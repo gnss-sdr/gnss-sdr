@@ -38,9 +38,9 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
-#include "gnss_synchro.h"
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
+#include "gnss_synchro.h"
 #include <string>
 
 class ConfigurationInterface;
@@ -49,7 +49,8 @@ class GalileoE5aNoncoherentIQAcquisitionCaf : public AcquisitionInterface
 {
 public:
     GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
@@ -87,8 +88,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
 
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -131,6 +144,13 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
     galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
@@ -140,12 +160,13 @@ private:
     unsigned int code_length_;
     bool bit_transition_flag_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     int Zero_padding;

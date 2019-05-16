@@ -65,23 +65,23 @@
  * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *
  */
-float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s)
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
 {
-    double SNR = 0.0;
-    double SNR_dB_Hz = 0.0;
-    double Psig = 0.0;
-    double Ptot = 0.0;
+    float SNR = 0.0;
+    float SNR_dB_Hz = 0.0;
+    float Psig = 0.0;
+    float Ptot = 0.0;
     for (int i = 0; i < length; i++)
         {
-            Psig += std::abs(static_cast<double>(Prompt_buffer[i].real()));
-            Ptot += static_cast<double>(Prompt_buffer[i].imag()) * static_cast<double>(Prompt_buffer[i].imag()) + static_cast<double>(Prompt_buffer[i].real()) * static_cast<double>(Prompt_buffer[i].real());
+            Psig += std::abs(Prompt_buffer[i].real());
+            Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
-    Psig /= static_cast<double>(length);
+    Psig /= static_cast<float>(length);
     Psig = Psig * Psig;
-    Ptot /= static_cast<double>(length);
+    Ptot /= static_cast<float>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10.0 * log10(SNR) - 10.0 * log10(coh_integration_time_s);
-    return static_cast<float>(SNR_dB_Hz);
+    SNR_dB_Hz = 10.0 * std::log10(SNR) - 10.0 * std::log10(coh_integration_time_s);
+    return SNR_dB_Hz;
 }
 
 

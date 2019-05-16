@@ -36,9 +36,9 @@
 #include "gnss_block_interface.h"
 #include "signal_generator_c.h"
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/vector_to_stream.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/vector_to_stream.h>
 #include <string>
 #include <vector>
 
@@ -52,7 +52,7 @@ class SignalGenerator : public GNSSBlockInterface
 {
 public:
     SignalGenerator(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~SignalGenerator();

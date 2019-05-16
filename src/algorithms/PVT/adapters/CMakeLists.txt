@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,32 +17,47 @@
 #
 
 
-if(Boost_VERSION LESS 105800)
-     add_definitions(-DOLD_BOOST=1)
-endif(Boost_VERSION LESS 105800)
-
 set(PVT_ADAPTER_SOURCES
-	rtklib_pvt.cc
+    rtklib_pvt.cc
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+set(PVT_ADAPTER_HEADERS
+    rtklib_pvt.h
 )
 
-file(GLOB PVT_ADAPTER_HEADERS "*.h")
-list(SORT PVT_ADAPTER_HEADERS)
-add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
 source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
-target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+
+add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
+
+target_link_libraries(pvt_adapters
+    PUBLIC
+        pvt_gr_blocks
+        algorithms_libs_rtklib
+        core_system_parameters
+    PRIVATE
+        gnss_sdr_flags
+        pvt_libs
+)
+
+target_include_directories(pvt_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(Boost_VERSION LESS 105800)
+    target_compile_definitions(pvt_adapters PRIVATE -DOLD_BOOST=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(pvt_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET pvt_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

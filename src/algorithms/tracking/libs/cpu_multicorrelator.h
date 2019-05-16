@@ -41,11 +41,11 @@
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class cpu_multicorrelator
+class Cpu_Multicorrelator
 {
 public:
-    cpu_multicorrelator();
-    ~cpu_multicorrelator();
+    Cpu_Multicorrelator();
+    ~Cpu_Multicorrelator();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const std::complex<float> *local_code_in, float *shifts_chips);
     bool set_input_output_vectors(std::complex<float> *corr_out, const std::complex<float> *sig_in);
@@ -65,4 +65,4 @@ private:
 };
 
 
-#endif /* CPU_MULTICORRELATOR_H_ */
+#endif /* GNSS_SDR_CPU_MULTICORRELATOR_H_ */

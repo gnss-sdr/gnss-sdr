@@ -33,17 +33,17 @@
 #define GNSS_SDR_GPS_L2C_H_
 
 
-#include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
-const double GPS_L2_C_m_s = 299792458.0;                //!< The speed of light, [m/s]
-const double GPS_L2_C_m_ms = 299792.4580;               //!< The speed of light, [m/ms]
+const double GPS_L2_C_M_S = 299792458.0;                //!< The speed of light, [m/s]
+const double GPS_L2_C_M_MS = 299792.4580;               //!< The speed of light, [m/ms]
 const double GPS_L2_PI = 3.1415926535898;               //!< Pi as defined in IS-GPS-200E
 const double GPS_L2_TWO_PI = 6.283185307179586;         //!< 2Pi as defined in IS-GPS-200E
 const double GPS_L2_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
@@ -62,6 +62,10 @@ const int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;  //!< GPS L2 L code length [c
 const double GPS_L2_L_PERIOD = 1.5;                 //!< GPS L2 L code period [seconds]
 
 const int32_t GPS_L2C_HISTORY_DEEP = 5;
+
+//optimum parameters
+const uint32_t GPS_L2C_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+
 
 const int32_t GPS_L2C_M_INIT_REG[115] =
     {0742417664, 0756014035, 0002747144, 0066265724,     // 1:4

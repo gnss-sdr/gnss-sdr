@@ -33,14 +33,14 @@
 #ifndef GNSS_SDR_ACQUISITION_MSG_RX_H
 #define GNSS_SDR_ACQUISITION_MSG_RX_H
 
-#include <gnuradio/top_block.h>
 #include <gnuradio/block.h>
+#include <gnuradio/top_block.h>
 #include <pmt/pmt.h>
 
 // ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########
 class Acquisition_msg_rx;
 
-typedef boost::shared_ptr<Acquisition_msg_rx> Acquisition_msg_rx_sptr;
+using Acquisition_msg_rx_sptr = boost::shared_ptr<Acquisition_msg_rx>;
 
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
 

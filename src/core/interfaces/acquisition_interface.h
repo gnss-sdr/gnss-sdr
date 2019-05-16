@@ -42,7 +42,9 @@
 #include "gnss_synchro.h"
 
 template <typename Data>
-class concurrent_queue;
+class Concurrent_Queue;
+
+class ChannelFsm;
 
 /*! \brief This abstract class represents an interface to an acquisition GNSS block.
  *
@@ -55,7 +57,8 @@ class AcquisitionInterface : public GNSSBlockInterface
 {
 public:
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
-    virtual void set_channel(unsigned int channel) = 0;
+    virtual void set_channel(unsigned int channel_id) = 0;
+    virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
@@ -64,6 +67,8 @@ public:
     virtual void set_state(int state) = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;
+    virtual void stop_acquisition() = 0;
+    virtual void set_resampler_latency(uint32_t latency_samples) = 0;
 };
 
 #endif /* GNSS_SDR_ACQUISITION_INTERFACE */

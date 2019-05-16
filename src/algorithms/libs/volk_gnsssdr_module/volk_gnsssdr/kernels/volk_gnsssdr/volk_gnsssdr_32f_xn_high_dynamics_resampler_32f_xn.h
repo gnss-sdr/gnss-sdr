@@ -67,13 +67,13 @@
 #ifndef INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H
 #define INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H
 
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h> /* abs */
-#include <stdint.h> /* int64_t */
-#include <stdio.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <assert.h>
+#include <math.h>
+#include <stdint.h> /* int64_t */
+#include <stdio.h>
+#include <stdlib.h> /* abs */
 
 
 #ifdef LV_HAVE_GENERIC

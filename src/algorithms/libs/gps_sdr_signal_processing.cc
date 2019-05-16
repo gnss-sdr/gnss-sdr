@@ -64,12 +64,14 @@ void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 
     /* A simple error check */
     if ((prn_idx < 0) || (prn_idx > 51))
-        return;
+        {
+            return;
+        }
 
     for (lcv = 0; lcv < 10; lcv++)
         {
-            G1_register[lcv] = 1;
-            G2_register[lcv] = 1;
+            G1_register[lcv] = true;
+            G2_register[lcv] = true;
         }
 
     /* Generate G1 & G2 Register */
@@ -131,7 +133,7 @@ void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
 void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
-    int32_t ca_code_int[_code_length];
+    int32_t ca_code_int[_code_length] = {0};
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);
 

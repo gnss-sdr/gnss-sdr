@@ -1,6 +1,5 @@
 /*!
- * \file udp_signal_source.h
- *
+ * \file custom_udp_signal_source.h
  * \brief Receives ip frames containing samples in UDP frame encapsulation
  * using a high performance packet capture library (libpcap)
  * \author Javier Arribas jarribas (at) cttc.es
@@ -36,9 +35,9 @@
 #include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -54,7 +53,7 @@ class CustomUDPSignalSource : public GNSSBlockInterface
 {
 public:
     CustomUDPSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~CustomUDPSignalSource();
@@ -65,7 +64,7 @@ public:
     }
 
     /*!
-     * \brief Returns "UDP_Signal_Source"
+     * \brief Returns "Custom_UDP_Signal_Source"
      */
     inline std::string implementation() override
     {
@@ -97,7 +96,7 @@ private:
     bool dump_;
     std::string dump_filename_;
     std::vector<boost::shared_ptr<gr::block>> null_sinks_;
-    gr_complex_ip_packet_source::sptr udp_gnss_rx_source_;
+    Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
 };

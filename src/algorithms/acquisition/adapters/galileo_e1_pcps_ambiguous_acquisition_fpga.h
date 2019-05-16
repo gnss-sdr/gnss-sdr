@@ -1,12 +1,12 @@
 /*!
- * \file galileo_e1_pcps_ambiguous_acquisition.h
+ * \file galileo_e1_pcps_ambiguous_acquisition_fpga.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E1 Signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *  Galileo E1 Signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,49 +32,45 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 
-#include "acquisition_interface.h"
-#include "gnss_synchro.h"
+#include "channel_fsm.h"
 #include "pcps_acquisition_fpga.h"
-#include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
-#include <gnuradio/blocks/float_to_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>                   // for size_t
 #include <string>
 
-
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an
- *  AcquisitionInterface for Galileo E1 Signals
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for Galileo E1 Signals
  */
 class GalileoE1PcpsAmbiguousAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsAmbiguousAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1PcpsAmbiguousAcquisitionFpga();
 
     inline std::string role() override
     {
-        //   printf("top acq role\n");
         return role_;
     }
 
     /*!
-     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition"
+     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {
-        //  printf("top acq implementation\n");
         return "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga";
     }
 
     size_t item_size() override
     {
-        //   printf("top acq item size\n");
         size_t item_size = sizeof(lv_16sc_t);
         return item_size;
     }
@@ -87,14 +83,27 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_fpga_->set_channel(channel_);
+    }
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_fpga_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -136,40 +145,28 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
-    //pcps_acquisition_sptr acquisition_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
-    gr::blocks::float_to_complex::sptr float_to_complex_;
-    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    // size_t item_size_;
-    // std::string item_type_;
-    //unsigned int vector_length_;
-    //unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     bool acquire_pilot_;
-    unsigned int channel_;
-    //float threshold_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    //unsigned int sampled_ms_;
-    unsigned int max_dwells_;
-    //long fs_in_;
-    //long if_;
-    bool dump_;
-    bool blocking_;
+    uint32_t channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
     std::string dump_filename_;
-    //std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    //float calculate_threshold(float pfa);
 
-    // extra for the FPGA
-    lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
+    uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
 #endif /* GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_ */

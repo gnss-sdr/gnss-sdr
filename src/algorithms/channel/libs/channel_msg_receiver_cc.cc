@@ -30,18 +30,32 @@
 
 
 #include "channel_msg_receiver_cc.h"
+#include <boost/any.hpp>
+#include <boost/bind.hpp>
+#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include <cstdint>
-
-using google::LogMessage;
+#include <utility>
 
 
 channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat)
 {
-    return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(channel_fsm, repeat));
+    return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(std::move(channel_fsm), repeat));
 }
+
+
+channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat) : gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
+
+    d_channel_fsm = std::move(channel_fsm);
+    d_repeat = repeat;
+}
+
+
+channel_msg_receiver_cc::~channel_msg_receiver_cc() = default;
 
 
 void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
@@ -49,10 +63,12 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
     bool result = false;
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             switch (message)
                 {
                 case 1:  // positive acquisition
+                         // Now the acquisition block can optionally trigger the event valid acquisition internally,
+                         // in order to reduce acquisition to tracking delay.
                     result = d_channel_fsm->Event_valid_acquisition();
                     break;
                 case 2:  // negative acquisition
@@ -82,16 +98,3 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
             LOG(WARNING) << "msg_handler_telemetry invalid event";
         }
 }
-
-
-channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat) : gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
-    this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
-
-    d_channel_fsm = channel_fsm;
-    d_repeat = repeat;
-}
-
-
-channel_msg_receiver_cc::~channel_msg_receiver_cc() {}

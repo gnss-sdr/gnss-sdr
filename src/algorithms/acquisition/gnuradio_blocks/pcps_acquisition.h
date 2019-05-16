@@ -52,18 +52,23 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H_
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acq_conf.h"
+#include "channel_fsm.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
-#include <volk/volk.h>
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/thread/thread.h>  // for scoped_lock
+#include <gnuradio/types.h>          // for gr_vector_const_void_star
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstdint>
 #include <string>
+#include <utility>
 
-
+class Gnss_Synchro;
 class pcps_acquisition;
 
-typedef boost::shared_ptr<pcps_acquisition> pcps_acquisition_sptr;
+using pcps_acquisition_sptr = boost::shared_ptr<pcps_acquisition>;
 
 pcps_acquisition_sptr
 pcps_make_acquisition(const Acq_Conf& conf_);
@@ -98,6 +103,9 @@ private:
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, float input_power, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
+    bool start();
+
+
     Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
@@ -117,6 +125,7 @@ private:
     int64_t d_old_freq;
     int32_t d_state;
     uint32_t d_channel;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
     uint32_t d_doppler_step;
     float d_doppler_center_step_two;
     uint32_t d_num_noncoherent_integrations_counter;
@@ -138,15 +147,17 @@ private:
     int64_t d_dump_number;
     uint32_t d_dump_channel;
     uint32_t d_buffer_count;
+    bool d_dump;
+    std::string d_dump_filename;
 
 public:
     ~pcps_acquisition();
 
     /*!
-      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-      * to exchange synchronization data between acquisition and tracking blocks.
-      * \param p_gnss_synchro Satellite information shared by the processing blocks.
-      */
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to exchange synchronization data between acquisition and tracking blocks.
+     * \param p_gnss_synchro Satellite information shared by the processing blocks.
+     */
     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
@@ -162,21 +173,21 @@ public:
     }
 
     /*!
-      * \brief Initializes acquisition algorithm and reserves memory.
-      */
+     * \brief Initializes acquisition algorithm and reserves memory.
+     */
     void init();
 
     /*!
-      * \brief Sets local code for PCPS acquisition algorithm.
-      * \param code - Pointer to the PRN code.
-      */
+     * \brief Sets local code for PCPS acquisition algorithm.
+     * \param code - Pointer to the PRN code.
+     */
     void set_local_code(std::complex<float>* code);
 
     /*!
-      * \brief Starts acquisition algorithm, turning from standby mode to
-      * active mode
-      * \param active - bool that activates/deactivates the block.
-      */
+     * \brief Starts acquisition algorithm, turning from standby mode to
+     * active mode
+     * \param active - bool that activates/deactivates the block.
+     */
     inline void set_active(bool active)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
@@ -184,27 +195,34 @@ public:
     }
 
     /*!
-      * \brief If set to 1, ensures that acquisition starts at the
-      * first available sample.
-      * \param state - int=1 forces start of acquisition
-      */
+     * \brief If set to 1, ensures that acquisition starts at the
+     * first available sample.
+     * \param state - int=1 forces start of acquisition
+     */
     void set_state(int32_t state);
 
     /*!
-      * \brief Set acquisition channel unique ID
-      * \param channel - receiver channel.
-      */
+     * \brief Set acquisition channel unique ID
+     * \param channel - receiver channel.
+     */
     inline void set_channel(uint32_t channel)
     {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_channel = channel;
     }
 
     /*!
-      * \brief Set statistics threshold of PCPS algorithm.
-      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-      * Algorithm 1, for a definition of this threshold).
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = std::move(channel_fsm);
+    }
+
+    /*!
+     * \brief Set statistics threshold of PCPS algorithm.
+     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
+     * Algorithm 1, for a definition of this threshold).
+     */
     inline void set_threshold(float threshold)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
@@ -212,9 +230,9 @@ public:
     }
 
     /*!
-      * \brief Set maximum Doppler grid search
-      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-      */
+     * \brief Set maximum Doppler grid search
+     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
+     */
     inline void set_doppler_max(uint32_t doppler_max)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
@@ -222,18 +240,21 @@ public:
     }
 
     /*!
-      * \brief Set Doppler steps for the grid search
-      * \param doppler_step - Frequency bin of the search grid [Hz].
-      */
+     * \brief Set Doppler steps for the grid search
+     * \param doppler_step - Frequency bin of the search grid [Hz].
+     */
     inline void set_doppler_step(uint32_t doppler_step)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_doppler_step = doppler_step;
     }
 
+
+    void set_resampler_latency(uint32_t latency_samples);
+
     /*!
-      * \brief Parallel Code Phase Search Acquisition signal processing.
-      */
+     * \brief Parallel Code Phase Search Acquisition signal processing.
+     */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items);

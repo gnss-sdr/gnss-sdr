@@ -34,8 +34,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
-#include "acquisition_interface.h"
 #include "pcps_assisted_acquisition_cc.h"
 #include <string>
 
@@ -49,7 +49,8 @@ class GpsL1CaPcpsAssistedAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAssistedAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAssistedAcquisition();
@@ -87,8 +88,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
 
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -122,6 +135,13 @@ public:
     void reset() override;
     void set_state(int state __attribute__((unused))) override{};
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;
     size_t item_size_;
@@ -129,13 +149,14 @@ private:
     unsigned int vector_length_;
     //unsigned int satellite_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     int doppler_max_;
     unsigned int doppler_step_;
     int doppler_min_;
     unsigned int sampled_ms_;
     int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
-#include "acquisition_interface.h"
 #include "pcps_opencl_acquisition_cc.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
@@ -48,7 +48,8 @@ class GpsL1CaPcpsOpenClAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
@@ -86,8 +87,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
 
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -124,6 +137,13 @@ public:
     void reset() override;
     void set_state(int state __attribute__((unused))) override{};
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;
@@ -134,12 +154,13 @@ private:
     unsigned int code_length_;
     bool bit_transition_flag_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -30,12 +30,10 @@
 
 #include "pulse_blanking_cc.h"
 #include <boost/math/distributions/chi_squared.hpp>
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <cmath>
 
-using google::LogMessage;
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_,
     int32_t n_segments_est, int32_t n_segments_reset)
@@ -79,9 +77,9 @@ pulse_blanking_cc::~pulse_blanking_cc()
 
 void pulse_blanking_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    for (uint32_t aux = 0; aux < ninput_items_required.size(); aux++)
+    for (int &aux : ninput_items_required)
         {
-            ninput_items_required[aux] = length_;
+            aux = length_;
         }
 }
 
@@ -89,9 +87,9 @@ void pulse_blanking_cc::forecast(int noutput_items __attribute__((unused)), gr_v
 int pulse_blanking_cc::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
-    float *magnitude = static_cast<float *>(volk_malloc(noutput_items * sizeof(float), volk_get_alignment()));
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *magnitude = static_cast<float *>(volk_malloc(noutput_items * sizeof(float), volk_get_alignment()));
     volk_32fc_magnitude_squared_32f(magnitude, in, noutput_items);
     int32_t sample_index = 0;
     float segment_energy;

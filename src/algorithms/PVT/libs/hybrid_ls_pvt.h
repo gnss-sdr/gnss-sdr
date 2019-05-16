@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_ls_pvt.h
+ * \file hybrid_ls_pvt.h
  * \brief Interface of a Least Squares Position, Velocity, and Time (PVT)
  * solver, based on K.Borre's Matlab receiver.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
@@ -32,11 +32,12 @@
 #ifndef GNSS_SDR_HYBRID_LS_PVT_H_
 #define GNSS_SDR_HYBRID_LS_PVT_H_
 
-#include "ls_pvt.h"
+#include "galileo_almanac.h"
 #include "galileo_navigation_message.h"
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
 #include "gnss_synchro.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_navigation_message.h"
+#include "ls_pvt.h"
 #include "rtklib_rtkcmn.h"
 #include <fstream>
 #include <map>
@@ -45,7 +46,7 @@
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
-class hybrid_ls_pvt : public Ls_Pvt
+class Hybrid_Ls_Pvt : public Ls_Pvt
 {
 private:
     int count_valid_position;
@@ -56,10 +57,10 @@ private:
     double d_galileo_current_time;
 
 public:
-    hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
-    ~hybrid_ls_pvt();
+    Hybrid_Ls_Pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
+    ~Hybrid_Ls_Pvt();
 
-    bool get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
+    bool get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging);
 
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;  //!< Map storing new Galileo_Ephemeris
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;          //!< Map storing new GPS_Ephemeris

@@ -29,14 +29,14 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnuplot_i.h"
+#include "test_flags.h"
+#include <boost/filesystem.hpp>
+#include <gnuradio/fft/fft.h>
 #include <algorithm>
 #include <chrono>
 #include <functional>
 #include <random>
-#include <boost/filesystem.hpp>
-#include <gnuradio/fft/fft.h>
-#include "gnuplot_i.h"
-#include "test_flags.h"
 
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
@@ -112,7 +112,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                         {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
-                            std::string gnuplot_path = dir.native();
+                            const std::string& gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
@@ -151,7 +151,10 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g2.savetops("FFT_execution_times");
                             g2.savetopdf("FFT_execution_times", 18);
-                            if (FLAGS_show_plots) g2.showonscreen();  // window output
+                            if (FLAGS_show_plots)
+                                {
+                                    g2.showonscreen();  // window output
+                                }
                         }
                     catch (const GnuplotException& ge)
                         {

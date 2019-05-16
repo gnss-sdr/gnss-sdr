@@ -31,20 +31,24 @@
  */
 
 #include "rtl_tcp_signal_source.h"
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include "GPS_L1_CA.h"
 #include <boost/format.hpp>
 #include <glog/logging.h>
+#include <cstdint>
 #include <iostream>
-
-
-using google::LogMessage;
+#include <utility>
 
 
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
+                                              in_stream_(in_stream),
+                                              out_stream_(out_stream),
+                                              queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -57,7 +61,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
     // rtl_tcp PARAMETERS
     std::string default_address = "127.0.0.1";
-    short default_port = 1234;
+    int16_t default_port = 1234;
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     gain_ = configuration->property(role + ".gain", 40.0);
@@ -69,11 +73,11 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     port_ = configuration->property(role + ".port", default_port);
     flip_iq_ = configuration->property(role + ".flip_iq", false);
 
-    if (item_type_.compare("short") == 0)
+    if (item_type_ == "short")
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block
@@ -112,10 +116,10 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
             valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
@@ -139,9 +143,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 }
 
 
-RtlTcpSignalSource::~RtlTcpSignalSource()
-{
-}
+RtlTcpSignalSource::~RtlTcpSignalSource() = default;
 
 
 void RtlTcpSignalSource::MakeBlock()
@@ -162,7 +164,7 @@ void RtlTcpSignalSource::MakeBlock()
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if (samples_)
+    if (samples_ != 0ULL)
         {
             top_block->connect(signal_source_, 0, valve_, 0);
             DLOG(INFO) << "connected rtl tcp source to valve";
@@ -182,7 +184,7 @@ void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 
 void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if (samples_)
+    if (samples_ != 0ULL)
         {
             top_block->disconnect(signal_source_, 0, valve_, 0);
             if (dump_)
@@ -206,12 +208,9 @@ gr::basic_block_sptr RtlTcpSignalSource::get_left_block()
 
 gr::basic_block_sptr RtlTcpSignalSource::get_right_block()
 {
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             return valve_;
         }
-    else
-        {
-            return signal_source_;
-        }
+    return signal_source_;
 }

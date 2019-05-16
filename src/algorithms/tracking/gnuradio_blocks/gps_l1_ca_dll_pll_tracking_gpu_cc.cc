@@ -29,23 +29,20 @@
  */
 
 #include "gps_l1_ca_dll_pll_tracking_gpu_cc.h"
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
 #include "GPS_L1_CA.h"
-#include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <boost/lexical_cast.hpp>
-#include <cuda_profiler_api.h>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <cmath>
+#include <cuda_profiler_api.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
 
-
-using google::LogMessage;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(
@@ -85,6 +82,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_dump = dump;
     d_fs_in = fs_in;

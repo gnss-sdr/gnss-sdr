@@ -206,42 +206,42 @@ memb_ganssUtcDeltaTlsf_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_ganssUtcA1_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_A1_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcA0_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_A0_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcTot_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_TOT_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcWNt_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_W_NT_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcDeltaTls_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_DELTA_TLS_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcWNlsf_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_W_NLSF_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcDN_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_DN_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssUtcDeltaTlsf_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_UTC_DELTA_TLSF_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -252,7 +252,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcA1_constraint_1,
-		&asn_PER_memb_ganssUtcA1_constr_2,
+		&ASN_PER_MEMB_GANSS_UTC_A1_CONSTR_2,
 		0,
 		"ganssUtcA1"
 		},
@@ -261,7 +261,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcA0_constraint_1,
-		&asn_PER_memb_ganssUtcA0_constr_3,
+		&ASN_PER_MEMB_GANSS_UTC_A0_CONSTR_3,
 		0,
 		"ganssUtcA0"
 		},
@@ -270,7 +270,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcTot_constraint_1,
-		&asn_PER_memb_ganssUtcTot_constr_4,
+		&ASN_PER_MEMB_GANSS_UTC_TOT_CONSTR_4,
 		0,
 		"ganssUtcTot"
 		},
@@ -279,7 +279,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcWNt_constraint_1,
-		&asn_PER_memb_ganssUtcWNt_constr_5,
+		&ASN_PER_MEMB_GANSS_UTC_W_NT_CONSTR_5,
 		0,
 		"ganssUtcWNt"
 		},
@@ -288,7 +288,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcDeltaTls_constraint_1,
-		&asn_PER_memb_ganssUtcDeltaTls_constr_6,
+		&ASN_PER_MEMB_GANSS_UTC_DELTA_TLS_CONSTR_6,
 		0,
 		"ganssUtcDeltaTls"
 		},
@@ -297,7 +297,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcWNlsf_constraint_1,
-		&asn_PER_memb_ganssUtcWNlsf_constr_7,
+		&ASN_PER_MEMB_GANSS_UTC_W_NLSF_CONSTR_7,
 		0,
 		"ganssUtcWNlsf"
 		},
@@ -306,7 +306,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcDN_constraint_1,
-		&asn_PER_memb_ganssUtcDN_constr_8,
+		&ASN_PER_MEMB_GANSS_UTC_DN_CONSTR_8,
 		0,
 		"ganssUtcDN"
 		},
@@ -315,7 +315,7 @@ static asn_TYPE_member_t asn_MBR_GANSSUTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssUtcDeltaTlsf_constraint_1,
-		&asn_PER_memb_ganssUtcDeltaTlsf_constr_9,
+		&ASN_PER_MEMB_GANSS_UTC_DELTA_TLSF_CONSTR_9,
 		0,
 		"ganssUtcDeltaTlsf"
 		},

@@ -31,13 +31,14 @@
  */
 
 #include "ad9361_fpga_signal_source.h"
-#include "configuration_interface.h"
-#include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include "ad9361_manager.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <exception>
 #include <iostream>  // for cout, endl
+#include <utility>
 
 #ifdef __APPLE__
 #include <iio/iio.h>
@@ -46,16 +47,16 @@
 #endif
 
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2600000);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000);
+    bandwidth_ = configuration->property(role + ".bandwidth", 12500000);
     rx1_en_ = configuration->property(role + ".rx1_enable", true);
-    rx2_en_ = configuration->property(role + ".rx2_enable", false);
+    rx2_en_ = configuration->property(role + ".rx2_enable", true);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
@@ -106,10 +107,10 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
         }
 
     // turn switch to A/D position
-    std::string default_device_name = "/dev/uio13";
+    std::string default_device_name = "/dev/uio1";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
-    int switch_position = configuration->property(role + ".switch_position", 0);
-    switch_fpga = std::make_shared<fpga_switch>(device_name);
+    int32_t switch_position = configuration->property(role + ".switch_position", 0);
+    switch_fpga = std::make_shared<Fpga_Switch>(device_name);
     switch_fpga->set_switch_position(switch_position);
     if (in_stream_ > 0)
         {

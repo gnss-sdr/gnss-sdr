@@ -1,8 +1,8 @@
 /*!
  * \file dll_pll_veml_tracking.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
- * 		   Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -35,45 +35,42 @@
  */
 
 #include "dll_pll_veml_tracking.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "control_message_factory.h"
-#include "MATH_CONSTANTS.h"
-#include "Galileo_E1.h"
-#include "galileo_e1_signal_processing.h"
-#include "Galileo_E5a.h"
-#include "galileo_e5_signal_processing.h"
+#include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L2C.h"
-#include "gps_l2c_signal.h"
 #include "GPS_L5.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "MATH_CONSTANTS.h"
+#include "beidou_b1i_signal_processing.h"
+#include "beidou_b3i_signal_processing.h"
+#include "galileo_e1_signal_processing.h"
+#include "galileo_e5_signal_processing.h"
+#include "gnss_sdr_create_directory.h"
+#include "gnss_synchro.h"
+#include "gps_l2c_signal.h"
 #include "gps_l5_signal.h"
-#include <boost/lexical_cast.hpp>
+#include "gps_sdr_signal_processing.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
+#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <matio.h>
+#include <gnuradio/io_signature.h>   // for io_signature
+#include <gnuradio/thread/thread.h>  // for scoped_lock
+#include <matio.h>                   // for Mat_VarCreate
+#include <pmt/pmt_sugar.h>           // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <sstream>
+#include <algorithm>  // for fill_n
+#include <cmath>      // for fmod, round, floor
+#include <exception>  // for exception
+#include <iostream>   // for cout, cerr
+#include <map>
 
-using google::LogMessage;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 {
     return dll_pll_veml_tracking_sptr(new dll_pll_veml_tracking(conf_));
-}
-
-
-void dll_pll_veml_tracking::forecast(int noutput_items,
-    gr_vector_int &ninput_items_required)
-{
-    if (noutput_items != 0)
-        {
-            ninput_items_required[0] = static_cast<int32_t>(trk_parameters.vector_length) * 2;
-        }
 }
 
 
@@ -85,16 +82,19 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / static_cast<double>(trk_parameters.vector_length));
 
-    // Telemetry bit synchronization message port input (mainly for GPS L1 CA)
-    this->message_port_register_in(pmt::mp("preamble_samplestamp"));
+    // Telemetry message port input
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
+    this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
     d_veml = false;
     d_cloop = true;
+    d_pull_in_transitory = true;
     d_code_chip_rate = 0.0;
     d_secondary_code_length = 0U;
     d_secondary_code_string = nullptr;
-    d_gps_l1ca_preambles_symbols = nullptr;
+    d_preambles_symbols = nullptr;
+    d_preamble_length_symbols = 0;
     signal_type = std::string(trk_parameters.signal);
 
     std::map<std::string, std::string> map_signal_pretty_name;
@@ -105,13 +105,15 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     map_signal_pretty_name["2G"] = "L2 C/A";
     map_signal_pretty_name["5X"] = "E5a";
     map_signal_pretty_name["L5"] = "L5";
+    map_signal_pretty_name["B1"] = "B1I";
+    map_signal_pretty_name["B3"] = "B3I";
 
     signal_pretty_name = map_signal_pretty_name[signal_type];
 
     if (trk_parameters.system == 'G')
         {
             systemName = "GPS";
-            if (signal_type.compare("1C") == 0)
+            if (signal_type == "1C")
                 {
                     d_signal_carrier_freq = GPS_L1_FREQ_HZ;
                     d_code_period = GPS_L1_CA_CODE_PERIOD;
@@ -129,27 +131,28 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     uint16_t preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
                     // preamble bits to sampled symbols
-                    d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    d_preamble_length_symbols = GPS_CA_PREAMBLE_LENGTH_SYMBOLS;
+                    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                     int32_t n = 0;
-                    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                    for (uint16_t preambles_bit : preambles_bits)
                         {
                             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                                 {
-                                    if (preambles_bits[i] == 1)
+                                    if (preambles_bit == 1)
                                         {
-                                            d_gps_l1ca_preambles_symbols[n] = 1;
+                                            d_preambles_symbols[n] = 1;
                                         }
                                     else
                                         {
-                                            d_gps_l1ca_preambles_symbols[n] = -1;
+                                            d_preambles_symbols[n] = -1;
                                         }
                                     n++;
                                 }
                         }
-                    d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
-                    d_symbol_history.clear();                                 // Clear all the elements in the buffer
+                    d_symbol_history.set_capacity(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
+                    d_symbol_history.clear();                                       // Clear all the elements in the buffer
                 }
-            else if (signal_type.compare("2S") == 0)
+            else if (signal_type == "2S")
                 {
                     d_signal_carrier_freq = GPS_L2_FREQ_HZ;
                     d_code_period = GPS_L2_M_PERIOD;
@@ -163,27 +166,27 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     trk_parameters.track_pilot = false;
                     interchange_iq = false;
                 }
-            else if (signal_type.compare("L5") == 0)
+            else if (signal_type == "L5")
                 {
                     d_signal_carrier_freq = GPS_L5_FREQ_HZ;
-                    d_code_period = GPS_L5i_PERIOD;
-                    d_code_chip_rate = GPS_L5i_CODE_RATE_HZ;
+                    d_code_period = GPS_L5I_PERIOD;
+                    d_code_chip_rate = GPS_L5I_CODE_RATE_HZ;
                     d_symbols_per_bit = GPS_L5_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_code_length_chips = static_cast<uint32_t>(GPS_L5i_CODE_LENGTH_CHIPS);
+                    d_code_length_chips = static_cast<uint32_t>(GPS_L5I_CODE_LENGTH_CHIPS);
                     d_secondary = true;
                     if (trk_parameters.track_pilot)
                         {
-                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5q_NH_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5q_NH_CODE_STR);
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5Q_NH_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5Q_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "Q";
                             interchange_iq = true;
                         }
                     else
                         {
-                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5i_NH_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5i_NH_CODE_STR);
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5I_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "I";
                             interchange_iq = false;
                         }
@@ -205,12 +208,12 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     else if (trk_parameters.system == 'E')
         {
             systemName = "Galileo";
-            if (signal_type.compare("1B") == 0)
+            if (signal_type == "1B")
                 {
-                    d_signal_carrier_freq = Galileo_E1_FREQ_HZ;
-                    d_code_period = Galileo_E1_CODE_PERIOD;
-                    d_code_chip_rate = Galileo_E1_CODE_CHIP_RATE_HZ;
-                    d_code_length_chips = static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
+                    d_signal_carrier_freq = GALILEO_E1_FREQ_HZ;
+                    d_code_period = GALILEO_E1_CODE_PERIOD;
+                    d_code_chip_rate = GALILEO_E1_CODE_CHIP_RATE_HZ;
+                    d_code_length_chips = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
                     d_symbols_per_bit = 1;
                     d_correlation_length_ms = 4;
                     d_code_samples_per_chip = 2;  // CBOC disabled: 2 samples per chip. CBOC enabled: 12 samples per chip
@@ -218,8 +221,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary = true;
-                            d_secondary_code_length = static_cast<uint32_t>(Galileo_E1_C_SECONDARY_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&Galileo_E1_C_SECONDARY_CODE);
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&GALILEO_E1_C_SECONDARY_CODE);
                             signal_pretty_name = signal_pretty_name + "C";
                         }
                     else
@@ -229,20 +232,20 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                         }
                     interchange_iq = false;  // Note that E1-B and E1-C are in anti-phase, NOT IN QUADRATURE. See Galileo ICD.
                 }
-            else if (signal_type.compare("5X") == 0)
+            else if (signal_type == "5X")
                 {
-                    d_signal_carrier_freq = Galileo_E5a_FREQ_HZ;
-                    d_code_period = GALILEO_E5a_CODE_PERIOD;
-                    d_code_chip_rate = Galileo_E5a_CODE_CHIP_RATE_HZ;
+                    d_signal_carrier_freq = GALILEO_E5A_FREQ_HZ;
+                    d_code_period = GALILEO_E5A_CODE_PERIOD;
+                    d_code_chip_rate = GALILEO_E5A_CODE_CHIP_RATE_HZ;
                     d_symbols_per_bit = 20;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_code_length_chips = static_cast<uint32_t>(Galileo_E5a_CODE_LENGTH_CHIPS);
+                    d_code_length_chips = static_cast<uint32_t>(GALILEO_E5A_CODE_LENGTH_CHIPS);
 
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary = true;
-                            d_secondary_code_length = static_cast<uint32_t>(Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_Q_SECONDARY_CODE_LENGTH);
                             signal_pretty_name = signal_pretty_name + "Q";
                             interchange_iq = true;
                         }
@@ -268,6 +271,56 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_symbols_per_bit = 0;
                 }
         }
+    else if (trk_parameters.system == 'C')
+        {
+            systemName = "Beidou";
+            if (signal_type == "B1")
+                {
+                    // GEO Satellites use different secondary code
+                    d_signal_carrier_freq = BEIDOU_B1I_FREQ_HZ;
+                    d_code_period = BEIDOU_B1I_CODE_PERIOD;
+                    d_code_chip_rate = BEIDOU_B1I_CODE_RATE_HZ;
+                    d_code_length_chips = static_cast<uint32_t>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = true;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                    d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
+                }
+            else if (signal_type == "B3")
+                {
+                    // GEO Satellites use different secondary code
+                    d_signal_carrier_freq = BEIDOU_B3I_FREQ_HZ;
+                    d_code_period = BEIDOU_B3I_CODE_PERIOD;
+                    d_code_chip_rate = BEIDOU_B3I_CODE_RATE_HZ;
+                    d_code_length_chips = static_cast<uint32_t>(BEIDOU_B3I_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = true;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                    d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
+                }
+            else
+                {
+                    LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
+                    std::cout << "Invalid Signal argument when instantiating tracking blocks" << std::endl;
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    interchange_iq = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0;
+                    d_symbols_per_bit = 0;
+                }
+        }
+
     else
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
@@ -287,10 +340,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     K_blk_samples = 0.0;
 
     // Initialize tracking  ==========================================
-    d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
-    d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
-    d_code_loop_filter = Tracking_2nd_DLL_filter(static_cast<float>(d_code_period));
-    d_carrier_loop_filter = Tracking_2nd_PLL_filter(static_cast<float>(d_code_period));
+    d_code_loop_filter = Tracking_loop_filter(d_code_period, trk_parameters.dll_bw_hz, trk_parameters.dll_filter_order, false);
+    d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
@@ -355,6 +406,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         {
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
+            correlator_data_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
@@ -363,7 +415,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
-    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
+    d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)
@@ -376,6 +429,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_acq_sample_stamp = 0ULL;
 
     d_current_prn_length_samples = static_cast<int32_t>(trk_parameters.vector_length);
+    d_current_correlation_time_s = 0.0;
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -385,7 +439,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
     d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-
+    d_cn0_smoother = Exponential_Smoother();
+    if (d_code_period > 0.0)
+        {
+            d_cn0_smoother.set_samples_for_initialization(200 / static_cast<int>(d_code_period * 1000.0));
+        }
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -397,12 +455,98 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_code_phase_step_chips = 0.0;
     d_code_phase_rate_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
+    d_carrier_phase_rate_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
-    d_K_blk_samples = 0.0;
-    d_code_phase_samples = 0.0;
-    d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
     clear_tracking_vars();
+    if (trk_parameters.smoother_length > 0)
+        {
+            d_carr_ph_history.set_capacity(trk_parameters.smoother_length * 2);
+            d_code_ph_history.set_capacity(trk_parameters.smoother_length * 2);
+        }
+    else
+        {
+            d_carr_ph_history.set_capacity(1);
+            d_code_ph_history.set_capacity(1);
+        }
+
+    d_dump = trk_parameters.dump;
+    d_dump_mat = trk_parameters.dump_mat and d_dump;
+    if (d_dump)
+        {
+            d_dump_filename = trk_parameters.dump_filename;
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
+                {
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "trk_channel_";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                }
+
+            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump files for the tracking block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+        }
+}
+
+
+void dll_pll_veml_tracking::forecast(int noutput_items,
+    gr_vector_int &ninput_items_required)
+{
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = static_cast<int32_t>(trk_parameters.vector_length) * 2;
+        }
+}
+
+
+void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
+{
+    try
+        {
+            if (pmt::any_ref(msg).type() == typeid(int))
+                {
+                    int tlm_event;
+                    tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
+
+                    switch (tlm_event)
+                        {
+                        case 1:  //tlm fault in current channel
+                            {
+                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
+                                gr::thread::scoped_lock lock(d_setlock);
+                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                        }
+                }
+        }
+    catch (boost::bad_any_cast &e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any cast!";
+        }
 }
 
 
@@ -415,51 +559,21 @@ void dll_pll_veml_tracking::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
-    double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / trk_parameters.fs_in;
-    DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
-    DLOG(INFO) << "Number of seconds between Acquisition and Tracking = " << acq_trk_diff_seconds;
-    // Doppler effect Fd = (C / (C + Vr)) * F
-    double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
-    // new chip and PRN sequence periods based on acq Doppler
-    d_code_freq_chips = radial_velocity * d_code_chip_rate;
-    d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
-    double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
-    double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
-    double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
-
-    //d_current_prn_length_samples = std::round(T_prn_mod_samples);
-    d_current_prn_length_samples = std::floor(T_prn_mod_samples);
-
-    double T_prn_true_seconds = static_cast<double>(d_code_length_chips) / d_code_chip_rate;
-    double T_prn_true_samples = T_prn_true_seconds * trk_parameters.fs_in;
-    double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
-    double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    double corrected_acq_phase_samples = std::fmod(d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * trk_parameters.fs_in, T_prn_true_samples);
-    if (corrected_acq_phase_samples < 0.0)
-        {
-            corrected_acq_phase_samples += T_prn_mod_samples;
-        }
-    double delay_correction_samples = d_acq_code_phase_samples - corrected_acq_phase_samples;
-
-    d_acq_code_phase_samples = corrected_acq_phase_samples;
-
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
+    d_carrier_phase_rate_step_rad = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
 
-    // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize();  // initialize the carrier filter
-    d_code_loop_filter.initialize();     // initialize the code filter
-
-    if (systemName.compare("GPS") == 0 and signal_type.compare("1C") == 0)
+    if (systemName == "GPS" and signal_type == "1C")
         {
             gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
-    else if (systemName.compare("GPS") == 0 and signal_type.compare("2S") == 0)
+    else if (systemName == "GPS" and signal_type == "2S")
         {
             gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
-    else if (systemName.compare("GPS") == 0 and signal_type.compare("L5") == 0)
+    else if (systemName == "GPS" and signal_type == "L5")
         {
             if (trk_parameters.track_pilot)
                 {
@@ -473,7 +587,7 @@ void dll_pll_veml_tracking::start_tracking()
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (systemName.compare("Galileo") == 0 and signal_type.compare("1B") == 0)
+    else if (systemName == "Galileo" and signal_type == "1B")
         {
             if (trk_parameters.track_pilot)
                 {
@@ -488,13 +602,13 @@ void dll_pll_veml_tracking::start_tracking()
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (systemName.compare("Galileo") == 0 and signal_type.compare("5X") == 0)
+    else if (systemName == "Galileo" and signal_type == "5X")
         {
-            gr_complex *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
+            auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
             galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
             if (trk_parameters.track_pilot)
                 {
-                    d_secondary_code_string = const_cast<std::string *>(&Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+                    d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
                     for (uint32_t i = 0; i < d_code_length_chips; i++)
                         {
                             d_tracking_code[i] = aux_code[i].imag();
@@ -511,6 +625,85 @@ void dll_pll_veml_tracking::start_tracking()
                         }
                 }
             volk_gnsssdr_free(aux_code);
+        }
+    else if (systemName == "Beidou" and signal_type == "B1")
+        {
+            beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            // Update secondary code settings for geo satellites
+            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+                {
+                    d_symbols_per_bit = 2;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                    d_secondary_code_length = 0;
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_D2_SECONDARY_CODE_STR);
+
+                    // preamble bits to sampled symbols
+                    d_preamble_length_symbols = 22;
+                    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(22 * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    int32_t n = 0;
+                    uint32_t preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+                    for (uint32_t preambles_bit : preambles_bits)
+                        {
+                            for (int32_t j = 0; j < d_symbols_per_bit; j++)
+                                {
+                                    if (preambles_bit == 1)
+                                        {
+                                            d_preambles_symbols[n] = 1;
+                                        }
+                                    else
+                                        {
+                                            d_preambles_symbols[n] = -1;
+                                        }
+                                    n++;
+                                }
+                        }
+                    d_symbol_history.resize(22);  // Change fixed buffer size
+                    d_symbol_history.clear();
+                }
+        }
+
+    else if (systemName == "Beidou" and signal_type == "B3")
+        {
+            beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            // Update secondary code settings for geo satellites
+            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+                {
+                    d_symbols_per_bit = 2;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                    d_secondary_code_length = 0;
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_D2_SECONDARY_CODE_STR);
+
+                    // preamble bits to sampled symbols
+                    d_preamble_length_symbols = 22;
+                    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(22 * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    int32_t n = 0;
+                    uint32_t preambles_bits[BEIDOU_B3I_PREAMBLE_LENGTH_BITS] = {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+                    for (uint32_t preambles_bit : preambles_bits)
+                        {
+                            for (int32_t j = 0; j < d_symbols_per_bit; j++)
+                                {
+                                    if (preambles_bit == 1)
+                                        {
+                                            d_preambles_symbols[n] = 1;
+                                        }
+                                    else
+                                        {
+                                            d_preambles_symbols[n] = -1;
+                                        }
+                                    n++;
+                                }
+                        }
+                    d_symbol_history.resize(22);  // Change fixed buffer size
+                    d_symbol_history.clear();
+                }
         }
 
     multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
@@ -538,32 +731,33 @@ void dll_pll_veml_tracking::start_tracking()
             d_local_code_shift_chips[2] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
         }
 
-    d_code_phase_samples = d_acq_code_phase_samples;
-    d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
-    d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
-    d_carrier_loop_filter.set_pdi(static_cast<float>(d_code_period));
-    d_code_loop_filter.set_pdi(static_cast<float>(d_code_period));
+    d_current_correlation_time_s = d_code_period;
+
+    // Initialize tracking  ==========================================
+    d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
+    d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_hz);
+    d_code_loop_filter.set_update_interval(d_code_period);
+    // DLL/PLL filter initialization
+    d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
+    d_code_loop_filter.initialize();                                                 // initialize the code filter
 
     // DEBUG OUTPUT
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking pull-in
     d_state = 1;
     d_cloop = true;
-    d_Prompt_buffer_deque.clear();
-    d_last_prompt = gr_complex(0.0, 0.0);
-    LOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
-              << ". Code Phase correction [samples] = " << delay_correction_samples
-              << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
+    d_pull_in_transitory = true;
+    d_Prompt_circular_buffer.clear();
 }
 
 
 dll_pll_veml_tracking::~dll_pll_veml_tracking()
 {
-    if (signal_type.compare("1C") == 0)
+    if (signal_type == "1C")
         {
-            volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
+            volk_gnsssdr_free(d_preambles_symbols);
         }
 
     if (d_dump_file.is_open())
@@ -577,16 +771,15 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
                     LOG(WARNING) << "Exception in destructor " << ex.what();
                 }
         }
-    if (trk_parameters.dump)
+    if (d_dump_mat)
         {
-            if (d_channel == 0)
+            try
                 {
-                    std::cout << "Writing .mat files ...";
+                    save_matfile();
                 }
-            save_matfile();
-            if (d_channel == 0)
+            catch (const std::exception &ex)
                 {
-                    std::cout << " done." << std::endl;
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
                 }
         }
     try
@@ -616,7 +809,7 @@ bool dll_pll_veml_tracking::acquire_secondary()
     int32_t corr_value = 0;
     for (uint32_t i = 0; i < d_secondary_code_length; i++)
         {
-            if (d_Prompt_buffer_deque.at(i).real() < 0.0)  // symbols clipping
+            if (d_Prompt_circular_buffer[i].real() < 0.0)  // symbols clipping
                 {
                     if (d_secondary_code_string->at(i) == '0')
                         {
@@ -644,17 +837,14 @@ bool dll_pll_veml_tracking::acquire_secondary()
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 
 bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-
     if (d_cn0_estimation_counter < trk_parameters.cn0_samples)
         {
             // fill buffer with prompt correlator output values
@@ -662,35 +852,38 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
             d_cn0_estimation_counter++;
             return true;
         }
-    else
+
+    d_Prompt_buffer[d_cn0_estimation_counter % trk_parameters.cn0_samples] = d_P_accu;
+    d_cn0_estimation_counter++;
+    // Code lock indicator
+    float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
+    // Carrier lock indicator
+    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
+    // Loss of lock detection
+    if (!d_pull_in_transitory)
         {
-            d_cn0_estimation_counter = 0;
-            // Code lock indicator
-            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, coh_integration_time_s);
-            // Carrier lock indicator
-            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
-            // Loss of lock detection
             if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < trk_parameters.cn0_min)
                 {
                     d_carrier_lock_fail_counter++;
                 }
             else
                 {
-                    if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
-                }
-            if (d_carrier_lock_fail_counter > trk_parameters.max_lock_fail)
-                {
-                    std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
-                    LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                    this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
-                    d_carrier_lock_fail_counter = 0;
-                    return false;
-                }
-            else
-                {
-                    return true;
+                    if (d_carrier_lock_fail_counter > 0)
+                        {
+                            d_carrier_lock_fail_counter--;
+                        }
                 }
         }
+    if (d_carrier_lock_fail_counter > trk_parameters.max_lock_fail)
+        {
+            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+            d_carrier_lock_fail_counter = 0;
+            return false;
+        }
+    return true;
 }
 
 
@@ -706,7 +899,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
-        d_carrier_phase_step_rad,
+        d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
         static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -718,7 +911,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
             correlator_data_cpu.set_input_output_vectors(d_Prompt_Data, input_samples);
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
                 d_rem_carr_phase_rad,
-                d_carrier_phase_step_rad,
+                d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -734,20 +927,45 @@ void dll_pll_veml_tracking::run_dll_pll()
     if (d_cloop)
         {
             // Costas loop discriminator, insensitive to 180 deg phase transitions
-            d_carr_error_hz = pll_cloop_two_quadrant_atan(d_P_accu) / PI_2;
+            d_carr_phase_error_hz = pll_cloop_two_quadrant_atan(d_P_accu) / PI_2;
         }
     else
         {
             // Secondary code acquired. No symbols transition should be present in the signal
-            d_carr_error_hz = pll_four_quadrant_atan(d_P_accu) / PI_2;
+            d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / PI_2;
         }
 
-    // Carrier discriminator filter
-    d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(d_carr_error_hz);
+    if ((d_pull_in_transitory == true and trk_parameters.enable_fll_pull_in == true) or trk_parameters.enable_fll_steady_state)
+        {
+            // FLL discriminator
+            //d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / GPS_TWO_PI;
+            d_carr_freq_error_hz = fll_diff_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / GPS_TWO_PI;
+
+            d_P_accu_old = d_P_accu;
+            //std::cout << "d_carr_freq_error_hz: " << d_carr_freq_error_hz << std::endl;
+            // Carrier discriminator filter
+            if ((d_pull_in_transitory == true and trk_parameters.enable_fll_pull_in == true))
+                {
+                    //pure FLL, disable PLL
+                    d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(d_carr_freq_error_hz, 0, d_current_correlation_time_s);
+                }
+            else
+                {
+                    //FLL-aided PLL
+                    d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(d_carr_freq_error_hz, d_carr_phase_error_hz, d_current_correlation_time_s);
+                }
+        }
+    else
+        {
+            // Carrier discriminator filter
+            d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(0, d_carr_phase_error_hz, d_current_correlation_time_s);
+        }
+
     // New carrier Doppler frequency estimation
-    d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_carr_error_filt_hz;
+    d_carrier_doppler_hz = d_carr_error_filt_hz;
 
-
+    //    std::cout << "d_carrier_doppler_hz: " << d_carrier_doppler_hz << std::endl;
+    //    std::cout << "d_CN0_SNV_dB_Hz: " << this->d_CN0_SNV_dB_Hz << std::endl;
     // ################## DLL ##########################################################
     // DLL discriminator
     if (d_veml)
@@ -759,7 +977,7 @@ void dll_pll_veml_tracking::run_dll_pll()
             d_code_error_chips = dll_nc_e_minus_l_normalized(d_E_accu, d_L_accu);  // [chips/Ti]
         }
     // Code discriminator filter
-    d_code_error_filt_chips = d_code_loop_filter.get_code_nco(d_code_error_chips);  // [chips/second]
+    d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
 
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
@@ -769,14 +987,22 @@ void dll_pll_veml_tracking::run_dll_pll()
 void dll_pll_veml_tracking::clear_tracking_vars()
 {
     std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
-    if (trk_parameters.track_pilot) d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-    d_carr_error_hz = 0.0;
+    if (trk_parameters.track_pilot)
+        {
+            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+        }
+    d_P_accu_old = gr_complex(0.0, 0.0);
+    d_carr_phase_error_hz = 0.0;
+    d_carr_freq_error_hz = 0.0;
     d_carr_error_filt_hz = 0.0;
     d_code_error_chips = 0.0;
     d_code_error_filt_chips = 0.0;
     d_current_symbol = 0;
-    d_Prompt_buffer_deque.clear();
-    d_last_prompt = gr_complex(0.0, 0.0);
+    d_Prompt_circular_buffer.clear();
+    d_carrier_phase_rate_step_rad = 0.0;
+    d_code_phase_rate_step_chips = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
 }
 
 
@@ -796,15 +1022,59 @@ void dll_pll_veml_tracking::update_tracking_vars()
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
+    // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
+    if (trk_parameters.high_dyn)
+        {
+            d_carr_ph_history.push_back(std::pair<double, double>(d_carrier_phase_step_rad, static_cast<double>(d_current_prn_length_samples)));
+            if (d_carr_ph_history.full())
+                {
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_carr_ph_history[k].first;
+                            tmp_cp2 += d_carr_ph_history[trk_parameters.smoother_length * 2 - k - 1].first;
+                            tmp_samples += d_carr_ph_history[trk_parameters.smoother_length * 2 - k - 1].second;
+                        }
+                    tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
+                    d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                }
+        }
+    //std::cout << d_carrier_phase_rate_step_rad * trk_parameters.fs_in * trk_parameters.fs_in / PI_2 << std::endl;
     // remnant carrier phase to prevent overflow in the code NCO
-    d_rem_carr_phase_rad += d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
+
     // carrier phase accumulator
-    d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    //double a = d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    //double b = 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples);
+    //std::cout << fmod(b, PI_2) / fmod(a, PI_2) << std::endl;
+    d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
 
     //################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
+    if (trk_parameters.high_dyn)
+        {
+            d_code_ph_history.push_back(std::pair<double, double>(d_code_phase_step_chips, static_cast<double>(d_current_prn_length_samples)));
+            if (d_code_ph_history.full())
+                {
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_code_ph_history[k].first;
+                            tmp_cp2 += d_code_ph_history[trk_parameters.smoother_length * 2 - k - 1].first;
+                            tmp_samples += d_code_ph_history[trk_parameters.smoother_length * 2 - k - 1].second;
+                        }
+                    tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
+                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                }
+        }
     // remnant code phase [chips]
     d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_current_prn_length_samples);  // rounding error < 1 sample
     d_rem_code_phase_chips = d_code_freq_chips * d_rem_code_phase_samples / trk_parameters.fs_in;
@@ -856,15 +1126,19 @@ void dll_pll_veml_tracking::save_correlation_results()
         }
     // If tracking pilot, disable Costas loop
     if (trk_parameters.track_pilot)
-        d_cloop = false;
+        {
+            d_cloop = false;
+        }
     else
-        d_cloop = true;
+        {
+            d_cloop = true;
+        }
 }
 
 
 void dll_pll_veml_tracking::log_data(bool integrating)
 {
-    if (trk_parameters.dump)
+    if (d_dump)
         {
             // Dump results to file
             float prompt_I;
@@ -947,10 +1221,16 @@ void dll_pll_veml_tracking::log_data(bool integrating)
                     // carrier and code frequency
                     tmp_float = d_carrier_doppler_hz;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // carrier phase rate [Hz/s]
+                    tmp_float = d_carrier_phase_rate_step_rad * trk_parameters.fs_in * trk_parameters.fs_in / PI_2;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = d_code_freq_chips;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // code phase rate [chips/s^2]
+                    tmp_float = d_code_phase_rate_step_chips * trk_parameters.fs_in * trk_parameters.fs_in;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    tmp_float = d_carr_error_hz;
+                    tmp_float = d_carr_phase_error_hz;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = d_carr_error_filt_hz;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -986,14 +1266,20 @@ int32_t dll_pll_veml_tracking::save_matfile()
     // READ DUMP FILE
     std::ifstream::pos_type size;
     int32_t number_of_double_vars = 1;
-    int32_t number_of_float_vars = 17;
+    int32_t number_of_float_vars = 19;
     int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                                sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
+    std::string dump_filename_ = d_dump_filename;
+    // add channel number to the filename
+    dump_filename_.append(std::to_string(d_channel));
+    // add extension
+    dump_filename_.append(".dat");
+    std::cout << "Generating .mat file for " << dump_filename_ << std::endl;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
         {
-            dump_file.open(trk_parameters.dump_filename.c_str(), std::ios::binary | std::ios::ate);
+            dump_file.open(dump_filename_.c_str(), std::ios::binary | std::ios::ate);
         }
     catch (const std::ifstream::failure &e)
         {
@@ -1012,26 +1298,28 @@ int32_t dll_pll_veml_tracking::save_matfile()
         {
             return 1;
         }
-    float *abs_VE = new float[num_epoch];
-    float *abs_E = new float[num_epoch];
-    float *abs_P = new float[num_epoch];
-    float *abs_L = new float[num_epoch];
-    float *abs_VL = new float[num_epoch];
-    float *Prompt_I = new float[num_epoch];
-    float *Prompt_Q = new float[num_epoch];
-    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
-    float *acc_carrier_phase_rad = new float[num_epoch];
-    float *carrier_doppler_hz = new float[num_epoch];
-    float *code_freq_chips = new float[num_epoch];
-    float *carr_error_hz = new float[num_epoch];
-    float *carr_error_filt_hz = new float[num_epoch];
-    float *code_error_chips = new float[num_epoch];
-    float *code_error_filt_chips = new float[num_epoch];
-    float *CN0_SNV_dB_Hz = new float[num_epoch];
-    float *carrier_lock_test = new float[num_epoch];
-    float *aux1 = new float[num_epoch];
-    double *aux2 = new double[num_epoch];
-    uint32_t *PRN = new uint32_t[num_epoch];
+    auto *abs_VE = new float[num_epoch];
+    auto *abs_E = new float[num_epoch];
+    auto *abs_P = new float[num_epoch];
+    auto *abs_L = new float[num_epoch];
+    auto *abs_VL = new float[num_epoch];
+    auto *Prompt_I = new float[num_epoch];
+    auto *Prompt_Q = new float[num_epoch];
+    auto *PRN_start_sample_count = new uint64_t[num_epoch];
+    auto *acc_carrier_phase_rad = new float[num_epoch];
+    auto *carrier_doppler_hz = new float[num_epoch];
+    auto *carrier_doppler_rate_hz = new float[num_epoch];
+    auto *code_freq_chips = new float[num_epoch];
+    auto *code_freq_rate_chips = new float[num_epoch];
+    auto *carr_error_hz = new float[num_epoch];
+    auto *carr_error_filt_hz = new float[num_epoch];
+    auto *code_error_chips = new float[num_epoch];
+    auto *code_error_filt_chips = new float[num_epoch];
+    auto *CN0_SNV_dB_Hz = new float[num_epoch];
+    auto *carrier_lock_test = new float[num_epoch];
+    auto *aux1 = new float[num_epoch];
+    auto *aux2 = new double[num_epoch];
+    auto *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -1049,7 +1337,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_doppler_rate_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_freq_rate_chips[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(float));
@@ -1076,7 +1366,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
             delete[] PRN_start_sample_count;
             delete[] acc_carrier_phase_rad;
             delete[] carrier_doppler_hz;
+            delete[] carrier_doppler_rate_hz;
             delete[] code_freq_chips;
+            delete[] code_freq_rate_chips;
             delete[] carr_error_hz;
             delete[] carr_error_filt_hz;
             delete[] code_error_chips;
@@ -1092,11 +1384,11 @@ int32_t dll_pll_veml_tracking::save_matfile()
     // WRITE MAT FILE
     mat_t *matfp;
     matvar_t *matvar;
-    std::string filename = trk_parameters.dump_filename;
+    std::string filename = dump_filename_;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);
@@ -1139,7 +1431,15 @@ int32_t dll_pll_veml_tracking::save_matfile()
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
+            matvar = Mat_VarCreate("carrier_doppler_rate_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_rate_hz, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
             matvar = Mat_VarCreate("code_freq_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_chips, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("code_freq_rate_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_rate_chips, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -1190,7 +1490,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
     delete[] PRN_start_sample_count;
     delete[] acc_carrier_phase_rad;
     delete[] carrier_doppler_hz;
+    delete[] carrier_doppler_rate_hz;
     delete[] code_freq_chips;
+    delete[] code_freq_rate_chips;
     delete[] carr_error_hz;
     delete[] carr_error_filt_hz;
     delete[] code_error_chips;
@@ -1210,17 +1512,23 @@ void dll_pll_veml_tracking::set_channel(uint32_t channel)
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
-    if (trk_parameters.dump)
+    if (d_dump)
         {
+            std::string dump_filename_ = d_dump_filename;
+            // add channel number to the filename
+            dump_filename_.append(std::to_string(d_channel));
+            // add extension
+            dump_filename_.append(".dat");
+
             if (!d_dump_file.is_open())
                 {
                     try
                         {
-                            trk_parameters.dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            trk_parameters.dump_filename.append(".dat");
+                            //trk_parameters.dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            //trk_parameters.dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(trk_parameters.dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << trk_parameters.dump_filename.c_str();
+                            d_dump_file.open(dump_filename_.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << dump_filename_.c_str();
                         }
                     catch (const std::ifstream::failure &e)
                         {
@@ -1238,14 +1546,28 @@ void dll_pll_veml_tracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 }
 
 
+void dll_pll_veml_tracking::stop_tracking()
+{
+    gr::thread::scoped_lock l(d_setlock);
+    d_state = 0;
+}
+
+
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
+    if (d_pull_in_transitory == true)
+        {
+            if (trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
+                {
+                    d_pull_in_transitory = false;
+                }
+        }
     switch (d_state)
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
@@ -1258,17 +1580,31 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                uint64_t acq_to_trk_delay_samples = static_cast<uint64_t>(d_sample_counter - d_acq_sample_stamp);
-                double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
-                int32_t samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                if (samples_offset < 0)
-                    {
-                        samples_offset = 0;
-                    }
-                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * d_acq_code_phase_samples;
+                int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
+                double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / trk_parameters.fs_in;
+                double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
+
+                d_code_freq_chips = d_code_chip_rate;
+                d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
+                d_code_phase_rate_step_chips = 0.0;
+                double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
+                double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
+                double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
+
+                d_acq_code_phase_samples = T_prn_mod_samples - std::fmod(delta_trk_to_acq_prn_start_samples, T_prn_mod_samples);
+                d_current_prn_length_samples = round(T_prn_mod_samples);
+
+                int32_t samples_offset = round(d_acq_code_phase_samples);
+                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
-                d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
-                consume_each(samples_offset);                               // shift input to perform alignment with local replica
+                d_sample_counter += samples_offset;  // count for the processed samples
+                d_cn0_smoother.reset();
+
+                DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
+                DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
+                           << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
+
+                consume_each(samples_offset);  // shift input to perform alignment with local replica
                 return 0;
             }
         case 2:  // Wide tracking and symbol synchronization
@@ -1302,17 +1638,17 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         if (d_secondary)
                             {
                                 // ####### SECONDARY CODE LOCK #####
-                                d_Prompt_buffer_deque.push_back(*d_Prompt);
-                                if (d_Prompt_buffer_deque.size() == d_secondary_code_length)
+                                d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                     {
                                         next_state = acquire_secondary();
                                         if (next_state)
                                             {
+                                                LOG(INFO) << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                                 std::cout << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
                                                           << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                             }
-
-                                        d_Prompt_buffer_deque.pop_front();
                                     }
                             }
                         else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
@@ -1323,23 +1659,26 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_symbol_history.push_back(d_Prompt->real());
                                         //******* preamble correlation ********
                                         int32_t corr_value = 0;
-                                        if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
+                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+                                                int i = 0;
+                                                for (const auto &iter : d_symbol_history)
                                                     {
-                                                        if (d_symbol_history.at(i) < 0)  // symbols clipping
+                                                        if (iter < 0.0)  // symbols clipping
                                                             {
-                                                                corr_value -= d_gps_l1ca_preambles_symbols[i];
+                                                                corr_value -= d_preambles_symbols[i];
                                                             }
                                                         else
                                                             {
-                                                                corr_value += d_gps_l1ca_preambles_symbols[i];
+                                                                corr_value += d_preambles_symbols[i];
                                                             }
+                                                        i++;
                                                     }
                                             }
-                                        if (corr_value == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+                                        if (corr_value == d_preamble_length_symbols)
                                             {
-                                                //std::cout << "Preamble detected at tracking!" << std::endl;
+                                                LOG(INFO) << systemName << " " << signal_pretty_name << " tracking preamble detected in channel " << d_channel
+                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                                 next_state = true;
                                             }
                                         else
@@ -1386,6 +1725,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
                                     }
                             }
+
                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -1400,17 +1740,14 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_P_accu = gr_complex(0.0, 0.0);
                                 d_L_accu = gr_complex(0.0, 0.0);
                                 d_VL_accu = gr_complex(0.0, 0.0);
-                                d_last_prompt = gr_complex(0.0, 0.0);
-                                d_Prompt_buffer_deque.clear();
+                                d_Prompt_circular_buffer.clear();
                                 d_current_symbol = 0;
 
                                 if (d_enable_extended_integration)
                                     {
                                         // UPDATE INTEGRATION TIME
                                         d_extend_correlation_symbols_count = 0;
-                                        float new_correlation_time = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
-                                        d_carrier_loop_filter.set_pdi(new_correlation_time);
-                                        d_code_loop_filter.set_pdi(new_correlation_time);
+                                        d_current_correlation_time_s = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
                                         d_state = 3;  // next state is the extended correlator integrator
                                         LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
@@ -1419,8 +1756,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                         // Set narrow taps delay values [chips]
-                                        d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_narrow_hz);
-                                        d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_narrow_hz);
+                                        d_code_loop_filter.set_update_interval(d_current_correlation_time_s);
+                                        d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_narrow_hz);
+                                        d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_narrow_hz, trk_parameters.pll_filter_order);
                                         if (d_veml)
                                             {
                                                 d_local_code_shift_chips[0] = -trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);

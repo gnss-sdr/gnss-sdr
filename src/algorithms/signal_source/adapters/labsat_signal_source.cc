@@ -32,36 +32,35 @@
 #include "configuration_interface.h"
 #include "labsat23_source.h"
 #include <glog/logging.h>
+#include <cstdint>
+#include <utility>
 
-
-using google::LogMessage;
 
 LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
-    std::string default_dump_file = "./data/source.bin";
+    std::string default_dump_file = "./labsat_output.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     int channel_selector = configuration->property(role + ".selected_channel", 1);
-    std::string default_filename = "./example_capture.LS3";
 
-    samples_ = configuration->property(role + ".samples", 0);
+    std::string default_filename = "./example_capture.LS3";
     filename_ = configuration->property(role + ".filename", default_filename);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            labsat23_source_ = labsat23_make_source(filename_.c_str(), channel_selector);
+            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channel_selector, queue_);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for LabSat source";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     if (dump_)
         {
@@ -83,9 +82,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
 }
 
 
-LabsatSignalSource::~LabsatSignalSource()
-{
-}
+LabsatSignalSource::~LabsatSignalSource() = default;
 
 
 void LabsatSignalSource::connect(gr::top_block_sptr top_block)

@@ -30,10 +30,10 @@
  */
 
 #include "signal_conditioner.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
+#include <utility>
 
-
-using google::LogMessage;
 
 // Constructor
 SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
@@ -41,11 +41,11 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
     std::shared_ptr<GNSSBlockInterface> in_filt,
     std::shared_ptr<GNSSBlockInterface> res,
     std::string role,
-    std::string implementation) : data_type_adapt_(data_type_adapt),
-                                  in_filt_(in_filt),
-                                  res_(res),
-                                  role_(role),
-                                  implementation_(implementation)
+    std::string implementation) : data_type_adapt_(std::move(data_type_adapt)),
+                                  in_filt_(std::move(in_filt)),
+                                  res_(std::move(res)),
+                                  role_(std::move(role)),
+                                  implementation_(std::move(implementation))
 {
     connected_ = false;
     if (configuration)
@@ -55,7 +55,7 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
 
 
 // Destructor
-SignalConditioner::~SignalConditioner() {}
+SignalConditioner::~SignalConditioner() = default;
 
 
 void SignalConditioner::connect(gr::top_block_sptr top_block)

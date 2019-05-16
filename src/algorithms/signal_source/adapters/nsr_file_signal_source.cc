@@ -39,14 +39,12 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-
-
-using google::LogMessage;
+#include <utility>
 
 
 NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    const std::string& role, unsigned int in_streams, unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -57,8 +55,14 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_ = FLAGS_signal_source;
-    if (FLAGS_s.compare("-") != 0) filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-")
+        {
+            filename_ = FLAGS_signal_source;
+        }
+    if (FLAGS_s != "-")
+        {
+            filename_ = FLAGS_s;
+        }
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -66,7 +70,7 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
-    if (item_type_.compare("byte") == 0)
+    if (item_type_ == "byte")
         {
             item_size_ = sizeof(char);
         }
@@ -177,9 +181,7 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
 }
 
 
-NsrFileSignalSource::~NsrFileSignalSource()
-{
-}
+NsrFileSignalSource::~NsrFileSignalSource() = default;
 
 
 void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
@@ -310,15 +312,9 @@ gr::basic_block_sptr NsrFileSignalSource::get_right_block()
         {
             return valve_;
         }
-    else
+    if (enable_throttle_control_ == true)
         {
-            if (enable_throttle_control_ == true)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return unpack_byte_;
-                }
+            return throttle_;
         }
+    return unpack_byte_;
 }

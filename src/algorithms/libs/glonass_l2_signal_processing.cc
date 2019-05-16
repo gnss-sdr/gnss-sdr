@@ -46,7 +46,7 @@ void glonass_l2_ca_code_gen_complex(std::complex<float>* _dest, /* int32_t _prn,
 
     for (lcv = 0; lcv < 9; lcv++)
         {
-            G1_register[lcv] = 1;
+            G1_register[lcv] = true;
         }
 
     /* Generate G1 Register */

@@ -39,16 +39,14 @@
 
 
 #include "gps_l1_ca_kf_tracking.h"
-#include "gnss_sdr_flags.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
 GpsL1CaKfTracking::GpsL1CaKfTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
@@ -76,7 +74,10 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+        }
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -89,7 +90,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     bce_kappa = configuration->property(role + ".bce_kappa", 0);
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_kf_make_tracking_cc(
@@ -117,7 +118,10 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
 }
 
 
-GpsL1CaKfTracking::~GpsL1CaKfTracking()
+GpsL1CaKfTracking::~GpsL1CaKfTracking() = default;
+
+
+void GpsL1CaKfTracking::stop_tracking()
 {
 }
 

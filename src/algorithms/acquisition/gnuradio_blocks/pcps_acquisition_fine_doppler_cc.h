@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_fine_doppler_acquisition_cc.h
+ * \file pcps_acquisition_fine_doppler_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  * for GPS L1 C/A signal
  *
@@ -49,19 +49,21 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 
-#include "gnss_synchro.h"
 #include "acq_conf.h"
+#include "channel_fsm.h"
+#include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
+#include <gnuradio/gr_complex.h>
+#include <cstdint>
 #include <fstream>
 #include <string>
+#include <utility>
 
 class pcps_acquisition_fine_doppler_cc;
 
-typedef boost::shared_ptr<pcps_acquisition_fine_doppler_cc>
-    pcps_acquisition_fine_doppler_cc_sptr;
+using pcps_acquisition_fine_doppler_cc_sptr = boost::shared_ptr<pcps_acquisition_fine_doppler_cc>;
 
 pcps_acquisition_fine_doppler_cc_sptr
 pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
@@ -87,7 +89,7 @@ private:
     bool start();
 
     Acq_Conf acq_parameters;
-    long d_fs_in;
+    int64_t d_fs_in;
     int d_samples_per_ms;
     int d_max_dwells;
     int d_gnuradio_forecast_samples;
@@ -121,10 +123,11 @@ private:
     int d_n_samples_in_buffer;
     bool d_dump;
     unsigned int d_channel;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
 
     std::string d_dump_filename;
 
-    arma ::fmat grid_;
+    arma::fmat grid_;
     int64_t d_dump_number;
     unsigned int d_dump_channel;
 
@@ -181,6 +184,14 @@ public:
     {
         d_channel = channel;
         d_dump_channel = d_channel;
+    }
+
+    /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = std::move(channel_fsm);
     }
 
     /*!

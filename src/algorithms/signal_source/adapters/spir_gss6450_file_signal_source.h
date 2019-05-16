@@ -35,12 +35,12 @@
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "unpack_spir_gss6450_samples.h"
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/blocks/throttle.h>
 #include <gnuradio/blocks/deinterleave.h>
-#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/endian_swap.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <cstdint>
@@ -57,7 +57,7 @@ class ConfigurationInterface;
 class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, std::string role,
+    SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue);
 
     virtual ~SpirGSS6450FileSignalSource();
@@ -79,6 +79,7 @@ public:
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block(int RF_channel) override;
     gr::basic_block_sptr get_right_block() override;
 
     inline std::string filename() const
@@ -96,19 +97,19 @@ public:
         return repeat_;
     }
 
-    inline long sampling_frequency() const
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    inline long samples() const
+    inline uint64_t samples() const
     {
         return samples_;
     }
 
 private:
     uint64_t samples_;
-    double sampling_frequency_;
+    int64_t sampling_frequency_;
     std::string filename_;
     bool repeat_;
     bool dump_;  //Enables dumping the gr_complex sample output
@@ -124,12 +125,12 @@ private:
     uint32_t sel_ch_;
     gr::blocks::file_source::sptr file_source_;
     gr::blocks::deinterleave::sptr deint_;
-    gr::blocks::endian_swap::sptr endian_;
+    std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
-    unpack_spir_gss6450_samples_sptr unpack_spir_;
-    boost::shared_ptr<gr::block> valve_;
-    gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr throttle_;
+    std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
+    std::vector<boost::shared_ptr<gr::block>> valve_vec_;
+    std::vector<gr::blocks::file_sink::sptr> sink_vec_;
+    std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     gr::msg_queue::sptr queue_;
     size_t item_size_;
 };

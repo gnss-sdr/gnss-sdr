@@ -30,13 +30,11 @@
 
 #include "raw_array_signal_source.h"
 #include "configuration_interface.h"
-#include <dbfcttc/raw_array.h>
+#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include <glog/logging.h>
+#include <dbfcttc/raw_array.h>
 
-
-using google::LogMessage;
 
 RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
@@ -45,10 +43,8 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     std::string default_dump_file = "./data/raw_array_source.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
-
     //dump_ = configuration->property(role + ".dump", false);
     //dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
     dump_ = false;
 
     std::string default_ethernet_dev = "eth0";
@@ -66,7 +62,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     int sampling_freq_;
     sampling_freq_ = configuration->property(role + ".sampling_freq", 5000000);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             raw_array_source_ = gr::dbfcttc::raw_array::make(eth_device_.c_str(), channels_, snapshots_per_frame_, inter_frame_delay_, sampling_freq_);
@@ -97,9 +93,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
 }
 
 
-RawArraySignalSource::~RawArraySignalSource()
-{
-}
+RawArraySignalSource::~RawArraySignalSource() = default;
 
 
 void RawArraySignalSource::connect(gr::top_block_sptr top_block)

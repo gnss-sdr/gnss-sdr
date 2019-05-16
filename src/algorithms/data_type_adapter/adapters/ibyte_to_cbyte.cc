@@ -34,9 +34,8 @@
 #include <glog/logging.h>
 #include <volk/volk.h>
 
-using google::LogMessage;
 
-IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string role,
+IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
@@ -77,9 +76,7 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string ro
 }
 
 
-IbyteToCbyte::~IbyteToCbyte()
-{
-}
+IbyteToCbyte::~IbyteToCbyte() = default;
 
 
 void IbyteToCbyte::connect(gr::top_block_sptr top_block)
@@ -146,8 +143,5 @@ gr::basic_block_sptr IbyteToCbyte::get_right_block()
         {
             return conjugate_ic_;
         }
-    else
-        {
-            return ibyte_to_cbyte_;
-        }
+    return ibyte_to_cbyte_;
 }

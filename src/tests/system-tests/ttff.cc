@@ -34,9 +34,9 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "file_configuration.h"
-#include "in_memory_configuration.h"
 #include "gnss_flowgraph.h"
 #include "gps_acq_assist.h"
+#include "in_memory_configuration.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -48,9 +48,9 @@
 #include <numeric>
 #include <random>
 #include <string>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/types.h>
 #include <thread>
 
 
@@ -62,8 +62,8 @@ DEFINE_string(subdevice, "A:0", "USRP subdevice");
 DEFINE_string(config_file_ttff, std::string(""), "File containing the configuration parameters for the TTFF test.");
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
 
@@ -79,7 +79,7 @@ class TtffTest : public ::testing::Test
 public:
     void config_1();
     void config_2();
-    void print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_);
+    void print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
@@ -135,7 +135,7 @@ void TtffTest::config_1()
     config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
     config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
     config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-    config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
+    config->set_property("GNSS-SDR.SUPL_MNC", std::to_string(5));
     config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
     config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
 
@@ -297,7 +297,7 @@ void receive_msg()
 }
 
 
-void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -385,10 +385,13 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
             stm << "Disabled." << std::endl;
         }
     stm << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for (double ttff_ : ttff) stm << ttff_ << " ";
+    for (double ttff_ : ttff)
+        {
+            stm << ttff_ << " ";
+        }
     stm << std::endl;
     stm << "TTFF mean: " << mean << " [s]" << std::endl;
-    if (ttff.size() > 0)
+    if (!ttff.empty())
         {
             stm << "TTFF max: " << *max_ttff << " [s]" << std::endl;
             stm << "TTFF min: " << *min_ttff << " [s]" << std::endl;
@@ -398,7 +401,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
     stm << "Navigation mode: "
         << "3D" << std::endl;
 
-    if (source.compare("UHD_Signal_Source"))
+    if (source != "UHD_Signal_Source")
         {
             stm << "Source: File" << std::endl;
         }
@@ -417,7 +420,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
 }
 
 
-TEST_F(TtffTest, ColdStart)
+TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
 {
     unsigned int num_measurements = 0;
 
@@ -500,7 +503,7 @@ TEST_F(TtffTest, ColdStart)
 }
 
 
-TEST_F(TtffTest, HotStart)
+TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();
@@ -629,7 +632,7 @@ int main(int argc, char **argv)
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
-    msgctl(sysv_msqid, IPC_RMID, NULL);
+    msgctl(sysv_msqid, IPC_RMID, nullptr);
 
     google::ShutDownCommandLineFlags();
     return res;

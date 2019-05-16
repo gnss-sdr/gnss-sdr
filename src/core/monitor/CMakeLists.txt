@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,24 +16,80 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/gnss_synchro.proto)
 
-set(CORE_MONITOR_LIBS_SOURCES 
-	gnss_synchro_monitor.cc
-	gnss_synchro_udp_sink.cc
-)
-	
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
+set(CORE_MONITOR_LIBS_SOURCES
+    gnss_synchro_monitor.cc
+    gnss_synchro_udp_sink.cc
+    ${PROTO_SRCS}
 )
 
-file(GLOB CORE_MONITOR_LIBS_HEADERS "*.h")
+set(CORE_MONITOR_LIBS_HEADERS
+    gnss_synchro_monitor.h
+    gnss_synchro_udp_sink.h
+    serdes_gnss_synchro.h
+    ${PROTO_HDRS}
+)
+
 list(SORT CORE_MONITOR_LIBS_HEADERS)
-add_library(core_monitor_lib ${CORE_MONITOR_LIBS_SOURCES} ${CORE_MONITOR_LIBS_HEADERS})
+list(SORT CORE_MONITOR_LIBS_SOURCES)
+
 source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
-target_link_libraries(core_monitor_lib ${Boost_LIBRARIES}) 
-add_dependencies(core_monitor_lib glog-${glog_RELEASE})
+
+add_library(core_monitor
+    ${CORE_MONITOR_LIBS_SOURCES}
+    ${CORE_MONITOR_LIBS_HEADERS}
+)
+
+target_link_libraries(core_monitor
+    PUBLIC
+        Boost::serialization
+        Boost::system
+        Gnuradio::runtime
+        protobuf::libprotobuf
+        core_system_parameters
+    PRIVATE
+        Gnuradio::pmt
+)
+
+get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
+
+target_include_directories(core_monitor
+    PUBLIC
+        ${PROTO_INCLUDE_HEADERS}
+)
+
+
+if(Boost_VERSION VERSION_GREATER "106599")
+    target_compile_definitions(core_monitor
+        PUBLIC
+            -DBOOST_GREATER_1_65
+    )
+endif()
+
+
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(core_monitor
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(core_monitor
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+
+
+set_property(TARGET core_monitor
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${PROTO_INCLUDE_HEADERS}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

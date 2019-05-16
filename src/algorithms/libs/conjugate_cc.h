@@ -33,10 +33,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class conjugate_cc;
 
-typedef boost::shared_ptr<conjugate_cc> conjugate_cc_sptr;
+using conjugate_cc_sptr = boost::shared_ptr<conjugate_cc>;
 
 conjugate_cc_sptr make_conjugate_cc();
 
@@ -48,10 +49,9 @@ class conjugate_cc : public gr::sync_block
 {
 private:
     friend conjugate_cc_sptr make_conjugate_cc();
-
-public:
     conjugate_cc();
-
+    
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

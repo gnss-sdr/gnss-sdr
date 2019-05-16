@@ -30,43 +30,56 @@
  * -------------------------------------------------------------------------
  */
 
-
 #include "GPS_L1_CA.h"
-#include "gnss_block_factory.h"
-#include "tracking_interface.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "GPS_L2C.h"
+#include "GPS_L5.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "acquisition_msg_rx.h"
+#include "control_message_factory.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
+#include "gnss_block_factory.h"
+#include "gnss_sdr_valve.h"
+#include "gnuplot_i.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
-#include "tracking_true_obs_reader.h"
-#include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
-#include "gnuplot_i.h"
 #include "test_flags.h"
+#include "tracking_dump_reader.h"
+#include "tracking_interface.h"
 #include "tracking_tests_flags.h"
-#include "acquisition_msg_rx.h"
+#include "tracking_true_obs_reader.h"
+#include <armadillo>
 #include <boost/filesystem.hpp>
-#include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/blocks/head.h>
+#include <gnuradio/filter/firdes.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cstdint>
+#include <utility>
 #include <vector>
-#include <armadillo>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/fir_filter_blk.h>
+#else
+#include <gnuradio/filter/fir_filter_ccf.h>
+#endif
 
 
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx;
 
-typedef boost::shared_ptr<TrackingPullInTest_msg_rx> TrackingPullInTest_msg_rx_sptr;
+using TrackingPullInTest_msg_rx_sptr = boost::shared_ptr<TrackingPullInTest_msg_rx>;
 
 TrackingPullInTest_msg_rx_sptr TrackingPullInTest_msg_rx_make();
 
@@ -93,7 +106,7 @@ void TrackingPullInTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;  //3 -> loss of lock
             //std::cout << "Received trk message: " << rx_message << std::endl;
         }
@@ -113,9 +126,7 @@ TrackingPullInTest_msg_rx::TrackingPullInTest_msg_rx() : gr::block("TrackingPull
 }
 
 
-TrackingPullInTest_msg_rx::~TrackingPullInTest_msg_rx()
-{
-}
+TrackingPullInTest_msg_rx::~TrackingPullInTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -123,6 +134,19 @@ TrackingPullInTest_msg_rx::~TrackingPullInTest_msg_rx()
 class TrackingPullInTest : public ::testing::Test
 {
 public:
+    enum StringValue
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G
+    };
+    std::map<std::string, StringValue> mapStringValues_;
+
     std::string generator_binary;
     std::string p1;
     std::string p2;
@@ -168,11 +192,16 @@ public:
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
+        mapStringValues_["1C"] = evGPS_1C;
+        mapStringValues_["2S"] = evGPS_2S;
+        mapStringValues_["L5"] = evGPS_L5;
+        mapStringValues_["1B"] = evGAL_1B;
+        mapStringValues_["5X"] = evGAL_5X;
+        mapStringValues_["1G"] = evGLO_1G;
+        mapStringValues_["2G"] = evGLO_2G;
     }
 
-    ~TrackingPullInTest()
-    {
-    }
+    ~TrackingPullInTest() = default;
 
     void configure_receiver(double PLL_wide_bw_hz,
         double DLL_wide_bw_hz,
@@ -186,6 +215,8 @@ public:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
+
+    gr::msg_queue::sptr queue;
 };
 
 
@@ -215,11 +246,13 @@ int TrackingPullInTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -256,7 +289,7 @@ void TrackingPullInTest::configure_receiver(
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     std::string System_and_Signal;
-    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
+    if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
             gnss_synchro.System = 'G';
             std::string signal = "1C";
@@ -265,7 +298,7 @@ void TrackingPullInTest::configure_receiver(
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.early_late_space_narrow_chips", "0.5");
         }
-    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+    else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
             gnss_synchro.System = 'E';
             std::string signal = "1B";
@@ -277,37 +310,37 @@ void TrackingPullInTest::configure_receiver(
             config->set_property("Tracking.very_early_late_space_narrow_chips", "0.6");
             config->set_property("Tracking.track_pilot", "true");
         }
-    else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
             gnss_synchro.System = 'G';
             std::string signal = "2S";
             System_and_Signal = "GPS L2CM";
             signal.copy(gnss_synchro.Signal, 2, 0);
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
         }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking") == 0 or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             gnss_synchro.System = 'E';
             std::string signal = "5X";
             System_and_Signal = "Galileo E5a";
             signal.copy(gnss_synchro.Signal, 2, 0);
-            if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+            if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
                 {
                     config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
                 }
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
         }
-    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
             gnss_synchro.System = 'G';
             std::string signal = "L5";
             System_and_Signal = "GPS L5I";
             signal.copy(gnss_synchro.Signal, 2, 0);
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
         }
     else
@@ -340,8 +373,15 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     // Satellite signal definition
     Gnss_Synchro tmp_gnss_synchro;
     tmp_gnss_synchro.Channel_ID = 0;
+
+
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
+    // Enable automatic resampler for the acquisition, if required
+    if (FLAGS_use_acquisition_resampler == true)
+        {
+            config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
+        }
     config->set_property("Acquisition.blocking_on_standby", "true");
     config->set_property("Acquisition.blocking", "true");
     config->set_property("Acquisition.dump", "false");
@@ -351,11 +391,12 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     std::shared_ptr<AcquisitionInterface> acquisition;
 
     std::string System_and_Signal;
+    std::string signal;
     //create the correspondign acquisition block according to the desired tracking signal
-    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
+    if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "1C";
+            signal = "1C";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -364,10 +405,10 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             //acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
             acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+    else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "1B";
+            signal = "1B";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -375,10 +416,10 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "2S";
+            signal = "2S";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -386,10 +427,10 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "5X";
+            signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -402,10 +443,10 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 0);
         }
 
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking") == 0)
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "5X";
+            signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -413,10 +454,10 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "L5";
+            signal = "L5";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -444,13 +485,90 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     std::string file = FLAGS_signal_file;
     const char* file_name = file.c_str();
     file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
-    file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
+    file_source->seek(2 * FLAGS_skip_samples, SEEK_SET);  //skip head. ibyte, two bytes per complex sample
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
     //gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
 
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
-    //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+
+    // Enable automatic resampler for the acquisition, if required
+    if (FLAGS_use_acquisition_resampler == true)
+        {
+            //create acquisition resamplers if required
+            double resampler_ratio = 1.0;
+
+            double opt_fs = baseband_sampling_freq;
+            //find the signal associated to this channel
+            switch (mapStringValues_[signal])
+                {
+                case evGPS_1C:
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    break;
+                case evGPS_2S:
+                    opt_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                    break;
+                case evGPS_L5:
+                    opt_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                    break;
+                case evSBAS_1C:
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    break;
+                case evGAL_1B:
+                    opt_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
+                    break;
+                case evGAL_5X:
+                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
+                    break;
+                case evGLO_1G:
+                    opt_fs = baseband_sampling_freq;
+                    break;
+                case evGLO_2G:
+                    opt_fs = baseband_sampling_freq;
+                    break;
+                }
+            if (opt_fs < baseband_sampling_freq)
+                {
+                    resampler_ratio = baseband_sampling_freq / opt_fs;
+                    int decimation = floor(resampler_ratio);
+                    while (baseband_sampling_freq % decimation > 0)
+                        {
+                            decimation--;
+                        };
+                    double acq_fs = baseband_sampling_freq / decimation;
+
+                    if (decimation > 1)
+                        {
+                            //create a FIR low pass filter
+                            std::vector<float> taps;
+                            taps = gr::filter::firdes::low_pass(1.0,
+                                baseband_sampling_freq,
+                                acq_fs / 2.1,
+                                acq_fs / 10,
+                                gr::filter::firdes::win_type::WIN_HAMMING);
+                            std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
+                            acquisition->set_resampler_latency((taps.size() - 1) / 2);
+                            gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
+                            top_block->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
+                            top_block->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
+                        }
+                    else
+                        {
+                            std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                        }
+                }
+            else
+                {
+                    std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                }
+        }
+    else
+        {
+            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+            //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+        }
+
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -526,7 +644,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                     std::cout << " . ";
                 }
             top_block->stop();
-            file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
+            file_source->seek(2 * FLAGS_skip_samples, SEEK_SET);  //skip head. ibyte, two bytes per complex sample
             std::cout.flush();
         }
     std::cout << "]" << std::endl;
@@ -598,7 +716,10 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             ASSERT_EQ(acquire_signal(FLAGS_test_satellite_PRN), true);
             bool found_satellite = doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end();
             EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
-            if (!found_satellite) return;
+            if (!found_satellite)
+                {
+                    return;
+                }
         }
     else
         {
@@ -629,7 +750,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     double true_acq_delay_samples = 0.0;
     uint64_t acq_samplestamp_samples = 0;
 
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     if (!FLAGS_enable_external_signal_file)
         {
             test_satellite_PRN = FLAGS_test_satellite_PRN;
@@ -658,6 +779,18 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                       << " [Hz], estimated Initial code delay " << true_acq_delay_samples << " [Samples]"
                       << " Acquisition SampleStamp is " << acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second << std::endl;
         }
+
+    // create the msg queue for valve
+
+    queue = gr::msg_queue::make(0);
+    boost::shared_ptr<Gnss_Sdr_Valve> reseteable_valve;
+    long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
+    boost::shared_ptr<Gnss_Sdr_Valve> resetable_valve_(new Gnss_Sdr_Valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false));
+
+    std::shared_ptr<ControlMessageFactory> control_message_factory_;
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
+
+
     //CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;
 
@@ -710,7 +843,15 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                 gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
                                 top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
                                 top_block->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
-                                top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
+                                if (acq_to_trk_delay_samples > 0)
+                                    {
+                                        top_block->connect(head_samples, 0, resetable_valve_, 0);
+                                        top_block->connect(resetable_valve_, 0, tracking->get_left_block(), 0);
+                                    }
+                                else
+                                    {
+                                        top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
+                                    }
                                 top_block->connect(tracking->get_right_block(), 0, sink, 0);
                                 top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
                                 file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
@@ -721,17 +862,45 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             //***** STEP 5: Perform the signal tracking and read the results *****
                             //********************************************************************
                             std::cout << "--- START TRACKING WITH PULL-IN ERROR: " << acq_doppler_error_hz_values.at(current_acq_doppler_error_idx) << " [Hz] and " << acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) << " [Chips] ---" << std::endl;
-                            tracking->start_tracking();
                             std::chrono::time_point<std::chrono::system_clock> start, end;
-                            EXPECT_NO_THROW({
-                                start = std::chrono::system_clock::now();
-                                top_block->run();  // Start threads and wait
-                                end = std::chrono::system_clock::now();
-                            }) << "Failure running the top_block.";
+                            if (acq_to_trk_delay_samples > 0)
+                                {
+                                    EXPECT_NO_THROW({
+                                        start = std::chrono::system_clock::now();
+                                        std::cout << "--- SIMULATING A PULL-IN DELAY OF " << FLAGS_acq_to_trk_delay_s << " SECONDS ---\n";
+                                        top_block->start();
+                                        std::cout << " Waiting for valve...\n";
+                                        //wait the valve message indicating the circulation of the amount of samples of the delay
+                                        gr::message::sptr queue_message = queue->delete_head();
+                                        if (queue_message != nullptr)
+                                            {
+                                                control_messages_ = control_message_factory_->GetControlMessages(queue_message);
+                                            }
+                                        else
+                                            {
+                                                control_messages_->clear();
+                                            }
+                                        std::cout << " Starting tracking...\n";
+                                        tracking->start_tracking();
+                                        resetable_valve_->open_valve();
+                                        std::cout << " Waiting flowgraph..\n";
+                                        top_block->wait();
+                                        end = std::chrono::system_clock::now();
+                                    }) << "Failure running the top_block.";
+                                }
+                            else
+                                {
+                                    tracking->start_tracking();
+                                    std::chrono::time_point<std::chrono::system_clock> start, end;
+                                    EXPECT_NO_THROW({
+                                        start = std::chrono::system_clock::now();
+                                        top_block->run();  // Start threads and wait
+                                        end = std::chrono::system_clock::now();
+                                    }) << "Failure running the top_block.";
+                                }
 
                             std::chrono::duration<double> elapsed_seconds = end - start;
                             std::cout << "Signal tracking completed in " << elapsed_seconds.count() << " seconds" << std::endl;
-
 
                             pull_in_results_v.push_back(msg_rx->rx_message != 3);  //save last asynchronous tracking message in order to detect a loss of lock
 
@@ -741,7 +910,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                 {
                                     //load the measured values
-                                    tracking_dump_reader trk_dump;
+                                    Tracking_Dump_Reader trk_dump;
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 
@@ -798,9 +967,9 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                 {
                                                     boost::filesystem::path p(gnuplot_executable);
                                                     boost::filesystem::path dir = p.parent_path();
-                                                    std::string gnuplot_path = dir.native();
+                                                    const std::string& gnuplot_path = dir.native();
                                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
-                                                    unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+                                                    auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
                                                     if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                                         {
@@ -822,7 +991,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                             g1.plot_xy(trk_timestamp_s, prompt, "Prompt", decimate);
                                                             g1.plot_xy(trk_timestamp_s, early, "Early", decimate);
                                                             g1.plot_xy(trk_timestamp_s, late, "Late", decimate);
-                                                            if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+                                                            if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
                                                                 {
                                                                     g1.plot_xy(trk_timestamp_s, v_early, "Very Early", decimate);
                                                                     g1.plot_xy(trk_timestamp_s, v_late, "Very Late", decimate);
@@ -932,7 +1101,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                 {
                     g4.disablescreen();
                 }
-            g4.cmd("set palette defined ( 0 \"black\", 1 \"green\" )");
+            g4.cmd(R"(set palette defined ( 0 "black", 1 "green" ))");
             g4.cmd("set key off");
             g4.cmd("set view map");
             std::string title;

@@ -29,10 +29,11 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "gnss_signal_processing.h"
+#include <armadillo>
 #include <chrono>
 #include <complex>
-#include <armadillo>
-#include "gnss_signal_processing.h"
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 
@@ -41,10 +42,10 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
 {
     // Dynamic allocation creates new usable space on the program STACK
     // (an area of RAM specifically allocated to the program)
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_carrier_test];
+    auto* output = new std::complex<float>[FLAGS_size_carrier_test];
     const double _f = 2000.0;
     const double _fs = 2000000.0;
-    const double phase_step = static_cast<double>((GPS_TWO_PI * _f) / _fs);
+    const auto phase_step = static_cast<double>((GPS_TWO_PI * _f) / _fs);
     double phase = 0.0;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -84,7 +85,7 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
     std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
     const double _f = 2000.0;
     const double _fs = 2000000.0;
-    const double phase_step = static_cast<double>((GPS_TWO_PI * _f) / _fs);
+    const auto phase_step = static_cast<double>((GPS_TWO_PI * _f) / _fs);
     double phase = 0.0;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -113,7 +114,7 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
 
 TEST(ComplexCarrierTest, OwnComplexImplementation)
 {
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_carrier_test];
+    auto* output = new std::complex<float>[FLAGS_size_carrier_test];
     double _f = 2000.0;
     double _fs = 2000000.0;
     std::chrono::time_point<std::chrono::system_clock> start, end;

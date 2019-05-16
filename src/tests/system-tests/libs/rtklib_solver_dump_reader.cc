@@ -29,9 +29,11 @@
  */
 
 #include "rtklib_solver_dump_reader.h"
+#include <exception>
 #include <iostream>
+#include <utility>
 
-bool rtklib_solver_dump_reader::read_binary_obs()
+bool Rtklib_Solver_Dump_Reader::read_binary_obs()
 {
     try
         {
@@ -72,7 +74,7 @@ bool rtklib_solver_dump_reader::read_binary_obs()
 }
 
 
-bool rtklib_solver_dump_reader::restart()
+bool Rtklib_Solver_Dump_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -80,14 +82,11 @@ bool rtklib_solver_dump_reader::restart()
             d_dump_file.seekg(0, std::ios::beg);
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
-int64_t rtklib_solver_dump_reader::num_epochs()
+int64_t Rtklib_Solver_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int epoch_size_bytes = 2 * sizeof(uint32_t) + 21 * sizeof(double) + 3 * sizeof(uint8_t) + 2 * sizeof(float);
@@ -98,27 +97,24 @@ int64_t rtklib_solver_dump_reader::num_epochs()
             int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
-bool rtklib_solver_dump_reader::open_obs_file(std::string out_file)
+bool Rtklib_Solver_Dump_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
             try
                 {
-                    d_dump_filename = out_file;
+                    d_dump_filename = std::move(out_file);
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     return true;
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening rtklib_solver dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening rtklib_solver dump Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -129,10 +125,21 @@ bool rtklib_solver_dump_reader::open_obs_file(std::string out_file)
 }
 
 
-rtklib_solver_dump_reader::~rtklib_solver_dump_reader()
+Rtklib_Solver_Dump_Reader::~Rtklib_Solver_Dump_Reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing rtklib_solver dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

@@ -30,29 +30,26 @@
 
 
 #include "labsat23_source.h"
+#include "control_message_factory.h"
 #include <gnuradio/io_signature.h>
+#include <exception>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
-labsat23_source_sptr labsat23_make_source(const char *signal_file_basename, int channel_selector)
+labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector, gr::msg_queue::sptr queue)
 {
-    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector));
-}
-
-
-std::string labsat23_source::generate_filename()
-{
-    std::ostringstream ss;
-    ss << std::setw(4) << std::setfill('0') << d_current_file_number;
-    return d_signal_file_basename + "_" + ss.str() + ".LS3";
+    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, std::move(queue)));
 }
 
 
 labsat23_source::labsat23_source(const char *signal_file_basename,
-    int channel_selector) : gr::block("labsat23_source",
-                                gr::io_signature::make(0, 0, 0),
-                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
+    int channel_selector,
+    gr::msg_queue::sptr queue) : gr::block("labsat23_source",
+                                     gr::io_signature::make(0, 0, 0),
+                                     gr::io_signature::make(1, 1, sizeof(gr_complex))),
+                                 d_queue(std::move(queue))
 {
     if (channel_selector < 1 or channel_selector > 2)
         {
@@ -88,11 +85,41 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
 
 labsat23_source::~labsat23_source()
 {
-    if (binary_input_file->is_open())
+    try
         {
-            binary_input_file->close();
+            if (binary_input_file->is_open())
+                {
+                    binary_input_file->close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing input file" << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
     delete binary_input_file;
+}
+
+
+std::string labsat23_source::generate_filename()
+{
+    if (d_signal_file_basename.substr(d_signal_file_basename.length() - 4, 4) == ".ls2" or d_signal_file_basename.substr(d_signal_file_basename.length() - 4, 4) == ".LS2")
+        {
+            if (d_current_file_number == 0)
+                {
+                    return d_signal_file_basename;
+                }
+            else
+                {
+                    return std::string("donotexist");  // just to stop processing
+                }
+        }
+    std::ostringstream ss;
+    ss << std::setw(4) << std::setfill('0') << d_current_file_number;
+    return d_signal_file_basename + "_" + ss.str() + ".LS3";
 }
 
 
@@ -108,7 +135,7 @@ void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex
     switch (type)
         {
         case 2:
-            //two bits per sample, 8 samples per int16
+            // two bits per sample, 8 samples per int16
             for (int i = 0; i < 8; i++)
                 {
                     out[i] = gr_complex(static_cast<float>(bs[15 - (2 * i)]),
@@ -117,51 +144,61 @@ void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex
                 }
             break;
         case 4:
-            //four bits per sample, 4 samples per int16
+            //  bits per sample, 4 samples per int16
             for (int i = 0; i < 4; i++)
                 {
-                    out[i] = gr_complex(0.0, 0.0);
-                    //In-Phase
+                    //out[i] = gr_complex(0.0, 0.0);
+                    // In-Phase
                     if (bs[15 - 4 * i])
                         {
-                            if (bs[13 - 4 * i])  //11
+                            if (bs[13 - 4 * i])  // 11
                                 {
-                                    out[i] += gr_complex(-1, 0);
+                                    out[i] = gr_complex(-1, 0);
                                 }
-                            else  //10
+                            else  // 10
                                 {
-                                    out[i] += gr_complex(-2, 0);
+                                    out[i] = gr_complex(-2, 0);
                                 }
                         }
                     else
                         {
-                            if (bs[13 - 4 * i])  //01
+                            if (bs[13 - 4 * i])  // 01
                                 {
-                                    out[i] += gr_complex(1, 0);
+                                    out[i] = gr_complex(2, 0);
+                                }
+                            else
+                                {
+                                    out[i] = gr_complex(1, 0);
                                 }
                         }
 
-                    //Quadrature
+                    // Quadrature
                     if (bs[14 - 4 * i])
                         {
-                            if (bs[12 - 4 * i])  //11
+                            if (bs[12 - 4 * i])  // 11
                                 {
                                     out[i] += gr_complex(0, -1);
                                 }
-                            else  //10
+                            else  // 10
                                 {
                                     out[i] += gr_complex(0, -2);
                                 }
                         }
                     else
                         {
-                            if (bs[12 - 4 * i])  //01
+                            if (bs[12 - 4 * i])  // 01
+                                {
+                                    out[i] += gr_complex(0, 2);
+                                }
+                            else
                                 {
                                     out[i] += gr_complex(0, 1);
                                 }
                         }
-                    out[i] += gr_complex(0.5, 0.5);
+                    //out[i] += gr_complex(0.5, 0.5);
                 }
+            break;
+        default:
             break;
         }
 }
@@ -172,7 +209,7 @@ int labsat23_source::general_work(int noutput_items,
     __attribute__((unused)) gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
 
     if (d_header_parsed == false)
         {
@@ -180,14 +217,16 @@ int labsat23_source::general_work(int noutput_items,
                 {
                     char memblock[1024];
                     binary_input_file->read(memblock, 1024);
-                    //parse Labsat header
-                    //check preamble
+                    // parse Labsat header
+                    // check preamble
                     int byte_counter = 0;
                     bool preamble_ok = true;
                     for (int i = 0; i < 8; i++)
                         {
-                            if (memblock[byte_counter] != 0x00) preamble_ok = false;
-                            //std::cout << "H[" << i << "]:" << (int)memblock[byte_counter] << std::endl;
+                            if (memblock[byte_counter] != 0x00)
+                                {
+                                    preamble_ok = false;
+                                }
                             byte_counter++;
                         }
 
@@ -228,17 +267,14 @@ int labsat23_source::general_work(int noutput_items,
                     header_bytes += memblock[byte_counter] | (memblock[byte_counter + 1] << 8) | (memblock[byte_counter + 2] << 16) | (memblock[byte_counter + 3] << 24);
 
                     byte_counter += 4;
-                    //std::cout << "header_bytes=" << header_bytes << std::endl;
 
                     // read first section
                     // section ID (little-endian)
                     uint8_t section_id = static_cast<int>(memblock[byte_counter]) + static_cast<int>(memblock[byte_counter + 1]) * 256;
-                    //std::cout << "Section ID: " << (int)section_id << std::endl;
                     byte_counter += 2;
 
-                    uint8_t section_lenght_bytes = 0;
-                    section_lenght_bytes += memblock[byte_counter] | (memblock[byte_counter + 1] << 8) | (memblock[byte_counter + 2] << 16) | (memblock[byte_counter + 3] << 24);
-                    //std::cout << "section_lenght_bytes=" << (int)section_lenght_bytes << std::endl;
+                    //uint8_t section_lenght_bytes = 0;
+                    //section_lenght_bytes += memblock[byte_counter] | (memblock[byte_counter + 1] << 8) | (memblock[byte_counter + 2] << 16) | (memblock[byte_counter + 3] << 24);
 
                     byte_counter += 4;
                     if (section_id == 2)
@@ -247,10 +283,10 @@ int labsat23_source::general_work(int noutput_items,
                             switch (d_ref_clock)
                                 {
                                 case 0:
-                                    std::cout << "Labsat reference clock: internal OXCO" << std::endl;
+                                    std::cout << "Labsat reference clock: internal OCXO" << std::endl;
                                     break;
                                 case 1:
-                                    std::cout << "Labsat reference clock: internal TXCO" << std::endl;
+                                    std::cout << "Labsat reference clock: internal TCXO" << std::endl;
                                     break;
                                 case 2:
                                     std::cout << "Labsat reference clock: external 10 MHz" << std::endl;
@@ -281,26 +317,26 @@ int labsat23_source::general_work(int noutput_items,
                             switch (d_channel_selector)
                                 {
                                 case 0:
-                                    std::cout << "Available channels: Channel A + B, 1 bit quantisation" << std::endl;
+                                    std::cout << "Available channels: Channel A + B, 1 bit quantisation (I & Q)" << std::endl;
                                     break;
                                 case 1:
-                                    std::cout << "Available channels: Channel A, 1 bit quantisation" << std::endl;
+                                    std::cout << "Available channels: Channel A, 1 bit quantisation (I & Q)" << std::endl;
                                     break;
                                 case 2:
-                                    std::cout << "Available channels: Channel B, 1 bit quantisation" << std::endl;
+                                    std::cout << "Available channels: Channel B, 1 bit quantisation (I & Q)" << std::endl;
                                     break;
                                 case 3:
-                                    std::cout << "Available channels: Channel A, 2 bit quantisation" << std::endl;
+                                    std::cout << "Available channels: Channel A, 2 bit quantisation (I & Q)" << std::endl;
                                     break;
                                 case 4:
-                                    std::cout << "Available channels: Channel B, 2 bit quantisation" << std::endl;
+                                    std::cout << "Available channels: Channel B, 2 bit quantisation (I & Q)" << std::endl;
                                     break;
                                 default:
                                     std::cout << "Unknown channel selection ID " << static_cast<int>(d_channel_selector) << std::endl;
                                     return -1;
                                 }
 
-                            //check if the selected channel in config file match the file encoding
+                            // check if the selected channel in config file match the file encoding
                             if (d_channel_selector_config == 2 and d_channel_selector != 0)
                                 {
                                     std::cout << "Labsat source channel config inconsistency: channel 2 is selected but the file has only one channel" << std::endl;
@@ -314,9 +350,11 @@ int labsat23_source::general_work(int noutput_items,
                                     return -1;
                                 }
                             byte_counter++;
-                            uint8_t quantization = static_cast<uint8_t>(memblock[byte_counter]);
+                            auto quantization = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (quantization)
                                 {
+                                case 0:
+                                    break;
                                 case 1:
                                     std::cout << "1 bit per sample" << std::endl;
                                     break;
@@ -327,7 +365,7 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Unknown quantization ID " << static_cast<int>(quantization) << std::endl;
                                 }
                             byte_counter++;
-                            uint8_t channel_a_constellation = static_cast<uint8_t>(memblock[byte_counter]);
+                            auto channel_a_constellation = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (channel_a_constellation)
                                 {
                                 case 0:
@@ -343,7 +381,7 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Unknown channel A constellation ID " << static_cast<int>(channel_a_constellation) << std::endl;
                                 }
                             byte_counter++;
-                            uint8_t channel_b_constellation = static_cast<uint8_t>(memblock[byte_counter]);
+                            auto channel_b_constellation = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (channel_b_constellation)
                                 {
                                 case 0:
@@ -355,142 +393,156 @@ int labsat23_source::general_work(int noutput_items,
                                 case 2:
                                     std::cout << "Labsat Channel B is BDS" << std::endl;
                                     break;
+                                case 255:
+                                    // No channel B
+                                    break;
                                 default:
                                     std::cout << "Unknown channel B constellation ID " << static_cast<int>(channel_b_constellation) << std::endl;
                                 }
 
-                            //end of header
+                            // end of header
                             d_header_parsed = true;
-                            //seek file to the first signal sample
+                            // seek file to the first signal sample
                             binary_input_file->clear();
                             binary_input_file->seekg(header_bytes, binary_input_file->beg);
                             return 0;
                         }
-                    else
-                        {
-                            std::cout << "Labsat file header error: section 2 is not available." << std::endl;
-                            return -1;
-                        }
-                }
-            else
-                {
-                    std::cout << "Labsat file read error: file is empty." << std::endl;
+                    std::cout << "Labsat file header error: section 2 is not available." << std::endl;
                     return -1;
                 }
+            std::cout << "Labsat file read error: file is empty." << std::endl;
+            return -1;
         }
-    else
+
+    // ready to start reading samples
+    switch (d_bits_per_sample)
         {
-            //ready to start reading samples
-            switch (d_bits_per_sample)
+        case 2:
+            switch (d_channel_selector)
                 {
-                case 2:
-                    {
-                        switch (d_channel_selector)
-                            {
-                            case 0:
-                                // dual channel 2 bits per complex sample
-                                break;
-                            default:
-                                //single channel 2 bits per complex sample (1 bit I + 1 bit Q, 8 samples per int16)
-                                int n_int16_to_read = noutput_items / 8;
-                                if (n_int16_to_read > 0)
-                                    {
-                                        int16_t memblock[n_int16_to_read];
-                                        binary_input_file->read(reinterpret_cast<char *>(memblock), n_int16_to_read * 2);
-                                        n_int16_to_read = binary_input_file->gcount() / 2;  //from bytes to int16
-                                        if (n_int16_to_read > 0)
-                                            {
-                                                int output_pointer = 0;
-                                                for (int i = 0; i < n_int16_to_read; i++)
-                                                    {
-                                                        decode_samples_one_channel(memblock[i], &out[output_pointer], d_bits_per_sample);
-                                                        output_pointer += 8;
-                                                    }
-                                                return output_pointer;
-                                            }
-                                        else
-                                            {
-                                                //trigger the read of the next file in the sequence
-                                                std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
-
-                                                d_current_file_number++;
-                                                binary_input_file->close();
-                                                binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
-                                                if (binary_input_file->is_open())
-                                                    {
-                                                        std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
-                                                    }
-                                                else
-                                                    {
-                                                        std::cout << "Last file reached, LabSat source stop" << std::endl;
-                                                        return -1;
-                                                    }
-                                            }
-                                    }
-                                else
-                                    {
-                                        return 0;
-                                    }
-                            };
-                        break;
-                    }
-                case 4:
-                    {
-                        switch (d_channel_selector)
-                            {
-                            case 0:
-                                // dual channel
-                                break;
-                            default:
-                                //single channel 4 bits per complex sample (2 bit I + 2 bit Q, 4 samples per int16)
-                                int n_int16_to_read = noutput_items / 4;
-                                if (n_int16_to_read > 0)
-                                    {
-                                        int16_t memblock[n_int16_to_read];
-                                        binary_input_file->read(reinterpret_cast<char *>(memblock), n_int16_to_read * 2);
-                                        n_int16_to_read = binary_input_file->gcount() / 2;  //from bytes to int16
-                                        if (n_int16_to_read > 0)
-                                            {
-                                                int output_pointer = 0;
-                                                for (int i = 0; i < n_int16_to_read; i++)
-                                                    {
-                                                        decode_samples_one_channel(memblock[i], &out[output_pointer], d_bits_per_sample);
-                                                        output_pointer += 4;
-                                                    }
-                                                return output_pointer;
-                                            }
-                                        else
-                                            {
-                                                //trigger the read of the next file in the sequence
-                                                std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
-
-                                                d_current_file_number++;
-                                                binary_input_file->close();
-                                                binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
-                                                if (binary_input_file->is_open())
-                                                    {
-                                                        std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
-                                                    }
-                                                else
-                                                    {
-                                                        std::cout << "Last file reached, LabSat source stop" << std::endl;
-                                                        return -1;
-                                                    }
-                                            }
-                                    }
-                                else
-                                    {
-                                        return 0;
-                                    }
-                            }
-                        break;
-                    }
+                case 0:
+                    // dual channel 2 bits per complex sample
+                    //todo: implement dual channel reader
+                    break;
                 default:
-                    {
-                        return -1;
-                    }
+                    // single channel 2 bits per complex sample (1 bit I + 1 bit Q, 8 samples per int16)
+                    int n_int16_to_read = noutput_items / 8;
+                    if (n_int16_to_read > 0)
+                        {
+                            int16_t memblock[n_int16_to_read];
+                            binary_input_file->read(reinterpret_cast<char *>(memblock), n_int16_to_read * 2);
+                            n_int16_to_read = binary_input_file->gcount() / 2;  //from bytes to int16
+                            if (n_int16_to_read > 0)
+                                {
+                                    int output_pointer = 0;
+                                    for (int i = 0; i < n_int16_to_read; i++)
+                                        {
+                                            decode_samples_one_channel(memblock[i], &out[output_pointer], d_bits_per_sample);
+                                            output_pointer += 8;
+                                        }
+                                    return output_pointer;
+                                }
+
+                            // trigger the read of the next file in the sequence
+                            d_current_file_number++;
+                            if (d_labsat_version == 3)
+                                {
+                                    std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
+                                }
+                            binary_input_file->close();
+                            binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
+                            if (binary_input_file->is_open())
+                                {
+                                    std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
+                                    return 0;
+                                }
+                            else
+                                {
+                                    if (d_labsat_version == 3)
+                                        {
+                                            std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                        }
+                                    else
+                                        {
+                                            std::cout << "End of file reached, LabSat source stop" << std::endl;
+                                        }
+                                    auto *cmf = new ControlMessageFactory();
+                                    d_queue->handle(cmf->GetQueueMessage(200, 0));
+                                    delete cmf;
+                                    return -1;
+                                }
+                        }
+                    else
+                        {
+                            return 0;
+                        }
                 }
+            break;
+        case 4:
+            switch (d_channel_selector)
+                {
+                case 0:
+                    // dual channel
+                    //todo: implement dual channel reader
+                    break;
+                default:
+                    // single channel 4 bits per complex sample (2 bit I + 2 bit Q, 4 samples per int16)
+                    int n_int16_to_read = noutput_items / 4;
+                    if (n_int16_to_read > 0)
+                        {
+                            int16_t memblock[n_int16_to_read];
+                            binary_input_file->read(reinterpret_cast<char *>(memblock), n_int16_to_read * 2);
+                            n_int16_to_read = binary_input_file->gcount() / 2;  // from bytes to int16
+                            if (n_int16_to_read > 0)
+                                {
+                                    int output_pointer = 0;
+                                    for (int i = 0; i < n_int16_to_read; i++)
+                                        {
+                                            decode_samples_one_channel(memblock[i], &out[output_pointer], d_bits_per_sample);
+                                            output_pointer += 4;
+                                        }
+                                    return output_pointer;
+                                }
+
+                            // trigger the read of the next file in the sequence
+                            d_current_file_number++;
+                            if (d_labsat_version == 3)
+                                {
+                                    std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
+                                }
+                            binary_input_file->close();
+                            binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
+                            if (binary_input_file->is_open())
+                                {
+                                    std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
+                                    return 0;
+                                }
+                            else
+                                {
+                                    if (d_labsat_version == 3)
+                                        {
+                                            std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                        }
+                                    else
+                                        {
+                                            std::cout << "End of file reached, LabSat source stop" << std::endl;
+                                        }
+                                    auto *cmf = new ControlMessageFactory();
+                                    d_queue->handle(cmf->GetQueueMessage(200, 0));
+                                    delete cmf;
+                                    return -1;
+                                }
+                        }
+                    else
+                        {
+                            return 0;
+                        }
+                }
+            break;
+        default:
+            return -1;
         }
+
     std::cout << "Warning!!" << std::endl;
     return 0;
 }

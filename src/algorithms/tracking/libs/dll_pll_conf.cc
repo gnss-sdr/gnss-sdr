@@ -36,11 +36,20 @@
 Dll_Pll_Conf::Dll_Pll_Conf()
 {
     /* DLL/PLL tracking configuration */
-    use_high_dynamics_resampler = true;
+    high_dyn = false;
+    smoother_length = 10;
     fs_in = 0.0;
     vector_length = 0U;
     dump = false;
-    dump_filename = "./dll_pll_dump.dat";
+    dump_mat = true;
+    dump_filename = std::string("./dll_pll_dump.dat");
+    enable_fll_pull_in = false;
+    enable_fll_steady_state = false;
+    pull_in_time_s = 2;
+    fll_filter_order = 1;
+    pll_filter_order = 3;
+    dll_filter_order = 2;
+    fll_bw_hz = 35.0;
     pll_pull_in_bw_hz = 50.0;
     dll_pull_in_bw_hz = 3.0;
     pll_bw_hz = 35.0;

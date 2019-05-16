@@ -28,26 +28,26 @@
  * -------------------------------------------------------------------------
  */
 
+#include <gflags/gflags.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/top_block.h>
 #include <chrono>
 #include <complex>
 #include <cstdint>
-#include <gflags/gflags.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/analog/sig_source_waveform.h>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
+#include "file_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
+#include "in_memory_configuration.h"
 #include "notch_filter_lite.h"
-#include "file_signal_source.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 
 
 DEFINE_int32(notch_filter_lite_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
@@ -62,9 +62,7 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_notch_filter_lite_test_nsamples;
     }
-    ~NotchFilterLiteTest()
-    {
-    }
+    ~NotchFilterLiteTest() = default;
 
     void init();
     void configure_gr_complex_gr_complex();
@@ -97,7 +95,10 @@ TEST_F(NotchFilterLiteTest, InstantiateGrComplexGrComplex)
     configure_gr_complex_gr_complex();
     std::unique_ptr<NotchFilterLite> filter(new NotchFilterLite(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 

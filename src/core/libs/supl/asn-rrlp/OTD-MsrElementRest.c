@@ -56,12 +56,12 @@ memb_taCorrection_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_refFrameNumber_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_FRAME_NUMBER_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  42431 }	/* (0..42431) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_taCorrection_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_TA_CORRECTION_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  960 }	/* (0..960) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -72,7 +72,7 @@ static asn_TYPE_member_t asn_MBR_OTD_MsrElementRest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refFrameNumber_constraint_1,
-		&asn_PER_memb_refFrameNumber_constr_2,
+		&ASN_PER_MEMB_REF_FRAME_NUMBER_CONSTR_2,
 		0,
 		"refFrameNumber"
 		},
@@ -108,7 +108,7 @@ static asn_TYPE_member_t asn_MBR_OTD_MsrElementRest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_taCorrection_constraint_1,
-		&asn_PER_memb_taCorrection_constr_6,
+		&ASN_PER_MEMB_TA_CORRECTION_CONSTR_6,
 		0,
 		"taCorrection"
 		},

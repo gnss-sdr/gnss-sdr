@@ -2,7 +2,7 @@
  * \file kml_printer.h
  * \brief Interface of a class that prints PVT information to a kml file
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
+ *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -33,11 +33,11 @@
 #ifndef GNSS_SDR_KML_PRINTER_H_
 #define GNSS_SDR_KML_PRINTER_H_
 
-#include "pvt_solution.h"
-#include <fstream>
-#include <memory>
-#include <string>
+#include <fstream>   // for ofstream
+#include <memory>    // for shared_ptr
 
+
+class Rtklib_Solver;
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
@@ -48,14 +48,19 @@ class Kml_Printer
 {
 private:
     std::ofstream kml_file;
+    std::ofstream tmp_file;
     bool positions_printed;
     std::string kml_filename;
+    std::string kml_base_path;
+    std::string tmp_file_str;
+    unsigned int point_id;
+    std::string indent;
 
 public:
-    Kml_Printer();
+    Kml_Printer(const std::string& base_path = std::string("."));
     ~Kml_Printer();
-    bool set_headers(std::string filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
+    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
     bool close_file();
 };
 

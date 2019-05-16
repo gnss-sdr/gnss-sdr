@@ -30,10 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include <armadillo>
+#include <gnuradio/fft/fft.h>
 #include <chrono>
 #include <memory>
-#include <gnuradio/fft/fft.h>
-#include <armadillo>
 
 DEFINE_int32(fft_speed_iterations_test, 100, "Number of averaged iterations in FFT length timing test");
 
@@ -46,8 +46,9 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
     unsigned int fft_sizes[19] = {16, 25, 32, 45, 64, 95, 128, 195, 256, 325, 512, 785, 1024, 1503, 2048, 3127, 4096, 6349, 8192};
     double d_execution_time;
     EXPECT_NO_THROW(
-        for (int i = 0; i < 19; i++) {
-            d_fft_size = fft_sizes[i];
+        for (unsigned int fft_size
+             : fft_sizes) {
+            d_fft_size = fft_size;
             gr::fft::fft_complex* d_gr_fft;
             d_gr_fft = new gr::fft::fft_complex(d_fft_size, true);
             arma::arma_rng::set_seed_random();

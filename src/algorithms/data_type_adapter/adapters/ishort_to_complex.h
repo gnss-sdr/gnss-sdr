@@ -33,8 +33,8 @@
 
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -47,7 +47,7 @@ class IshortToComplex : public GNSSBlockInterface
 {
 public:
     IshortToComplex(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~IshortToComplex();

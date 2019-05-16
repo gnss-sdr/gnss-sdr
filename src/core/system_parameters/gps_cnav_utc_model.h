@@ -1,5 +1,5 @@
 /*!
- * \file gps_utc_model.h
+ * \file gps_cnav_utc_model.h
  * \brief  Interface of a GPS UTC MODEL storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
@@ -32,7 +32,6 @@
 #ifndef GNSS_SDR_GPS_CNAV_UTC_MODEL_H_
 #define GNSS_SDR_GPS_CNAV_UTC_MODEL_H_
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
@@ -46,15 +45,15 @@ class Gps_CNAV_Utc_Model
 public:
     bool valid;
     // UTC parameters
-    double d_A2;          //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
-    double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
-    double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s]
-    double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200H) [s]
-    int32_t i_WN_T;       //!< UTC reference week number [weeks]
-    double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int32_t i_WN_LSF;     //!< Week number at the end of which the leap second becomes effective [weeks]
-    int32_t i_DN;         //!< Day number (DN) at the end of which the leap second becomes effective [days]
-    double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
+    double d_A2;           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
+    double d_A1;           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
+    double d_A0;           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s]
+    int32_t d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200H) [s]
+    int32_t i_WN_T;        //!< UTC reference week number [weeks]
+    int32_t d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
+    int32_t i_WN_LSF;      //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN;          //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     /*!
      * Default constructor

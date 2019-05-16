@@ -30,16 +30,16 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_navigation_message.h"
-#include "galileo_fnav_message.h"
 #include "convolutional.h"
-#include <unistd.h>
+#include "galileo_fnav_message.h"
+#include "galileo_navigation_message.h"
+#include <armadillo>
+#include <gtest/gtest.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <chrono>
 #include <exception>
 #include <string>
-#include <armadillo>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <gtest/gtest.h>
+#include <unistd.h>
 
 
 class Galileo_FNAV_INAV_test : public ::testing::Test
@@ -61,7 +61,7 @@ public:
     }
 
 
-    void deinterleaver(int32_t rows, int32_t cols, double *in, double *out)
+    void deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
     {
         for (int32_t r = 0; r < rows; r++)
             {
@@ -76,7 +76,7 @@ public:
     bool decode_INAV_word(double *page_part_symbols, int32_t frame_length)
     {
         // 1. De-interleave
-        double *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
+        auto *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
         deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
 
         // 2. Viterbi decoder
@@ -90,7 +90,7 @@ public:
                     }
             }
 
-        int32_t *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+        auto *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
         const int32_t CodeLength = 240;
         int32_t DataLength = (CodeLength / nn) - mm;
@@ -137,7 +137,7 @@ public:
     bool decode_FNAV_word(double *page_symbols, int32_t frame_length)
     {
         // 1. De-interleave
-        double *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
+        auto *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
         deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
         // 2. Viterbi decoder
@@ -150,7 +150,7 @@ public:
                         page_symbols_deint[i] = -page_symbols_deint[i];
                     }
             }
-        int32_t *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+        auto *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
         const int32_t CodeLength = 488;
         int32_t DataLength = (CodeLength / nn) - mm;
@@ -180,10 +180,7 @@ public:
                 std::cout << "Galileo E5a FNAV PAGE CRC correct \n";
                 return true;
             }
-        else
-            {
-                return false;
-            }
+        return false;
     }
 
     Galileo_FNAV_INAV_test()
@@ -215,7 +212,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-
+    start = std::chrono::system_clock::now();
     int repetitions = 10;
     // FNAV FULLY ENCODED FRAME
     double FNAV_frame[488] = {-1, 1, -1, -1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -282,7 +279,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
                 EXPECT_EQ(decode_INAV_word(&INAV_frame_odd[0], 240), true);
             }
     }) << "Exception during INAV frame decoding";
-
-
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = end - start;
     std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

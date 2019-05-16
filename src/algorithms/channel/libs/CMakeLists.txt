@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,28 +16,45 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(CHANNEL_FSM_SOURCES 
-    channel_fsm.cc 
+set(CHANNEL_FSM_SOURCES
+    channel_fsm.cc
     channel_msg_receiver_cc.cc
-    )
-
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB CHANNEL_FSM_HEADERS "*.h")
+set(CHANNEL_FSM_HEADERS
+    channel_fsm.h
+    channel_msg_receiver_cc.h
+) 
+
 list(SORT CHANNEL_FSM_HEADERS)
-add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+list(SORT CHANNEL_FSM_SOURCES)
+
 source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
-add_dependencies(channel_fsm glog-${glog_RELEASE})
 
-target_link_libraries(channel_fsm gnss_rx)
+add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
+target_link_libraries(channel_libs
+    PUBLIC
+        Gnuradio::runtime
+        Gnuradio::pmt
+        core_system_parameters
+    PRIVATE
+        Boost::boost
+        Gflags::gflags
+        Glog::glog
+        core_receiver
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(channel_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET channel_libs
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

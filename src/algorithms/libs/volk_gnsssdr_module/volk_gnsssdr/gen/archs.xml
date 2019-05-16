@@ -6,14 +6,17 @@
 
 <arch name="softfp">
   <flag compiler="gnu">-mfloat-abi=softfp</flag>
+  <flag compiler="clang">-mfloat-abi=softfp</flag>
 </arch>
 
 <arch name="hardfp">
   <flag compiler="gnu">-mfloat-abi=hard</flag>
+  <flag compiler="clang">-mfloat-abi=hard</flag>
 </arch>
 
 <arch name="neon">
   <flag compiler="gnu">-funsafe-math-optimizations</flag>
+  <flag compiler="clang">-funsafe-math-optimizations</flag>
   <alignment>16</alignment>
   <check name="has_neon"></check>
 </arch>
@@ -21,18 +24,22 @@
 <arch name="neonv7">
   <flag compiler="gnu">-mfpu=neon</flag>
   <flag compiler="gnu">-funsafe-math-optimizations</flag>
+  <flag compiler="clang">-mfpu=neon</flag>
+  <flag compiler="clang">-funsafe-math-optimizations</flag>
   <alignment>16</alignment>
   <check name="has_neonv7"></check>
 </arch>
 
 <arch name="neonv8">
   <flag compiler="gnu">-funsafe-math-optimizations</flag>
+  <flag compiler="clang">-funsafe-math-optimizations</flag>
   <alignment>16</alignment>
   <check name="has_neonv8"></check>
 </arch>
 
 <arch name="32">
   <flag compiler="gnu">-m32</flag>
+  <flag compiler="clang">-m32</flag>
 </arch>
 
 <arch name="64">

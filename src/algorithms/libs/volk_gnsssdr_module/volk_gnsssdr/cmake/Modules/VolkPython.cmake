@@ -21,45 +21,6 @@ endif()
 set(__INCLUDED_VOLK_PYTHON_CMAKE TRUE)
 
 ########################################################################
-# Setup the python interpreter:
-# This allows the user to specify a specific interpreter,
-# or finds the interpreter via the built-in cmake module.
-########################################################################
-set(VOLK_PYTHON_MIN_VERSION "2.7")
-set(VOLK_PYTHON3_MIN_VERSION "3.4")
-
-if(CMAKE_VERSION VERSION_LESS 3.12)
-    if(PYTHON_EXECUTABLE)
-        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
-    else(PYTHON_EXECUTABLE)
-        message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
-        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
-        if(NOT PYTHONINTERP_FOUND)
-            message(STATUS "python2 not found - using python3")
-            find_package(PythonInterp ${VOLK_PYTHON3_MIN_VERSION} REQUIRED)
-         endif(NOT PYTHONINTERP_FOUND)
-    endif(PYTHON_EXECUTABLE)
-    find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
-else(CMAKE_VERSION VERSION_LESS 3.12)
-    if(PYTHON_EXECUTABLE)
-        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
-    else(PYTHON_EXECUTABLE)
-        find_package (Python COMPONENTS Interpreter)
-        set(PYTHON_VERSION_MAJOR ${Python_VERSION_MAJOR})
-        set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
-    endif(PYTHON_EXECUTABLE)
-endif(CMAKE_VERSION VERSION_LESS 3.12)
-
-if (${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
-    set(PYTHON3 TRUE)
-endif ()
-
-
-
-########################################################################
 # Check for the existence of a python module:
 # - desc a string description of the check
 # - mod the name of the module to import
@@ -79,7 +40,7 @@ macro(VOLK_PYTHON_CHECK_MODULE_RAW desc python_code have)
         message(STATUS "Python checking for ${desc} - not found")
         set(${have} FALSE)
     endif()
-endmacro(VOLK_PYTHON_CHECK_MODULE_RAW)
+endmacro()
 
 macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
     VOLK_PYTHON_CHECK_MODULE_RAW(
@@ -92,7 +53,62 @@ except (ImportError, AssertionError): exit(-1)
 except: pass
 #########################################"
     "${have}")
-endmacro(VOLK_PYTHON_CHECK_MODULE)
+endmacro()
+
+
+########################################################################
+# Setup the python interpreter:
+# This allows the user to specify a specific interpreter,
+# or finds the interpreter via the built-in cmake module.
+########################################################################
+set(VOLK_PYTHON_MIN_VERSION "2.7")
+set(VOLK_PYTHON3_MIN_VERSION "3.4")
+
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else()
+        message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
+        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+        if(NOT PYTHONINTERP_FOUND)
+            message(STATUS "python2 not found - using python3")
+            find_package(PythonInterp ${VOLK_PYTHON3_MIN_VERSION} REQUIRED)
+        endif()
+    endif()
+else()
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else()
+        find_package(Python3 COMPONENTS Interpreter)
+        if(Python3_FOUND)
+            set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+            set(PYTHON_VERSION_MAJOR ${Python3_VERSION_MAJOR})
+            volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+            volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+        endif()
+        if(NOT Python3_FOUND OR NOT MAKO_FOUND OR NOT SIX_FOUND)
+            find_package(Python2 COMPONENTS Interpreter)
+            if(Python2_FOUND)
+                set(PYTHON_EXECUTABLE ${Python2_EXECUTABLE})
+                set(PYTHON_VERSION_MAJOR ${Python2_VERSION_MAJOR})
+                volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+                volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+            endif()
+            if(NOT MAKO_FOUND OR NOT SIX_FOUND)
+                unset(PYTHON_EXECUTABLE)
+                find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+            endif()
+        endif()
+    endif()
+endif()
+
+if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+    set(PYTHON3 TRUE)
+endif()
+
 
 ########################################################################
 # Sets the python installation directory VOLK_PYTHON_DIR
@@ -121,14 +137,14 @@ unique = hashlib.md5(b'${reldir}${ARGN}').hexdigest()[:5]
 print(re.sub('\\W', '_', '${desc} ${reldir} ' + unique))"
     OUTPUT_VARIABLE _target OUTPUT_STRIP_TRAILING_WHITESPACE)
     add_custom_target(${_target} ALL DEPENDS ${ARGN})
-endfunction(VOLK_UNIQUE_TARGET)
+endfunction()
 
 ########################################################################
 # Install python sources (also builds and installs byte-compiled python)
 ########################################################################
 function(VOLK_PYTHON_INSTALL)
     include(CMakeParseArgumentsCopy)
-    CMAKE_PARSE_ARGUMENTS(VOLK_PYTHON_INSTALL "" "DESTINATION;COMPONENT" "FILES;PROGRAMS" ${ARGN})
+    cmake_parse_arguments(VOLK_PYTHON_INSTALL "" "DESTINATION;COMPONENT" "FILES;PROGRAMS" ${ARGN})
 
     ####################################################################
     if(VOLK_PYTHON_INSTALL_FILES)
@@ -162,7 +178,7 @@ function(VOLK_PYTHON_INSTALL)
             get_filename_component(pygen_path ${pygenfile} PATH)
             file(MAKE_DIRECTORY ${pygen_path})
 
-        endforeach(pyfile)
+        endforeach()
 
         #the command to generate the pyc files
         add_custom_command(
@@ -189,8 +205,8 @@ function(VOLK_PYTHON_INSTALL)
     ####################################################################
         file(TO_NATIVE_PATH ${PYTHON_EXECUTABLE} pyexe_native)
 
-        if (CMAKE_CROSSCOMPILING)
-           set(pyexe_native "/usr/bin/env python")
+        if(CMAKE_CROSSCOMPILING)
+            set(pyexe_native "/usr/bin/env python")
         endif()
 
         foreach(pyfile ${VOLK_PYTHON_INSTALL_PROGRAMS})
@@ -220,13 +236,13 @@ function(VOLK_PYTHON_INSTALL)
                 DESTINATION ${VOLK_PYTHON_INSTALL_DESTINATION}
                 COMPONENT ${VOLK_PYTHON_INSTALL_COMPONENT}
             )
-        endforeach(pyfile)
+        endforeach()
 
     endif()
 
-    VOLK_UNIQUE_TARGET("pygen" ${python_install_gen_targets})
+    volk_unique_target("pygen" ${python_install_gen_targets})
 
-endfunction(VOLK_PYTHON_INSTALL)
+endfunction()
 
 ########################################################################
 # Write the python helper script that generates byte code files

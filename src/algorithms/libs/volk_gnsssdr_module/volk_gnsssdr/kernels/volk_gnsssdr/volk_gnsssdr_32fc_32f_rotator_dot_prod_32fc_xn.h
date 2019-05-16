@@ -69,10 +69,10 @@
 #define INCLUDED_volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_H
 
 
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/saturation_arithmetic.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <math.h>
 //#include <stdio.h>
 
@@ -165,8 +165,8 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload
 #endif /*LV_HAVE_GENERIC*/
 
 #ifdef LV_HAVE_AVX
-#include <immintrin.h>
 #include <volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h>
+#include <immintrin.h>
 static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
 {
     unsigned int number = 0;
@@ -313,7 +313,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
     number = sixteenthPoints * 16;
     for (; number < num_points; number++)
         {
-            wo = (*aPtr++) * _phase;
+            wo = in_common[number] * _phase;
             _phase *= phase_inc;
 
             for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
@@ -329,8 +329,8 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
 
 
 #ifdef LV_HAVE_AVX
-#include <immintrin.h>
 #include <volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h>
+#include <immintrin.h>
 static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
 {
     unsigned int number = 0;
@@ -477,7 +477,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
     number = sixteenthPoints * 16;
     for (; number < num_points; number++)
         {
-            wo = (*aPtr++) * _phase;
+            wo = in_common[number] * _phase;
             _phase *= phase_inc;
 
             for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)

@@ -1,10 +1,8 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_fpga.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface that uses the FPGA
- * \author Marc Majoral, 2018, mmajoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * for GPS L1 C/A to a TrackingInterface for the FPGA
+ * \author Marc Majoral, 2019, mmajoral(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -13,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,54 +34,121 @@
  * -------------------------------------------------------------------------
  */
 
-#include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "GPS_L1_CA.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
+#include "gps_sdr_signal_processing.h"
+#include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for round
+#include <cstring>  // for memcpy
+#include <iostream>
 
-#define NUM_PRNs 32
+#define NUM_PRNs 32  // total number of PRNs
 
-using google::LogMessage;
+// the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000  // flag that enables WE (Write Enable) of the local code FPGA
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
+    Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    
+
     //################# CONFIGURATION PARAMETERS ########################
-    //std::string default_item_type = "gr_complex";
-    //std::string item_type = configuration->property(role + ".item_type", default_item_type);
-    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
+    trk_param_fpga.high_dyn = configuration->property(role + ".high_dyn", false);
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param_fpga.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param_fpga.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
+
     bool dump = configuration->property(role + ".dump", false);
     trk_param_fpga.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param_fpga.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param_fpga.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+        }
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
     float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
     trk_param_fpga.pll_bw_narrow_hz = pll_bw_narrow_hz;
     float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
     trk_param_fpga.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+        }
     trk_param_fpga.dll_bw_hz = dll_bw_hz;
+
+    int dll_filter_order = configuration->property(role + ".dll_filter_order", 2);
+    if (dll_filter_order < 1)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 1.";
+            dll_filter_order = 1;
+        }
+    if (dll_filter_order > 3)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
+            dll_filter_order = 3;
+        }
+    trk_param_fpga.dll_filter_order = dll_filter_order;
+
+    int pll_filter_order = configuration->property(role + ".pll_filter_order", 3);
+    if (pll_filter_order < 2)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 2.";
+            pll_filter_order = 2;
+        }
+    if (pll_filter_order > 3)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 3.";
+            pll_filter_order = 3;
+        }
+    trk_param_fpga.pll_filter_order = pll_filter_order;
+
+    if (pll_filter_order == 2)
+        {
+            trk_param_fpga.fll_filter_order = 1;
+        }
+    if (pll_filter_order == 3)
+        {
+            trk_param_fpga.fll_filter_order = 2;
+        }
+
+    bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
+    trk_param_fpga.enable_fll_pull_in = enable_fll_pull_in;
+    float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
+    trk_param_fpga.fll_bw_hz = fll_bw_hz;
+    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
+    trk_param_fpga.pull_in_time_s = pull_in_time_s;
+
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     trk_param_fpga.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param_fpga.dump_filename = dump_filename;
-    int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    int32_t vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
-    int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
+    int32_t symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
     if (symbols_extended_correlator < 1)
         {
             symbols_extended_correlator = 1;
@@ -110,54 +175,84 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.system = 'G';
     char sig_[3] = "1C";
     std::memcpy(trk_param_fpga.signal, sig_, 3);
-    int cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
+    int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
+    if (FLAGS_cn0_samples != 20)
+        {
+            cn0_samples = FLAGS_cn0_samples;
+        }
     trk_param_fpga.cn0_samples = cn0_samples;
-    int cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
+    int32_t cn0_min = configuration->property(role + ".cn0_min", 30);
+    if (FLAGS_cn0_min != 25)
+        {
+            cn0_min = FLAGS_cn0_min;
+        }
     trk_param_fpga.cn0_min = cn0_min;
-    int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
+    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
+    if (FLAGS_max_lock_fail != 50)
+        {
+            max_lock_fail = FLAGS_max_lock_fail;
+        }
     trk_param_fpga.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
-    if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
+    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.80);
+    if (FLAGS_carrier_lock_th != 0.85)
+        {
+            carrier_lock_th = FLAGS_carrier_lock_th;
+        }
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    unsigned int device_base = configuration->property(role + ".device_base", 1);
+    uint32_t device_base = configuration->property(role + ".device_base", 3);
     trk_param_fpga.device_base = device_base;
-    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
-    trk_param_fpga.multicorr_type = 0; //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
+    trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
-    {
-        gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-    }
+    d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
+        {
+            gps_l1_ca_code_gen_int(&d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
+
+            // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
+            for (uint32_t k = 0; k < GPS_L1_CA_CODE_LENGTH_CHIPS; k++)
+                {
+                    int32_t tmp_value = d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + k];
+                    if (tmp_value < 0)
+                        {
+                            tmp_value = 0;
+                        }
+                    tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
+                    d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + k] = tmp_value;
+                }
+        }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
-    trk_param_fpga.code_samples_per_chip = 1; // 1 sample per chip
+    trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
-    
 }
+
 
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
 {
     delete[] d_ca_codes;
 }
 
+
 void GpsL1CaDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
 }
+
+
+void GpsL1CaDllPllTrackingFpga::stop_tracking()
+{
+}
+
 
 /*
  * Set tracking channel unique ID
@@ -168,21 +263,27 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
     tracking_fpga_sc->set_channel(channel);
 }
 
+
 void GpsL1CaDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
 }
 
+
 void GpsL1CaDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect
 }
 
 
 void GpsL1CaDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect
 }
 
@@ -197,5 +298,3 @@ gr::basic_block_sptr GpsL1CaDllPllTrackingFpga::get_right_block()
 {
     return tracking_fpga_sc;
 }
-
-

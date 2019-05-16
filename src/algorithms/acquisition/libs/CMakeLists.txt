@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,32 +17,43 @@
 #
 
 if(ENABLE_FPGA)
-   set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc )
-   include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${VOLK_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-   )
-
-   file(GLOB ACQUISITION_LIB_HEADERS "*.h")
-endif(ENABLE_FPGA)
+    set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc)
+    set(ACQUISITION_LIB_HEADERS fpga_acquisition.h)
+endif()
 
 set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
-list(SORT ACQUISITION_LIB_HEADERS)
-
 set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
 
-add_library(acquisition_lib ${ACQUISITION_LIB_SOURCES} ${ACQUISITION_LIB_HEADERS})
+list(SORT ACQUISITION_LIB_HEADERS)
+list(SORT ACQUISITION_LIB_SOURCES)
+
 source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
-target_link_libraries(acquisition_lib ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
-if(VOLK_GNSSSDR_FOUND)
-    add_dependencies(acquisition_lib glog-${glog_RELEASE})
-else(VOLK_GNSSSDR_FOUND)
-    add_dependencies(acquisition_lib glog-${glog_RELEASE} volk_gnsssdr_module)
+
+add_library(acquisition_libs
+    ${ACQUISITION_LIB_SOURCES}
+    ${ACQUISITION_LIB_HEADERS}
+)
+
+target_link_libraries(acquisition_libs
+    PUBLIC
+        Volk::volk
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        algorithms_libs
+        core_system_parameters
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(acquisition_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
+
+set_property(TARGET acquisition_libs
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

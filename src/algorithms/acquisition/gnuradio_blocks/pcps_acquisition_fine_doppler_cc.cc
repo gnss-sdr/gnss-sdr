@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_fine_doppler_acquisition_cc.cc
+ * \file pcps_acquisition_fine_doppler_cc.cc
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  * \authors <ul>
  *          <li> Javier Arribas, 2013. jarribas(at)cttc.es
@@ -31,19 +31,18 @@
  */
 
 #include "pcps_acquisition_fine_doppler_cc.h"
-#include "gps_sdr_signal_processing.h"
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h"
+#include "gnss_sdr_create_directory.h"
+#include "gps_sdr_signal_processing.h"
+#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <matio.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // std::rotate, std::fill_n
 #include <sstream>
-#include <matio.h>
 
-
-using google::LogMessage;
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
 {
@@ -85,13 +84,45 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_dump = conf_.dump;
     d_dump_filename = conf_.dump_filename;
 
+    if (d_dump)
+        {
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
+                {
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "acquisition";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                }
+            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+        }
+
     d_n_samples_in_buffer = 0;
     d_threshold = 0;
     d_num_doppler_points = 0;
     d_doppler_step = 0;
-    d_grid_data = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_data = nullptr;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
@@ -280,7 +311,10 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
         {
             d_grid_data[index_doppler][idx] = 0.0;
             idx++;
-            if (idx == static_cast<int>(d_fft_size)) idx = 0;
+            if (idx == static_cast<int>(d_fft_size))
+                {
+                    idx = 0;
+                }
         }
     while (idx != excludeRangeIndex2);
 
@@ -303,7 +337,7 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
 
 float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
     // Compute the input signal power estimation
     float power = 0;
     volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
@@ -316,7 +350,7 @@ float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_voi
 int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
@@ -325,7 +359,7 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
@@ -371,12 +405,12 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     int signal_samples = prn_replicas * d_fft_size;
     //int fft_size_extended = nextPowerOf2(signal_samples * zero_padding_factor);
     int fft_size_extended = signal_samples * zero_padding_factor;
-    gr::fft::fft_complex *fft_operator = new gr::fft::fft_complex(fft_size_extended, true);
+    auto *fft_operator = new gr::fft::fft_complex(fft_size_extended, true);
     //zero padding the entire vector
     std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
 
     //1. generate local code aligned with the acquisition code phase estimation
-    gr_complex *code_replica = static_cast<gr_complex *>(volk_gnsssdr_malloc(signal_samples * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto *code_replica = static_cast<gr_complex *>(volk_gnsssdr_malloc(signal_samples * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
 
@@ -399,7 +433,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     fft_operator->execute();
 
     // 4. Compute the magnitude and find the maximum
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(fft_size_extended * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(fft_size_extended * sizeof(float), volk_gnsssdr_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, fft_operator->get_outbuf(), fft_size_extended);
 
@@ -408,7 +442,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     //case even
     int counter = 0;
-    float *fftFreqBins = new float[fft_size_extended];
+    auto *fftFreqBins = new float[fft_size_extended];
 
     std::fill_n(fftFreqBins, fft_size_extended, 0.0);
 
@@ -638,8 +672,8 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
     filename.append(std::to_string(d_gnss_synchro->PRN));
     filename.append(".mat");
 
-    mat_t *matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (matfp == NULL)
+    mat_t *matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (matfp == nullptr)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
             d_dump = false;
@@ -665,7 +699,7 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            float aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+            auto aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
             matvar = Mat_VarCreate("acq_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);

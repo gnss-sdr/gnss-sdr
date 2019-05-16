@@ -37,85 +37,99 @@
 # Find the PCAP includes and library
 # http://www.tcpdump.org/
 #
-# The environment variable PCAPDIR allows to specficy where to find 
+# The environment variable PCAPDIR allows to specficy where to find
 # libpcap in non standard location.
-#  
+#
 #  PCAP_INCLUDE_DIRS - where to find pcap.h, etc.
 #  PCAP_LIBRARIES   - List of libraries when using pcap.
 #  PCAP_FOUND       - True if pcap found.
+#
+# Provides the following imported target:
+# Pcap::pcap
+#
 
-
-IF(EXISTS $ENV{PCAPDIR})
-  FIND_PATH(PCAP_INCLUDE_DIR 
+if(EXISTS $ENV{PCAPDIR})
+  find_path(PCAP_INCLUDE_DIR
     NAMES
-    pcap/pcap.h
-    pcap.h
+      pcap/pcap.h
+      pcap.h
     PATHS
       $ENV{PCAPDIR}
+      ${PCAP_ROOT}/include
+      $ENV{PCAP_ROOT}/include
     NO_DEFAULT_PATH
   )
-  
-  FIND_LIBRARY(PCAP_LIBRARY
-    NAMES 
+  find_library(PCAP_LIBRARY
+    NAMES
       pcap
     PATHS
       $ENV{PCAPDIR}
+      ${PCAP_ROOT}/lib
+      $ENV{PCAP_ROOT}/lib
     NO_DEFAULT_PATH
   )
-  
-
-ELSE(EXISTS $ENV{PCAPDIR})
-  FIND_PATH(PCAP_INCLUDE_DIR 
+else()
+  find_path(PCAP_INCLUDE_DIR
     NAMES
-    pcap/pcap.h
-    pcap.h
+      pcap/pcap.h
+      pcap.h
+    HINTS
+      ${PCAP_ROOT}/include
+      $ENV{PCAP_ROOT}/include
   )
-  
-  FIND_LIBRARY(PCAP_LIBRARY
-    NAMES 
+  find_library(PCAP_LIBRARY
+    NAMES
       pcap
+    HINTS
+      ${PCAP_ROOT}/lib
+      $ENV{PCAP_ROOT}/lib
   )
-  
-ENDIF(EXISTS $ENV{PCAPDIR})
+endif()
 
-SET(PCAP_INCLUDE_DIRS ${PCAP_INCLUDE_DIR})
-SET(PCAP_LIBRARIES ${PCAP_LIBRARY})
+set(PCAP_INCLUDE_DIRS ${PCAP_INCLUDE_DIR})
+set(PCAP_LIBRARIES ${PCAP_LIBRARY})
 
-IF(PCAP_INCLUDE_DIRS)
-  MESSAGE(STATUS "Pcap include dirs set to ${PCAP_INCLUDE_DIRS}")
-ELSE(PCAP_INCLUDE_DIRS)
-  MESSAGE(FATAL " Pcap include dirs cannot be found")
-ENDIF(PCAP_INCLUDE_DIRS)
+if(PCAP_INCLUDE_DIRS)
+  message(STATUS "Pcap include dirs set to ${PCAP_INCLUDE_DIRS}")
+else()
+  message(FATAL " Pcap include dirs cannot be found")
+endif()
 
-IF(PCAP_LIBRARIES)
-  MESSAGE(STATUS "Pcap library set to ${PCAP_LIBRARIES}")
-ELSE(PCAP_LIBRARIES)
-  MESSAGE(FATAL "Pcap library cannot be found")
-ENDIF(PCAP_LIBRARIES)
+if(PCAP_LIBRARIES)
+  message(STATUS "Pcap library set to ${PCAP_LIBRARIES}")
+else()
+  message(FATAL "Pcap library cannot be found")
+endif()
 
 #Functions
-INCLUDE(CheckFunctionExists)
-SET(CMAKE_REQUIRED_INCLUDES ${PCAP_INCLUDE_DIRS})
-SET(CMAKE_REQUIRED_LIBRARIES ${PCAP_LIBRARIES})
-CHECK_FUNCTION_EXISTS("pcap_breakloop" HAVE_PCAP_BREAKLOOP)
-CHECK_FUNCTION_EXISTS("pcap_datalink_name_to_val" HAVE_PCAP_DATALINK_NAME_TO_VAL)
-CHECK_FUNCTION_EXISTS("pcap_datalink_val_to_name" HAVE_PCAP_DATALINK_VAL_TO_NAME)
-CHECK_FUNCTION_EXISTS("pcap_findalldevs" HAVE_PCAP_FINDALLDEVS)
-CHECK_FUNCTION_EXISTS("pcap_freecode" HAVE_PCAP_FREECODE)
-CHECK_FUNCTION_EXISTS("pcap_get_selectable_fd" HAVE_PCAP_GET_SELECTABLE_FD)
-CHECK_FUNCTION_EXISTS("pcap_lib_version" HAVE_PCAP_LIB_VERSION)
-CHECK_FUNCTION_EXISTS("pcap_list_datalinks" HAVE_PCAP_LIST_DATALINKS)
-CHECK_FUNCTION_EXISTS("pcap_open_dead" HAVE_PCAP_OPEN_DEAD)
-CHECK_FUNCTION_EXISTS("pcap_set_datalink" HAVE_PCAP_SET_DATALINK)
+include(CheckFunctionExists)
+set(CMAKE_REQUIRED_INCLUDES ${PCAP_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${PCAP_LIBRARIES})
+check_function_exists("pcap_breakloop" HAVE_PCAP_BREAKLOOP)
+check_function_exists("pcap_datalink_name_to_val" HAVE_PCAP_DATALINK_NAME_TO_VAL)
+check_function_exists("pcap_datalink_val_to_name" HAVE_PCAP_DATALINK_VAL_TO_NAME)
+check_function_exists("pcap_findalldevs" HAVE_PCAP_FINDALLDEVS)
+check_function_exists("pcap_freecode" HAVE_PCAP_FREECODE)
+check_function_exists("pcap_get_selectable_fd" HAVE_PCAP_GET_SELECTABLE_FD)
+check_function_exists("pcap_lib_version" HAVE_PCAP_LIB_VERSION)
+check_function_exists("pcap_list_datalinks" HAVE_PCAP_LIST_DATALINKS)
+check_function_exists("pcap_open_dead" HAVE_PCAP_OPEN_DEAD)
+check_function_exists("pcap_set_datalink" HAVE_PCAP_SET_DATALINK)
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(PCAP DEFAULT_MSG PCAP_INCLUDE_DIRS PCAP_LIBRARIES)
 
-#Is pcap found ?
-IF(PCAP_INCLUDE_DIRS AND PCAP_LIBRARIES)
-  SET( PCAP_FOUND true )
-ENDIF(PCAP_INCLUDE_DIRS AND PCAP_LIBRARIES)
+if(PCAP_FOUND AND NOT TARGET Pcap::pcap)
+    add_library(Pcap::pcap SHARED IMPORTED)
+    set_target_properties(Pcap::pcap PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${PCAP_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${PCAP_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${PCAP_LIBRARIES}"
+    )
+endif()
 
-
-MARK_AS_ADVANCED(
+mark_as_advanced(
   PCAP_LIBRARIES
   PCAP_INCLUDE_DIRS
 )

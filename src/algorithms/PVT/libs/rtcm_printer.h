@@ -34,10 +34,18 @@
 #ifndef GNSS_SDR_RTCM_PRINTER_H_
 #define GNSS_SDR_RTCM_PRINTER_H_
 
-#include "rtcm.h"
-#include <fstream>  // std::ofstream
+#include <cstdint>  // for int32_t
+#include <fstream>  // for std::ofstream
+#include <map>      // for std::map
 #include <memory>   // std::shared_ptr
 
+class Galileo_Ephemeris;
+class Glonass_Gnav_Ephemeris;
+class Glonass_Gnav_Utc_Model;
+class Gnss_Synchro;
+class Gps_CNAV_Ephemeris;
+class Gps_Ephemeris;
+class Rtcm;
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages
@@ -48,7 +56,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true);
+    Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name = true, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor.
@@ -59,6 +67,7 @@ public:
     bool Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     bool Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     bool Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
     /*!
      * \brief Prints L1-Only GLONASS RTK Observables
      * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred.
@@ -69,6 +78,7 @@ public:
      * \return true or false upon operation success
      */
     bool Print_Rtcm_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
     /*!
      * \brief Prints Extended L1-Only GLONASS RTK Observables
      * \details This GLONASS message type is used when only L1 data is present and bandwidth is very tight, often 1012 is used in such cases.
@@ -79,6 +89,7 @@ public:
      * \return true or false upon operation success
      */
     bool Print_Rtcm_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
     /*!
      * \brief Prints L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred
@@ -90,6 +101,7 @@ public:
      * \return true or false upon operation success
      */
     bool Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
+
     /*!
      * \brief Prints Extended L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is the most common observational message type, with L1/L2/SNR content.  This is one of the most common messages found.
@@ -102,8 +114,9 @@ public:
      */
     bool Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
-    bool Print_Rtcm_MT1019(const Gps_Ephemeris& gps_eph);      //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
-    bool Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph);  //<! Galileo Ephemeris, should be broadcast every 2 minutes
+    bool Print_Rtcm_MT1019(const Gps_Ephemeris& gps_eph);      //!< GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
+    bool Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph);  //!< Galileo Ephemeris, should be broadcast every 2 minutes
+
     /*!
      * \brief Prints GLONASS GNAV Ephemeris
      * \details This GLONASS message should be broadcast every 2 minutes
@@ -112,7 +125,7 @@ public:
      * \param utc_model GLONASS GNAV Clock Information broadcast in string 5
      * \return true or false upon operation success
      */
-    bool Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris& glo_gnav_eph, const Glonass_Gnav_Utc_Model& utc_model);
+    bool Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& utc_model);
 
     bool Print_Rtcm_MSM(uint32_t msm_number,
         const Gps_Ephemeris& gps_eph,
@@ -127,10 +140,11 @@ public:
         bool divergence_free,
         bool more_messages);
 
-    std::string print_MT1005_test();  //<!  For testing purposes
+    std::string print_MT1005_test();  //!<  For testing purposes
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
     uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
     uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
+
     /*!
      * \brief Locks time for logging given GLONASS GNAV Broadcast Ephemeris
      * \note Code added as part of GSoC 2017 program
@@ -142,16 +156,18 @@ public:
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
 private:
-    std::string rtcm_filename;           // String with the RTCM log filename
+    std::string rtcm_filename;  // String with the RTCM log filename
+    std::string rtcm_base_path;
     std::ofstream rtcm_file_descriptor;  // Output file stream for RTCM log file
     std::string rtcm_devname;
     uint16_t port;
     uint16_t station_id;
-    int32_t rtcm_dev_descriptor;                     // RTCM serial device descriptor (i.e. COM port)
-    int32_t init_serial(std::string serial_device);  //serial port control
+    int32_t rtcm_dev_descriptor;                            // RTCM serial device descriptor (i.e. COM port)
+    int32_t init_serial(const std::string& serial_device);  //serial port control
     void close_serial();
     std::shared_ptr<Rtcm> rtcm;
     bool Print_Message(const std::string& message);
+    bool d_rtcm_file_dump;
 };
 
 #endif

@@ -33,12 +33,12 @@
 #ifndef GNSS_SDR_GALILEO_E1_H_
 #define GNSS_SDR_GALILEO_E1_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
@@ -46,24 +46,29 @@ const double GALILEO_PI = 3.1415926535898;               //!< Pi as defined in G
 const double GALILEO_TWO_PI = 6.283185307179600;         //!< 2*Pi as defined in GALILEO ICD
 const double GALILEO_GM = 3.986004418e14;                //!< Geocentric gravitational constant[m^3/s^2]
 const double GALILEO_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Mean angular velocity of the Earth [rad/s]
-const double GALILEO_C_m_s = 299792458.0;                //!< The speed of light, [m/s]
-const double GALILEO_C_m_ms = 299792.4580;               //!< The speed of light, [m/ms]
+const double GALILEO_C_M_S = 299792458.0;                //!< The speed of light, [m/s]
+const double GALILEO_C_M_MS = 299792.4580;               //!< The speed of light, [m/ms]
 const double GALILEO_F = -4.442807309e-10;               //!< Constant, [s/(m)^(1/2)]
 
 // carrier and code frequencies
-const double Galileo_E1_FREQ_HZ = FREQ1;                  //!< Galileo E1 carrier frequency [Hz]
-const double Galileo_E1_CODE_CHIP_RATE_HZ = 1.023e6;      //!< Galileo E1 code rate [chips/s]
-const double Galileo_E1_CODE_PERIOD = 0.004;              //!< Galileo E1 code period [s]
-const int32_t Galileo_E1_CODE_PERIOD_MS = 4;              //!< Galileo E1 code period [ms]
-const double Galileo_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6;  //!< Galileo E1 sub-carrier 'a' rate [Hz]
-const double Galileo_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6;  //!< Galileo E1 sub-carrier 'b' rate [Hz]
-const double Galileo_E1_B_CODE_LENGTH_CHIPS = 4092.0;     //!< Galileo E1-B code length [chips]
-const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0;        //!< Galileo E1-B symbol rate [bits/second]
-const int32_t Galileo_E1_B_SAMPLES_PER_SYMBOL = 1;        //!< (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS
-const int32_t Galileo_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C secondary code length [chips]
-const int32_t Galileo_E1_NUMBER_OF_CODES = 50;
+const double GALILEO_E1_FREQ_HZ = FREQ1;                  //!< Galileo E1 carrier frequency [Hz]
+const double GALILEO_E1_CODE_CHIP_RATE_HZ = 1.023e6;      //!< Galileo E1 code rate [chips/s]
+const double GALILEO_E1_CODE_PERIOD = 0.004;              //!< Galileo E1 code period [s]
+const int32_t GALILEO_E1_CODE_PERIOD_MS = 4;              //!< Galileo E1 code period [ms]
+const double GALILEO_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6;  //!< Galileo E1 sub-carrier 'a' rate [Hz]
+const double GALILEO_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6;  //!< Galileo E1 sub-carrier 'b' rate [Hz]
+const double GALILEO_E1_B_CODE_LENGTH_CHIPS = 4092.0;     //!< Galileo E1-B code length [chips]
+const double GALILEO_E1_B_SYMBOL_RATE_BPS = 250.0;        //!< Galileo E1-B symbol rate [bits/second]
+const int32_t GALILEO_E1_B_SAMPLES_PER_SYMBOL = 1;        //!< (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS
+const int32_t GALILEO_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C secondary code length [chips]
+const int32_t GALILEO_E1_NUMBER_OF_CODES = 50;
 
-const double GALILEO_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
+
+//optimum parameters
+const uint32_t GALILEO_E1_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+
+
+const double GALILEO_STARTOFFSET_MS = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
 
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
@@ -74,7 +79,7 @@ const int32_t GALILEO_E1_HISTORY_DEEP = 100;
 const std::string GALILEO_INAV_PREAMBLE = {"0101100000"};
 
 const int32_t GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
-const double GALILEO_INAV_PAGE_PART_WITH_PREABLE_SECONDS = 2.0 + GALILEO_INAV_PREAMBLE_LENGTH_BITS * Galileo_E1_CODE_PERIOD;
+const double GALILEO_INAV_PAGE_PART_WITH_PREABLE_SECONDS = 2.0 + GALILEO_INAV_PREAMBLE_LENGTH_BITS * GALILEO_E1_CODE_PERIOD;
 const int32_t GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
 const int32_t GALILEO_INAV_PAGE_PART_SYMBOLS = 250;  //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
 const int32_t GALILEO_INAV_PAGE_SYMBOLS = 500;       //!< The complete Galileo INAV page length
@@ -88,219 +93,216 @@ const int32_t GALILEO_PAGE_TYPE_BITS = 6;
 const int32_t GALILEO_DATA_JK_BITS = 128;
 const int32_t GALILEO_DATA_FRAME_BITS = 196;
 const int32_t GALILEO_DATA_FRAME_BYTES = 25;
-const double GALILEO_E1_CODE_PERIOD = 0.004;
-const int32_t GALILEO_E1_CODE_PERIOD_MS = 4;
 
-const std::vector<std::pair<int32_t, int32_t>> type({{1, 6}});
-const std::vector<std::pair<int32_t, int32_t>> PAGE_TYPE_bit({{1, 6}});
-;
+const std::vector<std::pair<int32_t, int32_t>> TYPE({{1, 6}});
+const std::vector<std::pair<int32_t, int32_t>> PAGE_TYPE_BIT({{1, 6}});
 
 /*Page 1 - Word type 1: Ephemeris (1/4)*/
-const std::vector<std::pair<int32_t, int32_t>> IOD_nav_1_bit({{7, 10}});
-const std::vector<std::pair<int32_t, int32_t>> T0E_1_bit({{17, 14}});
-const double t0e_1_LSB = 60;
-const std::vector<std::pair<int32_t, int32_t>> M0_1_bit({{31, 32}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_1_BIT({{7, 10}});
+const std::vector<std::pair<int32_t, int32_t>> T0_E_1_BIT({{17, 14}});
+const int32_t T0E_1_LSB = 60;
+const std::vector<std::pair<int32_t, int32_t>> M0_1_BIT({{31, 32}});
 const double M0_1_LSB = PI_TWO_N31;
-const std::vector<std::pair<int32_t, int32_t>> e_1_bit({{63, 32}});
-const double e_1_LSB = TWO_N33;
-const std::vector<std::pair<int32_t, int32_t>> A_1_bit({{95, 32}});
-const double A_1_LSB_gal = TWO_N19;
+const std::vector<std::pair<int32_t, int32_t>> E_1_BIT({{63, 32}});
+const double E_1_LSB = TWO_N33;
+const std::vector<std::pair<int32_t, int32_t>> A_1_BIT({{95, 32}});
+const double A_1_LSB_GAL = TWO_N19;
 //last two bits are reserved
 
 
 /*Page 2 - Word type 2: Ephemeris (2/4)*/
-const std::vector<std::pair<int32_t, int32_t>> IOD_nav_2_bit({{7, 10}});
-const std::vector<std::pair<int32_t, int32_t>> OMEGA_0_2_bit({{17, 32}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_2_BIT({{7, 10}});
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_0_2_BIT({{17, 32}});
 const double OMEGA_0_2_LSB = PI_TWO_N31;
-const std::vector<std::pair<int32_t, int32_t>> i_0_2_bit({{49, 32}});
-const double i_0_2_LSB = PI_TWO_N31;
-const std::vector<std::pair<int32_t, int32_t>> omega_2_bit({{81, 32}});
-const double omega_2_LSB = PI_TWO_N31;
-const std::vector<std::pair<int32_t, int32_t>> iDot_2_bit({{113, 14}});
-const double iDot_2_LSB = PI_TWO_N43;
+const std::vector<std::pair<int32_t, int32_t>> I_0_2_BIT({{49, 32}});
+const double I_0_2_LSB = PI_TWO_N31;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_2_BIT({{81, 32}});
+const double OMEGA_2_LSB = PI_TWO_N31;
+const std::vector<std::pair<int32_t, int32_t>> I_DOT_2_BIT({{113, 14}});
+const double I_DOT_2_LSB = PI_TWO_N43;
 //last two bits are reserved
 
 
 /*Word type 3: Ephemeris (3/4) and SISA*/
-const std::vector<std::pair<int32_t, int32_t>> IOD_nav_3_bit({{7, 10}});
-const std::vector<std::pair<int32_t, int32_t>> OMEGA_dot_3_bit({{17, 24}});
-const double OMEGA_dot_3_LSB = PI_TWO_N43;
-const std::vector<std::pair<int32_t, int32_t>> delta_n_3_bit({{41, 16}});
-const double delta_n_3_LSB = PI_TWO_N43;
-const std::vector<std::pair<int32_t, int32_t>> C_uc_3_bit({{57, 16}});
-const double C_uc_3_LSB = TWO_N29;
-const std::vector<std::pair<int32_t, int32_t>> C_us_3_bit({{73, 16}});
-const double C_us_3_LSB = TWO_N29;
-const std::vector<std::pair<int32_t, int32_t>> C_rc_3_bit({{89, 16}});
-const double C_rc_3_LSB = TWO_N5;
-const std::vector<std::pair<int32_t, int32_t>> C_rs_3_bit({{105, 16}});
-const double C_rs_3_LSB = TWO_N5;
-const std::vector<std::pair<int32_t, int32_t>> SISA_3_bit({{121, 8}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_3_BIT({{7, 10}});
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_DOT_3_BIT({{17, 24}});
+const double OMEGA_DOT_3_LSB = PI_TWO_N43;
+const std::vector<std::pair<int32_t, int32_t>> DELTA_N_3_BIT({{41, 16}});
+const double DELTA_N_3_LSB = PI_TWO_N43;
+const std::vector<std::pair<int32_t, int32_t>> C_UC_3_BIT({{57, 16}});
+const double C_UC_3_LSB = TWO_N29;
+const std::vector<std::pair<int32_t, int32_t>> C_US_3_BIT({{73, 16}});
+const double C_US_3_LSB = TWO_N29;
+const std::vector<std::pair<int32_t, int32_t>> C_RC_3_BIT({{89, 16}});
+const double C_RC_3_LSB = TWO_N5;
+const std::vector<std::pair<int32_t, int32_t>> C_RS_3_BIT({{105, 16}});
+const double C_RS_3_LSB = TWO_N5;
+const std::vector<std::pair<int32_t, int32_t>> SISA_3_BIT({{121, 8}});
 
 
 /*Word type 4: Ephemeris (4/4) and Clock correction parameters*/
-const std::vector<std::pair<int32_t, int32_t>> IOD_nav_4_bit({{7, 10}});
-const std::vector<std::pair<int32_t, int32_t>> SV_ID_PRN_4_bit({{17, 6}});
-const std::vector<std::pair<int32_t, int32_t>> C_ic_4_bit({{23, 16}});
-const double C_ic_4_LSB = TWO_N29;
-const std::vector<std::pair<int32_t, int32_t>> C_is_4_bit({{39, 16}});
-const double C_is_4_LSB = TWO_N29;
-const std::vector<std::pair<int32_t, int32_t>> t0c_4_bit({{55, 14}});  //
-const double t0c_4_LSB = 60;
-const std::vector<std::pair<int32_t, int32_t>> af0_4_bit({{69, 31}});  //
-const double af0_4_LSB = TWO_N34;
-const std::vector<std::pair<int32_t, int32_t>> af1_4_bit({{100, 21}});  //
-const double af1_4_LSB = TWO_N46;
-const std::vector<std::pair<int32_t, int32_t>> af2_4_bit({{121, 6}});
-const double af2_4_LSB = TWO_N59;
-const std::vector<std::pair<int32_t, int32_t>> spare_4_bit({{127, 2}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_4_BIT({{7, 10}});
+const std::vector<std::pair<int32_t, int32_t>> SV_ID_PRN_4_BIT({{17, 6}});
+const std::vector<std::pair<int32_t, int32_t>> C_IC_4_BIT({{23, 16}});
+const double C_IC_4_LSB = TWO_N29;
+const std::vector<std::pair<int32_t, int32_t>> C_IS_4_BIT({{39, 16}});
+const double C_IS_4_LSB = TWO_N29;
+const std::vector<std::pair<int32_t, int32_t>> T0C_4_BIT({{55, 14}});  //
+const int32_t T0C_4_LSB = 60;
+const std::vector<std::pair<int32_t, int32_t>> AF0_4_BIT({{69, 31}});  //
+const double AF0_4_LSB = TWO_N34;
+const std::vector<std::pair<int32_t, int32_t>> AF1_4_BIT({{100, 21}});  //
+const double AF1_4_LSB = TWO_N46;
+const std::vector<std::pair<int32_t, int32_t>> AF2_4_BIT({{121, 6}});
+const double AF2_4_LSB = TWO_N59;
+const std::vector<std::pair<int32_t, int32_t>> SPARE_4_BIT({{127, 2}});
 //last two bits are reserved
 
 
 /*Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
 /*Ionospheric correction*/
 /*Az*/
-const std::vector<std::pair<int32_t, int32_t>> ai0_5_bit({{7, 11}});  //
-const double ai0_5_LSB = TWO_N2;
-const std::vector<std::pair<int32_t, int32_t>> ai1_5_bit({{18, 11}});  //
-const double ai1_5_LSB = TWO_N8;
-const std::vector<std::pair<int32_t, int32_t>> ai2_5_bit({{29, 14}});  //
-const double ai2_5_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> AI0_5_BIT({{7, 11}});  //
+const double AI0_5_LSB = TWO_N2;
+const std::vector<std::pair<int32_t, int32_t>> AI1_5_BIT({{18, 11}});  //
+const double AI1_5_LSB = TWO_N8;
+const std::vector<std::pair<int32_t, int32_t>> AI2_5_BIT({{29, 14}});  //
+const double AI2_5_LSB = TWO_N15;
 /*Ionospheric disturbance flag*/
-const std::vector<std::pair<int32_t, int32_t>> Region1_5_bit({{43, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> Region2_5_bit({{44, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> Region3_5_bit({{45, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> Region4_5_bit({{46, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> Region5_5_bit({{47, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> BGD_E1E5a_5_bit({{48, 10}});  //
-const double BGD_E1E5a_5_LSB = TWO_N32;
-const std::vector<std::pair<int32_t, int32_t>> BGD_E1E5b_5_bit({{58, 10}});  //
-const double BGD_E1E5b_5_LSB = TWO_N32;
-const std::vector<std::pair<int32_t, int32_t>> E5b_HS_5_bit({{68, 2}});   //
-const std::vector<std::pair<int32_t, int32_t>> E1B_HS_5_bit({{70, 2}});   //
-const std::vector<std::pair<int32_t, int32_t>> E5b_DVS_5_bit({{72, 1}});  //
-const std::vector<std::pair<int32_t, int32_t>> E1B_DVS_5_bit({{73, 1}});  //
+const std::vector<std::pair<int32_t, int32_t>> REGION1_5_BIT({{43, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION2_5_BIT({{44, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION3_5_BIT({{45, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION4_5_BIT({{46, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION5_5_BIT({{47, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> BGD_E1_E5A_5_BIT({{48, 10}});  //
+const double BGD_E1_E5A_5_LSB = TWO_N32;
+const std::vector<std::pair<int32_t, int32_t>> BGD_E1_E5B_5_BIT({{58, 10}});  //
+const double BGD_E1_E5B_5_LSB = TWO_N32;
+const std::vector<std::pair<int32_t, int32_t>> E5B_HS_5_BIT({{68, 2}});    //
+const std::vector<std::pair<int32_t, int32_t>> E1_B_HS_5_BIT({{70, 2}});   //
+const std::vector<std::pair<int32_t, int32_t>> E5B_DVS_5_BIT({{72, 1}});   //
+const std::vector<std::pair<int32_t, int32_t>> E1_B_DVS_5_BIT({{73, 1}});  //
 /*GST*/
-const std::vector<std::pair<int32_t, int32_t>> WN_5_bit({{74, 12}});
-const std::vector<std::pair<int32_t, int32_t>> TOW_5_bit({{86, 20}});
-const std::vector<std::pair<int32_t, int32_t>> spare_5_bit({{106, 23}});
+const std::vector<std::pair<int32_t, int32_t>> WN_5_BIT({{74, 12}});
+const std::vector<std::pair<int32_t, int32_t>> TOW_5_BIT({{86, 20}});
+const std::vector<std::pair<int32_t, int32_t>> SPARE_5_BIT({{106, 23}});
 
 
 /* Page 6 */
-const std::vector<std::pair<int32_t, int32_t>> A0_6_bit({{7, 32}});
+const std::vector<std::pair<int32_t, int32_t>> A0_6_BIT({{7, 32}});
 const double A0_6_LSB = TWO_N30;
-const std::vector<std::pair<int32_t, int32_t>> A1_6_bit({{39, 24}});
+const std::vector<std::pair<int32_t, int32_t>> A1_6_BIT({{39, 24}});
 const double A1_6_LSB = TWO_N50;
-const std::vector<std::pair<int32_t, int32_t>> Delta_tLS_6_bit({{63, 8}});
-const std::vector<std::pair<int32_t, int32_t>> t0t_6_bit({{71, 8}});
-const double t0t_6_LSB = 3600;
-const std::vector<std::pair<int32_t, int32_t>> WNot_6_bit({{79, 8}});
-const std::vector<std::pair<int32_t, int32_t>> WN_LSF_6_bit({{87, 8}});
-const std::vector<std::pair<int32_t, int32_t>> DN_6_bit({{95, 3}});
-const std::vector<std::pair<int32_t, int32_t>> Delta_tLSF_6_bit({{98, 8}});
-const std::vector<std::pair<int32_t, int32_t>> TOW_6_bit({{106, 20}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_T_LS_6_BIT({{63, 8}});
+const std::vector<std::pair<int32_t, int32_t>> T0T_6_BIT({{71, 8}});
+const int32_t T0T_6_LSB = 3600;
+const std::vector<std::pair<int32_t, int32_t>> W_NOT_6_BIT({{79, 8}});
+const std::vector<std::pair<int32_t, int32_t>> WN_LSF_6_BIT({{87, 8}});
+const std::vector<std::pair<int32_t, int32_t>> DN_6_BIT({{95, 3}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_T_LSF_6_BIT({{98, 8}});
+const std::vector<std::pair<int32_t, int32_t>> TOW_6_BIT({{106, 20}});
 
 
 /* Page 7 */
-const std::vector<std::pair<int32_t, int32_t>> IOD_a_7_bit({{7, 4}});
-const std::vector<std::pair<int32_t, int32_t>> WN_a_7_bit({{11, 2}});
-const std::vector<std::pair<int32_t, int32_t>> t0a_7_bit({{13, 10}});
-const double t0a_7_LSB = 600;
-const std::vector<std::pair<int32_t, int32_t>> SVID1_7_bit({{23, 6}});
-const std::vector<std::pair<int32_t, int32_t>> DELTA_A_7_bit({{29, 13}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_A_7_BIT({{7, 4}});
+const std::vector<std::pair<int32_t, int32_t>> WN_A_7_BIT({{11, 2}});
+const std::vector<std::pair<int32_t, int32_t>> T0A_7_BIT({{13, 10}});
+const int32_t T0A_7_LSB = 600;
+const std::vector<std::pair<int32_t, int32_t>> SVI_D1_7_BIT({{23, 6}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_A_7_BIT({{29, 13}});
 const double DELTA_A_7_LSB = TWO_N9;
-const std::vector<std::pair<int32_t, int32_t>> e_7_bit({{42, 11}});
-const double e_7_LSB = TWO_N16;
-const std::vector<std::pair<int32_t, int32_t>> omega_7_bit({{53, 16}});
-const double omega_7_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> delta_i_7_bit({{69, 11}});
-const double delta_i_7_LSB = TWO_N14;
-const std::vector<std::pair<int32_t, int32_t>> Omega0_7_bit({{80, 16}});
-const double Omega0_7_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> Omega_dot_7_bit({{96, 11}});
-const double Omega_dot_7_LSB = TWO_N33;
-const std::vector<std::pair<int32_t, int32_t>> M0_7_bit({{107, 16}});
+const std::vector<std::pair<int32_t, int32_t>> E_7_BIT({{42, 11}});
+const double E_7_LSB = TWO_N16;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_7_BIT({{53, 16}});
+const double OMEGA_7_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> DELTA_I_7_BIT({{69, 11}});
+const double DELTA_I_7_LSB = TWO_N14;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA0_7_BIT({{80, 16}});
+const double OMEGA0_7_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_DOT_7_BIT({{96, 11}});
+const double OMEGA_DOT_7_LSB = TWO_N33;
+const std::vector<std::pair<int32_t, int32_t>> M0_7_BIT({{107, 16}});
 const double M0_7_LSB = TWO_N15;
 
 
 /* Page 8 */
-const std::vector<std::pair<int32_t, int32_t>> IOD_a_8_bit({{7, 4}});
-const std::vector<std::pair<int32_t, int32_t>> af0_8_bit({{11, 16}});
-const double af0_8_LSB = TWO_N19;
-const std::vector<std::pair<int32_t, int32_t>> af1_8_bit({{27, 13}});
-const double af1_8_LSB = TWO_N38;
-const std::vector<std::pair<int32_t, int32_t>> E5b_HS_8_bit({{40, 2}});
-const std::vector<std::pair<int32_t, int32_t>> E1B_HS_8_bit({{42, 2}});
-const std::vector<std::pair<int32_t, int32_t>> SVID2_8_bit({{44, 6}});
-const std::vector<std::pair<int32_t, int32_t>> DELTA_A_8_bit({{50, 13}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_A_8_BIT({{7, 4}});
+const std::vector<std::pair<int32_t, int32_t>> AF0_8_BIT({{11, 16}});
+const double AF0_8_LSB = TWO_N19;
+const std::vector<std::pair<int32_t, int32_t>> AF1_8_BIT({{27, 13}});
+const double AF1_8_LSB = TWO_N38;
+const std::vector<std::pair<int32_t, int32_t>> E5B_HS_8_BIT({{40, 2}});
+const std::vector<std::pair<int32_t, int32_t>> E1_B_HS_8_BIT({{42, 2}});
+const std::vector<std::pair<int32_t, int32_t>> SVI_D2_8_BIT({{44, 6}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_A_8_BIT({{50, 13}});
 const double DELTA_A_8_LSB = TWO_N9;
-const std::vector<std::pair<int32_t, int32_t>> e_8_bit({{63, 11}});
-const double e_8_LSB = TWO_N16;
-const std::vector<std::pair<int32_t, int32_t>> omega_8_bit({{74, 16}});
-const double omega_8_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> delta_i_8_bit({{90, 11}});
-const double delta_i_8_LSB = TWO_N14;
-const std::vector<std::pair<int32_t, int32_t>> Omega0_8_bit({{101, 16}});
-const double Omega0_8_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> Omega_dot_8_bit({{117, 11}});
-const double Omega_dot_8_LSB = TWO_N33;
+const std::vector<std::pair<int32_t, int32_t>> E_8_BIT({{63, 11}});
+const double E_8_LSB = TWO_N16;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_8_BIT({{74, 16}});
+const double OMEGA_8_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> DELTA_I_8_BIT({{90, 11}});
+const double DELTA_I_8_LSB = TWO_N14;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA0_8_BIT({{101, 16}});
+const double OMEGA0_8_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_DOT_8_BIT({{117, 11}});
+const double OMEGA_DOT_8_LSB = TWO_N33;
 
 
 /* Page 9 */
-const std::vector<std::pair<int32_t, int32_t>> IOD_a_9_bit({{7, 4}});
-const std::vector<std::pair<int32_t, int32_t>> WN_a_9_bit({{11, 2}});
-const std::vector<std::pair<int32_t, int32_t>> t0a_9_bit({{13, 10}});
-const double t0a_9_LSB = 600;
-const std::vector<std::pair<int32_t, int32_t>> M0_9_bit({{23, 16}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_A_9_BIT({{7, 4}});
+const std::vector<std::pair<int32_t, int32_t>> WN_A_9_BIT({{11, 2}});
+const std::vector<std::pair<int32_t, int32_t>> T0A_9_BIT({{13, 10}});
+const int32_t T0A_9_LSB = 600;
+const std::vector<std::pair<int32_t, int32_t>> M0_9_BIT({{23, 16}});
 const double M0_9_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> af0_9_bit({{39, 16}});
-const double af0_9_LSB = TWO_N19;
-const std::vector<std::pair<int32_t, int32_t>> af1_9_bit({{55, 13}});
-const double af1_9_LSB = TWO_N38;
-const std::vector<std::pair<int32_t, int32_t>> E5b_HS_9_bit({{68, 2}});
-const std::vector<std::pair<int32_t, int32_t>> E1B_HS_9_bit({{70, 2}});
-const std::vector<std::pair<int32_t, int32_t>> SVID3_9_bit({{72, 6}});
-const std::vector<std::pair<int32_t, int32_t>> DELTA_A_9_bit({{78, 13}});
+const std::vector<std::pair<int32_t, int32_t>> AF0_9_BIT({{39, 16}});
+const double AF0_9_LSB = TWO_N19;
+const std::vector<std::pair<int32_t, int32_t>> AF1_9_BIT({{55, 13}});
+const double AF1_9_LSB = TWO_N38;
+const std::vector<std::pair<int32_t, int32_t>> E5B_HS_9_BIT({{68, 2}});
+const std::vector<std::pair<int32_t, int32_t>> E1_B_HS_9_BIT({{70, 2}});
+const std::vector<std::pair<int32_t, int32_t>> SVI_D3_9_BIT({{72, 6}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_A_9_BIT({{78, 13}});
 const double DELTA_A_9_LSB = TWO_N9;
-const std::vector<std::pair<int32_t, int32_t>> e_9_bit({{91, 11}});
-const double e_9_LSB = TWO_N16;
-const std::vector<std::pair<int32_t, int32_t>> omega_9_bit({{102, 16}});
-const double omega_9_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> delta_i_9_bit({{118, 11}});
-const double delta_i_9_LSB = TWO_N14;
+const std::vector<std::pair<int32_t, int32_t>> E_9_BIT({{91, 11}});
+const double E_9_LSB = TWO_N16;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_9_BIT({{102, 16}});
+const double OMEGA_9_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> DELTA_I_9_BIT({{118, 11}});
+const double DELTA_I_9_LSB = TWO_N14;
 
 
 /* Page 10 */
-const std::vector<std::pair<int32_t, int32_t>> IOD_a_10_bit({{7, 4}});
-const std::vector<std::pair<int32_t, int32_t>> Omega0_10_bit({{11, 16}});
-const double Omega0_10_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> Omega_dot_10_bit({{27, 11}});
-const double Omega_dot_10_LSB = TWO_N33;
-const std::vector<std::pair<int32_t, int32_t>> M0_10_bit({{38, 16}});
+const std::vector<std::pair<int32_t, int32_t>> IOD_A_10_BIT({{7, 4}});
+const std::vector<std::pair<int32_t, int32_t>> OMEGA0_10_BIT({{11, 16}});
+const double OMEGA0_10_LSB = TWO_N15;
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_DOT_10_BIT({{27, 11}});
+const double OMEGA_DOT_10_LSB = TWO_N33;
+const std::vector<std::pair<int32_t, int32_t>> M0_10_BIT({{38, 16}});
 const double M0_10_LSB = TWO_N15;
-const std::vector<std::pair<int32_t, int32_t>> af0_10_bit({{54, 16}});
-const double af0_10_LSB = TWO_N19;
-const std::vector<std::pair<int32_t, int32_t>> af1_10_bit({{70, 13}});
-const double af1_10_LSB = TWO_N38;
-const std::vector<std::pair<int32_t, int32_t>> E5b_HS_10_bit({{83, 2}});
-const std::vector<std::pair<int32_t, int32_t>> E1B_HS_10_bit({{85, 2}});
-const std::vector<std::pair<int32_t, int32_t>> A_0G_10_bit({{87, 16}});
+const std::vector<std::pair<int32_t, int32_t>> AF0_10_BIT({{54, 16}});
+const double AF0_10_LSB = TWO_N19;
+const std::vector<std::pair<int32_t, int32_t>> AF1_10_BIT({{70, 13}});
+const double AF1_10_LSB = TWO_N38;
+const std::vector<std::pair<int32_t, int32_t>> E5B_HS_10_BIT({{83, 2}});
+const std::vector<std::pair<int32_t, int32_t>> E1_B_HS_10_BIT({{85, 2}});
+const std::vector<std::pair<int32_t, int32_t>> A_0_G_10_BIT({{87, 16}});
 const double A_0G_10_LSB = TWO_N35;
-const std::vector<std::pair<int32_t, int32_t>> A_1G_10_bit({{103, 12}});
+const std::vector<std::pair<int32_t, int32_t>> A_1_G_10_BIT({{103, 12}});
 const double A_1G_10_LSB = TWO_N51;
-const std::vector<std::pair<int32_t, int32_t>> t_0G_10_bit({{115, 8}});
-const double t_0G_10_LSB = 3600;
-const std::vector<std::pair<int32_t, int32_t>> WN_0G_10_bit({{123, 6}});
+const std::vector<std::pair<int32_t, int32_t>> T_0_G_10_BIT({{115, 8}});
+const int32_t T_0_G_10_LSB = 3600;
+const std::vector<std::pair<int32_t, int32_t>> WN_0_G_10_BIT({{123, 6}});
 
 
 /* Page 0 */
-const std::vector<std::pair<int32_t, int32_t>> Time_0_bit({{7, 2}});
-const std::vector<std::pair<int32_t, int32_t>> WN_0_bit({{97, 12}});
-const std::vector<std::pair<int32_t, int32_t>> TOW_0_bit({{109, 20}});
+const std::vector<std::pair<int32_t, int32_t>> TIME_0_BIT({{7, 2}});
+const std::vector<std::pair<int32_t, int32_t>> WN_0_BIT({{97, 12}});
+const std::vector<std::pair<int32_t, int32_t>> TOW_0_BIT({{109, 20}});
 
 
 // Galileo E1 primary codes
-const std::string Galileo_E1_B_PRIMARY_CODE[Galileo_E1_NUMBER_OF_CODES] = {
+const std::string GALILEO_E1_B_PRIMARY_CODE[GALILEO_E1_NUMBER_OF_CODES] = {
     "F5D710130573541B9DBD4FD9E9B20A0D59D144C54BC7935539D2E75810FB51E494093A0A19DD79C70C5A98E5657AA578097777E86BCC4651CC72F2F974DC766E07AEA3D0B557EF42FF57E6A58E805358CE9257669133B18F80FDBDFB38C5524C7FB1DE079842482990DF58F72321D9201F8979EAB159B2679C9E95AA6D53456C0DF75C2B4316D1E2309216882854253A1FA60CA2C94ECE013E2A8C943341E7D9E5A8464B3AD407E0AE465C3E3DD1BE60A8C3D50F831536401E776BE02A6042FC4A27AF653F0CFC4D4D013F115310788D68CAEAD3ECCCC5330587EB3C22A1459FC8E6FCCE9CDE849A5205E70C6D66D125814D698DD0EEBFEAE52CC65C5C84EEDF207379000E169D318426516AC5D1C31F2E18A65E07AE6E33FDD724B13098B3A444688389EFBBB5EEAB588742BB083B679D42FB26FF77919EAB21DE0389D9997498F967AE05AF0F4C7E177416E18C4D5E6987ED3590690AD127D872F14A8F4903A12329732A9768F82F295BEE391879293E3A97D51435A7F03ED7FBE275F102A83202DC3DE94AF4C712E9D006D182693E9632933E6EB773880CF147B922E74539E4582F79E39723B4C80E42EDCE4C08A8D02221BAE6D17734817D5B531C0D3C1AE723911F3FFF6AAC02E97FEA69E376AF4761E6451CA61FDB2F9187642EFCD63A09AAB680770C1593EEDD4FF4293BFFD6DD2C3367E85B14A654C834B6699421A",  // 01
     "96B856A629F581D1344FEF597835FE60434625D077ECF0D95FBE1155EA0431979E5AFF544AF591A332FDAEF98AB1EDD847A73F3AF15AAEE7E9A05C9D82C59EC325EF4CF264B8ADF2A8E8BA459354CB4B415CC50BF239ADBC31B3A9C87B0843CF3B9E6D646BA43F866276B053826F3A2334CC5E2EFB9F8F195B382E75EEA63F58A06B3F82A3B5C77C1800FD9498F803E524435B321210BB84690BED0BBBE16D363B3A90656A73720E27008852FB7DACC8284411B177728D9527C560859084A395A6F11A96AD9DB6B43E00642B000ED12BFD967868EAB1108552CD4FC89FBC408ACE7678C381EC91DD000319124EB5D5EF52C4CAC9AADEE2FA045C16CE492D7F43743CA77924C78696FCBF2F9F7F36D8E623752200C6FCBBD71ABBB6877F3C5D6E6740AB0389458A6B66440858B2D383244E853646FE2714211DEA9E6196252815BB704A20BFE556AC474F8998944E0CABBBE21A6400B87BFDCF937D12B2821D59298AF4AD378F0F42BD8C41693B8D993CF37C8B478F3BB5D33AD2A9FA24AD7B8FA895FDBC04964192F7BA3FF74E0E3A435B5DFE042E3115CACF29624C0645E9C917534A2EBC1F5665E4E1B1BC56208DBCD8A27CCB6474D5D0E20CA4072C960E5ACE41BDA3770DF3B681F2B318F6F8E1CB17C2857350FB6009AED665E13B2780D79217F73FAC7A8A48048DB0FB8A8A5007CDDC9A7B2DA8257C99F1CB605A18204",
     "E57DE19A3E4A8C122FCB1DD6584B3D2DAE364D800F9C5A9E957B38F624CBD3ACC58FA3ED070B5E44857CCB813FBC0BB83B5D157C6C562422E5963CC4DD753C45B0264F8E136A0F1774D77A543E44D51EF8C6B9408B6E3B5CEE1347A94F13ECDC94DC764976E5A50B4CB0AE7557553B47EDFE03EC2CD32EA8D125A341E1EDFC77E75330D6E7B23DC838EBCE7E5567F5B8C80C3D15E7404B4E10F0BEB0C69626A814AF91334199864FC77E0FF548DC2A6FA6A71C3C0561F2B085CC05E8512E27B9DBA60B93D114B87935776C8E9A67905C429D48BF3AB1B0A56FAFBFD5D9C8D8C8A9E5918BFF273CF5E8664FF2B90314BDBFDAD5AB8C22A0E45C104ECE75EA43FE9BDCE306A5A28AE464628163D249D8056005F1A900951808CC8620F81768153436F741667A8E271DD986C7A1E5046FCC74C7CEBBF9A1296D6CF0B2FF85BE412D87214BB368DFF462AD649D7324A117252311C664D33E4DAFBD830FBCEB6EFBDD7391D4BADA7A775FD1949D981F619655DB3C22BAC34E5AE41222905C0C7E80D6EA28471EC0468756531C09A471EDBE200472E78F1701FEE96E5769A9893C0F11E7906B064442E06E21ED8B0D70AF288690C532A2D03B373E1E0085F62F7AAA658B569C5184E3DDC40ECAA88B887118601691892F9F55E2DE79E49DFF11D434C2BA3AA6447522A7C99DC215CAD2ED0114ED62CBDAE9D315E48AE14D2014B7F8E",
@@ -353,7 +355,7 @@ const std::string Galileo_E1_B_PRIMARY_CODE[Galileo_E1_NUMBER_OF_CODES] = {
     "97051FC67ACA30E8AEE73D3A8CF38BB13524D4E0EBD9BE68398C7C16227CABB1D0B0A0ABE7B6384ABA02905BA0C3C7363599D059C7B4C99DB165CD14FA12FA7912449CA7DD5E346D8010C85A757382270DAD15BA3CE36A76EF55F81A1E80BF366B37FE3A88EC722028C25E234E624040450A99CD808F942568AA7133981D72E7F2928894670AD5399482DF1B90E7E64062F830B736C79C30F36281495C76699CD48404673FA334F042F9E0E67DD7F3853BF71ABEAF6A9A5546855E840CE42B224D8F6490C6CE5FC02EBAF4FFC390107058F54CD635D4A7F2878099C1EF495750E6921BE2F39AD808C4210F287319F811A254CEF8CF153FC50AB2F3D694A530949E5F578D075DB96DDCF2BB90ED3DE09D9CA8E08662FD8982741DE1CE0A6B64C3D3D5004B5C04B2B0DFD976A20FACC94D1762D41EE03B40D2CF367612812EF4CC41D1BFE9CEB51AE3A22AF1BE7B85A057D3048D0E73FA0FDAF1119EFD76F0A41BE63128B22D64A5553E9549D411483BBCA1483EF30CF6A6D317AD2C7973EFA6D4C1121F703D2F48FCDA3177AD450D75D2A28D2C244AEA13F0E60AEED8ACBAB444D400DF5E280DB799B2D9A984DF1E2567D39D1DE58EF78CA6B4D8BC172B07DCB02D156CA96EEFAC69E556CFCE0AAB617C7FBB8C34871C1D35E74B7BD307D3F2E424C7A9AD676A1A69E0FE735EA50887A1DFAE6CA2FE4460FC7EF323ADE493020"  // 50
 };
 
-const std::string Galileo_E1_C_PRIMARY_CODE[Galileo_E1_NUMBER_OF_CODES] = {
+const std::string GALILEO_E1_C_PRIMARY_CODE[GALILEO_E1_NUMBER_OF_CODES] = {
     "B39340CA1C817D81EF4FAE4E95BF3504A7709089FB48560E9E3EF802180E85EB2194E05902C6C4C52021FEB7EC64FD416BCEBC8E39D64A4B5EE345291911AB8204A888C25B1CD3D9342A56C538636D3EAB957037D09E879AE5F3A39834FBB84A3D8D5090D7814246B62E9CA68533D2EC403B4FB9488467FF9758B0D15A8CEF89187A1D5897880040B6C3C5244E85A2AD14BCF2F5ABC44A7B1D4A87E8BDA05766218773ED4F70F8D1D07CBB1E8CA6298E64EE6DC5886D37495BA2EDB3E0B0B68AD9F300310B88898DDEEFD484538C31A9BCAA76ECAD0C16607D32189058B0862EE9D70CEA9D304755CE8037BA4C46C2573181748A212E4B2BDD04F9BC240518273DC17CBAFF21A03E9120FA7DCA18D56DD1D9A7E510C90CF219104385F531F2EFAFD185ECB6B911F9B7809D98D86F15516FFDDBE9BD1CF8662EB777C3F94EA3F962D7B79449FAAD39935429E92CAE5637E9BCF4E94D413D27934952409AB536BE4055AFBC4330CD1E4B5509EFE5F8EFC9ECBE9EF377DE7E37C479BB9D3EE7745E4609B0A6D2C5D92EB3C9E2278C1F2221FF907596AA5E096ACF8990EBA907E43AD320F8019CB6355A2BA8670EE5A4F463E8E56F8F1D3E7F4922510FB668E32C4CF23AD8496399638B095B47833E0CBB34977EB3E4242EAF870D86660D6A73F83E45D6E8A41EDCA3815079649544597C5C43B6C93FEBAD5700D22EDAF431FD340",
     "A64F94BB47BD4033C76D4924305907EC1F618B43C7535F3CFC093E5AF5DDD5C4339F3BB6D835B5C2C2053CD3D5693368D4E1A7CAC59425D1FD96809C67285CFD3FC05B01053CB0773221D7205778022F487BF99D1650566BE287FD7AE882AA8E8F52E5D4E3C0C2F971C9FF70AA378691EBD8ADE45CF213822D09FD05243F9726F6C69893845E57C37A7643E16B770E26F431FF69D437271905D270EB85D8D229D7D87662121F0BEEB1E895ED9589A9CF5833408A04197AC9025D8570AD9B75DB7E192EA0A089504996E9DC652975D83633619CFF80667D8B519536B3475248BA8213C8A4C66DE69B4B3774BF9142425C57F34A27B1E288119E3FFCC6AF6A21087F9394F09DDFBD42F32D059B8CD4104A519BA640765D5CDE490E62F10E695FBFD33CBC9D2208A532C8EC25DA28B8CC1B6850AB43D9B5C00B6E74B7A148791AB07B328D347058C7E6233E18C5ED172C9F9E9ACF29D913E2A1614BFC0893D4967ED033B2B9AE6B51F908F1CED57C14FEEA85CD4D9711216BE7F79FA6721B7DCCA033C80127AC6E5FCF58EB4005EC24CB4886D787355362D5E7031B9B2AC2A86D730AD734181E723A811FF510A4DF868001973FE83288D78E6F9B9441DAF5BE2974A2848FD917C3BCD346A431922246EC852E4AAD467E60C15D61DD3BF4A207BB57DB45DCADEFE3210BE74B9DACC918A394469F2E2C95AD1E211947948FE24F5E4",
     "FD1F6976002C39C87187C44E3D224ED4DF0B67750105944C651A5E57798F168A136AC0FB5979C4E847A82B20A2E6C45DB42EF2B930A80D3257BCCC53EDA966F5DCD9AD47CFB226EED9B62A874E9F6404D4087798A1005F4131171D3A47907A3CD602B83DABE094D2CB031867DF4595F3ED59FD8C4D76EDEEE59E422CE5C7D0A5F720BE94FA24DF05F758348EADD5EFE9197C6BB2292E2B14DB8C6DB24AA94C5FF0F5106D2B566058D32C58B63A150784F7B02478D9973DD4CFD2E84059AE0F4F1320754B7EE83F04A51C67EFFC2EB1C301C0C58DBAEBE95474E3484A76500103C14C40BB0B7D3A04D8BDABB605C1EF9FD4A6564934DEC50BD5878243AEE80F9796EED70CE1B1E8B55725DF76472D12D4A7A487989F42E6705818B1F7E149E97153A7B05A82FA3FBE51763E61171A4E12931472E94CCBA74CC09483DF93623FC60945070FDDF3A00B561650427E4BD64D675B1EB398B35EF057A66FD0B48EDBABBDCD57C32ABAE46F5CDD0CB1FCF17765258236F3DE40BD5D0A3C5C978D81DEB07367AB20B2CAA9834B9576161C4F20FB9C184A01DC9021A4E92B71333354E05BBEA9015E5AC4C66312E8B79F0B92279AC7EF1936BCC30802B83DB3D113BEF64452CAD7ACF6674FDA44023A661019841A101BE80FDA4E3210AE774E433A9ABD97F2755259AECE21F7A8C3B1A3D471F874D2EEC85B9B21BC0C2E2EC9016F847C6",
@@ -405,6 +407,6 @@ const std::string Galileo_E1_C_PRIMARY_CODE[Galileo_E1_NUMBER_OF_CODES] = {
     "CD7AAC98501F29507EA4E0183E8A40D2E5117E47BB5D18D01A3732DE4C821DFE86521CBEA7DB29BE1148BD544ECC681689BCD1B41EAF755310B7659342F8EE11CB41550CC30E566E192796B66C1A83C0B28BACCFA6C393043A0A2CB89712BC1CCB174DE58E66896AF39C1CEED1E05B0435F8CF6FD920D100F51584FE24879987399481DBF27DDB6286B6353919E552E669290CE02AB4CD5113D7F484229F379C7332767EC69E4336439B05DE1C1E3563DD303A4F580BFF20A40E49CB0822F715ED0221EBCDB5DBAD751124B1715E82F37488265135B6C8BBCF4F801ECC4D3525FF189493AD4EFF0C042B070C4CA8FB1FDF43D79F06A6E4E3D35D7B07D4B728D5DC54EEDACBBBA1EDDCDC07ADF7DFCFEF835E44DF1FF66DAF2A7BAEBE218AC3B15E183044D6A8A89B3C101B40BED97ED5DF93BBC1B84931D56B8C822A6D058AC74CFA4C85D8B456698E82D5B7574C17B041E5F4BEED09F75012355CBC322B822C63F10C18A8F279E9A0E18E1FEF183D23E13894E31F6D046956FE8A647558228F6D4D6910151EC03937876B6ED7A078D33DAEB3F2239353BB8181E62B286BBC41588DE10F478A5CE5B508F205A41820356767B0A0ED4B8DB9EFE348362E9A90D6C30218B295B338B51C09239D02FC8A1E7DAAAB60AC37F5E67CFC88EEF69567B5C81A03B449F4ED38B9D295A36AA3503173F6F6F66D93CE72D753076040FACDE",
     "ADDCEDB50E907D20E826E6E8A0D30C20C74B2DF204EA784BAE9F618CAE33A3C937729DF9CB10BA2A4C33E0182A37200C0CC509729D828B8A2A20F283AC4F9306596684EA3FB5492A4C9F2DB459E7531C9F9C0950E7D9E93B3EE5912AE7E39AC8F4EC14B18F24E325003F477E347C5AC1B67CDB11AF3BBBBCD0AC3703024B5767AA67A208254F798684BFD1D3EACD757EEC77254950A146620400DB95E694574F739A991EBA771EBBDFF1056BB39A77DBE0636A032E17141332F951C57C6C90F348F165E3ABDD60D429D5D6BEC7E3E3463806F819EB2D212B3528A5EDE51F235AD100A35E890955F8A1DC51FDCB53EABCA2540997DD054C1F5B29462995B876B44D085904E55E1B838BEF600A992EB49CE078DF75AF3D0F137685AC0D07F0BE1EB87B63A41E74DDE869C8A683BDE60AF5D77FF18F7137495BCEFD0ED28F62F9C3E25D332B5F861D999FCDC0B4851A984A4DBB53401FD40351ADA4335C702BCC8D900C737507B990BDDBE91D201E3A0946DC968D43FD10D04B0B76667FF5B4291C2124B0124C6B710A6D1BCFAEB016B9DEEB0F7A4FE044CA4EA0CCD84B7682617C3A545071EC295B0663B3F577D562DE1D9DD80DE6A1EFD6D5991EB5246F1597B86D0E9A90CF6DB0EB2B8E7BAE9431E567F01AA98502C773742246467ABF911A91A51F6C1B9E0C3233DC1A37D17DB91A5F0F661B0EB5886964456C7818601BD0C"};
 
-const std::string Galileo_E1_C_SECONDARY_CODE = "0011100000001010110110010";
+const std::string GALILEO_E1_C_SECONDARY_CODE = "0011100000001010110110010";
 
 #endif /* GNSS_SDR_GALILEO_E1_H_ */

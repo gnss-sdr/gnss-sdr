@@ -30,20 +30,20 @@
  */
 
 #include "direct_resampler_conditioner.h"
+#include "configuration_interface.h"
+#include "direct_resampler_conditioner_cb.h"
 #include "direct_resampler_conditioner_cc.h"
 #include "direct_resampler_conditioner_cs.h"
-#include "direct_resampler_conditioner_cb.h"
-#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
-using google::LogMessage;
 
 DirectResamplerConditioner::DirectResamplerConditioner(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "short";
@@ -64,7 +64,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_, sample_freq_out_);
@@ -73,7 +73,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
             resampler_ = direct_resampler_make_conditioner_cs(sample_freq_in_, sample_freq_out_);
@@ -82,7 +82,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
             resampler_ = direct_resampler_make_conditioner_cb(sample_freq_in_, sample_freq_out_);
@@ -94,7 +94,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     if (dump_)
         {
@@ -113,7 +113,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
 }
 
 
-DirectResamplerConditioner::~DirectResamplerConditioner() {}
+DirectResamplerConditioner::~DirectResamplerConditioner() = default;
 
 
 void DirectResamplerConditioner::connect(gr::top_block_sptr top_block)

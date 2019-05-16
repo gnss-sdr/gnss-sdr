@@ -1,11 +1,11 @@
 /*!
  * \file cpu_multicorrelator_16sc.h
- * \brief High optimized CPU vector multiTAP correlator class for lv_16sc_t (short int complex)
+ * \brief Highly optimized CPU vector multiTAP correlator class for lv_16sc_t (short int complex)
  * \authors <ul>
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that implements a high optimized vector multiTAP correlator class for CPUs
+ * Class that implements a highly optimized vector multiTAP correlator class for CPUs
  *
  * -------------------------------------------------------------------------
  *
@@ -41,11 +41,11 @@
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class cpu_multicorrelator_16sc
+class Cpu_Multicorrelator_16sc
 {
 public:
-    cpu_multicorrelator_16sc();
-    ~cpu_multicorrelator_16sc();
+    Cpu_Multicorrelator_16sc();
+    ~Cpu_Multicorrelator_16sc();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const lv_16sc_t *local_code_in, float *shifts_chips);
     bool set_input_output_vectors(lv_16sc_t *corr_out, const lv_16sc_t *sig_in);

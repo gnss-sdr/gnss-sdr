@@ -30,57 +30,68 @@
  * -------------------------------------------------------------------------
  */
 
-#include <unistd.h>
-#include <chrono>
-#include <exception>
+#include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
+#include "GPS_L5.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "acquisition_msg_rx.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
+#include "galileo_e5a_pcps_acquisition.h"
+#include "glonass_l1_ca_pcps_acquisition.h"
+#include "glonass_l2_ca_pcps_acquisition.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_satellite.h"
+#include "gnss_sdr_sample_counter.h"
+#include "gnss_synchro.h"
+#include "gnuplot_i.h"
+#include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l2_m_pcps_acquisition.h"
+#include "gps_l5i_pcps_acquisition.h"
+#include "hybrid_observables.h"
+#include "in_memory_configuration.h"
+#include "observable_tests_flags.h"
+#include "observables_dump_reader.h"
+#include "signal_generator_flags.h"
+#include "telemetry_decoder_interface.h"
+#include "test_flags.h"
+#include "tlm_dump_reader.h"
+#include "tracking_dump_reader.h"
+#include "tracking_interface.h"
+#include "tracking_tests_flags.h"
+#include "tracking_true_obs_reader.h"
+#include "true_observables_reader.h"
 #include <armadillo>
-#include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
-#include <gpstk/RinexUtilities.hpp>
+#include <gnuradio/filter/firdes.h>
+#include <gnuradio/top_block.h>
 #include <gpstk/Rinex3ObsBase.hpp>
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
 #include <gpstk/Rinex3ObsStream.hpp>
+#include <gpstk/RinexUtilities.hpp>
+#include <gtest/gtest.h>
 #include <matio.h>
-#include "GPS_L1_CA.h"
-#include "gnss_satellite.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "acquisition_msg_rx.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
-#include "tracking_interface.h"
-#include "telemetry_decoder_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_synchro.h"
-#include "tracking_true_obs_reader.h"
-#include "true_observables_reader.h"
-#include "tracking_dump_reader.h"
-#include "observables_dump_reader.h"
-#include "tlm_dump_reader.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
-#include "hybrid_observables.h"
-#include "signal_generator_flags.h"
-#include "gnss_sdr_sample_counter.h"
-#include "test_flags.h"
-#include "tracking_tests_flags.h"
-#include "observable_tests_flags.h"
-#include "gnuplot_i.h"
+#include <chrono>
+#include <exception>
+#include <unistd.h>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/fir_filter_blk.h>
+#else
+#include <gnuradio/filter/fir_filter_ccf.h>
+#endif
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class HybridObservablesTest_msg_rx;
 
-typedef boost::shared_ptr<HybridObservablesTest_msg_rx> HybridObservablesTest_msg_rx_sptr;
+using HybridObservablesTest_msg_rx_sptr = boost::shared_ptr<HybridObservablesTest_msg_rx>;
 
 HybridObservablesTest_msg_rx_sptr HybridObservablesTest_msg_rx_make();
 
@@ -105,7 +116,7 @@ void HybridObservablesTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -122,9 +133,7 @@ HybridObservablesTest_msg_rx::HybridObservablesTest_msg_rx() : gr::block("Hybrid
     rx_message = 0;
 }
 
-HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx()
-{
-}
+HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -133,7 +142,7 @@ HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx()
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
 class HybridObservablesTest_tlm_msg_rx;
 
-typedef boost::shared_ptr<HybridObservablesTest_tlm_msg_rx> HybridObservablesTest_tlm_msg_rx_sptr;
+using HybridObservablesTest_tlm_msg_rx_sptr = boost::shared_ptr<HybridObservablesTest_tlm_msg_rx>;
 
 HybridObservablesTest_tlm_msg_rx_sptr HybridObservablesTest_tlm_msg_rx_make();
 
@@ -158,7 +167,7 @@ void HybridObservablesTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -175,9 +184,7 @@ HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() : gr::block
     rx_message = 0;
 }
 
-HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx()
-{
-}
+HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx() = default;
 
 
 // ###########################################################
@@ -186,6 +193,19 @@ HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx()
 class HybridObservablesTest : public ::testing::Test
 {
 public:
+    enum StringValue
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G
+    };
+    std::map<std::string, StringValue> mapStringValues_;
+
     std::string generator_binary;
     std::string p1;
     std::string p2;
@@ -206,7 +226,7 @@ public:
         arma::mat& true_ch0,
         arma::vec& true_tow_s,
         arma::mat& measured_ch0,
-        std::string data_title);
+        const std::string& data_title);
     void check_results_carrier_phase_double_diff(
         arma::mat& true_ch0,
         arma::mat& true_ch1,
@@ -214,11 +234,11 @@ public:
         arma::vec& true_tow_ch1_s,
         arma::mat& measured_ch0,
         arma::mat& measured_ch1,
-        std::string data_title);
+        const std::string& data_title);
     void check_results_carrier_doppler(arma::mat& true_ch0,
         arma::vec& true_tow_s,
         arma::mat& measured_ch0,
-        std::string data_title);
+        const std::string& data_title);
     void check_results_carrier_doppler_double_diff(
         arma::mat& true_ch0,
         arma::mat& true_ch1,
@@ -226,7 +246,7 @@ public:
         arma::vec& true_tow_ch1_s,
         arma::mat& measured_ch0,
         arma::mat& measured_ch1,
-        std::string data_title);
+        const std::string& data_title);
     void check_results_code_pseudorange(
         arma::mat& true_ch0,
         arma::mat& true_ch1,
@@ -234,18 +254,29 @@ public:
         arma::vec& true_tow_ch1_s,
         arma::mat& measured_ch0,
         arma::mat& measured_ch1,
-        std::string data_title);
+        const std::string& data_title);
+
+    void check_results_duplicated_satellite(
+        arma::mat& measured_sat1,
+        arma::mat& measured_sat2,
+        int ch_id,
+        const std::string& data_title);
 
     HybridObservablesTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
+        mapStringValues_["1C"] = evGPS_1C;
+        mapStringValues_["2S"] = evGPS_2S;
+        mapStringValues_["L5"] = evGPS_L5;
+        mapStringValues_["1B"] = evGAL_1B;
+        mapStringValues_["5X"] = evGAL_5X;
+        mapStringValues_["1G"] = evGLO_1G;
+        mapStringValues_["2G"] = evGLO_2G;
     }
 
-    ~HybridObservablesTest()
-    {
-    }
+    ~HybridObservablesTest() = default;
 
     bool ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_Synchro gnss);
 
@@ -255,7 +286,9 @@ public:
         double DLL_wide_bw_hz,
         double PLL_narrow_bw_hz,
         double DLL_narrow_bw_hz,
-        int extend_correlation_symbols);
+        int extend_correlation_symbols,
+        uint32_t smoother_length,
+        bool high_dyn);
 
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
@@ -290,11 +323,13 @@ int HybridObservablesTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -320,6 +355,11 @@ bool HybridObservablesTest::acquire_signal()
     tmp_gnss_synchro.Channel_ID = 0;
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
+    // Enable automatic resampler for the acquisition, if required
+    if (FLAGS_use_acquisition_resampler == true)
+        {
+            config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
+        }
     config->set_property("Acquisition.blocking_on_standby", "true");
     config->set_property("Acquisition.blocking", "true");
     config->set_property("Acquisition.dump", "false");
@@ -329,11 +369,12 @@ bool HybridObservablesTest::acquire_signal()
     std::shared_ptr<AcquisitionInterface> acquisition;
 
     std::string System_and_Signal;
+    std::string signal;
     //create the correspondign acquisition block according to the desired tracking signal
-    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
+    if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "1C";
+            signal = "1C";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -342,10 +383,10 @@ bool HybridObservablesTest::acquire_signal()
             //acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
             acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+    else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "1B";
+            signal = "1B";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -353,10 +394,10 @@ bool HybridObservablesTest::acquire_signal()
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "2S";
+            signal = "2S";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -364,10 +405,10 @@ bool HybridObservablesTest::acquire_signal()
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "5X";
+            signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -380,10 +421,10 @@ bool HybridObservablesTest::acquire_signal()
             acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 0);
         }
 
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking") == 0)
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "5X";
+            signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -391,10 +432,10 @@ bool HybridObservablesTest::acquire_signal()
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "L5";
+            signal = "L5";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -425,10 +466,88 @@ bool HybridObservablesTest::acquire_signal()
     file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
     //gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
+    //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
 
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
-    //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+
+    // Enable automatic resampler for the acquisition, if required
+    if (FLAGS_use_acquisition_resampler == true)
+        {
+            //create acquisition resamplers if required
+            double resampler_ratio = 1.0;
+
+            double opt_fs = baseband_sampling_freq;
+            //find the signal associated to this channel
+            switch (mapStringValues_[signal])
+                {
+                case evGPS_1C:
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    break;
+                case evGPS_2S:
+                    opt_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                    break;
+                case evGPS_L5:
+                    opt_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                    break;
+                case evSBAS_1C:
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    break;
+                case evGAL_1B:
+                    opt_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
+                    break;
+                case evGAL_5X:
+                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
+                    break;
+                case evGLO_1G:
+                    opt_fs = baseband_sampling_freq;
+                    break;
+                case evGLO_2G:
+                    opt_fs = baseband_sampling_freq;
+                    break;
+                }
+            if (opt_fs < baseband_sampling_freq)
+                {
+                    resampler_ratio = baseband_sampling_freq / opt_fs;
+                    int decimation = floor(resampler_ratio);
+                    while (baseband_sampling_freq % decimation > 0)
+                        {
+                            decimation--;
+                        };
+                    double acq_fs = baseband_sampling_freq / decimation;
+
+                    if (decimation > 1)
+                        {
+                            //create a FIR low pass filter
+                            std::vector<float> taps;
+                            taps = gr::filter::firdes::low_pass(1.0,
+                                baseband_sampling_freq,
+                                acq_fs / 2.1,
+                                acq_fs / 10,
+                                gr::filter::firdes::win_type::WIN_HAMMING);
+                            std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
+                            acquisition->set_resampler_latency((taps.size() - 1) / 2);
+                            gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
+                            top_block->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
+                            top_block->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
+                        }
+                    else
+                        {
+                            std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                        }
+                }
+            else
+                {
+                    std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                }
+        }
+    else
+        {
+            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+            //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+        }
+
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -519,7 +638,7 @@ bool HybridObservablesTest::acquire_signal()
     std::cout << "Total signal acquisition run time "
               << elapsed_seconds.count()
               << " [seconds]" << std::endl;
-    if (gnss_synchro_vec.size() > 0)
+    if (!gnss_synchro_vec.empty())
         {
             return true;
         }
@@ -535,10 +654,21 @@ void HybridObservablesTest::configure_receiver(
     double DLL_wide_bw_hz,
     double PLL_narrow_bw_hz,
     double DLL_narrow_bw_hz,
-    int extend_correlation_symbols)
+    int extend_correlation_symbols,
+    uint32_t smoother_length,
+    bool high_dyn)
 {
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Tracking.dump", "true");
+    if (high_dyn)
+        {
+            config->set_property("Tracking.high_dyn", "true");
+        }
+    else
+        {
+            config->set_property("Tracking.high_dyn", "false");
+        }
+    config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
     config->set_property("Tracking.item_type", "gr_complex");
@@ -555,7 +685,7 @@ void HybridObservablesTest::configure_receiver(
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     std::string System_and_Signal;
-    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
+    if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
             gnss_synchro_master.System = 'G';
             std::string signal = "1C";
@@ -568,7 +698,7 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
         }
-    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+    else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
             gnss_synchro_master.System = 'E';
             std::string signal = "1B";
@@ -584,7 +714,7 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E1B_Telemetry_Decoder");
         }
-    else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
         {
             gnss_synchro_master.System = 'G';
             std::string signal = "2S";
@@ -597,7 +727,7 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L2C_Telemetry_Decoder");
         }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking") == 0 or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking" or implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
         {
             gnss_synchro_master.System = 'E';
             std::string signal = "5X";
@@ -605,7 +735,7 @@ void HybridObservablesTest::configure_receiver(
             const char* str = signal.c_str();                                     // get a C style null terminated string
             std::memcpy(static_cast<void*>(gnss_synchro_master.Signal), str, 3);  // copy string into synchro char array: 2 char + null
 
-            if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+            if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
                 {
                     config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
                 }
@@ -615,7 +745,7 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E5a_Telemetry_Decoder");
         }
-    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0)
+    else if (implementation == "GPS_L5_DLL_PLL_Tracking")
         {
             gnss_synchro_master.System = 'G';
             std::string signal = "L5";
@@ -645,6 +775,8 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "pll_bw_narrow_hz: " << config->property("Tracking.pll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_narrow_hz: " << config->property("Tracking.dll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "extend_correlation_symbols: " << config->property("Tracking.extend_correlation_symbols", 0) << " Symbols\n";
+    std::cout << "high_dyn: " << config->property("Tracking.high_dyn", false) << "\n";
+    std::cout << "smoother_length: " << config->property("Tracking.smoother_length", 0) << "\n";
     std::cout << "*****************************************\n";
     std::cout << "*****************************************\n";
 }
@@ -653,7 +785,7 @@ void HybridObservablesTest::check_results_carrier_phase(
     arma::mat& true_ch0,
     arma::vec& true_tow_s,
     arma::mat& measured_ch0,
-    std::string data_title)
+    const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
 
@@ -734,7 +866,7 @@ void HybridObservablesTest::check_results_carrier_phase_double_diff(
     arma::vec& true_tow_ch1_s,
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
-    std::string data_title)
+    const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
 
@@ -825,7 +957,7 @@ void HybridObservablesTest::check_results_carrier_doppler_double_diff(
     arma::vec& true_tow_ch1_s,
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
-    std::string data_title)
+    const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
 
@@ -913,7 +1045,7 @@ void HybridObservablesTest::check_results_carrier_doppler(
     arma::mat& true_ch0,
     arma::vec& true_tow_s,
     arma::mat& measured_ch0,
-    std::string data_title)
+    const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
 
@@ -987,6 +1119,256 @@ void HybridObservablesTest::check_results_carrier_doppler(
     ASSERT_LT(rmse_ch0, 30);
 }
 
+void HybridObservablesTest::check_results_duplicated_satellite(
+    arma::mat& measured_sat1,
+    arma::mat& measured_sat2,
+    int ch_id,
+    const std::string& data_title)
+{
+    //1. True value interpolation to match the measurement times
+
+    //define the common measured time interval
+    double t0_sat1 = measured_sat1(0, 0);
+    int size1 = measured_sat1.col(0).n_rows;
+    double t1_sat1 = measured_sat1(size1 - 1, 0);
+
+    double t0_sat2 = measured_sat2(0, 0);
+    int size2 = measured_sat2.col(0).n_rows;
+    double t1_sat2 = measured_sat2(size2 - 1, 0);
+
+    double t0;
+    double t1;
+    if (t0_sat1 > t0_sat2)
+        {
+            t0 = t0_sat1;
+        }
+    else
+        {
+            t0 = t0_sat2;
+        }
+
+    if (t1_sat1 > t1_sat2)
+        {
+            t1 = t1_sat2;
+        }
+    else
+        {
+            t1 = t1_sat1;
+        }
+
+    arma::vec t = arma::linspace<arma::vec>(t0, t1, floor((t1 - t0) * 1e3));
+    //conversion between arma::vec and std:vector
+    arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
+    std::vector<double> time_vector(t_from_start.colptr(0), t_from_start.colptr(0) + t_from_start.n_rows);
+    //Doppler
+    arma::vec meas_sat1_doppler_interp;
+    arma::interp1(measured_sat1.col(0), measured_sat1.col(2), t, meas_sat1_doppler_interp);
+    arma::vec meas_sat2_doppler_interp;
+    arma::interp1(measured_sat2.col(0), measured_sat2.col(2), t, meas_sat2_doppler_interp);
+
+    //Carrier Phase
+    arma::vec meas_sat1_carrier_phase_interp;
+    arma::vec meas_sat2_carrier_phase_interp;
+    arma::interp1(measured_sat1.col(0), measured_sat1.col(3), t, meas_sat1_carrier_phase_interp);
+    arma::interp1(measured_sat2.col(0), measured_sat2.col(3), t, meas_sat2_carrier_phase_interp);
+
+    // generate double difference accumulated carrier phases
+    //compute error without the accumulated carrier phase offsets (which depends on the receiver starting time)
+    arma::vec delta_measured_carrier_phase_cycles = (meas_sat1_carrier_phase_interp - meas_sat1_carrier_phase_interp(0)) - (meas_sat2_carrier_phase_interp - meas_sat2_carrier_phase_interp(0));
+
+    //Pseudoranges
+    arma::vec meas_sat1_dist_interp;
+    arma::vec meas_sat2_dist_interp;
+    arma::interp1(measured_sat1.col(0), measured_sat1.col(4), t, meas_sat1_dist_interp);
+    arma::interp1(measured_sat2.col(0), measured_sat2.col(4), t, meas_sat2_dist_interp);
+    // generate delta pseudoranges
+    arma::vec delta_measured_dist_m = meas_sat1_dist_interp - meas_sat2_dist_interp;
+
+    //Carrier Doppler error
+    //2. RMSE
+    arma::vec err_ch0_hz;
+
+    //compute error
+    err_ch0_hz = meas_sat1_doppler_interp - meas_sat2_doppler_interp;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_common_time_s(t.colptr(0),
+        t.colptr(0) + t.n_rows);
+
+    std::vector<double> tmp_vector_err_ch0_hz(err_ch0_hz.colptr(0),
+        err_ch0_hz.colptr(0) + err_ch0_hz.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_ch0_hz, std::string("measured_doppler_error_ch_" + std::to_string(ch_id)));
+
+    //compute statistics
+    arma::vec err2_ch0 = arma::square(err_ch0_hz);
+    double rmse_ch0 = sqrt(arma::mean(err2_ch0));
+
+    //3. Mean err and variance
+    double error_mean_ch0 = arma::mean(err_ch0_hz);
+    double error_var_ch0 = arma::var(err_ch0_hz);
+
+    // 4. Peaks
+    double max_error_ch0 = arma::max(err_ch0_hz);
+    double min_error_ch0 = arma::min(err_ch0_hz);
+
+    //5. report
+    std::streamsize ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << "Carrier Doppler RMSE = "
+              << rmse_ch0 << ", mean = " << error_mean_ch0
+              << ", stdev = " << sqrt(error_var_ch0)
+              << " (max,min) = " << max_error_ch0
+              << "," << min_error_ch0
+              << " [Hz]" << std::endl;
+    std::cout.precision(ss);
+
+    //plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Carrier Doppler error [Hz]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Carrier Doppler error [Hz]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> error_vec(err_ch0_hz.colptr(0), err_ch0_hz.colptr(0) + err_ch0_hz.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, error_vec,
+                "Carrier Doppler error");
+            g3.set_legend();
+            g3.savetops(data_title + "Carrier_doppler_error");
+
+            g3.showonscreen();  // window output
+        }
+
+    //check results against the test tolerance
+    EXPECT_LT(error_mean_ch0, 5);
+    EXPECT_GT(error_mean_ch0, -5);
+    //assuming PLL BW=35
+    EXPECT_LT(error_var_ch0, 250);
+    EXPECT_LT(max_error_ch0, 100);
+    EXPECT_GT(min_error_ch0, -100);
+    EXPECT_LT(rmse_ch0, 30);
+
+    //Carrier Phase error
+    //2. RMSE
+    arma::vec err_carrier_phase;
+
+    err_carrier_phase = delta_measured_carrier_phase_cycles;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_err_carrier_phase(err_carrier_phase.colptr(0),
+        err_carrier_phase.colptr(0) + err_carrier_phase.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_carrier_phase, std::string("measured_carrier_phase_error_ch_" + std::to_string(ch_id)));
+
+
+    arma::vec err2_carrier_phase = arma::square(err_carrier_phase);
+    double rmse_carrier_phase = sqrt(arma::mean(err2_carrier_phase));
+
+    //3. Mean err and variance
+    double error_mean_carrier_phase = arma::mean(err_carrier_phase);
+    double error_var_carrier_phase = arma::var(err_carrier_phase);
+
+    // 4. Peaks
+    double max_error_carrier_phase = arma::max(err_carrier_phase);
+    double min_error_carrier_phase = arma::min(err_carrier_phase);
+
+    //5. report
+    ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << "Carrier Phase RMSE = "
+              << rmse_carrier_phase << ", mean = " << error_mean_carrier_phase
+              << ", stdev = " << sqrt(error_var_carrier_phase)
+              << " (max,min) = " << max_error_carrier_phase
+              << "," << min_error_carrier_phase
+              << " [Cycles]" << std::endl;
+    std::cout.precision(ss);
+
+    //plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Carrier Phase error [Cycles]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Carrier Phase error [Cycles]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> range_error_m(err_carrier_phase.colptr(0), err_carrier_phase.colptr(0) + err_carrier_phase.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, range_error_m,
+                "Carrier Phase error");
+            g3.set_legend();
+            g3.savetops(data_title + "duplicated_satellite_carrier_phase_error");
+
+            g3.showonscreen();  // window output
+        }
+
+    //check results against the test tolerance
+    EXPECT_LT(rmse_carrier_phase, 0.25);
+    EXPECT_LT(error_mean_carrier_phase, 0.2);
+    EXPECT_GT(error_mean_carrier_phase, -0.2);
+    EXPECT_LT(error_var_carrier_phase, 0.5);
+    EXPECT_LT(max_error_carrier_phase, 0.5);
+    EXPECT_GT(min_error_carrier_phase, -0.5);
+
+    //Pseudorange error
+    //2. RMSE
+    arma::vec err_pseudorange;
+
+    err_pseudorange = delta_measured_dist_m;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_err_pseudorange(err_pseudorange.colptr(0),
+        err_pseudorange.colptr(0) + err_pseudorange.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_pseudorange, std::string("measured_pr_error_ch_" + std::to_string(ch_id)));
+
+    arma::vec err2_pseudorange = arma::square(err_pseudorange);
+    double rmse_pseudorange = sqrt(arma::mean(err2_pseudorange));
+
+    //3. Mean err and variance
+    double error_mean_pseudorange = arma::mean(err_pseudorange);
+    double error_var_pseudorange = arma::var(err_pseudorange);
+
+    // 4. Peaks
+    double max_error_pseudorange = arma::max(err_pseudorange);
+    double min_error_pseudorange = arma::min(err_pseudorange);
+
+    //5. report
+    ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << "Pseudorange RMSE = "
+              << rmse_pseudorange << ", mean = " << error_mean_pseudorange
+              << ", stdev = " << sqrt(error_var_pseudorange)
+              << " (max,min) = " << max_error_pseudorange
+              << "," << min_error_pseudorange
+              << " [meters]" << std::endl;
+    std::cout.precision(ss);
+
+    //plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Pseudorange error [m]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Pseudorange error [m]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> range_error_m(err_pseudorange.colptr(0), err_pseudorange.colptr(0) + err_pseudorange.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, range_error_m,
+                "Pseudorrange error");
+            g3.set_legend();
+            g3.savetops(data_title + "duplicated_satellite_pseudorrange_error");
+
+            g3.showonscreen();  // window output
+        }
+
+    //check results against the test tolerance
+    EXPECT_LT(rmse_pseudorange, 3.0);
+    EXPECT_LT(error_mean_pseudorange, 1.0);
+    EXPECT_GT(error_mean_pseudorange, -1.0);
+    EXPECT_LT(error_var_pseudorange, 10.0);
+    EXPECT_LT(max_error_pseudorange, 10.0);
+    EXPECT_GT(min_error_pseudorange, -10.0);
+}
+
 bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
 {
     try
@@ -996,8 +1378,8 @@ bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<doub
             matvar_t* matvar;
             filename.append(".mat");
             std::cout << "save_mat_xy write " << filename << std::endl;
-            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
-            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+            matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
                     size_t dims[2] = {1, x.size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
@@ -1029,7 +1411,7 @@ void HybridObservablesTest::check_results_code_pseudorange(
     arma::vec& true_tow_ch1_s,
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
-    std::string data_title)
+    const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
 
@@ -1153,7 +1535,7 @@ bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_S
                             gpstk::CommonTime time = r_ref_data.time;
                             double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
 
-                            gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
+                            auto pointer = r_ref_data.obs.find(prn);
                             if (pointer == r_ref_data.obs.end())
                                 {
                                     // PRN not present; do nothing
@@ -1293,22 +1675,24 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
-        FLAGS_extend_correlation_symbols);
+        FLAGS_extend_correlation_symbols,
+        FLAGS_smoother_length,
+        FLAGS_high_dyn);
 
 
-    for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
+    for (auto& n : gnss_synchro_vec)
         {
             //setup the signal synchronization, simulating an acquisition
             if (!FLAGS_enable_external_signal_file)
                 {
                     //based on true observables metadata (for custom sdr generator)
                     //open true observables log file written by the simulator or based on provided RINEX obs
-                    std::vector<std::shared_ptr<tracking_true_obs_reader>> true_reader_vec;
+                    std::vector<std::shared_ptr<Tracking_True_Obs_Reader>> true_reader_vec;
                     //read true data from the generator logs
-                    true_reader_vec.push_back(std::make_shared<tracking_true_obs_reader>());
-                    std::cout << "Loading true observable data for PRN " << gnss_synchro_vec.at(n).PRN << std::endl;
+                    true_reader_vec.push_back(std::make_shared<Tracking_True_Obs_Reader>());
+                    std::cout << "Loading true observable data for PRN " << n.PRN << std::endl;
                     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
-                    true_obs_file.append(std::to_string(gnss_synchro_vec.at(n).PRN));
+                    true_obs_file.append(std::to_string(n.PRN));
                     true_obs_file.append(".dat");
                     ASSERT_NO_THROW({
                         if (true_reader_vec.back()->open_obs_file(true_obs_file) == false)
@@ -1330,17 +1714,17 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
                     std::cout << "Initial Doppler [Hz]=" << true_reader_vec.back()->doppler_l1_hz << " Initial code delay [Chips]="
                               << true_reader_vec.back()->prn_delay_chips << std::endl;
-                    gnss_synchro_vec.at(n).Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
-                    gnss_synchro_vec.at(n).Acq_doppler_hz = true_reader_vec.back()->doppler_l1_hz;
-                    gnss_synchro_vec.at(n).Acq_samplestamp_samples = 0;
+                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
+                    n.Acq_doppler_hz = true_reader_vec.back()->doppler_l1_hz;
+                    n.Acq_samplestamp_samples = 0;
                 }
             else
                 {
                     //based on the signal acquisition process
-                    std::cout << "Estimated Initial Doppler " << gnss_synchro_vec.at(n).Acq_doppler_hz
-                              << " [Hz], estimated Initial code delay " << gnss_synchro_vec.at(n).Acq_delay_samples << " [Samples]"
-                              << " Acquisition SampleStamp is " << gnss_synchro_vec.at(n).Acq_samplestamp_samples << std::endl;
-                    gnss_synchro_vec.at(n).Acq_samplestamp_samples = 0;
+                    std::cout << "Estimated Initial Doppler " << n.Acq_doppler_hz
+                              << " [Hz], estimated Initial code delay " << n.Acq_delay_samples << " [Samples]"
+                              << " Acquisition SampleStamp is " << n.Acq_samplestamp_samples << std::endl;
+                    n.Acq_samplestamp_samples = 0;
                 }
         }
 
@@ -1394,10 +1778,10 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     //Observables
     std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
 
-    for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+    for (auto& n : tracking_ch_vec)
         {
             ASSERT_NO_THROW({
-                tracking_ch_vec.at(n)->connect(top_block);
+                n->connect(top_block);
             }) << "Failure connecting tracking to the top_block.";
         }
 
@@ -1434,9 +1818,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
     }) << "Failure connecting the blocks.";
 
-    for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+    for (auto& n : tracking_ch_vec)
         {
-            tracking_ch_vec.at(n)->start_tracking();
+            n->start_tracking();
         }
 
     EXPECT_NO_THROW({
@@ -1453,7 +1837,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     if (!FLAGS_enable_external_signal_file)
         {
             //load the true values
-            true_observables_reader true_observables;
+            True_Observables_Reader true_observables;
             ASSERT_NO_THROW({
                 if (true_observables.open_obs_file(std::string("./obs_out.bin")) == false)
                     {
@@ -1461,7 +1845,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     }
             }) << "Failure opening true observables file";
 
-            unsigned int nepoch = static_cast<unsigned int>(true_observables.num_epochs());
+            auto nepoch = static_cast<unsigned int>(true_observables.num_epochs());
 
             std::cout << "True observation epochs = " << nepoch << std::endl;
 
@@ -1494,11 +1878,14 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
     else
         {
-            ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
-                << "Failure reading RINEX file";
+            if (!FLAGS_duplicated_satellites_test)
+                {
+                    ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
+                        << "Failure reading RINEX file";
+                }
         }
     //read measured values
-    observables_dump_reader estimated_observables(tracking_ch_vec.size());
+    Observables_Dump_Reader estimated_observables(tracking_ch_vec.size());
     ASSERT_NO_THROW({
         if (estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
             {
@@ -1506,7 +1893,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             }
     }) << "Failure opening dump observables file";
 
-    unsigned int nepoch = static_cast<unsigned int>(estimated_observables.num_epochs());
+    auto nepoch = static_cast<unsigned int>(estimated_observables.num_epochs());
     std::cout << "Measured observations epochs = " << nepoch << std::endl;
 
     // Matrices for storing columnwise measured RX_time, TOW, Doppler, Carrier phase and Pseudorange
@@ -1535,115 +1922,175 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
         }
 
-
     //Cut measurement tail zeros
     arma::uvec index;
-    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+    for (auto& n : measured_obs_vec)
         {
-            index = arma::find(measured_obs_vec.at(n).col(0) > 0.0, 1, "last");
-            if ((index.size() > 0) and index(0) < (nepoch - 1))
+            index = arma::find(n.col(0) > 0.0, 1, "last");
+            if ((!index.empty()) and index(0) < (nepoch - 1))
                 {
-                    measured_obs_vec.at(n).shed_rows(index(0) + 1, nepoch - 1);
+                    n.shed_rows(index(0) + 1, nepoch - 1);
                 }
         }
 
     //Cut measurement initial transitory of the measurements
-
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
-
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
-            if ((index.size() > 0) and (index(0) > 0))
+            if ((!index.empty()) and (index(0) > 0))
                 {
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
 
-            index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-            if ((index.size() > 0) and (index(0) > 0))
+            if (!FLAGS_duplicated_satellites_test)
                 {
-                    measured_obs_vec.at(n).shed_rows(0, index(0));
+                    index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
+                    if ((!index.empty()) and (index(0) > 0))
+                        {
+                            measured_obs_vec.at(n).shed_rows(0, index(0));
+                        }
                 }
         }
 
 
-    //Correct the clock error using true values (it is not possible for a receiver to correct
-    //the receiver clock offset error at the observables level because it is required the
-    //decoding of the ephemeris data and solve the PVT equations)
-
-    //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
-    double min_pr = std::numeric_limits<double>::max();
-    unsigned int min_pr_ch_id = 0;
-    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+    if (FLAGS_duplicated_satellites_test)
         {
-            if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+            //special test mode for duplicated satellites
+            std::vector<unsigned int> prn_pairs;
+            std::stringstream ss(FLAGS_duplicated_satellites_prns);
+            unsigned int i;
+            while (ss >> i)
                 {
-                    {
-                        if (measured_obs_vec.at(n)(0, 4) < min_pr)
-                            {
-                                min_pr = measured_obs_vec.at(n)(0, 4);
-                                min_pr_ch_id = n;
-                            }
-                    }
+                    prn_pairs.push_back(i);
+                    if (ss.peek() == ',')
+                        {
+                            ss.ignore();
+                        }
+                }
+
+            if (prn_pairs.size() % 2 != 0)
+                {
+                    std::cout << "Test settings error: duplicated_satellites_prns are even\n";
                 }
             else
                 {
-                    std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
+                    for (unsigned int n = 0; n < prn_pairs.size(); n = n + 2)
+                        {
+                            int sat1_ch_id = -1;
+                            int sat2_ch_id = -1;
+                            for (unsigned int ch = 0; ch < measured_obs_vec.size(); ch++)
+                                {
+                                    if (epoch_counters_vec.at(ch) > 10)  //discard non-valid channels
+                                        {
+                                            if (gnss_synchro_vec.at(ch).PRN == prn_pairs.at(n))
+                                                {
+                                                    sat1_ch_id = ch;
+                                                }
+                                            if (gnss_synchro_vec.at(ch).PRN == prn_pairs.at(n + 1))
+                                                {
+                                                    sat2_ch_id = ch;
+                                                }
+                                        }
+                                }
+                            if (sat1_ch_id != -1 and sat2_ch_id != -1)
+                                {
+                                    //compute single differences for the duplicated satellite
+
+                                    check_results_duplicated_satellite(
+                                        measured_obs_vec.at(sat1_ch_id),
+                                        measured_obs_vec.at(sat2_ch_id),
+                                        sat1_ch_id,
+                                        "Duplicated sat [CH " + std::to_string(sat1_ch_id) + "," + std::to_string(sat2_ch_id) + "] PRNs " + std::to_string(gnss_synchro_vec.at(sat1_ch_id).PRN) + "," + std::to_string(gnss_synchro_vec.at(sat2_ch_id).PRN) + " ");
+                                }
+                            else
+                                {
+                                    std::cout << "Satellites PRNs " << prn_pairs.at(n) << "and " << prn_pairs.at(n) << " not found\n";
+                                }
+                        }
                 }
         }
-
-    arma::vec receiver_time_offset_ref_channel_s;
-    receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_m_s;
-    std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
-
-    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+    else
         {
-            //debug save to .mat
-            std::vector<double> tmp_vector_x(true_obs_vec.at(n).col(0).colptr(0),
-                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y(true_obs_vec.at(n).col(1).colptr(0),
-                true_obs_vec.at(n).col(1).colptr(0) + true_obs_vec.at(n).col(1).n_rows);
-            save_mat_xy(tmp_vector_x, tmp_vector_y, std::string("true_pr_ch_" + std::to_string(n)));
+            //normal mode
 
-            std::vector<double> tmp_vector_x2(measured_obs_vec.at(n).col(0).colptr(0),
-                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y2(measured_obs_vec.at(n).col(4).colptr(0),
-                measured_obs_vec.at(n).col(4).colptr(0) + measured_obs_vec.at(n).col(4).n_rows);
-            save_mat_xy(tmp_vector_x2, tmp_vector_y2, std::string("measured_pr_ch_" + std::to_string(n)));
+            //Correct the clock error using true values (it is not possible for a receiver to correct
+            //the receiver clock offset error at the observables level because it is required the
+            //decoding of the ephemeris data and solve the PVT equations)
 
-            std::vector<double> tmp_vector_x3(true_obs_vec.at(n).col(0).colptr(0),
-                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y3(true_obs_vec.at(n).col(2).colptr(0),
-                true_obs_vec.at(n).col(2).colptr(0) + true_obs_vec.at(n).col(2).n_rows);
-            save_mat_xy(tmp_vector_x3, tmp_vector_y3, std::string("true_doppler_ch_" + std::to_string(n)));
-
-            std::vector<double> tmp_vector_x4(measured_obs_vec.at(n).col(0).colptr(0),
-                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
-                measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
-            save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
-
-
-            if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+            //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
+            double min_pr = std::numeric_limits<double>::max();
+            unsigned int min_pr_ch_id = 0;
+            for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
                 {
-                    arma::vec true_TOW_ref_ch_s = true_obs_vec.at(min_pr_ch_id).col(0) - receiver_time_offset_ref_channel_s(0);
-                    arma::vec true_TOW_ch_s = true_obs_vec.at(n).col(0) - receiver_time_offset_ref_channel_s(0);
-                    //Compare measured observables
-                    if (min_pr_ch_id != n)
+                    if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
                         {
-                            check_results_code_pseudorange(true_obs_vec.at(n),
-                                true_obs_vec.at(min_pr_ch_id),
-                                true_TOW_ch_s,
-                                true_TOW_ref_ch_s,
-                                measured_obs_vec.at(n),
-                                measured_obs_vec.at(min_pr_ch_id),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                            {
+                                if (measured_obs_vec.at(n)(0, 4) < min_pr)
+                                    {
+                                        min_pr = measured_obs_vec.at(n)(0, 4);
+                                        min_pr_ch_id = n;
+                                    }
+                            }
+                        }
+                    else
+                        {
+                            std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
+                        }
+                }
 
-                            //Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
-                            //E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
-                            if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+            arma::vec receiver_time_offset_ref_channel_s;
+            receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_M_S;
+            std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
+
+            for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+                {
+                    //debug save to .mat
+                    std::vector<double> tmp_vector_x(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y(true_obs_vec.at(n).col(1).colptr(0),
+                        true_obs_vec.at(n).col(1).colptr(0) + true_obs_vec.at(n).col(1).n_rows);
+                    save_mat_xy(tmp_vector_x, tmp_vector_y, std::string("true_pr_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x2(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y2(measured_obs_vec.at(n).col(4).colptr(0),
+                        measured_obs_vec.at(n).col(4).colptr(0) + measured_obs_vec.at(n).col(4).n_rows);
+                    save_mat_xy(tmp_vector_x2, tmp_vector_y2, std::string("measured_pr_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x3(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y3(true_obs_vec.at(n).col(2).colptr(0),
+                        true_obs_vec.at(n).col(2).colptr(0) + true_obs_vec.at(n).col(2).n_rows);
+                    save_mat_xy(tmp_vector_x3, tmp_vector_y3, std::string("true_doppler_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x4(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
+                        measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
+                    save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x5(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y5(true_obs_vec.at(n).col(3).colptr(0),
+                        true_obs_vec.at(n).col(3).colptr(0) + true_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x5, tmp_vector_y5, std::string("true_cp_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x6(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y6(measured_obs_vec.at(n).col(3).colptr(0),
+                        measured_obs_vec.at(n).col(3).colptr(0) + measured_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x6, tmp_vector_y6, std::string("measured_cp_ch_" + std::to_string(n)));
+
+
+                    if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+                        {
+                            arma::vec true_TOW_ref_ch_s = true_obs_vec.at(min_pr_ch_id).col(0) - receiver_time_offset_ref_channel_s(0);
+                            arma::vec true_TOW_ch_s = true_obs_vec.at(n).col(0) - receiver_time_offset_ref_channel_s(0);
+                            //Compare measured observables
+                            if (min_pr_ch_id != n)
                                 {
-                                    check_results_carrier_phase_double_diff(true_obs_vec.at(n),
+                                    check_results_code_pseudorange(true_obs_vec.at(n),
                                         true_obs_vec.at(min_pr_ch_id),
                                         true_TOW_ch_s,
                                         true_TOW_ref_ch_s,
@@ -1651,34 +2098,47 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                         measured_obs_vec.at(min_pr_ch_id),
                                         "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
 
-                                    check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
-                                        true_obs_vec.at(min_pr_ch_id),
+                                    //Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
+                                    //E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                        {
+                                            check_results_carrier_phase_double_diff(true_obs_vec.at(n),
+                                                true_obs_vec.at(min_pr_ch_id),
+                                                true_TOW_ch_s,
+                                                true_TOW_ref_ch_s,
+                                                measured_obs_vec.at(n),
+                                                measured_obs_vec.at(min_pr_ch_id),
+                                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+
+                                            check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
+                                                true_obs_vec.at(min_pr_ch_id),
+                                                true_TOW_ch_s,
+                                                true_TOW_ref_ch_s,
+                                                measured_obs_vec.at(n),
+                                                measured_obs_vec.at(min_pr_ch_id),
+                                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                                        }
+                                }
+                            else
+                                {
+                                    std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
+                                }
+                            if (FLAGS_compute_single_diffs)
+                                {
+                                    check_results_carrier_phase(true_obs_vec.at(n),
                                         true_TOW_ch_s,
-                                        true_TOW_ref_ch_s,
                                         measured_obs_vec.at(n),
-                                        measured_obs_vec.at(min_pr_ch_id),
+                                        "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                                    check_results_carrier_doppler(true_obs_vec.at(n),
+                                        true_TOW_ch_s,
+                                        measured_obs_vec.at(n),
                                         "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
                                 }
                         }
                     else
                         {
-                            std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
+                            std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
                         }
-                    if (FLAGS_compute_single_diffs)
-                        {
-                            check_results_carrier_phase(true_obs_vec.at(n),
-                                true_TOW_ch_s,
-                                measured_obs_vec.at(n),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-                            check_results_carrier_doppler(true_obs_vec.at(n),
-                                true_TOW_ch_s,
-                                measured_obs_vec.at(n),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-                        }
-                }
-            else
-                {
-                    std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
                 }
         }
     std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;

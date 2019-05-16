@@ -51,8 +51,8 @@
 
 #include "clFFT.h"
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 
 using namespace std;
 

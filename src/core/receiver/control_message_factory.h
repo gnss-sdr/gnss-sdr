@@ -36,7 +36,7 @@
 #include <vector>
 
 //! Message described by who sent it and what it says
-typedef struct ControlMessage_
+typedef struct control_message
 {
     unsigned int who;
     unsigned int what;
@@ -58,7 +58,7 @@ public:
     virtual ~ControlMessageFactory();
 
     gr::message::sptr GetQueueMessage(unsigned int who, unsigned int what);
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(gr::message::sptr queue_message);
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(const gr::message::sptr queue_message);  // NOLINT(performance-unnecessary-value-param)
 };
 
 #endif /*GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_*/

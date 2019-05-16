@@ -37,11 +37,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
-#include "gps_sdr_signal_processing.h"
+#include "cpu_multicorrelator_16sc.h"
 #include "gnss_synchro.h"
+#include "gps_sdr_signal_processing.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include "cpu_multicorrelator_16sc.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
@@ -52,8 +52,7 @@
 
 class gps_l1_ca_dll_pll_c_aid_tracking_sc;
 
-typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_sc>
-    gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr;
+using gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr = boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_sc>;
 
 gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
@@ -127,7 +126,7 @@ private:
     //gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
     //cpu_multicorrelator multicorrelator_cpu;
-    cpu_multicorrelator_16sc multicorrelator_cpu_16sc;
+    Cpu_Multicorrelator_16sc multicorrelator_cpu_16sc;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

@@ -1,8 +1,8 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking.h
- * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
- *   to a TrackingInterface for Galileo E1 signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \file galileo_e1_dll_pll_veml_tracking_fpga.h
+ * \brief Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
+ *  to a TrackingInterface for Galileo E1 signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,11 +37,14 @@
 #ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_FPGA_H_
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_FPGA_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
-#include <string>
+#include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, basic_block_sptr
+#include <cstddef>                   // for size_t
+#include <cstdint>                   // for uint32_t
+#include <string>                    // for string
 
-
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -52,7 +55,7 @@ class GalileoE1DllPllVemlTrackingFpga : public TrackingInterface
 {
 public:
     GalileoE1DllPllVemlTrackingFpga(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -63,7 +66,7 @@ public:
         return role_;
     }
 
-    //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking"
+    //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga"
     inline std::string implementation() override
     {
         return "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga";
@@ -71,7 +74,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -87,24 +90,26 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
 
-private:
-    //dll_pll_veml_tracking_sptr tracking_;
-    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
-    unsigned int channel_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-    int* d_ca_codes;
-    int* d_data_codes;
-    bool d_track_pilot;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
+private:
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
+    uint32_t channel_;
+    std::string role_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    int32_t* d_ca_codes;
+    int32_t* d_data_codes;
+    bool d_track_pilot;
 };
 
 

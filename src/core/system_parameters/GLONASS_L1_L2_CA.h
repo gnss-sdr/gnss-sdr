@@ -33,26 +33,26 @@
 #ifndef GNSS_SDR_GLONASS_L1_L2_CA_H_
 #define GNSS_SDR_GLONASS_L1_L2_CA_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <map>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
-const double GLONASS_C_m_s = SPEED_OF_LIGHT;                   //!< The speed of light, [m/s]
-const double GLONASS_C_m_ms = 299792.4580;                     //!< The speed of light, [m/ms]
+const double GLONASS_C_M_S = SPEED_OF_LIGHT;                   //!< The speed of light, [m/s]
+const double GLONASS_C_M_MS = 299792.4580;                     //!< The speed of light, [m/ms]
 const double GLONASS_PI = 3.1415926535898;                     //!< Pi as defined in IS-GPS-200E
 const double GLONASS_TWO_PI = 6.283185307179586;               //!< 2Pi as defined in IS-GPS-200E
 const double GLONASS_OMEGA_EARTH_DOT = 7.292115e-5;            //!< Earth rotation rate, [rad/s]
 const double GLONASS_GM = 398600.4418e9;                       //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-const double GLONASS_fM_a = 0.35e9;                            //!< Gravitational constant of atmosphere [m^3/s^2]
+const double GLONASS_F_M_A = 0.35e9;                           //!< Gravitational constant of atmosphere [m^3/s^2]
 const double GLONASS_SEMI_MAJOR_AXIS = 6378136;                //!< Semi-major axis of Earth [m]
 const double GLONASS_FLATTENING = 1 / 29825784;                //!< Flattening parameter
 const double GLONASS_GRAVITY = 97803284;                       //!< Equatorial acceleration of gravity [mGal]
-const double GLONASS_GRAVITY_CORRECTION = 0.87;                //!< Correction to acceleration of gravity at sea-level due to Atmosphere[мGal]
+const double GLONASS_GRAVITY_CORRECTION = 0.87;                //!< Correction to acceleration of gravity at sea-level due to Atmosphere[uGal]
 const double GLONASS_J2 = 1082625.75e-9;                       //!< Second zonal harmonic of the geopotential
 const double GLONASS_J4 = -2370.89e-9;                         //!< Fourth zonal harmonic of the geopotential
 const double GLONASS_J6 = 6.08e-9;                             //!< Sixth zonal harmonic of the geopotential
@@ -74,7 +74,7 @@ const double GLONASS_MOON_SEMI_MAJOR_AXIS = 3.84385243e5;     //!< Semi-major ax
 const double GLONASS_MOON_ECCENTRICITY = 0.054900489;         //!< Eccentricity of lunar orbit
 const double GLONASS_MOON_INCLINATION = 0.000089803977407e3;  //!< Inclination of lunar orbit to ecliptic plane (5 deg 08 min 43.4 sec) [rad]
 
-const double GLONASS_SUN_OMEGA = 0.004908229466869e3;  //!< TODO What is this operation in the seconds with T?(281 deg 13 min 15.0 + 6189.03*Т sec) [rad]
+const double GLONASS_SUN_OMEGA = 0.004908229466869e3;  //!< TODO What is this operation in the seconds with T?(281 deg 13 min 15.0 + 6189.03 x T sec) [rad]
 const double GLONASS_SUN_Q0 = 0.006256583774423e3;     //!< (358 deg 28 min 33.04 sec) [rad]
 const double GLONASS_SUN_Q1 = 0e3;                     //!< TODO Why is the value greater than 60?(129596579.10 sec) [rad]
 const double GLONASS_SUN_GM = 0.1325263e12;            //!< Solar gravitational constant [km^3/s^2]
@@ -225,7 +225,7 @@ const std::map<uint32_t, int32_t> GLONASS_PRN = {
     },         //Plane 3
     {24, 2}};  //Plane 3
 
-const double GLONASS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
+const double GLONASS_STARTOFFSET_MS = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
@@ -301,7 +301,7 @@ const std::vector<std::pair<int32_t, int32_t>> N({{71, 5}});
 const std::vector<std::pair<int32_t, int32_t>> M({{76, 2}});
 
 // STRING 5
-const std::vector<std::pair<int32_t, int32_t>> N_A({{6, 11}});
+const std::vector<std::pair<int32_t, int32_t>> DAY_NUMBER_A({{6, 11}});
 const std::vector<std::pair<int32_t, int32_t>> TAU_C({{17, 32}});
 const std::vector<std::pair<int32_t, int32_t>> N_4({{50, 5}});
 const std::vector<std::pair<int32_t, int32_t>> TAU_GPS({{55, 22}});
@@ -310,7 +310,7 @@ const std::vector<std::pair<int32_t, int32_t>> ALM_L_N({{77, 1}});
 // STRING 6, 8, 10, 12, 14
 const std::vector<std::pair<int32_t, int32_t>> C_N({{6, 1}});
 const std::vector<std::pair<int32_t, int32_t>> M_N_A({{7, 2}});
-const std::vector<std::pair<int32_t, int32_t>> n_A({{9, 5}});
+const std::vector<std::pair<int32_t, int32_t>> N_A({{9, 5}});
 const std::vector<std::pair<int32_t, int32_t>> TAU_N_A({{14, 10}});
 const std::vector<std::pair<int32_t, int32_t>> LAMBDA_N_A({{24, 21}});
 const std::vector<std::pair<int32_t, int32_t>> DELTA_I_N_A({{45, 18}});

@@ -29,13 +29,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include <stdexcept>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
 #include "file_signal_source.h"
 #include "in_memory_configuration.h"
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <stdexcept>
 
 TEST(FileSignalSource, Instantiate)
 {

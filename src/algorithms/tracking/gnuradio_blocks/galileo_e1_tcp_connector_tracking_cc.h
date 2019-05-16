@@ -39,25 +39,25 @@
 #ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
 #define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
 
+#include "cpu_multicorrelator.h"
+#include "gnss_synchro.h"
+#include "tcp_communication.h"
+#include <gnuradio/block.h>
+#include <volk/volk.h>
 #include <fstream>
 #include <map>
 #include <string>
-#include <gnuradio/block.h>
-#include <volk/volk.h>
-#include "gnss_synchro.h"
-#include "cpu_multicorrelator.h"
-#include "tcp_communication.h"
 
 
 class Galileo_E1_Tcp_Connector_Tracking_cc;
 
-typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc> galileo_e1_tcp_connector_tracking_cc_sptr;
+using galileo_e1_tcp_connector_tracking_cc_sptr = boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>;
 
 galileo_e1_tcp_connector_tracking_cc_sptr
 galileo_e1_tcp_connector_make_tracking_cc(
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips,
@@ -87,7 +87,7 @@ private:
     galileo_e1_tcp_connector_make_tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string &dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips,
@@ -97,7 +97,7 @@ private:
     Galileo_E1_Tcp_Connector_Tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string &dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips,
@@ -142,7 +142,7 @@ private:
     // correlator
     float *d_local_code_shift_chips;
     gr_complex *d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // tracking vars
     double d_code_freq_chips;
@@ -154,7 +154,7 @@ private:
     size_t d_port;
     int32_t d_listen_connection;
     float d_control_id;
-    tcp_communication d_tcp_com;
+    Tcp_Communication d_tcp_com;
 
     //PRN period in samples
     int32_t d_current_prn_length_samples;

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,28 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+#
+# Provides the following imported target:
+# Iio::iio
+#
+
 ########################################################################
 # Find the library for the USRP Hardware Driver
 ########################################################################
+include(FindPkgConfig)
+pkg_check_modules(PC_UHD uhd)
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_UHD uhd)
-
-FIND_PATH(
-    UHD_INCLUDE_DIRS
+find_path(UHD_INCLUDE_DIRS
     NAMES uhd/config.hpp
     HINTS $ENV{UHD_DIR}/include
-        ${PC_UHD_INCLUDEDIR}
+          ${PC_UHD_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
           ${GNURADIO_INSTALL_PREFIX}/include
+          ${UHD_ROOT}/include
+          $ENV{UHD_ROOT}/include
 )
 
-FIND_LIBRARY(
-    UHD_LIBRARIES
+find_library(UHD_LIBRARIES
     NAMES uhd
     HINTS $ENV{UHD_DIR}/lib
-        ${PC_UHD_LIBDIR}
+          ${PC_UHD_LIBDIR}
     PATHS /usr/local/lib
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -64,8 +68,23 @@ FIND_LIBRARY(
           /usr/lib64
           /usr/lib
           ${GNURADIO_INSTALL_PREFIX}/lib
+          ${UHD_ROOT}/lib
+          $ENV{UHD_ROOT}/lib
+          ${UHD_ROOT}/lib64
+          $ENV{UHD_ROOT}/lib64
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
-MARK_AS_ADVANCED(UHD_LIBRARIES UHD_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
+
+if(UHD_FOUND AND NOT TARGET Uhd::uhd)
+    add_library(Uhd::uhd SHARED IMPORTED)
+    set_target_properties(Uhd::uhd PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${UHD_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${UHD_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${UHD_LIBRARIES}"
+    )
+endif()
+
+mark_as_advanced(UHD_LIBRARIES UHD_INCLUDE_DIRS)

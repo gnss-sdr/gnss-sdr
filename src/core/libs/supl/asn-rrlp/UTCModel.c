@@ -206,42 +206,42 @@ memb_utcDeltaTlsf_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_utcA1_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_A1_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcA0_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_A0_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcTot_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_TOT_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcWNt_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_W_NT_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcDeltaTls_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_DELTA_TLS_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcWNlsf_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_W_NLSF_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcDN_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_DN_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_utcDeltaTlsf_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_UTC_DELTA_TLSF_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -252,7 +252,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcA1_constraint_1,
-		&asn_PER_memb_utcA1_constr_2,
+		&ASN_PER_MEMB_UTC_A1_CONSTR_2,
 		0,
 		"utcA1"
 		},
@@ -261,7 +261,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcA0_constraint_1,
-		&asn_PER_memb_utcA0_constr_3,
+		&ASN_PER_MEMB_UTC_A0_CONSTR_3,
 		0,
 		"utcA0"
 		},
@@ -270,7 +270,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcTot_constraint_1,
-		&asn_PER_memb_utcTot_constr_4,
+		&ASN_PER_MEMB_UTC_TOT_CONSTR_4,
 		0,
 		"utcTot"
 		},
@@ -279,7 +279,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcWNt_constraint_1,
-		&asn_PER_memb_utcWNt_constr_5,
+		&ASN_PER_MEMB_UTC_W_NT_CONSTR_5,
 		0,
 		"utcWNt"
 		},
@@ -288,7 +288,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcDeltaTls_constraint_1,
-		&asn_PER_memb_utcDeltaTls_constr_6,
+		&ASN_PER_MEMB_UTC_DELTA_TLS_CONSTR_6,
 		0,
 		"utcDeltaTls"
 		},
@@ -297,7 +297,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcWNlsf_constraint_1,
-		&asn_PER_memb_utcWNlsf_constr_7,
+		&ASN_PER_MEMB_UTC_W_NLSF_CONSTR_7,
 		0,
 		"utcWNlsf"
 		},
@@ -306,7 +306,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcDN_constraint_1,
-		&asn_PER_memb_utcDN_constr_8,
+		&ASN_PER_MEMB_UTC_DN_CONSTR_8,
 		0,
 		"utcDN"
 		},
@@ -315,7 +315,7 @@ static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_utcDeltaTlsf_constraint_1,
-		&asn_PER_memb_utcDeltaTlsf_constr_9,
+		&ASN_PER_MEMB_UTC_DELTA_TLSF_CONSTR_9,
 		0,
 		"utcDeltaTlsf"
 		},

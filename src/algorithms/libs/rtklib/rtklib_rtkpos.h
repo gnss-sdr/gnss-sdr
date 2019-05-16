@@ -108,7 +108,7 @@ double baseline(const double *ru, const double *rb, double *dr);
 
 void initx_rtk(rtk_t *rtk, double xi, double var, int i);
 
-int selsat(const obsd_t *obs, double *azel, int nu, int nr,
+int selsat(const obsd_t *obs, const double *azel, int nu, int nr,
     const prcopt_t *opt, int *sat, int *iu, int *ir);
 
 void udpos(rtk_t *rtk, double tt);
@@ -144,7 +144,7 @@ int zdres(int base, const obsd_t *obs, int n, const double *rs,
     const double *rr, const prcopt_t *opt, int index, double *y,
     double *e, double *azel);
 
-int validobs(int i, int j, int f, int nf, double *y);
+int validobs(int i, int j, int f, int nf, const double *y);
 
 void ddcov(const int *nb, int n, const double *Ri, const double *Rj,
     int nv, double *R);
@@ -162,7 +162,7 @@ double gloicbcorr(int sat1, int sat2, const prcopt_t *opt, double lam1,
 int test_sys(int sys, int m);
 
 int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
-    const double *P, const int *sat, double *y, double *e,
+    const double *P, const int *sat, double *y, const double *e,
     double *azel, const int *iu, const int *ir, int ns, double *v,
     double *H, double *R, int *vflg);
 

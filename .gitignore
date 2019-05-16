@@ -13,3 +13,4 @@ thirdparty/
 cmake-build-debug/
 /install
 .DS_Store
+.pydevproject

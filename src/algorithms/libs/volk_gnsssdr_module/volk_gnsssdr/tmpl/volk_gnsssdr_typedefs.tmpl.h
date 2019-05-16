@@ -19,8 +19,8 @@
 #ifndef INCLUDED_VOLK_GNSSSDR_TYPEDEFS
 #define INCLUDED_VOLK_GNSSSDR_TYPEDEFS
 
-#include <inttypes.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <inttypes.h>
 
 // clang-format off
 %for kern in kernels:

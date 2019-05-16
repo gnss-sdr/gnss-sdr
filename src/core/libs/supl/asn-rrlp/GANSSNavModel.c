@@ -106,22 +106,22 @@ memb_sqrtAMBS_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_nonBroadcastIndFlag_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_NON_BROADCAST_IND_FLAG_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_toeMSB_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_TOE_MSB_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 5,  5,  0,  31 }	/* (0..31) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_eMSB_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_E_MSB_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_sqrtAMBS_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_SQRT_AMBS_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -132,7 +132,7 @@ static asn_TYPE_member_t asn_MBR_GANSSNavModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_nonBroadcastIndFlag_constraint_1,
-		&asn_PER_memb_nonBroadcastIndFlag_constr_2,
+		&ASN_PER_MEMB_NON_BROADCAST_IND_FLAG_CONSTR_2,
 		0,
 		"nonBroadcastIndFlag"
 		},
@@ -141,7 +141,7 @@ static asn_TYPE_member_t asn_MBR_GANSSNavModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_toeMSB_constraint_1,
-		&asn_PER_memb_toeMSB_constr_3,
+		&ASN_PER_MEMB_TOE_MSB_CONSTR_3,
 		0,
 		"toeMSB"
 		},
@@ -150,7 +150,7 @@ static asn_TYPE_member_t asn_MBR_GANSSNavModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_eMSB_constraint_1,
-		&asn_PER_memb_eMSB_constr_4,
+		&ASN_PER_MEMB_E_MSB_CONSTR_4,
 		0,
 		"eMSB"
 		},
@@ -159,7 +159,7 @@ static asn_TYPE_member_t asn_MBR_GANSSNavModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_sqrtAMBS_constraint_1,
-		&asn_PER_memb_sqrtAMBS_constr_5,
+		&ASN_PER_MEMB_SQRT_AMBS_CONSTR_5,
 		0,
 		"sqrtAMBS"
 		},

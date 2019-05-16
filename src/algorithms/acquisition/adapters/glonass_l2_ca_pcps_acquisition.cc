@@ -31,20 +31,22 @@
  */
 
 #include "glonass_l2_ca_pcps_acquisition.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "acq_conf.h"
 #include "configuration_interface.h"
 #include "glonass_l2_signal_processing.h"
-#include "GLONASS_L1_L2_CA.h"
 #include "gnss_sdr_flags.h"
-#include "acq_conf.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
 GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
@@ -55,7 +57,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GLONASS_L2_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
@@ -65,7 +67,10 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters.blocking = blocking_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
@@ -89,7 +94,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("cshort") == 0)
+    if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
         }
@@ -109,7 +114,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
@@ -118,7 +123,8 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
+    
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -136,10 +142,8 @@ GlonassL2CaPcpsAcquisition::~GlonassL2CaPcpsAcquisition()
 }
 
 
-void GlonassL2CaPcpsAcquisition::set_channel(unsigned int channel)
+void GlonassL2CaPcpsAcquisition::stop_acquisition()
 {
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
 }
 
 
@@ -202,7 +206,7 @@ void GlonassL2CaPcpsAcquisition::init()
 
 void GlonassL2CaPcpsAcquisition::set_local_code()
 {
-    std::complex<float>* code = new std::complex<float>[code_length_];
+    auto* code = new std::complex<float>[code_length_];
 
     glonass_l2_ca_code_gen_complex_sampled(code, /* gnss_synchro_->PRN,*/ fs_in_, 0);
 
@@ -246,9 +250,9 @@ float GlonassL2CaPcpsAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = static_cast<double>(vector_length_);
+    auto lambda = static_cast<double>(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -256,15 +260,15 @@ float GlonassL2CaPcpsAcquisition::calculate_threshold(float pfa)
 
 void GlonassL2CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             // nothing to connect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             // nothing to connect
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             // Since a byte-based acq implementation is not available,
             // we just convert cshorts to gr_complex
@@ -281,15 +285,15 @@ void GlonassL2CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void GlonassL2CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             // nothing to disconnect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             // nothing to disconnect
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
@@ -304,23 +308,21 @@ void GlonassL2CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GlonassL2CaPcpsAcquisition::get_left_block()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return acquisition_;
         }
-    else if (item_type_.compare("cshort") == 0)
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }
-    else if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-            return nullptr;
-        }
+
+    LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    return nullptr;
 }
 
 

@@ -33,12 +33,12 @@
 #ifndef GNSS_SDR_GPX_PRINTER_H_
 #define GNSS_SDR_GPX_PRINTER_H_
 
-#include "pvt_solution.h"
-#include "rtklib_solver.h"
+
 #include <fstream>
 #include <memory>
 #include <string>
 
+class Rtklib_Solver;
 
 /*!
  * \brief Prints PVT information to GPX format file
@@ -52,12 +52,13 @@ private:
     bool positions_printed;
     std::string gpx_filename;
     std::string indent;
+    std::string gpx_base_path;
 
 public:
-    Gpx_Printer();
+    Gpx_Printer(const std::string& base_path = ".");
     ~Gpx_Printer();
-    bool set_headers(std::string filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values);
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
+    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
     bool close_file();
 };
 

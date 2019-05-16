@@ -1,10 +1,8 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface that uses the FPGA
- * \author Marc Majoral, 2018. mmajoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * for GPS L1 C/A to a TrackingInterface for the FPGA
+ * \author Marc Majoral, 2019, mmajoral(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -13,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,11 +37,14 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
-#include <string>
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
+#include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
+#include <string>
 
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -53,9 +54,9 @@ class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllTrackingFpga();
 
@@ -72,7 +73,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -93,16 +94,18 @@ public:
 
     void start_tracking() override;
 
-	//void reset(void);
-	
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
+
 private:
-	dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
-    unsigned int channel_;
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
+    uint32_t channel_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-    int* d_ca_codes;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    int32_t* d_ca_codes;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

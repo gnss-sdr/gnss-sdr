@@ -30,13 +30,11 @@
 
 #include "gn3s_signal_source.h"
 #include "configuration_interface.h"
+#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include <glog/logging.h>
 #include <gn3s/gn3s_source_cc.h>
 
-
-using google::LogMessage;
 
 Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)

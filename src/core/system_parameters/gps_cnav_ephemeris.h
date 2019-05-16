@@ -32,9 +32,8 @@
 #ifndef GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 #define GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 
-#include "GPS_CNAV.h"
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 
 /*!
@@ -54,7 +53,7 @@ public:
     int32_t i_GPS_week;        //!< GPS week number, aka WN [week]
     int32_t i_URA;             //!< ED Accuracy Index
     int32_t i_signal_health;   //!< Signal health (L1/L2/L5)
-    double d_Top;              //!< Data predict time of week
+    int32_t d_Top;             //!< Data predict time of week
     double d_DELTA_A;          //!< Semi-major axis difference at reference time
     double d_A_DOT;            //!< Change rate in semi-major axis
     double d_Delta_n;          //!< Mean Motion Difference From Computed Value [semi-circles/s]
@@ -63,8 +62,8 @@ public:
     double d_e_eccentricity;   //!< Eccentricity
     double d_OMEGA;            //!< Argument of Perigee [semi-cicles]
     double d_OMEGA0;           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
-    double d_Toe1;             //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-    double d_Toe2;             //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t d_Toe1;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t d_Toe2;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     double d_DELTA_OMEGA_DOT;  //!< Rate of Right Ascension  difference [semi-circles/s]
     double d_i_0;              //!< Inclination Angle at Reference Time [semi-circles]
     double d_IDOT;             //!< Rate of Inclination Angle [semi-circles/s]
@@ -76,7 +75,7 @@ public:
     double d_Cuc;              //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
 
     // Clock Correction and Accuracy Parameters
-    double d_Toc;   //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+    int32_t d_Toc;  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
     double d_A_f0;  //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;  //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
@@ -92,7 +91,7 @@ public:
     double d_ISCL5I;
     double d_ISCL5Q;
 
-    double d_TOW;  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    int32_t d_TOW;  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
 
     /*! \brief If true, enhanced level of integrity assurance.
      *

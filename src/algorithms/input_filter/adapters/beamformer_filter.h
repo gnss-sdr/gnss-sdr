@@ -34,6 +34,7 @@
 
 #include "gnss_block_interface.h"
 #include <gnuradio/hier_block2.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -46,7 +47,7 @@ class BeamformerFilter : public GNSSBlockInterface
 {
 public:
     BeamformerFilter(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 
     virtual ~BeamformerFilter();
@@ -78,7 +79,7 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    unsigned long long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
     gr::block_sptr beamformer_;

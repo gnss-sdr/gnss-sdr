@@ -33,9 +33,9 @@
 #define GNSS_SDR_LABSAT_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -47,7 +47,7 @@ class LabsatSignalSource : public GNSSBlockInterface
 {
 public:
     LabsatSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~LabsatSignalSource();
@@ -81,7 +81,6 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    long samples_;
     std::string filename_;
     bool dump_;
     std::string dump_filename_;

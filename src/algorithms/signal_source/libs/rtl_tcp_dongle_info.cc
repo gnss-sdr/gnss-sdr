@@ -37,13 +37,13 @@
 
 using boost::asio::ip::tcp;
 
-rtl_tcp_dongle_info::rtl_tcp_dongle_info() : tuner_type_(0), tuner_gain_count_(0)
+Rtl_Tcp_Dongle_Info::Rtl_Tcp_Dongle_Info() : tuner_type_(0), tuner_gain_count_(0)
 {
     std::memset(magic_, 0, sizeof(magic_));
 }
 
 
-boost::system::error_code rtl_tcp_dongle_info::read(boost::asio::ip::tcp::socket &socket)
+boost::system::error_code Rtl_Tcp_Dongle_Info::read(boost::asio::ip::tcp::socket &socket)
 {
     boost::system::error_code ec;
 
@@ -67,7 +67,7 @@ boost::system::error_code rtl_tcp_dongle_info::read(boost::asio::ip::tcp::socket
 }
 
 
-const char *rtl_tcp_dongle_info::get_type_name() const
+const char *Rtl_Tcp_Dongle_Info::get_type_name() const
 {
     switch (get_tuner_type())
         {
@@ -89,7 +89,7 @@ const char *rtl_tcp_dongle_info::get_type_name() const
 }
 
 
-double rtl_tcp_dongle_info::clip_gain(int gain) const
+double Rtl_Tcp_Dongle_Info::clip_gain(int gain) const
 {
     // the following gain values have been copied from librtlsdr
     // all gain values are expressed in tenths of a dB
@@ -121,37 +121,32 @@ double rtl_tcp_dongle_info::clip_gain(int gain) const
         }
 
     // clip
-    if (gains.size() == 0)
+    if (gains.empty())
         {
             // no defined gains to clip to
             return gain;
         }
-    else
-        {
-            double last_stop = gains.front();
-            BOOST_FOREACH (double g, gains)
-                {
-                    g /= 10.0;
 
-                    if (gain < g)
+    double last_stop = gains.front();
+    BOOST_FOREACH (double g, gains)
+        {
+            g /= 10.0;
+
+            if (gain < g)
+                {
+                    if (std::abs(gain - g) < std::abs(gain - last_stop))
                         {
-                            if (std::abs(gain - g) < std::abs(gain - last_stop))
-                                {
-                                    return g;
-                                }
-                            else
-                                {
-                                    return last_stop;
-                                }
+                            return g;
                         }
-                    last_stop = g;
+                    return last_stop;
                 }
-            return last_stop;
+            last_stop = g;
         }
+    return last_stop;
 }
 
 
-bool rtl_tcp_dongle_info::is_valid() const
+bool Rtl_Tcp_Dongle_Info::is_valid() const
 {
     return std::memcmp(magic_, "RTL0", 4) == 0;
 }

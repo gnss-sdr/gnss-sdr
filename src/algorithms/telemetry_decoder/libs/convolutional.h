@@ -88,7 +88,7 @@ inline static int parity_counter(int symbol, int length)
 inline static int nsc_enc_bit(int state_out_p[],
     int input,
     int state_in,
-    int g[],
+    const int g[],
     int KK,
     int nn)
 {
@@ -144,7 +144,7 @@ inline static void nsc_transit(int output_p[],
  *  \param[in] nn            The length of the received vector
  *
  */
-inline static float Gamma(float rec_array[],
+inline static float Gamma(const float rec_array[],
     int symbol,
     int nn)
 {
@@ -155,7 +155,9 @@ inline static float Gamma(float rec_array[],
     for (i = 0; i < nn; i++)
         {
             if (symbol & mask)
-                rm += rec_array[nn - i - 1];
+                {
+                    rm += rec_array[nn - i - 1];
+                }
             mask = mask << 1;
         }
     return (rm);
@@ -175,11 +177,11 @@ inline static float Gamma(float rec_array[],
  *
  */
 inline static void Viterbi(int output_u_int[],
-    int out0[],
-    int state0[],
-    int out1[],
-    int state1[],
-    double input_c[],
+    const int out0[],
+    const int state0[],
+    const int out1[],
+    const int state1[],
+    const double input_c[],
     int KK,
     int nn,
     int LL)
@@ -219,11 +221,15 @@ inline static void Viterbi(int output_u_int[],
     for (t = 0; t < LL + mm; t++)
         {
             for (i = 0; i < nn; i++)
-                rec_array[i] = static_cast<float>(input_c[nn * t + i]);
+                {
+                    rec_array[i] = static_cast<float>(input_c[nn * t + i]);
+                }
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)
-                metric_c[i] = Gamma(rec_array, i, nn);
+                {
+                    metric_c[i] = Gamma(rec_array, i, nn);
+                }
 
             /* step through all states */
             for (state = 0; state < states; state++)

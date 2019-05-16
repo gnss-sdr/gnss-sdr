@@ -36,14 +36,14 @@
  */
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
-#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <exception>
 #include <sstream>
+#include <utility>
 
-using google::LogMessage;
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
@@ -59,7 +59,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
 {
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
         new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
-            samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
+            samples_per_code, bit_transition_flag, dump, std::move(dump_filename), both_signal_components_, CAF_window_hz_, Zero_padding_));
 }
 
 
@@ -117,8 +117,8 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
         }
     else
         {
-            d_fft_code_Q_A = 0;
-            d_magnitudeQA = 0;
+            d_fft_code_Q_A = nullptr;
+            d_magnitudeQA = nullptr;
         }
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
@@ -132,16 +132,16 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                 }
             else
                 {
-                    d_fft_code_Q_B = 0;
-                    d_magnitudeQB = 0;
+                    d_fft_code_Q_B = nullptr;
+                    d_magnitudeQB = nullptr;
                 }
         }
     else
         {
-            d_fft_code_I_B = 0;
-            d_magnitudeIB = 0;
-            d_fft_code_Q_B = 0;
-            d_magnitudeQB = 0;
+            d_fft_code_I_B = nullptr;
+            d_magnitudeIB = nullptr;
+            d_fft_code_Q_B = nullptr;
+            d_magnitudeQB = nullptr;
         }
 
     // Direct FFT
@@ -152,19 +152,19 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;
     d_doppler_step = 250;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_CAF_vector = 0;
-    d_CAF_vector_I = 0;
-    d_CAF_vector_Q = 0;
+    d_CAF_vector = nullptr;
+    d_CAF_vector_I = nullptr;
+    d_CAF_vector_Q = nullptr;
     d_channel = 0;
     d_gr_stream_buffer = 0;
 }
@@ -213,9 +213,20 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisi
     delete d_fft_if;
     delete d_ifft;
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 
@@ -393,7 +404,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             }
         case 1:
             {
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 unsigned int buff_increment;
                 if ((ninput_items[0] + d_buffer_count) <= d_fft_size)
                     {
@@ -417,7 +428,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         case 2:
             {
                 // Fill last part of the buffer and reset counter
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 if (d_buffer_count < d_fft_size)
                     {
                         memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * (d_fft_size - d_buffer_count));
@@ -674,7 +685,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 if (d_CAF_window_hz > 0)
                     {
                         int CAF_bins_half;
-                        float *accum = static_cast<float *>(volk_gnsssdr_malloc(sizeof(float), volk_gnsssdr_get_alignment()));
+                        auto *accum = static_cast<float *>(volk_gnsssdr_malloc(sizeof(float), volk_gnsssdr_get_alignment()));
                         CAF_bins_half = d_CAF_window_hz / (2 * d_doppler_step);
                         float weighting_factor;
                         weighting_factor = 0.5 / static_cast<float>(CAF_bins_half);

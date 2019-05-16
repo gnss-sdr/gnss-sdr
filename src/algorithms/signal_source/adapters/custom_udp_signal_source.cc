@@ -1,6 +1,5 @@
 /*!
- * \file udp_signal_source.cc
- *
+ * \file custom_udp_signal_source.cc
  * \brief Receives ip frames containing samples in UDP frame encapsulation
  * using a high performance packet capture library (libpcap)
  * \author Javier Arribas jarribas (at) cttc.es
@@ -31,19 +30,17 @@
 
 
 #include "custom_udp_signal_source.h"
-#include "configuration_interface.h"
 #include "GPS_L1_CA.h"
+#include "configuration_interface.h"
 #include <boost/format.hpp>
 #include <glog/logging.h>
 #include <iostream>
-
-
-using google::LogMessage;
+#include <utility>
 
 
 CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -71,7 +68,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     // output item size is always gr_complex
     item_size_ = sizeof(gr_complex);
 
-    udp_gnss_rx_source_ = gr_complex_ip_packet_source::make(capture_device,
+    udp_gnss_rx_source_ = Gr_Complex_Ip_Packet_Source::make(capture_device,
         address,
         port,
         payload_bytes,
@@ -112,9 +109,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
 }
 
 
-CustomUDPSignalSource::~CustomUDPSignalSource()
-{
-}
+CustomUDPSignalSource::~CustomUDPSignalSource() = default;
 
 
 void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)

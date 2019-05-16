@@ -31,14 +31,14 @@
  */
 
 #include "gps_ephemeris.h"
-#include "gnss_satellite.h"
 #include "GPS_L1_CA.h"
+#include "gnss_satellite.h"
 #include <cmath>
 
 Gps_Ephemeris::Gps_Ephemeris()
 {
     i_satellite_PRN = 0U;
-    d_TOW = 0.0;
+    d_TOW = 0;
     d_Crs = 0.0;
     d_Delta_n = 0.0;
     d_M_0 = 0.0;
@@ -46,8 +46,8 @@ Gps_Ephemeris::Gps_Ephemeris()
     d_e_eccentricity = 0.0;
     d_Cus = 0.0;
     d_sqrt_A = 0.0;
-    d_Toe = 0.0;
-    d_Toc = 0.0;
+    d_Toe = 0;
+    d_Toc = 0;
     d_Cic = 0.0;
     d_OMEGA0 = 0.0;
     d_Cis = 0.0;
@@ -61,11 +61,11 @@ Gps_Ephemeris::Gps_Ephemeris()
     b_L2_P_data_flag = false;
     i_SV_accuracy = 0;
     i_SV_health = 0;
-    d_IODE_SF2 = 0.0;
-    d_IODE_SF3 = 0.0;
-    d_TGD = 0.0;   // Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
-    d_IODC = 0.0;  // Issue of Data, Clock
-    i_AODO = 0;    // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
+    d_IODE_SF2 = 0;
+    d_IODE_SF3 = 0;
+    d_TGD = 0.0;  // Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
+    d_IODC = 0;   // Issue of Data, Clock
+    i_AODO = 0;   // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
     b_fit_interval_flag = false;  // indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0  =  4 hours, 1  =  greater than 4 hours.
     d_spare1 = 0.0;
@@ -283,7 +283,7 @@ double Gps_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (GPS_C_m_s * GPS_C_m_s);
+    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (GPS_C_M_S * GPS_C_M_S);
 
     return dtr_s;
 }

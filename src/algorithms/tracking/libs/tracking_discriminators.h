@@ -52,6 +52,19 @@
  */
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2);
 
+/*
+ * FLL differential arctan discriminator:
+ * \f{equation}
+ *     e_{atan}(k)=\frac{1}{t_1-t_2}\text{phase_unwrap}(\tan^-1(\frac{Q(k)}{I(k)})-\tan^-1(\frac{Q(k-1)}{I(k-1)}))
+ * \f}
+ * The output is in [radians/second].
+ */
+double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2);
+
+/*! \brief Phase unwrapping function, input is [rad]
+ *
+ */
+double phase_unwrap(double phase_rad);
 
 /*! \brief PLL four quadrant arctan discriminator
  *

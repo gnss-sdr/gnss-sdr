@@ -29,44 +29,44 @@
  * -------------------------------------------------------------------------
  */
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
+#include "fir_filter.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
+#include "gen_signal_source.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
+#include "pass_through.h"
+#include "signal_generator.h"
+#include "signal_generator_c.h"
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_synchro.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "signal_generator.h"
-#include "signal_generator_c.h"
-#include "fir_filter.h"
-#include "gen_signal_source.h"
-#include "gnss_sdr_valve.h"
-#include "pass_through.h"
-
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx;
 
-typedef boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr;
+using GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr = boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx>;
 
-GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(concurrent_queue<int>& queue);
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx : public gr::block
 {
 private:
-    friend GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(concurrent_queue<int>& queue);
+    friend GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -74,7 +74,7 @@ public:
 };
 
 
-GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(concurrent_queue<int>& queue)
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr(new GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(queue));
 }
@@ -84,7 +84,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::msg_handler_events(p
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -96,7 +96,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::msg_handler_events(p
 }
 
 
-GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(concurrent_queue<int>& queue) : gr::block("GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::msg_handler_events, this, _1));
@@ -104,9 +104,7 @@ GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::GalileoE5aPcpsAcquisition
 }
 
 
-GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx()
-{
-}
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx() = default;
 
 
 class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest : public ::testing::Test
@@ -121,9 +119,7 @@ protected:
         init();
     }
 
-    ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest()
-    {
-    }
+    ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest() = default;
 
     void init();
     void config_1();
@@ -134,7 +130,7 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GalileoE5aNoncoherentIQAcquisitionCaf> acquisition;
@@ -144,7 +140,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -429,7 +425,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message, this);
+    ch_thread = std::thread(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message, this);
 }
 
 

@@ -47,13 +47,20 @@ DerivePointerAlignment: true
 DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
+IncludeBlocks: Merge
 IncludeCategories:
-  - Regex:           '^<.*\.h>'
+  - Regex:           '^.*.h"'
     Priority:        1
-  - Regex:           '^<.*'
+  - Regex:           '^.*(boost|gflags|glog|gnsssdr|gpstk|gtest|gnuradio|pmt|uhd|volk)/'
+    Priority:        2
+  - Regex:           '^.*(armadillo|matio|pugixml)'
     Priority:        2
   - Regex:           '.*'
     Priority:        3
+  - Regex:           '^<.*\.h>'
+    Priority:        4
+  - Regex:           '^<.*'
+    Priority:        5
 IndentCaseLabels: false
 IndentWidth:     4
 IndentWrappedFunctionNames: false
@@ -73,7 +80,7 @@ PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Left
 ReflowComments:  true
-SortIncludes:    false
+SortIncludes:    true
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements

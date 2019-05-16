@@ -31,32 +31,33 @@
  */
 
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
+#include "glonass_l1_ca_dll_pll_tracking.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
+#include "tracking_interface.h"
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gtest/gtest.h>
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "tracking_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_sdr_valve.h"
-#include "gnss_synchro.h"
-#include "glonass_l1_ca_dll_pll_tracking.h"
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaDllPllTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx> GlonassL1CaDllPllTrackingTest_msg_rx_sptr;
+using GlonassL1CaDllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx>;
 
 GlonassL1CaDllPllTrackingTest_msg_rx_sptr GlonassL1CaDllPllTrackingTest_msg_rx_make();
 
@@ -81,7 +82,7 @@ void GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -98,9 +99,7 @@ GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() : g
     rx_message = 0;
 }
 
-GlonassL1CaDllPllTrackingTest_msg_rx::~GlonassL1CaDllPllTrackingTest_msg_rx()
-{
-}
+GlonassL1CaDllPllTrackingTest_msg_rx::~GlonassL1CaDllPllTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -117,9 +116,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GlonassL1CaDllPllTrackingTest()
-    {
-    }
+    ~GlonassL1CaDllPllTrackingTest() = default;
 
     void init();
 

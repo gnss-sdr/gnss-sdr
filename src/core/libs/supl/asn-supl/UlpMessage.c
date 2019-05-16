@@ -6,7 +6,7 @@
 
 #include "UlpMessage.h"
 
-static asn_per_constraints_t asn_PER_type_UlpMessage_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_ULP_MESSAGE_CONSTR_1 = {
 	{ APC_CONSTRAINED | APC_EXTENSIBLE,  3,  3,  0,  7 }	/* (0..7,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -122,7 +122,7 @@ asn_TYPE_descriptor_t asn_DEF_UlpMessage = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	&asn_PER_type_UlpMessage_constr_1,
+	&ASN_PER_TYPE_ULP_MESSAGE_CONSTR_1,
 	asn_MBR_UlpMessage_1,
 	8,	/* Elements count */
 	&asn_SPC_UlpMessage_specs_1	/* Additional specs */

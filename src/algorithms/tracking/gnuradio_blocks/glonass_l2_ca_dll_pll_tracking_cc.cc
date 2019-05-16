@@ -37,25 +37,24 @@
  */
 
 #include "glonass_l2_ca_dll_pll_tracking_cc.h"
-#include "glonass_l2_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "glonass_l2_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "control_message_factory.h"
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #define CN0_ESTIMATION_SAMPLES 10
 
-using google::LogMessage;
 
 glonass_l2_ca_dll_pll_tracking_cc_sptr
 glonass_l2_ca_dll_pll_make_tracking_cc(
@@ -68,7 +67,7 @@ glonass_l2_ca_dll_pll_make_tracking_cc(
     float early_late_space_chips)
 {
     return glonass_l2_ca_dll_pll_tracking_cc_sptr(new Glonass_L2_Ca_Dll_Pll_Tracking_cc(
-        fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
+        fs_in, vector_length, dump, std::move(dump_filename), pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
 
@@ -93,12 +92,12 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
                                         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
-
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_current_prn_length_samples = static_cast<int32_t>(d_vector_length);
 
@@ -154,7 +153,7 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
 
     systemName["R"] = std::string("Glonass");
 
-    d_acquisition_gnss_synchro = 0;
+    d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
     d_acq_carrier_doppler_hz = 0.0;
@@ -279,7 +278,15 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::~Glonass_L2_Ca_Dll_Pll_Tracking_cc()
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            Glonass_L2_Ca_Dll_Pll_Tracking_cc::save_matfile();
+            try
+                {
+                    Glonass_L2_Ca_Dll_Pll_Tracking_cc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;
@@ -331,24 +338,24 @@ int32_t Glonass_L2_Ca_Dll_Pll_Tracking_cc::save_matfile()
         {
             return 1;
         }
-    float *abs_E = new float[num_epoch];
-    float *abs_P = new float[num_epoch];
-    float *abs_L = new float[num_epoch];
-    float *Prompt_I = new float[num_epoch];
-    float *Prompt_Q = new float[num_epoch];
-    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
-    double *acc_carrier_phase_rad = new double[num_epoch];
-    double *carrier_doppler_hz = new double[num_epoch];
-    double *code_freq_chips = new double[num_epoch];
-    double *carr_error_hz = new double[num_epoch];
-    double *carr_error_filt_hz = new double[num_epoch];
-    double *code_error_chips = new double[num_epoch];
-    double *code_error_filt_chips = new double[num_epoch];
-    double *CN0_SNV_dB_Hz = new double[num_epoch];
-    double *carrier_lock_test = new double[num_epoch];
-    double *aux1 = new double[num_epoch];
-    double *aux2 = new double[num_epoch];
-    uint32_t *PRN = new uint32_t[num_epoch];
+    auto *abs_E = new float[num_epoch];
+    auto *abs_P = new float[num_epoch];
+    auto *abs_L = new float[num_epoch];
+    auto *Prompt_I = new float[num_epoch];
+    auto *Prompt_Q = new float[num_epoch];
+    auto *PRN_start_sample_count = new uint64_t[num_epoch];
+    auto *acc_carrier_phase_rad = new double[num_epoch];
+    auto *carrier_doppler_hz = new double[num_epoch];
+    auto *code_freq_chips = new double[num_epoch];
+    auto *carr_error_hz = new double[num_epoch];
+    auto *carr_error_filt_hz = new double[num_epoch];
+    auto *code_error_chips = new double[num_epoch];
+    auto *code_error_filt_chips = new double[num_epoch];
+    auto *CN0_SNV_dB_Hz = new double[num_epoch];
+    auto *carrier_lock_test = new double[num_epoch];
+    auto *aux1 = new double[num_epoch];
+    auto *aux2 = new double[num_epoch];
+    auto *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -408,8 +415,8 @@ int32_t Glonass_L2_Ca_Dll_Pll_Tracking_cc::save_matfile()
     std::string filename = d_dump_filename;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_E", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E, 0);
@@ -518,7 +525,7 @@ void Glonass_L2_Ca_Dll_Pll_Tracking_cc::set_channel(uint32_t channel)
                 {
                     try
                         {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -549,8 +556,8 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
     double code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // PRN start block alignment
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // PRN start block alignment
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
@@ -566,7 +573,7 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                     double acq_trk_shif_correction_samples;
                     int32_t acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples
@@ -659,7 +666,10 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                         }
                     else
                         {
-                            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                            if (d_carrier_lock_fail_counter > 0)
+                                {
+                                    d_carrier_lock_fail_counter--;
+                                }
                         }
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {
@@ -749,7 +759,7 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                     // AUX vars (for debug purposes)
                     tmp_float = d_rem_code_phase_samples;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    double tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    auto tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;

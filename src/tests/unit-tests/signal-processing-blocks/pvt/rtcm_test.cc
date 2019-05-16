@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include "Galileo_E1.h"
+#include "rtcm.h"
 #include <memory>
 #include <thread>
-#include "rtcm.h"
-#include "Galileo_E1.h"
 
 TEST(RtcmTest, HexToBin)
 {
@@ -295,7 +295,7 @@ TEST(RtcmTest, MT1020)
     // Bit distribution per fields dependent on other factors
     gnav_ephemeris.d_t_b = 8100;
     // Binary flag representation
-    gnav_ephemeris.d_P_3 = 1;
+    gnav_ephemeris.d_P_3 = true;
 
     std::string tx_msg = rtcm->print_MT1020(gnav_ephemeris, gnav_utc_model);
 
@@ -336,14 +336,14 @@ TEST(RtcmTest, MT1045)
     Galileo_Ephemeris gal_eph_read = Galileo_Ephemeris();
 
     gal_eph.i_satellite_PRN = 5;
-    gal_eph.OMEGA_dot_3 = 53.0 * OMEGA_dot_3_LSB;
+    gal_eph.OMEGA_dot_3 = 53.0 * OMEGA_DOT_3_LSB;
     gal_eph.E5a_DVS = true;
 
     std::string tx_msg = rtcm->print_MT1045(gal_eph);
 
     EXPECT_EQ(0, rtcm->read_MT1045(tx_msg, gal_eph_read));
     EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
-    EXPECT_DOUBLE_EQ(53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
+    EXPECT_DOUBLE_EQ(53.0 * OMEGA_DOT_3_LSB, gal_eph_read.OMEGA_dot_3);
     EXPECT_EQ(static_cast<unsigned int>(5), gal_eph_read.i_satellite_PRN);
     EXPECT_EQ(1, rtcm->read_MT1045(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gal_eph_read));
 }
@@ -570,7 +570,7 @@ TEST(RtcmTest, MSM1)
     EXPECT_EQ(ref_id, rtcm->bin_to_uint(MSM1_bin.substr(size_header + size_msg_length + 12, 12)));
     EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("101101"));  // check cell mask
 
-    double meters_to_miliseconds = GPS_C_m_s * 0.001;
+    double meters_to_miliseconds = GPS_C_M_S * 0.001;
     unsigned int rough_range_1 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
     unsigned int rough_range_2 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro2.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
     unsigned int rough_range_4 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro3.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;

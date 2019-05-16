@@ -30,19 +30,21 @@
  */
 
 #include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
-#include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
+#include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include <boost/math/distributions/exponential.hpp>
+#include <glog/logging.h>
 
-using google::LogMessage;
 
 GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -53,11 +55,14 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     item_type_ = configuration_->property(role + ".item_type",
         default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
     if (sampled_ms_ % 4 != 0)
@@ -75,7 +80,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
 
     //--- Find number of samples per spreading code (4 ms)  -----------------
     code_length_ = round(
-        fs_in_ / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
+        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
@@ -83,7 +88,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(sampled_ms_, max_dwells_,
@@ -104,7 +109,8 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
+    
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -122,21 +128,19 @@ GalileoE1Pcps8msAmbiguousAcquisition::~GalileoE1Pcps8msAmbiguousAcquisition()
 }
 
 
-void GalileoE1Pcps8msAmbiguousAcquisition::set_channel(unsigned int channel)
+void GalileoE1Pcps8msAmbiguousAcquisition::stop_acquisition()
 {
-    channel_ = channel;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_channel(channel_);
-        }
 }
 
 
 void GalileoE1Pcps8msAmbiguousAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
-    if (pfa == 0.0) pfa = configuration_->property(role_ + ".pfa", 0.0);
+    if (pfa == 0.0)
+        {
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
+        }
 
     if (pfa == 0.0)
         {
@@ -149,7 +153,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
         }
@@ -160,7 +164,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_max(unsigned int doppler_
 {
     doppler_max_ = doppler_max;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_max(doppler_max_);
         }
@@ -170,7 +174,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_max(unsigned int doppler_
 void GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
@@ -181,7 +185,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_gnss_synchro(
     Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_gnss_synchro(gnss_synchro_);
         }
@@ -190,14 +194,11 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_gnss_synchro(
 
 signed int GalileoE1Pcps8msAmbiguousAcquisition::mag()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -210,12 +211,12 @@ void GalileoE1Pcps8msAmbiguousAcquisition::init()
 
 void GalileoE1Pcps8msAmbiguousAcquisition::set_local_code()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             bool cboc = configuration_->property(
-                "Acquisition" + boost::lexical_cast<std::string>(channel_) + ".cboc", false);
+                "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-            std::complex<float>* code = new std::complex<float>[code_length_];
+            auto* code = new std::complex<float>[code_length_];
 
             galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
@@ -235,7 +236,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_local_code()
 
 void GalileoE1Pcps8msAmbiguousAcquisition::reset()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_active(true);
         }
@@ -254,9 +255,9 @@ float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -264,7 +265,7 @@ float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
 
 void GalileoE1Pcps8msAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
@@ -273,7 +274,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 
 void GalileoE1Pcps8msAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
         }

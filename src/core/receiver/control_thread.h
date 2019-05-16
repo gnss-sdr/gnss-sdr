@@ -35,16 +35,24 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
-#include "control_message_factory.h"
-#include "gnss_sdr_supl_client.h"
-#include <boost/thread.hpp>
-#include <gnuradio/msg_queue.h>
-#include <memory>
-#include <vector>
+#include "agnss_ref_location.h"       // for Agnss_Ref_Location
+#include "agnss_ref_time.h"           // for Agnss_Ref_Time
+#include "control_message_factory.h"  // for ControlMessage
+#include "gnss_sdr_supl_client.h"     // for Gnss_Sdr_Supl_Client
+#include "tcp_cmd_interface.h"        // for TcpCmdInterface
+#include <armadillo>                  // for arma::vec
+#include <boost/thread.hpp>           // for boost::thread
+#include <gnuradio/msg_queue.h>       // for msg_queue, msg_queue::sptr
+#include <ctime>                      // for time_t
+#include <memory>                     // for shared_ptr
+#include <string>                     // for string
+#include <thread>                     // for std::thread
+#include <utility>                    // for pair
+#include <vector>                     // for vector
 
-class GNSSFlowgraph;
 class ConfigurationInterface;
-
+class GNSSFlowgraph;
+class Gnss_Satellite;
 
 /*!
  * \brief This class represents the main thread of the application, so the name is ControlThread.
@@ -82,15 +90,14 @@ public:
      *
      *  - Read control messages and process them; }
      */
-    void run();
+    int run();
 
     /*!
      * \brief Sets the control_queue
      *
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
-    void set_control_queue(gr::msg_queue::sptr control_queue);
-
+    void set_control_queue(const gr::msg_queue::sptr control_queue);  // NOLINT(performance-unnecessary-value-param)
 
     unsigned int processed_control_messages()
     {
@@ -113,9 +120,13 @@ public:
     }
 
 private:
+    //Telecommand TCP interface
+    TcpCmdInterface cmd_interface_;
+    void telecommand_listener();
+    std::thread cmd_interface_thread_;
     //SUPL assistance classes
-    gnss_sdr_supl_client supl_client_acquisition_;
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_acquisition_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
     int supl_mns;  // Current network MNC (Mobile Network code), 2 or 3 digits.
     int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
@@ -139,6 +150,12 @@ private:
     void gps_acq_assist_data_collector();
 
     /*
+     * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues
+     * returns a vector filled with the available satellites ordered from high elevation to low elevation angle.
+     */
+    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const arma::vec& LLH);
+
+    /*
      * Read initial GNSS assistance from SUPL server or local XML files
      */
     void assist_GNSS();
@@ -150,12 +167,16 @@ private:
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;
+    bool restart_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-    boost::thread keyboard_thread_;
-    boost::thread sysv_queue_thread_;
-    boost::thread gps_acq_assist_data_collector_thread_;
+
+    boost::thread fpga_helper_thread_;
+
+    std::thread keyboard_thread_;
+    std::thread sysv_queue_thread_;
+    std::thread gps_acq_assist_data_collector_thread_;
 
     void keyboard_listener();
     void sysv_queue_listener();
@@ -167,6 +188,18 @@ private:
     const std::string iono_default_xml_filename = "./gps_iono.xml";
     const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
     const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
+    const std::string eph_gal_default_xml_filename = "./gal_ephemeris.xml";
+    const std::string eph_cnav_default_xml_filename = "./gps_cnav_ephemeris.xml";
+    const std::string gal_iono_default_xml_filename = "./gal_iono.xml";
+    const std::string gal_utc_default_xml_filename = "./gal_utc_model.xml";
+    const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
+    const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
+    const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
+    const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
+    const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
+
+    Agnss_Ref_Location agnss_ref_location_;
+    Agnss_Ref_Time agnss_ref_time_;
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

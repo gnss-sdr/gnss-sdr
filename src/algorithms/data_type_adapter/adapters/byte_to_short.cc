@@ -31,12 +31,12 @@
 #include "byte_to_short.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
+#include <cstdint>
+#include <utility>
 
-
-using google::LogMessage;
 
 ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
     std::string default_output_item_type = "short";
@@ -49,7 +49,7 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
 
-    size_t item_size = sizeof(short);
+    size_t item_size = sizeof(int16_t);
 
     gr_char_to_short_ = gr::blocks::char_to_short::make();
 
@@ -71,9 +71,7 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
 }
 
 
-ByteToShort::~ByteToShort()
-{
-}
+ByteToShort::~ByteToShort() = default;
 
 
 void ByteToShort::connect(gr::top_block_sptr top_block)

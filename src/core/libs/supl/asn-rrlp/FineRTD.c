@@ -111,7 +111,7 @@ FineRTD_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_FineRTD_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_FINE_RTD_CONSTR_1 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -138,7 +138,7 @@ asn_TYPE_descriptor_t asn_DEF_FineRTD = {
 	asn_DEF_FineRTD_tags_1,	/* Same as above */
 	sizeof(asn_DEF_FineRTD_tags_1)
 		/sizeof(asn_DEF_FineRTD_tags_1[0]), /* 1 */
-	&asn_PER_type_FineRTD_constr_1,
+	&ASN_PER_TYPE_FINE_RTD_CONSTR_1,
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

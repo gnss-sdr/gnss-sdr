@@ -1,7 +1,8 @@
 /*!
  * \file channel_fsm.h
  * \brief Interface of the State Machine for channel
- * \authors Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ * \authors Javier Arribas, 2019. javiarribas@gmail.com
+ *          Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *          Luis Esteve,   2011. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
@@ -33,8 +34,8 @@
 #define GNSS_SDR_CHANNEL_FSM_H
 
 #include "acquisition_interface.h"
-#include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
+#include "tracking_interface.h"
 #include <gnuradio/msg_queue.h>
 #include <cstdint>
 #include <memory>
@@ -52,28 +53,33 @@ public:
 
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
+    void set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry);
     void set_queue(gr::msg_queue::sptr queue);
     void set_channel(uint32_t channel);
-
-    //FSM EVENTS
+    void start_acquisition();
+    // FSM EVENTS
     bool Event_start_acquisition();
+    bool Event_start_acquisition_fpga();
     bool Event_valid_acquisition();
+    bool Event_stop_channel();
     bool Event_failed_acquisition_repeat();
     bool Event_failed_acquisition_no_repeat();
     bool Event_failed_tracking_standby();
 
 private:
-    void start_acquisition();
     void start_tracking();
+    void stop_acquisition();
+    void stop_tracking();
     void request_satellite();
     void notify_stop_tracking();
 
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
+    std::shared_ptr<TelemetryDecoderInterface> nav_;
     gr::msg_queue::sptr queue_;
     uint32_t channel_;
     uint32_t d_state;
     std::mutex mx;
 };
 
-#endif /*GNSS_SDR_CHANNEL_FSM_H*/
+#endif  // GNSS_SDR_CHANNEL_FSM_H

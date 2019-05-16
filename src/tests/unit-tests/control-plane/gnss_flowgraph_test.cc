@@ -30,21 +30,21 @@
  * -------------------------------------------------------------------------
  */
 
+#include "acquisition_interface.h"
+#include "channel.h"
+#include "channel_interface.h"
+#include "file_configuration.h"
+#include "file_signal_source.h"
+#include "gnss_block_interface.h"
+#include "gnss_flowgraph.h"
+#include "in_memory_configuration.h"
+#include "pass_through.h"
+#include "tracking_interface.h"
 #include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
-#include "gnss_flowgraph.h"
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
-#include "file_configuration.h"
-#include "channel.h"
-#include "acquisition_interface.h"
-#include "tracking_interface.h"
-#include "channel_interface.h"
-#include "pass_through.h"
-#include "file_signal_source.h"
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopOldNotation /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
@@ -80,7 +80,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
 }
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStop)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStop /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
@@ -114,7 +114,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     EXPECT_FALSE(flowgraph->running());
 }
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopGalileoE1B /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
@@ -149,7 +149,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
 }
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopHybrid /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");

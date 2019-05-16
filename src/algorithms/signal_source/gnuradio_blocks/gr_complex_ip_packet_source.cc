@@ -32,7 +32,8 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
-
+#include <cstdint>
+#include <utility>
 
 const int FIFO_SIZE = 1472000;
 
@@ -74,17 +75,17 @@ typedef struct gr_udp_header
 } gr_udp_header;
 
 
-gr_complex_ip_packet_source::sptr
-gr_complex_ip_packet_source::make(std::string src_device,
-    std::string origin_address,
+Gr_Complex_Ip_Packet_Source::sptr
+Gr_Complex_Ip_Packet_Source::make(std::string src_device,
+    const std::string &origin_address,
     int udp_port,
     int udp_packet_size,
     int n_baseband_channels,
-    std::string wire_sample_type,
+    const std::string &wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
 {
-    return gnuradio::get_initial_sptr(new gr_complex_ip_packet_source(src_device,
+    return gnuradio::get_initial_sptr(new Gr_Complex_Ip_Packet_Source(std::move(src_device),
         origin_address,
         udp_port,
         udp_packet_size,
@@ -98,12 +99,12 @@ gr_complex_ip_packet_source::make(std::string src_device,
 /*
  * The private constructor
  */
-gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
-    __attribute__((unused)) std::string origin_address,
+Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
+    __attribute__((unused)) const std::string &origin_address,
     int udp_port,
     int udp_packet_size,
     int n_baseband_channels,
-    std::string wire_sample_type,
+    const std::string &wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
     : gr::sync_block("gr_complex_ip_packet_source",
@@ -113,12 +114,12 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     std::cout << "Start Ethernet packet capture\n";
 
     d_n_baseband_channels = n_baseband_channels;
-    if (wire_sample_type.compare("cbyte") == 0)
+    if (wire_sample_type == "cbyte")
         {
             d_wire_sample_type = 1;
             d_bytes_per_sample = d_n_baseband_channels * 2;
         }
-    else if (wire_sample_type.compare("c4bits") == 0)
+    else if (wire_sample_type == "c4bits")
         {
             d_wire_sample_type = 2;
             d_bytes_per_sample = d_n_baseband_channels;
@@ -129,7 +130,7 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
             exit(0);
         }
     std::cout << "d_wire_sample_type:" << d_wire_sample_type << std::endl;
-    d_src_device = src_device;
+    d_src_device = std::move(src_device);
     d_udp_port = udp_port;
     d_udp_payload_size = udp_packet_size;
     d_fifo_full = false;
@@ -142,22 +143,22 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     d_item_size = item_size;
     d_IQ_swap = IQ_swap_;
     d_sock_raw = 0;
-    d_pcap_thread = NULL;
-    descr = NULL;
+    d_pcap_thread = nullptr;
+    descr = nullptr;
 
     memset(reinterpret_cast<char *>(&si_me), 0, sizeof(si_me));
 }
 
 
 // Called by gnuradio to enable drivers, etc for i/o devices.
-bool gr_complex_ip_packet_source::start()
+bool Gr_Complex_Ip_Packet_Source::start()
 {
     std::cout << "gr_complex_ip_packet_source START\n";
     // open the ethernet device
     if (open() == true)
         {
             // start pcap capture thread
-            d_pcap_thread = new boost::thread(boost::bind(&gr_complex_ip_packet_source::my_pcap_loop_thread, this, descr));
+            d_pcap_thread = new boost::thread(boost::bind(&Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread, this, descr));
             return true;
         }
     else
@@ -168,10 +169,10 @@ bool gr_complex_ip_packet_source::start()
 
 
 // Called by gnuradio to disable drivers, etc for i/o devices.
-bool gr_complex_ip_packet_source::stop()
+bool Gr_Complex_Ip_Packet_Source::stop()
 {
     std::cout << "gr_complex_ip_packet_source STOP\n";
-    if (descr != NULL)
+    if (descr != nullptr)
         {
             pcap_breakloop(descr);
             d_pcap_thread->join();
@@ -181,13 +182,13 @@ bool gr_complex_ip_packet_source::stop()
 }
 
 
-bool gr_complex_ip_packet_source::open()
+bool Gr_Complex_Ip_Packet_Source::open()
 {
     char errbuf[PCAP_ERRBUF_SIZE];
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     // open device for reading
     descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf);
-    if (descr == NULL)
+    if (descr == nullptr)
         {
             std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
             std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf) << std::endl;
@@ -218,9 +219,9 @@ bool gr_complex_ip_packet_source::open()
 }
 
 
-gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
+Gr_Complex_Ip_Packet_Source::~Gr_Complex_Ip_Packet_Source()
 {
-    if (d_pcap_thread != NULL)
+    if (d_pcap_thread != nullptr)
         {
             delete d_pcap_thread;
         }
@@ -229,15 +230,15 @@ gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
 }
 
 
-void gr_complex_ip_packet_source::static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr,
+void Gr_Complex_Ip_Packet_Source::static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
-    gr_complex_ip_packet_source *bridge = reinterpret_cast<gr_complex_ip_packet_source *>(args);
+    auto *bridge = reinterpret_cast<Gr_Complex_Ip_Packet_Source *>(args);
     bridge->pcap_callback(args, pkthdr, packet);
 }
 
 
-void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *args, __attribute__((unused)) const struct pcap_pkthdr *pkthdr,
+void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *args, __attribute__((unused)) const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
@@ -311,13 +312,13 @@ void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *
 }
 
 
-void gr_complex_ip_packet_source::my_pcap_loop_thread(pcap_t *pcap_handle)
+void Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread(pcap_t *pcap_handle)
 {
-    pcap_loop(pcap_handle, -1, gr_complex_ip_packet_source::static_pcap_callback, reinterpret_cast<u_char *>(this));
+    pcap_loop(pcap_handle, -1, Gr_Complex_Ip_Packet_Source::static_pcap_callback, reinterpret_cast<u_char *>(this));
 }
 
 
-void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
+void Gr_Complex_Ip_Packet_Source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
 {
     int8_t real;
     int8_t imag;
@@ -327,22 +328,22 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
             switch (d_wire_sample_type)
                 {
                 case 1:  // interleaved byte samples
-                    for (long unsigned int i = 0; i < output_items.size(); i++)
+                    for (auto &output_item : output_items)
                         {
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
                             if (d_IQ_swap)
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(real, imag);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
                                 }
                             else
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(imag, real);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(imag, real);
                                 }
                         }
                     break;
                 case 2:  // 4-bit samples
-                    for (long unsigned int i = 0; i < output_items.size(); i++)
+                    for (auto &output_item : output_items)
                         {
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
                             if (tmp_char2 >= 8)
@@ -365,11 +366,11 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
                                 }
                             if (d_IQ_swap)
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(imag, real);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(imag, real);
                                 }
                             else
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(real, imag);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
                                 }
                         }
                     break;
@@ -382,7 +383,7 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
 }
 
 
-int gr_complex_ip_packet_source::work(int noutput_items,
+int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
     __attribute__((unused)) gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
@@ -390,7 +391,7 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     if (fifo_items == 0) return 0;
 
-    if (output_items.size() > static_cast<long unsigned int>(d_n_baseband_channels))
+    if (output_items.size() > static_cast<uint64_t>(d_n_baseband_channels))
         {
             std::cout << "Configuration error: more baseband channels connected than the available in the UDP source\n";
             exit(0);
@@ -439,7 +440,7 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     // update fifo items
     fifo_items = fifo_items - bytes_requested;
 
-    for (long unsigned int n = 0; n < output_items.size(); n++)
+    for (uint64_t n = 0; n < output_items.size(); n++)
         {
             produce(static_cast<int>(n), num_samples_readed);
         }

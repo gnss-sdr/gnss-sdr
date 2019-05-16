@@ -33,9 +33,9 @@
 #define GNSS_SDR_GN3S_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
 #include <string>
 
 
@@ -59,11 +59,11 @@ public:
     }
 
     /*!
-     * \brief Returns "Gn3sSignalSource".
+     * \brief Returns "Gn3s_Signal_Source".
      */
     inline std::string implementation() override
     {
-        return "Gn3sSignalSource";
+        return "Gn3s_Signal_Source";
     }
 
     inline size_t item_size() override

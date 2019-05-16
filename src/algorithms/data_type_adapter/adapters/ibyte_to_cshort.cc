@@ -35,9 +35,7 @@
 #include <volk/volk.h>
 
 
-using google::LogMessage;
-
-IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string role,
+IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
@@ -78,9 +76,7 @@ IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string 
 }
 
 
-IbyteToCshort::~IbyteToCshort()
-{
-}
+IbyteToCshort::~IbyteToCshort() = default;
 
 
 void IbyteToCshort::connect(gr::top_block_sptr top_block)
@@ -143,8 +139,5 @@ gr::basic_block_sptr IbyteToCshort::get_right_block()
         {
             return conjugate_sc_;
         }
-    else
-        {
-            return interleaved_byte_to_complex_short_;
-        }
+    return interleaved_byte_to_complex_short_;
 }

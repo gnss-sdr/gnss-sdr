@@ -39,9 +39,9 @@
 #ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
 #define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
 
-#include <string>
-#include "tracking_interface.h"
 #include "galileo_e1_tcp_connector_tracking_cc.h"
+#include "tracking_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;
@@ -53,7 +53,7 @@ class GalileoE1TcpConnectorTracking : public TrackingInterface
 {
 public:
     GalileoE1TcpConnectorTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -93,6 +93,10 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     galileo_e1_tcp_connector_tracking_cc_sptr tracking_;

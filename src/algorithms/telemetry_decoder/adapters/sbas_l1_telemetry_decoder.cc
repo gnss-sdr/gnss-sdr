@@ -32,16 +32,11 @@
 
 #include "sbas_l1_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "sbas_ephemeris.h"
-#include "sbas_l1_telemetry_decoder_cc.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -52,7 +47,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = sbas_l1_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
+    telemetry_decoder_ = sbas_l1_make_telemetry_decoder_gs(satellite_, dump_);  // TODO fix me
     channel_ = 0;
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     if (in_streams_ > 1)
@@ -66,9 +61,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
 }
 
 
-SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder()
-{
-}
+SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder() = default;
 
 
 void SbasL1TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

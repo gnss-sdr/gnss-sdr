@@ -55,7 +55,7 @@ void gps_l2c_m_code(int32_t* _dest, uint32_t _prn)
 
 void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -73,7 +73,7 @@ void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 
 void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -94,7 +94,7 @@ void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn)
  */
 void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
 {
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
             gps_l2c_m_code(_code, _prn);
@@ -119,7 +119,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _pr
 
             //--- Make index array to read L2C code values -------------------------
             //TODO: Check this formula! Seems to start with an extra sample
-            _codeValueIndex = ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
+            _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
             //aux = (_ts * (i + 1)) / _tc;
             //_codeValueIndex = static_cast<int32_t>(static_cast<long>(aux)) - 1;
 

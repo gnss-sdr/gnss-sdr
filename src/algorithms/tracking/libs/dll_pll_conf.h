@@ -38,15 +38,24 @@
 
 class Dll_Pll_Conf
 {
-private:
 public:
     /* DLL/PLL tracking configuration */
+
+    int fll_filter_order;
+    bool enable_fll_pull_in;
+    bool enable_fll_steady_state;
+    unsigned int pull_in_time_s;
+    int pll_filter_order;
+    int dll_filter_order;
+
     double fs_in;
     uint32_t vector_length;
     bool dump;
+    bool dump_mat;
     std::string dump_filename;
     float pll_pull_in_bw_hz;
     float dll_pull_in_bw_hz;
+    float fll_bw_hz;
     float pll_bw_hz;
     float dll_bw_hz;
     float pll_bw_narrow_hz;
@@ -56,15 +65,16 @@ public:
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
     int32_t extend_correlation_symbols;
-    bool use_high_dynamics_resampler;
+    bool high_dyn;
     int32_t cn0_samples;
     int32_t carrier_lock_det_mav_samples;
     int32_t cn0_min;
     int32_t max_lock_fail;
+    uint32_t smoother_length;
     double carrier_lock_th;
     bool track_pilot;
     char system;
-    char signal[3];
+    char signal[3]{};
 
     Dll_Pll_Conf();
 };

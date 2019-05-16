@@ -32,7 +32,7 @@
 #define GALILEO_E5A_PCPS_ACQUISITION_H_
 
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include <string>
@@ -43,7 +43,8 @@ class GalileoE5aPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE5aPcpsAcquisition();
@@ -78,8 +79,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_->set_channel(channel_);
+    }
 
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_->set_channel_fsm(channel_fsm);
+    }
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -122,13 +135,24 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+
+    void set_resampler_latency(uint32_t latency_samples) override;
+
 private:
     float calculate_threshold(float pfa);
 
     ConfigurationInterface* configuration_;
 
     pcps_acquisition_sptr acquisition_;
-
+    Acq_Conf acq_parameters_;
     size_t item_size_;
 
     std::string item_type_;
@@ -145,6 +169,7 @@ private:
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
@@ -152,7 +177,7 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
 
-    long fs_in_;
+    int64_t fs_in_;
 
     float threshold_;
 

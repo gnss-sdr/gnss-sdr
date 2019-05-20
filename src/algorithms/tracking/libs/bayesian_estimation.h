@@ -6,7 +6,12 @@
  * the properties of a stochastic process based on a sequence of
  * discrete samples of the sequence.
  *
- * [1] TODO: Refs
+ * [1]: LaMountain, Gerald, Vilà-Valls, Jordi, Closas, Pau, "Bayesian 
+ * Covariance Estimation for Kalman Filter based Digital Carrier 
+ * Synchronization," Proceedings of the 31st International Technical Meeting
+ * of the Satellite Division of The Institute of Navigation 
+ * (ION GNSS+ 2018), Miami, Florida, September 2018, pp. 3575-3586.
+ * https://doi.org/10.33012/2018.15911
  *
  * \authors <ul>
  *          <li> Gerald LaMountain, 2018. gerald(at)ece.neu.edu

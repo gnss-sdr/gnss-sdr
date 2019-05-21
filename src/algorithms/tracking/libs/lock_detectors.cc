@@ -60,11 +60,12 @@
  *
  * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(2*T_{int}),
  * \f}
  * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *
  */
+
 float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
 {
     float SNR = 0.0;
@@ -80,7 +81,7 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
     Psig = Psig * Psig;
     Ptot /= static_cast<float>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10.0 * std::log10(SNR) - 10.0 * std::log10(coh_integration_time_s);
+    SNR_dB_Hz = 10.0 * std::log10(SNR) - 10.0 * std::log10(2.0 * coh_integration_time_s);
     return SNR_dB_Hz;
 }
 

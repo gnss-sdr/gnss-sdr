@@ -163,7 +163,7 @@ target_link_libraries(core_receiver
 )
 
 if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_definitions(core_receiver
             PUBLIC
                 -DBOOST_ASIO_HAS_STD_STRING_VIEW

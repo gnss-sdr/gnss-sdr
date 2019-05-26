@@ -35,6 +35,22 @@ find_path(IIO_INCLUDE_DIRS
           $ENV{GRIIO_ROOT}/include
 )
 
+if(IIO_INCLUDE_DIRS)
+    set(GR_IIO_INCLUDE_HAS_GNURADIO TRUE)
+else()
+    find_path(IIO_INCLUDE_DIRS
+        NAMES iio/api.h
+        HINTS $ENV{IIO_DIR}/include
+              ${PC_IIO_INCLUDEDIR}
+        PATHS ${CMAKE_INSTALL_PREFIX}/include
+              /usr/local/include
+              /usr/include
+              ${GRIIO_ROOT}/include
+              $ENV{GRIIO_ROOT}/include
+    )
+    set(GR_IIO_INCLUDE_HAS_GNURADIO FALSE)
+endif()
+
 find_library(IIO_LIBRARIES
     NAMES gnuradio-iio
     HINTS $ENV{IIO_DIR}/lib
@@ -86,4 +102,4 @@ if(GRIIO_FOUND AND NOT TARGET Gnuradio::iio)
     )
 endif()
 
-mark_as_advanced(IIO_LIBRARIES IIO_INCLUDE_DIRS)
+mark_as_advanced(IIO_LIBRARIES IIO_INCLUDE_DIRS GR_IIO_INCLUDE_HAS_GNURADIO)

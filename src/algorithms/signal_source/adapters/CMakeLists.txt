@@ -238,6 +238,14 @@ target_compile_definitions(signal_source_adapters
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+    if(GR_IIO_INCLUDE_HAS_GNURADIO)
+        target_compile_definitions(signal_source_adapters
+            PUBLIC -DGRIIO_INCLUDE_HAS_GNURADIO=1
+        )
+    endif()
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_adapters

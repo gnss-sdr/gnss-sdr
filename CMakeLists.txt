@@ -690,6 +690,17 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
     endif()
 endif()
 
+# Fix for Boost Asio < 1.70 when using Clang in macOS
+if(${Boost_VERSION} VERSION_LESS 107000)
+    # Check if we have std::string_view
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <string_view>
+        int main()
+        { std::string_view sv; }"
+        has_string_view
+    )
+endif()
 
 
 ################################################################################

@@ -124,9 +124,6 @@ public:
  ************************************************/
 volk_gnsssdr_type_t volk_gnsssdr_type_from_string(std::string);
 
-float uniform(void);
-void random_floats(float *buf, unsigned n);
-
 bool run_volk_gnsssdr_tests(
     volk_gnsssdr_func_desc_t,
     void (*)(),

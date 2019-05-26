@@ -68,6 +68,7 @@ if(Boost_VERSION VERSION_GREATER "106599")
 endif()
 
 
+# Fix for Boost Asio < 1.70
 if(OS_IS_MACOSX)
     if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (${Boost_VERSION} VERSION_LESS 107000))
         if(${has_string_view})

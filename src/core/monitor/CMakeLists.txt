@@ -69,13 +69,21 @@ endif()
 
 
 if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        target_compile_definitions(core_monitor
-            PUBLIC
-                -DBOOST_ASIO_HAS_STD_STRING_VIEW
-        )
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (${Boost_VERSION} VERSION_LESS 107000))
+        if(${has_string_view})
+            target_compile_definitions(core_monitor
+                PUBLIC
+                    -DBOOST_ASIO_HAS_STD_STRING_VIEW=1
+            )
+        else()
+            target_compile_definitions(core_monitor
+                PUBLIC
+                    -DBOOST_ASIO_HAS_STD_STRING_VIEW=0
+            )
+        endif()
     endif()
 endif()
+
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

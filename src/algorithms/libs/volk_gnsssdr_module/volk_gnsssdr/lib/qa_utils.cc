@@ -32,24 +32,18 @@
 #include <vector>                              // for vector
 
 
-float uniform()
+template <typename T>
+void random_values(T *buf, unsigned int n, std::default_random_engine &e1)
 {
-    std::random_device r;
-    std::default_random_engine e1(r());
-    std::uniform_real_distribution<float> uniform_dist(-1, 1);
-    return uniform_dist(e1);  // uniformly (-1, 1)
-}
-
-template <class t>
-void random_floats(t *buf, unsigned n)
-{
-    for (unsigned i = 0; i < n; i++)
-        buf[i] = uniform();
+    std::uniform_real_distribution<T> uniform_dist(T(-1), T(1));
+    for (unsigned int i = 0; i < n; i++)
+        buf[i] = uniform_dist(e1);
 }
 
 void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
 {
     std::random_device r;
+    std::default_random_engine e1(r());
     std::default_random_engine e2(r());
 
     if (type.is_complex) n *= 2;
@@ -57,9 +51,9 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
     if (type.is_float)
         {
             if (type.size == 8)
-                random_floats<double>((double *)data, n);
+                random_values<double>((double *)data, n, e1);
             else
-                random_floats<float>((float *)data, n);
+                random_values<float>((float *)data, n, e1);
         }
     else
         {

@@ -708,14 +708,14 @@ $ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/pyth
 
 changing ```/opt/local``` by the base directory in which your software is installed.
 
-The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog, Matio, PugiXML and Google Test on the fly at compile time if they are not detected in your machine.
+The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog, Matio, Protocol Buffers, PugiXML and Google Test on the fly at compile time if they are not detected in your machine.
 
 
 Other builds
 ---------
 * **Docker image**: A technology providing operating-system-level virtualization to build, ship, and run distributed applications, whether on laptops, data center VMs, or the cloud. Visit [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr) or [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr) for instructions.
 
-* **Snap packages**: [Snaps](https://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions or directly [get the software from the Snap Store](https://snapcraft.io/gnss-sdr-next):
+* **Snap package**: [Snaps](https://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions, or directly [get the software from the Snap Store](https://snapcraft.io/gnss-sdr-next):
 
 <p align="center">
   <a href="https://snapcraft.io/gnss-sdr-next"><img src="https://snapcraft.io/static/images/badges/en/snap-store-white.svg" alt="Get GNSS-SDR from the Snap Store"></a>
@@ -1303,7 +1303,8 @@ Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking
 Tracking_1C.item_type=gr_complex
 Tracking_1C.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
 Tracking_1C.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
-Tracking_1C.order=3 ; PLL/DLL loop filter order [2] or [3]
+Tracking_1C.pll_filter_order=3 ; PLL loop filter order [2] or [3]
+Tracking_1C.dll_filter_order=2 ; DLL loop filter order [1], [2] or [3]
 Tracking_1C.early_late_space_chips=0.5 ; correlator early-late space [chips].
 Tracking_1C.dump=false ; Enable internal binary data file logging [true] or [false]
 Tracking_1C.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
@@ -1317,7 +1318,8 @@ Tracking_1B.implementation=Galileo_E1_DLL_PLL_VEML_Tracking
 Tracking_1B.item_type=gr_complex
 Tracking_1B.pll_bw_hz=15.0;
 Tracking_1B.dll_bw_hz=2.0;
-Tracking_1B.order=3;
+Tracking_1B.pll_filter_order=3 ; PLL loop filter order [2] or [3]
+Tracking_1B.dll_filter_order=2 ; DLL loop filter order [1], [2] or [3]
 Tracking_1B.early_late_space_chips=0.15;
 Tracking_1B.very_early_late_space_chips=0.6;
 Tracking_1B.dump=false

@@ -713,9 +713,13 @@ The CMake script will create Makefiles that download, build and link Armadillo, 
 
 Other builds
 ---------
-* **Docker container**: A technology providing operating-system-level virtualization to build, ship, and run distributed applications, whether on laptops, data center VMs, or the cloud. Visit [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr) or [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr) for instructions.
+* **Docker image**: A technology providing operating-system-level virtualization to build, ship, and run distributed applications, whether on laptops, data center VMs, or the cloud. Visit [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr) or [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr) for instructions.
 
-* **Snap packages**: [Snaps](https://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions.
+* **Snap packages**: [Snaps](https://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions or directly [get the software from the Snap Store](https://snapcraft.io/gnss-sdr-next):
+
+<p align="center">
+  <a href="https://snapcraft.io/gnss-sdr-next"><img src="https://snapcraft.io/static/images/badges/en/snap-store-white.svg" alt="Get GNSS-SDR from the Snap Store"></a>
+</p>
 
 * **GNSS-SDR in embedded platforms**: we provide a Software Development Kit (SDK) based on [OpenEmbedded](http://www.openembedded.org/wiki/Main_Page) for cross-compiling GNSS-SDR in your desktop computer and for producing executables that can run in embedded platforms, such as a Zedboard or a Raspberry Pi 3. Visit [Cross-compiling GNSS-SDR](https://gnss-sdr.org/docs/tutorials/cross-compiling/) for instructions.
 

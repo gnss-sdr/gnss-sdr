@@ -77,6 +77,15 @@ void volk_gnsssdr_get_config_path(char *path)
             return;
         }
 
+    // if nothing exists, write to HOME or APPDATA
+    home = getenv("HOME");
+    if (home == NULL) home = getenv("APPDATA");
+    if (home != NULL)
+        {
+            strncpy(path, home, 512);
+            strcat(path, suffix);
+            return;
+        }
     path[0] = 0;
     return;
 }

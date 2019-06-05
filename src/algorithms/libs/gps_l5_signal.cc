@@ -32,9 +32,6 @@
 
 #include "gps_l5_signal.h"
 #include "GPS_L5.h"
-#include <cinttypes>
-#include <cmath>
-#include <complex>
 #include <deque>
 
 

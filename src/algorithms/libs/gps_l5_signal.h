@@ -36,18 +36,22 @@
 #include <complex>
 #include <cstdint>
 
-//!Generates complex GPS L5i M code for the desired SV ID
+//! Generates complex GPS L5I code for the desired SV ID
 void gps_l5i_code_gen_complex(std::complex<float>* _dest, uint32_t _prn);
+
+//! Generates real GPS L5I code for the desired SV ID
 void gps_l5i_code_gen_float(float* _dest, uint32_t _prn);
 
-//!Generates complex GPS L5q M code for the desired SV ID
+//! Generates complex GPS L5Q code for the desired SV ID
 void gps_l5q_code_gen_complex(std::complex<float>* _dest, uint32_t _prn);
+
+//! Generates real GPS L5Q code for the desired SV ID
 void gps_l5q_code_gen_float(float* _dest, uint32_t _prn);
 
-//! Generates complex GPS L5i M code for the desired SV ID, and sampled to specific sampling frequency
+//! Generates complex GPS L5I code for the desired SV ID, and sampled to specific sampling frequency
 void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs);
 
-//! Generates complex GPS L5q M code for the desired SV ID, and sampled to specific sampling frequency
+//! Generates complex GPS L5Q code for the desired SV ID, and sampled to specific sampling frequency
 void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs);
 
 

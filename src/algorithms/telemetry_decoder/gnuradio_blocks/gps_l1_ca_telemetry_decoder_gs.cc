@@ -261,7 +261,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                                 {
                                     GPS_frame_4bytes ^= 0x3FFFFFC0;  // invert the data bits (using XOR)
                                 }
-                            //check parity. If ANY word inside the subframe fails the parity, set subframe_synchro_confirmation = false
+                            // check parity. If ANY word inside the subframe fails the parity, set subframe_synchro_confirmation = false
                             if (not gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(GPS_frame_4bytes))
                                 {
                                     subframe_synchro_confirmation = false;
@@ -457,6 +457,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                                gr::thread::scoped_lock lock(d_setlock);
                                 d_last_valid_preamble = d_sample_counter;
                                 if (!d_flag_frame_sync)
                                     {
@@ -537,7 +538,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
+            // 3. Make the output (copy the object contents to the GNU Radio reserved memory)
             *out[0] = current_symbol;
 
             return 1;

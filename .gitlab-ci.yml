@@ -72,6 +72,7 @@ archlinux:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -91,6 +92,7 @@ centos7:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -140,6 +142,7 @@ debian8:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -155,6 +158,7 @@ debian9:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
 
 
 debian10:
@@ -186,6 +190,7 @@ fedora26:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -202,6 +207,7 @@ fedora28:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
 
 
 fedora29:
@@ -217,6 +223,7 @@ fedora29:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -234,6 +241,7 @@ fedora-rawhide:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -251,6 +259,7 @@ opensuse42.3:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -268,6 +277,7 @@ opensuse-leap15.0:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -285,6 +295,7 @@ opensuse-tumbleweed:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -306,6 +317,7 @@ ubuntu14.04:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -321,6 +333,7 @@ ubuntu16.04:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -336,6 +349,7 @@ ubuntu18.04:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
 
 
 ubuntu18.10:
@@ -350,6 +364,7 @@ ubuntu18.10:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -365,6 +380,7 @@ ubuntu19.04:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -380,6 +396,7 @@ ubuntu19.10:
     - make -j$(($NPROC+1))
     - make check
     - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
   allow_failure: true
 
 
@@ -624,7 +641,7 @@ run-tests-armhf:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
     - ldconfig
     - volk_profile -v 8111
-    - volk_gnsssdr_profile
+    - volk_gnsssdr_profile -v 2053
     - position_test
     - run_tests --gtest_filter=Matio*
     # - run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=25.0 --DLL_bw_hz_start=1.5  --PLL_narrow_bw_hz=10.0 --DLL_narrow_bw_hz=0.75 --disable_generator=1 --enable_external_signal_file=1 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=4.0 --extend_correlation_symbols=5 --external_signal_acquisition_doppler_step_hz=10 --trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --show_plots=0 --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=30 --gtest_output=xml:test_results.xml

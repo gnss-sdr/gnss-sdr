@@ -35,13 +35,21 @@ include_directories(
 )
 
 
-set(Clang_required_link "")
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(Clang_required_link "c++")
+set(CXX_REQUIRED_LINK "")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(CXX_REQUIRED_LINK "c++")
+    else()
+        if(${USE_CXX17} AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0.0"))
+            set(CXX_REQUIRED_LINK "stdc++fs")
+        endif()
     endif()
 endif()
-
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0.0"))
+    if(${USE_CXX17})
+        set(CXX_REQUIRED_LINK "stdc++fs")
+    endif()
+endif()
 
 if(ORC_FOUND)
     set(orc_lib ${ORC_LIBRARIES})
@@ -66,10 +74,14 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc
 )
 
+if(${USE_CXX17})
+    add_definitions(-DHAS_STD_FILESYSTEM=1)
+endif()
+
 if(ENABLE_STATIC_LIBS)
-    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr_profile ${CXX_REQUIRED_LINK} volk_gnsssdr_static ${Boost_LIBRARIES} ${orc_lib})
 else()
-    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr_profile ${CXX_REQUIRED_LINK} volk_gnsssdr ${Boost_LIBRARIES} ${orc_lib})
     add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
 endif()
 
@@ -92,9 +104,9 @@ install(
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc)
 if(ENABLE_STATIC_LIBS)
-    target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr-config-info ${CXX_REQUIRED_LINK} volk_gnsssdr_static ${orc_lib})
 else()
-    target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr-config-info ${CXX_REQUIRED_LINK} volk_gnsssdr ${orc_lib})
     add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 endif()
 

@@ -22,19 +22,26 @@
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
 #include "volk_gnsssdr/volk_gnsssdr_prefs.h"    // for volk_gnsssdr_get_config_path
 #include "volk_gnsssdr_option_helpers.h"        // for option_list, option_t
-#include <boost/filesystem/operations.hpp>      // for create_directories, exists
-#include <boost/filesystem/path.hpp>            // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>     // for filesystem
-#include <cstddef>                              // for size_t
-#include <fstream>                              // IWYU pragma: keep
-#include <iostream>                             // for operator<<, basic_ostream
-#include <map>                                  // for map, map<>::iterator
-#include <sys/stat.h>                           // for stat
-#include <utility>                              // for pair
-#include <vector>                               // for vector, vector<>::const_..
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#endif
+#include <cstddef>     // for size_t
+#include <fstream>     // IWYU pragma: keep
+#include <iostream>    // for operator<<, basic_ostream
+#include <map>         // for map, map<>::iterator
+#include <sys/stat.h>  // for stat
+#include <utility>     // for pair
+#include <vector>      // for vector, vector<>::const_..
 
-
+#if HAS_STD_FILESYSTEM
+namespace fs = std::filesystem;
+#else
 namespace fs = boost::filesystem;
+#endif
 
 volk_gnsssdr_test_params_t test_params(1e-6f, 327.f, 8111, 1987, false, "");
 

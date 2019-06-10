@@ -762,7 +762,7 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8))
         if(POLICY CMP0057)
             cmake_policy(SET CMP0057 NEW)
         endif()
-        if(ENABLE_UNIT_TESTING_EXTRA OFF) # Workaround for GPSTk
+        if(NOT ENABLE_UNIT_TESTING_EXTRA) # Workaround for GPSTk
             find_package(FILESYSTEM)
             set_package_properties(FILESYSTEM PROPERTIES
                 URL "https://en.cppreference.com/w/cpp/filesystem"

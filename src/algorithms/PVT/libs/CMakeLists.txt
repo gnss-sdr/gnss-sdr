@@ -61,6 +61,13 @@ source_group(Headers FILES ${PVT_LIB_HEADERS})
 
 add_library(pvt_libs ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(pvt_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(pvt_libs PRIVATE std::filesystem)
+else()
+    target_link_libraries(pvt_libs PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(pvt_libs
     PUBLIC
         Armadillo::armadillo
@@ -70,8 +77,6 @@ target_link_libraries(pvt_libs
         core_system_parameters
     PRIVATE
         algorithms_libs
-        Boost::filesystem
-        Boost::system
         Gflags::gflags
         Glog::glog
         Matio::matio

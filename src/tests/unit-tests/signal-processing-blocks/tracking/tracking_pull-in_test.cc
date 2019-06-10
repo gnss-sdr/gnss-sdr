@@ -55,7 +55,6 @@
 #include "tracking_tests_flags.h"
 #include "tracking_true_obs_reader.h"
 #include <armadillo>
-#include <boost/filesystem.hpp>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
@@ -69,10 +68,19 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
+
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
+#endif
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #endif
 
 
@@ -965,8 +973,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                         {
                                             try
                                                 {
-                                                    boost::filesystem::path p(gnuplot_executable);
-                                                    boost::filesystem::path dir = p.parent_path();
+                                                    fs::path p(gnuplot_executable);
+                                                    fs::path dir = p.parent_path();
                                                     const std::string& gnuplot_path = dir.native();
                                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
                                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);

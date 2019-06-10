@@ -80,6 +80,13 @@ add_library(tracking_gr_blocks
     ${TRACKING_GR_BLOCKS_HEADERS}
 )
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(tracking_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(tracking_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(tracking_gr_blocks PRIVATE Boost::filesystem)
+endif()
+
 target_link_libraries(tracking_gr_blocks
     PUBLIC
         Boost::boost

@@ -129,6 +129,12 @@ set(CMAKE_REQUIRED_QUIET ${FILESYSTEM_FIND_QUIETLY})
 
 # All of our tests require C++17 or later
 set(CMAKE_CXX_STANDARD 17)
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "9.0.0"))
+    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99"))
+    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+endif()
 
 # Normalize and check the component list we were given
 set(want_components ${FILESYSTEM_FIND_COMPONENTS})
@@ -234,6 +240,10 @@ if(CXX_FILESYSTEM_HAVE_FS)
             target_link_libraries(std::filesystem INTERFACE -lc++fs)
         endif()
     endif()
+endif()
+
+if(NOT ${_found})
+    set(CMAKE_CXX_STANDARD 11)
 endif()
 
 cmake_pop_check_state()

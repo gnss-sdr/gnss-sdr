@@ -88,6 +88,13 @@ source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
 add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(algorithms_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(algorithms_libs PRIVATE std::filesystem)
+else()
+    target_link_libraries(algorithms_libs PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(algorithms_libs
     PUBLIC
         Armadillo::armadillo
@@ -100,7 +107,6 @@ target_link_libraries(algorithms_libs
         core_system_parameters
         Volk::volk ${ORC_LIBRARIES}
         Volkgnsssdr::volkgnsssdr
-        Boost::filesystem
         Glog::glog
 )
 
@@ -133,11 +139,16 @@ source_group(Headers FILES gnss_sdr_flags.h)
 
 add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(gnss_sdr_flags PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(gnss_sdr_flags PRIVATE std::filesystem)
+else()
+    target_link_libraries(gnss_sdr_flags PRIVATE Boost::filesystem)
+endif()
+
 target_link_libraries(gnss_sdr_flags
     PUBLIC
         Gflags::gflags
-    PRIVATE
-        Boost::filesystem
 )
 
 if(${GFLAGS_GREATER_20})

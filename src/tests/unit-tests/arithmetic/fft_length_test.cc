@@ -31,13 +31,19 @@
 
 #include "gnuplot_i.h"
 #include "test_flags.h"
-#include <boost/filesystem.hpp>
 #include <gnuradio/fft/fft.h>
 #include <algorithm>
 #include <chrono>
 #include <functional>
 #include <random>
 
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
 DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest with gnuplot");
@@ -110,8 +116,8 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                 {
                     try
                         {
-                            boost::filesystem::path p(gnuplot_executable);
-                            boost::filesystem::path dir = p.parent_path();
+                            fs::path p(gnuplot_executable);
+                            fs::path dir = p.parent_path();
                             const std::string& gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 

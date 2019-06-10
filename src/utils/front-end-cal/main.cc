@@ -51,7 +51,6 @@
 #include <boost/any.hpp>  // for bad_any_cast
 #include <boost/bind.hpp>
 #include <boost/exception/exception.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -82,6 +81,14 @@
 #include <thread>
 #include <utility>
 #include <vector>
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 DECLARE_string(log_dir);
 
@@ -284,14 +291,14 @@ int main(int argc, char** argv)
         }
     else
         {
-            const boost::filesystem::path p(FLAGS_log_dir);
-            if (!boost::filesystem::exists(p))
+            const fs::path p(FLAGS_log_dir);
+            if (!fs::exists(p))
                 {
                     std::cout << "The path "
                               << FLAGS_log_dir
                               << " does not exist, attempting to create it"
                               << std::endl;
-                    boost::filesystem::create_directory(p);
+                    fs::create_directory(p);
                 }
             std::cout << "Logging with be done at "
                       << FLAGS_log_dir << std::endl;

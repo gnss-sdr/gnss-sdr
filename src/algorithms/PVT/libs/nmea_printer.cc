@@ -36,16 +36,29 @@
 #include "nmea_printer.h"
 #include "rtklib_solution.h"
 #include "rtklib_solver.h"
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+#else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <boost/system/error_code.hpp>       // for error_code
+#endif
 #include <glog/logging.h>
 #include <cstdint>
 #include <exception>
 #include <fcntl.h>
 #include <iostream>  // for cout, cerr
 #include <termios.h>
+
+#if HAS_STD_FILESYSTEM
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 
 Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path)
@@ -54,24 +67,24 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
     d_flag_nmea_output_file = flag_nmea_output_file;
     if (d_flag_nmea_output_file == true)
         {
-            boost::filesystem::path full_path(boost::filesystem::current_path());
-            const boost::filesystem::path p(nmea_base_path);
-            if (!boost::filesystem::exists(p))
+            fs::path full_path(fs::current_path());
+            const fs::path p(nmea_base_path);
+            if (!fs::exists(p))
                 {
                     std::string new_folder;
-                    for (auto& folder : boost::filesystem::path(nmea_base_path))
+                    for (auto& folder : fs::path(nmea_base_path))
                         {
                             new_folder += folder.string();
-                            boost::system::error_code ec;
-                            if (!boost::filesystem::exists(new_folder))
+                            errorlib::error_code ec;
+                            if (!fs::exists(new_folder))
                                 {
-                                    if (!boost::filesystem::create_directory(new_folder, ec))
+                                    if (!fs::create_directory(new_folder, ec))
                                         {
                                             std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                             nmea_base_path = full_path.string();
                                         }
                                 }
-                            new_folder += boost::filesystem::path::preferred_separator;
+                            new_folder += fs::path::preferred_separator;
                         }
                 }
             else
@@ -84,7 +97,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
                     std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
                 }
 
-            nmea_base_path = nmea_base_path + boost::filesystem::path::preferred_separator;
+            nmea_base_path = nmea_base_path + fs::path::preferred_separator;
 
             nmea_filename = nmea_base_path + filename;
 

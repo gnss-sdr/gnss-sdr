@@ -39,11 +39,16 @@
 #include "gps_cnav_ephemeris.h"
 #include "gps_ephemeris.h"
 #include "rtcm.h"
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+#else
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <boost/system/error_code.hpp>       // for error_codes
+#endif
 #include <glog/logging.h>
 #include <cstdio>     // for remove
 #include <ctime>      // for tm
@@ -52,6 +57,14 @@
 #include <iostream>   // for cout, cerr
 #include <termios.h>  // for tcgetattr
 #include <unistd.h>   // for close, write
+
+#if HAS_STD_FILESYSTEM
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 
 Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
@@ -62,24 +75,24 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
     rtcm_base_path = base_path;
     if (d_rtcm_file_dump)
         {
-            boost::filesystem::path full_path(boost::filesystem::current_path());
-            const boost::filesystem::path p(rtcm_base_path);
-            if (!boost::filesystem::exists(p))
+            fs::path full_path(fs::current_path());
+            const fs::path p(rtcm_base_path);
+            if (!fs::exists(p))
                 {
                     std::string new_folder;
-                    for (auto& folder : boost::filesystem::path(rtcm_base_path))
+                    for (auto& folder : fs::path(rtcm_base_path))
                         {
                             new_folder += folder.string();
-                            boost::system::error_code ec;
-                            if (!boost::filesystem::exists(new_folder))
+                            errorlib::error_code ec;
+                            if (!fs::exists(new_folder))
                                 {
-                                    if (!boost::filesystem::create_directory(new_folder, ec))
+                                    if (!fs::create_directory(new_folder, ec))
                                         {
                                             std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                             rtcm_base_path = full_path.string();
                                         }
                                 }
-                            new_folder += boost::filesystem::path::preferred_separator;
+                            new_folder += fs::path::preferred_separator;
                         }
                 }
             else
@@ -91,7 +104,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                     std::cout << "RTCM binary file will be stored at " << rtcm_base_path << std::endl;
                 }
 
-            rtcm_base_path = rtcm_base_path + boost::filesystem::path::preferred_separator;
+            rtcm_base_path = rtcm_base_path + fs::path::preferred_separator;
         }
 
     if (time_tag_name)

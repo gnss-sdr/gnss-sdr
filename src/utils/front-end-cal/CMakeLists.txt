@@ -56,6 +56,13 @@ endif()
 
 add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(front-end-cal PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(front-end-cal PRIVATE std::filesystem)
+else()
+    target_link_libraries(front-end-cal PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(front-end-cal
     PUBLIC
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
@@ -64,7 +71,6 @@ target_link_libraries(front-end-cal
         front_end_cal_lib
         gnss_sdr_flags
     PRIVATE
-        Boost::filesystem
         Gflags::gflags
         Glog::glog
 )

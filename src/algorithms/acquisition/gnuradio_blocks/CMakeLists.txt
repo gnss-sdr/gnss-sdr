@@ -66,6 +66,13 @@ source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 
 add_library(acquisition_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(acquisition_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(acquisition_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(acquisition_gr_blocks PRIVATE Boost::filesystem)
+endif()
+
 target_link_libraries(acquisition_gr_blocks
     PUBLIC
         Gnuradio::runtime
@@ -76,7 +83,6 @@ target_link_libraries(acquisition_gr_blocks
         core_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
-        Boost::filesystem
         Gflags::gflags
         Glog::glog
         Matio::matio

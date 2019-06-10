@@ -28,6 +28,13 @@ source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
 
 add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(pvt_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(pvt_gr_blocks PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         algorithms_libs_rtklib
@@ -40,8 +47,6 @@ target_link_libraries(pvt_gr_blocks
         algorithms_libs
         Gflags::gflags
         Glog::glog
-        Boost::filesystem
-        Boost::system
         Boost::serialization
 )
 

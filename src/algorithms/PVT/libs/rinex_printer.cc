@@ -53,9 +53,15 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+#else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+#endif
 #include <glog/logging.h>
 #include <algorithm>  // for min and max
 #include <cmath>      // for floor
@@ -69,28 +75,36 @@
 #include <utility>
 #include <vector>
 
+#if HAS_STD_FILESYSTEM
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
+
 
 Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
 {
     std::string base_rinex_path = base_path;
-    boost::filesystem::path full_path(boost::filesystem::current_path());
-    const boost::filesystem::path p(base_rinex_path);
-    if (!boost::filesystem::exists(p))
+    fs::path full_path(fs::current_path());
+    const fs::path p(base_rinex_path);
+    if (!fs::exists(p))
         {
             std::string new_folder;
-            for (auto& folder : boost::filesystem::path(base_rinex_path))
+            for (auto& folder : fs::path(base_rinex_path))
                 {
                     new_folder += folder.string();
-                    boost::system::error_code ec;
-                    if (!boost::filesystem::exists(new_folder))
+                    errorlib::error_code ec;
+                    if (!fs::exists(new_folder))
                         {
-                            if (!boost::filesystem::create_directory(new_folder, ec))
+                            if (!fs::create_directory(new_folder, ec))
                                 {
                                     std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                     base_rinex_path = full_path.string();
                                 }
                         }
-                    new_folder += boost::filesystem::path::preferred_separator;
+                    new_folder += fs::path::preferred_separator;
                 }
         }
     else
@@ -102,13 +116,13 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
             std::cout << "RINEX files will be stored at " << base_rinex_path << std::endl;
         }
 
-    navfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV");
-    obsfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
-    sbsfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS");
-    navGalfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV");
-    navMixfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV");
-    navGlofilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GLO_NAV");
-    navBdsfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_BDS_NAV");
+    navfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV");
+    obsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
+    sbsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS");
+    navGalfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV");
+    navMixfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV");
+    navGlofilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GLO_NAV");
+    navBdsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_BDS_NAV");
 
     Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::in | std::ios::app);
     Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::in | std::ios::app);

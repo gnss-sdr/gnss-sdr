@@ -47,7 +47,6 @@
 #include "test_flags.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
-#include <boost/filesystem.hpp>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
@@ -55,6 +54,17 @@
 #include <thread>
 #include <utility>
 
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+#include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
 DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
@@ -692,8 +702,8 @@ void AcquisitionPerformanceTest::plot_results()
                 {
                     try
                         {
-                            boost::filesystem::path p(gnuplot_executable);
-                            boost::filesystem::path dir = p.parent_path();
+                            fs::path p(gnuplot_executable);
+                            fs::path dir = p.parent_path();
                             const std::string& gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
@@ -782,12 +792,12 @@ TEST_F(AcquisitionPerformanceTest, ROC)
 {
     Tracking_True_Obs_Reader true_trk_data;
 
-    if (boost::filesystem::exists(path_str))
+    if (fs::exists(path_str))
         {
-            boost::filesystem::remove_all(path_str);
+            fs::remove_all(path_str);
         }
-    boost::system::error_code ec;
-    ASSERT_TRUE(boost::filesystem::create_directory(path_str, ec)) << "Could not create the " << path_str << " folder.";
+    errorlib::error_code ec;
+    ASSERT_TRUE(fs::create_directory(path_str, ec)) << "Could not create the " << path_str << " folder.";
 
     unsigned int cn0_index = 0;
     for (double it : cn0_vector)

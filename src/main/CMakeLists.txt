@@ -19,10 +19,15 @@
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(gnss-sdr PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(gnss-sdr PRIVATE std::filesystem)
+else()
+    target_link_libraries(gnss-sdr PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(gnss-sdr
     PUBLIC
-        Boost::filesystem
-        Boost::system
         Gflags::gflags
         Glog::glog
         Threads::Threads

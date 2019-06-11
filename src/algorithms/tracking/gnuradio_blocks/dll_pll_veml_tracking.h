@@ -193,13 +193,14 @@ private:
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
+    int32_t d_code_lock_fail_counter;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
     gr_complex *d_Prompt_buffer;
     Exponential_Smoother d_cn0_smoother;
-
+    Exponential_Smoother d_carrier_lock_test_smoother;
     // file dump
     std::ofstream d_dump_file;
     std::string d_dump_filename;

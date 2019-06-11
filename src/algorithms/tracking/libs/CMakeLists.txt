@@ -82,6 +82,7 @@ target_link_libraries(tracking_libs
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
         core_system_parameters
+        algorithms_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         Gflags::gflags

@@ -110,6 +110,7 @@ Kml_Printer::Kml_Printer(const std::string& base_path)
         {
             close(fd);
         }
+    umask(mask);
     fs::path tmp_filename = fs::path(tmp_filename_);
 
     tmp_file_str = tmp_filename.string();

@@ -60,6 +60,9 @@ add_executable(volk_gnsssdr_profile
 
 if(${FILESYSTEM_FOUND})
     add_definitions(-DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        add_definitions(-DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
     target_link_libraries(volk_gnsssdr_profile PRIVATE std::filesystem)
 endif()
 

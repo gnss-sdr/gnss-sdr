@@ -209,8 +209,8 @@ GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : g
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
         boost::bind(
-            &GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events,
-            this, _1));
+                              &GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events,
+                              this, _1));
     rx_message = 0;
 }
 
@@ -320,8 +320,6 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("GNSS-SDR.internal_fs_sps",
         std::to_string(baseband_sampling_freq));
     // Set Tracking
-    //config->set_property("Tracking_1C.implementation",
-    //        "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga");
     config->set_property("Tracking_1C.implementation",
         "GPS_L1_CA_DLL_PLL_Tracking_Fpga");
     config->set_property("Tracking_1C.item_type", "cshort");

@@ -133,7 +133,7 @@ public:
     std::string p4;
     std::string p5;
     std::string p6;
-    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";  //"GPS_L1_CA_DLL_PLL_C_Aid_Tracking";
+    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 

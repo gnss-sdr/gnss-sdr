@@ -41,8 +41,6 @@ endif()
 set(TRACKING_GR_BLOCKS_SOURCES
     galileo_e1_tcp_connector_tracking_cc.cc
     gps_l1_ca_tcp_connector_tracking_cc.cc
-    gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
-    gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
     glonass_l1_ca_dll_pll_tracking_cc.cc
     glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
     glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
@@ -57,8 +55,6 @@ set(TRACKING_GR_BLOCKS_SOURCES
 set(TRACKING_GR_BLOCKS_HEADERS
     galileo_e1_tcp_connector_tracking_cc.h
     gps_l1_ca_tcp_connector_tracking_cc.h
-    gps_l1_ca_dll_pll_c_aid_tracking_cc.h
-    gps_l1_ca_dll_pll_c_aid_tracking_sc.h
     glonass_l1_ca_dll_pll_tracking_cc.h
     glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
     glonass_l1_ca_dll_pll_c_aid_tracking_sc.h

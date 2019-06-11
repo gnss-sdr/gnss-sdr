@@ -31,8 +31,8 @@
  */
 
 
-#include "control_message_factory.h"
 #include "control_thread.h"
+#include "control_message_factory.h"
 #include "in_memory_configuration.h"
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
@@ -170,7 +170,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
     config->set_property("Acquisition_1C.threshold", "1");
     config->set_property("Acquisition_1C.doppler_max", "5000");
     config->set_property("Acquisition_1C.doppler_min", "-5000");
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
@@ -234,7 +234,7 @@ TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
     config->set_property("Acquisition_1C.threshold", "1");
     config->set_property("Acquisition_1C.doppler_max", "5000");
     config->set_property("Acquisition_1C.doppler_min", "-5000");
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");

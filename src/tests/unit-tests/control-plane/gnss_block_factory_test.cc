@@ -33,9 +33,9 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_block_factory.h"
 #include "acquisition_interface.h"
 #include "channel.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "observables_interface.h"
@@ -251,18 +251,6 @@ TEST(GNSSBlockFactoryTest, InstantiateGalileoE1PcpsAmbiguousAcquisition)
 }
 
 
-TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaDllPllCAidTracking)
-{
-    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
-    std::unique_ptr<GNSSBlockFactory> factory;
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking", 1, 1);
-    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
-    EXPECT_STREQ("Tracking", tracking->role().c_str());
-    EXPECT_STREQ("GPS_L1_CA_DLL_PLL_C_Aid_Tracking", tracking->implementation().c_str());
-}
-
-
 TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaDllPllTracking)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
@@ -316,7 +304,7 @@ TEST(GNSSBlockFactoryTest, InstantiateChannels)
     configuration->set_property("Channels_1C.count", "2");
     configuration->set_property("Channels_1E.count", "0");
     configuration->set_property("Channels.in_acquisition", "2");
-    configuration->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    configuration->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     configuration->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     configuration->set_property("Channel0.item_type", "gr_complex");
     configuration->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");

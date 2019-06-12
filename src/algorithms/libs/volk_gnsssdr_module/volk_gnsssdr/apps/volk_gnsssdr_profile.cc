@@ -23,7 +23,11 @@
 #include "volk_gnsssdr/volk_gnsssdr_prefs.h"    // for volk_gnsssdr_get_config_path
 #include "volk_gnsssdr_option_helpers.h"        // for option_list, option_t
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+#else
 #include <filesystem>
+#endif
 #else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
@@ -38,7 +42,11 @@
 #include <vector>      // for vector, vector<>::const_..
 
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+namespace fs = std::experimental::filesystem;
+#else
 namespace fs = std::filesystem;
+#endif
 #else
 namespace fs = boost::filesystem;
 #endif

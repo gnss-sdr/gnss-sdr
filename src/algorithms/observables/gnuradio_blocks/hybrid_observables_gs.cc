@@ -35,7 +35,6 @@
 #include "gnss_circular_deque.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
-#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -46,6 +45,13 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
 
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem/path.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
@@ -125,7 +131,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
             d_dump_filename.append(".dat");
-            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
                 {

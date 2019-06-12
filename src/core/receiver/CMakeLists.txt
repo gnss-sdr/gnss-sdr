@@ -162,12 +162,20 @@ target_link_libraries(core_receiver
         pvt_adapters
 )
 
+# Fix for Boost Asio < 1.70
 if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
-        target_compile_definitions(core_receiver
-            PUBLIC
-                -DBOOST_ASIO_HAS_STD_STRING_VIEW
-        )
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (${Boost_VERSION} VERSION_LESS 107000))
+        if(${has_string_view})
+            target_compile_definitions(core_receiver
+                PUBLIC
+                    -DBOOST_ASIO_HAS_STD_STRING_VIEW=1
+            )
+        else()
+            target_compile_definitions(core_receiver
+                PUBLIC
+                    -DBOOST_ASIO_HAS_STD_STRING_VIEW=0
+            )
+        endif()
     endif()
 endif()
 

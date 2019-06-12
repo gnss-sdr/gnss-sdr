@@ -41,7 +41,6 @@
 #include "tracking_tests_flags.h"
 #include "tracking_true_obs_reader.h"
 #include <armadillo>
-#include <boost/filesystem.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
@@ -54,10 +53,19 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -125,7 +133,7 @@ public:
     std::string p4;
     std::string p5;
     std::string p6;
-    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";  //"GPS_L1_CA_DLL_PLL_C_Aid_Tracking";
+    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
@@ -807,8 +815,8 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                         {
                             try
                                 {
-                                    boost::filesystem::path p(gnuplot_executable);
-                                    boost::filesystem::path dir = p.parent_path();
+                                    fs::path p(gnuplot_executable);
+                                    fs::path dir = p.parent_path();
                                     const std::string& gnuplot_path = dir.native();
                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);

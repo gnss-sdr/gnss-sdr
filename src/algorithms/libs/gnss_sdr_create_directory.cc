@@ -29,35 +29,46 @@
  */
 
 #include "gnss_sdr_create_directory.h"
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+#else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <boost/system/error_code.hpp>       // for error_code
-#include <exception>                         // for exception
-#include <fstream>                           // for ofstream
+#endif
+#include <exception>  // for exception
+#include <fstream>    // for ofstream
+
+#if HAS_STD_FILESYSTEM
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 bool gnss_sdr_create_directory(const std::string& foldername)
 {
     std::string new_folder;
-    for (auto& folder : boost::filesystem::path(foldername))
+    for (auto& folder : fs::path(foldername))
         {
             new_folder += folder.string();
-            boost::system::error_code ec;
-            if (!boost::filesystem::exists(new_folder))
+            errorlib::error_code ec;
+            if (!fs::exists(new_folder))
                 {
-                    try
+                    if (!fs::create_directory(new_folder, ec))
                         {
-                            if (!boost::filesystem::create_directory(new_folder, ec))
-                                {
-                                    return false;
-                                }
+                            return false;
                         }
-                    catch (std::exception& e)
+
+                    if (static_cast<bool>(ec))
                         {
                             return false;
                         }
                 }
-            new_folder += boost::filesystem::path::preferred_separator;
+            new_folder += fs::path::preferred_separator;
         }
 
     // Check if we have writing permissions
@@ -67,19 +78,16 @@ bool gnss_sdr_create_directory(const std::string& foldername)
 
     if (os_test_file.is_open())
         {
-            boost::system::error_code ec;
+            errorlib::error_code ec;
             os_test_file.close();
-            try
-                {
-                    boost::filesystem::remove(test_file, ec);
-                }
-            catch (std::exception& e)
+
+            fs::remove(test_file, ec);
+            if (static_cast<bool>(ec))
                 {
                     return false;
                 }
             return true;
         }
 
-    os_test_file.close();
     return false;
 }

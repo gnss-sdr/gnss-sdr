@@ -54,7 +54,6 @@
 #include "gps_sdr_signal_processing.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
@@ -66,6 +65,14 @@
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem/path.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
@@ -497,7 +504,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
 
-            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
                 {

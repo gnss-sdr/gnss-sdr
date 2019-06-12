@@ -33,10 +33,15 @@
 #include "geojson_printer.h"
 #include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+#else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <boost/system/error_code.hpp>       // for error_code
+#endif
 #include <glog/logging.h>
 #include <cstdio>     // for remove
 #include <ctime>      // for tm
@@ -45,29 +50,36 @@
 #include <iostream>   // for cout, cerr
 #include <sstream>    // for stringstream
 
+#if HAS_STD_FILESYSTEM
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
 {
     first_pos = true;
     geojson_base_path = base_path;
-    boost::filesystem::path full_path(boost::filesystem::current_path());
-    const boost::filesystem::path p(geojson_base_path);
-    if (!boost::filesystem::exists(p))
+    fs::path full_path(fs::current_path());
+    const fs::path p(geojson_base_path);
+    if (!fs::exists(p))
         {
             std::string new_folder;
-            for (auto& folder : boost::filesystem::path(geojson_base_path))
+            for (auto& folder : fs::path(geojson_base_path))
                 {
                     new_folder += folder.string();
-                    boost::system::error_code ec;
-                    if (!boost::filesystem::exists(new_folder))
+                    errorlib::error_code ec;
+                    if (!fs::exists(new_folder))
                         {
-                            if (!boost::filesystem::create_directory(new_folder, ec))
+                            if (!fs::create_directory(new_folder, ec))
                                 {
                                     std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                     geojson_base_path = full_path.string();
                                 }
                         }
-                    new_folder += boost::filesystem::path::preferred_separator;
+                    new_folder += fs::path::preferred_separator;
                 }
         }
     else
@@ -79,7 +91,7 @@ GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
             std::cout << "GeoJSON files will be stored at " << geojson_base_path << std::endl;
         }
 
-    geojson_base_path = geojson_base_path + boost::filesystem::path::preferred_separator;
+    geojson_base_path = geojson_base_path + fs::path::preferred_separator;
 }
 
 

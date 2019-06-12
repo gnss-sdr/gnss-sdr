@@ -1,9 +1,14 @@
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Accuracy
+
+- Local clock correction based on PVT solution (error kept below 1 ms).
+
+
 ### Improvements in Availability
 
 - Fixed bug that caused a random deadlock in the Observables block, preventing the computation of PVT fixes.
-- Fixed bug in Galileo INAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
+- Fixed bug in Galileo INAV/FNAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
 - Fixed PVT computation continuity through the TOW rollover.
 
 
@@ -27,7 +32,7 @@
 - Fix bug in GLONASS dual frequency receiver.
 - Added a custom UDP/IP output for PVT data streaming.
 - Improved Monitor block with UDP/IP output for internal receiver's data streaming.
-- Custom output formats described with .proto files, making easier to other applications reading them in a forward and backward-compatible fashion upon future format changes.
+- Custom output formats described with .proto files, making easier to other applications reading them in a forward and backward-compatible fashion upon future format changes. New dependency: Protocol Buffers >= 3.0.0
 - Fixes in RINEX generation: week rollover, annotations are not repeated anymore in navigation files. Parameter rinexnav_rate_ms has been removed, annotations are made as new ephemeris arrive.
 - Fixes in RTCM messages generation: week rollover.
 
@@ -45,6 +50,7 @@
 - Added interfaces for FPGA off-loading.
 - CMake scripts now follow a modern approach (targets and properties) but still work with 2.8.12.
 - Improvements for macOS users using Homebrew.
+- The volk_gnsssdr library can now be built without requiring Boost if the compiler supports C++17.
 
 
 ### Improvements in Reliability

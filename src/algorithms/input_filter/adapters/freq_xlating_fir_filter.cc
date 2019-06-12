@@ -121,7 +121,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
         }
 
     size_t item_size;
-
+    LOG(INFO) << "Created freq_xlating_fir_filter with " << taps_.size()<<" taps";
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);    //output

@@ -41,7 +41,6 @@
 #include "gps_l2_m_pcps_acquisition.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
-#include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/char_to_short.h>
@@ -53,10 +52,19 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <utility>
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #endif
 
 
@@ -203,8 +211,8 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
             std::cout << "Plotting the acquisition grid. This can take a while..." << std::endl;
             try
                 {
-                    boost::filesystem::path p(gnuplot_executable);
-                    boost::filesystem::path dir = p.parent_path();
+                    fs::path p(gnuplot_executable);
+                    fs::path dir = p.parent_path();
                     const std::string &gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
@@ -232,9 +240,9 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                 }
         }
     std::string data_str = "./tmp-acq-gps2";
-    if (boost::filesystem::exists(data_str))
+    if (fs::exists(data_str))
         {
-            boost::filesystem::remove_all(data_str);
+            fs::remove_all(data_str);
         }
 }
 
@@ -289,11 +297,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     if (FLAGS_plot_acq_grid == true)
         {
             std::string data_str = "./tmp-acq-gps2";
-            if (boost::filesystem::exists(data_str))
+            if (fs::exists(data_str))
                 {
-                    boost::filesystem::remove_all(data_str);
+                    fs::remove_all(data_str);
                 }
-            boost::filesystem::create_directory(data_str);
+            fs::create_directory(data_str);
         }
 
     init();

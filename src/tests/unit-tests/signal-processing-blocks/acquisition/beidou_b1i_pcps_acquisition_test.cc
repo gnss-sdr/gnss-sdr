@@ -41,7 +41,6 @@
 #include "gnuplot_i.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
-#include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <glog/logging.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -52,12 +51,20 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <utility>
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class BeidouB1iPcpsAcquisitionTest_msg_rx;
@@ -200,8 +207,8 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
             std::cout << "Plotting the acquisition grid. This can take a while..." << std::endl;
             try
                 {
-                    boost::filesystem::path p(gnuplot_executable);
-                    boost::filesystem::path dir = p.parent_path();
+                    fs::path p(gnuplot_executable);
+                    fs::path dir = p.parent_path();
                     const std::string &gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
@@ -229,9 +236,9 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
                 }
         }
     std::string data_str = "./tmp-acq-bds-b1i";
-    if (boost::filesystem::exists(data_str))
+    if (fs::exists(data_str))
         {
-            boost::filesystem::remove_all(data_str);
+            fs::remove_all(data_str);
         }
 }
 
@@ -290,11 +297,11 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     if (FLAGS_plot_acq_grid == true)
         {
             std::string data_str = "./tmp-acq-bds-b1i";
-            if (boost::filesystem::exists(data_str))
+            if (fs::exists(data_str))
                 {
-                    boost::filesystem::remove_all(data_str);
+                    fs::remove_all(data_str);
                 }
-            boost::filesystem::create_directory(data_str);
+            fs::create_directory(data_str);
         }
 
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);

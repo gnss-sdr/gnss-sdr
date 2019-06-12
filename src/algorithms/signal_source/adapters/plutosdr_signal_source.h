@@ -35,7 +35,11 @@
 #include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/file_sink.h>
+#if GRIIO_INCLUDE_HAS_GNURADIO
 #include <gnuradio/iio/pluto_source.h>
+#else
+#include <iio/pluto_source.h>
+#endif
 #include <gnuradio/msg_queue.h>
 #include <string>
 

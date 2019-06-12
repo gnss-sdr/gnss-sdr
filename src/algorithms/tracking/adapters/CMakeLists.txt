@@ -51,7 +51,6 @@ set(TRACKING_ADAPTER_SOURCES
     galileo_e1_dll_pll_veml_tracking.cc
     galileo_e1_tcp_connector_tracking.cc
     gps_l1_ca_dll_pll_tracking.cc
-    gps_l1_ca_dll_pll_c_aid_tracking.cc
     gps_l1_ca_tcp_connector_tracking.cc
     galileo_e5a_dll_pll_tracking.cc
     gps_l2_m_dll_pll_tracking.cc
@@ -70,7 +69,6 @@ set(TRACKING_ADAPTER_HEADERS
     galileo_e1_dll_pll_veml_tracking.h
     galileo_e1_tcp_connector_tracking.h
     gps_l1_ca_dll_pll_tracking.h
-    gps_l1_ca_dll_pll_c_aid_tracking.h
     gps_l1_ca_tcp_connector_tracking.h
     galileo_e5a_dll_pll_tracking.h
     gps_l2_m_dll_pll_tracking.h

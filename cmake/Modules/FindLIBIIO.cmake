@@ -76,6 +76,12 @@ find_library(
           $ENV{LIBIIO_ROOT}/lib64
 )
 
+if(LIBIIO_LIBRARIES AND APPLE)
+    if(LIBIIO_LIBRARIES MATCHES "framework")
+        set(LIBIIO_LIBRARIES ${LIBIIO_LIBRARIES}/iio)
+    endif()
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
 

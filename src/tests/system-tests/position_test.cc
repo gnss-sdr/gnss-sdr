@@ -48,7 +48,6 @@
 #include "test_flags.h"
 #include "tracking_tests_flags.h"  //acquisition resampler
 #include <armadillo>
-#include <boost/filesystem.hpp>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <matio.h>
@@ -58,6 +57,14 @@
 #include <fstream>
 #include <numeric>
 #include <thread>
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 // For GPS NAVIGATION (L1)
 Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -843,8 +850,8 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
 
             try
                 {
-                    boost::filesystem::path p(gnuplot_executable);
-                    boost::filesystem::path dir = p.parent_path();
+                    fs::path p(gnuplot_executable);
+                    fs::path dir = p.parent_path();
                     const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 

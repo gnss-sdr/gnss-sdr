@@ -46,7 +46,6 @@
 #include "gnss_synchro.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -59,6 +58,15 @@
 #include <exception>
 #include <iostream>
 #include <map>
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem/path.hpp>
+namespace fs = boost::filesystem;
+#endif
+
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)
 {
@@ -413,7 +421,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
 
-            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
                 {

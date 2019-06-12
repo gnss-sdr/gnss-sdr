@@ -411,13 +411,13 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.300.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.500.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.14")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.15")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.7.1")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.8.0")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2") # Fix for CentOS 7
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
@@ -597,102 +597,6 @@ endif()
 
 
 ################################################################################
-# Boost - https://www.boost.org
-################################################################################
-if(UNIX AND EXISTS "/usr/lib64")
-    list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
-endif()
-set(Boost_ADDITIONAL_VERSIONS
-    "1.53.0" "1.53" "1.54.0" "1.54"
-    "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
-    "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
-    "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
-    "1.70.0" "1.70" "1.71.0" "1.71" "1.72.0" "1.72" "1.73.0" "1.73" "1.74.0" "1.74"
-    "1.75.0" "1.75" "1.76.0" "1.76" "1.77.0" "1.77" "1.78.0" "1.78" "1.79.0" "1.79"
-    "1.80.0" "1.80" "1.81.0" "1.81" "1.82.0" "1.82" "1.83.0" "1.83" "1.84.0" "1.84"
-)
-set(Boost_USE_MULTITHREAD ON)
-set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS atomic chrono date_time filesystem serialization system thread REQUIRED)
-set_package_properties(Boost PROPERTIES
-    URL "https://www.boost.org"
-    DESCRIPTION "Portable C++ source libraries"
-    PURPOSE "Used widely across the source code."
-    TYPE REQUIRED
-)
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
-endif()
-
-if(CMAKE_VERSION VERSION_LESS 3.5)
-    if(NOT TARGET Boost::boost)
-        add_library(Boost::boost SHARED IMPORTED) # Trick for CMake 2.8.12
-        set_target_properties(Boost::boost PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::date_time)
-        add_library(Boost::date_time SHARED IMPORTED)
-        set_target_properties(Boost::date_time PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_DATE_TIME_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::system)
-        add_library(Boost::system SHARED IMPORTED)
-        set_target_properties(Boost::system PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_SYSTEM_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::filesystem)
-        add_library(Boost::filesystem SHARED IMPORTED)
-        set_target_properties(Boost::filesystem PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::thread)
-        add_library(Boost::thread SHARED IMPORTED)
-        set_target_properties(Boost::thread PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_THREAD_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_THREAD_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::serialization)
-        add_library(Boost::serialization SHARED IMPORTED)
-        set_target_properties(Boost::serialization PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::chrono)
-        add_library(Boost::chrono SHARED IMPORTED)
-        set_target_properties(Boost::chrono PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES}
-        )
-    endif()
-    if(NOT TARGET Boost::atomic)
-        add_library(Boost::atomic SHARED IMPORTED)
-        set_target_properties(Boost::atomic PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-            INTERFACE_LINK_LIBRARIES ${Boost_ATOMIC_LIBRARIES}
-            IMPORTED_LOCATION ${Boost_ATOMIC_LIBRARIES}
-        )
-    endif()
-endif()
-
-
-
-################################################################################
 # GNU Radio - https://gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
@@ -845,6 +749,150 @@ if(ENABLE_UHD AND UHD_FOUND AND GNURADIO_UHD_FOUND)
         )
     endif()
 endif()
+
+
+
+################################################################################
+# Dectect availability of std::filesystem
+################################################################################
+set(FILESYSTEM_FOUND FALSE)
+if(NOT (GNURADIO_VERSION VERSION_LESS 3.8))
+    # Check if we have std::filesystem
+    if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
+        if(POLICY CMP0057)
+            cmake_policy(SET CMP0057 NEW)
+        endif()
+        if(NOT ENABLE_UNIT_TESTING_EXTRA) # Workaround for GPSTk
+            find_package(FILESYSTEM)
+            set_package_properties(FILESYSTEM PROPERTIES
+                URL "https://en.cppreference.com/w/cpp/filesystem"
+                DESCRIPTION "Provides facilities for performing operations on file systems and their components"
+                PURPOSE "Work with paths, regular files, and directories."
+                TYPE OPTIONAL
+            )
+            if(${FILESYSTEM_FOUND})
+                set(CMAKE_CXX_STANDARD 17)
+                set(CMAKE_CXX_STANDARD_REQUIRED ON)
+            endif()
+        endif()
+    endif()
+endif()
+
+
+
+################################################################################
+# Boost - https://www.boost.org
+################################################################################
+if(UNIX AND EXISTS "/usr/lib64")
+    list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
+endif()
+set(Boost_ADDITIONAL_VERSIONS
+    "1.53.0" "1.53" "1.54.0" "1.54"
+    "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
+    "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
+    "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
+    "1.70.0" "1.70" "1.71.0" "1.71" "1.72.0" "1.72" "1.73.0" "1.73" "1.74.0" "1.74"
+    "1.75.0" "1.75" "1.76.0" "1.76" "1.77.0" "1.77" "1.78.0" "1.78" "1.79.0" "1.79"
+    "1.80.0" "1.80" "1.81.0" "1.81" "1.82.0" "1.82" "1.83.0" "1.83" "1.84.0" "1.84"
+)
+set(Boost_USE_MULTITHREAD ON)
+set(Boost_USE_STATIC_LIBS OFF)
+set(BOOST_COMPONENTS atomic chrono date_time serialization system thread)
+if(NOT ${FILESYSTEM_FOUND})
+    set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)
+endif()
+find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
+set_package_properties(Boost PROPERTIES
+    URL "https://www.boost.org"
+    DESCRIPTION "Portable C++ source libraries"
+    PURPOSE "Used widely across the source code."
+    TYPE REQUIRED
+)
+if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.5)
+    if(NOT TARGET Boost::boost)
+        add_library(Boost::boost SHARED IMPORTED) # Trick for CMake 2.8.12
+        set_target_properties(Boost::boost PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
+        )
+    endif()
+    if(NOT TARGET Boost::date_time)
+        add_library(Boost::date_time SHARED IMPORTED)
+        set_target_properties(Boost::date_time PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_DATE_TIME_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
+        )
+    endif()
+    if(NOT TARGET Boost::system)
+        add_library(Boost::system SHARED IMPORTED)
+        set_target_properties(Boost::system PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_SYSTEM_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARIES}
+        )
+    endif()
+    if(NOT TARGET Boost::thread)
+        add_library(Boost::thread SHARED IMPORTED)
+        set_target_properties(Boost::thread PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_THREAD_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_THREAD_LIBRARIES}
+        )
+    endif()
+    if(NOT TARGET Boost::serialization)
+        add_library(Boost::serialization SHARED IMPORTED)
+        set_target_properties(Boost::serialization PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES}
+        )
+    endif()
+    if(NOT TARGET Boost::chrono)
+        add_library(Boost::chrono SHARED IMPORTED)
+        set_target_properties(Boost::chrono PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES}
+        )
+    endif()
+    if(NOT TARGET Boost::atomic)
+        add_library(Boost::atomic SHARED IMPORTED)
+        set_target_properties(Boost::atomic PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_ATOMIC_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_ATOMIC_LIBRARIES}
+        )
+    endif()
+    if(NOT ${FILESYSTEM_FOUND})
+        if(NOT TARGET Boost::filesystem)
+            add_library(Boost::filesystem SHARED IMPORTED)
+            set_target_properties(Boost::filesystem PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+                INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES}
+                IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES}
+            )
+         endif()
+    endif()
+endif()
+
+# Fix for Boost Asio < 1.70 when using Clang in macOS
+if(${Boost_VERSION} VERSION_LESS 107000)
+    # Check if we have std::string_view
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <string_view>
+        int main()
+        { std::string_view sv; }"
+        has_string_view
+    )
+endif()
+
+
 
 
 

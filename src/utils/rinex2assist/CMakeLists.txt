@@ -55,8 +55,8 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
 )
 
 if(Boost_FOUND)
+    set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
-
     add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
     target_link_libraries(rinex2assist

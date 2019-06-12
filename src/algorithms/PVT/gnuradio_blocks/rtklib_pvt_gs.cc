@@ -66,10 +66,8 @@
 #include <boost/bind/bind.hpp>             // for bind_t, bind
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception/exception.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>  // for nvp, make_nvp
-#include <boost/system/error_code.hpp>  // for error_code
 #include <glog/logging.h>               // for LOG
 #include <gnuradio/io_signature.h>      // for io_signature
 #include <pmt/pmt_sugar.h>              // for mp
@@ -83,6 +81,19 @@
 #include <stdexcept>                    // for length_error
 #include <sys/ipc.h>                    // for IPC_CREAT
 #include <sys/msg.h>                    // for msgctl
+
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+#include <system_error>
+namespace fs = std::filesystem;
+namespace errorlib = std;
+#else
+#include <boost/filesystem/path.hpp>
+#include <boost/system/error_code.hpp>  // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
+
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -140,7 +151,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
-            dump_ls_pvt_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            dump_ls_pvt_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
             dump_ls_pvt_filename.append(".dat");
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
@@ -305,24 +316,24 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     if (d_xml_storage)
         {
             xml_base_path = conf_.xml_output_path;
-            boost::filesystem::path full_path(boost::filesystem::current_path());
-            const boost::filesystem::path p(xml_base_path);
-            if (!boost::filesystem::exists(p))
+            fs::path full_path(fs::current_path());
+            const fs::path p(xml_base_path);
+            if (!fs::exists(p))
                 {
                     std::string new_folder;
-                    for (auto& folder : boost::filesystem::path(xml_base_path))
+                    for (auto& folder : fs::path(xml_base_path))
                         {
                             new_folder += folder.string();
-                            boost::system::error_code ec;
-                            if (!boost::filesystem::exists(new_folder))
+                            errorlib::error_code ec;
+                            if (!fs::exists(new_folder))
                                 {
-                                    if (!boost::filesystem::create_directory(new_folder, ec))
+                                    if (!fs::create_directory(new_folder, ec))
                                         {
                                             std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                             xml_base_path = full_path.string();
                                         }
                                 }
-                            new_folder += boost::filesystem::path::preferred_separator;
+                            new_folder += fs::path::preferred_separator;
                         }
                 }
             else
@@ -334,7 +345,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                     std::cout << "XML files will be stored at " << xml_base_path << std::endl;
                 }
 
-            xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
+            xml_base_path = xml_base_path + fs::path::preferred_separator;
         }
 
     d_rx_time = 0.0;

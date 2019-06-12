@@ -41,8 +41,6 @@ endif()
 set(TRACKING_GR_BLOCKS_SOURCES
     galileo_e1_tcp_connector_tracking_cc.cc
     gps_l1_ca_tcp_connector_tracking_cc.cc
-    gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
-    gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
     glonass_l1_ca_dll_pll_tracking_cc.cc
     glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
     glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
@@ -57,8 +55,6 @@ set(TRACKING_GR_BLOCKS_SOURCES
 set(TRACKING_GR_BLOCKS_HEADERS
     galileo_e1_tcp_connector_tracking_cc.h
     gps_l1_ca_tcp_connector_tracking_cc.h
-    gps_l1_ca_dll_pll_c_aid_tracking_cc.h
-    gps_l1_ca_dll_pll_c_aid_tracking_sc.h
     glonass_l1_ca_dll_pll_tracking_cc.h
     glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
     glonass_l1_ca_dll_pll_c_aid_tracking_sc.h
@@ -79,6 +75,13 @@ add_library(tracking_gr_blocks
     ${TRACKING_GR_BLOCKS_SOURCES}
     ${TRACKING_GR_BLOCKS_HEADERS}
 )
+
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(tracking_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    target_link_libraries(tracking_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(tracking_gr_blocks PRIVATE Boost::filesystem)
+endif()
 
 target_link_libraries(tracking_gr_blocks
     PUBLIC

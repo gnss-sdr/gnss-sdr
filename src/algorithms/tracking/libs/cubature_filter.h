@@ -6,7 +6,8 @@
  * Filter, which uses multidimensional cubature rules to estimate the
  * time evolution of a nonlinear system.
  *
- * [1] TODO: Refs
+ * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE 
+ * Transactions on Automatic Control, 54(6):1254–1269,2009.
  *
  * \authors <ul>
  *          <li> Gerald LaMountain, 2019. gerald(at)ece.neu.edu
@@ -14,7 +15,7 @@
  *          </ul>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,6 +44,22 @@
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
 
+// Abstract model function
+class ModelFunction{
+    public:
+        ModelFunction() {};
+        virtual arma::vec operator() (arma::vec input) = 0;
+        virtual ~ModelFunction() = default;
+};
+
+class TestModel{
+    public:
+        TestModel() {};
+        //virtual arma::vec operator() (arma::vec input) = 0;
+        virtual double operator() (double input) = 0;
+        virtual ~TestModel() = default;
+};
+
 class Cubature_filter
 {
 public:
@@ -53,17 +70,21 @@ public:
     ~Cubature_filter();
 
     // Reinitialization function
-    void init(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
+    void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
 
     // Prediction and estimation
-    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, arma::vec (*transition_fcn)(const arma::mat&), const arma::mat& noise_covariance);
-    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, arma::vec (*measurement_fcn)(const arma::mat&), const arma::mat& noise_covariance);
+    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
+    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
 
     // Getters
     arma::mat get_x_pred() const;
     arma::mat get_P_x_pred() const;
     arma::mat get_x_est() const;
     arma::mat get_P_x_est() const;
+
+    //Test-dev
+    double func_number(double number, TestModel* func);
+
 private:
     arma::vec x_pred_out;
     arma::mat P_x_pred_out;

@@ -6,7 +6,8 @@
  * Filter, which uses multidimensional cubature rules to estimate the
  * time evolution of a nonlinear system.
  *
- * [1] TODO: Refs
+ * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE 
+ * Transactions on Automatic Control, 54(6):1254–1269,2009.
  *
  * \authors <ul>
  *          <li> Gerald LaMountain, 2019. gerald(at)ece.neu.edu
@@ -14,7 +15,7 @@
  *          </ul>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -70,7 +71,7 @@ Cubature_filter::Cubature_filter(const arma::vec& x_pred_0, const arma::mat& P_x
 
 Cubature_filter::~Cubature_filter() = default;
 
-void Cubature_filter::init(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
+void Cubature_filter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
 {
     x_pred_out = x_pred_0;
     P_x_pred_out = P_x_pred_0;
@@ -83,29 +84,33 @@ void Cubature_filter::init(const arma::mat& x_pred_0, const arma::mat& P_x_pred_
 /*
  * Perform the prediction step of the cubature Kalman filter
  */
-void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, arma::vec (*transition_fcn)(const arma::mat&), const arma::mat& noise_covariance)
+void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance)
 {
     // Compute number of cubature points
     int nx = x_post.n_elem;
     int np = 2 * nx;
+
+    // Generator Matrix
+    arma::mat gen_one = arma::join_horiz(arma::eye(nx,nx),-1.0*arma::eye(nx,nx));
 
     // Initialize predicted mean and covariance
     arma::vec x_pred = arma::zeros(nx,1);
     arma::mat P_x_pred = arma::zeros(nx,nx);
 
     // Factorize posterior covariance
-    arma::mat Sm_post = arma::chol(P_x_post);
+    arma::mat Sm_post = arma::chol(P_x_post, "lower");
     
     // Propagate and evaluate cubature points
     arma::vec Xi_post;
     arma::vec Xi_pred;
-    for (int32_t i = 0; i < np; i++)
+
+    for (uint8_t i = 0; i < np; i++)
     {
-        Xi_post = Sm_post*std::sqrt(((float) np) / 2.0)*arma::ones(nx,1) + x_post;
+        Xi_post = Sm_post * (std::sqrt(((float) np) / 2.0) * gen_one.col(i)) + x_post;
         Xi_pred = (*transition_fcn)(Xi_post);
-        
-        x_pred = x_post + Xi_pred;
-        P_x_pred = P_x_post + Xi_pred*Xi_pred.t();
+       
+        x_pred = x_pred + Xi_pred;
+        P_x_pred = P_x_pred + Xi_pred*Xi_pred.t();
     }
     
     // Estimate predicted state and error covariance
@@ -120,34 +125,37 @@ void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::ma
 /*
  * Perform the update step of the cubature Kalman filter
  */
-void Cubature_filter::update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, arma::vec (*measurement_fcn)(const arma::mat&), const arma::mat& noise_covariance)
+void Cubature_filter::update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance)
 {
     // Compute number of cubature points
     int nx = x_pred.n_elem;
     int nz = z_upd.n_elem;
     int np = 2 * nx;
 
+    // Generator Matrix
+    arma::mat gen_one = arma::join_horiz(arma::eye(nx,nx),-1.0*arma::eye(nx,nx));
+
     // Evaluate predicted measurement and covariances
-    arma::mat z_pred = arma::zeros(nx,1);
+    arma::mat z_pred = arma::zeros(nz,1);
     arma::mat P_zz_pred = arma::zeros(nz,nz);
     arma::mat P_xz_pred = arma::zeros(nx,nz);
 
     // Factorize predicted covariance
-    arma::mat Sm_pred = arma::chol(P_x_pred);
+    arma::mat Sm_pred = arma::chol(P_x_pred, "lower");
 
     // Propagate and evaluate cubature points
     arma::vec Xi_pred;
     arma::vec Zi_pred;
-    for (int32_t i = 0; i < np; i++)
+    for (uint8_t i = 0; i < np; i++)
     {
-        Xi_pred = Sm_pred*std::sqrt(((float) np) / 2.0)*arma::ones(nx,1) + x_pred;
+        Xi_pred = Sm_pred * (std::sqrt(((float) np) / 2.0) * gen_one.col(i)) + x_pred;
         Zi_pred = (*measurement_fcn)(Xi_pred);
         
         z_pred = z_pred + Zi_pred;
         P_zz_pred = P_zz_pred + Zi_pred*Zi_pred.t();
         P_xz_pred = P_xz_pred + Xi_pred*Zi_pred.t();
     }
-    
+
     // Estimate measurement covariance and cross covariances
     z_pred = z_pred / ((float) np);
     P_zz_pred = P_zz_pred / ((float) np) - z_pred*z_pred.t() + noise_covariance;
@@ -179,4 +187,9 @@ arma::mat Cubature_filter::get_x_est() const
 arma::mat Cubature_filter::get_P_x_est() const
 {
     return P_x_est;
+}
+
+double Cubature_filter::func_number(double number, TestModel* func)
+{
+    return (*func)(number);
 }

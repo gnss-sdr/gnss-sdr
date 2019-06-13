@@ -6,7 +6,7 @@
  * Filter, which uses multidimensional cubature rules to estimate the
  * time evolution of a nonlinear system.
  *
- * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE 
+ * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE
  * Transactions on Automatic Control, 54(6):1254–1269,2009.
  *
  * \authors <ul>

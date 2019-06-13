@@ -35,20 +35,24 @@
 
 #define CUBATURE_TEST_N_TRIALS 1000
 
-class Transition_Model : public Model_Function {
-    public:
-        Transition_Model(arma::mat kf_F) {coeff_mat = kf_F;};
-        virtual arma::vec operator() (arma::vec input) {return coeff_mat*input;};
-    private:
-        arma::mat coeff_mat;
+class Transition_Model : public Model_Function
+{
+public:
+    Transition_Model(arma::mat kf_F) { coeff_mat = kf_F; };
+    virtual arma::vec operator()(arma::vec input) { return coeff_mat * input; };
+
+private:
+    arma::mat coeff_mat;
 };
 
-class Measurement_Model : public Model_Function {
-    public:
-        Measurement_Model(arma::mat kf_H) {coeff_mat = kf_H;};
-        virtual arma::vec operator() (arma::vec input) {return coeff_mat*input;};
-    private:
-        arma::mat coeff_mat;
+class Measurement_Model : public Model_Function
+{
+public:
+    Measurement_Model(arma::mat kf_H) { coeff_mat = kf_H; };
+    virtual arma::vec operator()(arma::vec input) { return coeff_mat * input; };
+
+private:
+    arma::mat coeff_mat;
 };
 
 TEST(CubatureFilterComputationTest, CubatureFilterTest)
@@ -101,21 +105,21 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
             nx = std::rand() % 5 + 1;
             ny = std::rand() % 5 + 1;
 
-            kf_x = arma::randn<arma::vec>(nx,1);
+            kf_x = arma::randn<arma::vec>(nx, 1);
 
-            kf_P_x_post = 5.0 * arma::diagmat(arma::randu<arma::vec>(nx,1));
+            kf_P_x_post = 5.0 * arma::diagmat(arma::randu<arma::vec>(nx, 1));
             kf_x_post = arma::mvnrnd(kf_x, kf_P_x_post);
 
             kf_cubature.initialize(kf_x_post, kf_P_x_post);
 
             // Prediction Step
-            kf_F = arma::randu<arma::mat>(nx,nx);
-            kf_Q = arma::diagmat(arma::randu<arma::vec>(nx,1));
+            kf_F = arma::randu<arma::mat>(nx, nx);
+            kf_Q = arma::diagmat(arma::randu<arma::vec>(nx, 1));
 
             transition_function = new Transition_Model(kf_F);
             arma::mat ttx = (*transition_function)(kf_x_post);
 
-            kf_cubature.predict_sequential(kf_x_post,kf_P_x_post,transition_function,kf_Q);
+            kf_cubature.predict_sequential(kf_x_post, kf_P_x_post, transition_function, kf_Q);
 
             ckf_x_pre = kf_cubature.get_x_pred();
             ckf_P_x_pre = kf_cubature.get_P_x_pred();
@@ -127,16 +131,16 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
             EXPECT_TRUE(arma::approx_equal(ckf_P_x_pre, kf_P_x_pre, "absdiff", 0.01));
 
             // Update Step
-            kf_H = arma::randu<arma::mat>(ny,nx);
-            kf_R = arma::diagmat(arma::randu<arma::vec>(ny,1));
+            kf_H = arma::randu<arma::mat>(ny, nx);
+            kf_R = arma::diagmat(arma::randu<arma::vec>(ny, 1));
 
-            eta = arma::mvnrnd(arma::zeros<arma::vec>(nx,1),kf_Q);
-            nu = arma::mvnrnd(arma::zeros<arma::vec>(ny,1),kf_R);
+            eta = arma::mvnrnd(arma::zeros<arma::vec>(nx, 1), kf_Q);
+            nu = arma::mvnrnd(arma::zeros<arma::vec>(ny, 1), kf_R);
 
-            kf_y = kf_H*(kf_F*kf_x + eta) + nu;
+            kf_y = kf_H * (kf_F * kf_x + eta) + nu;
 
             measurement_function = new Measurement_Model(kf_H);
-            kf_cubature.update_sequential(kf_y,kf_x_pre,kf_P_x_pre,measurement_function,kf_R);
+            kf_cubature.update_sequential(kf_y, kf_x_pre, kf_P_x_pre, measurement_function, kf_R);
 
             ckf_x_post = kf_cubature.get_x_est();
             ckf_P_x_post = kf_cubature.get_P_x_est();
@@ -145,7 +149,7 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
             kf_K = (kf_P_x_pre * kf_H.t()) * arma::inv(kf_P_y);
 
             kf_x_post = kf_x_pre + kf_K * (kf_y - kf_H * kf_x_pre);
-            kf_P_x_post = (arma::eye(nx,nx) - kf_K * kf_H) * kf_P_x_pre;
+            kf_P_x_post = (arma::eye(nx, nx) - kf_K * kf_H) * kf_P_x_pre;
 
             EXPECT_TRUE(arma::approx_equal(ckf_x_post, kf_x_post, "absdiff", 0.01));
             EXPECT_TRUE(arma::approx_equal(ckf_P_x_post, kf_P_x_post, "absdiff", 0.01));

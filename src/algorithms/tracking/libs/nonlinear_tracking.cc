@@ -1,10 +1,12 @@
 /*!
  * \file cubature_filter.cc
- * \brief Interface of a library with Bayesian noise statistic estimation
+ * \brief Interface of a library for nonlinear tracking algorithms
  *
  * Cubature_Filter implements the functionality of the Cubature Kalman
  * Filter, which uses multidimensional cubature rules to estimate the
- * time evolution of a nonlinear system.
+ * time evolution of a nonlinear system. Unscented_filter implements
+ * an Unscented Kalman Filter which uses Unscented Transform rules to
+ * perform a similar estimation.
  *
  * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE 
  * Transactions on Automatic Control, 54(6):1254–1269,2009.
@@ -38,8 +40,9 @@
  * -------------------------------------------------------------------------
  */
 
-#include "cubature_filter.h"
+#include "nonlinear_tracking.h"
 
+/***************** CUBATURE KALMAN FILTER *****************/
 
 Cubature_filter::Cubature_filter()
 {
@@ -113,11 +116,11 @@ void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::ma
         P_x_pred = P_x_pred + Xi_pred*Xi_pred.t();
     }
     
-    // Estimate predicted state and error covariance
+    // Compute predicted mean and error covariance
     x_pred = x_pred / ((float) np);
     P_x_pred = P_x_pred / ((float) np) - x_pred*x_pred.t() + noise_covariance;
 
-    // Store predicted state and error covariance
+    // Store predicted mean and error covariance
     x_pred_out = x_pred;
     P_x_pred_out = P_x_pred;
 }
@@ -135,7 +138,7 @@ void Cubature_filter::update_sequential(const arma::vec& z_upd, const arma::vec&
     // Generator Matrix
     arma::mat gen_one = arma::join_horiz(arma::eye(nx,nx),-1.0*arma::eye(nx,nx));
 
-    // Evaluate predicted measurement and covariances
+    // Initialize estimated predicted measurement and covariances
     arma::mat z_pred = arma::zeros(nz,1);
     arma::mat P_zz_pred = arma::zeros(nz,nz);
     arma::mat P_xz_pred = arma::zeros(nx,nz);
@@ -156,15 +159,15 @@ void Cubature_filter::update_sequential(const arma::vec& z_upd, const arma::vec&
         P_xz_pred = P_xz_pred + Xi_pred*Zi_pred.t();
     }
 
-    // Estimate measurement covariance and cross covariances
+    // Compute measurement mean, covariance and cross covariance
     z_pred = z_pred / ((float) np);
     P_zz_pred = P_zz_pred / ((float) np) - z_pred*z_pred.t() + noise_covariance;
     P_xz_pred = P_xz_pred / ((float) np) - x_pred*z_pred.t();
 
-    // Estimate cubature Kalman gain
+    // Compute cubature Kalman gain
     arma::mat W_k = P_xz_pred*arma::inv(P_zz_pred);
 
-    // Estimate and store the updated state and error covariance
+    // Compute and store the updated mean and error covariance
     x_est = x_pred + W_k*(z_upd - z_pred);
     P_x_est = P_x_pred - W_k*P_zz_pred*W_k.t();
 }
@@ -188,3 +191,180 @@ arma::mat Cubature_filter::get_P_x_est() const
 {
     return P_x_est;
 }
+/***************** END CUBATURE KALMAN FILTER *****************/
+
+/***************** UNSCENTED KALMAN FILTER *****************/
+
+Unscented_filter::Unscented_filter()
+{
+    int nx = 1;
+    x_pred_out = arma::zeros(nx, 1);
+    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
+
+    x_est = x_pred_out;
+    P_x_est = P_x_pred_out;
+}
+
+Unscented_filter::Unscented_filter(int nx)
+{
+    x_pred_out = arma::zeros(nx, 1);
+    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
+
+    x_est = x_pred_out;
+    P_x_est = P_x_pred_out;
+}
+
+Unscented_filter::Unscented_filter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0)
+{
+    x_pred_out = x_pred_0;
+    P_x_pred_out = P_x_pred_0;
+
+    x_est = x_pred_out;
+    P_x_est = P_x_pred_out;
+}
+
+Unscented_filter::~Unscented_filter() = default;
+
+void Unscented_filter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
+{
+    x_pred_out = x_pred_0;
+    P_x_pred_out = P_x_pred_0;
+
+    x_est = x_pred_out;
+    P_x_est = P_x_pred_out;
+}
+
+
+/*
+ * Perform the prediction step of the Unscented Kalman filter
+ */
+void Unscented_filter::predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, Model_Function* transition_fcn, const arma::mat& noise_covariance)
+{
+    // Compute number of sigma points
+    int nx = x_post.n_elem;
+    int np = 2 * nx + 1;
+
+    float alpha = 0.001;
+    float kappa = 0.0;
+    float beta = 2.0;
+
+    float lambda = std::pow(alpha,2.0)*(((float) nx) + kappa) - ((float) nx);
+
+    // Compute UT Weights
+    float W0_m = lambda / (((float) nx) + lambda);
+    float W0_c = lambda / (((float) nx) + lambda) + (1 - std::pow(alpha,2.0) + beta);
+    float Wi_m = 1.0 / (2.0 * (((float) nx) + lambda));
+
+    // Propagate and evaluate sigma points
+    arma::mat Xi_fact = arma::zeros(nx,nx);
+    arma::mat Xi_post = arma::zeros(nx,np);
+    arma::mat Xi_pred = arma::zeros(nx,np);
+
+
+    Xi_post.col(0) = x_post;
+    Xi_pred.col(0) = (*transition_fcn)(Xi_post.col(0));
+    for (uint8_t i = 1; i <= nx; i++)
+    {
+        Xi_fact = std::sqrt(((float) nx) + lambda) * arma::sqrtmat_sympd(P_x_post);
+        Xi_post.col(i) = x_post + Xi_fact.col(i-1);
+        Xi_post.col(i+nx) = x_post - Xi_fact.col(i-1);
+
+        Xi_pred.col(i) = (*transition_fcn)(Xi_post.col(i)); 
+        Xi_pred.col(i+nx) = (*transition_fcn)(Xi_post.col(i+nx)); 
+    }
+
+    // Compute predicted mean
+    arma::vec x_pred = W0_m*Xi_pred.col(0) + Wi_m*arma::sum(Xi_pred.cols(1,np-1),1);
+
+    // Compute predicted error covariance
+    arma::mat P_x_pred = W0_c*((Xi_pred.col(0)-x_pred) * (Xi_pred.col(0).t()-x_pred.t()));
+    for (uint8_t i = 1; i < np; i++)
+    {
+        P_x_pred = P_x_pred + Wi_m*((Xi_pred.col(i)-x_pred) * (Xi_pred.col(i).t()-x_pred.t()));
+    }
+    P_x_pred = P_x_pred + noise_covariance;
+
+    // Store predicted mean and error covariance
+    x_pred_out = x_pred;
+    P_x_pred_out = P_x_pred;
+}
+
+/*
+ * Perform the update step of the Unscented Kalman filter
+ */
+void Unscented_filter::update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, Model_Function* measurement_fcn, const arma::mat& noise_covariance)
+{
+    // Compute number of sigma points
+    int nx = x_pred.n_elem;
+    int nz = z_upd.n_elem;
+    int np = 2 * nx + 1;
+
+    float alpha = 0.001;
+    float kappa = 0.0;
+    float beta = 2.0;
+
+    float lambda = std::pow(alpha,2.0)*(((float) nx) + kappa) - ((float) nx);
+
+    // Compute UT Weights
+    float W0_m = lambda / (((float) nx) + lambda);
+    float W0_c = lambda / (((float) nx) + lambda) + (1 - std::pow(alpha,2.0) + beta);
+    float Wi_m = 1.0 / (2.0 * (((float) nx) + lambda));
+
+    // Propagate and evaluate sigma points
+    arma::mat Xi_fact = arma::zeros(nx,nx);
+    arma::mat Xi_pred = arma::zeros(nx,np);
+    arma::mat Zi_pred = arma::zeros(nz,np);
+
+    Xi_pred.col(0) = x_pred;
+    Zi_pred.col(0) = (*measurement_fcn)(Xi_pred.col(0));
+    for (uint8_t i = 1; i <= nx; i++)
+    {
+        Xi_fact = std::sqrt(((float) nx) + lambda) * arma::sqrtmat_sympd(P_x_pred);
+        Xi_pred.col(i) = x_pred + Xi_fact.col(i-1);
+        Xi_pred.col(i+nx) = x_pred - Xi_fact.col(i-1);
+
+        Zi_pred.col(i) = (*measurement_fcn)(Xi_pred.col(i)); 
+        Zi_pred.col(i+nx) = (*measurement_fcn)(Xi_pred.col(i+nx)); 
+    }
+
+    // Compute measurement mean
+    arma::mat z_pred = W0_m*Zi_pred.col(0) + Wi_m*arma::sum(Zi_pred.cols(1,np-1),1);
+
+    // Compute measurement covariance and cross covariance
+    arma::mat P_zz_pred = W0_c * ((Zi_pred.col(0) - z_pred) * (Zi_pred.col(0).t() - z_pred.t()));
+    arma::mat P_xz_pred = W0_c * ((Xi_pred.col(0) - x_pred) * (Zi_pred.col(0).t() - z_pred.t()));
+    for (uint8_t i = 0; i < np; i++)
+    {
+        P_zz_pred = P_zz_pred + Wi_m * ((Zi_pred.col(i) - z_pred) * (Zi_pred.col(i).t() - z_pred.t()));
+        P_xz_pred = P_xz_pred + Wi_m * ((Xi_pred.col(i) - x_pred) * (Zi_pred.col(i).t() - z_pred.t()));
+    }
+    P_zz_pred = P_zz_pred + noise_covariance;
+
+    // Estimate cubature Kalman gain
+    arma::mat W_k = P_xz_pred*arma::inv(P_zz_pred);
+
+    // Estimate and store the updated mean and error covariance
+    x_est = x_pred + W_k*(z_upd - z_pred);
+    P_x_est = P_x_pred - W_k*P_zz_pred*W_k.t();
+}
+
+arma::mat Unscented_filter::get_x_pred() const
+{
+    return x_pred_out;
+}
+
+arma::mat Unscented_filter::get_P_x_pred() const
+{
+    return P_x_pred_out;
+}
+
+arma::mat Unscented_filter::get_x_est() const
+{
+    return x_est;
+}
+
+arma::mat Unscented_filter::get_P_x_est() const
+{
+    return P_x_est;
+}
+/***************** END UNSCENTED KALMAN FILTER *****************/

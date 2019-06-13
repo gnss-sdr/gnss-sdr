@@ -1,10 +1,12 @@
 /*!
- * \file cubature_filter.h
- * \brief Interface of a library with Bayesian noise statistic estimation
+ * \file nonlinear_tracking.h
+ * \brief Interface of a library for nonlinear tracking algorithms
  *
  * Cubature_Filter implements the functionality of the Cubature Kalman
  * Filter, which uses multidimensional cubature rules to estimate the
- * time evolution of a nonlinear system.
+ * time evolution of a nonlinear system. Unscented_filter implements
+ * an Unscented Kalman Filter which uses Unscented Transform rules to
+ * perform a similar estimation.
  *
  * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE 
  * Transactions on Automatic Control, 54(6):1254–1269,2009.
@@ -38,8 +40,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CUBATURE_FILTER_H_
-#define GNSS_SDR_CUBATURE_FILTER_H_
+#ifndef GNSS_SDR_NONLINEAR_TRACKING_H_
+#define GNSS_SDR_NONLINEAR_TRACKING_H_
 
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
@@ -60,6 +62,35 @@ public:
     Cubature_filter(int nx);
     Cubature_filter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
     ~Cubature_filter();
+
+    // Reinitialization function
+    void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
+
+    // Prediction and estimation
+    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, Model_Function* transition_fcn, const arma::mat& noise_covariance);
+    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, Model_Function* measurement_fcn, const arma::mat& noise_covariance);
+
+    // Getters
+    arma::mat get_x_pred() const;
+    arma::mat get_P_x_pred() const;
+    arma::mat get_x_est() const;
+    arma::mat get_P_x_est() const;
+
+private:
+    arma::vec x_pred_out;
+    arma::mat P_x_pred_out;
+    arma::vec x_est;
+    arma::mat P_x_est;
+};
+
+class Unscented_filter
+{
+public:
+    // Constructors and destructors
+    Unscented_filter();
+    Unscented_filter(int nx);
+    Unscented_filter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
+    ~Unscented_filter();
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);

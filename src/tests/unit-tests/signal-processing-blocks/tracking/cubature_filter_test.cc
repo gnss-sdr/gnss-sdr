@@ -28,12 +28,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include "cubature_filter.h"
+#include "nonlinear_tracking.h"
 #include <armadillo>
 #include <gtest/gtest.h>
 #include <random>
 
 #define CUBATURE_TEST_N_TRIALS 1000
+#define CUBATURE_TEST_TOLERANCE 0.01
 
 class Transition_Model : public Model_Function {
     public:
@@ -123,8 +124,8 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
             kf_x_pre = kf_F * kf_x_post;
             kf_P_x_pre = kf_F * kf_P_x_post * kf_F.t() + kf_Q;
 
-            EXPECT_TRUE(arma::approx_equal(ckf_x_pre, kf_x_pre, "absdiff", 0.01));
-            EXPECT_TRUE(arma::approx_equal(ckf_P_x_pre, kf_P_x_pre, "absdiff", 0.01));
+            EXPECT_TRUE(arma::approx_equal(ckf_x_pre, kf_x_pre, "absdiff", CUBATURE_TEST_TOLERANCE));
+            EXPECT_TRUE(arma::approx_equal(ckf_P_x_pre, kf_P_x_pre, "absdiff", CUBATURE_TEST_TOLERANCE));
 
             // Update Step
             kf_H = arma::randu<arma::mat>(ny,nx);
@@ -147,8 +148,8 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
             kf_x_post = kf_x_pre + kf_K * (kf_y - kf_H * kf_x_pre);
             kf_P_x_post = (arma::eye(nx,nx) - kf_K * kf_H) * kf_P_x_pre;
 
-            EXPECT_TRUE(arma::approx_equal(ckf_x_post, kf_x_post, "absdiff", 0.01));
-            EXPECT_TRUE(arma::approx_equal(ckf_P_x_post, kf_P_x_post, "absdiff", 0.01));
+            EXPECT_TRUE(arma::approx_equal(ckf_x_post, kf_x_post, "absdiff", CUBATURE_TEST_TOLERANCE));
+            EXPECT_TRUE(arma::approx_equal(ckf_P_x_post, kf_P_x_post, "absdiff", CUBATURE_TEST_TOLERANCE));
 
             delete transition_function;
             delete measurement_function;

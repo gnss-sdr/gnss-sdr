@@ -8,7 +8,7 @@
  * an Unscented Kalman Filter which uses Unscented Transform rules to
  * perform a similar estimation.
  *
- * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE 
+ * [1] I Arasaratnam and S Haykin. Cubature kalman filters. IEEE
  * Transactions on Automatic Control, 54(6):1254–1269,2009.
  *
  * \authors <ul>

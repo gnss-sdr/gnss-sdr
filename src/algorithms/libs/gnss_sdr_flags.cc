@@ -30,18 +30,20 @@
 
 
 #include "gnss_sdr_flags.h"
-#if HAS_STD_FILESYSTEM
-#include <filesystem>
-#else
-#include <boost/filesystem/operations.hpp>  // for exists
-#endif
 #include <cstdint>
 #include <iostream>
 #include <string>
 
 #if HAS_STD_FILESYSTEM
-namespace fs = std::filesystem;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>  // for exists
 namespace fs = boost::filesystem;
 #endif
 

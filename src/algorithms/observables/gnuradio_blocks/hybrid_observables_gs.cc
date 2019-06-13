@@ -46,12 +46,18 @@
 #include <utility>    // for move
 
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
 #include <filesystem>
 namespace fs = std::filesystem;
+#endif
 #else
 #include <boost/filesystem/path.hpp>
 namespace fs = boost::filesystem;
 #endif
+
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {

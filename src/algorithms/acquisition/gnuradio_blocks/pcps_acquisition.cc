@@ -40,7 +40,11 @@
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+#else
 #include <filesystem>
+#endif
 #else
 #include <boost/filesystem/path.hpp>
 #endif
@@ -58,7 +62,11 @@
 #include <map>
 
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+namespace fs = std::experimental::filesystem;
+#else
 namespace fs = std::filesystem;
+#endif
 #else
 namespace fs = boost::filesystem;
 #endif

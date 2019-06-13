@@ -643,9 +643,9 @@ leo-position-test-180417120737:
     - mkdir galE5a && cd galE5a
     - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - cd .. && cp -r galE5a /../leo_position
-    - mkdir galE5a && cd galE5a
+    - mkdir gpsL5galE5a  && cd gpsL5galE5a
     - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
-    - cd .. && cp -r galE5a /../leo_position
+    - cd .. && cp -r gpsL5galE5a /../leo_position
   artifacts:
     paths:
       - leo_position/*

@@ -753,17 +753,33 @@ endif()
 
 
 ################################################################################
+# Log4cpp - http://log4cpp.sourceforge.net/
+################################################################################
+find_package(LOG4CPP)
+set_package_properties(LOG4CPP PROPERTIES
+    URL "http://log4cpp.sourceforge.net/"
+    DESCRIPTION "Library of C++ classes for flexible logging to files"
+    PURPOSE "Required by GNU Radio."
+    TYPE REQUIRED
+)
+if(NOT LOG4CPP_FOUND)
+    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
+endif()
+
+
+
+################################################################################
 # Dectect availability of std::filesystem
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)
-if(NOT (GNURADIO_VERSION VERSION_LESS 3.8))
+if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
         if(POLICY CMP0057)
             cmake_policy(SET CMP0057 NEW)
         endif()
         if(NOT ENABLE_UNIT_TESTING_EXTRA) # Workaround for GPSTk
-            find_package(FILESYSTEM)
+            find_package(FILESYSTEM COMPONENTS Final Experimental)
             set_package_properties(FILESYSTEM PROPERTIES
                 URL "https://en.cppreference.com/w/cpp/filesystem"
                 DESCRIPTION "Provides facilities for performing operations on file systems and their components"
@@ -894,8 +910,6 @@ endif()
 
 
 
-
-
 ################################################################################
 # VOLK - Vector-Optimized Library of Kernels
 ################################################################################
@@ -908,22 +922,6 @@ set_package_properties(VOLK PROPERTIES
 )
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
-endif()
-
-
-
-################################################################################
-# Log4cpp - http://log4cpp.sourceforge.net/
-################################################################################
-find_package(LOG4CPP)
-set_package_properties(LOG4CPP PROPERTIES
-    URL "http://log4cpp.sourceforge.net/"
-    DESCRIPTION "Library of C++ classes for flexible logging to files"
-    PURPOSE "Required by GNU Radio."
-    TYPE REQUIRED
-)
-if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
 endif()
 
 

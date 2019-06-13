@@ -83,10 +83,15 @@
 #include <sys/msg.h>                    // for msgctl
 
 #if HAS_STD_FILESYSTEM
-#include <filesystem>
 #include <system_error>
-namespace fs = std::filesystem;
 namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
 #else
 #include <boost/filesystem/path.hpp>
 #include <boost/system/error_code.hpp>  // for error_code

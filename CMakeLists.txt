@@ -753,10 +753,26 @@ endif()
 
 
 ################################################################################
+# Log4cpp - http://log4cpp.sourceforge.net/
+################################################################################
+find_package(LOG4CPP)
+set_package_properties(LOG4CPP PROPERTIES
+    URL "http://log4cpp.sourceforge.net/"
+    DESCRIPTION "Library of C++ classes for flexible logging to files"
+    PURPOSE "Required by GNU Radio."
+    TYPE REQUIRED
+)
+if(NOT LOG4CPP_FOUND)
+    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
+endif()
+
+
+
+################################################################################
 # Dectect availability of std::filesystem
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)
-if(NOT (GNURADIO_VERSION VERSION_LESS 3.8))
+if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
         if(POLICY CMP0057)
@@ -906,22 +922,6 @@ set_package_properties(VOLK PROPERTIES
 )
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
-endif()
-
-
-
-################################################################################
-# Log4cpp - http://log4cpp.sourceforge.net/
-################################################################################
-find_package(LOG4CPP)
-set_package_properties(LOG4CPP PROPERTIES
-    URL "http://log4cpp.sourceforge.net/"
-    DESCRIPTION "Library of C++ classes for flexible logging to files"
-    PURPOSE "Required by GNU Radio."
-    TYPE REQUIRED
-)
-if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
 endif()
 
 

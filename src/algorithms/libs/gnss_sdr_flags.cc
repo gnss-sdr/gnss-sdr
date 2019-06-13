@@ -43,7 +43,7 @@ namespace fs = std::experimental::filesystem;
 namespace fs = std::filesystem;
 #endif
 #else
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>  // for exists
 namespace fs = boost::filesystem;
 #endif
 

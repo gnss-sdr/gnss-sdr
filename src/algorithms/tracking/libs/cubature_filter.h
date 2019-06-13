@@ -45,19 +45,11 @@
 #include <gnuradio/gr_complex.h>
 
 // Abstract model function
-class ModelFunction{
+class Model_Function{
     public:
-        ModelFunction() {};
+        Model_Function() {};
         virtual arma::vec operator() (arma::vec input) = 0;
-        virtual ~ModelFunction() = default;
-};
-
-class TestModel{
-    public:
-        TestModel() {};
-        //virtual arma::vec operator() (arma::vec input) = 0;
-        virtual double operator() (double input) = 0;
-        virtual ~TestModel() = default;
+        virtual ~Model_Function() = default;
 };
 
 class Cubature_filter
@@ -73,17 +65,14 @@ public:
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
 
     // Prediction and estimation
-    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
-    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
+    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, Model_Function* transition_fcn, const arma::mat& noise_covariance);
+    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, Model_Function* measurement_fcn, const arma::mat& noise_covariance);
 
     // Getters
     arma::mat get_x_pred() const;
     arma::mat get_P_x_pred() const;
     arma::mat get_x_est() const;
     arma::mat get_P_x_est() const;
-
-    //Test-dev
-    double func_number(double number, TestModel* func);
 
 private:
     arma::vec x_pred_out;

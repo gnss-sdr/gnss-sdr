@@ -84,7 +84,7 @@ void Cubature_filter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x
 /*
  * Perform the prediction step of the cubature Kalman filter
  */
-void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance)
+void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, Model_Function* transition_fcn, const arma::mat& noise_covariance)
 {
     // Compute number of cubature points
     int nx = x_post.n_elem;
@@ -125,7 +125,7 @@ void Cubature_filter::predict_sequential(const arma::vec& x_post, const arma::ma
 /*
  * Perform the update step of the cubature Kalman filter
  */
-void Cubature_filter::update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance)
+void Cubature_filter::update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, Model_Function* measurement_fcn, const arma::mat& noise_covariance)
 {
     // Compute number of cubature points
     int nx = x_pred.n_elem;
@@ -187,9 +187,4 @@ arma::mat Cubature_filter::get_x_est() const
 arma::mat Cubature_filter::get_P_x_est() const
 {
     return P_x_est;
-}
-
-double Cubature_filter::func_number(double number, TestModel* func)
-{
-    return (*func)(number);
 }

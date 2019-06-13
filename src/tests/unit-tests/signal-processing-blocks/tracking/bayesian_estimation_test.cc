@@ -1,7 +1,7 @@
 /*!
- * \file bayesian_estimation_positivity_test.cc
- * \brief  This file implements timing tests for the Bayesian covariance estimator
- * \author Gerald LaMountain, 20168. gerald(at)ece.neu.edu
+ * \file bayesian_estimation_test.cc
+ * \brief  This file implements feasability test for the BCE library.
+ * \author Gerald LaMountain, 2018. gerald(at)ece.neu.edu
  *
  *
  * -------------------------------------------------------------------------

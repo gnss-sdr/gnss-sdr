@@ -33,15 +33,6 @@
 #include "kml_printer.h"
 #include "rtklib_solver.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#if HAS_STD_FILESYSTEM
-#include <filesystem>
-#include <system_error>
-#else
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path.hpp>         // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <boost/system/error_code.hpp>       // for error_code
-#endif
 #include <glog/logging.h>
 #include <cstdio>     // for remove
 #include <cstdlib>    // for mkstemp
@@ -55,9 +46,20 @@
 #include <sys/types.h>  //for mode_t
 
 #if HAS_STD_FILESYSTEM
-namespace fs = std::filesystem;
+#include <system_error>
 namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif

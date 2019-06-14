@@ -47,11 +47,12 @@
 #include <gnuradio/gr_complex.h>
 
 // Abstract model function
-class Model_Function{
-    public:
-        Model_Function() {};
-        virtual arma::vec operator() (arma::vec input) = 0;
-        virtual ~Model_Function() = default;
+class Model_Function
+{
+public:
+    Model_Function(){};
+    virtual arma::vec operator()(arma::vec input) = 0;
+    virtual ~Model_Function() = default;
 };
 
 class Cubature_filter

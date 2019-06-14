@@ -1271,7 +1271,9 @@ if(ENABLE_UHD)
         find_package(Gnuradio)
     endif()
 endif()
-
+if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS "3.7.99")
+    set(PC_GNURADIO_RUNTIME_VERSION "3.7.13")
+endif()
 
 ################################################################################
 # Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html (OPTIONAL, used if found)

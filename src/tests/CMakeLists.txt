@@ -798,14 +798,20 @@ endif()
 
 #########################################################
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
+    set(NONLINEAR_SOURCES "")
+    if(ARMADILLO_VERSION_STRING VERSION_GREATER 9.400)
+        set(NONLINEAR_SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc
+        )
+    endif()
     add_executable(trk_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc
+        ${NONLINEAR_SOURCES}
     )
     if(${FILESYSTEM_FOUND})
         target_compile_definitions(trk_test PRIVATE -DHAS_STD_FILESYSTEM=1)

@@ -100,6 +100,7 @@ DECLARE_string(log_dir);
 
 #include "unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc"

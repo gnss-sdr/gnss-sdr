@@ -33,7 +33,7 @@ set(TRACKING_LIB_SOURCES
     cpu_multicorrelator.cc
     cpu_multicorrelator_real_codes.cc
     cpu_multicorrelator_16sc.cc
-    cubature_filter.cc
+    nonlinear_tracking.cc
     lock_detectors.cc
     tcp_communication.cc
     tcp_packet_data.cc
@@ -51,7 +51,7 @@ set(TRACKING_LIB_HEADERS
     cpu_multicorrelator.h
     cpu_multicorrelator_real_codes.h
     cpu_multicorrelator_16sc.h
-    cubature_filter.h
+    nonlinear_tracking.h
     lock_detectors.h
     tcp_communication.h
     tcp_packet_data.h

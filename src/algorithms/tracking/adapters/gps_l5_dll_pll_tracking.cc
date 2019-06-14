@@ -130,13 +130,12 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
     trk_param.enable_fll_pull_in = enable_fll_pull_in;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param.fll_bw_hz = fll_bw_hz;
-    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
-    trk_param.pull_in_time_s = pull_in_time_s;
+    trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
     trk_param.vector_length = vector_length;
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
-    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
+    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
     bool track_pilot = configuration->property(role + ".track_pilot", false);
     if (extend_correlation_symbols < 1)

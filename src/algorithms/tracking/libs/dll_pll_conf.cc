@@ -46,7 +46,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     dump_filename = std::string("./dll_pll_dump.dat");
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
-    pull_in_time_s = 2;
+    pull_in_time_s = 10;
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;

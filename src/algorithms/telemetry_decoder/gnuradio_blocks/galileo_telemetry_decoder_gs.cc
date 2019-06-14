@@ -97,7 +97,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
-                d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_PART_SYMBOLS * 30;  //rise alarm 30 seconds without valid tlm
+                d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  //rise alarm 60 seconds without valid tlm
 
                 break;
             }
@@ -127,7 +127,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                                 d_secondary_code_samples[i] = -1;
                             }
                     }
-                d_max_symbols_without_valid_frame = GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_FNAV_SYMBOLS_PER_PAGE * 30;  //rise alarm 30 seconds without valid tlm
+                d_max_symbols_without_valid_frame = GALILEO_FNAV_CODES_PER_PAGE * 10;  //rise alarm 100 seconds without valid tlm
                 break;
             }
         default:
@@ -452,8 +452,10 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 
 void galileo_telemetry_decoder_gs::reset()
 {
+    gr::thread::scoped_lock lock(d_setlock);
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -501,11 +503,12 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     d_flag_preamble = false;
 
     // check if there is a problem with the telemetry of the current satellite
-    if (d_stat < 1 and d_sent_tlm_failed_msg == false)
+    if (d_sent_tlm_failed_msg == false)
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
                     int message = 1;  //bad telemetry
+                    DLOG(INFO) << "sent msg sat " << this->d_satellite;
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
                 }

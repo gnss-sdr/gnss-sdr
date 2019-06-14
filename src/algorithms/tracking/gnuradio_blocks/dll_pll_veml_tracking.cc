@@ -99,6 +99,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
+    d_dll_filt_history.set_capacity(2000);
     d_veml = false;
     d_cloop = true;
     d_pull_in_transitory = true;
@@ -525,6 +526,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_dump = false;
                 }
         }
+    d_corrected_doppler = false;
 }
 
 
@@ -553,7 +555,7 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                             {
                                 DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                                 gr::thread::scoped_lock lock(d_setlock);
-                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
+                                d_carrier_lock_fail_counter = 100000;  //force loss-of-lock condition
                                 break;
                             }
                         default:
@@ -771,6 +773,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_cloop = true;
     d_pull_in_transitory = true;
     d_Prompt_circular_buffer.clear();
+    d_corrected_doppler = false;
 }
 
 
@@ -1016,9 +1019,25 @@ void dll_pll_veml_tracking::run_dll_pll()
         }
     // Code discriminator filter
     d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
-
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
+
+    // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
+    if (d_pull_in_transitory == false and d_corrected_doppler == false)
+        {
+            d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
+            if (d_dll_filt_history.full())
+                {
+                    float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0) / static_cast<float>(d_dll_filt_history.capacity());
+                    if (fabs(avg_code_error_chips_s) > 1.0)
+                        {
+                            float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
+                            LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
+                            d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
+                            d_corrected_doppler = true;
+                        }
+                }
+        }
 }
 
 
@@ -1641,7 +1660,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
 
-                DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
+                LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                 DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
                            << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
 

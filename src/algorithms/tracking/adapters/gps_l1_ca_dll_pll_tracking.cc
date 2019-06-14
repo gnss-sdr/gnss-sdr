@@ -129,8 +129,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     trk_param.enable_fll_pull_in = enable_fll_pull_in;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param.fll_bw_hz = fll_bw_hz;
-    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
-    trk_param.pull_in_time_s = pull_in_time_s;
+    trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param.early_late_space_chips = early_late_space_chips;

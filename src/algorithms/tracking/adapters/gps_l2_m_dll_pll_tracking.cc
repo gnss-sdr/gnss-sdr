@@ -117,8 +117,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.enable_fll_pull_in = enable_fll_pull_in;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param.fll_bw_hz = fll_bw_hz;
-    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
-    trk_param.pull_in_time_s = pull_in_time_s;
+    trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     trk_param.vector_length = vector_length;

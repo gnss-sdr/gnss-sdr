@@ -161,6 +161,11 @@ if(ENABLE_FPGA)
     add_definitions(-DFPGA_BLOCKS_TEST=1)
 endif()
 
+if(ARMADILLO_VERSION_STRING VERSION_GREATER 9.400)
+    #  sqrtmat_sympd() in nonlinear_tracking.cc requires 9.400
+    add_definitions(-DARMADILLO_HAVE_MVNRND=1)
+endif()
+
 find_package(Gnuplot)
 if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")

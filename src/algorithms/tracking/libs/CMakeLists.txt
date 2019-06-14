@@ -33,7 +33,6 @@ set(TRACKING_LIB_SOURCES
     cpu_multicorrelator.cc
     cpu_multicorrelator_real_codes.cc
     cpu_multicorrelator_16sc.cc
-    nonlinear_tracking.cc
     lock_detectors.cc
     tcp_communication.cc
     tcp_packet_data.cc
@@ -51,7 +50,6 @@ set(TRACKING_LIB_HEADERS
     cpu_multicorrelator.h
     cpu_multicorrelator_real_codes.h
     cpu_multicorrelator_16sc.h
-    nonlinear_tracking.h
     lock_detectors.h
     tcp_communication.h
     tcp_packet_data.h
@@ -64,6 +62,12 @@ set(TRACKING_LIB_HEADERS
     bayesian_estimation.h
     exponential_smoother.h
 )
+
+if(ARMADILLO_VERSION_STRING VERSION_GREATER 9.400)
+    # sqrtmat_sympd() requires 9.400
+    set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} nonlinear_tracking.cc)
+    set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} nonlinear_tracking.h)
+endif()
 
 if(ENABLE_FPGA)
     set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator.cc dll_pll_conf_fpga.cc)
@@ -84,6 +88,7 @@ target_link_libraries(tracking_libs
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
         core_system_parameters
+        algorithms_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         Gflags::gflags

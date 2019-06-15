@@ -16,7 +16,7 @@
 
 - Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average per channel).
 - Shortened Acquisition to Tracking transition time.
-- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-copy-initialization, performance-unnecessary-value-param, readability-string-compare.
+- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-value-param, readability-string-compare.
 
 
 ### Improvements in Flexibility:

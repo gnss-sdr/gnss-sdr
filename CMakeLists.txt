@@ -1235,37 +1235,32 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
         set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
         set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
     endif()
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
-"#!/bin/sh
-export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
-export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK} -lc++\"
-export CXXFLAGS=\"-stdlib=libc++\"
-export CC=clang
-export CXX=clang++
-cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
-aclocal
-automake --add-missing
-autoreconf -vfi
-cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure"
-        )
-    else()
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
-"#!/bin/sh
-export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
-export LIBS=${GFLAGS_LIBRARIES_TO_LINK}
-cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
-aclocal
-automake --add-missing
-autoreconf -vfi
-cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure"
-        )
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag(-stdlib=libc++ HAVE_FLAG_CXX)
+    if(${HAVE_FLAG_CXX})
+        set(GFLAGS_LIBRARIES_TO_LINK "${GFLAGS_LIBRARIES_TO_LINK} -lc++")
+        set(GLOG_EXPORT_CXX_LIBRARIES "export CXXFLAGS=\"-stdlib=libc++\"")
     endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(GLOG_EXPORT_C_COMPILER "export CC=clang")
+        set(GLOG_EXPORT_CXX_COMPILER "export CXX=clang++")
+    endif()
+
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
+export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK}\"
+${GLOG_EXPORT_CXX_LIBRARIES}
+${GLOG_EXPORT_C_COMPILER}
+${GLOG_EXPORT_CXX_COMPILER}
+cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
+aclocal
+automake --add-missing
+autoreconf -vfi
+cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure"
+    )
 
     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}

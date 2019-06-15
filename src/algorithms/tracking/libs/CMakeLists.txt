@@ -63,8 +63,8 @@ set(TRACKING_LIB_HEADERS
     exponential_smoother.h
 )
 
-if(ARMADILLO_VERSION_STRING VERSION_GREATER 9.400)
-    # sqrtmat_sympd() requires 9.400
+if(ARMADILLO_VERSION_STRING VERSION_GREATER 7.400)
+    # sqrtmat_sympd() requires 7.400
     set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} nonlinear_tracking.cc)
     set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} nonlinear_tracking.h)
 endif()

@@ -161,8 +161,8 @@ if(ENABLE_FPGA)
     add_definitions(-DFPGA_BLOCKS_TEST=1)
 endif()
 
-if(ARMADILLO_VERSION_STRING VERSION_GREATER 9.400)
-    #  sqrtmat_sympd() in nonlinear_tracking.cc requires 9.400
+if(ARMADILLO_VERSION_STRING VERSION_GREATER 8.400)
+    # mvnrnd() requires 8.400
     add_definitions(-DARMADILLO_HAVE_MVNRND=1)
 endif()
 
@@ -799,7 +799,7 @@ endif()
 #########################################################
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(NONLINEAR_SOURCES "")
-    if(ARMADILLO_VERSION_STRING VERSION_GREATER 9.400)
+    if(ARMADILLO_VERSION_STRING VERSION_GREATER 8.400)
         set(NONLINEAR_SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc

@@ -1337,6 +1337,9 @@ set_package_properties(Armadillo PROPERTIES
     TYPE REQUIRED
 )
 if(ARMADILLO_FOUND)
+    set_package_properties(Armadillo PROPERTIES
+        DESCRIPTION "C++ library for linear algebra and scientific computing (found: v${ARMADILLO_VERSION_STRING})"
+    )
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
         set(ARMADILLO_FOUND false)
         set(ENABLE_OWN_ARMADILLO true)

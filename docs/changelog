@@ -50,7 +50,8 @@
 - Added interfaces for FPGA off-loading.
 - CMake scripts now follow a modern approach (targets and properties) but still work with 2.8.12.
 - Improvements for macOS users using Homebrew.
-- The volk_gnsssdr library can now be built without requiring Boost if the compiler supports C++17.
+- The volk_gnsssdr library can now be built without requiring Boost if the compiler supports C++17 or higher.
+- CMake scripts automatically select among C++11, C++14, C++17 or C++20 standards, the most recent as possible, depending on compiler and dependencies versions.
 
 
 ### Improvements in Reliability

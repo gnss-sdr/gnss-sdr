@@ -64,8 +64,9 @@
 - The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
 - Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
 - The Labsat_Signal_Source now terminates the receiver's execution when the end of file(s) is reached. It now accepts LabSat 2 filenames and series of LabSat 3 files.
-- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
+- Added configuration parameters to set the annotation rate in KML, GPX, GeoJSON and NMEA outputs, set by default to 1 s.
 - New parameter PVT.show_local_time_zone displays time in the local time zone. Subject to the proper system configuration of the machine running the software receiver.
+- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
 - Improved information provided to the user in case of failure.
 
 

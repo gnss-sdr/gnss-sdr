@@ -97,14 +97,15 @@ TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
     std::default_random_engine e1(r());
     std::normal_distribution<float> normal_dist(0, 5);
     std::uniform_real_distribution<float> uniform_dist(0.1, 5.0);
+    std::uniform_int_distribution<> uniform_dist_int(1, 5);
 
     uint8_t nx = 0;
     uint8_t ny = 0;
 
     for (uint16_t k = 0; k < UNSCENTED_TEST_N_TRIALS; k++)
         {
-            nx = std::rand() % 5 + 1;
-            ny = std::rand() % 5 + 1;
+            nx = static_cast<uint8_t>(uniform_dist_int(e1));
+            ny = static_cast<uint8_t>(uniform_dist_int(e1));
 
             kf_x = arma::randn<arma::vec>(nx, 1);
 

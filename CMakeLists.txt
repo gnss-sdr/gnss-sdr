@@ -474,7 +474,7 @@ endif()
 
 
 ################################################################################
-# Set C and C++ standard
+# Set minimal C and C++ standards
 ################################################################################
 if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
     set(CMAKE_C_STANDARD 11)
@@ -490,7 +490,7 @@ else()
         endif()
     endif()
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if(OS_IS_MACOSX)
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
             if(CLANG_VERSION VERSION_LESS "600")
                 add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
             else()
@@ -649,7 +649,7 @@ endif()
 
 
 ################################################################################
-# Dectect availability of std::filesystem
+# Detect availability of std::filesystem and set C++ standard accordingly
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)

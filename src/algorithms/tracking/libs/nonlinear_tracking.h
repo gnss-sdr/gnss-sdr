@@ -2,9 +2,9 @@
  * \file nonlinear_tracking.h
  * \brief Interface of a library for nonlinear tracking algorithms
  *
- * Cubature_Filter implements the functionality of the Cubature Kalman
+ * CubatureFilter implements the functionality of the Cubature Kalman
  * Filter, which uses multidimensional cubature rules to estimate the
- * time evolution of a nonlinear system. Unscented_filter implements
+ * time evolution of a nonlinear system. UnscentedFilter implements
  * an Unscented Kalman Filter which uses Unscented Transform rules to
  * perform a similar estimation.
  *
@@ -47,29 +47,29 @@
 #include <gnuradio/gr_complex.h>
 
 // Abstract model function
-class Model_Function
+class ModelFunction
 {
 public:
-    Model_Function(){};
-    virtual arma::vec operator()(arma::vec input) = 0;
-    virtual ~Model_Function() = default;
+    ModelFunction(){};
+    virtual arma::vec operator()(const arma::vec& input) = 0;
+    virtual ~ModelFunction() = default;
 };
 
-class Cubature_filter
+class CubatureFilter
 {
 public:
     // Constructors and destructors
-    Cubature_filter();
-    Cubature_filter(int nx);
-    Cubature_filter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~Cubature_filter();
+    CubatureFilter();
+    CubatureFilter(int nx);
+    CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
+    ~CubatureFilter();
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
 
     // Prediction and estimation
-    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, Model_Function* transition_fcn, const arma::mat& noise_covariance);
-    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, Model_Function* measurement_fcn, const arma::mat& noise_covariance);
+    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
+    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
 
     // Getters
     arma::mat get_x_pred() const;
@@ -84,21 +84,21 @@ private:
     arma::mat P_x_est;
 };
 
-class Unscented_filter
+class UnscentedFilter
 {
 public:
     // Constructors and destructors
-    Unscented_filter();
-    Unscented_filter(int nx);
-    Unscented_filter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~Unscented_filter();
+    UnscentedFilter();
+    UnscentedFilter(int nx);
+    UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
+    ~UnscentedFilter();
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
 
     // Prediction and estimation
-    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, Model_Function* transition_fcn, const arma::mat& noise_covariance);
-    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, Model_Function* measurement_fcn, const arma::mat& noise_covariance);
+    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
+    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
 
     // Getters
     arma::mat get_x_pred() const;

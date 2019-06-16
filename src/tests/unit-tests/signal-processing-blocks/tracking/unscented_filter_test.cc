@@ -36,21 +36,21 @@
 #define UNSCENTED_TEST_N_TRIALS 10
 #define UNSCENTED_TEST_TOLERANCE 10
 
-class Transition_Model_UKF : public Model_Function
+class TransitionModelUKF : public ModelFunction
 {
 public:
-    Transition_Model_UKF(arma::mat kf_F) { coeff_mat = kf_F; };
-    virtual arma::vec operator()(arma::vec input) { return coeff_mat * input; };
+    TransitionModelUKF(const arma::mat& kf_F) { coeff_mat = kf_F; };
+    virtual arma::vec operator()(const arma::vec& input) { return coeff_mat * input; };
 
 private:
     arma::mat coeff_mat;
 };
 
-class Measurement_Model_UKF : public Model_Function
+class MeasurementModelUKF : public ModelFunction
 {
 public:
-    Measurement_Model_UKF(arma::mat kf_H) { coeff_mat = kf_H; };
-    virtual arma::vec operator()(arma::vec input) { return coeff_mat * input; };
+    MeasurementModelUKF(const arma::mat& kf_H) { coeff_mat = kf_H; };
+    virtual arma::vec operator()(const arma::vec& input) { return coeff_mat * input; };
 
 private:
     arma::mat coeff_mat;
@@ -58,7 +58,7 @@ private:
 
 TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
 {
-    Unscented_filter kf_unscented;
+    UnscentedFilter kf_unscented;
 
     arma::vec kf_x;
     arma::mat kf_P_x;
@@ -88,8 +88,8 @@ TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
     arma::mat kf_P_y;
     arma::mat kf_K;
 
-    Model_Function* transition_function;
-    Model_Function* measurement_function;
+    ModelFunction* transition_function;
+    ModelFunction* measurement_function;
 
     //--- Perform initializations ------------------------------
 
@@ -97,14 +97,15 @@ TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
     std::default_random_engine e1(r());
     std::normal_distribution<float> normal_dist(0, 5);
     std::uniform_real_distribution<float> uniform_dist(0.1, 5.0);
+    std::uniform_int_distribution<> uniform_dist_int(1, 5);
 
     uint8_t nx = 0;
     uint8_t ny = 0;
 
     for (uint16_t k = 0; k < UNSCENTED_TEST_N_TRIALS; k++)
         {
-            nx = std::rand() % 5 + 1;
-            ny = std::rand() % 5 + 1;
+            nx = static_cast<uint8_t>(uniform_dist_int(e1));
+            ny = static_cast<uint8_t>(uniform_dist_int(e1));
 
             kf_x = arma::randn<arma::vec>(nx, 1);
 
@@ -117,7 +118,7 @@ TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
             kf_F = arma::randu<arma::mat>(nx, nx);
             kf_Q = arma::diagmat(arma::randu<arma::vec>(nx, 1));
 
-            transition_function = new Transition_Model_UKF(kf_F);
+            transition_function = new TransitionModelUKF(kf_F);
             arma::mat ttx = (*transition_function)(kf_x_post);
 
             kf_unscented.predict_sequential(kf_x_post, kf_P_x_post, transition_function, kf_Q);
@@ -140,7 +141,7 @@ TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
 
             kf_y = kf_H * (kf_F * kf_x + eta) + nu;
 
-            measurement_function = new Measurement_Model_UKF(kf_H);
+            measurement_function = new MeasurementModelUKF(kf_H);
             kf_unscented.update_sequential(kf_y, kf_x_pre, kf_P_x_pre, measurement_function, kf_R);
 
             ukf_x_post = kf_unscented.get_x_est();

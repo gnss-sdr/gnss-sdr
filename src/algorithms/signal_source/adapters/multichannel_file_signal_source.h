@@ -1,15 +1,15 @@
 /*!
- * \file file_signal_source.h
- * \brief Interface of a class that reads signals samples from a file
- * and adapts it to a SignalSourceInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \file multichannel_file_signal_source.h
+ * \brief Implementation of a class that reads signals samples from files at
+ * different frequency band and adapts it to a SignalSourceInterface
+ * \author Javier Arribas, 2019 jarribas(at)cttc.es
  *
  * This class represents a file signal source. Internally it uses a GNU Radio's
  * gr_file_source as a connector to the data.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,7 +48,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief Class that reads signals samples from a file
+ * \brief Class that reads signals samples from files at different frequency bands
  * and adapts it to a SignalSourceInterface
  */
 class MultichannelFileSignalSource : public GNSSBlockInterface
@@ -66,7 +66,7 @@ public:
     }
 
     /*!
-     * \brief Returns "File_Signal_Source".
+     * \brief Returns "Multichannel_File_Signal_Source".
      */
     inline std::string implementation() override
     {
@@ -128,4 +128,4 @@ private:
     bool enable_throttle_control_;
 };
 
-#endif /*GNSS_SDR_MULTICHANNEL_FILE_SIGNAL_SOURCE_H_*/
+#endif /* GNSS_SDR_MULTICHANNEL_FILE_SIGNAL_SOURCE_H_ */

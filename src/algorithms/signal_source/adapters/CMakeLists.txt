@@ -129,6 +129,7 @@ endif()
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
     file_signal_source.cc
+    multichannel_file_signal_source.cc
     gen_signal_source.cc
     nsr_file_signal_source.cc
     spir_file_signal_source.cc
@@ -142,6 +143,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
 
 set(SIGNAL_SOURCE_ADAPTER_HEADERS
     file_signal_source.h
+    multichannel_file_signal_source.h
     gen_signal_source.h
     nsr_file_signal_source.h
     spir_file_signal_source.h

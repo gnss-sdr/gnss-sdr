@@ -35,6 +35,10 @@ Pvt_Conf::Pvt_Conf()
     type_of_receiver = 0U;
     output_rate_ms = 0;
     display_rate_ms = 0;
+    kml_rate_ms = 1000;
+    gpx_rate_ms = 1000;
+    geojson_rate_ms = 1000;
+    nmea_rate_ms = 1000;
 
     rinex_version = 0;
     rinexobs_rate_ms = 0;

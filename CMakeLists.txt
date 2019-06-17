@@ -702,14 +702,25 @@ if(NOT ${FILESYSTEM_FOUND})
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)
 endif()
 find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
+
+if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
+endif()
+
 set_package_properties(Boost PROPERTIES
     URL "https://www.boost.org"
-    DESCRIPTION "Portable C++ source libraries"
     PURPOSE "Used widely across the source code."
     TYPE REQUIRED
 )
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
+
+if(CMAKE_VERSION VERSION_GREATER 3.14)
+    set_package_properties(Boost PROPERTIES
+        DESCRIPTION "Portable C++ source libraries (found: ${Boost_VERSION_STRING})"
+    )
+else()
+    set_package_properties(Boost PROPERTIES
+        DESCRIPTION "Portable C++ source libraries (found: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
+    )
 endif()
 
 if(CMAKE_VERSION VERSION_LESS 3.5)
@@ -1669,6 +1680,10 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     set_package_properties(MATIO PROPERTIES
         PURPOSE "Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+else()
+    set_package_properties(MATIO PROPERTIES
+        DESCRIPTION "MATLAB MAT File I/O Library (found: v.${MATIO_VERSION_STRING})"
+    )
 endif()
 
 
@@ -1796,6 +1811,13 @@ if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
         set(Protobuf_VERSION "${_PROTOBUF_MAJOR_VERSION}.${_PROTOBUF_MINOR_VERSION}.${_PROTOBUF_SUBMINOR_VERSION}")
     endif()
 endif()
+
+if(Protobuf_FOUND)
+    set_package_properties(Protobuf PROPERTIES
+        DESCRIPTION "Structured data serialization mechanism (found: v${Protobuf_VERSION})"
+    )
+endif()
+
 if(Protobuf_FOUND AND CMAKE_CROSSCOMPILING)
     find_program(PROTOC_EXECUTABLE protoc)
     if(NOT PROTOC_EXECUTABLE)
@@ -1815,6 +1837,7 @@ if(Protobuf_FOUND AND CMAKE_CROSSCOMPILING)
         message(FATAL_ERROR "Please install the Protocol Buffers compiler v${Protobuf_VERSION} in the host machine")
     endif()
 endif()
+
 if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION}))
     unset(Protobuf_PROTOC_EXECUTABLE)
     if(CMAKE_CROSSCOMPILING)

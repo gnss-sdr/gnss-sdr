@@ -218,7 +218,7 @@ void GNSSFlowgraph::connect()
 // Signal Source (i) >  Signal conditioner (i) >
 #ifndef ENABLE_FPGA
     int RF_Channels = 0;
-    int signal_conditioner_ID = 0;
+    unsigned int signal_conditioner_ID = 0;
     for (int i = 0; i < sources_count_; i++)
         {
             try

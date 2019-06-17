@@ -99,15 +99,15 @@ int Gnss_Sdr_Valve::work(int noutput_items,
                 {
                     return 0;
                 }
-            //multichannel support
-            for (int ch = 0; ch < output_items.size(); ch++)
+            // multichannel support
+            for (unsigned int ch = 0; ch < output_items.size(); ch++)
                 {
                     memcpy(output_items[ch], input_items[ch], n * input_signature()->sizeof_stream_item(ch));
                 }
             d_ncopied_items += n;
             return n;
         }
-    for (int ch = 0; ch < output_items.size(); ch++)
+    for (unsigned int ch = 0; ch < output_items.size(); ch++)
         {
             memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
         }

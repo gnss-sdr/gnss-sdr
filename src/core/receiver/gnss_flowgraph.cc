@@ -215,7 +215,7 @@ void GNSSFlowgraph::connect()
         }
 
     DLOG(INFO) << "blocks connected internally";
-    // Signal Source (i) >  Signal conditioner (i) >
+// Signal Source (i) >  Signal conditioner (i) >
 #ifndef ENABLE_FPGA
     int RF_Channels = 0;
     int signal_conditioner_ID = 0;
@@ -249,10 +249,13 @@ void GNSSFlowgraph::connect()
                                     DLOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
                                     DLOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
 
-                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
+                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1 or sig_source_.at(i)->get_right_block()->output_signature()->max_streams() == -1)
                                         {
-                                            LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
-                                            top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                            if (sig_conditioner_.size() > signal_conditioner_ID)
+                                                {
+                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+                                                    top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
                                         }
                                     else
                                         {
@@ -819,7 +822,7 @@ void GNSSFlowgraph::disconnect()
 
                             for (int j = 0; j < RF_Channels; j++)
                                 {
-                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
+                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1 or sig_source_.at(i)->get_right_block()->output_signature()->max_streams() == -1)
                                         {
                                             top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                         }

@@ -16,7 +16,7 @@
 
 - Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average per channel).
 - Shortened Acquisition to Tracking transition time.
-- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-copy-initialization, performance-unnecessary-value-param, readability-string-compare.
+- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-value-param, readability-string-compare.
 
 
 ### Improvements in Flexibility:
@@ -50,7 +50,8 @@
 - Added interfaces for FPGA off-loading.
 - CMake scripts now follow a modern approach (targets and properties) but still work with 2.8.12.
 - Improvements for macOS users using Homebrew.
-- The volk_gnsssdr library can now be built without requiring Boost if the compiler supports C++17.
+- The volk_gnsssdr library can now be built without requiring Boost if the compiler supports C++17 or higher.
+- CMake scripts automatically select among C++11, C++14, C++17 or C++20 standards, the most recent as possible, depending on compiler and dependencies versions.
 
 
 ### Improvements in Reliability
@@ -63,8 +64,9 @@
 - The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
 - Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
 - The Labsat_Signal_Source now terminates the receiver's execution when the end of file(s) is reached. It now accepts LabSat 2 filenames and series of LabSat 3 files.
-- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
+- Added configuration parameters to set the annotation rate in KML, GPX, GeoJSON and NMEA outputs, set by default to 1 s.
 - New parameter PVT.show_local_time_zone displays time in the local time zone. Subject to the proper system configuration of the machine running the software receiver.
+- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
 - Improved information provided to the user in case of failure.
 
 

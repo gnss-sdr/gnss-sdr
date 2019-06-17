@@ -106,6 +106,11 @@ private:
     int32_t d_rtcm_MT1097_rate_ms;  // Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
     int32_t d_rtcm_MSM_rate_ms;
 
+    int32_t d_kml_rate_ms;
+    int32_t d_gpx_rate_ms;
+    int32_t d_geojson_rate_ms;
+    int32_t d_nmea_rate_ms;
+
     int32_t d_last_status_print_seg;  // for status printer
 
     uint32_t d_nchannels;

@@ -99,3 +99,5 @@ else()
     message(STATUS "Boost Iostreams library not found.")
     message(STATUS " rinex2assist will not be built.")
 endif()
+
+set(Boost_FOUND TRUE) # trick for summary report

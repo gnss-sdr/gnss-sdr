@@ -85,7 +85,6 @@ find_library(LOG4CPP_LIBRARY
         /usr/lib/alpha-linux-gnu
         /usr/lib64
         /usr/lib
-        /usr/local/lib
         /opt/local/lib
         ${LOG4CPP_ROOT}/lib
         $ENV{LOG4CPP_ROOT}/lib

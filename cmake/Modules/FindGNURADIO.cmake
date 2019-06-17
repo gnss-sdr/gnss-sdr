@@ -143,6 +143,21 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
         set(GNURADIO_FOUND FALSE) # Trick for feature_summary
     endif()
 
+    # Create imported target
+    string(TOLOWER ${EXTVAR} gnuradio_component)
+    if(NOT TARGET Gnuradio::${gnuradio_component})
+        add_library(Gnuradio::${gnuradio_component} SHARED IMPORTED)
+        set(GNURADIO_LIBRARY ${GNURADIO_${EXTVAR}_LIBRARIES})
+        list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
+        get_filename_component(GNURADIO_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::${gnuradio_component} PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_${EXTVAR}_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
+        )
+    endif()
+
     mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
 endfunction()
 
@@ -218,3 +233,25 @@ if(NOT DEFINED GNURADIO_FOUND)
     set(GNURADIO_FOUND TRUE)
 endif()
 set(GNURADIO_VERSION ${PC_GNURADIO_RUNTIME_VERSION})
+
+if(NOT GNSSSDR_GNURADIO_MIN_VERSION)
+    set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
+endif()
+
+if(GNURADIO_VERSION)
+    if(GNURADIO_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
+        unset(GNURADIO_RUNTIME_FOUND)
+        message(STATUS "The GNU Radio version installed in your system (v${GNURADIO_VERSION}) is too old.")
+        if(OS_IS_LINUX)
+            message("Go to https://github.com/gnuradio/pybombs")
+            message("and follow the instructions to install GNU Radio in your system.")
+        endif()
+        if(OS_IS_MACOSX)
+            message("You can install it easily via Macports:")
+            message("  sudo port install gnuradio ")
+            message("Alternatively, you can use homebrew:")
+            message("  brew install gnuradio")
+        endif()
+        message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
+    endif()
+endif()

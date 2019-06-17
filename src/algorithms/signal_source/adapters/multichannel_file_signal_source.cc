@@ -1,13 +1,12 @@
 /*!
- * \file file_signal_source.cc
- * \brief Implementation of a class that reads signals samples from a file
- * and adapts it to a SignalSourceInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011 jarribas(at)cttc.es
+ * \file multichannel_file_signal_source.cc
+ * \brief Implementation of a class that reads signals samples from files at
+ * different frequency band and adapts it to a SignalSourceInterface
+ * \author Javier Arribas, 2019 jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -201,7 +200,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
                 {
                     int64_t bytes_to_skip = samples_to_skip * item_size_;
                     int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
-                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  //process all the samples available in the file excluding at least the last 1 ms
+                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  // process all the samples available in the file excluding at least the last 1 ms
                 }
         }
 
@@ -219,7 +218,6 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
 
     valve_ = gnss_sdr_make_valve(item_size_, samples_ * n_channels_, queue_);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
-
 
     if (enable_throttle_control_)
         {
@@ -239,7 +237,6 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
     DLOG(INFO) << "Item type " << item_type_;
     DLOG(INFO) << "Item size " << item_size_;
     DLOG(INFO) << "Repeat " << repeat_;
-
 
     if (in_streams_ > 0)
         {

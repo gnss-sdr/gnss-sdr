@@ -461,7 +461,7 @@ docker-for-test:
   script:
     - mkdir docker-build
     - cd docker-build
-    - echo -e "FROM phusion/baseimage:0.11\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libpugixml-dev libgflags-dev libgoogle-glog-dev googletest libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev git ca-certificates gnuradio-dev python-mako python-six libprotobuf-dev protobuf-compiler texlive-latex-base texlive-fonts-recommended texlive-font-utils texlive-pictures epstool fig2dev octave pstoedit gnuplot-x11 && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_PACKAGING=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_INSTALL_TESTS=ON .. && NPROC=$(grep -c ^processor /proc/cpuinfo) && make -j$(($NPROC+1)) && make install && rm -rf /home/src\nWORKDIR /home\nRUN /usr/bin/volk_profile -v 8111\nRUN /usr/local/bin/volk_gnsssdr_profile\nRUN rm -rf /tmp/* /var/tmp/*\nCMD [\"bash\"]" > Dockerfile
+    - echo -e "FROM phusion/baseimage:0.11\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libpugixml-dev libgflags-dev libgoogle-glog-dev googletest libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev git ca-certificates gnuradio-dev python-mako python-six libprotobuf-dev protobuf-compiler texlive-latex-base texlive-fonts-recommended texlive-font-utils texlive-pictures epstool fig2dev octave pstoedit gnuplot-x11 && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_INSTALL_TESTS=ON .. && NPROC=$(grep -c ^processor /proc/cpuinfo) && make -j$(($NPROC+1)) && make install && rm -rf /home/src\nWORKDIR /home\nRUN rm -rf /tmp/* /var/tmp/*\nCMD [\"bash\"]" > Dockerfile
     - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
     - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
@@ -670,7 +670,7 @@ position-test-L5-180417100529:
   script:
     - export DISPLAY=unknown
     - volk_profile -v 8111
-    - volk_gnsssdr_profile -v 2053    
+    - volk_gnsssdr_profile -v 2053
     - mkdir /test && mkdir /position_test && cd /test
     - position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
     - mkdir /position-test/L5 && rm PVT_*.* && mv *.* /position-test/L5/

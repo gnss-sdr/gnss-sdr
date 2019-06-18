@@ -619,6 +619,32 @@ position-test-180417100529:
   allow_failure: true
 
 
+position-test-all:
+  image: ubuntu:bionic
+  stage: test
+  tags:
+    - kepler
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libpugixml-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot libprotobuf-dev protobuf-compiler
+    - mkdir build-test
+    - mkdir position-test
+    - cd build-test
+    - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    # Execute System Tests
+    - export DISPLAY=unknown
+    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1L5E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
+    - mkdir ../position-test/L1E1L5E5 && rm PVT_*.* && cp *.* ../position-test/L1E1L5E5
+    - cd ..
+    - rm -rf build-test
+  artifacts:
+    paths:
+      - position-test/L1E1L5E5/*
+  allow_failure: true
+
+
 leo-position-test-180417120737:
   image: ubuntu:bionic
   stage: test
@@ -654,7 +680,30 @@ leo-position-test-180417120737:
     - mkdir gpsL5galE5a  && cd gpsL5galE5a
     - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - cd .. && cp -r gpsL5galE5a /../leo_position
-    - mkdir gpsL1galE1gpsL5GalE5  && cd gpsL1galE1gpsL5GalE5 
+  artifacts:
+    paths:
+      - leo_position/*
+  allow_failure: true
+
+
+leo-position-all:
+  image: ubuntu:bionic
+  stage: test
+  when: manual
+  tags:
+    - kepler
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libpugixml-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot libprotobuf-dev protobuf-compiler
+    - mkdir build-test
+    - mkdir leo_position
+    - cd build-test
+    - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    # Execute System Tests
+    - export DISPLAY=unknown
+    - mkdir gpsL1galE1gpsL5GalE5  && cd gpsL1galE1gpsL5GalE5
     - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1L5E5.con$
     - cd .. && cp -r gpsL1galE1gpsL5GalE5  /../leo_position
   artifacts:

@@ -42,6 +42,7 @@ find_path(LIBOSMOSDR_INCLUDE_DIR NAMES osmosdr.h
     /usr/local/include
     ${LIBOSMOSDR_ROOT}/include
     $ENV{LIBOSMOSDR_ROOT}/include
+    ${LIBOSMOSDR_PKG_INCLUDEDIR}
 )
 
 find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
@@ -77,6 +78,7 @@ find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
     $ENV{LIBOSMOSDR_ROOT}/lib
     ${LIBOSMOSDR_ROOT}/lib64
     $ENV{LIBOSMOSDR_ROOT}/lib64
+    ${LIBOSMOSDR_PKG_LIBDIR}
 )
 
 include(FindPackageHandleStandardArgs)

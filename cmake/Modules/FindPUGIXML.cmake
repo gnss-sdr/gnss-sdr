@@ -27,6 +27,9 @@
 # Pugixml::pugixml
 #
 
+include(FindPkgConfig)
+pkg_check_modules(PC_PUGIXML pugixml QUIET)
+
 find_path(PUGIXML_INCLUDE_DIR
     NAMES pugixml.hpp
     PATHS ${PUGIXML_HOME}/include
@@ -38,6 +41,7 @@ find_path(PUGIXML_INCLUDE_DIR
           $ENV{PUGIXML_ROOT}/include
           ${PUGIXML_ROOT}/include/pugixml-1.9
           $ENV{PUGIXML_ROOT}/include/pugixml-1.9
+          ${PC_PUGIXML_INCLUDEDIR}
 )
 
 find_library(PUGIXML_LIBRARY
@@ -67,6 +71,7 @@ find_library(PUGIXML_LIBRARY
           $ENV{PUGIXML_ROOT}/lib/pugixml-1.9
           ${PUGIXML_ROOT}/lib64/pugixml-1.9
           $ENV{PUGIXML_ROOT}/lib64/pugixml-1.9
+          ${PC_PUGIXML_LIBDIR}
 )
 
 # Support the REQUIRED and QUIET arguments, and set PUGIXML_FOUND if found.
@@ -79,6 +84,9 @@ if(PUGIXML_FOUND)
     if(NOT PUGIXML_FIND_QUIETLY)
         message(STATUS "PugiXML include = ${PUGIXML_INCLUDE_DIR}")
         message(STATUS "PugiXML library = ${PUGIXML_LIBRARY}")
+    endif()
+    if(PC_PUGIXML_VERSION)
+        set(PUGIXML_VERSION ${PC_PUGIXML_VERSION})
     endif()
 else()
     message(STATUS "PugiXML not found.")

@@ -610,16 +610,31 @@ set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
     URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
-    DESCRIPTION "USRP Hardware Driver"
     PURPOSE "Used for communication with front-ends of the USRP family."
     TYPE OPTIONAL
 )
 if(ENABLE_UHD)
     if(NOT UHD_FOUND)
         set(ENABLE_UHD OFF)
+        set_package_properties(UHD PROPERTIES
+            DESCRIPTION "USRP Hardware Driver"
+        )
     else()
         set(GR_REQUIRED_COMPONENTS ${GR_REQUIRED_COMPONENTS} UHD)
+        if(UHD_VERSION)
+            set_package_properties(UHD PROPERTIES
+                DESCRIPTION "USRP Hardware Driver (found: v${UHD_VERSION})"
+            )
+        else()
+            set_package_properties(UHD PROPERTIES
+                DESCRIPTION "USRP Hardware Driver"
+            )
+        endif()
     endif()
+else()
+    set_package_properties(UHD PROPERTIES
+        DESCRIPTION "USRP Hardware Driver"
+    )
 endif()
 
 find_package(GNURADIO)
@@ -2248,10 +2263,18 @@ endif()
 find_package(LIBIIO)
 set_package_properties(LIBIIO PROPERTIES
     URL "https://github.com/analogdevicesinc/libiio"
-    DESCRIPTION "A library for interfacing with Linux IIO devices"
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
+if(LIBIIO_FOUND AND LIBIIO_VERSION)
+    set_package_properties(LIBIIO PROPERTIES
+        DESCRIPTION "A library for interfacing with Linux IIO devices (found: v${LIBIIO_VERSION})"
+    )
+else()
+    set_package_properties(LIBIIO PROPERTIES
+        DESCRIPTION "A library for interfacing with Linux IIO devices"
+    )
+endif()
 
 
 ##############################################

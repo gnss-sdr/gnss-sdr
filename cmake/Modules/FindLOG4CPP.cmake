@@ -39,6 +39,20 @@ find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
   $ENV{LOG4CPP_ROOT}/include
 )
 
+if(LOG4CPP_INCLUDE_DIR)
+    file(STRINGS ${LOG4CPP_INCLUDE_DIR}/log4cpp/Priority.hh _log4cpp_Priority)
+    set(_log4cpp_cxx17 TRUE)
+    foreach(_loop_var IN LISTS _log4cpp_Priority)
+        string(STRIP "${_loop_var}" _file_line)
+        if("throw(std::invalid_argument);" STREQUAL "${_file_line}")
+            set(_log4cpp_cxx17 FALSE)
+        endif()
+    endforeach()
+    if(${_log4cpp_cxx17})
+        set(LOG4CPP_READY_FOR_CXX17 TRUE)
+    endif()
+endif()
+
 set(LOG4CPP_NAMES log4cpp)
 find_library(LOG4CPP_LIBRARY
   NAMES ${LOG4CPP_NAMES}
@@ -71,7 +85,6 @@ find_library(LOG4CPP_LIBRARY
         /usr/lib/alpha-linux-gnu
         /usr/lib64
         /usr/lib
-        /usr/local/lib
         /opt/local/lib
         ${LOG4CPP_ROOT}/lib
         $ENV{LOG4CPP_ROOT}/lib

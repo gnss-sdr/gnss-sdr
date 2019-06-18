@@ -83,10 +83,15 @@
 #include <sys/msg.h>                    // for msgctl
 
 #if HAS_STD_FILESYSTEM
-#include <filesystem>
 #include <system_error>
-namespace fs = std::filesystem;
 namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
 #else
 #include <boost/filesystem/path.hpp>
 #include <boost/system/error_code.hpp>  // for error_code
@@ -173,6 +178,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
     d_kml_output_enabled = conf_.kml_output_enabled;
+    d_kml_rate_ms = conf_.kml_rate_ms;
+    if (d_kml_rate_ms == 0)
+        {
+            d_kml_output_enabled = false;
+        }
     if (d_kml_output_enabled)
         {
             d_kml_dump = std::make_shared<Kml_Printer>(conf_.kml_output_path);
@@ -187,6 +197,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     std::string gpx_dump_filename;
     gpx_dump_filename = d_dump_filename;
     d_gpx_output_enabled = conf_.gpx_output_enabled;
+    d_gpx_rate_ms = conf_.gpx_rate_ms;
+    if (d_gpx_rate_ms == 0)
+        {
+            d_gpx_output_enabled = false;
+        }
     if (d_gpx_output_enabled)
         {
             d_gpx_dump = std::make_shared<Gpx_Printer>(conf_.gpx_output_path);
@@ -201,6 +216,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
     d_geojson_output_enabled = conf_.geojson_output_enabled;
+    d_geojson_rate_ms = conf_.geojson_rate_ms;
+    if (d_geojson_rate_ms == 0)
+        {
+            d_geojson_output_enabled = false;
+        }
     if (d_geojson_output_enabled)
         {
             d_geojson_printer = std::make_shared<GeoJSON_Printer>(conf_.geojson_output_path);
@@ -213,6 +233,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     // initialize nmea_printer
     d_nmea_output_file_enabled = (conf_.nmea_output_file_enabled or conf_.flag_nmea_tty_port);
+    d_nmea_rate_ms = conf_.nmea_rate_ms;
+    if (d_nmea_rate_ms == 0)
+        {
+            d_nmea_output_file_enabled = false;
+        }
+
     if (d_nmea_output_file_enabled)
         {
             d_nmea_printer = std::make_shared<Nmea_Printer>(conf_.nmea_dump_filename, conf_.nmea_output_file_enabled, conf_.flag_nmea_tty_port, conf_.nmea_dump_devname, conf_.nmea_output_file_path);
@@ -1794,19 +1820,31 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 }
                                             if (d_kml_output_enabled)
                                                 {
-                                                    d_kml_dump->print_position(d_pvt_solver, false);
+                                                    if (current_RX_time_ms % d_kml_rate_ms == 0)
+                                                        {
+                                                            d_kml_dump->print_position(d_pvt_solver, false);
+                                                        }
                                                 }
                                             if (d_gpx_output_enabled)
                                                 {
-                                                    d_gpx_dump->print_position(d_pvt_solver, false);
+                                                    if (current_RX_time_ms % d_gpx_rate_ms == 0)
+                                                        {
+                                                            d_gpx_dump->print_position(d_pvt_solver, false);
+                                                        }
                                                 }
                                             if (d_geojson_output_enabled)
                                                 {
-                                                    d_geojson_printer->print_position(d_pvt_solver, false);
+                                                    if (current_RX_time_ms % d_geojson_rate_ms == 0)
+                                                        {
+                                                            d_geojson_printer->print_position(d_pvt_solver, false);
+                                                        }
                                                 }
                                             if (d_nmea_output_file_enabled)
                                                 {
-                                                    d_nmea_printer->Print_Nmea_Line(d_pvt_solver, false);
+                                                    if (current_RX_time_ms % d_nmea_rate_ms == 0)
+                                                        {
+                                                            d_nmea_printer->Print_Nmea_Line(d_pvt_solver, false);
+                                                        }
                                                 }
 
                                             /*

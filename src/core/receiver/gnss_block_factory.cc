@@ -97,6 +97,7 @@
 #include "ishort_to_cshort.h"
 #include "labsat_signal_source.h"
 #include "mmse_resampler_conditioner.h"
+#include "multichannel_file_signal_source.h"
 #include "notch_filter.h"
 #include "notch_filter_lite.h"
 #include "nsr_file_signal_source.h"
@@ -1257,6 +1258,21 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             try
                 {
                     std::unique_ptr<GNSSBlockInterface> block_(new FileSignalSource(configuration.get(), role, in_streams,
+                        out_streams, queue));
+                    block = std::move(block_);
+                }
+
+            catch (const std::exception& e)
+                {
+                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    exit(1);
+                }
+        }
+    else if (implementation == "Multichannel_File_Signal_Source")
+        {
+            try
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_(new MultichannelFileSignalSource(configuration.get(), role, in_streams,
                         out_streams, queue));
                     block = std::move(block_);
                 }

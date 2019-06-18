@@ -95,6 +95,10 @@ find_library(GROSMOSDR_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GROSMOSDR DEFAULT_MSG GROSMOSDR_LIBRARIES GROSMOSDR_INCLUDE_DIR)
 
+if(GROSMOSDR_PKG_VERSION)
+    set(GROSMOSDR_VERSION ${GROSMOSDR_PKG_VERSION})
+endif()
+
 if(GROSMOSDR_FOUND AND NOT TARGET Gnuradio::osmosdr)
     add_library(Gnuradio::osmosdr SHARED IMPORTED)
     set_target_properties(Gnuradio::osmosdr PROPERTIES

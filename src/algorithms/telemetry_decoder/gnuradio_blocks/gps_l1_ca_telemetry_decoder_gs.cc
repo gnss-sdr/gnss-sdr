@@ -430,7 +430,14 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             {
                                 DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                if (corr_value < 0) flag_PLL_180_deg_phase_locked = true;
+                                if (corr_value < 0)
+                                    {
+                                        flag_PLL_180_deg_phase_locked = true;
+                                    }
+                                else
+                                    {
+                                        flag_PLL_180_deg_phase_locked = false;
+                                    }
                                 d_stat = 2;
                             }
                         else

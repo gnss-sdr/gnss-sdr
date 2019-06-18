@@ -65,10 +65,16 @@
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
+#include <numeric>
 
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
 #include <filesystem>
 namespace fs = std::filesystem;
+#endif
 #else
 #include <boost/filesystem/path.hpp>
 namespace fs = boost::filesystem;
@@ -94,6 +100,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
+    d_dll_filt_history.set_capacity(2000);
     d_veml = false;
     d_cloop = true;
     d_pull_in_transitory = true;
@@ -444,6 +451,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
+    d_code_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
     d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_cn0_smoother = Exponential_Smoother();
@@ -451,6 +459,13 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         {
             d_cn0_smoother.set_samples_for_initialization(200 / static_cast<int>(d_code_period * 1000.0));
         }
+
+    d_carrier_lock_test_smoother = Exponential_Smoother();
+    d_carrier_lock_test_smoother.set_alpha(0.002);
+    d_carrier_lock_test_smoother.set_min_value(-1.0);
+    d_carrier_lock_test_smoother.set_offset(0.0);
+    d_carrier_lock_test_smoother.set_samples_for_initialization(25);
+
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -512,6 +527,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_dump = false;
                 }
         }
+    d_corrected_doppler = false;
 }
 
 
@@ -540,7 +556,7 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                             {
                                 DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                                 gr::thread::scoped_lock lock(d_setlock);
-                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
+                                d_carrier_lock_fail_counter = 100000;  //force loss-of-lock condition
                                 break;
                             }
                         default:
@@ -717,6 +733,7 @@ void dll_pll_veml_tracking::start_tracking()
     std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
 
     d_carrier_lock_fail_counter = 0;
+    d_code_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
@@ -757,6 +774,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_cloop = true;
     d_pull_in_transitory = true;
     d_Prompt_circular_buffer.clear();
+    d_corrected_doppler = false;
 }
 
 
@@ -866,11 +884,13 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
     float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
-    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
+    d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer, 1));
+    //d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
     // Loss of lock detection
     if (!d_pull_in_transitory)
         {
-            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < trk_parameters.cn0_min)
+            //d_carrier_lock_test < d_carrier_lock_threshold or
+            if (d_carrier_lock_test < d_carrier_lock_threshold)
                 {
                     d_carrier_lock_fail_counter++;
                 }
@@ -881,13 +901,28 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
                             d_carrier_lock_fail_counter--;
                         }
                 }
+
+            if (d_CN0_SNV_dB_Hz < trk_parameters.cn0_min)
+                {
+                    d_code_lock_fail_counter++;
+                }
+            else
+                {
+                    if (d_code_lock_fail_counter > 0)
+                        {
+                            d_code_lock_fail_counter--;
+                        }
+                }
         }
-    if (d_carrier_lock_fail_counter > trk_parameters.max_lock_fail)
+    if (d_carrier_lock_fail_counter > trk_parameters.max_carrier_lock_fail or d_code_lock_fail_counter > trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
-            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
+            LOG(INFO) << "Loss of lock in channel " << d_channel
+                      << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
+                      << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
             d_carrier_lock_fail_counter = 0;
+            d_code_lock_fail_counter = 0;
             return false;
         }
     return true;
@@ -985,9 +1020,25 @@ void dll_pll_veml_tracking::run_dll_pll()
         }
     // Code discriminator filter
     d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
-
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
+
+    // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
+    if (d_pull_in_transitory == false and d_corrected_doppler == false)
+        {
+            d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
+            if (d_dll_filt_history.full())
+                {
+                    float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0) / static_cast<float>(d_dll_filt_history.capacity());
+                    if (fabs(avg_code_error_chips_s) > 1.0)
+                        {
+                            float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
+                            LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
+                            d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
+                            d_corrected_doppler = true;
+                        }
+                }
+        }
 }
 
 
@@ -1573,6 +1624,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             if (trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
                 {
                     d_pull_in_transitory = false;
+                    d_carrier_lock_fail_counter = 0;
+                    d_code_lock_fail_counter = 0;
                 }
         }
     switch (d_state)
@@ -1606,8 +1659,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_state = 2;
                 d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
+                d_carrier_lock_test_smoother.reset();
 
-                DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
+                LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                 DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
                            << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
 
@@ -1642,51 +1696,59 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
                         // enable write dump file this cycle (valid DLL/PLL cycle)
                         log_data(false);
-                        if (d_secondary)
+
+                        if (!d_pull_in_transitory)
                             {
-                                // ####### SECONDARY CODE LOCK #####
-                                d_Prompt_circular_buffer.push_back(*d_Prompt);
-                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
+                                if (d_secondary)
                                     {
-                                        next_state = acquire_secondary();
-                                        if (next_state)
+                                        // ####### SECONDARY CODE LOCK #####
+                                        d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                        if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                             {
-                                                LOG(INFO) << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
-                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-                                                std::cout << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
-                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-                                            }
-                                    }
-                            }
-                        else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
-                            {
-                                float current_tracking_time_s = static_cast<float>(d_sample_counter - d_acq_sample_stamp) / trk_parameters.fs_in;
-                                if (current_tracking_time_s > 10)
-                                    {
-                                        d_symbol_history.push_back(d_Prompt->real());
-                                        //******* preamble correlation ********
-                                        int32_t corr_value = 0;
-                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
-                                            {
-                                                int i = 0;
-                                                for (const auto &iter : d_symbol_history)
+                                                next_state = acquire_secondary();
+                                                if (next_state)
                                                     {
-                                                        if (iter < 0.0)  // symbols clipping
-                                                            {
-                                                                corr_value -= d_preambles_symbols[i];
-                                                            }
-                                                        else
-                                                            {
-                                                                corr_value += d_preambles_symbols[i];
-                                                            }
-                                                        i++;
+                                                        LOG(INFO) << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                                        std::cout << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                                     }
                                             }
-                                        if (corr_value == d_preamble_length_symbols)
+                                    }
+                                else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
+                                    {
+                                        float current_tracking_time_s = static_cast<float>(d_sample_counter - d_acq_sample_stamp) / trk_parameters.fs_in;
+                                        if (current_tracking_time_s > 10)
                                             {
-                                                LOG(INFO) << systemName << " " << signal_pretty_name << " tracking preamble detected in channel " << d_channel
-                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-                                                next_state = true;
+                                                d_symbol_history.push_back(d_Prompt->real());
+                                                //******* preamble correlation ********
+                                                int32_t corr_value = 0;
+                                                if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
+                                                    {
+                                                        int i = 0;
+                                                        for (const auto &iter : d_symbol_history)
+                                                            {
+                                                                if (iter < 0.0)  // symbols clipping
+                                                                    {
+                                                                        corr_value -= d_preambles_symbols[i];
+                                                                    }
+                                                                else
+                                                                    {
+                                                                        corr_value += d_preambles_symbols[i];
+                                                                    }
+                                                                i++;
+                                                            }
+                                                    }
+                                                if (corr_value == d_preamble_length_symbols)
+                                                    {
+                                                        LOG(INFO) << systemName << " " << signal_pretty_name << " tracking preamble detected in channel " << d_channel
+                                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                                        next_state = true;
+                                                    }
+                                                else
+                                                    {
+                                                        next_state = false;
+                                                    }
                                             }
                                         else
                                             {
@@ -1695,14 +1757,13 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                     }
                                 else
                                     {
-                                        next_state = false;
+                                        next_state = true;
                                     }
                             }
                         else
                             {
-                                next_state = true;
+                                next_state = false;  //keep in state 2 during pull-in transitory
                             }
-
                         // ########### Output the tracking results to Telemetry block ##########
                         if (interchange_iq)
                             {
@@ -1837,7 +1898,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         d_extend_correlation_symbols_count = 0;
                         d_state = 4;
                     }
-                log_data(true);
                 break;
             }
         case 4:  // narrow tracking

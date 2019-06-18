@@ -30,18 +30,20 @@
 
 
 #include "gnss_sdr_flags.h"
-#if HAS_STD_FILESYSTEM
-#include <filesystem>
-#else
-#include <boost/filesystem/operations.hpp>  // for exists
-#endif
 #include <cstdint>
 #include <iostream>
 #include <string>
 
 #if HAS_STD_FILESYSTEM
-namespace fs = std::filesystem;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>  // for exists
 namespace fs = boost::filesystem;
 #endif
 
@@ -65,9 +67,12 @@ DEFINE_int32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimat
 
 DEFINE_int32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz).");
 
-DEFINE_int32(max_lock_fail, 50, "Maximum number of lock failures before dropping a satellite.");
+DEFINE_int32(max_carrier_lock_fail, 10000, "Maximum number of carrier lock failures before dropping a satellite.");
 
-DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad).");
+DEFINE_int32(max_lock_fail, 50, "Maximum number of code lock failures before dropping a satellite.");
+
+//cos(2xError_angle)=0.7 -> Error_angle=22 deg
+DEFINE_double(carrier_lock_th, 0.7, "Carrier lock threshold (in rad).");
 
 DEFINE_string(RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");
 

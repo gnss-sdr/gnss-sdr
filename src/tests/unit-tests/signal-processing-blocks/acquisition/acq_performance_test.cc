@@ -55,16 +55,22 @@
 #include <utility>
 
 #if HAS_STD_FILESYSTEM
-#include <filesystem>
 #include <system_error>
-namespace fs = std::filesystem;
 namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
 #else
 #include <boost/filesystem.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/system/error_code.hpp>  // for error_code
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
 DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");

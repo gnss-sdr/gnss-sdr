@@ -45,12 +45,37 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/i686-redhat-linux/4.8.2
         /usr/lib/gcc/x86_64-redhat-linux/7
         /usr/lib/gcc/i686-redhat-linux/7
+        /usr/lib/gcc/x86_64-redhat-linux/8
+        /usr/lib/gcc/i686-redhat-linux/8
+        /usr/lib/gcc/x86_64-redhat-linux/9
+        /usr/lib/gcc/i686-redhat-linux/9
+        /usr/lib64/gcc/x86_64-redhat-linux/7
+        /usr/lib64/gcc/x86_64-redhat-linux/8
+        /usr/lib64/gcc/x86_64-redhat-linux/9
         /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/7
         /usr/lib/gcc/aarch64-redhat-linux/7
         /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
         /usr/lib/gcc/i586-suse-linux/4.9
+        /usr/lib/gcc/i586-suse-linux/7
+        /usr/lib/gcc/i586-suse-linux/8
+        /usr/lib/gcc/i586-suse-linux/9
         /usr/lib/gcc/x86_64-suse-linux/4.8
         /usr/lib/gcc/x86_64-suse-linux/4.9
+        /usr/lib64/gcc/x86_64-suse-linux/7
+        /usr/lib64/gcc/x86_64-suse-linux/8
+        /usr/lib64/gcc/x86_64-suse-linux/9
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/7
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/8
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/9
+        /usr/lib64/gcc/aarch64-suse-linux/7
+        /usr/lib64/gcc/aarch64-suse-linux/8
+        /usr/lib64/gcc/aarch64-suse-linux/9
+        /usr/lib64/gcc/powerpc64-suse-linux/7
+        /usr/lib64/gcc/powerpc64-suse-linux/8
+        /usr/lib64/gcc/powerpc64-suse-linux/9
+        /usr/lib64/gcc/powerpc64le-suse-linux/7
+        /usr/lib64/gcc/powerpc64le-suse-linux/8
+        /usr/lib64/gcc/powerpc64le-suse-linux/9
         /usr/lib/gcc/i486-linux-gnu # Debian 7
         /usr/lib/gcc/i486-linux-gnu/4.4
         /usr/lib/gcc/i486-linux-gnu/4.6
@@ -142,6 +167,24 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/powerpc64le-linux-gnu/8
         /usr/lib/gcc/s390x-linux-gnu/8
         /usr/lib/gcc/alpha-linux-gnu/8
+        /usr/lib/gcc/x86_64-linux-gnu/9
+        /usr/lib/gcc/aarch64-linux-gnu/9
+        /usr/lib/gcc/arm-linux-gnueabi/9
+        /usr/lib/gcc/arm-linux-gnueabihf/9
+        /usr/lib/gcc/i686-linux-gnu/9
+        /usr/lib/gcc/powerpc64le-linux-gnu/9
+        /usr/lib/gcc/powerpc64-linux-gnu/9/
+        /usr/lib/gcc/s390x-linux-gnu/9
+        /usr/lib/gcc/alpha-linux-gnu/9
+        /usr/lib/gcc/hppa-linux-gnu/9
+        /usr/lib/gcc/m68k-linux-gnu/9
+        /usr/lib/gcc/mips-linux-gnu/9
+        /usr/lib/gcc/mips64el-linux-gnuabi64/9
+        /usr/lib/gcc/mipsel-linux-gnu/9
+        /usr/lib/gcc/riscv64-linux-gnu/9
+        /usr/lib/gcc/sh4-linux-gnu/9
+        /usr/lib/gcc/sparc64-linux-gnu/9
+        /usr/lib/gcc/x86_64-linux-gnux32/9
         ${GFORTRAN_ROOT}/lib
         $ENV{GFORTRAN_ROOT}/lib
 )

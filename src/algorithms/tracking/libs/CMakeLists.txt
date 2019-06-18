@@ -63,6 +63,12 @@ set(TRACKING_LIB_HEADERS
     exponential_smoother.h
 )
 
+if(ARMADILLO_VERSION_STRING VERSION_GREATER 7.400)
+    # sqrtmat_sympd() requires 7.400
+    set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} nonlinear_tracking.cc)
+    set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} nonlinear_tracking.h)
+endif()
+
 if(ENABLE_FPGA)
     set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator.cc dll_pll_conf_fpga.cc)
     set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} fpga_multicorrelator.h dll_pll_conf_fpga.h)
@@ -82,6 +88,7 @@ target_link_libraries(tracking_libs
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
         core_system_parameters
+        algorithms_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         Gflags::gflags

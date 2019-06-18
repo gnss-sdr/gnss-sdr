@@ -46,21 +46,13 @@
 #include <boost/exception/diagnostic_information.hpp>  // for diagnostic_informatio
 #include <boost/exception/exception.hpp>               // for exception
 #include <boost/thread/exceptions.hpp>                 // for thread_resource_error
-#if HAS_STD_FILESYSTEM
-#include <filesystem>
-#include <system_error>
-#else
-#include <boost/filesystem/operations.hpp>  // for create_directories, exists
-#include <boost/filesystem/path.hpp>        // for path, operator<<
-#include <boost/system/error_code.hpp>      // for error_code
-#endif
-#include <gflags/gflags.h>  // for ShutDownCommandLineFlags
-#include <glog/logging.h>   // for FLAGS_log_dir
-#include <chrono>           // for time_point
-#include <exception>        // for exception
-#include <iostream>         // for operator<<, endl
-#include <memory>           // for unique_ptr
-#include <string>           // for string
+#include <gflags/gflags.h>                             // for ShutDownCommandLineFlags
+#include <glog/logging.h>                              // for FLAGS_log_dir
+#include <chrono>                                      // for time_point
+#include <exception>                                   // for exception
+#include <iostream>                                    // for operator<<, endl
+#include <memory>                                      // for unique_ptr
+#include <string>                                      // for string
 
 #if CUDA_GPU_ACCEL
 // For the CUDA runtime routines (prefixed with "cuda_")
@@ -68,9 +60,20 @@
 #endif
 
 #if HAS_STD_FILESYSTEM
-namespace fs = std::filesystem;
+#include <system_error>
 namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif

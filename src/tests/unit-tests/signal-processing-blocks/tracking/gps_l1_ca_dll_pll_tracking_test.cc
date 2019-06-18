@@ -61,8 +61,13 @@
 #endif
 
 #if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
 #include <filesystem>
 namespace fs = std::filesystem;
+#endif
 #else
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;

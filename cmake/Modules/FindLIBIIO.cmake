@@ -85,6 +85,10 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
 
+if(PC_LIBIIO_VERSION)
+    set(LIBIIO_VERSION ${PC_LIBIIO_VERSION})
+endif()
+
 if(LIBIIO_FOUND AND NOT TARGET Iio::iio)
     add_library(Iio::iio SHARED IMPORTED)
     set_target_properties(Iio::iio PROPERTIES

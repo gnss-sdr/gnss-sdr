@@ -303,6 +303,7 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition(void)
 {
+	//printf("============ resetting the hw now from the acquisition ===============");
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the acquisition. This causes a reset of all
                                         // the FPGA HW modules including the multicorrelators
 }

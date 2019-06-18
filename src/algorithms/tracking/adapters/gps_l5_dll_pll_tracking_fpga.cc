@@ -286,6 +286,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
+    trk_param_fpga.extended_correlation_in_fpga = true;
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";

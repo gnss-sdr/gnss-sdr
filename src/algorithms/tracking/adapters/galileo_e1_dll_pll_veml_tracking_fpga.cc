@@ -280,6 +280,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = GALILEO_E1_B_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
+    trk_param_fpga.extended_correlation_in_fpga = false;
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

@@ -58,6 +58,11 @@
 #define PHASE_STEP_RATE_REG_ADDR 22
 #define STOP_TRACKING_REG_ADDR 23
 #define INT_ON_RST_REG_ADDR 24  // cause interrupt on reset to prevent deadlock
+#define SECONDARY_CODE_LENGTHS_REG_ADDR 25
+#define PROG_SECONDARY_CODE_0_DATA_REG_ADDR 26
+#define PROG_SECONDARY_CODE_1_DATA_REG_ADDR 27
+#define FIRST_PRN_LENGTH_MINUS_1_REG_ADDR 28
+#define NEXT_PRN_LENGTH_MINUS_1_REG_ADDR 29
 #define START_FLAG_ADDR 30
 // read-write addresses
 #define TEST_REG_ADDR 31
@@ -67,6 +72,13 @@
 #define SAMPLE_COUNTER_REG_ADDR_LSW 13
 #define SAMPLE_COUNTER_REG_ADDR_MSW 14
 
+// FPGA-related constants
+#define SECONDARY_CODE_WORD_SIZE 20 // the secondary codes are written in to the FPGA in words of SECONDARY_CODE_WORD_SIZE bits
+#define SECONDARY_CODE_WR_STROBE 0x800000	// write strobe position in the secondary code write register
+#define SECONDARY_CODE_ADDR_BITS 0x100000	// memory address position in the secondary code write register
+#define DROP_SAMPLES 1						// bit 0 of DROP_SAMPLES_REG_ADDR
+#define ENABLE_SECONDARY_CODE 2				// bit 1 of DROP_SAMPLES_REG_ADDR
+#define INIT_SECONDARY_CODE_ADDRESSES 4		// bit 2 of DROP_SAMPLES_REG_ADDR
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -93,6 +105,16 @@ public:
     uint64_t read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
+//    void initialize_secondary_codes(bool track_pilot,
+//    		uint32_t secondary_code_length_data, std::string *secondary_code_string_data,
+//			uint32_t secondary_code_length_pilot, std::string *secondary_code_string_pilot);
+    void set_secondary_code_lengths(uint32_t secondary_code_0_length, uint32_t secondary_code_1_length);
+    void initialize_secondary_code(uint32_t secondary_code, std::string *secondary_code_string);
+    void update_secondary_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code);
+    void enable_secondary_codes();
+    void disable_secondary_codes();
+//    void init_secondary_code_indices();
+
 
 private:
     gr_complex *d_corr_out;
@@ -139,6 +161,10 @@ private:
 
     uint32_t d_multicorr_type;
 
+    uint32_t d_secondary_code_0_length;
+    uint32_t d_secondary_code_1_length;
+
+    bool d_secondary_code_enabled;
     // private functions
     uint32_t fpga_acquisition_test_register(uint32_t writeval);
     void fpga_configure_tracking_gps_local_code(int32_t PRN);
@@ -149,6 +175,7 @@ private:
     void fpga_launch_multicorrelator_fpga(void);
     void read_tracking_gps_results(void);
     void close_device(void);
+    void write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr);
 };
 
 #endif /* GNSS_SDR_FPGA_MULTICORRELATOR_H_ */

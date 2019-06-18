@@ -77,4 +77,5 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     code_samples_per_chip = 0U;
     ca_codes = nullptr;
     data_codes = nullptr;
+    extended_correlation_in_fpga = false;
 }

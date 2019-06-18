@@ -87,9 +87,12 @@ private:
     void do_correlation_step(void);
     void run_dll_pll();
     void update_tracking_vars();
+    void update_tracking_vars_extend_integration_in_FPGA();
     void clear_tracking_vars();
     void save_correlation_results();
+    void save_correlation_results_extended_integration_in_FPGA();
     void log_data(bool integrating);
+    void log_data_extended_integration_in_FPGA(bool integrating, bool extended_correlation_in_fpga_enabled);
     int32_t save_matfile();
 
     //void run_state_2(Gnss_Synchro &current_synchro_data);
@@ -148,6 +151,9 @@ private:
     gr_complex d_L_accu;
     gr_complex d_VL_accu;
 
+//    gr_complex d_P_data_accu; // when the extended integration is done in the FPGA we need to accumulate the pilot correlator results too
+    uint32_t d_num_current_syncrho_repetitions;
+
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;
@@ -158,6 +164,9 @@ private:
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
+    double d_rem_code_phase_samples_first;
+    double d_rem_code_phase_samples_next;
+    double d_rem_code_phase_samples_prev;
     float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
@@ -184,8 +193,13 @@ private:
     double T_prn_seconds;
     double T_prn_samples;
     double K_blk_samples;
+
+    double K_blk_samples_prev;
     // PRN period in samples
-    int32_t d_current_prn_length_samples;
+    // REPLACED BY d_correlation_length_samples, d_next_integration_length_samples
+    //int32_t d_current_prn_length_samples;
+    int32_t d_current_integration_length_samples;
+    int32_t d_past_integration_length_samples;
     // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
@@ -204,6 +218,9 @@ private:
     gr_complex *d_Prompt_buffer;
     Exponential_Smoother d_cn0_smoother;
 
+
+    bool d_extended_correlation_in_fpga;
+
     // file dump
     std::ofstream d_dump_file;
     std::string d_dump_filename;
@@ -212,8 +229,60 @@ private:
 
     // extra
     int32_t d_correlation_length_samples;
-    int32_t d_next_prn_length_samples;
+    //int32_t d_next_prn_length_samples;
+    int32_t d_next_integration_length_samples;
+
+    int32_t d_extended_integration_first_prn_length_samples;
+    int32_t d_extended_integration_next_prn_length_samples;
+
+    double d_extended_integration_first_acc_carrier_phase_rad;
+    double d_extended_integration_next_acc_carrier_phase_rad_step;
+
+    //float d_extended_integration_first_rem_carr_phase_rad;
+    //float d_extended_integration_next_rem_carr_phase_rad_step;
+
     uint64_t d_sample_counter_next;
+
+    // DEBUG STUFF
+    uint64_t d_current_synchro_data_Tracking_sample_counter[20];
+    double d_current_synchro_data_Code_phase_samples[20];
+    double d_current_synchro_data_Carrier_phase_rads[20];
+    double d_current_synchro_data_Carrier_Doppler_hz[20];
+    double d_current_synchro_data_CN0_dB_hz[20];
+    bool d_current_synchro_data_Flag_valid_symbol_output[20];
+    int32_t d_current_synchro_data_correlation_length_ms[20];
+    double d_current_synchro_data_Prompt_I[20];
+    double d_current_synchro_data_Prompt_Q[20];
+
+    double T_prn_samples_prev;
+    int32_t d_actual_blk_length;
+
+    bool d_flag_printout;
+
+    std::string *d_secondary_code_string_data;
+    std::string *d_secondary_code_string_pilot;
+
+    uint32_t d_secondary_code_length_data;
+    uint32_t d_secondary_code_length_pilot;
+
+    uint32_t d_first_length_secondary_code;
+    uint32_t d_next_length_secondary_code;
+
+    uint32_t d_debug_counter;
+
+    uint32_t d_secondary_code_post_apply_counter; // init in set_gnss_synchro
+    std::string *d_secondary_code_string_post_apply; // init in constructor
+    uint32_t d_secondary_code_post_apply_length; // init in constructor
+    bool enable_post_apply_secondary_code;
+    uint32_t d_secondary_code_debug_counter_whole_bits;
+    bool d_sc_remodulate_enabled;
+    bool d_sc_demodulate_enabled;
+    bool d_sc_prompt_changed;
+
+    float debug_d_rem_carr_phase_rad;
+    uint32_t debug_first_time;
+
+
 };
 
 #endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

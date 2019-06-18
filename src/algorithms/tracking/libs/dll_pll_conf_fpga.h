@@ -83,6 +83,7 @@ public:
     uint32_t code_samples_per_chip;
     int32_t* ca_codes;
     int32_t* data_codes;
+    bool extended_correlation_in_fpga;
 
     Dll_Pll_Conf_Fpga();
 };

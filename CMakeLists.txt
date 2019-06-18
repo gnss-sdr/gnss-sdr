@@ -2206,7 +2206,7 @@ if(ENABLE_OSMOSDR)
         message(STATUS " You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ..'")
         if(GROSMOSDR_VERSION)
             set_package_properties(GROSMOSDR PROPERTIES
-                DESCRIPTION "osmocom GNU Radio blocks (found: v${GROSMOSDR_VERSION})"
+                DESCRIPTION "osmocom GNU Radio blocks (found: ${GROSMOSDR_VERSION})"
             )
         else()
             set_package_properties(GROSMOSDR PROPERTIES

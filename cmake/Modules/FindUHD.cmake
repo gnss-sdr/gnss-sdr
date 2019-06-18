@@ -77,6 +77,20 @@ find_library(UHD_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
 
+if(PC_UHD_VERSION)
+    set(UHD_VERSION ${PC_UHD_VERSION})
+endif()
+if(NOT PC_UHD_VERSION)
+    list(GET UHD_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(UHD_LIBRARIES_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${UHD_LIBRARIES_DIR}/cmake/uhd/UHDConfigVersion.cmake)
+        include(${UHD_LIBRARIES_DIR}/cmake/uhd/UHDConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(UHD_VERSION ${PACKAGE_VERSION})
+    endif()
+endif()
+
 if(UHD_FOUND AND NOT TARGET Uhd::uhd)
     add_library(Uhd::uhd SHARED IMPORTED)
     set_target_properties(Uhd::uhd PROPERTIES

@@ -65,6 +65,7 @@
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
+#include <numeric>
 
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL

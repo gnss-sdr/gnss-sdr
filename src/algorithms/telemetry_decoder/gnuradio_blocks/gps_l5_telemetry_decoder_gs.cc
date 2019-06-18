@@ -64,7 +64,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SAMPLES_PER_SYMBOL * GPS_L5_SYMBOLS_PER_BIT * 5;  //rise alarm if 5 consecutive subframes have no valid CRC
+    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SAMPLES_PER_SYMBOL * GPS_L5_SYMBOLS_PER_BIT * 20;  //rise alarm if 20 consecutive subframes have no valid CRC
 
     // initialize internal vars
     d_dump = dump;

@@ -117,8 +117,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.enable_fll_pull_in = enable_fll_pull_in;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param.fll_bw_hz = fll_bw_hz;
-    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
-    trk_param.pull_in_time_s = pull_in_time_s;
+    trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     trk_param.vector_length = vector_length;
@@ -141,30 +140,11 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.system = 'G';
     char sig_[3] = "2S";
     std::memcpy(trk_param.signal, sig_, 3);
-    int cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20)
-        {
-            cn0_samples = FLAGS_cn0_samples;
-        }
-    trk_param.cn0_samples = cn0_samples;
-    int cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25)
-        {
-            cn0_min = FLAGS_cn0_min;
-        }
-    trk_param.cn0_min = cn0_min;
-    int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50)
-        {
-            max_lock_fail = FLAGS_max_lock_fail;
-        }
-    trk_param.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
-    if (FLAGS_carrier_lock_th != 0.85)
-        {
-            carrier_lock_th = FLAGS_carrier_lock_th;
-        }
-    trk_param.carrier_lock_th = carrier_lock_th;
+    trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
+    trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
+    trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);
+    trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
+    trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

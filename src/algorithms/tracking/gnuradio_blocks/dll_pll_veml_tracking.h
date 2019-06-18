@@ -113,6 +113,8 @@ private:
     int32_t d_preamble_length_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
+    // dll filter buffer
+    boost::circular_buffer<float> d_dll_filt_history;
     // tracking state machine
     int32_t d_state;
 
@@ -170,6 +172,7 @@ private:
 
     // tracking vars
     bool d_pull_in_transitory;
+    bool d_corrected_doppler;
     double d_current_correlation_time_s;
     double d_carr_phase_error_hz;
     double d_carr_freq_error_hz;
@@ -193,13 +196,14 @@ private:
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
+    int32_t d_code_lock_fail_counter;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
     gr_complex *d_Prompt_buffer;
     Exponential_Smoother d_cn0_smoother;
-
+    Exponential_Smoother d_carrier_lock_test_smoother;
     // file dump
     std::ofstream d_dump_file;
     std::string d_dump_filename;

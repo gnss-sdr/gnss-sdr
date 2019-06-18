@@ -229,7 +229,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
-    trk_param_fpga.extended_correlation_in_fpga = false;
+    trk_param_fpga.extended_correlation_in_fpga = true;
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

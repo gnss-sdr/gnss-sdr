@@ -465,7 +465,7 @@ docker-for-test:
     - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
     - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
-    - git push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+    - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
 
 
 # Stage "test"

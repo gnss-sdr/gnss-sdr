@@ -143,7 +143,7 @@ if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
         URL "https://git-scm.com"
-        DESCRIPTION "A free and open source distributed version control system"
+        DESCRIPTION "A free and open source distributed version control system (found: ${GIT_VERSION_STRING})"
         PURPOSE "Manage version control, get MINOR_VERSION name for version number."
         TYPE REQUIRED
     )
@@ -610,16 +610,31 @@ set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
     URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
-    DESCRIPTION "USRP Hardware Driver"
     PURPOSE "Used for communication with front-ends of the USRP family."
     TYPE OPTIONAL
 )
 if(ENABLE_UHD)
     if(NOT UHD_FOUND)
         set(ENABLE_UHD OFF)
+        set_package_properties(UHD PROPERTIES
+            DESCRIPTION "USRP Hardware Driver"
+        )
     else()
         set(GR_REQUIRED_COMPONENTS ${GR_REQUIRED_COMPONENTS} UHD)
+        if(UHD_VERSION)
+            set_package_properties(UHD PROPERTIES
+                DESCRIPTION "USRP Hardware Driver (found: v${UHD_VERSION})"
+            )
+        else()
+            set_package_properties(UHD PROPERTIES
+                DESCRIPTION "USRP Hardware Driver"
+            )
+        endif()
     endif()
+else()
+    set_package_properties(UHD PROPERTIES
+        DESCRIPTION "USRP Hardware Driver"
+    )
 endif()
 
 find_package(GNURADIO)
@@ -809,15 +824,15 @@ endif()
 # VOLK - Vector-Optimized Library of Kernels
 ################################################################################
 find_package(VOLK)
-set_package_properties(VOLK PROPERTIES
-    URL "http://libvolk.org"
-    DESCRIPTION "Vector-Optimized Library of Kernels"
-    PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
-    TYPE REQUIRED
-)
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
 endif()
+set_package_properties(VOLK PROPERTIES
+    URL "http://libvolk.org"
+    DESCRIPTION "Vector-Optimized Library of Kernels (found: ${VOLK_VERSION})"
+    PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
+    TYPE REQUIRED
+)
 
 
 
@@ -875,26 +890,32 @@ if(NOT VOLKGNSSSDR_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif()
 
-    set_package_properties(Python3 PROPERTIES
-        URL "https://www.python.org/"
-        DESCRIPTION "An interpreted, high-level, general-purpose programming language"
-        PURPOSE "Required to build volk_gnsssdr."
-        TYPE REQUIRED
-    )
+    if(Python3_FOUND)
+        set_package_properties(Python3 PROPERTIES
+            URL "https://www.python.org/"
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
+            PURPOSE "Required to build volk_gnsssdr."
+            TYPE REQUIRED
+        )
+    endif()
 
-    set_package_properties(Python2 PROPERTIES
-        URL "https://www.python.org/"
-        DESCRIPTION "An interpreted, high-level, general-purpose programming language"
-        PURPOSE "Required to build volk_gnsssdr."
-        TYPE REQUIRED
-    )
+    if(Python2_FOUND)
+        set_package_properties(Python2 PROPERTIES
+            URL "https://www.python.org/"
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python2_VERSION})"
+            PURPOSE "Required to build volk_gnsssdr."
+            TYPE REQUIRED
+        )
+    endif()
 
-    set_package_properties(PythonInterp PROPERTIES
-        URL "https://www.python.org/"
-        DESCRIPTION "An interpreted, high-level, general-purpose programming language"
-        PURPOSE "Required to build volk_gnsssdr."
-        TYPE REQUIRED
-    )
+    if(PYTHONINTERP_FOUND)
+        set_package_properties(PythonInterp PROPERTIES
+            URL "https://www.python.org/"
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${PYTHON_VERSION_STRING})"
+            PURPOSE "Required to build volk_gnsssdr."
+            TYPE REQUIRED
+        )
+    endif()
 
     set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
@@ -1343,7 +1364,6 @@ endif()
 find_package(Armadillo)
 set_package_properties(Armadillo PROPERTIES
     URL "http://arma.sourceforge.net/"
-    DESCRIPTION "C++ library for linear algebra and scientific computing"
     PURPOSE "Used for matrix computations."
     TYPE REQUIRED
 )
@@ -1445,6 +1465,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         INTERFACE_LINK_LIBRARIES "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
     )
     set_package_properties(Armadillo PROPERTIES
+        DESCRIPTION "C++ library for linear algebra and scientific computing"
         PURPOSE "Armadillo ${GNSSSDR_ARMADILLO_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
 endif()
@@ -1503,7 +1524,7 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
     find_package(OpenSSL)
     set_package_properties(OpenSSL PROPERTIES
         URL "https://www.openssl.org"
-        DESCRIPTION "Cryptography and SSL/TLS Toolkit"
+        DESCRIPTION "Cryptography and SSL/TLS Toolkit (found: v${OPENSSL_VERSION})"
         PURPOSE "Used for the SUPL protocol implementation."
         TYPE REQUIRED
     )
@@ -1540,7 +1561,6 @@ endif()
 find_package(MATIO)
 set_package_properties(MATIO PROPERTIES
     URL "https://github.com/tbeu/matio"
-    DESCRIPTION "MATLAB MAT File I/O Library"
     PURPOSE "Used to store processing block's results in MAT files readable from MATLAB/Octave."
     TYPE REQUIRED
 )
@@ -1550,6 +1570,9 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     endif()
     message(STATUS " Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
+    set_package_properties(MATIO PROPERTIES
+        DESCRIPTION "MATLAB MAT File I/O Library"
+    )
     find_package(ZLIB)
     set_package_properties(ZLIB PROPERTIES
         URL "https://www.zlib.net/"
@@ -1682,7 +1705,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     )
 else()
     set_package_properties(MATIO PROPERTIES
-        DESCRIPTION "MATLAB MAT File I/O Library (found: v.${MATIO_VERSION_STRING})"
+        DESCRIPTION "MATLAB MAT File I/O Library (found: v${MATIO_VERSION_STRING})"
     )
 endif()
 
@@ -1694,11 +1717,13 @@ endif()
 find_package(PUGIXML)
 set_package_properties(PUGIXML PROPERTIES
     URL "https://pugixml.org/"
-    DESCRIPTION "Light-weight, simple and fast XML parser for C++"
     PURPOSE "Used to handle Galileo almanac XML files published by the European GNSS Service Centre."
     TYPE REQUIRED
 )
 if(NOT PUGIXML_FOUND)
+    set_package_properties(PUGIXML PROPERTIES
+        DESCRIPTION "Light-weight, simple and fast XML parser for C++"
+    )
     message(STATUS " PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(PUGIXML_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
     set(TOOLCHAIN_ARG "")
@@ -1748,6 +1773,16 @@ if(NOT PUGIXML_FOUND)
     set_package_properties(PUGIXML PROPERTIES
         PURPOSE "PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+else()
+    if(PUGIXML_VERSION)
+        set_package_properties(PUGIXML PROPERTIES
+            DESCRIPTION "Light-weight, simple and fast XML parser for C++ (found: ${PUGIXML_VERSION})"
+        )
+    else()
+        set_package_properties(PUGIXML PROPERTIES
+            DESCRIPTION "Light-weight, simple and fast XML parser for C++"
+        )
+    endif()
 endif()
 
 
@@ -1758,7 +1793,6 @@ endif()
 find_package(Protobuf)
 set_package_properties(Protobuf PROPERTIES
     URL "https://developers.google.com/protocol-buffers/"
-    DESCRIPTION "Structured data serialization mechanism"
     PURPOSE "Used to serialize output data in a way that can be read by other applications."
     TYPE REQUIRED
 )
@@ -1815,6 +1849,10 @@ endif()
 if(Protobuf_FOUND)
     set_package_properties(Protobuf PROPERTIES
         DESCRIPTION "Structured data serialization mechanism (found: v${Protobuf_VERSION})"
+    )
+else()
+    set_package_properties(Protobuf PROPERTIES
+        DESCRIPTION "Structured data serialization mechanism"
     )
 endif()
 
@@ -2159,7 +2197,6 @@ endif()
 find_package(GROSMOSDR)
 set_package_properties(GROSMOSDR PROPERTIES
     URL "https://osmocom.org/projects/gr-osmosdr/wiki"
-    DESCRIPTION "osmocom GNU Radio blocks"
     PURPOSE "Used for communication with OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.)."
     TYPE OPTIONAL
 )
@@ -2167,7 +2204,19 @@ if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
         message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled.")
         message(STATUS " You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ..'")
+        if(GROSMOSDR_VERSION)
+            set_package_properties(GROSMOSDR PROPERTIES
+                DESCRIPTION "osmocom GNU Radio blocks (found: ${GROSMOSDR_VERSION})"
+            )
+        else()
+            set_package_properties(GROSMOSDR PROPERTIES
+                DESCRIPTION "osmocom GNU Radio blocks"
+            )
+        endif()
     else()
+        set_package_properties(GROSMOSDR PROPERTIES
+            DESCRIPTION "osmocom GNU Radio blocks"
+        )
         if(ENABLE_PACKAGING)
             message(WARNING "gr-osmosdr has not been found. Source blocks depending on it will NOT be built.")
         else()
@@ -2175,6 +2224,9 @@ if(ENABLE_OSMOSDR)
         endif()
     endif()
 else()
+    set_package_properties(GROSMOSDR PROPERTIES
+        DESCRIPTION "osmocom GNU Radio blocks"
+    )
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled.")
     message(STATUS " Enable it with 'cmake -DENABLE_OSMOSDR=ON ..' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
 endif()
@@ -2188,10 +2240,19 @@ endif()
 find_package(GRIIO)
 set_package_properties(GRIIO PROPERTIES
     URL "https://github.com/analogdevicesinc/gr-iio"
-    DESCRIPTION "IIO blocks for GNU Radio"
     PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
     TYPE OPTIONAL
 )
+if(GRIIO_FOUND AND GRIIO_VERSION)
+    set_package_properties(GRIIO PROPERTIES
+        DESCRIPTION "IIO blocks for GNU Radio (found: v${GRIIO_VERSION})"
+    )
+else()
+    set_package_properties(GRIIO PROPERTIES
+        DESCRIPTION "IIO blocks for GNU Radio"
+    )
+endif()
+
 
 
 #####################################################################
@@ -2202,10 +2263,18 @@ set_package_properties(GRIIO PROPERTIES
 find_package(LIBIIO)
 set_package_properties(LIBIIO PROPERTIES
     URL "https://github.com/analogdevicesinc/libiio"
-    DESCRIPTION "A library for interfacing with Linux IIO devices"
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
+if(LIBIIO_FOUND AND LIBIIO_VERSION)
+    set_package_properties(LIBIIO PROPERTIES
+        DESCRIPTION "A library for interfacing with Linux IIO devices (found: v${LIBIIO_VERSION})"
+    )
+else()
+    set_package_properties(LIBIIO PROPERTIES
+        DESCRIPTION "A library for interfacing with Linux IIO devices"
+    )
+endif()
 
 
 ##############################################

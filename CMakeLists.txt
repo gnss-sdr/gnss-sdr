@@ -829,10 +829,18 @@ if(NOT VOLK_FOUND)
 endif()
 set_package_properties(VOLK PROPERTIES
     URL "http://libvolk.org"
-    DESCRIPTION "Vector-Optimized Library of Kernels (found: ${VOLK_VERSION})"
     PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
     TYPE REQUIRED
 )
+if(VOLK_VERSION)
+    set_package_properties(VOLK PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels (found: ${VOLK_VERSION})"
+    )
+else()
+    set_package_properties(VOLK PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels"
+    )
+endif()
 
 
 
@@ -889,28 +897,30 @@ if(NOT VOLKGNSSSDR_FOUND)
         endif()
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif()
-
-    set_package_properties(Python3 PROPERTIES
-        URL "https://www.python.org/"
-        PURPOSE "Required to build volk_gnsssdr."
-        TYPE REQUIRED
-    )
-    if(Python3_FOUND)
+    if(CMAKE_VERSION VERSION_GREATER 3.12)
         set_package_properties(Python3 PROPERTIES
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
-        )
-    else()
-        set_package_properties(Python3 PROPERTIES
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language"
-        )
-    endif()
-    if(Python2_FOUND)
-        set_package_properties(Python2 PROPERTIES
             URL "https://www.python.org/"
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python2_VERSION})"
             PURPOSE "Required to build volk_gnsssdr."
             TYPE REQUIRED
         )
+        if(Python3_FOUND)
+            set_package_properties(Python3 PROPERTIES
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
+            )
+        else()
+            set_package_properties(Python3 PROPERTIES
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language"
+                PURPOSE "Another Python version will be used."
+            )
+        endif()
+        if(Python2_FOUND)
+            set_package_properties(Python2 PROPERTIES
+                URL "https://www.python.org/"
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python2_VERSION})"
+                PURPOSE "Required to build volk_gnsssdr."
+                TYPE REQUIRED
+            )
+        endif()
     endif()
 
     if(PYTHONINTERP_FOUND)

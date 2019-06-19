@@ -2193,10 +2193,21 @@ endif()
 find_package(PCAP)
 set_package_properties(PCAP PROPERTIES
     URL "https://www.tcpdump.org"
-    DESCRIPTION "A portable C/C++ library for network traffic capture"
     PURPOSE "Used for the custom UDP IP packet source."
     TYPE OPTIONAL
 )
+if(PCAP_FOUND AND PCAP_VERSION)
+    set_package_properties(PCAP PROPERTIES
+        DESCRIPTION "A portable C/C++ library for network traffic capture (found: ${PCAP_VERSION})"
+    )
+else()
+    set_package_properties(PCAP PROPERTIES
+        DESCRIPTION "A portable C/C++ library for network traffic capture"
+    )
+endif()
+if(PCAP_FOUND)
+    set(ENABLE_RAW_UDP ON)
+endif()
 if(ENABLE_RAW_UDP)
     message(STATUS "High-optimized custom UDP IP packet source is enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ..'")

@@ -172,10 +172,18 @@ if(GNUPLOT_FOUND)
 endif()
 set_package_properties(Gnuplot PROPERTIES
     URL "http://www.gnuplot.info"
-    DESCRIPTION "A portable command-line driven graphing utility"
     PURPOSE "Used to generate plots in some tests."
     TYPE OPTIONAL
 )
+if(GNUPLOT_FOUND AND GNUPLOT_VERSION_STRING)
+    set_package_properties(Gnuplot PROPERTIES
+        DESCRIPTION "A portable command-line driven graphing utility (found: v${GNUPLOT_VERSION_STRING})"
+    )
+else()
+    set_package_properties(Gnuplot PROPERTIES
+        DESCRIPTION "A portable command-line driven graphing utility"
+    )
+endif()
 
 if(ENABLE_UNIT_TESTING_MINIMAL)
     add_definitions(-DUNIT_TESTING_MINIMAL=1)

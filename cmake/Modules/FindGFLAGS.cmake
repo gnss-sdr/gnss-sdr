@@ -111,6 +111,17 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GFLAGS DEFAULT_MSG GFlags_LIBS GFlags_INCLUDE_DIRS)
 
+if(GFLAGS_FOUND)
+    list(GET GFlags_LIBS 0 FIRST_DIR)
+    get_filename_component(GFlags_LIBS_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
+        include(${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(GFLAGS_VERSION ${PACKAGE_VERSION})
+    endif()
+endif()
+
 if(GFLAGS_FOUND AND NOT TARGET Gflags::gflags)
     add_library(Gflags::gflags SHARED IMPORTED)
     set_target_properties(Gflags::gflags PROPERTIES

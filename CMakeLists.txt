@@ -1046,11 +1046,13 @@ set(LOCAL_GFLAGS false)
 find_package(GFLAGS)
 set_package_properties(GFLAGS PROPERTIES
     URL "https://github.com/gflags/gflags"
-    DESCRIPTION "C++ library that implements commandline flags processing"
     PURPOSE "Used for commandline flags management."
     TYPE REQUIRED
 )
 if(NOT GFLAGS_FOUND)
+    set_package_properties(GFLAGS PROPERTIES
+        DESCRIPTION "C++ library that implements commandline flags processing"
+    )
     message(STATUS " gflags library has not been found.")
     message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically ")
     message(STATUS " when doing 'make'.")
@@ -1109,6 +1111,16 @@ if(NOT GFLAGS_FOUND)
     set_package_properties(GFLAGS PROPERTIES
         PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+else()
+    if(GFLAGS_VERSION)
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing (found: v${GFLAGS_VERSION})"
+        )
+    else()
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing"
+        )
+    endif()
 endif()
 
 
@@ -1124,11 +1136,13 @@ if(NOT ${ENABLE_OWN_GLOG})
 endif()
 set_package_properties(GLOG PROPERTIES
     URL "https://github.com/google/glog"
-    DESCRIPTION "C++ implementation of the Google logging module"
     PURPOSE "Used for runtime internal logging."
     TYPE REQUIRED
 )
 if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
+    set_package_properties(GLOG PROPERTIES
+        DESCRIPTION "C++ implementation of the Google logging module"
+    )
     message(STATUS " glog library has not been found")
     if(NOT GFLAGS_FOUND)
         message(STATUS " or it is likely not linked to gflags.")
@@ -1285,6 +1299,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
     set_package_properties(GLOG PROPERTIES
         PURPOSE "Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built when doing 'make'."
     )
+else()
+    if(GLOG_VERSION)
+        set_package_properties(GLOG PROPERTIES
+            DESCRIPTION "C++ implementation of the Google logging module (found: v${GLOG_VERSION})"
+        )
+    else()
+        set_package_properties(GLOG PROPERTIES
+            DESCRIPTION "C++ implementation of the Google logging module"
+        )
+    endif()
 endif()
 
 if(NOT ENABLE_LOG)

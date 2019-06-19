@@ -92,6 +92,7 @@ if(NOT VOLK_VERSION)
     if(PACKAGE_VERSION)
         set(VOLK_VERSION ${PACKAGE_VERSION})
     endif()
+    unset(PACKAGE_VERSION)
 endif()
 
 mark_as_advanced(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)

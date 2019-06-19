@@ -89,6 +89,7 @@ if(NOT PC_UHD_VERSION)
     if(PACKAGE_VERSION)
         set(UHD_VERSION ${PACKAGE_VERSION})
     endif()
+    unset(PACKAGE_VERSION)
 endif()
 
 if(UHD_FOUND AND NOT TARGET Uhd::uhd)

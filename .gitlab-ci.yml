@@ -653,9 +653,11 @@ position-dual-static:
     - volk_profile -v 8111
     - volk_gnsssdr_profile -v 2053
     - mkdir test && mkdir position-test && cd test
-    - position_test --config_file_ptest=/captures/gitlab_test_signals/static/nss-sdr_180417100529.A_L1L5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - cp /captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1L5.conf ./gnss-sdr_180417100529.A_L1L5.conf
+    - position_test --config_file_ptest=gnss-sdr_180417100529.A_L1L5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir ../position-test/L1L5 && rm PVT_*.* && mv *.* ../position-test/L1L5
-    - position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - cp =/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1E5.conf ./gnss-sdr_180417100529.A_E1E5.conf
+    - position_test --config_file_ptest=gnss-sdr_180417100529.A_E1E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir ../position-test/E1E5 && rm PVT_*.* && mv *.* ../position-test/E1E5
     - ls -la ../position-test/L1L5
     - ls -la ../position-test/E1E5
@@ -673,6 +675,8 @@ position-static-allinone:
   tags:
     - kepler
   script:
+    - volk_profile -v 8111
+    - volk_gnsssdr_profile -v 2053
     - mkdir position-test && cd position-test
     - export DISPLAY=unknown
     - cp /captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1L5E5.conf ./gnss-sdr_180417100529.A_L1E1L5E5.conf
@@ -691,6 +695,9 @@ position-leo:
   tags:
     - kepler
   script:
+    - export DISPLAY=unknown
+    - volk_profile -v 8111
+    - volk_gnsssdr_profile -v 2053
     - mkdir leo_position && cd leo_position
     - mkdir gpsL1 && cd gpsL1
     - cp /captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1.conf ./gnss-sdr_180417120737.A_L1.conf
@@ -721,6 +728,8 @@ position-leo-allinone:
     - kepler
   script:
     - export DISPLAY=unknown
+    - volk_profile -v 8111
+    - volk_gnsssdr_profile -v 2053    
     - mkdir leo_position && cd leo_position
     - mkdir gpsL1galE1gpsL5GalE5  && cd gpsL1galE1gpsL5GalE5
     - cp /captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1L5E5.conf ./gnss-sdr_180417120737.A_L1E1L5E5.conf

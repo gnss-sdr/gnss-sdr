@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-find_package(PkgConfig)
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+include(FindPkgConfig)
 pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
 
 find_program(ORCC_EXECUTABLE orcc
@@ -62,6 +63,10 @@ find_library(ORC_LIB orc-0.4
     PATHS ${ORC_ROOT}/lib${LIB_SUFFIX}
           ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}
 )
+
+if(PC_ORC_VERSION)
+    set(ORC_VERSION ${PC_ORC_VERSION})
+endif()
 
 list(APPEND ORC_LIBRARY ${ORC_LIB})
 

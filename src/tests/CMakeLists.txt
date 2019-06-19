@@ -172,10 +172,18 @@ if(GNUPLOT_FOUND)
 endif()
 set_package_properties(Gnuplot PROPERTIES
     URL "http://www.gnuplot.info"
-    DESCRIPTION "A portable command-line driven graphing utility"
     PURPOSE "Used to generate plots in some tests."
     TYPE OPTIONAL
 )
+if(GNUPLOT_FOUND AND GNUPLOT_VERSION_STRING)
+    set_package_properties(Gnuplot PROPERTIES
+        DESCRIPTION "A portable command-line driven graphing utility (found: v${GNUPLOT_VERSION_STRING})"
+    )
+else()
+    set_package_properties(Gnuplot PROPERTIES
+        DESCRIPTION "A portable command-line driven graphing utility"
+    )
+endif()
 
 if(ENABLE_UNIT_TESTING_MINIMAL)
     add_definitions(-DUNIT_TESTING_MINIMAL=1)
@@ -191,10 +199,19 @@ add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downlo
 find_package(GPSTK)
 set_package_properties(GPSTK PROPERTIES
     URL "http://www.gpstk.org"
-    DESCRIPTION "Library and suite of applications for satellite navigation"
     PURPOSE "Used in some Extra Tests."
     TYPE OPTIONAL
 )
+if(GPSTK_FOUND AND GPSTK_VERSION)
+    set_package_properties(GPSTK PROPERTIES
+        DESCRIPTION "Library and suite of applications for satellite navigation (found: v${GPSTK_VERSION})"
+    )
+else()
+    set_package_properties(GPSTK PROPERTIES
+        DESCRIPTION "Library and suite of applications for satellite navigation"
+    )
+endif()
+
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)
         set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")

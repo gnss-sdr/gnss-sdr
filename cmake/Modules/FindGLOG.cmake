@@ -41,6 +41,7 @@ else()
     set(LIB_PATHS ${GLOG_ROOT} ${GLOG_ROOT}/lib)
 endif()
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_GLOG libglog)
 

@@ -41,6 +41,9 @@ else()
     set(LIB_PATHS ${GLOG_ROOT} ${GLOG_ROOT}/lib)
 endif()
 
+include(FindPkgConfig)
+pkg_check_modules(PC_GLOG libglog)
+
 macro(_FIND_GLOG_LIBRARIES _var)
     find_library(${_var}
           NAMES ${ARGN}
@@ -75,6 +78,7 @@ macro(_FIND_GLOG_LIBRARIES _var)
                 $ENV{GLOG_ROOT}/lib
                 ${GLOG_ROOT}/lib64
                 $ENV{GLOG_ROOT}/lib64
+                ${PC_GLOG_LIBDIR}
           PATH_SUFFIXES lib
       )
     mark_as_advanced(${_var})
@@ -94,6 +98,7 @@ if(MSVC)
         PATHS
             ${GLOG_ROOT}/src/windows
             ${GLOG_ROOT}/src/windows/glog
+            ${PC_GLOG_INCLUDEDIR}
     )
 else()
     # Linux/OS X builds
@@ -102,6 +107,7 @@ else()
             ${GLOG_ROOT}/include/glog
             /usr/include/glog
             /opt/local/include/glog   # default location in Macports
+            ${PC_GLOG_INCLUDEDIR}
     )
 endif()
 
@@ -118,14 +124,17 @@ else()
     endif()
 endif()
 
-if(GLOG_FOUND)
-    message(STATUS "glog library found at ${GLOG_LIBRARIES}")
-endif()
-
 # handle the QUIETLY and REQUIRED arguments and set GLOG_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GLOG DEFAULT_MSG GLOG_LIBRARIES)
+
+if(GLOG_FOUND)
+    message(STATUS "glog library found at ${GLOG_LIBRARIES}")
+    if(PC_GLOG_VERSION)
+        set(GLOG_VERSION ${PC_GLOG_VERSION})
+    endif()
+endif()
 
 if(MSVC)
     string(REGEX REPLACE "/glog$" "" VAR_WITHOUT ${GLOG_INCLUDE_DIR})

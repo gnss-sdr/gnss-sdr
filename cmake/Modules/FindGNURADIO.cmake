@@ -193,6 +193,7 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
     if(PACKAGE_VERSION)
         set(PC_GNURADIO_RUNTIME_VERSION ${PACKAGE_VERSION})
     endif()
+    unset(PACKAGE_VERSION)
 endif()
 
 # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present

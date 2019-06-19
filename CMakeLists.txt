@@ -890,15 +890,20 @@ if(NOT VOLKGNSSSDR_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif()
 
+    set_package_properties(Python3 PROPERTIES
+        URL "https://www.python.org/"
+        PURPOSE "Required to build volk_gnsssdr."
+        TYPE REQUIRED
+    )
     if(Python3_FOUND)
         set_package_properties(Python3 PROPERTIES
-            URL "https://www.python.org/"
             DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
-            PURPOSE "Required to build volk_gnsssdr."
-            TYPE REQUIRED
+        )
+    else()
+        set_package_properties(Python3 PROPERTIES
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language"
         )
     endif()
-
     if(Python2_FOUND)
         set_package_properties(Python2 PROPERTIES
             URL "https://www.python.org/"

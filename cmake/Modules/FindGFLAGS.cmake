@@ -120,6 +120,7 @@ if(GFLAGS_FOUND)
     if(PACKAGE_VERSION)
         set(GFLAGS_VERSION ${PACKAGE_VERSION})
     endif()
+    unset(PACKAGE_VERSION)
 endif()
 
 if(GFLAGS_FOUND AND NOT TARGET Gflags::gflags)

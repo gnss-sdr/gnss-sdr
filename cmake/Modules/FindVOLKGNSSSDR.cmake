@@ -25,6 +25,7 @@
 # Find VOLK (Vector-Optimized Library of Kernels) GNSS-SDR library
 ########################################################################
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_VOLK_GNSSSDR volk_gnsssdr)
 

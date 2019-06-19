@@ -92,13 +92,13 @@ set(PCAP_LIBRARIES ${PCAP_LIBRARY})
 if(PCAP_INCLUDE_DIRS)
   message(STATUS "Pcap include dirs set to ${PCAP_INCLUDE_DIRS}")
 else()
-  message(FATAL " Pcap include dirs cannot be found")
+  message(STATUS "Pcap include dirs cannot be found.")
 endif()
 
 if(PCAP_LIBRARIES)
   message(STATUS "Pcap library set to ${PCAP_LIBRARIES}")
 else()
-  message(FATAL "Pcap library cannot be found")
+  message(STATUS "Pcap library cannot be found.")
 endif()
 
 #Functions

@@ -642,12 +642,12 @@ position-test-L1-180417100529:
     - export DISPLAY=unknown
     - volk_profile -v 8111
     - volk_gnsssdr_profile -v 2053
-    - mkdir /test && mkdir /position_test && cd /test
+    - mkdir /test && mkdir /position-test && cd /test
     - position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir /position-test/L1 && rm PVT_*.* && mv *.* /position-test/L1/
     - position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir /position-test/E1 && rm PVT_*.* && mv *.* /position-test/E1
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir /position-test/L1E1 && rm PVT_*.* && mv *.* /position-test/L1E1/
     - ls -la /position-test/L1
     - ls -la /position-test/E1
@@ -671,7 +671,7 @@ position-test-L5-180417100529:
     - export DISPLAY=unknown
     - volk_profile -v 8111
     - volk_gnsssdr_profile -v 2053
-    - mkdir /test && mkdir /position_test && cd /test
+    - mkdir /test && mkdir /position-test && cd /test
     - position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
     - mkdir /position-test/L5 && rm PVT_*.* && mv *.* /position-test/L5/
     - position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0

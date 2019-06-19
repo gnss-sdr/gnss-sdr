@@ -707,6 +707,7 @@ position-test-all:
     - make -j$(($NPROC+1))
     # Execute System Tests
     - export DISPLAY=unknown
+    - cd ../position-test
     - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1L5E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
     - mkdir ../position-test/L1E1L5E5 && rm PVT_*.* && cp *.* ../position-test/L1E1L5E5
     - cd ..
@@ -775,9 +776,9 @@ leo-position-all:
     - make -j$(($NPROC+1))
     # Execute System Tests
     - export DISPLAY=unknown
+    - cd ../leo_position
     - mkdir gpsL1galE1gpsL5GalE5  && cd gpsL1galE1gpsL5GalE5
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1L5E5.con$
-    - cd .. && cp -r gpsL1galE1gpsL5GalE5  /../leo_position
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1L5E5.conf
   artifacts:
     paths:
       - leo_position/*

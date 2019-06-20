@@ -195,11 +195,9 @@ private:
     double K_blk_samples;
 
     double K_blk_samples_prev;
-    // PRN period in samples
-    // REPLACED BY d_correlation_length_samples, d_next_integration_length_samples
-    //int32_t d_current_prn_length_samples;
+
     int32_t d_current_integration_length_samples;
-    int32_t d_past_integration_length_samples;
+
     // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
@@ -229,7 +227,6 @@ private:
 
     // extra
     int32_t d_correlation_length_samples;
-    //int32_t d_next_prn_length_samples;
     int32_t d_next_integration_length_samples;
 
     int32_t d_extended_integration_first_prn_length_samples;
@@ -237,9 +234,6 @@ private:
 
     double d_extended_integration_first_acc_carrier_phase_rad;
     double d_extended_integration_next_acc_carrier_phase_rad_step;
-
-    //float d_extended_integration_first_rem_carr_phase_rad;
-    //float d_extended_integration_next_rem_carr_phase_rad_step;
 
     uint64_t d_sample_counter_next;
 

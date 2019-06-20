@@ -199,21 +199,21 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", input signal power " << d_input_power;
 
 
-    std::cout << "positive acquisition"
-               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << ", sample_stamp " << d_sample_counter
-               << ", test statistics value " << d_test_statistics
-               << ", test statistics threshold " << d_threshold
-               << ", code phase " << d_gnss_synchro->Acq_delay_samples
-               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
-               << ", magnitude " << d_mag
-               << ", input signal power " << d_input_power
-			   << ", d_gnss_synchro->Acq_samplestamp_samples " << d_gnss_synchro->Acq_samplestamp_samples
-			   << ", d_gnss_synchro->Flag_valid_word " << d_gnss_synchro->Flag_valid_word
-			   << ", Flag_valid_pseudorange " << d_gnss_synchro->Flag_valid_pseudorange
-			   << ", d_gnss_synchro->Flag_valid_symbol_output " <<  d_gnss_synchro->Flag_valid_symbol_output
-			   << ", d_gnss_synchro->Flag_valid_acquisition " << d_gnss_synchro->Flag_valid_acquisition
-			   << std::endl;
+//    std::cout << "positive acquisition"
+//               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+//               << ", sample_stamp " << d_sample_counter
+//               << ", test statistics value " << d_test_statistics
+//               << ", test statistics threshold " << d_threshold
+//               << ", code phase " << d_gnss_synchro->Acq_delay_samples
+//               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
+//               << ", magnitude " << d_mag
+//               << ", input signal power " << d_input_power
+//			   << ", d_gnss_synchro->Acq_samplestamp_samples " << d_gnss_synchro->Acq_samplestamp_samples
+//			   << ", d_gnss_synchro->Flag_valid_word " << d_gnss_synchro->Flag_valid_word
+//			   << ", Flag_valid_pseudorange " << d_gnss_synchro->Flag_valid_pseudorange
+//			   << ", d_gnss_synchro->Flag_valid_symbol_output " <<  d_gnss_synchro->Flag_valid_symbol_output
+//			   << ", d_gnss_synchro->Flag_valid_acquisition " << d_gnss_synchro->Flag_valid_acquisition
+//			   << std::endl;
 
     //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
     d_channel_fsm.lock()->Event_valid_acquisition();

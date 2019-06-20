@@ -48,18 +48,17 @@ find_path(GROSMOSDR_INCLUDE_DIR
     osmosdr/source.h
     osmosdr/api.h
   PATHS
-    ${GROSMOSDR_PKG_INCLUDE_DIRS}
     /usr/include
     /usr/local/include
     /opt/local/include
     ${GROSMOSDR_ROOT}/include
     $ENV{GROSMOSDR_ROOT}/include
+    ${GROSMOSDR_PKG_INCLUDEDIR}
 )
 
 find_library(GROSMOSDR_LIBRARIES
   NAMES gnuradio-osmosdr
   PATHS
-    ${GROSMOSDR_PKG_LIBRARY_DIRS}
     /usr/lib
     /usr/local/lib
     /opt/local/lib
@@ -91,6 +90,7 @@ find_library(GROSMOSDR_LIBRARIES
     $ENV{GROSMOSDR_ROOT}/lib
     ${GROSMOSDR_ROOT}/lib64
     $ENV{GROSMOSDR_ROOT}/lib64
+    ${GROSMOSDR_PKG_LIBDIR}
 )
 
 include(FindPackageHandleStandardArgs)

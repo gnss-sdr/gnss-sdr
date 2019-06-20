@@ -590,10 +590,18 @@ endif()
 find_package(GOOGLETEST)
 set_package_properties(GOOGLETEST PROPERTIES
     URL "https://github.com/google/googletest"
-    DESCRIPTION "Source code of Google's Testing Framework"
     PURPOSE "Used for Unit and System Tests."
     TYPE REQUIRED
 )
+if(GOOGLETEST_FOUND AND GOOGLETEST_VERSION)
+    set_package_properties(GOOGLETEST PROPERTIES
+        DESCRIPTION "Source code of Google's Testing Framework (found: ${GOOGLETEST_VERSION})"
+    )
+else()
+    set_package_properties(GOOGLETEST PROPERTIES
+        DESCRIPTION "Source code of Google's Testing Framework"
+    )
+endif()
 if(NOT GOOGLETEST_FOUND)
     set_package_properties(GOOGLETEST PROPERTIES
         PURPOSE "Googletest v${GNSSSDR_GTEST_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
@@ -1002,10 +1010,18 @@ if(NOT VOLKGNSSSDR_FOUND)
     find_package(ORC)
     set_package_properties(ORC PROPERTIES
         URL "https://gstreamer.freedesktop.org/modules/orc.html"
-        DESCRIPTION "The Optimized Inner Loops Runtime Compiler"
         PURPOSE "Used by volk_gnsssdr."
         TYPE OPTIONAL
     )
+    if(ORC_FOUND AND ORC_VERSION)
+        set_package_properties(ORC PROPERTIES
+            DESCRIPTION "The Optimized Inner Loops Runtime Compiler (found: v${ORC_VERSION})"
+        )
+    else()
+        set_package_properties(ORC PROPERTIES
+            DESCRIPTION "The Optimized Inner Loops Runtime Compiler"
+        )
+    endif()
     if(NOT ORC_FOUND)
         set(ORC_LIBRARIES "")
         set(ORC_INCLUDE_DIRS "")
@@ -1615,10 +1631,18 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     find_package(ZLIB)
     set_package_properties(ZLIB PROPERTIES
         URL "https://www.zlib.net/"
-        DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library"
         PURPOSE "Required to build Matio."
         TYPE REQUIRED
     )
+    if(ZLIB_FOUND AND ZLIB_VERSION_STRING)
+        set_package_properties(ZLIB PROPERTIES
+            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (found: ${ZLIB_VERSION_STRING})"
+        )
+    else()
+        set_package_properties(ZLIB PROPERTIES
+            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library"
+        )
+    endif()
     if(ZLIB_FOUND)
         get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
         if(OS_IS_LINUX)
@@ -1658,10 +1682,18 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         find_package(HDF5)
         set_package_properties(HDF5 PROPERTIES
             URL "https://support.hdfgroup.org/HDF5/"
-            DESCRIPTION "A versatile data model, a portable file format and a software library"
             PURPOSE "Required to build Matio."
             TYPE REQUIRED
         )
+        if(HDF5_FOUND AND HDF5_VERSION)
+            set_package_properties(HDF5 PROPERTIES
+                DESCRIPTION "A versatile data model, a portable file format and a software library (found: ${HDF5_VERSION})"
+            )
+        else()
+            set_package_properties(HDF5 PROPERTIES
+                DESCRIPTION "A versatile data model, a portable file format and a software library"
+            )
+        endif()
         if(HDF5_FOUND)
             list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
             get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
@@ -2056,10 +2088,18 @@ endif()
 find_package(Doxygen)
 set_package_properties(Doxygen PROPERTIES
     URL "http://www.doxygen.nl"
-    DESCRIPTION "Generates documentation from annotated C++ sources"
     PURPOSE "Used to generate code documentation by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'"
     TYPE OPTIONAL
 )
+if(DOXYGEN_FOUND AND DOXYGEN_VERSION)
+    set_package_properties(Doxygen PROPERTIES
+        DESCRIPTION "Generates documentation from annotated C++ sources (found: v${DOXYGEN_VERSION})"
+    )
+else()
+    set_package_properties(Doxygen PROPERTIES
+        DESCRIPTION "Generates documentation from annotated C++ sources"
+    )
+endif()
 find_package(LATEX)
 set_package_properties(LATEX PROPERTIES
     URL "https://www.latex-project.org"
@@ -2193,10 +2233,19 @@ endif()
 find_package(PCAP)
 set_package_properties(PCAP PROPERTIES
     URL "https://www.tcpdump.org"
-    DESCRIPTION "A portable C/C++ library for network traffic capture"
     PURPOSE "Used for the custom UDP IP packet source."
     TYPE OPTIONAL
 )
+if(PCAP_FOUND AND PCAP_VERSION)
+    set_package_properties(PCAP PROPERTIES
+        DESCRIPTION "A portable C/C++ library for network traffic capture (found: ${PCAP_VERSION})"
+    )
+else()
+    set_package_properties(PCAP PROPERTIES
+        DESCRIPTION "A portable C/C++ library for network traffic capture"
+    )
+endif()
+
 if(ENABLE_RAW_UDP)
     message(STATUS "High-optimized custom UDP IP packet source is enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ..'")

@@ -19,6 +19,7 @@
 # Find GNU Radio
 ########################################################################
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 include(FindPackageHandleStandardArgs)
 

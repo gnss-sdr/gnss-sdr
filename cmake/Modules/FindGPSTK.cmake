@@ -44,10 +44,21 @@ find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
           $ENV{GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
 )
 
-# handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if
+# handle the QUIET and REQUIRED arguments and set GPSTK_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GPSTK DEFAULT_MSG GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
+
+if(GPSTK_FOUND)
+    if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+        include(${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(GPSTK_VERSION ${PACKAGE_VERSION})
+    endif()
+    unset(PACKAGE_VERSION)
+endif()
+
 mark_as_advanced(GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
 
 if(GPSTK_FOUND AND NOT TARGET Gpstk::gpstk)

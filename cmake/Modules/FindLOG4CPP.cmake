@@ -26,6 +26,10 @@
 # Log4cpp::log4cpp
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 if(LOG4CPP_INCLUDE_DIR)
   # Already in cache, be silent
   set(LOG4CPP_FIND_QUIETLY TRUE)
@@ -106,6 +110,20 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LOG4CPP DEFAULT_MSG LOG4CPP_INCLUDE_DIRS LOG4CPP_LIBRARIES)
+
+set_package_properties(LOG4CPP PROPERTIES
+    URL "http://log4cpp.sourceforge.net/"
+)
+
+if(LOG4CPP_FOUND AND LOG4CPP_READY_FOR_CXX17)
+    set_package_properties(LOG4CPP PROPERTIES
+        DESCRIPTION "Library of C++ classes for flexible logging to files (the version found is C++17-ready)"
+    )
+else()
+    set_package_properties(LOG4CPP PROPERTIES
+        DESCRIPTION "Library of C++ classes for flexible logging to files"
+    )
+endif()
 
 if (LOG4CPP_FOUND AND NOT TARGET Log4cpp::log4cpp)
   add_library(Log4cpp::log4cpp SHARED IMPORTED)

@@ -22,6 +22,10 @@
 #  GPSTK_FOUND, If false, do not try to use GPSTK.
 #  GPSTK_LIBRARY, where to find the GPSTK library.
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
     HINTS /usr/include
           /usr/local/include
@@ -58,6 +62,20 @@ if(GPSTK_FOUND)
     endif()
     unset(PACKAGE_VERSION)
 endif()
+
+if(GPSTK_FOUND AND GPSTK_VERSION)
+    set_package_properties(GPSTK PROPERTIES
+        DESCRIPTION "Library and suite of applications for satellite navigation (found: v${GPSTK_VERSION})"
+    )
+else()
+    set_package_properties(GPSTK PROPERTIES
+        DESCRIPTION "Library and suite of applications for satellite navigation"
+    )
+endif()
+
+set_package_properties(GPSTK PROPERTIES
+    URL "http://www.gpstk.org"
+)
 
 mark_as_advanced(GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
 

@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 find_library(GFORTRAN NAMES gfortran
     PATHS /usr/lib
         /usr/lib64
@@ -187,6 +191,11 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/x86_64-linux-gnux32/9
         ${GFORTRAN_ROOT}/lib
         $ENV{GFORTRAN_ROOT}/lib
+)
+
+set_package_properties(GFORTRAN PROPERTIES
+    URL "http://gcc.gnu.org/wiki/GFortran"
+    DESCRIPTION "GNU Fortran library"
 )
 
 include(FindPackageHandleStandardArgs)

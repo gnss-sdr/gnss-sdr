@@ -29,6 +29,10 @@
 #
 # WIN32 should work, but is untested
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 include(FindPackageHandleStandardArgs)
 
 set(OPENCL_VERSION_STRING "0.1.0")
@@ -99,6 +103,11 @@ endif()
 
 mark_as_advanced(
   OPENCL_INCLUDE_DIRS
+)
+
+set_package_properties(OPENCL PROPERTIES
+    URL "https://www.khronos.org/opencl/"
+    DESCRIPTION "Library for parallel programming"
 )
 
 if(OPENCL_INCLUDE_DIRS AND OPENCL_LIBRARIES)

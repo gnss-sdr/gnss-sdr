@@ -64,7 +64,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SAMPLES_PER_SYMBOL * GPS_L5_SYMBOLS_PER_BIT * 20;  //rise alarm if 20 consecutive subframes have no valid CRC
+    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SAMPLES_PER_SYMBOL * GPS_L5_SYMBOLS_PER_BIT * 10;  //rise alarm if 20 consecutive subframes have no valid CRC
 
     // initialize internal vars
     d_dump = dump;
@@ -152,7 +152,9 @@ void gps_l5_telemetry_decoder_gs::set_channel(int32_t channel)
 void gps_l5_telemetry_decoder_gs::reset()
 {
     d_last_valid_preamble = d_sample_counter;
+    d_TOW_at_current_symbol_ms = 0;
     d_sent_tlm_failed_msg = false;
+    d_flag_valid_word = false;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -211,7 +213,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                             symbol_value = -1;
                         }
                     new_sym = true;
-                    sym_hist.clear();
+                    //sym_hist.clear();
                 }
             else
                 {
@@ -268,20 +270,39 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
 
             // update TOW at the preamble instant
             d_TOW_at_Preamble_ms = msg.tow * 6000;
-            d_last_valid_preamble = d_sample_counter;
+
             // The time of the last input symbol can be computed from the message ToW and
             // delay by the formulae:
             // \code
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
+
+            //check TOW update consistency
+            uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
-            d_flag_valid_word = true;
+            if (last_d_TOW_at_current_symbol_ms != 0 and abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > 1)
+                {
+                    DLOG(INFO) << "Warning: GPS L5 TOW update in ch " << d_channel
+                               << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms) << " ms "
+                               << " with delay: " << delay << " msg tow: " << msg.tow * 6000 << " ms \n";
+
+                    d_TOW_at_current_symbol_ms = 0;
+                    d_flag_valid_word = false;
+                }
+            else
+                {
+                    d_last_valid_preamble = d_sample_counter;
+                    d_flag_valid_word = true;
+                }
         }
     else
         {
-            d_TOW_at_current_symbol_ms += GPS_L5I_PERIOD_MS;
-            if (current_synchro_data.Flag_valid_symbol_output == false)
+            if (d_flag_valid_word)
                 {
-                    d_flag_valid_word = false;
+                    d_TOW_at_current_symbol_ms += GPS_L5I_PERIOD_MS;
+                    if (current_synchro_data.Flag_valid_symbol_output == false)
+                        {
+                            d_flag_valid_word = false;
+                        }
                 }
         }
 

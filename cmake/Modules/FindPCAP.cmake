@@ -48,6 +48,10 @@
 # Pcap::pcap
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_PCAP libpcap)
@@ -111,13 +115,11 @@ endif()
 
 #Functions
 include(CheckFunctionExists)
-include(CheckVariableExists)
 
 set(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
 set(OLD_CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
 set(CMAKE_REQUIRED_INCLUDES ${PCAP_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${PCAP_LIBRARIES})
-check_variable_exists("pcap_version" HAVE_PCAP_VERSION)
 check_function_exists("pcap_breakloop" HAVE_PCAP_BREAKLOOP)
 check_function_exists("pcap_datalink_name_to_val" HAVE_PCAP_DATALINK_NAME_TO_VAL)
 check_function_exists("pcap_datalink_val_to_name" HAVE_PCAP_DATALINK_VAL_TO_NAME)
@@ -134,13 +136,22 @@ set(CMAKE_REQUIRED_LIBRARIES ${OLD_CMAKE_REQUIRED_LIBRARIES})
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PCAP DEFAULT_MSG PCAP_INCLUDE_DIRS PCAP_LIBRARIES)
 
-if(${HAVE_PCAP_VERSION})
-    set(PCAP_VERSION ${HAVE_PCAP_VERSION})
+if(PCAP_FOUND AND PC_PCAP_VERSION)
+    set(PCAP_VERSION ${PC_PCAP_VERSION})
 endif()
-if(NOT PCAP_VERSION)
-    if(PC_PCAP_VERSION)
-        set(PCAP_VERSION ${PC_PCAP_VERSION})
-    endif()
+
+set_package_properties(PCAP PROPERTIES
+    URL "https://www.tcpdump.org"
+)
+
+if(PCAP_FOUND AND PCAP_VERSION)
+    set_package_properties(PCAP PROPERTIES
+        DESCRIPTION "A portable C/C++ library for network traffic capture (found: ${PCAP_VERSION})"
+    )
+else()
+    set_package_properties(PCAP PROPERTIES
+        DESCRIPTION "A portable C/C++ library for network traffic capture"
+    )
 endif()
 
 if(PCAP_FOUND AND NOT TARGET Pcap::pcap)

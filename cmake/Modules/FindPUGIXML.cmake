@@ -27,6 +27,10 @@
 # Pugixml::pugixml
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_PUGIXML pugixml QUIET)
@@ -91,6 +95,20 @@ if(PUGIXML_FOUND)
     endif()
 else()
     message(STATUS "PugiXML not found.")
+endif()
+
+set_package_properties(PUGIXML PROPERTIES
+    URL "https://pugixml.org/"
+)
+
+if(PUGIXML_FOUND AND PUGIXML_VERSION)
+    set_package_properties(PUGIXML PROPERTIES
+        DESCRIPTION "Light-weight, simple and fast XML parser for C++ (found: ${PUGIXML_VERSION})"
+    )
+else()
+    set_package_properties(PUGIXML PROPERTIES
+        DESCRIPTION "Light-weight, simple and fast XML parser for C++"
+    )
 endif()
 
 mark_as_advanced(PUGIXML_LIBRARY PUGIXML_INCLUDE_DIR)

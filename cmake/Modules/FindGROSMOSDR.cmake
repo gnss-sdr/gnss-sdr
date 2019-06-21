@@ -38,6 +38,9 @@
 # Gnuradio::osmosdr
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
@@ -48,18 +51,17 @@ find_path(GROSMOSDR_INCLUDE_DIR
     osmosdr/source.h
     osmosdr/api.h
   PATHS
-    ${GROSMOSDR_PKG_INCLUDE_DIRS}
     /usr/include
     /usr/local/include
     /opt/local/include
     ${GROSMOSDR_ROOT}/include
     $ENV{GROSMOSDR_ROOT}/include
+    ${GROSMOSDR_PKG_INCLUDEDIR}
 )
 
 find_library(GROSMOSDR_LIBRARIES
   NAMES gnuradio-osmosdr
   PATHS
-    ${GROSMOSDR_PKG_LIBRARY_DIRS}
     /usr/lib
     /usr/local/lib
     /opt/local/lib
@@ -91,6 +93,7 @@ find_library(GROSMOSDR_LIBRARIES
     $ENV{GROSMOSDR_ROOT}/lib
     ${GROSMOSDR_ROOT}/lib64
     $ENV{GROSMOSDR_ROOT}/lib64
+    ${GROSMOSDR_PKG_LIBDIR}
 )
 
 include(FindPackageHandleStandardArgs)
@@ -98,6 +101,20 @@ find_package_handle_standard_args(GROSMOSDR DEFAULT_MSG GROSMOSDR_LIBRARIES GROS
 
 if(GROSMOSDR_PKG_VERSION)
     set(GROSMOSDR_VERSION ${GROSMOSDR_PKG_VERSION})
+endif()
+
+set_package_properties(GROSMOSDR PROPERTIES
+    URL "https://osmocom.org/projects/gr-osmosdr/wiki"
+)
+
+if(GROSMOSDR_FOUND AND GROSMOSDR_VERSION)
+    set_package_properties(GROSMOSDR PROPERTIES
+        DESCRIPTION "osmocom GNU Radio blocks (found: ${GROSMOSDR_VERSION})"
+    )
+else()
+    set_package_properties(GROSMOSDR PROPERTIES
+        DESCRIPTION "osmocom GNU Radio blocks"
+    )
 endif()
 
 if(GROSMOSDR_FOUND AND NOT TARGET Gnuradio::osmosdr)

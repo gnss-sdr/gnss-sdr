@@ -31,6 +31,11 @@
 # Gflags::gflags
 #
 
+
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 if(APPLE)
     find_path(GFlags_ROOT_DIR
       libgflags.dylib
@@ -119,9 +124,24 @@ if(GFLAGS_FOUND)
     endif()
     if(PACKAGE_VERSION)
         set(GFLAGS_VERSION ${PACKAGE_VERSION})
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing (found: v${GFLAGS_VERSION})"
+        )
+    else()
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing"
+        )
     endif()
     unset(PACKAGE_VERSION)
+else()
+    set_package_properties(GFLAGS PROPERTIES
+        DESCRIPTION "C++ library that implements commandline flags processing"
+    )
 endif()
+
+set_package_properties(GFLAGS PROPERTIES
+    URL "https://github.com/gflags/gflags"
+)
 
 if(GFLAGS_FOUND AND NOT TARGET Gflags::gflags)
     add_library(Gflags::gflags SHARED IMPORTED)

@@ -589,19 +589,9 @@ endif()
 
 find_package(GOOGLETEST)
 set_package_properties(GOOGLETEST PROPERTIES
-    URL "https://github.com/google/googletest"
     PURPOSE "Used for Unit and System Tests."
     TYPE REQUIRED
 )
-if(GOOGLETEST_FOUND AND GOOGLETEST_VERSION)
-    set_package_properties(GOOGLETEST PROPERTIES
-        DESCRIPTION "Source code of Google's Testing Framework (found: ${GOOGLETEST_VERSION})"
-    )
-else()
-    set_package_properties(GOOGLETEST PROPERTIES
-        DESCRIPTION "Source code of Google's Testing Framework"
-    )
-endif()
 if(NOT GOOGLETEST_FOUND)
     set_package_properties(GOOGLETEST PROPERTIES
         PURPOSE "Googletest v${GNSSSDR_GTEST_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
@@ -617,38 +607,19 @@ set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
-    URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
     PURPOSE "Used for communication with front-ends of the USRP family."
     TYPE OPTIONAL
 )
 if(ENABLE_UHD)
     if(NOT UHD_FOUND)
         set(ENABLE_UHD OFF)
-        set_package_properties(UHD PROPERTIES
-            DESCRIPTION "USRP Hardware Driver"
-        )
     else()
         set(GR_REQUIRED_COMPONENTS ${GR_REQUIRED_COMPONENTS} UHD)
-        if(UHD_VERSION)
-            set_package_properties(UHD PROPERTIES
-                DESCRIPTION "USRP Hardware Driver (found: v${UHD_VERSION})"
-            )
-        else()
-            set_package_properties(UHD PROPERTIES
-                DESCRIPTION "USRP Hardware Driver"
-            )
-        endif()
     endif()
-else()
-    set_package_properties(UHD PROPERTIES
-        DESCRIPTION "USRP Hardware Driver"
-    )
 endif()
 
 find_package(GNURADIO)
 set_package_properties(GNURADIO PROPERTIES
-    URL "https://www.gnuradio.org/"
-    DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )
@@ -660,8 +631,6 @@ set_package_properties(GNURADIO PROPERTIES
 ################################################################################
 find_package(LOG4CPP)
 set_package_properties(LOG4CPP PROPERTIES
-    URL "http://log4cpp.sourceforge.net/"
-    DESCRIPTION "Library of C++ classes for flexible logging to files"
     PURPOSE "Required by GNU Radio."
     TYPE REQUIRED
 )
@@ -836,19 +805,9 @@ if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
 endif()
 set_package_properties(VOLK PROPERTIES
-    URL "http://libvolk.org"
     PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
     TYPE REQUIRED
 )
-if(VOLK_VERSION)
-    set_package_properties(VOLK PROPERTIES
-        DESCRIPTION "Vector-Optimized Library of Kernels (found: ${VOLK_VERSION})"
-    )
-else()
-    set_package_properties(VOLK PROPERTIES
-        DESCRIPTION "Vector-Optimized Library of Kernels"
-    )
-endif()
 
 
 
@@ -857,7 +816,6 @@ endif()
 ################################################################################
 find_package(VOLKGNSSSDR)
 set_package_properties(VOLKGNSSSDR PROPERTIES
-    DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR."
     PURPOSE "Accelerates math routines targeting several SIMD processors."
     TYPE REQUIRED
 )
@@ -1009,19 +967,10 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
     find_package(ORC)
     set_package_properties(ORC PROPERTIES
-        URL "https://gstreamer.freedesktop.org/modules/orc.html"
         PURPOSE "Used by volk_gnsssdr."
         TYPE OPTIONAL
     )
-    if(ORC_FOUND AND ORC_VERSION)
-        set_package_properties(ORC PROPERTIES
-            DESCRIPTION "The Optimized Inner Loops Runtime Compiler (found: v${ORC_VERSION})"
-        )
-    else()
-        set_package_properties(ORC PROPERTIES
-            DESCRIPTION "The Optimized Inner Loops Runtime Compiler"
-        )
-    endif()
+
     if(NOT ORC_FOUND)
         set(ORC_LIBRARIES "")
         set(ORC_INCLUDE_DIRS "")
@@ -1076,14 +1025,10 @@ endif()
 set(LOCAL_GFLAGS false)
 find_package(GFLAGS)
 set_package_properties(GFLAGS PROPERTIES
-    URL "https://github.com/gflags/gflags"
     PURPOSE "Used for commandline flags management."
     TYPE REQUIRED
 )
 if(NOT GFLAGS_FOUND)
-    set_package_properties(GFLAGS PROPERTIES
-        DESCRIPTION "C++ library that implements commandline flags processing"
-    )
     message(STATUS " gflags library has not been found.")
     message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically ")
     message(STATUS " when doing 'make'.")
@@ -1142,16 +1087,6 @@ if(NOT GFLAGS_FOUND)
     set_package_properties(GFLAGS PROPERTIES
         PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
-else()
-    if(GFLAGS_VERSION)
-        set_package_properties(GFLAGS PROPERTIES
-            DESCRIPTION "C++ library that implements commandline flags processing (found: v${GFLAGS_VERSION})"
-        )
-    else()
-        set_package_properties(GFLAGS PROPERTIES
-            DESCRIPTION "C++ library that implements commandline flags processing"
-        )
-    endif()
 endif()
 
 
@@ -1166,14 +1101,10 @@ if(NOT ${ENABLE_OWN_GLOG})
     endif()
 endif()
 set_package_properties(GLOG PROPERTIES
-    URL "https://github.com/google/glog"
     PURPOSE "Used for runtime internal logging."
     TYPE REQUIRED
 )
 if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
-    set_package_properties(GLOG PROPERTIES
-        DESCRIPTION "C++ implementation of the Google logging module"
-    )
     message(STATUS " glog library has not been found")
     if(NOT GFLAGS_FOUND)
         message(STATUS " or it is likely not linked to gflags.")
@@ -1330,16 +1261,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
     set_package_properties(GLOG PROPERTIES
         PURPOSE "Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built when doing 'make'."
     )
-else()
-    if(GLOG_VERSION)
-        set_package_properties(GLOG PROPERTIES
-            DESCRIPTION "C++ implementation of the Google logging module (found: v${GLOG_VERSION})"
-        )
-    else()
-        set_package_properties(GLOG PROPERTIES
-            DESCRIPTION "C++ implementation of the Google logging module"
-        )
-    endif()
 endif()
 
 if(NOT ENABLE_LOG)
@@ -1453,8 +1374,6 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     if(NOT OS_IS_MACOSX)
         find_package(GFORTRAN)
         set_package_properties(GFORTRAN PROPERTIES
-            URL "http://gcc.gnu.org/wiki/GFortran"
-            DESCRIPTION "GNU Fortran project"
             PURPOSE "Required by Armadillo."
             TYPE REQUIRED
         )
@@ -1533,10 +1452,18 @@ endif()
 find_package(GnuTLS)
 set_package_properties(GnuTLS PROPERTIES
     URL "https://www.gnutls.org/"
-    DESCRIPTION "Transport Layer Security Library"
     PURPOSE "Used for the SUPL protocol implementation."
     TYPE REQUIRED
 )
+if(GnuTLS_FOUND AND GNUTLS_VERSION_STRING)
+    set_package_properties(GnuTLS PROPERTIES
+        DESCRIPTION "Transport Layer Security Library (found: v${GNUTLS_VERSION_STRING})"
+    )
+else()
+    set_package_properties(GnuTLS PROPERTIES
+        DESCRIPTION "Transport Layer Security Library"
+    )
+endif()
 find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
     HINTS /usr/lib
         /usr/lib64
@@ -1615,7 +1542,6 @@ endif()
 ################################################################################
 find_package(MATIO)
 set_package_properties(MATIO PROPERTIES
-    URL "https://github.com/tbeu/matio"
     PURPOSE "Used to store processing block's results in MAT files readable from MATLAB/Octave."
     TYPE REQUIRED
 )
@@ -1625,9 +1551,6 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     endif()
     message(STATUS " Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
-    set_package_properties(MATIO PROPERTIES
-        DESCRIPTION "MATLAB MAT File I/O Library"
-    )
     find_package(ZLIB)
     set_package_properties(ZLIB PROPERTIES
         URL "https://www.zlib.net/"
@@ -1774,10 +1697,6 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     set_package_properties(MATIO PROPERTIES
         PURPOSE "Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
-else()
-    set_package_properties(MATIO PROPERTIES
-        DESCRIPTION "MATLAB MAT File I/O Library (found: v${MATIO_VERSION_STRING})"
-    )
 endif()
 
 
@@ -1787,14 +1706,10 @@ endif()
 ################################################################################
 find_package(PUGIXML)
 set_package_properties(PUGIXML PROPERTIES
-    URL "https://pugixml.org/"
     PURPOSE "Used to handle Galileo almanac XML files published by the European GNSS Service Centre."
     TYPE REQUIRED
 )
 if(NOT PUGIXML_FOUND)
-    set_package_properties(PUGIXML PROPERTIES
-        DESCRIPTION "Light-weight, simple and fast XML parser for C++"
-    )
     message(STATUS " PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(PUGIXML_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
     set(TOOLCHAIN_ARG "")
@@ -1844,16 +1759,6 @@ if(NOT PUGIXML_FOUND)
     set_package_properties(PUGIXML PROPERTIES
         PURPOSE "PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
-else()
-    if(PUGIXML_VERSION)
-        set_package_properties(PUGIXML PROPERTIES
-            DESCRIPTION "Light-weight, simple and fast XML parser for C++ (found: ${PUGIXML_VERSION})"
-        )
-    else()
-        set_package_properties(PUGIXML PROPERTIES
-            DESCRIPTION "Light-weight, simple and fast XML parser for C++"
-        )
-    endif()
 endif()
 
 
@@ -2171,8 +2076,6 @@ endif()
 ################################################################################
 find_package(OPENCL QUIET)
 set_package_properties(OPENCL PROPERTIES
-    URL "https://www.khronos.org/opencl/"
-    DESCRIPTION "Library for parallel programming"
     PURPOSE "Used in some processing block implementations."
     TYPE OPTIONAL
 )
@@ -2232,19 +2135,9 @@ endif()
 ################################################################################
 find_package(PCAP)
 set_package_properties(PCAP PROPERTIES
-    URL "https://www.tcpdump.org"
     PURPOSE "Used for the custom UDP IP packet source."
     TYPE OPTIONAL
 )
-if(PCAP_FOUND AND PCAP_VERSION)
-    set_package_properties(PCAP PROPERTIES
-        DESCRIPTION "A portable C/C++ library for network traffic capture (found: ${PCAP_VERSION})"
-    )
-else()
-    set_package_properties(PCAP PROPERTIES
-        DESCRIPTION "A portable C/C++ library for network traffic capture"
-    )
-endif()
 
 if(ENABLE_RAW_UDP)
     message(STATUS "High-optimized custom UDP IP packet source is enabled.")
@@ -2284,7 +2177,6 @@ endif()
 
 find_package(GROSMOSDR)
 set_package_properties(GROSMOSDR PROPERTIES
-    URL "https://osmocom.org/projects/gr-osmosdr/wiki"
     PURPOSE "Used for communication with OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.)."
     TYPE OPTIONAL
 )
@@ -2292,19 +2184,7 @@ if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
         message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled.")
         message(STATUS " You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ..'")
-        if(GROSMOSDR_VERSION)
-            set_package_properties(GROSMOSDR PROPERTIES
-                DESCRIPTION "osmocom GNU Radio blocks (found: ${GROSMOSDR_VERSION})"
-            )
-        else()
-            set_package_properties(GROSMOSDR PROPERTIES
-                DESCRIPTION "osmocom GNU Radio blocks"
-            )
-        endif()
     else()
-        set_package_properties(GROSMOSDR PROPERTIES
-            DESCRIPTION "osmocom GNU Radio blocks"
-        )
         if(ENABLE_PACKAGING)
             message(WARNING "gr-osmosdr has not been found. Source blocks depending on it will NOT be built.")
         else()
@@ -2312,9 +2192,6 @@ if(ENABLE_OSMOSDR)
         endif()
     endif()
 else()
-    set_package_properties(GROSMOSDR PROPERTIES
-        DESCRIPTION "osmocom GNU Radio blocks"
-    )
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled.")
     message(STATUS " Enable it with 'cmake -DENABLE_OSMOSDR=ON ..' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
 endif()
@@ -2327,20 +2204,9 @@ endif()
 ##############################################
 find_package(GRIIO)
 set_package_properties(GRIIO PROPERTIES
-    URL "https://github.com/analogdevicesinc/gr-iio"
     PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
     TYPE OPTIONAL
 )
-if(GRIIO_FOUND AND GRIIO_VERSION)
-    set_package_properties(GRIIO PROPERTIES
-        DESCRIPTION "IIO blocks for GNU Radio (found: v${GRIIO_VERSION})"
-    )
-else()
-    set_package_properties(GRIIO PROPERTIES
-        DESCRIPTION "IIO blocks for GNU Radio"
-    )
-endif()
-
 
 
 #####################################################################
@@ -2350,19 +2216,9 @@ endif()
 #####################################################################
 find_package(LIBIIO)
 set_package_properties(LIBIIO PROPERTIES
-    URL "https://github.com/analogdevicesinc/libiio"
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
-if(LIBIIO_FOUND AND LIBIIO_VERSION)
-    set_package_properties(LIBIIO PROPERTIES
-        DESCRIPTION "A library for interfacing with Linux IIO devices (found: v${LIBIIO_VERSION})"
-    )
-else()
-    set_package_properties(LIBIIO PROPERTIES
-        DESCRIPTION "A library for interfacing with Linux IIO devices"
-    )
-endif()
 
 
 ##############################################
@@ -2457,8 +2313,6 @@ endif()
 ################################################################################
 find_package(GPERFTOOLS)
 set_package_properties(GPERFTOOLS PROPERTIES
-    URL "https://github.com/gperftools/gperftools"
-    DESCRIPTION "Collection of performance analysis tools"
     PURPOSE "Used for performance analysis."
     TYPE OPTIONAL
 )

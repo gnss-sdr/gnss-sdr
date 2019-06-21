@@ -19,6 +19,10 @@
 # Find GNU Radio
 ########################################################################
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 include(FindPackageHandleStandardArgs)
@@ -256,4 +260,15 @@ if(GNURADIO_VERSION)
         endif()
         message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
     endif()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
+    )
+else()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem"
+    )
 endif()
+
+set_package_properties(GNURADIO PROPERTIES
+    URL "https://www.gnuradio.org/"
+)

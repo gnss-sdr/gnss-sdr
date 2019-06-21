@@ -198,19 +198,9 @@ add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downlo
 
 find_package(GPSTK)
 set_package_properties(GPSTK PROPERTIES
-    URL "http://www.gpstk.org"
     PURPOSE "Used in some Extra Tests."
     TYPE OPTIONAL
 )
-if(GPSTK_FOUND AND GPSTK_VERSION)
-    set_package_properties(GPSTK PROPERTIES
-        DESCRIPTION "Library and suite of applications for satellite navigation (found: v${GPSTK_VERSION})"
-    )
-else()
-    set_package_properties(GPSTK PROPERTIES
-        DESCRIPTION "Library and suite of applications for satellite navigation"
-    )
-endif()
 
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)

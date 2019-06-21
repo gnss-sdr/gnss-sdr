@@ -24,6 +24,9 @@
 ########################################################################
 # Find VOLK (Vector-Optimized Library of Kernels) GNSS-SDR library
 ########################################################################
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
@@ -58,6 +61,10 @@ find_library(VOLK_GNSSSDR_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VOLKGNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
 mark_as_advanced(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+
+set_package_properties(VOLKGNSSSDR PROPERTIES
+    DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR."
+)
 
 
 if(VOLKGNSSSDR_FOUND AND NOT TARGET Volkgnsssdr::volkgnsssdr)

@@ -40,6 +40,10 @@
 # Gperftools::gperftools
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 find_library(GPERFTOOLS_TCMALLOC
   NAMES tcmalloc
   HINTS ${Gperftools_ROOT_DIR}/lib
@@ -123,6 +127,11 @@ if(GPERFTOOLS_FOUND AND NOT TARGET Gperftools::gperftools)
         INTERFACE_LINK_LIBRARIES "${GPERFTOOLS_TCMALLOC_AND_PROFILER}"
     )
 endif()
+
+set_package_properties(GPERFTOOLS PROPERTIES
+    URL "https://github.com/gperftools/gperftools"
+    DESCRIPTION "Collection of performance analysis tools"
+)
 
 mark_as_advanced(
   GPERFTOOLS_TCMALLOC

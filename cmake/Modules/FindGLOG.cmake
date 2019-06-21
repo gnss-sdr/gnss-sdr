@@ -31,6 +31,10 @@
 # Glog::glog
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 if(NOT DEFINED GLOG_ROOT)
     set(GLOG_ROOT /usr /usr/local)
 endif()
@@ -147,6 +151,20 @@ else()
     set(GLOG_INCLUDE_DIRS ${GLOG_INCLUDE_DIR})
     string(REGEX REPLACE "/libglog.so" "" GLOG_LIBRARIES_DIR ${GLOG_LIBRARIES})
 endif()
+
+if(GLOG_FOUND AND GLOG_VERSION)
+    set_package_properties(GLOG PROPERTIES
+        DESCRIPTION "C++ implementation of the Google logging module (found: v${GLOG_VERSION})"
+    )
+else()
+    set_package_properties(GLOG PROPERTIES
+        DESCRIPTION "C++ implementation of the Google logging module"
+    )
+endif()
+
+set_package_properties(GLOG PROPERTIES
+    URL "https://github.com/google/glog"
+)
 
 if(GLOG_FOUND AND NOT TARGET Glog::glog)
     add_library(Glog::glog SHARED IMPORTED)

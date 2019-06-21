@@ -23,6 +23,10 @@
 ########################################################################
 # Find the library for the USRP Hardware Driver
 ########################################################################
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_UHD uhd)
@@ -91,6 +95,20 @@ if(NOT PC_UHD_VERSION)
         set(UHD_VERSION ${PACKAGE_VERSION})
     endif()
     unset(PACKAGE_VERSION)
+endif()
+
+set_package_properties(UHD PROPERTIES
+    URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
+)
+
+if(UHD_FOUND AND UHD_VERSION)
+    set_package_properties(UHD PROPERTIES
+        DESCRIPTION "USRP Hardware Driver (found: v${UHD_VERSION})"
+    )
+else()
+    set_package_properties(UHD PROPERTIES
+        DESCRIPTION "USRP Hardware Driver"
+    )
 endif()
 
 if(UHD_FOUND AND NOT TARGET Uhd::uhd)

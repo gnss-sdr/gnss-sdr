@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
@@ -76,5 +80,19 @@ set(ORC_LIBRARY_DIRS ${ORC_LIBRARY_DIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ORC "orc files" ORC_LIBRARY ORC_INCLUDE_DIR ORCC_EXECUTABLE)
+
+set_package_properties(ORC PROPERTIES
+    URL "https://gstreamer.freedesktop.org/modules/orc.html"
+)
+
+if(ORC_FOUND AND ORC_VERSION)
+    set_package_properties(ORC PROPERTIES
+        DESCRIPTION "The Optimized Inner Loops Runtime Compiler (found: v${ORC_VERSION})"
+    )
+else()
+    set_package_properties(ORC PROPERTIES
+        DESCRIPTION "The Optimized Inner Loops Runtime Compiler"
+    )
+endif()
 
 mark_as_advanced(ORC_INCLUDE_DIR ORC_LIBRARY ORCC_EXECUTABLE)

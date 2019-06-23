@@ -15,9 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
-pkg_check_modules(PC_TELEORBIT teleorbit)
+pkg_check_modules(PC_TELEORBIT teleorbit QUIET)
 
 find_path(TELEORBIT_INCLUDE_DIRS
     NAMES teleorbit/api.h
@@ -48,6 +52,20 @@ find_library(TELEORBIT_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TELEORBIT DEFAULT_MSG TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)
+
+if(PC_TELEORBIT_VERSION)
+    set(TELEORBIT_VERSION ${PC_TELEORBIT_VERSION})
+endif()
+
+if(TELEORBIT_FOUND AND TELEORBIT_VERSION)
+    set_package_properties(TELEORBIT PROPERTIES
+        DESCRIPTION "The Teleorbit's Flexiband GNU Radio block (found: v${TELEORBIT_VERSION})"
+    )
+else()
+    set_package_properties(TELEORBIT PROPERTIES
+        DESCRIPTION "The Teleorbit's Flexiband GNU Radio block."
+    )
+endif()
 
 if(TELEORBIT_FOUND AND NOT TARGET Gnuradio::teleorbit)
     add_library(Gnuradio::teleorbit SHARED IMPORTED)

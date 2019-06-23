@@ -41,11 +41,14 @@ find_path(PUGIXML_INCLUDE_DIR
           /usr/include
           /usr/local/include
           /usr/local/include/pugixml-1.9
+          /usr/local/include/pugixml-${PC_PUGIXML_VERSION}
           /opt/local/include
           ${PUGIXML_ROOT}/include
           $ENV{PUGIXML_ROOT}/include
           ${PUGIXML_ROOT}/include/pugixml-1.9
           $ENV{PUGIXML_ROOT}/include/pugixml-1.9
+          ${PUGIXML_ROOT}/include/pugixml-${PC_PUGIXML_VERSION}
+          $ENV{PUGIXML_ROOT}/include/pugixml-${PC_PUGIXML_VERSION}
           ${PC_PUGIXML_INCLUDEDIR}
 )
 
@@ -64,6 +67,7 @@ find_library(PUGIXML_LIBRARY
           /usr/lib/s390x-linux-gnu
           /usr/local/lib
           /usr/local/lib/pugixml-1.9
+          /usr/local/lib/pugixml-${PC_PUGIXML_VERSION}
           /opt/local/lib
           /usr/lib
           /usr/lib64
@@ -76,6 +80,10 @@ find_library(PUGIXML_LIBRARY
           $ENV{PUGIXML_ROOT}/lib/pugixml-1.9
           ${PUGIXML_ROOT}/lib64/pugixml-1.9
           $ENV{PUGIXML_ROOT}/lib64/pugixml-1.9
+          ${PUGIXML_ROOT}/lib/pugixml-${PC_PUGIXML_VERSION}
+          $ENV{PUGIXML_ROOT}/lib/pugixml-${PC_PUGIXML_VERSION}
+          ${PUGIXML_ROOT}/lib64/pugixml-${PC_PUGIXML_VERSION}
+          $ENV{PUGIXML_ROOT}/lib64/pugixml-${PC_PUGIXML_VERSION}
           ${PC_PUGIXML_LIBDIR}
 )
 

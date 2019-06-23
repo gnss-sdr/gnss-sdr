@@ -2242,7 +2242,6 @@ else()
 endif()
 find_package(TELEORBIT)
 set_package_properties(TELEORBIT PROPERTIES
-    DESCRIPTION "The Teleorbit's Flexiband GNU Radio block."
     PURPOSE "Used for communication with the Flexiband front-end."
     TYPE OPTIONAL
 )

@@ -62,10 +62,19 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VOLKGNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
 mark_as_advanced(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
 
-set_package_properties(VOLKGNSSSDR PROPERTIES
-    DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR."
-)
+if(PC_VOLK_GNSSSDR_VERSION)
+    set(VOLKGNSSSDR_VERSION ${PC_VOLK_GNSSSDR_VERSION})
+endif()
 
+if(VOLKGNSSSDR_FOUND AND VOLKGNSSSDR_VERSION)
+    set_package_properties(VOLKGNSSSDR PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR (found: v${VOLKGNSSSDR_VERSION})."
+    )
+else()
+    set_package_properties(VOLKGNSSSDR PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR."
+    )
+endif()
 
 if(VOLKGNSSSDR_FOUND AND NOT TARGET Volkgnsssdr::volkgnsssdr)
     add_library(Volkgnsssdr::volkgnsssdr SHARED IMPORTED)

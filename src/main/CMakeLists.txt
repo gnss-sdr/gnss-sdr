@@ -45,14 +45,16 @@ if(NOT ENABLE_LOG)
 endif()
 
 if(ENABLE_CUDA)
-    target_link_libraries(gnss-sdr
-        PUBLIC
-            ${CUDA_LIBRARIES}
-    )
-    target_include_directories(gnss-sdr
-        PUBLIC
-            ${CUDA_INCLUDE_DIRS}
-    )
+    if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
+        target_link_libraries(gnss-sdr
+            PUBLIC
+                ${CUDA_LIBRARIES}
+        )
+        target_include_directories(gnss-sdr
+            PUBLIC
+                ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
     target_compile_definitions(gnss-sdr PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 

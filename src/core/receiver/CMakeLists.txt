@@ -40,12 +40,6 @@ set(GNSS_RECEIVER_HEADERS
     control_message.h
 )
 
-if(ENABLE_CUDA)
-    set(OPT_RECEIVER_INCLUDE_DIRS
-        ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS}
-    )
-endif()
-
 list(SORT GNSS_RECEIVER_HEADERS)
 list(SORT GNSS_RECEIVER_SOURCES)
 
@@ -120,12 +114,16 @@ endif()
 
 if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL")
+    target_link_libraries(core_receiver PUBLIC algorithms_libs OpenCL::OpenCL)
     target_compile_definitions(core_receiver PRIVATE -DOPENCL_BLOCKS=1)
 else()
     target_compile_definitions(core_receiver PRIVATE -DOPENCL_BLOCKS=0)
 endif()
 
 if(ENABLE_CUDA)
+    if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(core_receiver PUBLIC ${CUDA_INCLUDE_DIRS})
+    endif()
     target_compile_definitions(core_receiver PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
@@ -212,5 +210,4 @@ endif()
 set_property(TARGET core_receiver APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/receiver>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>
-    $<BUILD_INTERFACE:${OPT_RECEIVER_INCLUDE_DIRS}>
 )

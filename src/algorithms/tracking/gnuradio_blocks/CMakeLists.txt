@@ -97,7 +97,7 @@ target_link_libraries(tracking_gr_blocks
         tracking_libs
 )
 
-if(ENABLE_CUDA)
+if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
     target_link_libraries(tracking_gr_blocks
         PUBLIC
             ${CUDA_LIBRARIES}

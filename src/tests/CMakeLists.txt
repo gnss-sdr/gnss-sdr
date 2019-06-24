@@ -443,7 +443,7 @@ if(ENABLE_UNIT_TESTING)
             )
         endif()
     endif()
-    if(ENABLE_CUDA)
+    if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
         target_link_libraries(run_tests
             PUBLIC
                 ${CUDA_LIBRARIES}

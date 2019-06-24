@@ -54,7 +54,7 @@ endif()
 
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
-pkg_check_modules(PC_PCAP libpcap)
+pkg_check_modules(PC_PCAP libpcap QUIET)
 
 if(EXISTS $ENV{PCAPDIR})
   find_path(PCAP_INCLUDE_DIR

@@ -51,8 +51,10 @@
 #ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
+#define CL_SILENCE_DEPRECATION
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
+#include "opencl/cl.hpp"
 #include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
@@ -61,12 +63,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
-#ifdef __APPLE__
-#include "opencl/cl.hpp"
-#else
-#include <CL/cl.hpp>
-#endif
 
 class pcps_opencl_acquisition_cc;
 
@@ -226,7 +222,6 @@ public:
         d_channel = channel;
     }
 
-
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
@@ -260,6 +255,16 @@ public:
     inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
+    }
+
+    inline bool opencl_ready() const
+    {
+        bool ready = false;
+        if (d_opencl == 0)
+            {
+                ready = true;
+            }
+        return ready;
     }
 
     /*!

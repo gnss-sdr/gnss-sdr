@@ -2112,13 +2112,33 @@ if(DEFINED ENV{CUDA_GPU_ACCEL})
 endif()
 
 if(ENABLE_CUDA)
-    find_package(CUDA REQUIRED)
-    set_package_properties(CUDA PROPERTIES
-        URL "https://developer.nvidia.com/cuda-downloads"
-        DESCRIPTION "Library for parallel programming in Nvidia GPUs"
-        PURPOSE "Used in some processing block implementations."
-        TYPE REQUIRED
-    )
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        include(CheckLanguage)
+        check_language(CUDA)
+        if(CMAKE_CUDA_COMPILER)
+            enable_language(CUDA)
+            set(CUDA_FOUND TRUE)
+            if(NOT DEFINED CMAKE_CUDA_STANDARD)
+                set(CMAKE_CUDA_STANDARD 11)
+                set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+            endif()
+        else()
+            set(ENABLE_CUDA OFF)
+        endif()
+    else()
+        find_package(CUDA REQUIRED)
+        set_package_properties(CUDA PROPERTIES
+            URL "https://developer.nvidia.com/cuda-downloads"
+            DESCRIPTION "Library for parallel programming in Nvidia GPUs"
+            PURPOSE "Used in some processing block implementations."
+            TYPE REQUIRED
+        )
+        if(NOT CUDA_FOUND)
+            set(ENABLE_CUDA OFF)
+        endif()
+    endif()
+endif()
+if(ENABLE_CUDA)
     message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_CUDA=OFF ..'")
 else()

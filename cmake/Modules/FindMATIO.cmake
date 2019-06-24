@@ -104,7 +104,6 @@ if(MATIO_INCLUDE_DIR)
     endif()
 
     if(MATIO_CONFIG_FILE)
-
         # Read and parse MATIO config header file for version number
         file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
 

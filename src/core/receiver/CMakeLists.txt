@@ -120,6 +120,7 @@ endif()
 
 if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL")
+    target_link_libraries(core_receiver PUBLIC algorithms_libs OpenCL::OpenCL)
     target_compile_definitions(core_receiver PRIVATE -DOPENCL_BLOCKS=1)
 else()
     target_compile_definitions(core_receiver PRIVATE -DOPENCL_BLOCKS=0)

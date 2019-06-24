@@ -51,8 +51,10 @@
 #ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
+#define CL_SILENCE_DEPRECATION
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
+#include "opencl/cl.hpp"
 #include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
@@ -61,13 +63,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
-#ifdef __APPLE__
-#define CL_SILENCE_DEPRECATION
-#include "opencl/cl.hpp"
-#else
-#include <CL/cl.hpp>
-#endif
 
 class pcps_opencl_acquisition_cc;
 

@@ -2129,9 +2129,11 @@ set_package_properties(PCAP PROPERTIES
     PURPOSE "Used for the custom UDP IP packet source."
     TYPE OPTIONAL
 )
-
+if(PCAP_FOUND)
+    set(ENABLE_RAW_UDP ON)
+endif()
 if(ENABLE_RAW_UDP)
-    message(STATUS "High-optimized custom UDP IP packet source is enabled.")
+    message(STATUS "Highly-optimized custom UDP IP packet source is enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ..'")
     if(NOT PCAP_FOUND)
         message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (with ENABLE_RAW_UDP=ON)")

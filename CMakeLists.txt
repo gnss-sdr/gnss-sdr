@@ -34,73 +34,53 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 # Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ..'
 ################################################################################
 include(FeatureSummary)
+
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
-add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
 
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source" OFF)
-add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
 
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
-add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio.")
 
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
-add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
 
 option(ENABLE_AD9361 "Enable the use of AD9361 direct to FPGA hardware, requires libiio" OFF)
-add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio.")
 
 option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
-add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNU Radio driver" OFF)
-add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
-add_feature_info(ENABLE_GN3S ENABLE_GN3S "Enables Gn3s_Signal_Source for using the GN3S v2 dongle. Requires gr-gn3s.")
 
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
-add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
-add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 
 option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
-add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
 
 # Code correctness
 option(ENABLE_CLANG_TIDY "Enable the use of clang-tidy when compiling" OFF)
-add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")
 
 # Acceleration
 option(ENABLE_PROFILING "Enable execution of volk_gnsssdr_profile at the end of the building" OFF)
-add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
 
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
-add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
 
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
-add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
 
 option(ENABLE_FPGA "Enable building of processing blocks implemented with FPGA" OFF)
-add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
-add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
-add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
-add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
 
 option(ENABLE_OWN_ARMADILLO "Download and build Armadillo locally" OFF)
-add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
 
 option(ENABLE_LOG "Enable logging" ON)
-add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
 
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
@@ -108,25 +88,19 @@ endif()
 
 # Testing
 option(ENABLE_UNIT_TESTING "Build unit tests" ON)
-add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")
 
 option(ENABLE_UNIT_TESTING_MINIMAL "Build a minimal set of unit tests" OFF)
-add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enables building a minimal set of Unit Tests.")
 
 option(ENABLE_UNIT_TESTING_EXTRA "Download external files and build extra unit tests" OFF)
-add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables building of Extra Unit Tests and downloading of external data files.")
 
 option(ENABLE_SYSTEM_TESTING "Build system tests" OFF)
-add_feature_info(ENABLE_SYSTEM_TESTING ENABLE_SYSTEM_TESTING "Enables building of System Tests.")
 
 option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra system tests" OFF)
-add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enables building of Extra System Tests and downloading of external tools.")
 
 if(ENABLE_SYSTEM_TESTING_EXTRA)
     set(ENABLE_SYSTEM_TESTING ON)
 endif()
 option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system tests, even if it is already installed" OFF)
-add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
 
 option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
 if(ENABLE_FPGA)
@@ -391,7 +365,6 @@ endif()
 if(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "${CMAKE_MAKE_PROGRAM}")
 endif()
-add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 
 
 
@@ -2208,6 +2181,7 @@ if(ENABLE_OSMOSDR)
         else()
             message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
         endif()
+        set(ENABLE_OSMOSDR OFF)
     endif()
 else()
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled.")
@@ -2466,6 +2440,35 @@ add_subdirectory(src)
 ################################################################################
 # Print summary
 ################################################################################
+add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
+add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
+add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio.")
+add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
+add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio.")
+add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
+add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
+add_feature_info(ENABLE_GN3S ENABLE_GN3S "Enables Gn3s_Signal_Source for using the GN3S v2 dongle. Requires gr-gn3s.")
+add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
+add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
+add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
+add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")
+add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
+add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
+add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
+add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
+add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
+add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
+add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
+add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
+add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
+add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")
+add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enables building a minimal set of Unit Tests.")
+add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables building of Extra Unit Tests and downloading of external data files.")
+add_feature_info(ENABLE_SYSTEM_TESTING ENABLE_SYSTEM_TESTING "Enables building of System Tests.")
+add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enables building of Extra System Tests and downloading of external tools.")
+add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
+add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
+
 message(STATUS "")
 message(STATUS "***************************************")
 message(STATUS "*           SUMMARY REPORT            *")

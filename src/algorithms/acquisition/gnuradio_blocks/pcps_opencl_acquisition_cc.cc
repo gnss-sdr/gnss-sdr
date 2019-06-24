@@ -209,7 +209,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
     std::vector<cl::Platform> all_platforms;
     cl::Platform::get(&all_platforms);
 
-    if (all_platforms.size() == 0)
+    if (all_platforms.empty())
         {
             std::cout << "No OpenCL platforms found. Check OpenCL installation!" << std::endl;
             return 1;
@@ -223,7 +223,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
     std::vector<cl::Device> gpu_devices;
     d_cl_platform.getDevices(CL_DEVICE_TYPE_GPU, &gpu_devices);
 
-    if (gpu_devices.size() == 0)
+    if (gpu_devices.empty())
         {
             std::cout << "No GPU devices found. Check OpenCL installation!" << std::endl;
             return 2;

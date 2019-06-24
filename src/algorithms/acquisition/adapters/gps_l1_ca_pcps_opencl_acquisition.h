@@ -144,6 +144,12 @@ public:
 
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
+    inline bool opencl_ready() const
+    {
+        bool ready = this->acquisition_cc_->opencl_ready();
+        return ready;
+    }
+
 private:
     ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;

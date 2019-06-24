@@ -222,7 +222,6 @@ public:
         d_channel = channel;
     }
 
-
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
@@ -256,6 +255,16 @@ public:
     inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
+    }
+
+    inline bool opencl_ready() const
+    {
+        bool ready = false;
+        if (d_opencl == 0)
+            {
+                ready = true;
+            }
+        return ready;
     }
 
     /*!

@@ -30,6 +30,7 @@ find_path(TELEORBIT_INCLUDE_DIRS
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/local/include
           /usr/include
+          /opt/local/include
           ${TELEORBIT_ROOT}/include
           $ENV{TELEORBIT_ROOT}/include
 )
@@ -44,6 +45,7 @@ find_library(TELEORBIT_LIBRARIES
           /usr/local/lib64
           /usr/lib
           /usr/lib64
+          /opt/local/lib
           ${TELEORBIT_ROOT}/lib
           $ENV{TELEORBIT_ROOT}/lib
           ${TELEORBIT_ROOT}/lib64
@@ -55,6 +57,18 @@ find_package_handle_standard_args(TELEORBIT DEFAULT_MSG TELEORBIT_LIBRARIES TELE
 
 if(PC_TELEORBIT_VERSION)
     set(TELEORBIT_VERSION ${PC_TELEORBIT_VERSION})
+endif()
+
+if(NOT TELEORBIT_VERSION)
+    list(GET TELEORBIT_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(TELEORBIT_LIBRARIES_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${TELEORBIT_LIBRARIES_DIR}/cmake/teleorbit/TeleorbitConfigVersion.cmake)
+        include(${TELEORBIT_LIBRARIES_DIR}/cmake/teleorbit/TeleorbitConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(TELEORBIT_VERSION ${PACKAGE_VERSION})
+    endif()
+    unset(PACKAGE_VERSION)
 endif()
 
 if(TELEORBIT_FOUND AND TELEORBIT_VERSION)

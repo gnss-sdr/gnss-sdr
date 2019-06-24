@@ -63,6 +63,7 @@
 #include <vector>
 
 #ifdef __APPLE__
+#define CL_SILENCE_DEPRECATION
 #include "opencl/cl.hpp"
 #else
 #include <CL/cl.hpp>

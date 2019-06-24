@@ -49,16 +49,6 @@ if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
 endif()
 
-
-if(OPENCL_FOUND)
-    include_directories(${OPENCL_INCLUDE_DIRS})
-    if(OS_IS_MACOSX)
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else()
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif()
-endif()
-
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 list(SORT ACQ_GR_BLOCKS_SOURCES)
 
@@ -84,7 +74,6 @@ target_link_libraries(acquisition_gr_blocks
         channel_libs
         acquisition_libs
         core_system_parameters
-        ${OPT_LIBRARIES}
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -101,7 +90,7 @@ target_include_directories(acquisition_gr_blocks
 )
 
 if(OPENCL_FOUND)
-    target_include_directories(acquisition_gr_blocks PUBLIC ${OPENCL_INCLUDE_DIRS})
+    target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
 endif()
 
 if(ENABLE_CLANG_TIDY)

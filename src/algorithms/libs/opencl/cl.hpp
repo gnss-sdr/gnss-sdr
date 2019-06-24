@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008-2013 The Khronos Group Inc.
+ * Copyright (c) 2008-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -31,9 +31,10 @@
  *       Brian Cole, March 3rd 2010 and April 2012
  *       Matt Gruenke, April 2012.
  *       Bruce Merry, February 2013.
+ *       Tom Deakin and Simon McIntosh-Smith, July 2013
  *
- *   \version 1.2.5
- *   \date June 2013
+ *   \version 1.2.8
+ *   \date October 2015
  *
  *   Optional extension support
  *
@@ -67,7 +68,7 @@
  * The following example shows a general use case for the C++
  * bindings, including support for the optional exception feature and
  * also the supplied vector and string classes, see following sections for
- * descriptions of these features.
+ * decriptions of these features.
  *
  * \code
  * #define __CL_ENABLE_EXCEPTIONS
@@ -146,22 +147,17 @@
 
 #ifdef _WIN32
 
-#include <intrin.h>
-#include <iterator>
 #include <malloc.h>
-#include <windows.h>
 
-#if defined(__CL_ENABLE_EXCEPTIONS)
-#include <exception>
-#endif  // #if defined(__CL_ENABLE_EXCEPTIONS)
-
-#pragma push_macro("max")
-#undef max
 #if defined(USE_DX_INTEROP)
 #include <CL/cl_d3d10.h>
 #include <CL/cl_dx9_media_sharing.h>
 #endif
 #endif  // _WIN32
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif  // _MSC_VER
 
 //
 #if defined(USE_CL_DEVICE_FISSION)
@@ -169,13 +165,24 @@
 #endif
 
 #if defined(__APPLE__) || defined(__MACOSX)
+#define CL_SILENCE_DEPRECATION
 #include <OpenCL/opencl.h>
-#include <OpenGL/OpenGL.h>
-#include <libkern/OSAtomic.h>
 #else
 #include <CL/opencl.h>
-#include <GL/gl.h>
 #endif  // !__APPLE__
+
+#if (_MSC_VER >= 1700) || (__cplusplus >= 201103L)
+#define CL_HPP_RVALUE_REFERENCES_SUPPORTED
+#define CL_HPP_CPP11_ATOMICS_SUPPORTED
+#include <atomic>
+#endif
+
+#if (__cplusplus >= 201103L)
+#define CL_HPP_NOEXCEPT noexcept
+#else
+#define CL_HPP_NOEXCEPT
+#endif
+
 
 // To avoid accidentally taking ownership of core OpenCL types
 // such as cl_kernel constructors are made explicit
@@ -199,8 +206,13 @@
 #define CL_CALLBACK
 #endif  //CL_CALLBACK
 
+#include <iterator>
 #include <limits>
 #include <utility>
+
+#if defined(__CL_ENABLE_EXCEPTIONS)
+#include <exception>
+#endif  // #if defined(__CL_ENABLE_EXCEPTIONS)
 
 #if !defined(__NO_STD_VECTOR)
 #include <vector>
@@ -210,10 +222,8 @@
 #include <string>
 #endif
 
-#if defined(linux) || defined(__APPLE__) || defined(__MACOSX)
+#if defined(__ANDROID__) || defined(linux) || defined(__APPLE__) || defined(__MACOSX)
 #include <alloca.h>
-#include <emmintrin.h>
-#include <xmmintrin.h>
 #endif  // linux
 
 #include <cstring>
@@ -395,7 +405,7 @@ static inline cl_int errHandler(cl_int err, const char* errStr = NULL)
 #define __BUILD_PROGRAM_ERR __ERR_STR(clBuildProgram)
 #if defined(CL_VERSION_1_2)
 #define __COMPILE_PROGRAM_ERR __ERR_STR(clCompileProgram)
-
+#define __LINK_PROGRAM_ERR __ERR_STR(clLinkProgram)
 #endif  // #if defined(CL_VERSION_1_2)
 #define __CREATE_KERNELS_IN_PROGRAM_ERR __ERR_STR(clCreateKernelsInProgram)
 
@@ -561,7 +571,7 @@ public:
         else
             {
                 char* newString = new char[n + 1];
-                int copySize = n;
+                ::size_t copySize = n;
                 if (size_ < n)
                     {
                         copySize = size_;
@@ -699,7 +709,7 @@ typedef cl::string STRING_CLASS;
  *  \param N maximum size of the vector.
  */
 template <typename T, unsigned int N = __MAX_DEFAULT_VECTOR_SIZE>
-class CL_EXT_PREFIX__VERSION_1_1_DEPRECATED vector CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED
+class CL_EXT_PREFIX__VERSION_1_1_DEPRECATED vector
 {
 private:
     T data_[N];
@@ -865,6 +875,28 @@ public:
     unsigned int capacity() const
     {
         return N;
+    }
+
+    //! \brief Resizes the vector to the given size
+    void resize(unsigned int newSize, T fill = T())
+    {
+        if (newSize > N)
+            {
+                detail::errHandler(CL_MEM_OBJECT_ALLOCATION_FAILURE, __VECTOR_CAPACITY_ERR);
+            }
+        else
+            {
+                while (size_ < newSize)
+                    {
+                        new (&data_[size_]) T(fill);
+                        size_++;
+                    }
+                while (size_ > newSize)
+                    {
+                        --size_;
+                        data_[size_].~T();
+                    }
+            }
     }
 
     /*! \brief Returns a reference to a given element.
@@ -1044,7 +1076,7 @@ public:
     {
         return data_[size_ - 1];
     }
-};
+} CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 #endif  // #if !defined(__USE_DEV_VECTOR) && !defined(__NO_STD_VECTOR)
 
 
@@ -1057,25 +1089,40 @@ namespace detail
 /*
      * Compare and exchange primitives are needed for handling of defaults
     */
+
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+inline int compare_exchange(std::atomic<int>* dest, int exchange, int comparand)
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 inline int compare_exchange(volatile int* dest, int exchange, int comparand)
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 {
-#ifdef _WIN32
-    return (int)(InterlockedCompareExchange(
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+    std::atomic_compare_exchange_strong(dest, &comparand, exchange);
+    return comparand;
+#elif _MSC_VER
+    return (int)(_InterlockedCompareExchange(
         (volatile long*)dest,
         (long)exchange,
         (long)comparand));
-#elif defined(__APPLE__) || defined(__MACOSX)
-    return OSAtomicOr32Orig((uint32_t)exchange, (volatile uint32_t*)dest);
-#else   // !_WIN32 || defined(__APPLE__) || defined(__MACOSX)
+#else   // !_MSC_VER && !CL_HPP_CPP11_ATOMICS_SUPPORTED
     return (__sync_val_compare_and_swap(
         dest,
         comparand,
         exchange));
-#endif  // !_WIN32
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 }
 
-inline void fence() { _mm_mfence(); }
-};  // namespace detail
+inline void fence()
+{
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+#elif _MSC_VER  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
+    _ReadWriteBarrier();
+#else           // !_MSC_VER && !CL_HPP_CPP11_ATOMICS_SUPPORTED
+    __sync_synchronize();
+#endif          // !CL_HPP_CPP11_ATOMICS_SUPPORTED
+}
+}  // namespace detail
 
 
 /*! \brief class used to interface between C++ and
@@ -1206,6 +1253,7 @@ inline cl_int getInfoHelper(Func f, cl_uint name, VECTOR_CLASS<char*>* param, in
 template <typename Func>
 inline cl_int getInfoHelper(Func f, cl_uint name, STRING_CLASS* param, long)
 {
+#if defined(__NO_STD_VECTOR) || defined(__NO_STD_STRING)
     ::size_t required;
     cl_int err = f(name, 0, NULL, &required);
     if (err != CL_SUCCESS)
@@ -1221,6 +1269,28 @@ inline cl_int getInfoHelper(Func f, cl_uint name, STRING_CLASS* param, long)
         }
 
     *param = value;
+    return CL_SUCCESS;
+#else
+    ::size_t required;
+    cl_int err = f(name, 0, NULL, &required);
+    if (err != CL_SUCCESS)
+        {
+            return err;
+        }
+
+    // std::string has a constant data member
+    // a char vector does not
+    VECTOR_CLASS<char> value(required);
+    err = f(name, required, value.data(), NULL);
+    if (err != CL_SUCCESS)
+        {
+            return err;
+        }
+    if (param)
+        {
+            param->assign(value.begin(), value.end());
+        }
+#endif
     return CL_SUCCESS;
 }
 
@@ -1345,7 +1415,7 @@ inline cl_int getInfoHelper(Func f, cl_uint name, T* param, int, typename T::cl_
     F(cl_event_info, CL_EVENT_COMMAND_QUEUE, cl::CommandQueue)                       \
     F(cl_event_info, CL_EVENT_COMMAND_TYPE, cl_command_type)                         \
     F(cl_event_info, CL_EVENT_REFERENCE_COUNT, cl_uint)                              \
-    F(cl_event_info, CL_EVENT_COMMAND_EXECUTION_STATUS, cl_uint)                     \
+    F(cl_event_info, CL_EVENT_COMMAND_EXECUTION_STATUS, cl_int)                      \
                                                                                      \
     F(cl_profiling_info, CL_PROFILING_COMMAND_QUEUED, cl_ulong)                      \
     F(cl_profiling_info, CL_PROFILING_COMMAND_SUBMIT, cl_ulong)                      \
@@ -1370,9 +1440,9 @@ inline cl_int getInfoHelper(Func f, cl_uint name, T* param, int, typename T::cl_
                                                                                      \
     F(cl_sampler_info, CL_SAMPLER_REFERENCE_COUNT, cl_uint)                          \
     F(cl_sampler_info, CL_SAMPLER_CONTEXT, cl::Context)                              \
-    F(cl_sampler_info, CL_SAMPLER_NORMALIZED_COORDS, cl_addressing_mode)             \
-    F(cl_sampler_info, CL_SAMPLER_ADDRESSING_MODE, cl_filter_mode)                   \
-    F(cl_sampler_info, CL_SAMPLER_FILTER_MODE, cl_bool)                              \
+    F(cl_sampler_info, CL_SAMPLER_NORMALIZED_COORDS, cl_bool)                        \
+    F(cl_sampler_info, CL_SAMPLER_ADDRESSING_MODE, cl_addressing_mode)               \
+    F(cl_sampler_info, CL_SAMPLER_FILTER_MODE, cl_filter_mode)                       \
                                                                                      \
     F(cl_program_info, CL_PROGRAM_REFERENCE_COUNT, cl_uint)                          \
     F(cl_program_info, CL_PROGRAM_CONTEXT, cl::Context)                              \
@@ -1442,6 +1512,7 @@ inline cl_int getInfoHelper(Func f, cl_uint name, T* param, int, typename T::cl_
     F(cl_kernel_arg_info, CL_KERNEL_ARG_ACCESS_QUALIFIER, cl_kernel_arg_access_qualifier)         \
     F(cl_kernel_arg_info, CL_KERNEL_ARG_TYPE_NAME, STRING_CLASS)                                  \
     F(cl_kernel_arg_info, CL_KERNEL_ARG_NAME, STRING_CLASS)                                       \
+    F(cl_kernel_arg_info, CL_KERNEL_ARG_TYPE_QUALIFIER, cl_kernel_arg_type_qualifier)             \
                                                                                                   \
     F(cl_device_info, CL_DEVICE_PARENT_DEVICE, cl_device_id)                                      \
     F(cl_device_info, CL_DEVICE_PARTITION_PROPERTIES, VECTOR_CLASS<cl_device_partition_property>) \
@@ -1780,7 +1851,7 @@ static cl_uint getVersion(const char* versionInfo)
             ++index;
         }
     ++index;
-    while (versionInfo[index] != ' ')
+    while (versionInfo[index] != ' ' && versionInfo[index] != '\0')
         {
             lowVersion *= 10;
             lowVersion += versionInfo[index] - '0';
@@ -1851,19 +1922,46 @@ public:
             }
     }
 
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    Wrapper(Wrapper<cl_type>&& rhs) CL_HPP_NOEXCEPT
+    {
+        object_ = rhs.object_;
+        rhs.object_ = NULL;
+    }
+#endif
+
     Wrapper<cl_type>& operator=(const Wrapper<cl_type>& rhs)
     {
-        if (object_ != NULL)
+        if (this != &rhs)
             {
-                detail::errHandler(release(), __RELEASE_ERR);
-            }
-        object_ = rhs.object_;
-        if (object_ != NULL)
-            {
-                detail::errHandler(retain(), __RETAIN_ERR);
+                if (object_ != NULL)
+                    {
+                        detail::errHandler(release(), __RELEASE_ERR);
+                    }
+                object_ = rhs.object_;
+                if (object_ != NULL)
+                    {
+                        detail::errHandler(retain(), __RETAIN_ERR);
+                    }
             }
         return *this;
     }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    Wrapper<cl_type>& operator=(Wrapper<cl_type>&& rhs)
+    {
+        if (this != &rhs)
+            {
+                if (object_ != NULL)
+                    {
+                        detail::errHandler(release(), __RELEASE_ERR);
+                    }
+                object_ = rhs.object_;
+                rhs.object_ = NULL;
+            }
+        return *this;
+    }
+#endif
 
     Wrapper<cl_type>& operator=(const cl_type& rhs)
     {
@@ -1946,20 +2044,51 @@ public:
             }
     }
 
-    Wrapper<cl_type>& operator=(const Wrapper<cl_type>& rhs)
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    Wrapper(Wrapper<cl_type>&& rhs) CL_HPP_NOEXCEPT
     {
-        if (object_ != NULL)
-            {
-                detail::errHandler(release(), __RELEASE_ERR);
-            }
         object_ = rhs.object_;
         referenceCountable_ = rhs.referenceCountable_;
-        if (object_ != NULL)
+        rhs.object_ = NULL;
+        rhs.referenceCountable_ = false;
+    }
+#endif
+
+    Wrapper<cl_type>& operator=(const Wrapper<cl_type>& rhs)
+    {
+        if (this != &rhs)
             {
-                detail::errHandler(retain(), __RETAIN_ERR);
+                if (object_ != NULL)
+                    {
+                        detail::errHandler(release(), __RELEASE_ERR);
+                    }
+                object_ = rhs.object_;
+                referenceCountable_ = rhs.referenceCountable_;
+                if (object_ != NULL)
+                    {
+                        detail::errHandler(retain(), __RETAIN_ERR);
+                    }
             }
         return *this;
     }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    Wrapper<cl_type>& operator=(Wrapper<cl_type>&& rhs)
+    {
+        if (this != &rhs)
+            {
+                if (object_ != NULL)
+                    {
+                        detail::errHandler(release(), __RELEASE_ERR);
+                    }
+                object_ = rhs.object_;
+                referenceCountable_ = rhs.referenceCountable_;
+                rhs.object_ = NULL;
+                rhs.referenceCountable_ = false;
+            }
+        return *this;
+    }
+#endif
 
     Wrapper<cl_type>& operator=(const cl_type& rhs)
     {
@@ -2011,7 +2140,7 @@ protected:
 }  // namespace detail
 //! \endcond
 
-/*! \struct ImageFormat
+/*! \stuct ImageFormat
  *  \brief Adds constructors and member functions for cl_image_format.
  *
  *  \see cl_image_format
@@ -2053,36 +2182,17 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Device() : detail::Wrapper<cl_type>() {}
 
-    /*! \brief Copy constructor.
-     *
-     *  This simply copies the device ID value, which is an inexpensive operation.
-     */
-    Device(const Device& device) : detail::Wrapper<cl_type>(device) {}
-
     /*! \brief Constructor from cl_device_id.
      *
      *  This simply copies the device ID value, which is an inexpensive operation.
      */
-    Device(const cl_device_id& device) : detail::Wrapper<cl_type>(device) {}
+    __CL_EXPLICIT_CONSTRUCTORS Device(const cl_device_id& device) : detail::Wrapper<cl_type>(device) {}
 
     /*! \brief Returns the first device on the default context.
      *
      *  \see Context::getDefault()
      */
     static Device getDefault(cl_int* err = NULL);
-
-    /*! \brief Assignment operator from Device.
-     *
-     *  This simply copies the device ID value, which is an inexpensive operation.
-     */
-    Device& operator=(const Device& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment operator from cl_device_id.
      *
@@ -2093,6 +2203,36 @@ public:
         detail::Wrapper<cl_type>::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Device(const Device& dev) : detail::Wrapper<cl_type>(dev) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Device& operator=(const Device& dev)
+    {
+        detail::Wrapper<cl_type>::operator=(dev);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Device(Device&& dev) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(dev)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Device& operator=(Device&& dev)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(dev));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     //! \brief Wrapper for clGetDeviceInfo().
     template <typename T>
@@ -2199,30 +2339,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Platform() : detail::Wrapper<cl_type>() {}
 
-    /*! \brief Copy constructor.
-     *
-     *  This simply copies the platform ID value, which is an inexpensive operation.
-     */
-    Platform(const Platform& platform) : detail::Wrapper<cl_type>(platform) {}
-
     /*! \brief Constructor from cl_platform_id.
      *
      *  This simply copies the platform ID value, which is an inexpensive operation.
      */
-    Platform(const cl_platform_id& platform) : detail::Wrapper<cl_type>(platform) {}
-
-    /*! \brief Assignment operator from Platform.
-     *
-     *  This simply copies the platform ID value, which is an inexpensive operation.
-     */
-    Platform& operator=(const Platform& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
+    __CL_EXPLICIT_CONSTRUCTORS Platform(const cl_platform_id& platform) : detail::Wrapper<cl_type>(platform) {}
 
     /*! \brief Assignment operator from cl_platform_id.
      *
@@ -2448,6 +2569,7 @@ public:
                     {
                         *errResult = err;
                     }
+                return Platform();
             }
 
         cl_platform_id* ids = (cl_platform_id*)alloca(
@@ -2457,14 +2579,15 @@ public:
         if (err != CL_SUCCESS)
             {
                 detail::errHandler(err, __GET_PLATFORM_IDS_ERR);
+                if (errResult != NULL)
+                    {
+                        *errResult = err;
+                    }
+                return Platform();
             }
 
-        if (errResult != NULL)
-            {
-                *errResult = err;
-            }
 
-        return ids[0];
+        return Platform(ids[0]);
     }
 
     static Platform getDefault(
@@ -2513,17 +2636,15 @@ class Context
     : public detail::Wrapper<cl_context>
 {
 private:
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+    static std::atomic<int> default_initialized_;
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
     static volatile int default_initialized_;
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
     static Context default_;
     static volatile cl_int default_error_;
 
 public:
-    /*! \brief Destructor.
-     *
-     *  This calls clReleaseContext() on the value held by this instance.
-     */
-    ~Context() {}
-
     /*! \brief Constructs a context including a list of specified devices.
      *
      *  Wraps clCreateContext().
@@ -2587,7 +2708,7 @@ public:
             }
     }
 
-    /*! \brief Constructs a context including all devices of a specified type.
+    /*! \brief Constructs a context including all or a subset of devices of a specified type.
      *
      *  Wraps clCreateContextFromType().
      */
@@ -2604,21 +2725,74 @@ public:
     {
         cl_int error;
 
-#if !defined(__APPLE__) || !defined(__MACOS)
+#if !defined(__APPLE__) && !defined(__MACOS)
         cl_context_properties prop[4] = {CL_CONTEXT_PLATFORM, 0, 0, 0};
+
         if (properties == NULL)
             {
-                prop[1] = (cl_context_properties)Platform::get(&error)();
+                // Get a valid platform ID as we cannot send in a blank one
+                VECTOR_CLASS<Platform> platforms;
+                error = Platform::get(&platforms);
                 if (error != CL_SUCCESS)
                     {
                         detail::errHandler(error, __CREATE_CONTEXT_FROM_TYPE_ERR);
                         if (err != NULL)
                             {
                                 *err = error;
-                                return;
+                            }
+                        return;
+                    }
+
+                // Check the platforms we found for a device of our specified type
+                cl_context_properties platform_id = 0;
+                for (unsigned int i = 0; i < platforms.size(); i++)
+                    {
+                        VECTOR_CLASS<Device> devices;
+
+#if defined(__CL_ENABLE_EXCEPTIONS)
+                        try
+                            {
+#endif
+
+                                error = platforms[i].getDevices(type, &devices);
+
+#if defined(__CL_ENABLE_EXCEPTIONS)
+                            }
+                        catch (Error)
+                            {
+                            }
+                            // Catch if exceptions are enabled as we don't want to exit if first platform has no devices of type
+                            // We do error checking next anyway, and can throw there if needed
+#endif
+
+                        // Only squash CL_SUCCESS and CL_DEVICE_NOT_FOUND
+                        if (error != CL_SUCCESS && error != CL_DEVICE_NOT_FOUND)
+                            {
+                                detail::errHandler(error, __CREATE_CONTEXT_FROM_TYPE_ERR);
+                                if (err != NULL)
+                                    {
+                                        *err = error;
+                                    }
+                            }
+
+                        if (devices.size() > 0)
+                            {
+                                platform_id = (cl_context_properties)platforms[i]();
+                                break;
                             }
                     }
 
+                if (platform_id == 0)
+                    {
+                        detail::errHandler(CL_DEVICE_NOT_FOUND, __CREATE_CONTEXT_FROM_TYPE_ERR);
+                        if (err != NULL)
+                            {
+                                *err = CL_DEVICE_NOT_FOUND;
+                            }
+                        return;
+                    }
+
+                prop[1] = platform_id;
                 properties = &prop[0];
             }
 #endif
@@ -2631,6 +2805,36 @@ public:
                 *err = error;
             }
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Context(const Context& ctx) : detail::Wrapper<cl_type>(ctx) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Context& operator=(const Context& ctx)
+    {
+        detail::Wrapper<cl_type>::operator=(ctx);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Context(Context&& ctx) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(ctx)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Context& operator=(Context&& ctx)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(ctx));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     /*! \brief Returns a singleton context including all devices of CL_DEVICE_TYPE_DEFAULT.
      *
@@ -2692,32 +2896,12 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Context() : detail::Wrapper<cl_type>() {}
 
-    /*! \brief Copy constructor.
-     *
-     *  This calls clRetainContext() on the parameter's cl_context.
-     */
-    Context(const Context& context) : detail::Wrapper<cl_type>(context) {}
-
     /*! \brief Constructor from cl_context - takes ownership.
      *
      *  This effectively transfers ownership of a refcount on the cl_context
      *  into the new Context object.
      */
     __CL_EXPLICIT_CONSTRUCTORS Context(const cl_context& context) : detail::Wrapper<cl_type>(context) {}
-
-    /*! \brief Assignment operator from Context.
-     *
-     *  This calls clRetainContext() on the parameter and clReleaseContext() on
-     *  the previous value held by this instance.
-     */
-    Context& operator=(const Context& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment operator from cl_context - takes ownership.
      *
@@ -2764,6 +2948,12 @@ public:
         VECTOR_CLASS<ImageFormat>* formats) const
     {
         cl_uint numEntries;
+
+        if (!formats)
+            {
+                return CL_SUCCESS;
+            }
+
         cl_int err = ::clGetSupportedImageFormats(
             object_,
             flags,
@@ -2776,21 +2966,28 @@ public:
                 return detail::errHandler(err, __GET_SUPPORTED_IMAGE_FORMATS_ERR);
             }
 
-        ImageFormat* value = (ImageFormat*)
-            alloca(numEntries * sizeof(ImageFormat));
-        err = ::clGetSupportedImageFormats(
-            object_,
-            flags,
-            type,
-            numEntries,
-            (cl_image_format*)value,
-            NULL);
-        if (err != CL_SUCCESS)
+        if (numEntries > 0)
             {
-                return detail::errHandler(err, __GET_SUPPORTED_IMAGE_FORMATS_ERR);
-            }
+                ImageFormat* value = (ImageFormat*)
+                    alloca(numEntries * sizeof(ImageFormat));
+                err = ::clGetSupportedImageFormats(
+                    object_,
+                    flags,
+                    type,
+                    numEntries,
+                    (cl_image_format*)value,
+                    NULL);
+                if (err != CL_SUCCESS)
+                    {
+                        return detail::errHandler(err, __GET_SUPPORTED_IMAGE_FORMATS_ERR);
+                    }
 
-        formats->assign(&value[0], &value[numEntries]);
+                formats->assign(&value[0], &value[numEntries]);
+            }
+        else
+            {
+                formats->clear();
+            }
         return CL_SUCCESS;
     }
 };
@@ -2801,7 +2998,7 @@ inline Device Device::getDefault(cl_int* err)
     Device device;
 
     Context context = Context::getDefault(&error);
-    detail::errHandler(error, __CREATE_COMMAND_QUEUE_ERR);
+    detail::errHandler(error, __CREATE_CONTEXT_ERR);
 
     if (error != CL_SUCCESS)
         {
@@ -2824,14 +3021,22 @@ inline Device Device::getDefault(cl_int* err)
 
 
 #ifdef _WIN32
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+__declspec(selectany) std::atomic<int> Context::default_initialized_;
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __declspec(selectany) volatile int Context::default_initialized_ = __DEFAULT_NOT_INITIALIZED;
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __declspec(selectany) Context Context::default_;
 __declspec(selectany) volatile cl_int Context::default_error_ = CL_SUCCESS;
-#else
+#else  // !_WIN32
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+__attribute__((weak)) std::atomic<int> Context::default_initialized_;
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __attribute__((weak)) volatile int Context::default_initialized_ = __DEFAULT_NOT_INITIALIZED;
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __attribute__((weak)) Context Context::default_;
 __attribute__((weak)) volatile cl_int Context::default_error_ = CL_SUCCESS;
-#endif
+#endif  // !_WIN32
 
 /*! \brief Class interface for cl_event.
  *
@@ -2844,46 +3049,20 @@ __attribute__((weak)) volatile cl_int Context::default_error_ = CL_SUCCESS;
 class Event : public detail::Wrapper<cl_event>
 {
 public:
-    /*! \brief Destructor.
-     *
-     *  This calls clReleaseEvent() on the value held by this instance.
-     */
-    ~Event() {}
-
     //! \brief Default constructor - initializes to NULL.
     Event() : detail::Wrapper<cl_type>() {}
-
-    /*! \brief Copy constructor.
-     *
-     *  This calls clRetainEvent() on the parameter's cl_event.
-     */
-    Event(const Event& event) : detail::Wrapper<cl_type>(event) {}
 
     /*! \brief Constructor from cl_event - takes ownership.
      *
      *  This effectively transfers ownership of a refcount on the cl_event
      *  into the new Event object.
      */
-    Event(const cl_event& event) : detail::Wrapper<cl_type>(event) {}
+    __CL_EXPLICIT_CONSTRUCTORS Event(const cl_event& event) : detail::Wrapper<cl_type>(event) {}
 
     /*! \brief Assignment operator from cl_event - takes ownership.
      *
      *  This effectively transfers ownership of a refcount on the rhs and calls
      *  clReleaseEvent() on the value previously held by this instance.
-     */
-    Event& operator=(const Event& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
-
-    /*! \brief Assignment operator from cl_event.
-     *
-     *  This calls clRetainEvent() on the parameter and clReleaseEvent() on
-     *  the previous value held by this instance.
      */
     Event& operator=(const cl_event& rhs)
     {
@@ -2979,7 +3158,7 @@ public:
     {
         return detail::errHandler(
             ::clWaitForEvents(
-                (cl_uint)events.size(), (cl_event*)&events.front()),
+                (cl_uint)events.size(), (events.size() > 0) ? (cl_event*)&events.front() : NULL),
             __WAIT_FOR_EVENTS_ERR);
     }
 };
@@ -3015,19 +3194,6 @@ public:
     //! \brief Default constructor - initializes to NULL.
     UserEvent() : Event() {}
 
-    //! \brief Copy constructor - performs shallow copy.
-    UserEvent(const UserEvent& event) : Event(event) {}
-
-    //! \brief Assignment Operator - performs shallow copy.
-    UserEvent& operator=(const UserEvent& rhs)
-    {
-        if (this != &rhs)
-            {
-                Event::operator=(rhs);
-            }
-        return *this;
-    }
-
     /*! \brief Sets the execution status of a user event object.
      *
      *  Wraps clSetUserEventStatus().
@@ -3050,7 +3216,7 @@ WaitForEvents(const VECTOR_CLASS<Event>& events)
 {
     return detail::errHandler(
         ::clWaitForEvents(
-            (cl_uint)events.size(), (cl_event*)&events.front()),
+            (cl_uint)events.size(), (events.size() > 0) ? (cl_event*)&events.front() : NULL),
         __WAIT_FOR_EVENTS_ERR);
 }
 
@@ -3065,20 +3231,8 @@ WaitForEvents(const VECTOR_CLASS<Event>& events)
 class Memory : public detail::Wrapper<cl_mem>
 {
 public:
-    /*! \brief Destructor.
-     *
-     *  This calls clReleaseMemObject() on the value held by this instance.
-     */
-    ~Memory() {}
-
     //! \brief Default constructor - initializes to NULL.
     Memory() : detail::Wrapper<cl_type>() {}
-
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  This calls clRetainMemObject() on the parameter's cl_mem.
-     */
-    Memory(const Memory& memory) : detail::Wrapper<cl_type>(memory) {}
 
     /*! \brief Constructor from cl_mem - takes ownership.
      *
@@ -3086,20 +3240,6 @@ public:
      *  into the new Memory object.
      */
     __CL_EXPLICIT_CONSTRUCTORS Memory(const cl_mem& memory) : detail::Wrapper<cl_type>(memory) {}
-
-    /*! \brief Assignment operator from Memory.
-     *
-     *  This calls clRetainMemObject() on the parameter and clReleaseMemObject()
-     *  on the previous value held by this instance.
-     */
-    Memory& operator=(const Memory& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment operator from cl_mem - takes ownership.
      *
@@ -3111,6 +3251,36 @@ public:
         detail::Wrapper<cl_type>::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Memory(const Memory& mem) : detail::Wrapper<cl_type>(mem) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Memory& operator=(const Memory& mem)
+    {
+        detail::Wrapper<cl_type>::operator=(mem);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Memory(Memory&& mem) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(mem)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Memory& operator=(Memory&& mem)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(mem));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     //! \brief Wrapper for clGetMemObjectInfo().
     template <typename T>
@@ -3170,6 +3340,11 @@ template <typename IteratorType>
 cl_int copy(IteratorType startIterator, IteratorType endIterator, cl::Buffer& buffer);
 template <typename IteratorType>
 cl_int copy(const cl::Buffer& buffer, IteratorType startIterator, IteratorType endIterator);
+template <typename IteratorType>
+cl_int copy(const CommandQueue& queue, IteratorType startIterator, IteratorType endIterator, cl::Buffer& buffer);
+template <typename IteratorType>
+cl_int copy(const CommandQueue& queue, const cl::Buffer& buffer, IteratorType startIterator, IteratorType endIterator);
+
 
 /*! \brief Class interface for Buffer Memory Objects.
  *
@@ -3234,7 +3409,8 @@ public:
 
     /*!
      * \brief Construct a Buffer from a host container via iterators.
-     * If useHostPtr is specified iterators must be random access.
+     * IteratorType must be random access.
+     * If useHostPtr is specified iterators must represent contiguous data.
      */
     template <typename IteratorType>
     Buffer(
@@ -3291,33 +3467,31 @@ public:
             }
     }
 
+    /*!
+     * \brief Construct a Buffer from a host container via iterators using a specified context.
+     * IteratorType must be random access.
+     * If useHostPtr is specified iterators must represent contiguous data.
+     */
+    template <typename IteratorType>
+    Buffer(const Context& context, IteratorType startIterator, IteratorType endIterator,
+        bool readOnly, bool useHostPtr = false, cl_int* err = NULL);
+
+    /*!
+    * \brief Construct a Buffer from a host container via iterators using a specified queue.
+    * If useHostPtr is specified iterators must represent contiguous data.
+    */
+    template <typename IteratorType>
+    Buffer(const CommandQueue& queue, IteratorType startIterator, IteratorType endIterator,
+        bool readOnly, bool useHostPtr = false, cl_int* err = NULL);
+
     //! \brief Default constructor - initializes to NULL.
     Buffer() : Memory() {}
-
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Buffer(const Buffer& buffer) : Memory(buffer) {}
 
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Buffer(const cl_mem& buffer) : Memory(buffer) {}
-
-    /*! \brief Assignment from Buffer - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Buffer& operator=(const Buffer& rhs)
-    {
-        if (this != &rhs)
-            {
-                Memory::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -3328,6 +3502,36 @@ public:
         Memory::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Buffer(const Buffer& buf) : Memory(buf) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Buffer& operator=(const Buffer& buf)
+    {
+        Memory::operator=(buf);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Buffer(Buffer&& buf) CL_HPP_NOEXCEPT : Memory(std::move(buf)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Buffer& operator=(Buffer&& buf)
+    {
+        Memory::operator=(std::move(buf));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
 #if defined(CL_VERSION_1_1)
     /*! \brief Creates a new buffer object from this.
@@ -3422,30 +3626,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     BufferD3D10() : Buffer() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferD3D10(const BufferD3D10& buffer) : Buffer(buffer) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS BufferD3D10(const cl_mem& buffer) : Buffer(buffer) {}
-
-    /*! \brief Assignment from BufferD3D10 - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferD3D10& operator=(const BufferD3D10& rhs)
-    {
-        if (this != &rhs)
-            {
-                Buffer::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -3456,6 +3641,36 @@ public:
         Buffer::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferD3D10(const BufferD3D10& buf) : Buffer(buf) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferD3D10& operator=(const BufferD3D10& buf)
+    {
+        Buffer::operator=(buf);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferD3D10(BufferD3D10&& buf) CL_HPP_NOEXCEPT : Buffer(std::move(buf)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferD3D10& operator=(BufferD3D10&& buf)
+    {
+        Buffer::operator=(std::move(buf));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 #endif
 
@@ -3478,7 +3693,7 @@ public:
     BufferGL(
         const Context& context,
         cl_mem_flags flags,
-        GLuint bufobj,
+        cl_GLuint bufobj,
         cl_int* err = NULL)
     {
         cl_int error;
@@ -3498,30 +3713,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     BufferGL() : Buffer() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferGL(const BufferGL& buffer) : Buffer(buffer) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS BufferGL(const cl_mem& buffer) : Buffer(buffer) {}
-
-    /*! \brief Assignment from BufferGL - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferGL& operator=(const BufferGL& rhs)
-    {
-        if (this != &rhs)
-            {
-                Buffer::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -3533,95 +3729,40 @@ public:
         return *this;
     }
 
-    //! \brief Wrapper for clGetGLObjectInfo().
-    cl_int getObjectInfo(
-        cl_gl_object_type* type,
-        GLuint* gl_object_name)
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferGL(const BufferGL& buf) : Buffer(buf) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferGL& operator=(const BufferGL& buf)
     {
-        return detail::errHandler(
-            ::clGetGLObjectInfo(object_, type, gl_object_name),
-            __GET_GL_OBJECT_INFO_ERR);
-    }
-};
-
-/*! \brief Class interface for GL Render Buffer Memory Objects.
- *
- *  This is provided to facilitate interoperability with OpenGL.
- *
- *  See Memory for details about copy semantics, etc.
- *
- *  \see Memory
- */
-class BufferRenderGL : public Buffer
-{
-public:
-    /*! \brief Constructs a BufferRenderGL in a specified context, from a given
-     *         GL Renderbuffer.
-     *
-     *  Wraps clCreateFromGLRenderbuffer().
-     */
-    BufferRenderGL(
-        const Context& context,
-        cl_mem_flags flags,
-        GLuint bufobj,
-        cl_int* err = NULL)
-    {
-        cl_int error;
-        object_ = ::clCreateFromGLRenderbuffer(
-            context(),
-            flags,
-            bufobj,
-            &error);
-
-        detail::errHandler(error, __CREATE_GL_RENDER_BUFFER_ERR);
-        if (err != NULL)
-            {
-                *err = error;
-            }
-    }
-
-    //! \brief Default constructor - initializes to NULL.
-    BufferRenderGL() : Buffer() {}
-
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferRenderGL(const BufferGL& buffer) : Buffer(buffer) {}
-
-    /*! \brief Constructor from cl_mem - takes ownership.
-     *
-     *  See Memory for further details.
-     */
-    __CL_EXPLICIT_CONSTRUCTORS BufferRenderGL(const cl_mem& buffer) : Buffer(buffer) {}
-
-    /*! \brief Assignment from BufferGL - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferRenderGL& operator=(const BufferRenderGL& rhs)
-    {
-        if (this != &rhs)
-            {
-                Buffer::operator=(rhs);
-            }
+        Buffer::operator=(buf);
         return *this;
     }
 
-    /*! \brief Assignment from cl_mem - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    BufferRenderGL& operator=(const cl_mem& rhs)
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferGL(BufferGL&& buf) CL_HPP_NOEXCEPT : Buffer(std::move(buf)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferGL& operator=(BufferGL&& buf)
     {
-        Buffer::operator=(rhs);
+        Buffer::operator=(std::move(buf));
         return *this;
     }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     //! \brief Wrapper for clGetGLObjectInfo().
     cl_int getObjectInfo(
         cl_gl_object_type* type,
-        GLuint* gl_object_name)
+        cl_GLuint* gl_object_name)
     {
         return detail::errHandler(
             ::clGetGLObjectInfo(object_, type, gl_object_name),
@@ -3641,30 +3782,11 @@ protected:
     //! \brief Default constructor - initializes to NULL.
     Image() : Memory() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image(const Image& image) : Memory(image) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Image(const cl_mem& image) : Memory(image) {}
-
-    /*! \brief Assignment from Image - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image& operator=(const Image& rhs)
-    {
-        if (this != &rhs)
-            {
-                Memory::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -3675,6 +3797,36 @@ protected:
         Memory::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image(const Image& img) : Memory(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image& operator=(const Image& img)
+    {
+        Memory::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image(Image&& img) CL_HPP_NOEXCEPT : Memory(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image& operator=(Image&& img)
+    {
+        Memory::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
 public:
     //! \brief Wrapper for clGetImageInfo().
@@ -3725,13 +3877,11 @@ public:
         cl_int* err = NULL)
     {
         cl_int error;
-        cl_image_desc desc;
-        desc.image_type = CL_MEM_OBJECT_IMAGE1D;
-        desc.image_width = width;
-        desc.image_row_pitch = 0;
-        desc.num_mip_levels = 0;
-        desc.num_samples = 0;
-        desc.buffer = 0;
+        cl_image_desc desc =
+            {
+                CL_MEM_OBJECT_IMAGE1D,
+                width,
+                0, 0, 0, 0, 0, 0, 0, 0};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -3750,30 +3900,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Image1D() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image1D(const Image1D& image1D) : Image(image1D) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Image1D(const cl_mem& image1D) : Image(image1D) {}
-
-    /*! \brief Assignment from Image1D - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image1D& operator=(const Image1D& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -3784,6 +3915,36 @@ public:
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1D(const Image1D& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1D& operator=(const Image1D& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1D(Image1D&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1D& operator=(Image1D&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 
 /*! \class Image1DBuffer
@@ -3801,13 +3962,12 @@ public:
         cl_int* err = NULL)
     {
         cl_int error;
-        cl_image_desc desc;
-        desc.image_type = CL_MEM_OBJECT_IMAGE1D_BUFFER;
-        desc.image_width = width;
-        desc.image_row_pitch = 0;
-        desc.num_mip_levels = 0;
-        desc.num_samples = 0;
-        desc.buffer = buffer();
+        cl_image_desc desc =
+            {
+                CL_MEM_OBJECT_IMAGE1D_BUFFER,
+                width,
+                0, 0, 0, 0, 0, 0, 0,
+                buffer()};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -3825,24 +3985,43 @@ public:
 
     Image1DBuffer() {}
 
-    Image1DBuffer(const Image1DBuffer& image1D) : Image(image1D) {}
-
     __CL_EXPLICIT_CONSTRUCTORS Image1DBuffer(const cl_mem& image1D) : Image(image1D) {}
-
-    Image1DBuffer& operator=(const Image1DBuffer& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     Image1DBuffer& operator=(const cl_mem& rhs)
     {
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DBuffer(const Image1DBuffer& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DBuffer& operator=(const Image1DBuffer& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DBuffer(Image1DBuffer&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DBuffer& operator=(Image1DBuffer&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 
 /*! \class Image1DArray
@@ -3862,14 +4041,14 @@ public:
         cl_int* err = NULL)
     {
         cl_int error;
-        cl_image_desc desc;
-        desc.image_type = CL_MEM_OBJECT_IMAGE1D_ARRAY;
-        desc.image_array_size = arraySize;
-        desc.image_width = width;
-        desc.image_row_pitch = rowPitch;
-        desc.num_mip_levels = 0;
-        desc.num_samples = 0;
-        desc.buffer = 0;
+        cl_image_desc desc =
+            {
+                CL_MEM_OBJECT_IMAGE1D_ARRAY,
+                width,
+                0, 0,  // height, depth (unused)
+                arraySize,
+                rowPitch,
+                0, 0, 0, 0};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -3887,24 +4066,43 @@ public:
 
     Image1DArray() {}
 
-    Image1DArray(const Image1DArray& imageArray) : Image(imageArray) {}
-
     __CL_EXPLICIT_CONSTRUCTORS Image1DArray(const cl_mem& imageArray) : Image(imageArray) {}
-
-    Image1DArray& operator=(const Image1DArray& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     Image1DArray& operator=(const cl_mem& rhs)
     {
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DArray(const Image1DArray& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DArray& operator=(const Image1DArray& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DArray(Image1DArray&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image1DArray& operator=(Image1DArray&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 #endif  // #if defined(CL_VERSION_1_2)
 
@@ -3950,14 +4148,14 @@ public:
 #if defined(CL_VERSION_1_2)
         if (useCreateImage)
             {
-                cl_image_desc desc;
-                desc.image_type = CL_MEM_OBJECT_IMAGE2D;
-                desc.image_width = width;
-                desc.image_height = height;
-                desc.image_row_pitch = row_pitch;
-                desc.num_mip_levels = 0;
-                desc.num_samples = 0;
-                desc.buffer = 0;
+                cl_image_desc desc =
+                    {
+                        CL_MEM_OBJECT_IMAGE2D,
+                        width,
+                        height,
+                        0, 0,  // depth, array size (unused)
+                        row_pitch,
+                        0, 0, 0, 0};
                 object_ = ::clCreateImage(
                     context(),
                     flags,
@@ -3991,30 +4189,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Image2D() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image2D(const Image2D& image2D) : Image(image2D) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Image2D(const cl_mem& image2D) : Image(image2D) {}
-
-    /*! \brief Assignment from Image2D - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image2D& operator=(const Image2D& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -4025,6 +4204,36 @@ public:
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2D(const Image2D& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2D& operator=(const Image2D& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2D(Image2D&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2D& operator=(Image2D&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 
 
@@ -4049,9 +4258,9 @@ public:
     Image2DGL(
         const Context& context,
         cl_mem_flags flags,
-        GLenum target,
-        GLint miplevel,
-        GLuint texobj,
+        cl_GLenum target,
+        cl_GLint miplevel,
+        cl_GLuint texobj,
         cl_int* err = NULL)
     {
         cl_int error;
@@ -4073,30 +4282,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Image2DGL() : Image2D() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image2DGL(const Image2DGL& image) : Image2D(image) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Image2DGL(const cl_mem& image) : Image2D(image) {}
-
-    /*! \brief Assignment from Image2DGL - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image2DGL& operator=(const Image2DGL& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image2D::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -4107,6 +4297,36 @@ public:
         Image2D::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DGL(const Image2DGL& img) : Image2D(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DGL& operator=(const Image2DGL& img)
+    {
+        Image2D::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DGL(Image2DGL&& img) CL_HPP_NOEXCEPT : Image2D(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DGL& operator=(Image2DGL&& img)
+    {
+        Image2D::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 #endif  // #if !defined(CL_VERSION_1_2)
 
@@ -4130,16 +4350,16 @@ public:
         cl_int* err = NULL)
     {
         cl_int error;
-        cl_image_desc desc;
-        desc.image_type = CL_MEM_OBJECT_IMAGE2D_ARRAY;
-        desc.image_array_size = arraySize;
-        desc.image_width = width;
-        desc.image_height = height;
-        desc.image_row_pitch = rowPitch;
-        desc.image_slice_pitch = slicePitch;
-        desc.num_mip_levels = 0;
-        desc.num_samples = 0;
-        desc.buffer = 0;
+        cl_image_desc desc =
+            {
+                CL_MEM_OBJECT_IMAGE2D_ARRAY,
+                width,
+                height,
+                0,  // depth (unused)
+                arraySize,
+                rowPitch,
+                slicePitch,
+                0, 0, 0};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -4157,24 +4377,43 @@ public:
 
     Image2DArray() {}
 
-    Image2DArray(const Image2DArray& imageArray) : Image(imageArray) {}
-
     __CL_EXPLICIT_CONSTRUCTORS Image2DArray(const cl_mem& imageArray) : Image(imageArray) {}
-
-    Image2DArray& operator=(const Image2DArray& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     Image2DArray& operator=(const cl_mem& rhs)
     {
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DArray(const Image2DArray& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DArray& operator=(const Image2DArray& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DArray(Image2DArray&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image2DArray& operator=(Image2DArray&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 #endif  // #if defined(CL_VERSION_1_2)
 
@@ -4221,16 +4460,16 @@ public:
 #if defined(CL_VERSION_1_2)
         if (useCreateImage)
             {
-                cl_image_desc desc;
-                desc.image_type = CL_MEM_OBJECT_IMAGE3D;
-                desc.image_width = width;
-                desc.image_height = height;
-                desc.image_depth = depth;
-                desc.image_row_pitch = row_pitch;
-                desc.image_slice_pitch = slice_pitch;
-                desc.num_mip_levels = 0;
-                desc.num_samples = 0;
-                desc.buffer = 0;
+                cl_image_desc desc =
+                    {
+                        CL_MEM_OBJECT_IMAGE3D,
+                        width,
+                        height,
+                        depth,
+                        0,  // array size (unused)
+                        row_pitch,
+                        slice_pitch,
+                        0, 0, 0};
                 object_ = ::clCreateImage(
                     context(),
                     flags,
@@ -4263,32 +4502,13 @@ public:
     }
 
     //! \brief Default constructor - initializes to NULL.
-    Image3D() {}
-
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image3D(const Image3D& image3D) : Image(image3D) {}
+    Image3D() : Image() {}
 
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Image3D(const cl_mem& image3D) : Image(image3D) {}
-
-    /*! \brief Assignment from Image3D - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image3D& operator=(const Image3D& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -4299,6 +4519,36 @@ public:
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3D(const Image3D& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3D& operator=(const Image3D& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3D(Image3D&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3D& operator=(Image3D&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 
 #if !defined(CL_VERSION_1_2)
@@ -4321,9 +4571,9 @@ public:
     Image3DGL(
         const Context& context,
         cl_mem_flags flags,
-        GLenum target,
-        GLint miplevel,
-        GLuint texobj,
+        cl_GLenum target,
+        cl_GLint miplevel,
+        cl_GLuint texobj,
         cl_int* err = NULL)
     {
         cl_int error;
@@ -4345,30 +4595,11 @@ public:
     //! \brief Default constructor - initializes to NULL.
     Image3DGL() : Image3D() {}
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image3DGL(const Image3DGL& image) : Image3D(image) {}
-
     /*! \brief Constructor from cl_mem - takes ownership.
      *
      *  See Memory for further details.
      */
     __CL_EXPLICIT_CONSTRUCTORS Image3DGL(const cl_mem& image) : Image3D(image) {}
-
-    /*! \brief Assignment from Image3DGL - performs shallow copy.
-     *
-     *  See Memory for further details.
-     */
-    Image3DGL& operator=(const Image3DGL& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image3D::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
      *
@@ -4379,6 +4610,36 @@ public:
         Image3D::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3DGL(const Image3DGL& img) : Image3D(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3DGL& operator=(const Image3DGL& img)
+    {
+        Image3D::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3DGL(Image3DGL&& img) CL_HPP_NOEXCEPT : Image3D(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Image3DGL& operator=(Image3DGL&& img)
+    {
+        Image3D::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 #endif  // #if !defined(CL_VERSION_1_2)
 
@@ -4395,9 +4656,9 @@ public:
     ImageGL(
         const Context& context,
         cl_mem_flags flags,
-        GLenum target,
-        GLint miplevel,
-        GLuint texobj,
+        cl_GLenum target,
+        cl_GLint miplevel,
+        cl_GLuint texobj,
         cl_int* err = NULL)
     {
         cl_int error;
@@ -4418,26 +4679,190 @@ public:
 
     ImageGL() : Image() {}
 
-    ImageGL(const ImageGL& image) : Image(image) {}
-
     __CL_EXPLICIT_CONSTRUCTORS ImageGL(const cl_mem& image) : Image(image) {}
-
-    ImageGL& operator=(const ImageGL& rhs)
-    {
-        if (this != &rhs)
-            {
-                Image::operator=(rhs);
-            }
-        return *this;
-    }
 
     ImageGL& operator=(const cl_mem& rhs)
     {
         Image::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    ImageGL(const ImageGL& img) : Image(img) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    ImageGL& operator=(const ImageGL& img)
+    {
+        Image::operator=(img);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    ImageGL(ImageGL&& img) CL_HPP_NOEXCEPT : Image(std::move(img)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    ImageGL& operator=(ImageGL&& img)
+    {
+        Image::operator=(std::move(img));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 };
 #endif  // #if defined(CL_VERSION_1_2)
+
+/*! \brief Class interface for GL Render Buffer Memory Objects.
+*
+*  This is provided to facilitate interoperability with OpenGL.
+*
+*  See Memory for details about copy semantics, etc.
+*
+*  \see Memory
+*/
+class BufferRenderGL :
+#if defined(CL_VERSION_1_2)
+    public ImageGL
+#else   // #if defined(CL_VERSION_1_2)
+    public Image2DGL
+#endif  //#if defined(CL_VERSION_1_2)
+{
+public:
+    /*! \brief Constructs a BufferRenderGL in a specified context, from a given
+    *         GL Renderbuffer.
+    *
+    *  Wraps clCreateFromGLRenderbuffer().
+    */
+    BufferRenderGL(
+        const Context& context,
+        cl_mem_flags flags,
+        cl_GLuint bufobj,
+        cl_int* err = NULL)
+    {
+        cl_int error;
+        object_ = ::clCreateFromGLRenderbuffer(
+            context(),
+            flags,
+            bufobj,
+            &error);
+
+        detail::errHandler(error, __CREATE_GL_RENDER_BUFFER_ERR);
+        if (err != NULL)
+            {
+                *err = error;
+            }
+    }
+
+    //! \brief Default constructor - initializes to NULL.
+#if defined(CL_VERSION_1_2)
+    BufferRenderGL() : ImageGL(){};
+#else   // #if defined(CL_VERSION_1_2)
+    BufferRenderGL() : Image2DGL(){};
+#endif  //#if defined(CL_VERSION_1_2)
+
+    /*! \brief Constructor from cl_mem - takes ownership.
+    *
+    *  See Memory for further details.
+    */
+#if defined(CL_VERSION_1_2)
+    __CL_EXPLICIT_CONSTRUCTORS BufferRenderGL(const cl_mem& buffer) : ImageGL(buffer)
+    {
+    }
+#else   // #if defined(CL_VERSION_1_2)
+    __CL_EXPLICIT_CONSTRUCTORS BufferRenderGL(const cl_mem& buffer) : Image2DGL(buffer)
+    {
+    }
+#endif  //#if defined(CL_VERSION_1_2)
+
+
+    /*! \brief Assignment from cl_mem - performs shallow copy.
+    *
+    *  See Memory for further details.
+    */
+    BufferRenderGL& operator=(const cl_mem& rhs)
+    {
+#if defined(CL_VERSION_1_2)
+        ImageGL::operator=(rhs);
+#else   // #if defined(CL_VERSION_1_2)
+        Image2DGL::operator=(rhs);
+#endif  //#if defined(CL_VERSION_1_2)
+
+        return *this;
+    }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+    * Required for MSVC.
+    */
+#if defined(CL_VERSION_1_2)
+    BufferRenderGL(const BufferRenderGL& buf) : ImageGL(buf)
+    {
+    }
+#else   // #if defined(CL_VERSION_1_2)
+    BufferRenderGL(const BufferRenderGL& buf) : Image2DGL(buf)
+    {
+    }
+#endif  //#if defined(CL_VERSION_1_2)
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferRenderGL& operator=(const BufferRenderGL& rhs)
+    {
+#if defined(CL_VERSION_1_2)
+        ImageGL::operator=(rhs);
+#else   // #if defined(CL_VERSION_1_2)
+        Image2DGL::operator=(rhs);
+#endif  //#if defined(CL_VERSION_1_2)
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+    * Required for MSVC.
+    */
+#if defined(CL_VERSION_1_2)
+    BufferRenderGL(BufferRenderGL&& buf) CL_HPP_NOEXCEPT : ImageGL(std::move(buf))
+    {
+    }
+#else   // #if defined(CL_VERSION_1_2)
+    BufferRenderGL(BufferRenderGL&& buf) CL_HPP_NOEXCEPT : Image2DGL(std::move(buf))
+    {
+    }
+#endif  //#if defined(CL_VERSION_1_2)
+
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+    * Required for MSVC.
+    */
+    BufferRenderGL& operator=(BufferRenderGL&& buf)
+    {
+#if defined(CL_VERSION_1_2)
+        ImageGL::operator=(std::move(buf));
+#else   // #if defined(CL_VERSION_1_2)
+        Image2DGL::operator=(std::move(buf));
+#endif  //#if defined(CL_VERSION_1_2)
+
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+
+    //! \brief Wrapper for clGetGLObjectInfo().
+    cl_int getObjectInfo(
+        cl_gl_object_type* type,
+        cl_GLuint* gl_object_name)
+    {
+        return detail::errHandler(
+            ::clGetGLObjectInfo(object_, type, gl_object_name),
+            __GET_GL_OBJECT_INFO_ERR);
+    }
+};
 
 /*! \brief Class interface for cl_sampler.
  *
@@ -4450,12 +4875,6 @@ public:
 class Sampler : public detail::Wrapper<cl_sampler>
 {
 public:
-    /*! \brief Destructor.
-     *
-     *  This calls clReleaseSampler() on the value held by this instance.
-     */
-    ~Sampler() {}
-
     //! \brief Default constructor - initializes to NULL.
     Sampler() {}
 
@@ -4485,32 +4904,12 @@ public:
             }
     }
 
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  This calls clRetainSampler() on the parameter's cl_sampler.
-     */
-    Sampler(const Sampler& sampler) : detail::Wrapper<cl_type>(sampler) {}
-
     /*! \brief Constructor from cl_sampler - takes ownership.
      *
      *  This effectively transfers ownership of a refcount on the cl_sampler
      *  into the new Sampler object.
      */
-    Sampler(const cl_sampler& sampler) : detail::Wrapper<cl_type>(sampler) {}
-
-    /*! \brief Assignment operator from Sampler.
-     *
-     *  This calls clRetainSampler() on the parameter and clReleaseSampler()
-     *  on the previous value held by this instance.
-     */
-    Sampler& operator=(const Sampler& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
+    __CL_EXPLICIT_CONSTRUCTORS Sampler(const cl_sampler& sampler) : detail::Wrapper<cl_type>(sampler) {}
 
     /*! \brief Assignment operator from cl_sampler - takes ownership.
      *
@@ -4522,6 +4921,36 @@ public:
         detail::Wrapper<cl_type>::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Sampler(const Sampler& sam) : detail::Wrapper<cl_type>(sam) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Sampler& operator=(const Sampler& sam)
+    {
+        detail::Wrapper<cl_type>::operator=(sam);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Sampler(Sampler&& sam) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(sam)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Sampler& operator=(Sampler&& sam)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(sam));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     //! \brief Wrapper for clGetSamplerInfo().
     template <typename T>
@@ -4618,14 +5047,14 @@ template <typename T>
 struct KernelArgumentHandler
 {
     static ::size_t size(const T&) { return sizeof(T); }
-    static T* ptr(T& value) { return &value; }
+    static const T* ptr(const T& value) { return &value; }
 };
 
 template <>
 struct KernelArgumentHandler<LocalSpaceArg>
 {
     static ::size_t size(const LocalSpaceArg& value) { return value.size_; }
-    static void* ptr(LocalSpaceArg&) { return NULL; }
+    static const void* ptr(const LocalSpaceArg&) { return NULL; }
 };
 
 }  // namespace detail
@@ -4669,20 +5098,8 @@ class Kernel : public detail::Wrapper<cl_kernel>
 public:
     inline Kernel(const Program& program, const char* name, cl_int* err = NULL);
 
-    /*! \brief Destructor.
-     *
-     *  This calls clReleaseKernel() on the value held by this instance.
-     */
-    ~Kernel() {}
-
     //! \brief Default constructor - initializes to NULL.
     Kernel() {}
-
-    /*! \brief Copy constructor - performs shallow copy.
-     *
-     *  This calls clRetainKernel() on the parameter's cl_kernel.
-     */
-    Kernel(const Kernel& kernel) : detail::Wrapper<cl_type>(kernel) {}
 
     /*! \brief Constructor from cl_kernel - takes ownership.
      *
@@ -4690,20 +5107,6 @@ public:
      *  into the new Kernel object.
      */
     __CL_EXPLICIT_CONSTRUCTORS Kernel(const cl_kernel& kernel) : detail::Wrapper<cl_type>(kernel) {}
-
-    /*! \brief Assignment operator from Kernel.
-     *
-     *  This calls clRetainKernel() on the parameter and clReleaseKernel()
-     *  on the previous value held by this instance.
-     */
-    Kernel& operator=(const Kernel& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
 
     /*! \brief Assignment operator from cl_kernel - takes ownership.
      *
@@ -4715,6 +5118,36 @@ public:
         detail::Wrapper<cl_type>::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Kernel(const Kernel& kernel) : detail::Wrapper<cl_type>(kernel) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Kernel& operator=(const Kernel& kernel)
+    {
+        detail::Wrapper<cl_type>::operator=(kernel);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Kernel(Kernel&& kernel) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(kernel)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Kernel& operator=(Kernel&& kernel)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(kernel));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     template <typename T>
     cl_int getInfo(cl_kernel_info name, T* param) const
@@ -4787,7 +5220,7 @@ public:
     }
 
     template <typename T>
-    cl_int setArg(cl_uint index, T value)
+    cl_int setArg(cl_uint index, const T& value)
     {
         return detail::errHandler(
             ::clSetKernelArg(
@@ -4798,7 +5231,7 @@ public:
             __SET_KERNEL_ARGS_ERR);
     }
 
-    cl_int setArg(cl_uint index, ::size_t size, void* argPtr)
+    cl_int setArg(cl_uint index, ::size_t size, const void* argPtr)
     {
         return detail::errHandler(
             ::clSetKernelArg(object_, index, size, argPtr),
@@ -4817,42 +5250,7 @@ public:
 
     Program(
         const STRING_CLASS& source,
-        cl_int* err = NULL)
-    {
-        cl_int error;
-
-        const char* strings = source.c_str();
-        const ::size_t length = source.size();
-
-        Context context = Context::getDefault(err);
-
-        object_ = ::clCreateProgramWithSource(
-            context(), (cl_uint)1, &strings, &length, &error);
-
-        detail::errHandler(error, __CREATE_PROGRAM_WITH_SOURCE_ERR);
-
-        if (error == CL_SUCCESS)
-            {
-                error = ::clBuildProgram(
-                    object_,
-                    0,
-                    NULL,
-                    "",
-                    NULL,
-                    NULL);
-
-                detail::errHandler(error, __BUILD_PROGRAM_ERR);
-            }
-
-        if (err != NULL)
-            {
-                *err = error;
-            }
-    }
-
-    Program(
-        const STRING_CLASS& source,
-        bool build,
+        bool build = false,
         cl_int* err = NULL)
     {
         cl_int error;
@@ -5013,7 +5411,7 @@ public:
         object_ = ::clCreateProgramWithBinary(
             context(), (cl_uint)devices.size(),
             deviceIDs,
-            lengths, images, binaryStatus != NULL ? &binaryStatus->front() : NULL, &error);
+            lengths, images, (binaryStatus != NULL && numDevices > 0) ? &binaryStatus->front() : NULL, &error);
 
         detail::errHandler(error, __CREATE_PROGRAM_WITH_BINARY_ERR);
         if (err != NULL)
@@ -5063,24 +5461,43 @@ public:
     {
     }
 
-    Program(const Program& program) : detail::Wrapper<cl_type>(program) {}
-
     __CL_EXPLICIT_CONSTRUCTORS Program(const cl_program& program) : detail::Wrapper<cl_type>(program) {}
-
-    Program& operator=(const Program& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
 
     Program& operator=(const cl_program& rhs)
     {
         detail::Wrapper<cl_type>::operator=(rhs);
         return *this;
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Program(const Program& program) : detail::Wrapper<cl_type>(program) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    Program& operator=(const Program& program)
+    {
+        detail::Wrapper<cl_type>::operator=(program);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Program(Program&& program) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(program)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    Program& operator=(Program&& program)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(program));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     cl_int build(
         const VECTOR_CLASS<Device>& devices,
@@ -5221,11 +5638,15 @@ inline Program linkProgram(
     void* data = NULL,
     cl_int* err = NULL)
 {
-    cl_int err_local = CL_SUCCESS;
+    cl_int error_local = CL_SUCCESS;
 
     cl_program programs[2] = {input1(), input2()};
 
-    Context ctx = input1.getInfo<CL_PROGRAM_CONTEXT>();
+    Context ctx = input1.getInfo<CL_PROGRAM_CONTEXT>(&error_local);
+    if (error_local != CL_SUCCESS)
+        {
+            detail::errHandler(error_local, __LINK_PROGRAM_ERR);
+        }
 
     cl_program prog = ::clLinkProgram(
         ctx(),
@@ -5236,12 +5657,12 @@ inline Program linkProgram(
         programs,
         notifyFptr,
         data,
-        &err_local);
+        &error_local);
 
-    detail::errHandler(err_local, __COMPILE_PROGRAM_ERR);
+    detail::errHandler(error_local, __COMPILE_PROGRAM_ERR);
     if (err != NULL)
         {
-            *err = err_local;
+            *err = error_local;
         }
 
     return Program(prog);
@@ -5254,7 +5675,7 @@ inline Program linkProgram(
     void* data = NULL,
     cl_int* err = NULL)
 {
-    cl_int err_local = CL_SUCCESS;
+    cl_int error_local = CL_SUCCESS;
 
     cl_program* programs = (cl_program*)alloca(inputPrograms.size() * sizeof(cl_program));
 
@@ -5266,8 +5687,17 @@ inline Program linkProgram(
                 }
         }
 
+    Context ctx;
+    if (inputPrograms.size() > 0)
+        {
+            ctx = inputPrograms[0].getInfo<CL_PROGRAM_CONTEXT>(&error_local);
+            if (error_local != CL_SUCCESS)
+                {
+                    detail::errHandler(error_local, __LINK_PROGRAM_ERR);
+                }
+        }
     cl_program prog = ::clLinkProgram(
-        Context::getDefault()(),
+        ctx(),
         0,
         NULL,
         options,
@@ -5275,12 +5705,12 @@ inline Program linkProgram(
         programs,
         notifyFptr,
         data,
-        &err_local);
+        &error_local);
 
-    detail::errHandler(err_local, __COMPILE_PROGRAM_ERR);
+    detail::errHandler(error_local, __COMPILE_PROGRAM_ERR);
     if (err != NULL)
         {
-            *err = err_local;
+            *err = error_local;
         }
 
     return Program(prog);
@@ -5327,7 +5757,11 @@ inline Kernel::Kernel(const Program& program, const char* name, cl_int* err)
 class CommandQueue : public detail::Wrapper<cl_command_queue>
 {
 private:
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+    static std::atomic<int> default_initialized_;
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
     static volatile int default_initialized_;
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
     static CommandQueue default_;
     static volatile cl_int default_error_;
 
@@ -5339,7 +5773,7 @@ public:
         cl_int error;
 
         Context context = Context::getDefault(&error);
-        detail::errHandler(error, __CREATE_COMMAND_QUEUE_ERR);
+        detail::errHandler(error, __CREATE_CONTEXT_ERR);
 
         if (error != CL_SUCCESS)
             {
@@ -5362,6 +5796,38 @@ public:
                     }
             }
     }
+    /*!
+    * \brief Constructs a CommandQueue for an implementation defined device in the given context
+    */
+    explicit CommandQueue(
+        const Context& context,
+        cl_command_queue_properties properties = 0,
+        cl_int* err = NULL)
+    {
+        cl_int error;
+        VECTOR_CLASS<cl::Device> devices;
+        error = context.getInfo(CL_CONTEXT_DEVICES, &devices);
+
+        detail::errHandler(error, __CREATE_CONTEXT_ERR);
+
+        if (error != CL_SUCCESS)
+            {
+                if (err != NULL)
+                    {
+                        *err = error;
+                    }
+                return;
+            }
+
+        object_ = ::clCreateCommandQueue(context(), devices[0](), properties, &error);
+
+        detail::errHandler(error, __CREATE_COMMAND_QUEUE_ERR);
+
+        if (err != NULL)
+            {
+                *err = error;
+            }
+    }
 
     CommandQueue(
         const Context& context,
@@ -5379,6 +5845,36 @@ public:
                 *err = error;
             }
     }
+
+    /*! \brief Copy constructor to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    CommandQueue(const CommandQueue& queue) : detail::Wrapper<cl_type>(queue) {}
+
+    /*! \brief Copy assignment to forward copy to the superclass correctly.
+     * Required for MSVC.
+     */
+    CommandQueue& operator=(const CommandQueue& queue)
+    {
+        detail::Wrapper<cl_type>::operator=(queue);
+        return *this;
+    }
+
+#if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
+    /*! \brief Move constructor to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    CommandQueue(CommandQueue&& queue) CL_HPP_NOEXCEPT : detail::Wrapper<cl_type>(std::move(queue)) {}
+
+    /*! \brief Move assignment to forward move to the superclass correctly.
+     * Required for MSVC.
+     */
+    CommandQueue& operator=(CommandQueue&& queue)
+    {
+        detail::Wrapper<cl_type>::operator=(std::move(queue));
+        return *this;
+    }
+#endif  // #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
 
     static CommandQueue getDefault(cl_int* err = NULL)
     {
@@ -5452,18 +5948,7 @@ public:
 
     CommandQueue() {}
 
-    CommandQueue(const CommandQueue& commandQueue) : detail::Wrapper<cl_type>(commandQueue) {}
-
-    CommandQueue(const cl_command_queue& commandQueue) : detail::Wrapper<cl_type>(commandQueue) {}
-
-    CommandQueue& operator=(const CommandQueue& rhs)
-    {
-        if (this != &rhs)
-            {
-                detail::Wrapper<cl_type>::operator=(rhs);
-            }
-        return *this;
-    }
+    __CL_EXPLICIT_CONSTRUCTORS CommandQueue(const cl_command_queue& commandQueue) : detail::Wrapper<cl_type>(commandQueue) {}
 
     CommandQueue& operator=(const cl_command_queue& rhs)
     {
@@ -5963,12 +6448,13 @@ public:
         Event* event = NULL,
         cl_int* err = NULL) const
     {
+        cl_event tmp;
         cl_int error;
         void* result = ::clEnqueueMapBuffer(
             object_, buffer(), blocking, flags, offset, size,
             (events != NULL) ? (cl_uint)events->size() : 0,
             (events != NULL && events->size() > 0) ? (cl_event*)&events->front() : NULL,
-            (cl_event*)event,
+            (event != NULL) ? &tmp : NULL,
             &error);
 
         detail::errHandler(error, __ENQUEUE_MAP_BUFFER_ERR);
@@ -5976,6 +6462,9 @@ public:
             {
                 *err = error;
             }
+        if (event != NULL && error == CL_SUCCESS)
+            *event = tmp;
+
         return result;
     }
 
@@ -5991,6 +6480,7 @@ public:
         Event* event = NULL,
         cl_int* err = NULL) const
     {
+        cl_event tmp;
         cl_int error;
         void* result = ::clEnqueueMapImage(
             object_, buffer(), blocking, flags,
@@ -5998,7 +6488,7 @@ public:
             row_pitch, slice_pitch,
             (events != NULL) ? (cl_uint)events->size() : 0,
             (events != NULL && events->size() > 0) ? (cl_event*)&events->front() : NULL,
-            (cl_event*)event,
+            (event != NULL) ? &tmp : NULL,
             &error);
 
         detail::errHandler(error, __ENQUEUE_MAP_IMAGE_ERR);
@@ -6006,6 +6496,8 @@ public:
             {
                 *err = error;
             }
+        if (event != NULL && error == CL_SUCCESS)
+            *event = tmp;
         return result;
     }
 
@@ -6200,7 +6692,7 @@ public:
                 object_, userFptr, args.first, args.second,
                 (mem_objects != NULL) ? (cl_uint)mem_objects->size() : 0,
                 mems,
-                (mem_locs != NULL) ? (const void**)&mem_locs->front() : NULL,
+                (mem_locs != NULL && mem_locs->size() > 0) ? (const void**)&mem_locs->front() : NULL,
                 (events != NULL) ? (cl_uint)events->size() : 0,
                 (events != NULL && events->size() > 0) ? (cl_event*)&events->front() : NULL,
                 (event != NULL) ? &tmp : NULL),
@@ -6219,9 +6711,17 @@ public:
     CL_EXT_PREFIX__VERSION_1_1_DEPRECATED
     cl_int enqueueMarker(Event* event = NULL) const CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED
     {
-        return detail::errHandler(
-            ::clEnqueueMarker(object_, (cl_event*)event),
+        cl_event tmp;
+        cl_int err = detail::errHandler(
+            ::clEnqueueMarker(
+                object_,
+                (event != NULL) ? &tmp : NULL),
             __ENQUEUE_MARKER_ERR);
+
+        if (event != NULL && err == CL_SUCCESS)
+            *event = tmp;
+
+        return err;
     }
 
     CL_EXT_PREFIX__VERSION_1_1_DEPRECATED
@@ -6231,7 +6731,7 @@ public:
             ::clEnqueueWaitForEvents(
                 object_,
                 (cl_uint)events.size(),
-                (const cl_event*)&events.front()),
+                events.size() > 0 ? (const cl_event*)&events.front() : NULL),
             __ENQUEUE_WAIT_FOR_EVENTS_ERR);
     }
 #endif  // #if defined(CL_VERSION_1_1)
@@ -6246,7 +6746,7 @@ public:
             ::clEnqueueAcquireGLObjects(
                 object_,
                 (mem_objects != NULL) ? (cl_uint)mem_objects->size() : 0,
-                (mem_objects != NULL) ? (const cl_mem*)&mem_objects->front() : NULL,
+                (mem_objects != NULL && mem_objects->size() > 0) ? (const cl_mem*)&mem_objects->front() : NULL,
                 (events != NULL) ? (cl_uint)events->size() : 0,
                 (events != NULL && events->size() > 0) ? (cl_event*)&events->front() : NULL,
                 (event != NULL) ? &tmp : NULL),
@@ -6268,7 +6768,7 @@ public:
             ::clEnqueueReleaseGLObjects(
                 object_,
                 (mem_objects != NULL) ? (cl_uint)mem_objects->size() : 0,
-                (mem_objects != NULL) ? (const cl_mem*)&mem_objects->front() : NULL,
+                (mem_objects != NULL && mem_objects->size() > 0) ? (const cl_mem*)&mem_objects->front() : NULL,
                 (events != NULL) ? (cl_uint)events->size() : 0,
                 (events != NULL && events->size() > 0) ? (cl_event*)&events->front() : NULL,
                 (event != NULL) ? &tmp : NULL),
@@ -6311,7 +6811,7 @@ public:
             pfn_clEnqueueAcquireD3D10ObjectsKHR(
                 object_,
                 (mem_objects != NULL) ? (cl_uint)mem_objects->size() : 0,
-                (mem_objects != NULL) ? (const cl_mem*)&mem_objects->front() : NULL,
+                (mem_objects != NULL && mem_objects->size() > 0) ? (const cl_mem*)&mem_objects->front() : NULL,
                 (events != NULL) ? (cl_uint)events->size() : 0,
                 (events != NULL) ? (cl_event*)&events->front() : NULL,
                 (event != NULL) ? &tmp : NULL),
@@ -6344,9 +6844,9 @@ public:
             pfn_clEnqueueReleaseD3D10ObjectsKHR(
                 object_,
                 (mem_objects != NULL) ? (cl_uint)mem_objects->size() : 0,
-                (mem_objects != NULL) ? (const cl_mem*)&mem_objects->front() : NULL,
+                (mem_objects != NULL && mem_objects->size() > 0) ? (const cl_mem*)&mem_objects->front() : NULL,
                 (events != NULL) ? (cl_uint)events->size() : 0,
-                (events != NULL) ? (cl_event*)&events->front() : NULL,
+                (events != NULL && events->size() > 0) ? (cl_event*)&events->front() : NULL,
                 (event != NULL) ? &tmp : NULL),
             __ENQUEUE_RELEASE_GL_ERR);
 
@@ -6382,14 +6882,139 @@ public:
 };
 
 #ifdef _WIN32
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+__declspec(selectany) std::atomic<int> CommandQueue::default_initialized_;
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __declspec(selectany) volatile int CommandQueue::default_initialized_ = __DEFAULT_NOT_INITIALIZED;
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __declspec(selectany) CommandQueue CommandQueue::default_;
 __declspec(selectany) volatile cl_int CommandQueue::default_error_ = CL_SUCCESS;
-#else
+#else  // !_WIN32
+#ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
+__attribute__((weak)) std::atomic<int> CommandQueue::default_initialized_;
+#else   // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __attribute__((weak)) volatile int CommandQueue::default_initialized_ = __DEFAULT_NOT_INITIALIZED;
+#endif  // !CL_HPP_CPP11_ATOMICS_SUPPORTED
 __attribute__((weak)) CommandQueue CommandQueue::default_;
 __attribute__((weak)) volatile cl_int CommandQueue::default_error_ = CL_SUCCESS;
-#endif
+#endif  // !_WIN32
+
+template <typename IteratorType>
+Buffer::Buffer(
+    const Context& context,
+    IteratorType startIterator,
+    IteratorType endIterator,
+    bool readOnly,
+    bool useHostPtr,
+    cl_int* err)
+{
+    typedef typename std::iterator_traits<IteratorType>::value_type DataType;
+    cl_int error;
+
+    cl_mem_flags flags = 0;
+    if (readOnly)
+        {
+            flags |= CL_MEM_READ_ONLY;
+        }
+    else
+        {
+            flags |= CL_MEM_READ_WRITE;
+        }
+    if (useHostPtr)
+        {
+            flags |= CL_MEM_USE_HOST_PTR;
+        }
+
+    ::size_t size = sizeof(DataType) * (endIterator - startIterator);
+
+    if (useHostPtr)
+        {
+            object_ = ::clCreateBuffer(context(), flags, size, static_cast<DataType*>(&*startIterator), &error);
+        }
+    else
+        {
+            object_ = ::clCreateBuffer(context(), flags, size, 0, &error);
+        }
+
+    detail::errHandler(error, __CREATE_BUFFER_ERR);
+    if (err != NULL)
+        {
+            *err = error;
+        }
+
+    if (!useHostPtr)
+        {
+            CommandQueue queue(context, 0, &error);
+            detail::errHandler(error, __CREATE_BUFFER_ERR);
+            if (err != NULL)
+                {
+                    *err = error;
+                }
+
+            error = cl::copy(queue, startIterator, endIterator, *this);
+            detail::errHandler(error, __CREATE_BUFFER_ERR);
+            if (err != NULL)
+                {
+                    *err = error;
+                }
+        }
+}
+
+template <typename IteratorType>
+Buffer::Buffer(
+    const CommandQueue& queue,
+    IteratorType startIterator,
+    IteratorType endIterator,
+    bool readOnly,
+    bool useHostPtr,
+    cl_int* err)
+{
+    typedef typename std::iterator_traits<IteratorType>::value_type DataType;
+    cl_int error;
+
+    cl_mem_flags flags = 0;
+    if (readOnly)
+        {
+            flags |= CL_MEM_READ_ONLY;
+        }
+    else
+        {
+            flags |= CL_MEM_READ_WRITE;
+        }
+    if (useHostPtr)
+        {
+            flags |= CL_MEM_USE_HOST_PTR;
+        }
+
+    ::size_t size = sizeof(DataType) * (endIterator - startIterator);
+
+    Context context = queue.getInfo<CL_QUEUE_CONTEXT>();
+
+    if (useHostPtr)
+        {
+            object_ = ::clCreateBuffer(context(), flags, size, static_cast<DataType*>(&*startIterator), &error);
+        }
+    else
+        {
+            object_ = ::clCreateBuffer(context(), flags, size, 0, &error);
+        }
+
+    detail::errHandler(error, __CREATE_BUFFER_ERR);
+    if (err != NULL)
+        {
+            *err = error;
+        }
+
+    if (!useHostPtr)
+        {
+            error = cl::copy(queue, startIterator, endIterator, *this);
+            detail::errHandler(error, __CREATE_BUFFER_ERR);
+            if (err != NULL)
+                {
+                    *err = error;
+                }
+        }
+}
 
 inline cl_int enqueueReadBuffer(
     const Buffer& buffer,
@@ -6515,9 +7140,43 @@ inline cl_int enqueueCopyBuffer(
 
 /**
  * Blocking copy operation between iterators and a buffer.
+ * Host to Device.
+ * Uses default command queue.
  */
 template <typename IteratorType>
 inline cl_int copy(IteratorType startIterator, IteratorType endIterator, cl::Buffer& buffer)
+{
+    cl_int error;
+    CommandQueue queue = CommandQueue::getDefault(&error);
+    if (error != CL_SUCCESS)
+        return error;
+
+    return cl::copy(queue, startIterator, endIterator, buffer);
+}
+
+/**
+ * Blocking copy operation between iterators and a buffer.
+ * Device to Host.
+ * Uses default command queue.
+ */
+template <typename IteratorType>
+inline cl_int copy(const cl::Buffer& buffer, IteratorType startIterator, IteratorType endIterator)
+{
+    cl_int error;
+    CommandQueue queue = CommandQueue::getDefault(&error);
+    if (error != CL_SUCCESS)
+        return error;
+
+    return cl::copy(queue, buffer, startIterator, endIterator);
+}
+
+/**
+ * Blocking copy operation between iterators and a buffer.
+ * Host to Device.
+ * Uses specified queue.
+ */
+template <typename IteratorType>
+inline cl_int copy(const CommandQueue& queue, IteratorType startIterator, IteratorType endIterator, cl::Buffer& buffer)
 {
     typedef typename std::iterator_traits<IteratorType>::value_type DataType;
     cl_int error;
@@ -6526,7 +7185,7 @@ inline cl_int copy(IteratorType startIterator, IteratorType endIterator, cl::Buf
     ::size_t byteLength = length * sizeof(DataType);
 
     DataType* pointer =
-        static_cast<DataType*>(enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_WRITE, 0, byteLength, 0, 0, &error));
+        static_cast<DataType*>(queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_WRITE, 0, byteLength, 0, 0, &error));
     // if exceptions enabled, enqueueMapBuffer will throw
     if (error != CL_SUCCESS)
         {
@@ -6542,7 +7201,7 @@ inline cl_int copy(IteratorType startIterator, IteratorType endIterator, cl::Buf
     std::copy(startIterator, endIterator, pointer);
 #endif
     Event endEvent;
-    error = enqueueUnmapMemObject(buffer, pointer, 0, &endEvent);
+    error = queue.enqueueUnmapMemObject(buffer, pointer, 0, &endEvent);
     // if exceptions enabled, enqueueUnmapMemObject will throw
     if (error != CL_SUCCESS)
         {
@@ -6554,9 +7213,11 @@ inline cl_int copy(IteratorType startIterator, IteratorType endIterator, cl::Buf
 
 /**
  * Blocking copy operation between iterators and a buffer.
+ * Device to Host.
+ * Uses specified queue.
  */
 template <typename IteratorType>
-inline cl_int copy(const cl::Buffer& buffer, IteratorType startIterator, IteratorType endIterator)
+inline cl_int copy(const CommandQueue& queue, const cl::Buffer& buffer, IteratorType startIterator, IteratorType endIterator)
 {
     typedef typename std::iterator_traits<IteratorType>::value_type DataType;
     cl_int error;
@@ -6565,7 +7226,7 @@ inline cl_int copy(const cl::Buffer& buffer, IteratorType startIterator, Iterato
     ::size_t byteLength = length * sizeof(DataType);
 
     DataType* pointer =
-        static_cast<DataType*>(enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_READ, 0, byteLength, 0, 0, &error));
+        static_cast<DataType*>(queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_READ, 0, byteLength, 0, 0, &error));
     // if exceptions enabled, enqueueMapBuffer will throw
     if (error != CL_SUCCESS)
         {
@@ -6573,7 +7234,7 @@ inline cl_int copy(const cl::Buffer& buffer, IteratorType startIterator, Iterato
         }
     std::copy(pointer, pointer + length, startIterator);
     Event endEvent;
-    error = enqueueUnmapMemObject(buffer, pointer, 0, &endEvent);
+    error = queue.enqueueUnmapMemObject(buffer, pointer, 0, &endEvent);
     // if exceptions enabled, enqueueUnmapMemObject will throw
     if (error != CL_SUCCESS)
         {
@@ -12404,10 +13065,9 @@ public:
 #undef __DEFAULT_BEING_INITIALIZED
 #undef __DEFAULT_INITIALIZED
 
-}  // namespace cl
+#undef CL_HPP_RVALUE_REFERENCES_SUPPORTED
+#undef CL_HPP_NOEXCEPT
 
-#ifdef _WIN32
-#pragma pop_macro("max")
-#endif  // _WIN32
+}  // namespace cl
 
 #endif  // CL_HPP_

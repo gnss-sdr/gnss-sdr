@@ -2099,8 +2099,6 @@ if(ENABLE_OPENCL)
     if(NOT OPENCL_FOUND)
         message(STATUS "Processing blocks using OpenCL will not be built.")
     endif()
-else()
-    set(OPENCL_FOUND FALSE)
 endif()
 
 

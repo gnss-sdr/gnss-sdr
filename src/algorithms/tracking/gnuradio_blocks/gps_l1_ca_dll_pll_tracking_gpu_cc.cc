@@ -327,11 +327,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
     double code_error_chips_Ti = 0.0;
     double code_error_filt_chips = 0.0;
     double code_error_filt_secs_Ti = 0.0;
-    double CURRENT_INTEGRATION_TIME_S;
-    double CORRECTED_INTEGRATION_TIME_S;
+    double CURRENT_INTEGRATION_TIME_S = 0.001;
+    double CORRECTED_INTEGRATION_TIME_S = 0.001;
     double dll_code_error_secs_Ti = 0.0;
     double carr_phase_error_secs_Ti = 0.0;
-    double old_d_rem_code_phase_samples;
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -524,14 +523,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     tmp_float = d_code_freq_chips;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    tmp_float = 1.0 / (d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
+                    tmp_float = 1.0 / (carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = 1.0 / (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S);
+                    tmp_float = 1.0 / (code_error_filt_secs_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
-                    tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
+                    tmp_float = code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_code_error_filt_chips_Ti;
+                    tmp_float = code_error_filt_secs_Ti;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
                     tmp_float = d_CN0_SNV_dB_Hz;
@@ -539,7 +538,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     tmp_float = d_carrier_lock_test;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
+                    tmp_float = code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));

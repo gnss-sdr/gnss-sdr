@@ -111,7 +111,7 @@ set_package_properties(PUGIXML PROPERTIES
 
 if(PUGIXML_FOUND AND PUGIXML_VERSION)
     set_package_properties(PUGIXML PROPERTIES
-        DESCRIPTION "Light-weight, simple and fast XML parser for C++ (found: ${PUGIXML_VERSION})"
+        DESCRIPTION "Light-weight, simple and fast XML parser for C++ (found: v${PUGIXML_VERSION})"
     )
 else()
     set_package_properties(PUGIXML PROPERTIES

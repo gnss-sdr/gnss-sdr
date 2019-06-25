@@ -61,7 +61,7 @@ find_package_handle_standard_args(GOOGLETEST DEFAULT_MSG LIBGTEST_DEV_DIR GTEST_
 if(GOOGLETEST_FOUND AND PC_GTEST_VERSION)
     set(GOOGLETEST_VERSION ${PC_GTEST_VERSION})
     set_package_properties(GOOGLETEST PROPERTIES
-        DESCRIPTION "Source code of Google's Testing Framework (found: ${GOOGLETEST_VERSION})"
+        DESCRIPTION "Source code of Google's Testing Framework (found: v${GOOGLETEST_VERSION})"
     )
 else()
     set_package_properties(GOOGLETEST PROPERTIES

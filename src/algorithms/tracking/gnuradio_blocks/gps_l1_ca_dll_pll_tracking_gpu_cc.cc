@@ -405,8 +405,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples - dll_code_error_secs_Ti * static_cast<double>(d_fs_in);
 
-            d_correlation_length_samples = round(K_blk_samples);  //round to a discrete samples
-            old_d_rem_code_phase_samples = d_rem_code_phase_samples;
+            d_correlation_length_samples = round(K_blk_samples);                                           //round to a discrete samples
             d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_correlation_length_samples);  //rounding error < 1 sample
 
             // UPDATE REMNANT CARRIER PHASE

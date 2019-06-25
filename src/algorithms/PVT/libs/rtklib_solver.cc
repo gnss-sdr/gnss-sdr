@@ -961,19 +961,22 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]
                     rx_position_and_time(1) = pvt_sol.rr[1];  // [m]
                     rx_position_and_time(2) = pvt_sol.rr[2];  // [m]
+                    //todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
                     if (rtk_.opt.mode == PMODE_SINGLE)
                         {
                             // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
-                            rx_position_and_time(3) = pvt_sol.dtr[0] + pvt_sol.dtr[1] + pvt_sol.dtr[2] + pvt_sol.dtr[3];
+                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            rx_position_and_time(3) = pvt_sol.dtr[0] + pvt_sol.dtr[2];
                         }
                     else
                         {
                             // the receiver clock offset is expressed in [meters], so we convert it into [s]
-                            rx_position_and_time(3) = (pvt_sol.dtr[0] + pvt_sol.dtr[1] + pvt_sol.dtr[2] + pvt_sol.dtr[3]) / GPS_C_M_S;
+                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            rx_position_and_time(3) = pvt_sol.dtr[2] + pvt_sol.dtr[0] / GPS_C_M_S;
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
 
-                    // compute Ground speed and COG
+                    //compute Ground speed and COG
                     double ground_speed_ms = 0.0;
                     double pos[3];
                     double enuv[3];

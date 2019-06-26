@@ -628,7 +628,7 @@ position-BDS-B1I:
     - volk_gnsssdr_profile -v 2053
     - mkdir test && mkdir position-test && cd test
     - cp /captures/gitlab_test_signals/static/beidou/BDS_B1I.conf ./BDS_B1I.conf
-    - position_test --config_file_ptest=BDS_B1I.conf --static_position="31.025035,121.439447,36.31" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0 --static_2D_error_m=10 --static_3D_error_m=10
+    - position_test --config_file_ptest=BDS_B1I.conf --static_position="31.025035,121.439447,36.31" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0 --static_2D_error_m=10 --static_3D_error_m=10 --accuracy_CEP=10
     - mkdir ../position-test/B1 && mv *.* ../position-test/B1
     - ls -la ../position-test/B1
   artifacts:
@@ -650,7 +650,7 @@ position-BDS-B3I:
     - volk_gnsssdr_profile -v 2053
     - mkdir test && mkdir position-test && cd test
     - cp /captures/gitlab_test_signals/static/beidou/BDS_B3I.conf ./BDS_B3I.conf
-    - position_test --config_file_ptest=BDS_B3I.conf --static_position="31.0250289,121.4394545,37.02" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0 --static_2D_error_m=10 --static_3D_error_m=10
+    - position_test --config_file_ptest=BDS_B3I.conf --static_position="31.0250289,121.4394545,37.02" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0 --static_2D_error_m=10 --static_3D_error_m=10 --accuracy_CEP=10
     - mkdir ../position-test/B3 && mv *.* ../position-test/B3
     - ls -la ../position-test/B3
   artifacts:

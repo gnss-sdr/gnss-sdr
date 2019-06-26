@@ -677,11 +677,11 @@ set_package_properties(Boost PROPERTIES
 
 if(CMAKE_VERSION VERSION_GREATER 3.14)
     set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: ${Boost_VERSION_STRING})"
+        DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
     )
 else()
     set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
+        DESCRIPTION "Portable C++ source libraries (found: v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
     )
 endif()
 
@@ -841,7 +841,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
         if(Python3_FOUND)
             set_package_properties(Python3 PROPERTIES
-                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${Python3_VERSION})"
             )
         else()
             set_package_properties(Python3 PROPERTIES
@@ -852,7 +852,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         if(Python2_FOUND)
             set_package_properties(Python2 PROPERTIES
                 URL "https://www.python.org/"
-                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python2_VERSION})"
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${Python2_VERSION})"
                 PURPOSE "Required to build volk_gnsssdr."
                 TYPE REQUIRED
             )
@@ -862,7 +862,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(PYTHONINTERP_FOUND)
         set_package_properties(PythonInterp PROPERTIES
             URL "https://www.python.org/"
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${PYTHON_VERSION_STRING})"
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${PYTHON_VERSION_STRING})"
             PURPOSE "Required to build volk_gnsssdr."
             TYPE REQUIRED
         )
@@ -1529,7 +1529,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     )
     if(ZLIB_FOUND AND ZLIB_VERSION_STRING)
         set_package_properties(ZLIB PROPERTIES
-            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (found: ${ZLIB_VERSION_STRING})"
+            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (found: v${ZLIB_VERSION_STRING})"
         )
     else()
         set_package_properties(ZLIB PROPERTIES
@@ -1580,7 +1580,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         )
         if(HDF5_FOUND AND HDF5_VERSION)
             set_package_properties(HDF5 PROPERTIES
-                DESCRIPTION "A versatile data model, a portable file format and a software library (found: ${HDF5_VERSION})"
+                DESCRIPTION "A versatile data model, a portable file format and a software library (found: v${HDF5_VERSION})"
             )
         else()
             set_package_properties(HDF5 PROPERTIES

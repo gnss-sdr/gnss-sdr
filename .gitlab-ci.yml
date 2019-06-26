@@ -615,7 +615,30 @@ position-L1-static:
   allow_failure: true
 
 
-position-BeiDouB3I:
+
+position-BDS-B1I:
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  stage: test
+  when: manual
+  tags:
+    - kepler
+  script:
+    - export DISPLAY=unknown
+    - volk_profile -v 8111
+    - volk_gnsssdr_profile -v 2053
+    - mkdir test && mkdir position-test && cd test
+    - cp /captures/gitlab_test_signals/static/beidou/BDS_B1I.conf ./BDS_B1I.conf
+    - position_test --config_file_ptest=BDS_B1I.conf --static_position="31.025035,121.439447,36.31" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0 --static_2D_error_m=10 --static_3D_error_m=10
+    - mkdir ../position-test/B1 && mv *.* ../position-test/B1
+    - ls -la ../position-test/B1
+  artifacts:
+    paths:
+      - position-test/*
+      - position-test/B1/*
+  allow_failure: true
+
+
+position-BDS-B3I:
   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
   stage: test
   when: manual
@@ -627,7 +650,7 @@ position-BeiDouB3I:
     - volk_gnsssdr_profile -v 2053
     - mkdir test && mkdir position-test && cd test
     - cp /captures/gitlab_test_signals/static/beidou/BDS_B3I.conf ./BDS_B3I.conf
-    - position_test --config_file_ptest=BDS_B3I.conf --static_position="31.0250289,121.4394545,37.02" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - position_test --config_file_ptest=BDS_B3I.conf --static_position="31.0250289,121.4394545,37.02" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0 --static_2D_error_m=10 --static_3D_error_m=10
     - mkdir ../position-test/B3 && mv *.* ../position-test/B3
     - ls -la ../position-test/B3
   artifacts:

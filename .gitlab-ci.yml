@@ -615,6 +615,28 @@ position-L1-static:
   allow_failure: true
 
 
+position-BeiDouB3I:
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  stage: test
+  when: manual
+  tags:
+    - kepler
+  script:
+    - export DISPLAY=unknown
+    - volk_profile -v 8111
+    - volk_gnsssdr_profile -v 2053
+    - mkdir test && mkdir position-test && cd test
+    - cp /captures/gitlab_test_signals/static/beidou/BDS_B3I.conf ./BDS_B3I.conf
+    - position_test --config_file_ptest=BDS_B3I.conf --static_position="31.0250289,121.4394545,37.02" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - mkdir ../position-test/B3 && mv *.* ../position-test/B3
+    - ls -la ../position-test/B3
+  artifacts:
+    paths:
+      - position-test/*
+      - position-test/B3/*
+  allow_failure: true
+
+
 position-L5-static:
   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
   stage: test
@@ -674,7 +696,7 @@ position-dual-static:
   allow_failure: true
 
 
-position-static-allinone:
+position-static-4in1:
   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
   stage: test
   tags:
@@ -728,7 +750,7 @@ position-leo:
   allow_failure: true
 
 
-position-leo-allinone:
+position-leo-4in1:
   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
   stage: test
   when: manual

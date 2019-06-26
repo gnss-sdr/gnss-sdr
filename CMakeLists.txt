@@ -117,7 +117,7 @@ if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
         URL "https://git-scm.com"
-        DESCRIPTION "A free and open source distributed version control system (found: ${GIT_VERSION_STRING})"
+        DESCRIPTION "A free and open source distributed version control system (found: v${GIT_VERSION_STRING})"
         PURPOSE "Manage version control, get MINOR_VERSION name for version number."
         TYPE REQUIRED
     )
@@ -620,9 +620,6 @@ set(FILESYSTEM_FOUND FALSE)
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        if(POLICY CMP0057)
-            cmake_policy(SET CMP0057 NEW)
-        endif()
         if((NOT ENABLE_UNIT_TESTING_EXTRA) AND (NOT ENABLE_SYSTEM_TESTING_EXTRA) AND (NOT ENABLE_FPGA)) # Workaround for GPSTk
             find_package(FILESYSTEM COMPONENTS Final Experimental)
             set_package_properties(FILESYSTEM PROPERTIES

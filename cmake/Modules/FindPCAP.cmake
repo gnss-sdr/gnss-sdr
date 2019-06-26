@@ -146,7 +146,7 @@ set_package_properties(PCAP PROPERTIES
 
 if(PCAP_FOUND AND PCAP_VERSION)
     set_package_properties(PCAP PROPERTIES
-        DESCRIPTION "A portable C/C++ library for network traffic capture (found: ${PCAP_VERSION})"
+        DESCRIPTION "A portable C/C++ library for network traffic capture (found: v${PCAP_VERSION})"
     )
 else()
     set_package_properties(PCAP PROPERTIES

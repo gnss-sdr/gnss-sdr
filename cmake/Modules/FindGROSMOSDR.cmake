@@ -109,7 +109,7 @@ set_package_properties(GROSMOSDR PROPERTIES
 
 if(GROSMOSDR_FOUND AND GROSMOSDR_VERSION)
     set_package_properties(GROSMOSDR PROPERTIES
-        DESCRIPTION "osmocom GNU Radio blocks (found: ${GROSMOSDR_VERSION})"
+        DESCRIPTION "osmocom GNU Radio blocks (found: v${GROSMOSDR_VERSION})"
     )
 else()
     set_package_properties(GROSMOSDR PROPERTIES

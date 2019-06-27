@@ -117,6 +117,8 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GFLAGS DEFAULT_MSG GFlags_LIBS GFlags_INCLUDE_DIRS)
 
 if(GFLAGS_FOUND)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
     list(GET GFlags_LIBS 0 FIRST_DIR)
     get_filename_component(GFlags_LIBS_DIR ${FIRST_DIR} DIRECTORY)
     if(EXISTS ${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
@@ -132,7 +134,7 @@ if(GFLAGS_FOUND)
             DESCRIPTION "C++ library that implements commandline flags processing"
         )
     endif()
-    unset(PACKAGE_VERSION)
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
 else()
     set_package_properties(GFLAGS PROPERTIES
         DESCRIPTION "C++ library that implements commandline flags processing"

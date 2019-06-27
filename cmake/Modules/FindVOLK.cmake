@@ -88,6 +88,8 @@ if(PC_VOLK_VERSION)
 endif()
 
 if(NOT VOLK_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
     list(GET VOLK_LIBRARIES 0 FIRST_DIR)
     get_filename_component(VOLK_LIB_DIR ${FIRST_DIR} DIRECTORY)
     if(EXISTS ${VOLK_LIB_DIR}/cmake/volk/VolkConfigVersion.cmake)
@@ -96,7 +98,7 @@ if(NOT VOLK_VERSION)
     if(PACKAGE_VERSION)
         set(VOLK_VERSION ${PACKAGE_VERSION})
     endif()
-    unset(PACKAGE_VERSION)
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
 endif()
 
 set_package_properties(VOLK PROPERTIES

@@ -677,11 +677,11 @@ set_package_properties(Boost PROPERTIES
 
 if(CMAKE_VERSION VERSION_GREATER 3.14)
     set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: ${Boost_VERSION_STRING})"
+        DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
     )
 else()
     set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
+        DESCRIPTION "Portable C++ source libraries (found: v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
     )
 endif()
 
@@ -808,7 +808,7 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     #  Mako
     if(NOT MAKO_FOUND)
-        message(STATUS "Mako template library not found. See http://www.makotemplates.org/ ")
+        message(STATUS "Mako template library not found. See http://www.makotemplates.org/")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install ${PYTHON_NAME}-mako")
@@ -822,7 +822,7 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     # Six
     if(NOT SIX_FOUND)
-        message(STATUS "python-six not found. See https://pythonhosted.org/six/ ")
+        message(STATUS "python-six not found. See https://pythonhosted.org/six/")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install ${PYTHON_NAME}-six")
@@ -841,7 +841,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
         if(Python3_FOUND)
             set_package_properties(Python3 PROPERTIES
-                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${Python3_VERSION})"
             )
         else()
             set_package_properties(Python3 PROPERTIES
@@ -852,7 +852,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         if(Python2_FOUND)
             set_package_properties(Python2 PROPERTIES
                 URL "https://www.python.org/"
-                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python2_VERSION})"
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${Python2_VERSION})"
                 PURPOSE "Required to build volk_gnsssdr."
                 TYPE REQUIRED
             )
@@ -862,7 +862,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(PYTHONINTERP_FOUND)
         set_package_properties(PythonInterp PROPERTIES
             URL "https://www.python.org/"
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${PYTHON_VERSION_STRING})"
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${PYTHON_VERSION_STRING})"
             PURPOSE "Required to build volk_gnsssdr."
             TYPE REQUIRED
         )
@@ -1000,7 +1000,7 @@ set_package_properties(GFLAGS PROPERTIES
 )
 if(NOT GFLAGS_FOUND)
     message(STATUS " gflags library has not been found.")
-    message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically ")
+    message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing 'make'.")
 
     if(CMAKE_VERSION VERSION_LESS 3.2)
@@ -1079,7 +1079,7 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
     if(NOT GFLAGS_FOUND)
         message(STATUS " or it is likely not linked to gflags.")
     endif()
-    message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built automatically ")
+    message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing 'make'.")
     if(NOT ${LOCAL_GFLAGS})
         add_library(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} UNKNOWN IMPORTED)
@@ -1529,7 +1529,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     )
     if(ZLIB_FOUND AND ZLIB_VERSION_STRING)
         set_package_properties(ZLIB PROPERTIES
-            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (found: ${ZLIB_VERSION_STRING})"
+            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (found: v${ZLIB_VERSION_STRING})"
         )
     else()
         set_package_properties(ZLIB PROPERTIES
@@ -1580,7 +1580,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         )
         if(HDF5_FOUND AND HDF5_VERSION)
             set_package_properties(HDF5 PROPERTIES
-                DESCRIPTION "A versatile data model, a portable file format and a software library (found: ${HDF5_VERSION})"
+                DESCRIPTION "A versatile data model, a portable file format and a software library (found: v${HDF5_VERSION})"
             )
         else()
             set_package_properties(HDF5 PROPERTIES
@@ -2059,7 +2059,7 @@ if(ENABLE_OPENCL)
     else()
         if(OPENCL_FOUND)
             message(STATUS "OpenCL has been found and will be used by some processing blocks")
-            message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..' ")
+            message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..'")
         endif()
     endif()
     if(ENABLE_GENERIC_ARCH)

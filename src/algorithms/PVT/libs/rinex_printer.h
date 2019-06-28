@@ -149,7 +149,30 @@ public:
      */
     void rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_iono, const Gps_CNAV_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac);
 
+    /*!
+     *  \brief Generates the BDS B1I or B3I Navigation Data header
+     */
     void rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& iono, const Beidou_Dnav_Utc_Model& utc_model);
+
+    /*!
+     *  \brief Generates the Mixed GPS L1,L5 + BDS B1I, B3I Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_lnav_iono, const Gps_Utc_Model& gps_lnav_utc_model, const Gps_Ephemeris& eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+
+    /*!
+     *  \brief Generates the Mixed GPS L2C + BDS B1I, B3I Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_cnav_iono, const Gps_CNAV_Utc_Model& gps_cnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+
+    /*!
+     *  \brief Generates the Mixed GLONASS L1,L2 + BDS B1I, B3I Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glo_gnav_utc_model, const Glonass_Gnav_Ephemeris& glo_gnav_eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+
+    /*!
+     *  \brief Generates the Mixed (Galileo/BDS B1I, B3I) Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
 
     /*!
      *  \brief Generates the GPS Observation data header

@@ -84,6 +84,8 @@ public:
     int32_t* ca_codes;
     int32_t* data_codes;
     bool extended_correlation_in_fpga;
+    uint32_t extend_fpga_integration_periods;
+    uint32_t fpga_integration_period;
 
     Dll_Pll_Conf_Fpga();
 };

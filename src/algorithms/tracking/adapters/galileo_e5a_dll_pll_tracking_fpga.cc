@@ -262,14 +262,37 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
+
+    trk_param_fpga.extended_correlation_in_fpga = false; // by default
+    trk_param_fpga.extend_fpga_integration_periods = 1; // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1; // (number of symbols that are effectively integrated in the FPGA)
     if (d_track_pilot)
     {
-    	trk_param_fpga.extended_correlation_in_fpga = true;
+    	if (extend_correlation_symbols >1)
+    	{
+			if (extend_correlation_symbols <= GALILEO_E5A_I_SECONDARY_CODE_LENGTH)
+			{
+				if ((GALILEO_E5A_I_SECONDARY_CODE_LENGTH % extend_correlation_symbols) == 0)
+				{
+					trk_param_fpga.extended_correlation_in_fpga = true;
+					trk_param_fpga.fpga_integration_period = extend_correlation_symbols;
+					printf("correlation in fpga true\n");
+				}
+			}
+			else
+			{
+				if (extend_correlation_symbols % GALILEO_E5A_I_SECONDARY_CODE_LENGTH == 0)
+				{
+					trk_param_fpga.extended_correlation_in_fpga = true;
+					trk_param_fpga.extend_fpga_integration_periods = extend_correlation_symbols/GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
+					trk_param_fpga.fpga_integration_period = GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
+					printf("correlation in fpga true\n");
+					printf("extend fpga integration periods true\n");
+				}
+			}
+    	}
     }
-    else
-    {
-    	trk_param_fpga.extended_correlation_in_fpga = false;
-    }
+
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

@@ -49,7 +49,8 @@
 #include <iostream>
 
 #define NUM_PRNs 32  // total number of PRNs
-
+#define GPS_CA_BIT_DURATION_MS 20
+#define GPS_CA_CODE_PERIOD_MS 1
 // the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
 // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000  // flag that enables WE (Write Enable) of the local code FPGA
@@ -229,7 +230,35 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
-    trk_param_fpga.extended_correlation_in_fpga = true;
+
+    trk_param_fpga.extended_correlation_in_fpga = false; // by default
+    trk_param_fpga.extend_fpga_integration_periods = 1; // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1; // (number of symbols that are effectively integrated in the FPGA)
+	if (symbols_extended_correlator >1)
+	{
+		if (symbols_extended_correlator <= GPS_CA_BIT_DURATION_MS)
+		{
+			if ((GPS_CA_BIT_DURATION_MS % symbols_extended_correlator) == 0)
+			{
+				trk_param_fpga.extended_correlation_in_fpga = true;
+				trk_param_fpga.fpga_integration_period = symbols_extended_correlator;
+				printf("correlation in fpga true\n");
+			}
+		}
+		else
+		{
+			if (symbols_extended_correlator % GPS_CA_BIT_DURATION_MS == 0)
+			{
+				trk_param_fpga.extended_correlation_in_fpga = true;
+				trk_param_fpga.extend_fpga_integration_periods = symbols_extended_correlator/GPS_CA_BIT_DURATION_MS;
+				trk_param_fpga.fpga_integration_period = GPS_CA_BIT_DURATION_MS;
+				printf("correlation in fpga true\n");
+				printf("extend fpga integration periods true\n");
+			}
+		}
+	}
+
+
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

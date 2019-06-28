@@ -281,6 +281,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.code_length_chips = GALILEO_E1_B_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
     trk_param_fpga.extended_correlation_in_fpga = false;
+    trk_param_fpga.extend_fpga_integration_periods = 1; // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1; // (number of symbols that are effectively integrated in the FPGA)
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

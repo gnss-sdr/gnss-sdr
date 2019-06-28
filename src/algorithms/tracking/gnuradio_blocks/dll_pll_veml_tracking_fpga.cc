@@ -128,6 +128,10 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     d_extended_correlation_in_fpga = trk_parameters.extended_correlation_in_fpga;
 
+    d_extend_fpga_integration_periods = trk_parameters.extend_fpga_integration_periods; // by default
+
+    d_fpga_integration_period = trk_parameters.fpga_integration_period; // by default
+
     //printf("d_extended_correlation_in_fpga = %d\n", d_extended_correlation_in_fpga);
     d_sc_remodulate_enabled = false; // by default
 
@@ -204,6 +208,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 							//printf("EXTENDED CORRELATION IN FPGA ENABLED => ENABLING SECONDARY CODE REMODULATION\n");
 							d_sc_demodulate_enabled = true;
 							d_sc_remodulate_enabled = true;
+
 						}
 					}
 
@@ -872,7 +877,7 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     T_prn_samples_prev = T_prn_samples;
     T_prn_samples = T_prn_seconds * trk_parameters.fs_in;
-    K_blk_samples_prev = K_blk_samples;
+    //K_blk_samples_prev = K_blk_samples;
     K_blk_samples = T_prn_samples + d_rem_code_phase_samples; // initially d_rem_code_phase_samples is zero. It is updated at the end of this function
 
     d_actual_blk_length = static_cast<int32_t>(std::floor(K_blk_samples));
@@ -945,8 +950,10 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars_extend_integration_in_FPGA
 {
 	// first compute the long integration intermediate prn length values based on the current values (not the values that are compute here for the next iteration)
 
-    d_extended_integration_first_prn_length_samples = d_current_integration_length_samples - (trk_parameters.extend_correlation_symbols - 1)*static_cast<int32_t>(std::floor(T_prn_samples));
-    d_extended_integration_next_prn_length_samples = static_cast<int32_t>(std::floor(T_prn_samples));
+    //d_extended_integration_first_prn_length_samples = d_current_integration_length_samples - (trk_parameters.extend_correlation_symbols - 1)*static_cast<int32_t>(std::floor(T_prn_samples));
+	d_extended_integration_first_prn_length_samples = d_current_integration_length_samples - (d_fpga_integration_period - 1)*static_cast<int32_t>(std::floor(T_prn_samples));
+
+	d_extended_integration_next_prn_length_samples = static_cast<int32_t>(std::floor(T_prn_samples));
 
 	T_chip_seconds = 1.0 / d_code_freq_chips;
     T_prn_seconds = T_chip_seconds * static_cast<double>(d_code_length_chips);
@@ -956,8 +963,9 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars_extend_integration_in_FPGA
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     T_prn_samples_prev = T_prn_samples;
     T_prn_samples = T_prn_seconds * trk_parameters.fs_in;
-    K_blk_samples_prev = K_blk_samples;
-    K_blk_samples = T_prn_samples*trk_parameters.extend_correlation_symbols + d_rem_code_phase_samples;
+    //K_blk_samples_prev = K_blk_samples;
+    //K_blk_samples = T_prn_samples*trk_parameters.extend_correlation_symbols + d_rem_code_phase_samples;
+    K_blk_samples = T_prn_samples*d_fpga_integration_period + d_rem_code_phase_samples;
 
     d_actual_blk_length = static_cast<int32_t>(std::floor(K_blk_samples));
     d_next_integration_length_samples = 2*d_actual_blk_length - d_current_integration_length_samples;
@@ -1808,8 +1816,9 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 			T_chip_seconds = 1.0 / d_code_freq_chips;
 			T_prn_seconds = T_chip_seconds * static_cast<double>(d_code_length_chips);
 			T_prn_samples_prev = T_prn_seconds * trk_parameters.fs_in;
-			K_blk_samples_prev = T_prn_samples_prev*trk_parameters.extend_correlation_symbols;
 
+			//K_blk_samples_prev = T_prn_samples_prev*trk_parameters.extend_correlation_symbols;
+			//K_blk_samples_prev = T_prn_samples_prev*d_fpga_integration_period;
 			d_debug_counter = 0;
 
 			enable_post_apply_secondary_code = 0;
@@ -1822,44 +1831,6 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
 		    multicorrelator_fpga->disable_secondary_codes(); // make sure the processing of the secondary codes is disabled by default
 
-//		    if (d_enable_extended_integration == true)
-//				{
-//					if (d_extended_correlation_in_fpga == true)
-//					{
-//						// Now we can write the secondary codes that do not depend on the PRN number
-//						if (trk_parameters.system == 'G')
-//						{
-//								if (signal_type == "L5")
-//								{
-//										if (trk_parameters.track_pilot)
-//										{
-//												multicorrelator_fpga->set_secondary_code_lengths(d_secondary_code_length_pilot, d_secondary_code_length_data);
-//												multicorrelator_fpga->initialize_secondary_code(0, d_secondary_code_string_pilot);
-//												multicorrelator_fpga->initialize_secondary_code(1, d_secondary_code_string_data);
-//										}
-//										else
-//										{
-//												multicorrelator_fpga->set_secondary_code_lengths(d_secondary_code_length_data, 0);
-//												multicorrelator_fpga->initialize_secondary_code(0, d_secondary_code_string_data);
-//										}
-//								}
-//						}
-//						else if (trk_parameters.system == 'E')
-//						{
-//								if (signal_type == "5X")
-//								{
-//										// coherent integration in the FPGA is only enabled when tracking the pilot.
-//										if (trk_parameters.track_pilot)
-//										{
-//												multicorrelator_fpga->set_secondary_code_lengths(d_secondary_code_length_pilot, d_secondary_code_length_data);
-//												multicorrelator_fpga->initialize_secondary_code(0, d_secondary_code_string_pilot);
-//												multicorrelator_fpga->initialize_secondary_code(1, d_secondary_code_string_data);
-//										}
-//
-//								}
-//						}
-//					}
-//				}
 
         }
 
@@ -2149,17 +2120,29 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                         if (d_extended_correlation_in_fpga)
                                         {
 
-                                        	// correction on already computed parameters
-                                            K_blk_samples = T_prn_samples*trk_parameters.extend_correlation_symbols + d_rem_code_phase_samples_prev;
-                                            d_next_integration_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));
+
 
                                             if (d_sc_demodulate_enabled)
                                             {
                                             	multicorrelator_fpga->enable_secondary_codes();
                                             }
 
-                                        	d_state = 5;
+                                            if (d_extend_fpga_integration_periods > 1)
+                                            {
+                                            	// correction on already computed parameters
+                                                K_blk_samples = T_prn_samples*(trk_parameters.extend_correlation_symbols/d_extend_fpga_integration_periods) + d_rem_code_phase_samples_prev;
+                                                d_next_integration_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));
 
+                                            	d_state = 5;
+                                            }
+                                            else
+                                            {
+                                            	// correction on already computed parameters
+                                                K_blk_samples = T_prn_samples*trk_parameters.extend_correlation_symbols + d_rem_code_phase_samples_prev;
+                                                d_next_integration_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));
+
+                                            	d_state = 6;
+                                            }
                                         }
                                         else
                                         {
@@ -2331,11 +2314,87 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 d_state = 3;  // new coherent integration (correlation time extension) cycle
                             }
                     }
-		break;
+                break;
 		}
 
+        case 5:  // coherent integration (correlation time extension)
+            {
+                d_sample_counter = d_sample_counter_next;
+                d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_integration_length_samples);
 
-        case 5:  // narrow tracking IN THE FPGA
+                // Fill the acquisition data
+                current_synchro_data = *d_acquisition_gnss_synchro;
+
+                extended_correlation_in_fpga_enabled = true;
+
+                // this must be computed for the secondary prn code
+                if (d_secondary)
+                {
+
+					d_first_length_secondary_code = d_current_integration_length_samples - (trk_parameters.extend_correlation_symbols - 1)*static_cast<int32_t>(std::floor(T_prn_samples));
+					d_next_length_secondary_code = static_cast<int32_t>(std::floor(T_prn_samples));
+
+					multicorrelator_fpga->update_secondary_code_length(d_first_length_secondary_code, d_next_length_secondary_code);
+                }
+
+                // perform a correlation step
+                do_correlation_step();
+                update_tracking_vars_extend_integration_in_FPGA();
+                save_correlation_results_extended_integration_in_FPGA();
+
+                // ########### Output the tracking results to Telemetry block ##########
+                if (interchange_iq)
+                    {
+                        if (trk_parameters.track_pilot)
+                            {
+                                // Note that data and pilot components are in quadrature. I and Q are interchanged
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).imag());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).real());
+                            }
+                        else
+                            {
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).imag());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).real());
+                            }
+                    }
+                else
+                    {
+                        if (trk_parameters.track_pilot)
+                            {
+                                // Note that data and pilot components are in quadrature. I and Q are interchanged
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).real());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).imag());
+                            }
+                        else
+                            {
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
+                            }
+                    }
+                current_synchro_data.Tracking_sample_counter = d_sample_counter + d_extended_integration_first_prn_length_samples;
+                current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
+                current_synchro_data.Carrier_phase_rads = d_extended_integration_first_acc_carrier_phase_rad;
+                current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+                current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+                current_synchro_data.Flag_valid_symbol_output = true;
+                current_synchro_data.correlation_length_ms = d_correlation_length_ms;
+
+                d_num_current_syncrho_repetitions = trk_parameters.extend_correlation_symbols;
+
+                d_extend_correlation_symbols_count++;
+                if (d_extend_correlation_symbols_count == (trk_parameters.extend_correlation_symbols - 1))
+                    {
+                        d_extend_correlation_symbols_count = 0;
+                        d_state = 6;
+                    }
+
+
+                log_data_extended_integration_in_FPGA(false, true);
+                break;
+            }
+
+
+        case 6:  // narrow tracking IN THE FPGA
             {
 
                 d_sample_counter = d_sample_counter_next;
@@ -2443,7 +2502,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
             // debug
             d_sc_prompt_changed = false;
-            if (d_state == 3 || d_state == 4 | d_state ==5)
+            if (d_state == 3 || d_state == 4 | d_state ==6)
             {
             	// debug - remodulate secondary code
             	if (d_sc_remodulate_enabled == true)
@@ -2519,7 +2578,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 	            	current_synchro_data.Carrier_phase_rads = d_extended_integration_first_acc_carrier_phase_rad;
 
 	            	d_sc_prompt_changed = false;
-	                if (d_state == 3 || d_state == 4 | d_state ==5)
+	                if (d_state == 3 || d_state == 4 | d_state ==6)
 	                {
 
 	                	if (d_sc_remodulate_enabled == true)

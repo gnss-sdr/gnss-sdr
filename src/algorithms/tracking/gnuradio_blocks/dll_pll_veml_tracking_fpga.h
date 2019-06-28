@@ -194,7 +194,7 @@ private:
     double T_prn_samples;
     double K_blk_samples;
 
-    double K_blk_samples_prev;
+    //double K_blk_samples_prev;
 
     int32_t d_current_integration_length_samples;
 
@@ -275,6 +275,10 @@ private:
 
     float debug_d_rem_carr_phase_rad;
     uint32_t debug_first_time;
+
+    uint32_t d_extend_fpga_integration_periods;
+
+    uint32_t d_fpga_integration_period;
 
 
 };

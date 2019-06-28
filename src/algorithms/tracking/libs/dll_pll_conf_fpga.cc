@@ -78,4 +78,6 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     ca_codes = nullptr;
     data_codes = nullptr;
     extended_correlation_in_fpga = false;
+    extend_fpga_integration_periods = 1;
+    fpga_integration_period = 0;
 }

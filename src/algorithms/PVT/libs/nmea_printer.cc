@@ -441,7 +441,7 @@ std::string Nmea_Printer::get_GPGSA()
     // GSA-GNSS DOP and Active Satellites
     std::stringstream sentence_str;
     unsigned char buff[1024] = {0};
-    outnmea_gsa(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat);
+    outnmea_gsa(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
     sentence_str << buff;
     return sentence_str.str();
 }
@@ -454,7 +454,7 @@ std::string Nmea_Printer::get_GPGSV()
     // Notice that NMEA 2.1 only supports 12 channels
     std::stringstream sentence_str;
     unsigned char buff[1024] = {0};
-    outnmea_gsv(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat);
+    outnmea_gsv(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
     sentence_str << buff;
     return sentence_str.str();
 }

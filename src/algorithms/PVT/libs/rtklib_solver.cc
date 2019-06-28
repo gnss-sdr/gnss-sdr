@@ -507,9 +507,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    obsd_t obs_data[MAXOBS];
-    eph_t eph_data[MAXOBS];
-    geph_t geph_data[MAXOBS];
+    std::array<obsd_t, MAXOBS> obs_data;
+    std::array<eph_t, MAXOBS> eph_data;
+    std::array<geph_t, MAXOBS> geph_data;
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -894,8 +894,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             int result = 0;
             int sat = 0;
             nav_t nav_data;
-            nav_data.eph = eph_data;
-            nav_data.geph = geph_data;
+            nav_data.eph = eph_data.data();
+            nav_data.geph = geph_data.data();
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
 
@@ -915,7 +915,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
 
-            result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
+            result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 
             if (result == 0)
                 {
@@ -976,7 +976,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
 
-                    //compute Ground speed and COG
+                    // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
                     double pos[3];
                     double enuv[3];
@@ -1015,9 +1015,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
 
-
-                    // PVT MONITOR
-
+                    // ######## PVT MONITOR #########
                     // TOW
                     monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
                     // WEEK
@@ -1066,7 +1064,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     monitor_pvt.pdop = dop_[1];
                     monitor_pvt.hdop = dop_[2];
                     monitor_pvt.vdop = dop_[3];
-
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

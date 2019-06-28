@@ -92,6 +92,15 @@ else()
     target_link_libraries(algorithms_libs PRIVATE Boost::filesystem Boost::system)
 endif()
 
+if(NOT (CMAKE_CXX_STANDARD VERSION_LESS 20))
+    target_compile_definitions(algorithms_libs PUBLIC -DHAS_SPAN=1)
+else()
+    target_include_directories(algorithms_libs
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
+    )
+endif()
+
 target_link_libraries(algorithms_libs
     PUBLIC
         Armadillo::armadillo

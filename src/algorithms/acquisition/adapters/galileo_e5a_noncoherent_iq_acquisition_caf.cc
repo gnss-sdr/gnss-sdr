@@ -119,7 +119,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -228,18 +228,18 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
-                    char a[3];
-                    strcpy(a, "5I");
-                    galileo_e5_a_code_gen_complex_sampled(codeI, a,
+                    std::array<char, 3> a = {{'5', 'I', '\0'}};
+                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeI, code_length_), a,
                         gnss_synchro_->PRN, fs_in_, 0);
 
-                    strcpy(a, "5Q");
-                    galileo_e5_a_code_gen_complex_sampled(codeQ, a,
+                    std::array<char, 3> b = {{'5', 'Q', '\0'}};
+                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeQ, code_length_), b,
                         gnss_synchro_->PRN, fs_in_, 0);
                 }
             else
                 {
-                    galileo_e5_a_code_gen_complex_sampled(codeI, gnss_synchro_->Signal,
+                    std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
+                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeI, code_length_), signal_type_,
                         gnss_synchro_->PRN, fs_in_, 0);
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)

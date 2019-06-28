@@ -113,7 +113,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l2c_m_code_gen_complex_sampled(code, PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), PRN, fs_in_);
             // fill in zero padding
             for (unsigned int s = code_length; s < nsamples_total; s++)
                 {
@@ -161,7 +161,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
 
     threshold_ = 0.0;
 }

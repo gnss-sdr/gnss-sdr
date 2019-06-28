@@ -49,6 +49,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <exception>
+#include <gsl/gsl>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -320,7 +321,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize();  // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_float(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_float(gsl::span<float>(d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(float)), d_acquisition_gnss_synchro->PRN, 0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
     for (int32_t n = 0; n < d_n_correlator_taps; n++)

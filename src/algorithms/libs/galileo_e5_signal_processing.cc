@@ -37,7 +37,7 @@
 #include <gnuradio/gr_complex.h>
 
 
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, const char _Signal[3])
+void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, std::array<char, 3> _Signal)
 {
     uint32_t prn = _prn - 1;
     uint32_t index = 0;
@@ -100,7 +100,7 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _
 }
 
 
-void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
+void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, std::array<char, 3> _Signal,
     uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     uint32_t _samplesPerCode;
@@ -110,7 +110,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
 
     auto* _code = new std::complex<float>[_codeLength]();
 
-    galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
+    galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>>(_code, _codeLength), _prn, _Signal);
 
     _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
@@ -122,7 +122,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
             if (posix_memalign(reinterpret_cast<void**>(&_resampled_signal), 16, _samplesPerCode * sizeof(gr_complex)) == 0)
                 {
                 };
-            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  // resamples code to fs
+            resampler(gsl::span<std::complex<float>>(_code, _codeLength), gsl::span<std::complex<float>>(_resampled_signal, _samplesPerCode), _codeFreqBasis, _fs);  // resamples code to fs
             delete[] _code;
             _code = _resampled_signal;
         }

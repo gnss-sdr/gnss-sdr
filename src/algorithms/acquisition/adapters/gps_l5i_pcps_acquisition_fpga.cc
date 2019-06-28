@@ -118,7 +118,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
+            gps_l5i_code_gen_complex_sampled(gsl::span<gr_complex>(code, nsamples_total), PRN, fs_in);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {

@@ -236,8 +236,8 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
         {
             if (track_pilot)
                 {
-                    gps_l5q_code_gen_float(tracking_code, PRN);
-                    gps_l5i_code_gen_float(data_code, PRN);
+                    gps_l5q_code_gen_float(gsl::span<float>(tracking_code, code_length_chips), PRN);
+                    gps_l5i_code_gen_float(gsl::span<float>(data_code, code_length_chips), PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
@@ -261,7 +261,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                 }
             else
                 {
-                    gps_l5i_code_gen_float(tracking_code, PRN);
+                    gps_l5i_code_gen_float(gsl::span<float>(tracking_code, code_length_chips), PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)

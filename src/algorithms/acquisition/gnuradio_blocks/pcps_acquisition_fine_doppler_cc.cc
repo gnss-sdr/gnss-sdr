@@ -430,7 +430,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     //1. generate local code aligned with the acquisition code phase estimation
     auto *code_replica = static_cast<gr_complex *>(volk_gnsssdr_malloc(signal_samples * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
-    gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
+    gps_l1_ca_code_gen_complex_sampled(gsl::span<gr_complex>(code_replica, signal_samples * sizeof(gr_complex)), d_gnss_synchro->PRN, d_fs_in, 0);
 
     int shift_index = static_cast<int>(d_gnss_synchro->Acq_delay_samples);
 
@@ -705,11 +705,11 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
 
             dims[0] = static_cast<size_t>(1);
             dims[1] = static_cast<size_t>(1);
-            matvar = Mat_VarCreate("doppler_max", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_config_doppler_max, 0);
+            matvar = Mat_VarCreate("doppler_max", MAT_C_INT32, MAT_T_INT32, 1, dims, &d_config_doppler_max, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("doppler_step", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims, &d_doppler_step, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 

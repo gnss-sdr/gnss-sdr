@@ -34,7 +34,7 @@
 
 auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
 
-void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int _chip_shift)
 {
     const unsigned int _code_length = 10230;
     bool G1[_code_length];
@@ -170,7 +170,7 @@ void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
 }
 
 
-void beidou_b3i_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b3i_code_gen_float(gsl::span<float> _dest, signed int _prn, unsigned int _chip_shift)
 {
     unsigned int _code_length = 10230;
     int b3i_code_int[10230];
@@ -184,7 +184,7 @@ void beidou_b3i_code_gen_float(float* _dest, signed int _prn, unsigned int _chip
 }
 
 
-void beidou_b3i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b3i_code_gen_complex(gsl::span<std::complex<float>> _dest, signed int _prn, unsigned int _chip_shift)
 {
     unsigned int _code_length = 10230;
     int b3i_code_int[10230];
@@ -198,7 +198,7 @@ void beidou_b3i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
 }
 
 
-void beidou_b3i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift)
+void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, unsigned int _prn, int _fs, unsigned int _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[10230];

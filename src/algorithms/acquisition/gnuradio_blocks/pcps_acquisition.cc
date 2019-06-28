@@ -450,7 +450,7 @@ void pcps_acquisition::send_positive_acquisition()
 
     if (!d_channel_fsm.expired())
         {
-            //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
+            // the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
             d_channel_fsm.lock()->Event_valid_acquisition();
         }
     else
@@ -510,11 +510,11 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
 
             dims[0] = static_cast<size_t>(1);
             dims[1] = static_cast<size_t>(1);
-            matvar = Mat_VarCreate("doppler_max", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &acq_parameters.doppler_max, 0);
+            matvar = Mat_VarCreate("doppler_max", MAT_C_INT32, MAT_T_INT32, 1, dims, &acq_parameters.doppler_max, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("doppler_step", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+            matvar = Mat_VarCreate("doppler_step", MAT_C_INT32, MAT_T_INT32, 1, dims, &d_doppler_step, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -552,7 +552,7 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("num_dwells", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_num_noncoherent_integrations_counter, 0);
+            matvar = Mat_VarCreate("num_dwells", MAT_C_INT32, MAT_T_INT32, 1, dims, &d_num_noncoherent_integrations_counter, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -774,7 +774,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 }
             if (acq_parameters.use_automatic_resampler)
                 {
-                    //take into account the acquisition resampler ratio
+                    // take into account the acquisition resampler ratio
                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code)) * acq_parameters.resampler_ratio;
                     d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  //account the resampler filter latency
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
@@ -832,7 +832,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
             if (acq_parameters.use_automatic_resampler)
                 {
-                    //take into account the acquisition resampler ratio
+                    // take into account the acquisition resampler ratio
                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code)) * acq_parameters.resampler_ratio;
                     d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  //account the resampler filter latency
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);

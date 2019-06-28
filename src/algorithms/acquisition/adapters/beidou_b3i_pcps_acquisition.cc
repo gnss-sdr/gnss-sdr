@@ -121,7 +121,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -142,6 +142,7 @@ BeidouB3iPcpsAcquisition::~BeidouB3iPcpsAcquisition()
 void BeidouB3iPcpsAcquisition::stop_acquisition()
 {
 }
+
 
 void BeidouB3iPcpsAcquisition::set_threshold(float threshold)
 {
@@ -203,7 +204,7 @@ void BeidouB3iPcpsAcquisition::set_local_code()
 {
     auto* code = new std::complex<float>[code_length_];
 
-    beidou_b3i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+    beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {

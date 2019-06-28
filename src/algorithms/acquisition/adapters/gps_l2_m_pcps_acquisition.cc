@@ -151,7 +151,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
     if (in_streams_ > 1)
         {
@@ -241,16 +241,14 @@ void GpsL2MPcpsAcquisition::set_local_code()
 {
     auto* code = new std::complex<float>[code_length_];
 
-
     if (acq_parameters_.use_automatic_resampler)
         {
-            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs);
+            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, acq_parameters_.resampled_fs);
         }
     else
         {
-            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_);
         }
-
 
     for (unsigned int i = 0; i < num_codes_; i++)
         {
@@ -267,6 +265,7 @@ void GpsL2MPcpsAcquisition::reset()
 {
     acquisition_->set_active(true);
 }
+
 
 void GpsL2MPcpsAcquisition::set_state(int state)
 {

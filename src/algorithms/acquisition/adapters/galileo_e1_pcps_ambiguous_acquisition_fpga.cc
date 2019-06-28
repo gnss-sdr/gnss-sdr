@@ -122,14 +122,14 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
             if (acquire_pilot_ == true)
                 {
                     //set local signal generator to Galileo E1 pilot component (1C)
-                    char pilot_signal[3] = "1C";
-                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
+                    std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), pilot_signal,
                         cboc, PRN, fs_in, 0, false);
                 }
             else
                 {
-                    char data_signal[3] = "1B";
-                    galileo_e1_code_gen_complex_sampled(code, data_signal,
+                    std::array<char, 3> data_signal = {{'1', 'B', '\0'}};
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), data_signal,
                         cboc, PRN, fs_in, 0, false);
                 }
 

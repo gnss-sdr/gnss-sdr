@@ -152,7 +152,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -236,28 +236,30 @@ void GalileoE5aPcpsAcquisition::init()
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
     auto* code = new gr_complex[code_length_];
-    char signal_[3];
+    std::array<char, 3> signal_;
+    signal_[0] = '5';
+    signal_[2] = '\0';
 
     if (acq_iq_)
         {
-            strcpy(signal_, "5X");
+            signal_[1] = 'X';
         }
     else if (acq_pilot_)
         {
-            strcpy(signal_, "5Q");
+            signal_[1] = 'Q';
         }
     else
         {
-            strcpy(signal_, "5I");
+            signal_[1] = 'I';
         }
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
+            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code, code_length_), signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
         }
     else
         {
-            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
+            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code, code_length_), signal_, gnss_synchro_->PRN, fs_in_, 0);
         }
 
     for (unsigned int i = 0; i < sampled_ms_; i++)

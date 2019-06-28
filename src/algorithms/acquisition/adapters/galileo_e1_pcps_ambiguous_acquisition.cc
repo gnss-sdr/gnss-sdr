@@ -154,7 +154,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -247,28 +247,30 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     if (acquire_pilot_ == true)
         {
             //set local signal generator to Galileo E1 pilot component (1C)
-            char pilot_signal[3] = "1C";
+            std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), pilot_signal,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), pilot_signal,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }
     else
         {
+            std::array<char, 3> Signal_;
+            std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), Signal_,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), Signal_,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }

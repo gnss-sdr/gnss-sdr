@@ -269,7 +269,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     d_code_loop_filter.initialize();                           // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    glonass_l2_ca_code_gen_complex(d_ca_code, 0);
+    glonass_l2_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS)), 0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
     for (int32_t n = 0; n < d_n_correlator_taps; n++)

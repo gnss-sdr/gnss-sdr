@@ -217,7 +217,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_code_loop_filter.initialize();                             // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS)), d_acquisition_gnss_synchro->PRN, 0);
 
     multicorrelator_gpu->set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips, d_n_correlator_taps);
 

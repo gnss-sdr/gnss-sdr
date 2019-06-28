@@ -227,12 +227,12 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
-            char data_signal[3] = "1B";
+            std::array<char, 3> data_signal = {'1', 'B', '\0'};
             if (d_track_pilot)
                 {
-                    char pilot_signal[3] = "1C";
-                    galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
-                    galileo_e1_code_gen_sinboc11_float(data_codes_f, data_signal, PRN);
+                    std::array<char, 3> pilot_signal = {'1', 'C', '\0'};
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(ca_codes_f, static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), pilot_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(data_codes_f, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), data_signal, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
@@ -255,7 +255,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                 }
             else
                 {
-                    galileo_e1_code_gen_sinboc11_float(ca_codes_f, data_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(ca_codes_f, static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), data_signal, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)

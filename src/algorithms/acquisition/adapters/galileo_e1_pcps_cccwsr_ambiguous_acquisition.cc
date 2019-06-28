@@ -111,7 +111,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -203,16 +203,14 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_local_code()
             bool cboc = configuration_->property(
                 "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-            char signal[3];
+            std::array<char, 3> signal = {{'1', 'B', '\0'}};
 
-            strcpy(signal, "1B");
-
-            galileo_e1_code_gen_complex_sampled(code_data_, signal,
+            galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(code_data_, vector_length_), signal,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
-            strcpy(signal, "1C");
+            std::array<char, 3> signal_C = {{'1', 'C', '\0'}};
 
-            galileo_e1_code_gen_complex_sampled(code_pilot_, signal,
+            galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(code_pilot_, vector_length_), signal_C,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
             acquisition_cc_->set_local_code(code_data_, code_pilot_);

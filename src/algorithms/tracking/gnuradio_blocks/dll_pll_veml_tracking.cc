@@ -63,7 +63,8 @@
 #include <algorithm>  // for fill_n
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
-#include <iostream>   // for cout, cerr
+#include <gsl/gsl>
+#include <iostream>  // for cout, cerr
 #include <map>
 #include <numeric>
 
@@ -587,48 +588,52 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_phase_rate_step_rad = 0.0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
+    std::array<char, 3> Signal_;
+    std::memcpy(Signal_.data(), d_acquisition_gnss_synchro->Signal, 3);
 
     if (systemName == "GPS" and signal_type == "1C")
         {
-            gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            gps_l1_ca_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN, 0);
         }
     else if (systemName == "GPS" and signal_type == "2S")
         {
-            gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+            gps_l2c_m_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
         }
     else if (systemName == "GPS" and signal_type == "L5")
         {
             if (trk_parameters.track_pilot)
                 {
-                    gps_l5q_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
-                    gps_l5i_code_gen_float(d_data_code, d_acquisition_gnss_synchro->PRN);
+                    gps_l5q_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    gps_l5i_code_gen_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                     correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
                 }
             else
                 {
-                    gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                    gps_l5i_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (systemName == "Galileo" and signal_type == "1B")
         {
             if (trk_parameters.track_pilot)
                 {
-                    char pilot_signal[3] = "1C";
-                    galileo_e1_code_gen_sinboc11_float(d_tracking_code, pilot_signal, d_acquisition_gnss_synchro->PRN);
-                    galileo_e1_code_gen_sinboc11_float(d_data_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
+                    std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
+
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), pilot_signal, d_acquisition_gnss_synchro->PRN);
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), Signal_, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                     correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code, d_prompt_data_shift);
                 }
             else
                 {
-                    galileo_e1_code_gen_sinboc11_float(d_tracking_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), Signal_, d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (systemName == "Galileo" and signal_type == "5X")
         {
             auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
-            galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
+            std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
+            galileo_e5_a_code_gen_complex_primary(gsl::span<gr_complex>(aux_code, d_code_length_chips), d_acquisition_gnss_synchro->PRN, signal_type_);
             if (trk_parameters.track_pilot)
                 {
                     d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
@@ -651,7 +656,7 @@ void dll_pll_veml_tracking::start_tracking()
         }
     else if (systemName == "Beidou" and signal_type == "B1")
         {
-            beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            beidou_b1i_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
@@ -691,7 +696,7 @@ void dll_pll_veml_tracking::start_tracking()
 
     else if (systemName == "Beidou" and signal_type == "B3")
         {
-            beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            beidou_b3i_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {

@@ -39,19 +39,26 @@
 #include <array>
 #include <algorithm>
 
+#if HAS_SPAN
+#include <span>
+namespace gsl = std;
+#else
+#include <gsl/gsl>
+#endif
+
 //! Generates int BeiDou B3I code for the desired SV ID and code shift
-void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);
+void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int _chip_shift);
 
 //! Generates float BeiDou B3I code for the desired SV ID and code shift
-void beidou_b3i_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift);
+void beidou_b3i_code_gen_float(gsl::span<float> _dest, signed int _prn, unsigned int _chip_shift);
 
 //! Generates complex BeiDou B3I code for the desired SV ID and code shift, and sampled to specific sampling frequency
-void beidou_b3i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
+void beidou_b3i_code_gen_complex(gsl::span<std::complex<float>> _dest, signed int _prn, unsigned int _chip_shift);
 
 //! Generates N complex BeiDou B3I codes for the desired SV ID and code shift
-void beidou_b3i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift, unsigned int _ncodes);
+void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, unsigned int _prn, int _fs, unsigned int _chip_shift, unsigned int _ncodes);
 
 //! Generates complex BeiDou B3I code for the desired SV ID and code shift
-void beidou_b3i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift);
+void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, unsigned int _prn, int _fs, unsigned int _chip_shift);
 
 #endif /* GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_ */

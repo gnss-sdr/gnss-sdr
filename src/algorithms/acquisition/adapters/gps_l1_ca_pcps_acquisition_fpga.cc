@@ -113,7 +113,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // temporary maxima search
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
+            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), PRN, fs_in, 0);  // generate PRN code
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -169,7 +169,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;

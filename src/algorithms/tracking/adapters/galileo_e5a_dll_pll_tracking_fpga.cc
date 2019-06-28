@@ -217,7 +217,8 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
-            galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(sig_));
+            std::array<char, 3> sig_a = {'5', 'X', '\0'};
+            galileo_e5_a_code_gen_complex_primary(gsl::span<gr_complex>(aux_code, code_length_chips * code_samples_per_chip), PRN, sig_a);
 
             if (trk_param_fpga.track_pilot)
                 {

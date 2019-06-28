@@ -188,10 +188,12 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    std::array<char, 3> Signal_;
+    std::memcpy(Signal_.data(), d_acquisition_gnss_synchro->Signal, 3);
 
     // generate local reference ALWAYS starting at chip 1 (2 samples per chip)
-    galileo_e1_code_gen_complex_sampled(d_ca_code,
-        d_acquisition_gnss_synchro->Signal,
+    galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(d_ca_code, (2 * GALILEO_E1_B_CODE_LENGTH_CHIPS)),
+        Signal_,
         false,
         d_acquisition_gnss_synchro->PRN,
         2 * GALILEO_E1_CODE_CHIP_RATE_HZ,

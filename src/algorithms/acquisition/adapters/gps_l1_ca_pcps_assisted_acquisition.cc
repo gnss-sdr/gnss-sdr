@@ -89,7 +89,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -154,7 +154,7 @@ void GpsL1CaPcpsAssistedAcquisition::init()
 
 void GpsL1CaPcpsAssistedAcquisition::set_local_code()
 {
-    gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
+    gps_l1_ca_code_gen_complex_sampled(gsl::span<gr_complex>(code_, vector_length_), gnss_synchro_->PRN, fs_in_, 0);
     acquisition_cc_->set_local_code(code_);
 }
 

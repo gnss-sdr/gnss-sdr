@@ -119,22 +119,24 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
-            char signal_[3];
+            std::array<char, 3> signal_;
+            signal_[0] = '5';
+            signal_[2] = '\0';
 
             if (acq_iq_)
                 {
-                    strcpy(signal_, "5X");
+                    signal_[1] = 'X';
                 }
             else if (acq_pilot_)
                 {
-                    strcpy(signal_, "5Q");
+                    signal_[1] = 'Q';
                 }
             else
                 {
-                    strcpy(signal_, "5I");
+                    signal_[1] = 'I';
                 }
 
-            galileo_e5_a_code_gen_complex_sampled(code, signal_, PRN, fs_in, 0);
+            galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), signal_, PRN, fs_in, 0);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {

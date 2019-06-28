@@ -223,7 +223,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, (GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), d_acquisition_gnss_synchro->PRN, 0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
     for (int32_t n = 0; n < d_n_correlator_taps; n++)

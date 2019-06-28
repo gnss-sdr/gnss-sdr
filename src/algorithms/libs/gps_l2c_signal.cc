@@ -41,7 +41,7 @@ int32_t gps_l2c_m_shift(int32_t x)
 }
 
 
-void gps_l2c_m_code(int32_t* _dest, uint32_t _prn)
+void gps_l2c_m_code(gsl::span<int32_t> _dest, uint32_t _prn)
 {
     int32_t x;
     x = GPS_L2C_M_INIT_REG[_prn - 1];
@@ -53,13 +53,13 @@ void gps_l2c_m_code(int32_t* _dest, uint32_t _prn)
 }
 
 
-void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
+void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(_code, _prn);
+            gps_l2c_m_code(gsl::span<int32_t>(_code, GPS_L2_M_CODE_LENGTH_CHIPS), _prn);
         }
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
@@ -71,13 +71,13 @@ void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 }
 
 
-void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn)
+void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(_code, _prn);
+            gps_l2c_m_code(gsl::span<int32_t>(_code, GPS_L2_M_CODE_LENGTH_CHIPS), _prn);
         }
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
@@ -92,12 +92,12 @@ void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn)
 /*
  *  Generates complex GPS L2C M code for the desired SV ID and sampled to specific sampling frequency
  */
-void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
+void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(_code, _prn);
+            gps_l2c_m_code(gsl::span<int32_t>(_code, GPS_L2_M_CODE_LENGTH_CHIPS), _prn);
         }
 
     int32_t _samplesPerCode, _codeValueIndex;

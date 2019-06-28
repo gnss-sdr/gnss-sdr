@@ -97,9 +97,16 @@ option(ENABLE_SYSTEM_TESTING "Build system tests" OFF)
 
 option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra system tests" OFF)
 
+option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
+
+if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))
+    set(ENABLE_GNSS_SIM_INSTALL OFF)
+endif()
+
 if(ENABLE_SYSTEM_TESTING_EXTRA)
     set(ENABLE_SYSTEM_TESTING ON)
 endif()
+
 option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system tests, even if it is already installed" OFF)
 
 option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
@@ -2026,7 +2033,7 @@ if(DOXYGEN_FOUND)
 else()
     message(STATUS " Doxygen has not been found in your system.")
     message(STATUS " You can get nice code documentation by using it!")
-    message(STATUS " Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
+    message(STATUS " Get it from http://www.doxygen.nl/download.html")
     if(OS_IS_LINUX)
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " or simply by doing 'sudo yum install doxygen-latex'.")
@@ -2466,6 +2473,7 @@ add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables bu
 add_feature_info(ENABLE_SYSTEM_TESTING ENABLE_SYSTEM_TESTING "Enables building of System Tests.")
 add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enables building of Extra System Tests and downloading of external tools.")
 add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
+add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 
 message(STATUS "")

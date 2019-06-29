@@ -63,7 +63,7 @@ protected:
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~FirFilterTest() = default;
+    ~FirFilterTest() override = default;
 
     void init();
     void configure_cbyte_cbyte();

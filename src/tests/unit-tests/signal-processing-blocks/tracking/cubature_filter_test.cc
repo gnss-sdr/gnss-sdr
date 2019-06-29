@@ -40,7 +40,7 @@ class TransitionModel : public ModelFunction
 {
 public:
     explicit TransitionModel(const arma::mat& kf_F) { coeff_mat = kf_F; };
-    virtual arma::vec operator()(const arma::vec& input) { return coeff_mat * input; };
+    arma::vec operator()(const arma::vec& input) override { return coeff_mat * input; };
 
 private:
     arma::mat coeff_mat;
@@ -50,7 +50,7 @@ class MeasurementModel : public ModelFunction
 {
 public:
     explicit MeasurementModel(const arma::mat& kf_H) { coeff_mat = kf_H; };
-    virtual arma::vec operator()(const arma::vec& input) { return coeff_mat * input; };
+    arma::vec operator()(const arma::vec& input) override { return coeff_mat * input; };
 
 private:
     arma::mat coeff_mat;

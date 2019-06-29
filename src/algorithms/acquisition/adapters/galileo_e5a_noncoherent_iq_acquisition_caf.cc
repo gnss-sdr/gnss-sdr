@@ -42,6 +42,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
@@ -244,28 +245,26 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
             // is generated, and modulated in the 'block'.
+            gsl::span<gr_complex> codeQ_span(codeQ_, vector_length_);
+            gsl::span<gr_complex> codeI_span(codeI_, vector_length_);
             if (Zero_padding == 0)  // if no zero_padding
                 {
                     for (unsigned int i = 0; i < sampled_ms_; i++)
                         {
-                            memcpy(&(codeI_[i * code_length_]), codeI,
-                                sizeof(gr_complex) * code_length_);
+                            std::copy_n(codeI, code_length_, codeI_span.subspan(i * code_length_, code_length_).data());
                             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                                 {
-                                    memcpy(&(codeQ_[i * code_length_]), codeQ,
-                                        sizeof(gr_complex) * code_length_);
+                                    std::copy_n(codeQ, code_length_, codeQ_span.subspan(i * code_length_, code_length_).data());
                                 }
                         }
                 }
             else
                 {
                     // 1ms code + 1ms zero padding
-                    memcpy(&(codeI_[0]), codeI,
-                        sizeof(gr_complex) * code_length_);
+                    std::copy_n(codeI, code_length_, codeI_);
                     if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                         {
-                            memcpy(&(codeQ_[0]), codeQ,
-                                sizeof(gr_complex) * code_length_);
+                            std::copy_n(codeQ, code_length_, codeQ_);
                         }
                 }
 

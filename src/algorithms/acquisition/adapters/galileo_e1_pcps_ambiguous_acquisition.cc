@@ -37,6 +37,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
@@ -275,10 +276,10 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
                 }
         }
 
-
+    gsl::span<gr_complex> code_span(code_, vector_length_);
     for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
         {
-            memcpy(&(code_[i * code_length_]), code, sizeof(gr_complex) * code_length_);
+            std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_);

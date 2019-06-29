@@ -37,6 +37,7 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <algorithm>
 
 
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
@@ -261,10 +262,10 @@ void GalileoE5aPcpsAcquisition::set_local_code()
         {
             galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code, code_length_), signal_, gnss_synchro_->PRN, fs_in_, 0);
         }
-
+    gsl::span<gr_complex> code_span(code_, vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            memcpy(code_ + (i * code_length_), code, sizeof(gr_complex) * code_length_);
+            std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_);

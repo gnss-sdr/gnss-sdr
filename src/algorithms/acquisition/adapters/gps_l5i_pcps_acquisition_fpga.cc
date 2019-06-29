@@ -43,9 +43,9 @@
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <cmath>    // for abs, pow, floor
-#include <complex>  // for complex
-#include <cstring>  // for memcpy
+#include <algorithm>  // for copy_n
+#include <cmath>      // for abs, pow, floor
+#include <complex>    // for complex
 
 #define NUM_PRNs 32
 
@@ -130,7 +130,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                     // fill in zero padding
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
-            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
+            std::copy_n(code, nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 

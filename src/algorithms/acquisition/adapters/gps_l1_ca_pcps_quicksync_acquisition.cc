@@ -37,6 +37,7 @@
 #include "gps_sdr_signal_processing.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
@@ -240,13 +241,12 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 
             gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
 
-            for (unsigned int i = 0; i < (sampled_ms_ / folding_factor_); i++)
+            gsl::span<gr_complex> code_span(code_, vector_length_);
+            for (unsigned int i = 0; i < sampled_ms_; i++)
                 {
-                    memcpy(&(code_[i * code_length_]), code,
-                        sizeof(gr_complex) * code_length_);
+                    std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
-            //memcpy(code_, code,sizeof(gr_complex)*code_length_);
             acquisition_cc_->set_local_code(code_);
 
             delete[] code;

@@ -39,6 +39,7 @@
 #include "gps_l2c_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
@@ -250,10 +251,10 @@ void GpsL2MPcpsAcquisition::set_local_code()
             gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_);
         }
 
+    gsl::span<gr_complex> code_span(code_, vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
-            memcpy(&(code_[i * code_length_]), code,
-                sizeof(gr_complex) * code_length_);
+            std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_);

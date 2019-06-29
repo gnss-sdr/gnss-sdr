@@ -211,7 +211,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
                 {
                     for (unsigned k = 0; k < _samplesPerCode; k++)
                         {
-                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1_span[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0f : -1.0f);
+                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1_span[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0F : -1.0F);
                         }
                 }
 
@@ -251,7 +251,7 @@ void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, c
 
     for (uint32_t ii = 0; ii < _samplesPerCode; ++ii)
         {
-            _dest[ii] = std::complex<float>(real_code_span[ii], 0.0f);
+            _dest[ii] = std::complex<float>(real_code_span[ii], 0.0F);
         }
     volk_gnsssdr_free(real_code);
 }

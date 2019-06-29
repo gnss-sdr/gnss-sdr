@@ -193,7 +193,7 @@ void beidou_b3i_code_gen_complex(gsl::span<std::complex<float>> _dest, signed in
 
     for (unsigned int ii = 0; ii < _code_length; ++ii)
         {
-            _dest[ii] = std::complex<float>(static_cast<float>(b3i_code_int[ii]), 0.0f);
+            _dest[ii] = std::complex<float>(static_cast<float>(b3i_code_int[ii]), 0.0F);
         }
 }
 

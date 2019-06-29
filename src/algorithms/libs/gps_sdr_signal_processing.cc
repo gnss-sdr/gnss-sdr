@@ -139,7 +139,7 @@ void gps_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _p
 
     for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
-            _dest[ii] = std::complex<float>(static_cast<float>(ca_code_int[ii]), 0.0f);
+            _dest[ii] = std::complex<float>(static_cast<float>(ca_code_int[ii]), 0.0F);
         }
 }
 

@@ -39,7 +39,7 @@
 class TransitionModelUKF : public ModelFunction
 {
 public:
-    TransitionModelUKF(const arma::mat& kf_F) { coeff_mat = kf_F; };
+    explicit TransitionModelUKF(const arma::mat& kf_F) { coeff_mat = kf_F; };
     virtual arma::vec operator()(const arma::vec& input) { return coeff_mat * input; };
 
 private:
@@ -49,7 +49,7 @@ private:
 class MeasurementModelUKF : public ModelFunction
 {
 public:
-    MeasurementModelUKF(const arma::mat& kf_H) { coeff_mat = kf_H; };
+    explicit MeasurementModelUKF(const arma::mat& kf_H) { coeff_mat = kf_H; };
     virtual arma::vec operator()(const arma::vec& input) { return coeff_mat * input; };
 
 private:

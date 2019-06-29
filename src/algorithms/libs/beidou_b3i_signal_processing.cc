@@ -113,7 +113,9 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
 
     // A simple error check
     if ((prn_idx < 0) || (prn_idx > 63))
-        return;
+        {
+            return;
+        }
 
     // Assign shifted G2 register based on prn number
     G2_register = G2_register_shifted[prn_idx];

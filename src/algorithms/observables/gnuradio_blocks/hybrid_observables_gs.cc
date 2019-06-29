@@ -424,15 +424,15 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             int32_t t2_idx;
                             if (rx_clock > d_gnss_synchro_history->at(ch, nearest_element).Tracking_sample_counter)
                                 {
-                                    //std::cout << "S1= " << d_gnss_synchro_history->at(ch, nearest_element).Tracking_sample_counter
-                                    //          << " Si=" << rx_clock << " S2=" << d_gnss_synchro_history->at(ch, neighbor_element).Tracking_sample_counter << std::endl;
+                                    // std::cout << "S1= " << d_gnss_synchro_history->at(ch, nearest_element).Tracking_sample_counter
+                                    //           << " Si=" << rx_clock << " S2=" << d_gnss_synchro_history->at(ch, neighbor_element).Tracking_sample_counter << std::endl;
                                     t1_idx = nearest_element;
                                     t2_idx = neighbor_element;
                                 }
                             else
                                 {
-                                    //std::cout << "inv S1= " << d_gnss_synchro_history->at(ch, neighbor_element).Tracking_sample_counter
-                                    //          << " Si=" << rx_clock << " S2=" << d_gnss_synchro_history->at(ch, nearest_element).Tracking_sample_counter << std::endl;
+                                    // std::cout << "inv S1= " << d_gnss_synchro_history->at(ch, neighbor_element).Tracking_sample_counter
+                                    //           << " Si=" << rx_clock << " S2=" << d_gnss_synchro_history->at(ch, nearest_element).Tracking_sample_counter << std::endl;
                                     t1_idx = neighbor_element;
                                     t2_idx = nearest_element;
                                 }
@@ -441,7 +441,6 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             interpolated_obs = d_gnss_synchro_history->at(ch, nearest_element);
 
                             // 2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
-
                             double T_rx_s = static_cast<double>(rx_clock) / static_cast<double>(interpolated_obs.fs);
 
                             double time_factor = (T_rx_s - d_gnss_synchro_history->at(ch, t1_idx).RX_time) /
@@ -460,18 +459,18 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                                 }
                             else
                                 {
-                                    //TOW rollover situation
+                                    // TOW rollover situation
                                     interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms + 604800000) - static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
                                 }
 
-                            //                            LOG(INFO) << "Channel " << ch << " int idx: " << t1_idx << " TOW Int: " << interpolated_obs.interp_TOW_ms
-                            //                                      << " TOW p1 : " << d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms
-                            //                                      << " TOW p2: "
-                            //                                      << d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms
-                            //                                      << " t2-t1: "
-                            //                                      << d_gnss_synchro_history->at(ch, t2_idx).RX_time - d_gnss_synchro_history->at(ch, t1_idx).RX_time
-                            //                                      << " trx - t1: "
-                            //                                      << T_rx_s - d_gnss_synchro_history->at(ch, t1_idx).RX_time;
+                            // LOG(INFO) << "Channel " << ch << " int idx: " << t1_idx << " TOW Int: " << interpolated_obs.interp_TOW_ms
+                            //           << " TOW p1 : " << d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms
+                            //           << " TOW p2: "
+                            //           << d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms
+                            //           << " t2-t1: "
+                            //           << d_gnss_synchro_history->at(ch, t2_idx).RX_time - d_gnss_synchro_history->at(ch, t1_idx).RX_time
+                            //           << " trx - t1: "
+                            //           << T_rx_s - d_gnss_synchro_history->at(ch, t1_idx).RX_time;
 
                             //
                             // std::cout << "Rx samplestamp: " << T_rx_s << " Channel " << ch << " interp buff idx " << nearest_element
@@ -501,10 +500,10 @@ void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), 
 
 void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 {
-    //1. Set the TOW using the minimum TOW in the observables.
-    //   this will be the receiver time.
-    //2. If the TOW is set, it must be incremented by the desired receiver time step.
-    //   the time step must match the observables timer block (connected to the las input channel)
+    // 1. Set the TOW using the minimum TOW in the observables.
+    //    this will be the receiver time.
+    // 2. If the TOW is set, it must be incremented by the desired receiver time step.
+    //    the time step must match the observables timer block (connected to the las input channel)
     std::vector<Gnss_Synchro>::const_iterator it;
     if (!T_rx_TOW_set)
         {
@@ -526,7 +525,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
         }
     else
         {
-            T_rx_TOW_ms += T_rx_step_ms;  //the tow time step increment must match the ref time channel step
+            T_rx_TOW_ms += T_rx_step_ms;  // the tow time step increment must match the ref time channel step
             if (T_rx_TOW_ms >= 604800000)
                 {
                     DLOG(INFO) << "TOW RX TIME rollover!";
@@ -538,8 +537,8 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 
 void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
 {
-    //    std::cout.precision(17);
-    //    std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
+    // std::cout.precision(17);
+    // std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
     double current_T_rx_TOW_ms = (static_cast<double>(T_rx_TOW_ms - T_rx_remnant_to_20ms));
     double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
@@ -548,7 +547,7 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
             if (it->Flag_valid_word)
                 {
                     double traveltime_ms = current_T_rx_TOW_ms - it->interp_TOW_ms;
-                    if (fabs(traveltime_ms) > 302400)  //check TOW roll over
+                    if (fabs(traveltime_ms) > 302400)  // check TOW roll over
                         {
                             traveltime_ms = 604800000.0 + current_T_rx_TOW_ms - it->interp_TOW_ms;
                         }
@@ -556,9 +555,8 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
                     it->Pseudorange_m = traveltime_ms * SPEED_OF_LIGHT_MS;
                     it->Flag_valid_pseudorange = true;
                     // debug code
-                    //
-                    //                    std::cout << "[" << it->Channel_ID << "] interp_TOW_ms: " << it->interp_TOW_ms << std::endl;
-                    //                    std::cout << "[" << it->Channel_ID << "] Diff T_rx_TOW_ms - interp_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms << std::endl;
+                    // std::cout << "[" << it->Channel_ID << "] interp_TOW_ms: " << it->interp_TOW_ms << std::endl;
+                    // std::cout << "[" << it->Channel_ID << "] Diff T_rx_TOW_ms - interp_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms << std::endl;
                 }
             else
                 {

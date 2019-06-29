@@ -203,7 +203,12 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
             delete[] _signal_E1;
             _signal_E1 = _resampled_signal;
         }
-
+    uint32_t size_signal_E1 = _codeLength;
+    if (_fs != _samplesPerChip * _codeFreqBasis)
+        {
+            size_signal_E1 = _samplesPerCode;
+        }
+    gsl::span<float> _signal_E1_span_aux(_signal_E1, size_signal_E1);
     if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
         {
             auto* _signal_E1C_secondary = new float[static_cast<int32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH) * _samplesPerCode];
@@ -212,7 +217,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
                 {
                     for (unsigned k = 0; k < _samplesPerCode; k++)
                         {
-                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0f : -1.0f);
+                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1_span_aux[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0f : -1.0f);
                         }
                 }
 
@@ -221,10 +226,14 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
             delete[] _signal_E1;
             _signal_E1 = _signal_E1C_secondary_span.data();
         }
-
+    if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
+        {
+            size_signal_E1 = static_cast<int32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH) * _samplesPerCode;
+        }
+    gsl::span<float> _signal_E1_span_aux2(_signal_E1, size_signal_E1);
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
-            _dest[(i + delay) % _samplesPerCode] = _signal_E1[i];
+            _dest[(i + delay) % _samplesPerCode] = _signal_E1_span_aux2[i];
         }
 
     delete[] _signal_E1;

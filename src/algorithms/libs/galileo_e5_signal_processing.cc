@@ -126,10 +126,15 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
             delete[] _code;
             _code = _resampled_signal;
         }
-
+    uint32_t size_code = _codeLength;
+    if (_fs != _codeFreqBasis)
+        {
+            size_code = _samplesPerCode;
+        }
+    gsl::span<std::complex<float>> _code_span_aux(_code, size_code);
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
-            _dest[(i + delay) % _samplesPerCode] = _code[i];
+            _dest[(i + delay) % _samplesPerCode] = _code_span_aux[i];
         }
     if (_fs != _codeFreqBasis)
         {

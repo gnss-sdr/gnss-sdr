@@ -37,7 +37,7 @@
 #include <string>
 
 
-void galileo_e1_code_gen_int(gsl::span<int> _dest, std::array<char, 3> _Signal, int32_t _prn)
+void galileo_e1_code_gen_int(gsl::span<int> _dest, const std::array<char, 3>& _Signal, int32_t _prn)
 {
     std::string _galileo_signal = _Signal.data();
     int32_t prn = _prn - 1;
@@ -105,7 +105,7 @@ void galileo_e1_sinboc_61_gen_int(gsl::span<int> _dest, gsl::span<const int> _pr
 }
 
 
-void galileo_e1_code_gen_sinboc11_float(gsl::span<float> _dest, std::array<char, 3> _Signal, uint32_t _prn)
+void galileo_e1_code_gen_sinboc11_float(gsl::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn)
 {
     std::string _galileo_signal = _Signal.data();
     const auto _codeLength = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
@@ -119,7 +119,7 @@ void galileo_e1_code_gen_sinboc11_float(gsl::span<float> _dest, std::array<char,
 }
 
 
-void galileo_e1_gen_float(gsl::span<float> _dest, gsl::span<int> _prn, std::array<char, 3> _Signal)
+void galileo_e1_gen_float(gsl::span<float> _dest, gsl::span<int> _prn, const std::array<char, 3>& _Signal)
 {
     std::string _galileo_signal = _Signal.data();
     const uint32_t _codeLength = 12 * GALILEO_E1_B_CODE_LENGTH_CHIPS;
@@ -153,7 +153,7 @@ void galileo_e1_gen_float(gsl::span<float> _dest, gsl::span<int> _prn, std::arra
 }
 
 
-void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, std::array<char, 3> _Signal,
+void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
     bool _secondary_flag)
 {
@@ -231,7 +231,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, std::array<char, 
 }
 
 
-void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, std::array<char, 3> _Signal,
+void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
     bool _secondary_flag)
 {
@@ -257,14 +257,14 @@ void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, s
 }
 
 
-void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, std::array<char, 3> _Signal,
+void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     galileo_e1_code_gen_float_sampled(_dest, _Signal, _cboc, _prn, _fs, _chip_shift, false);
 }
 
 
-void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, std::array<char, 3> _Signal,
+void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     galileo_e1_code_gen_complex_sampled(_dest, _Signal, _cboc, _prn, _fs, _chip_shift, false);

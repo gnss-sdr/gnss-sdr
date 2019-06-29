@@ -37,7 +37,7 @@
 #include <gnuradio/gr_complex.h>
 
 
-void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, std::array<char, 3> _Signal)
+void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, const std::array<char, 3>& _Signal)
 {
     uint32_t prn = _prn - 1;
     uint32_t index = 0;
@@ -100,7 +100,7 @@ void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest,
 }
 
 
-void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, std::array<char, 3> _Signal,
+void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     uint32_t _samplesPerCode;

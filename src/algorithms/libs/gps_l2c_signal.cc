@@ -56,15 +56,15 @@ void gps_l2c_m_code(gsl::span<int32_t> _dest, uint32_t _prn)
 void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
-
+    gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(gsl::span<int32_t>(_code, GPS_L2_M_CODE_LENGTH_CHIPS), _prn);
+            gps_l2c_m_code(_code_span, _prn);
         }
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[i], 0.0);
         }
 
     delete[] _code;
@@ -74,15 +74,15 @@ void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _
 void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
-
+    gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(gsl::span<int32_t>(_code, GPS_L2_M_CODE_LENGTH_CHIPS), _prn);
+            gps_l2c_m_code(_code_span, _prn);
         }
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code[i]);
+            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code_span[i]);
         }
 
     delete[] _code;
@@ -95,9 +95,10 @@ void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(gsl::span<int32_t>(_code, GPS_L2_M_CODE_LENGTH_CHIPS), _prn);
+            gps_l2c_m_code(_code_span, _prn);
         }
 
     int32_t _samplesPerCode, _codeValueIndex;
@@ -112,26 +113,22 @@ void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
     _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_HZ);  // C/A chip period in sec
 
-    //float aux;
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 
             //--- Make index array to read L2C code values -------------------------
-            //TODO: Check this formula! Seems to start with an extra sample
             _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
-            //aux = (_ts * (i + 1)) / _tc;
-            //_codeValueIndex = static_cast<int32_t>(static_cast<long>(aux)) - 1;
 
             //--- Make the digitized version of the L2C code -----------------------
             if (i == _samplesPerCode - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeLength - 1], 0);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeValueIndex], 0);  //repeat the chip -> upsample
                 }
         }
     delete[] _code;

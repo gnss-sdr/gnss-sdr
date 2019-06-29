@@ -109,8 +109,8 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
     const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_HZ;
 
     auto* _code = new std::complex<float>[_codeLength]();
-
-    galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>>(_code, _codeLength), _prn, _Signal);
+    gsl::span<std::complex<float>> _code_span(_code, _codeLength);
+    galileo_e5_a_code_gen_complex_primary(_code_span, _prn, _Signal);
 
     _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
@@ -122,14 +122,14 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
             if (posix_memalign(reinterpret_cast<void**>(&_resampled_signal), 16, _samplesPerCode * sizeof(gr_complex)) == 0)
                 {
                 };
-            resampler(gsl::span<std::complex<float>>(_code, _codeLength), gsl::span<std::complex<float>>(_resampled_signal, _samplesPerCode), _codeFreqBasis, _fs);  // resamples code to fs
+            resampler(_code_span, gsl::span<std::complex<float>>(_resampled_signal, _samplesPerCode), _codeFreqBasis, _fs);  // resamples code to fs
             delete[] _code;
             _code = _resampled_signal;
         }
 
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
-            _dest[(i + delay) % _samplesPerCode] = _code[i];
+            _dest[(i + delay) % _samplesPerCode] = _code_span[i];
         }
     if (_fs != _codeFreqBasis)
         {

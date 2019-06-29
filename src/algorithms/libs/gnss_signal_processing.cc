@@ -54,105 +54,105 @@ void complex_exp_gen_conj(gsl::span<std::complex<float>> _dest, double _f, doubl
 }
 
 
-void hex_to_binary_converter(int32_t* _dest, char _from)
+void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from)
 {
     switch (_from)
         {
         case '0':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case '1':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case '2':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case '3':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         case '4':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case '5':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case '6':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case '7':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         case '8':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case '9':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case 'A':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case 'B':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         case 'C':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case 'D':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case 'E':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case 'F':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         }
 }

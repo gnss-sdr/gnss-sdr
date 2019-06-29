@@ -63,7 +63,7 @@ void complex_exp_gen_conj(gsl::span<std::complex<float>> _dest, double _f, doubl
  *  to binary (the output are 4 ints with +1 or -1 values).
  *
  */
-void hex_to_binary_converter(int32_t* _dest, char _from);
+void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from);
 
 /*!
  * \brief This function resamples a sequence of float values.

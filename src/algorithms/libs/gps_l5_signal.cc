@@ -174,15 +174,15 @@ void make_l5q(gsl::span<int32_t> _dest, int32_t prn)
 void gps_l5i_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L5I_CODE_LENGTH_CHIPS];
-
+    gsl::span<int32_t> _code_span(_code, GPS_L5I_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            make_l5i(gsl::span<int32_t>(_code, GPS_L5I_CODE_LENGTH_CHIPS), _prn - 1);
+            make_l5i(_code_span, _prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[i], 0.0);
         }
 
     delete[] _code;
@@ -192,15 +192,15 @@ void gps_l5i_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _pr
 void gps_l5i_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L5I_CODE_LENGTH_CHIPS];
-
+    gsl::span<int32_t> _code_span(_code, GPS_L5I_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            make_l5i(gsl::span<int32_t>(_code, GPS_L5I_CODE_LENGTH_CHIPS), _prn - 1);
+            make_l5i(_code_span, _prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code[i]);
+            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code_span[i]);
         }
 
     delete[] _code;
@@ -213,9 +213,10 @@ void gps_l5i_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 void gps_l5i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     auto* _code = new int32_t[GPS_L5I_CODE_LENGTH_CHIPS];
+    gsl::span<int32_t> _code_span(_code, GPS_L5I_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            make_l5i(gsl::span<int32_t>(_code, GPS_L5I_CODE_LENGTH_CHIPS), _prn - 1);
+            make_l5i(_code_span, _prn - 1);
         }
 
     int32_t _samplesPerCode, _codeValueIndex;
@@ -241,11 +242,11 @@ void gps_l5i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
             if (i == _samplesPerCode - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0.0);
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeLength - 1], 0.0);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0.0);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeValueIndex], 0.0);  // repeat the chip -> upsample
                 }
         }
     delete[] _code;
@@ -255,15 +256,15 @@ void gps_l5i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
 void gps_l5q_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L5Q_CODE_LENGTH_CHIPS];
-
+    gsl::span<int32_t> _code_span(_code, GPS_L5Q_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            make_l5q(gsl::span<int32_t>(_code, GPS_L5Q_CODE_LENGTH_CHIPS), _prn - 1);
+            make_l5q(_code_span, _prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[i], 0.0);
         }
 
     delete[] _code;
@@ -273,15 +274,15 @@ void gps_l5q_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _pr
 void gps_l5q_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 {
     auto* _code = new int32_t[GPS_L5Q_CODE_LENGTH_CHIPS];
-
+    gsl::span<int32_t> _code_span(_code, GPS_L5Q_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            make_l5q(gsl::span<int32_t>(_code, GPS_L5Q_CODE_LENGTH_CHIPS), _prn - 1);
+            make_l5q(_code_span, _prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code[i]);
+            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code_span[i]);
         }
 
     delete[] _code;
@@ -294,9 +295,10 @@ void gps_l5q_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 void gps_l5q_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     auto* _code = new int32_t[GPS_L5Q_CODE_LENGTH_CHIPS];
+    gsl::span<int32_t> _code_span(_code, GPS_L5Q_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
-            make_l5q(gsl::span<int32_t>(_code, GPS_L5Q_CODE_LENGTH_CHIPS), _prn - 1);
+            make_l5q(_code_span, _prn - 1);
         }
 
     int32_t _samplesPerCode, _codeValueIndex;
@@ -323,11 +325,11 @@ void gps_l5q_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
             if (i == _samplesPerCode - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeLength - 1], 0);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeValueIndex], 0);  // repeat the chip -> upsample
                 }
         }
     delete[] _code;

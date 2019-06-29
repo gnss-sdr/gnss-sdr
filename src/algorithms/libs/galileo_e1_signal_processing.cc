@@ -176,15 +176,16 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
     _codeLength = _samplesPerChip * GALILEO_E1_B_CODE_LENGTH_CHIPS;
     _signal_E1 = new float[_codeLength];
     gsl::span<float> _signal_E1_span(_signal_E1, _codeLength);
+
     if (_cboc == true)
         {
-            galileo_e1_gen_float(gsl::span<float>(_signal_E1, _codeLength), gsl::span<int>(primary_code_E1_chips, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)), _Signal);  // generate cboc 12 samples per chip
+            galileo_e1_gen_float(_signal_E1_span, gsl::span<int>(primary_code_E1_chips, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)), _Signal);  // generate cboc 12 samples per chip
         }
     else
         {
             auto* _signal_E1_int = static_cast<int32_t*>(volk_gnsssdr_malloc(_codeLength * sizeof(int32_t), volk_gnsssdr_get_alignment()));
             gsl::span<int32_t> _signal_E1_int_span(_signal_E1_int, _codeLength);
-            galileo_e1_sinboc_11_gen_int(gsl::span<int32_t>(_signal_E1_int, _codeLength), gsl::span<int>(primary_code_E1_chips, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)));  // generate sinboc(1,1) 2 samples per chip
+            galileo_e1_sinboc_11_gen_int(_signal_E1_int_span, gsl::span<int>(primary_code_E1_chips, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)));  // generate sinboc(1,1) 2 samples per chip
 
             for (uint32_t ii = 0; ii < _codeLength; ++ii)
                 {
@@ -211,7 +212,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
                 {
                     for (unsigned k = 0; k < _samplesPerCode; k++)
                         {
-                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1_span[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0F : -1.0F);
+                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0f : -1.0f);
                         }
                 }
 
@@ -223,7 +224,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
 
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
-            _dest[(i + delay) % _samplesPerCode] = _signal_E1_span[i];
+            _dest[(i + delay) % _samplesPerCode] = _signal_E1[i];
         }
 
     delete[] _signal_E1;

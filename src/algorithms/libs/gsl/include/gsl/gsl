@@ -1,5 +1,8 @@
-///////////////////////////////////////////////////////////////////////////////
 //
+// gsl-lite is based on GSL: Guidelines Support Library.
+// For more information see https://github.com/martinmoene/gsl-lite
+//
+// Copyright (c) 2015 Martin Moene
 // Copyright (c) 2015 Microsoft Corporation. All rights reserved.
 //
 // This code is licensed under the MIT License (MIT).
@@ -11,19 +14,14 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
-///////////////////////////////////////////////////////////////////////////////
 
-#ifndef GSL_GSL_H
-#define GSL_GSL_H
+// mimic MS include hierarchy
 
-#include <gsl/gsl_algorithm> // copy
-#include <gsl/gsl_assert>    // Ensures/Expects
-#include <gsl/gsl_byte>      // byte
-#include <gsl/gsl_util>      // finally()/narrow()/narrow_cast()...
-#include <gsl/multi_span>    // multi_span, strided_span...
-#include <gsl/pointers>      // owner, not_null
-#include <gsl/span>          // span
-#include <gsl/string_span>   // zstring, string_span, zstring_builder...
+#pragma once
 
-#endif // GSL_GSL_H
+#ifndef GSL_GSL_H_INCLUDED
+#define GSL_GSL_H_INCLUDED
+
+#include "gsl-lite.hpp"
+
+#endif  // GSL_GSL_H_INCLUDED

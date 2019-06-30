@@ -225,7 +225,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(aux_code[s].imag());
+                            auto tmp_value = static_cast<int32_t>(aux_code[s].imag());
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
@@ -247,7 +247,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(aux_code[s].real());
+                            auto tmp_value = static_cast<int32_t>(aux_code[s].real());
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;

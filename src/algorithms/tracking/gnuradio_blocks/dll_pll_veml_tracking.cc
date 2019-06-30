@@ -449,7 +449,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[trk_parameters.cn0_samples];
+    d_Prompt_buffer = std::vector<gr_complex>(trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
@@ -824,7 +824,6 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
                     volk_gnsssdr_free(d_data_code);
                     correlator_data_cpu.free();
                 }
-            delete[] d_Prompt_buffer;
             multicorrelator_cpu.free();
         }
     catch (const std::exception &ex)
@@ -887,10 +886,10 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
     d_Prompt_buffer[d_cn0_estimation_counter % trk_parameters.cn0_samples] = d_P_accu;
     d_cn0_estimation_counter++;
     // Code lock indicator
-    float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
-    d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer, 1));
+    d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer.data(), 1));
     //d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
     // Loss of lock detection
     if (!d_pull_in_transitory)

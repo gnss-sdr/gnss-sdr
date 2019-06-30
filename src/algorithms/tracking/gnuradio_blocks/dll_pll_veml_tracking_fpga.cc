@@ -361,7 +361,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[trk_parameters.cn0_samples];
+    d_Prompt_buffer = std::vector<gr_complex>(trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_cn0_smoother = Exponential_Smoother();
@@ -537,7 +537,6 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
             volk_gnsssdr_free(d_local_code_shift_chips);
             volk_gnsssdr_free(d_correlator_outs);
             volk_gnsssdr_free(d_Prompt_Data);
-            delete[] d_Prompt_buffer;
             multicorrelator_fpga->free();
         }
     catch (const std::exception &ex)
@@ -601,10 +600,10 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
         {
             d_cn0_estimation_counter = 0;
             // Code lock indicator
-            float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+            float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
             d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
             // Carrier lock indicator
-            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
+            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), trk_parameters.cn0_samples);
             // Loss of lock detection
             if (!d_pull_in_transitory)
                 {
@@ -734,7 +733,6 @@ void dll_pll_veml_tracking_fpga::clear_tracking_vars()
     d_code_error_filt_chips = 0.0;
     d_current_symbol = 0;
     d_Prompt_circular_buffer.clear();
-    //d_Prompt_buffer_deque.clear();
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
     d_carr_ph_history.clear();

@@ -35,9 +35,10 @@
 #include "Galileo_E5a.h"
 #include "gnss_signal_processing.h"
 #include <gnuradio/gr_complex.h>
+#include <memory>
 
 
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, const char _Signal[3])
+void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, const std::array<char, 3>& _Signal)
 {
     uint32_t prn = _prn - 1;
     uint32_t index = 0;
@@ -100,7 +101,7 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _
 }
 
 
-void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
+void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     uint32_t _samplesPerCode;
@@ -108,9 +109,9 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
     const uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
     const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_HZ;
 
-    auto* _code = new std::complex<float>[_codeLength]();
-
-    galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
+    std::unique_ptr<std::complex<float>> _code{new std::complex<float>[_codeLength]};
+    gsl::span<std::complex<float>> _code_span(_code, _codeLength);
+    galileo_e5_a_code_gen_complex_primary(_code_span, _prn, _Signal);
 
     _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
@@ -118,25 +119,18 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
 
     if (_fs != _codeFreqBasis)
         {
-            std::complex<float>* _resampled_signal;
-            if (posix_memalign(reinterpret_cast<void**>(&_resampled_signal), 16, _samplesPerCode * sizeof(gr_complex)) == 0)
-                {
-                };
-            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  // resamples code to fs
-            delete[] _code;
-            _code = _resampled_signal;
+            std::unique_ptr<std::complex<float>> _resampled_signal{new std::complex<float>[_samplesPerCode]};
+            resampler(_code_span, gsl::span<std::complex<float>>(_resampled_signal, _samplesPerCode), _codeFreqBasis, _fs);  // resamples code to fs
+            _code = std::move(_resampled_signal);
         }
-
-    for (uint32_t i = 0; i < _samplesPerCode; i++)
-        {
-            _dest[(i + delay) % _samplesPerCode] = _code[i];
-        }
+    uint32_t size_code = _codeLength;
     if (_fs != _codeFreqBasis)
         {
-            free(_code);
+            size_code = _samplesPerCode;
         }
-    else
+    gsl::span<std::complex<float>> _code_span_aux(_code, size_code);
+    for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
-            delete[] _code;
+            _dest[(i + delay) % _samplesPerCode] = _code_span_aux[i];
         }
 }

@@ -82,10 +82,10 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_carrier = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;
@@ -129,8 +129,6 @@ pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
 {
     volk_gnsssdr_free(d_carrier);
     volk_gnsssdr_free(d_fft_codes);
-    delete d_ifft;
-    delete d_fft_if;
     try
         {
             if (d_dump)

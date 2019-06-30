@@ -37,7 +37,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
+#include <algorithm>
 
 using google::LogMessage;
 
@@ -66,7 +66,10 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters.blocking = blocking_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms_;
@@ -88,7 +91,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
             vector_length_ *= 2;
         }
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -121,7 +124,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -133,15 +136,13 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
 }
 
 
-BeidouB3iPcpsAcquisition::~BeidouB3iPcpsAcquisition()
-{
-    delete[] code_;
-}
+BeidouB3iPcpsAcquisition::~BeidouB3iPcpsAcquisition() = default;
 
 
 void BeidouB3iPcpsAcquisition::stop_acquisition()
 {
 }
+
 
 void BeidouB3iPcpsAcquisition::set_threshold(float threshold)
 {
@@ -201,18 +202,17 @@ void BeidouB3iPcpsAcquisition::init()
 
 void BeidouB3iPcpsAcquisition::set_local_code()
 {
-    auto* code = new std::complex<float>[code_length_];
+    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
 
-    beidou_b3i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+    beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
 
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            memcpy(&(code_[i * code_length_]), code,
-                sizeof(gr_complex) * code_length_);
+            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 

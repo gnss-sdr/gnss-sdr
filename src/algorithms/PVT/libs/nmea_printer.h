@@ -83,7 +83,7 @@ private:
     std::string get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time);
     std::string longitude_to_hm(double longitude);
     std::string latitude_to_hm(double lat);
-    char checkSum(std::string sentence);
+    char checkSum(const std::string& sentence);
     bool print_avg_pos;
     bool d_flag_nmea_output_file;
 };

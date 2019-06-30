@@ -43,9 +43,9 @@
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <cmath>    // for abs, pow, floor
-#include <complex>  // for complex
-#include <cstring>  // for memcpy
+#include <algorithm>  // for copy_n
+#include <cmath>      // for abs, pow, floor
+#include <complex>    // for complex
 
 #define NUM_PRNs 32
 
@@ -103,17 +103,17 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
+    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));
     // allocate memory to compute all the PRNs and compute all the possible codes
-    auto* code = new std::complex<float>[nsamples_total];  // buffer for the local code
+    std::vector<std::complex<float>> code(nsamples_total);  // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new uint32_t[(nsamples_total * NUM_PRNs)];  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
     float max;
     int32_t tmp, tmp2, local_code, fft_data;
     // temporary maxima search
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
+            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), PRN, fs_in, 0);  // generate PRN code
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -126,7 +126,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
 
-            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
+            std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                     // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
@@ -154,8 +154,8 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                 }
         }
 
-    //acq_parameters
-    acq_parameters.all_fft_codes = d_all_fft_codes_;
+    // acq_parameters
+    acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     // reference for the FPGA FFT-IFFT attenuation factor
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 10);
@@ -169,18 +169,13 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
-    // temporary buffers that we can delete
-    delete[] code;
-    delete fft_if;
-    delete[] fft_codes_padded;
+
+    // temporary buffers that we can release
+    volk_gnsssdr_free(fft_codes_padded);
 }
 
 
-GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
-{
-    delete[] d_all_fft_codes_;
-}
+GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga() = default;
 
 
 void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()

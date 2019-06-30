@@ -131,10 +131,10 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     if (d_opencl != 0)
         {
             // Direct FFT
-            d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+            d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
             // Inverse FFT
-            d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+            d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
         }
 
     // For dumping samples into a file
@@ -178,11 +178,6 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
                 }
 
             clFFT_DestroyPlan(d_cl_fft_plan);
-        }
-    else
-        {
-            delete d_ifft;
-            delete d_fft_if;
         }
 
     try

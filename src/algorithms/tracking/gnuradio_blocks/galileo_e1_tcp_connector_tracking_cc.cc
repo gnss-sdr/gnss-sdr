@@ -163,7 +163,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
+    d_Prompt_buffer = std::vector<gr_complex>(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -188,10 +188,12 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    std::array<char, 3> Signal_;
+    std::memcpy(Signal_.data(), d_acquisition_gnss_synchro->Signal, 3);
 
     // generate local reference ALWAYS starting at chip 1 (2 samples per chip)
-    galileo_e1_code_gen_complex_sampled(d_ca_code,
-        d_acquisition_gnss_synchro->Signal,
+    galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(d_ca_code, (2 * GALILEO_E1_B_CODE_LENGTH_CHIPS)),
+        Signal_,
         false,
         d_acquisition_gnss_synchro->PRN,
         2 * GALILEO_E1_CODE_CHIP_RATE_HZ,
@@ -245,7 +247,6 @@ Galileo_E1_Tcp_Connector_Tracking_cc::~Galileo_E1_Tcp_Connector_Tracking_cc()
             volk_gnsssdr_free(d_local_code_shift_chips);
             volk_gnsssdr_free(d_correlator_outs);
             volk_gnsssdr_free(d_ca_code);
-            delete[] d_Prompt_buffer;
             d_tcp_com.close_tcp_connection(d_port);
             multicorrelator_cpu.free();
         }
@@ -413,10 +414,10 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     d_cn0_estimation_counter = 0;
 
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GALILEO_E1_CODE_PERIOD);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GALILEO_E1_CODE_PERIOD);
 
                     // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
 
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)

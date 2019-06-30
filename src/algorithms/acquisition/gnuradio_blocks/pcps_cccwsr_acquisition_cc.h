@@ -43,6 +43,7 @@
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -100,8 +101,8 @@ private:
     uint32_t d_num_doppler_bins;
     gr_complex* d_fft_code_data;
     gr_complex* d_fft_code_pilot;
-    gr::fft::fft_complex* d_fft_if;
-    gr::fft::fft_complex* d_ifft;
+    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
+    std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;

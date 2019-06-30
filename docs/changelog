@@ -56,6 +56,7 @@
 
 ### Improvements in Reliability
 
+- Included the Guidelines Support Library. General improvement of memory management, replacement of raw pointers by containers or smart pointers.
 - Applied clang-tidy checks and fixes related to High Integrity C++: performance-move-const-arg, modernize-use-auto, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr, cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp, cert-err60-cpp.
 
 

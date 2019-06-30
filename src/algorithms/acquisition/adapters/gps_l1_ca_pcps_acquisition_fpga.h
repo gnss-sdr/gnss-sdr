@@ -41,7 +41,9 @@
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <volk/volk_complex.h>       // for lv_16sc_t
 #include <cstddef>                   // for size_t
-#include <string>                    // for string
+#include <memory>
+#include <string>
+#include <vector>
 
 class Gnss_Synchro;
 class ConfigurationInterface;
@@ -167,7 +169,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
+    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_ */

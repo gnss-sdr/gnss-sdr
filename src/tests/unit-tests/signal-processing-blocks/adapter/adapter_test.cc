@@ -51,7 +51,7 @@ class DataTypeAdapter : public ::testing::Test
 {
 public:
     DataTypeAdapter();
-    ~DataTypeAdapter();
+    ~DataTypeAdapter() override;
     int run_byte_to_short_block();
     int run_ibyte_to_cbyte_block();
     int run_ibyte_to_complex_block();

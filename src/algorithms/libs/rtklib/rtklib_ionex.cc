@@ -149,7 +149,7 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     for (i = 0; i < n; i++)
         {
             p->data[i] = 0.0;
-            p->rms[i] = 0.0f;
+            p->rms[i] = 0.0F;
         }
     nav->nt++;
     return p;

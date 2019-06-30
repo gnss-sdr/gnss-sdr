@@ -84,7 +84,7 @@
 
 
 /*!
- * \brief This class implements a simple PVT Least Squares solution
+ * \brief This class implements a PVT solution based on RTKLIB
  */
 class Rtklib_Solver : public Pvt_Solution
 {
@@ -107,7 +107,7 @@ public:
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
 
     sol_t pvt_sol;
-    ssat_t pvt_ssat[MAXSAT];
+    std::array<ssat_t, MAXSAT> pvt_ssat;
     double get_hdop() const;
     double get_vdop() const;
     double get_pdop() const;

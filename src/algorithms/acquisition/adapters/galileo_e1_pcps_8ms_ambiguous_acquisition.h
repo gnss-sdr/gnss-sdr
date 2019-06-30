@@ -36,7 +36,9 @@
 #include "galileo_pcps_8ms_acquisition_cc.h"
 #include "gnss_synchro.h"
 #include <gnuradio/blocks/stream_to_vector.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -165,7 +167,7 @@ private:
     int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

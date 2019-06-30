@@ -123,8 +123,8 @@ private:
     gr_complex** d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
     gr_complex* d_fft_codes;
-    gr::fft::fft_complex* d_fft_if;
-    gr::fft::fft_complex* d_ifft;
+    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
+    std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;

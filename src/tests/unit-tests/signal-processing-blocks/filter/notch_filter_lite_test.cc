@@ -62,7 +62,7 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_notch_filter_lite_test_nsamples;
     }
-    ~NotchFilterLiteTest() = default;
+    ~NotchFilterLiteTest() override = default;
 
     void init();
     void configure_gr_complex_gr_complex();

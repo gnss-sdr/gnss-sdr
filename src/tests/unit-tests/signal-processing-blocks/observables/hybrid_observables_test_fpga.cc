@@ -259,6 +259,7 @@ public:
     Gnss_Synchro gnss_synchro_master;
     std::vector<Gnss_Synchro> gnss_synchro_vec;
     size_t item_size;
+    pthread_mutex_t mutex_obs_test = PTHREAD_MUTEX_INITIALIZER;
 };
 
 int HybridObservablesTestFpga::configure_generator()
@@ -305,11 +306,10 @@ int HybridObservablesTestFpga::generate_signal()
 }
 
 
-const size_t TEST_OBS_PAGE_SIZE = 0x10000;
-const unsigned int TEST_OBS_TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
-
 void setup_fpga_switch_obs_test(void)
 {
+    const size_t TEST_OBS_PAGE_SIZE = 0x10000;
+    const unsigned int TEST_OBS_TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
     int switch_device_descriptor;        // driver descriptor
     volatile unsigned* switch_map_base;  // driver memory map
 
@@ -348,7 +348,7 @@ void setup_fpga_switch_obs_test(void)
 }
 
 
-static pthread_mutex_t mutex_obs_test = PTHREAD_MUTEX_INITIALIZER;
+//static pthread_mutex_t mutex_obs_test = PTHREAD_MUTEX_INITIALIZER;
 
 volatile unsigned int send_samples_start_obs_test = 0;
 
@@ -642,9 +642,9 @@ bool HybridObservablesTestFpga::acquire_signal()
                         {
                             std::cout << "ERROR cannot create DMA Process" << std::endl;
                         }
-                    pthread_mutex_lock(&mutex);
+                    pthread_mutex_lock(&mutex_obs_test);
                     send_samples_start_obs_test = 1;
-                    pthread_mutex_unlock(&mutex);
+                    pthread_mutex_unlock(&mutex_obs_test);
                     pthread_join(thread_DMA, nullptr);
                     send_samples_start_obs_test = 0;
 
@@ -669,9 +669,9 @@ bool HybridObservablesTestFpga::acquire_signal()
             msg_rx->rx_message = 0;
             top_block->start();
 
-            pthread_mutex_lock(&mutex);
+            pthread_mutex_lock(&mutex_obs_test);
             send_samples_start_obs_test = 1;
-            pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&mutex_obs_test);
 
             acquisition->reset();  // set active
 
@@ -686,9 +686,9 @@ bool HybridObservablesTestFpga::acquire_signal()
             // wait for the child DMA process to finish
             pthread_join(thread_DMA, nullptr);
 
-            pthread_mutex_lock(&mutex);
+            pthread_mutex_lock(&mutex_obs_test);
             send_samples_start_obs_test = 0;
-            pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&mutex_obs_test);
 
             // the DMA sends the exact number of samples needed for the acquisition.
             // however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate

@@ -122,7 +122,7 @@ private:
 
 public:
     int rx_message;
-    ~FrontEndCal_msg_rx();  //!< Default destructor
+    ~FrontEndCal_msg_rx() override;  //!< Default destructor
 };
 
 

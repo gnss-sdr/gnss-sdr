@@ -46,6 +46,7 @@
 #include <cstdint>                // for int32_t
 #include <fstream>                // for string, ofstream
 #include <utility>                // for pair
+#include <vector>
 
 class Gnss_Synchro;
 class dll_pll_veml_tracking;
@@ -201,7 +202,7 @@ private:
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
-    gr_complex *d_Prompt_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
     Exponential_Smoother d_cn0_smoother;
     Exponential_Smoother d_carrier_lock_test_smoother;
     // file dump

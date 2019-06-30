@@ -191,10 +191,8 @@ endif()
 
 
 ################################################################################
-# Optional generator
+# GPSTk and optional generator
 ################################################################################
-option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
-add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 
 find_package(GPSTK)
 set_package_properties(GPSTK PROPERTIES

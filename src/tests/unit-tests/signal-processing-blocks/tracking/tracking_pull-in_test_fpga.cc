@@ -248,6 +248,7 @@ public:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
+    pthread_mutex_t the_mutex = PTHREAD_MUTEX_INITIALIZER;
 };
 
 
@@ -386,12 +387,10 @@ void TrackingPullInTestFpga::configure_receiver(
 }
 
 
-const size_t PAGE_SIZE = 0x10000;
-const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
-
-
 void setup_fpga_switch(void)
 {
+    const size_t PAGE_SIZE_ = 0x10000;
+    const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
     int switch_device_descriptor;        // driver descriptor
     volatile unsigned* switch_map_base;  // driver memory map
 
@@ -400,7 +399,7 @@ void setup_fpga_switch(void)
             LOG(WARNING) << "Cannot open deviceio"
                          << "/dev/uio1";
         }
-    switch_map_base = reinterpret_cast<volatile unsigned*>(mmap(nullptr, PAGE_SIZE,
+    switch_map_base = reinterpret_cast<volatile unsigned*>(mmap(nullptr, PAGE_SIZE_,
         PROT_READ | PROT_WRITE, MAP_SHARED, switch_device_descriptor, 0));
 
     if (switch_map_base == reinterpret_cast<void*>(-1))
@@ -430,7 +429,7 @@ void setup_fpga_switch(void)
 }
 
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+//static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 volatile unsigned int send_samples_start = 0;
 
@@ -728,9 +727,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
                         {
                             std::cout << "ERROR cannot create DMA Process" << std::endl;
                         }
-                    pthread_mutex_lock(&mutex);
+                    pthread_mutex_lock(&the_mutex);
                     send_samples_start = 1;
-                    pthread_mutex_unlock(&mutex);
+                    pthread_mutex_unlock(&the_mutex);
                     pthread_join(thread_DMA, nullptr);
                     send_samples_start = 0;
 
@@ -753,9 +752,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             msg_rx->rx_message = 0;
             top_block->start();
 
-            pthread_mutex_lock(&mutex);
+            pthread_mutex_lock(&the_mutex);
             send_samples_start = 1;
-            pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&the_mutex);
 
             acquisition->reset();  // set active
 
@@ -770,9 +769,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             // wait for the child DMA process to finish
             pthread_join(thread_DMA, nullptr);
 
-            pthread_mutex_lock(&mutex);
+            pthread_mutex_lock(&the_mutex);
             send_samples_start = 0;
-            pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&the_mutex);
 
             // the DMA sends the exact number of samples needed for the acquisition.
             // however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
@@ -1063,9 +1062,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                             tracking->start_tracking();
 
-                            pthread_mutex_lock(&mutex);
+                            pthread_mutex_lock(&the_mutex);
                             send_samples_start = 1;
-                            pthread_mutex_unlock(&mutex);
+                            pthread_mutex_unlock(&the_mutex);
 
                             top_block->start();
 
@@ -1077,9 +1076,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             // reset the HW to launch the pending interrupts
                             acquisition->stop_acquisition();
 
-                            pthread_mutex_lock(&mutex);
+                            pthread_mutex_lock(&the_mutex);
                             send_samples_start = 0;
-                            pthread_mutex_unlock(&mutex);
+                            pthread_mutex_unlock(&the_mutex);
 
                             pull_in_results_v.push_back(msg_rx->rx_message != 3);  //save last asynchronous tracking message in order to detect a loss of lock
 

@@ -42,7 +42,7 @@
 #include <iostream>   // for string, operator<<
 #include <iterator>   // for back_insert_iterator
 
-using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
+using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 
 void Galileo_Fnav_Message::reset()
 {

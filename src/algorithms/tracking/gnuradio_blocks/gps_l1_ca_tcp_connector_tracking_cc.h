@@ -44,6 +44,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <vector>
 
 
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
@@ -152,7 +153,7 @@ private:
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
-    gr_complex *d_Prompt_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
     float d_carrier_lock_test;
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;

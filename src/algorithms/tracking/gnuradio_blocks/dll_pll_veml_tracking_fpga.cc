@@ -58,6 +58,7 @@
 #include <exception>
 #include <iostream>
 #include <map>
+#include <vector>
 
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
@@ -360,7 +361,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[trk_parameters.cn0_samples];
+    d_Prompt_buffer = std::vector<gr_complex>(trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_cn0_smoother = Exponential_Smoother();
@@ -536,7 +537,6 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
             volk_gnsssdr_free(d_local_code_shift_chips);
             volk_gnsssdr_free(d_correlator_outs);
             volk_gnsssdr_free(d_Prompt_Data);
-            delete[] d_Prompt_buffer;
             multicorrelator_fpga->free();
         }
     catch (const std::exception &ex)
@@ -600,10 +600,10 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
         {
             d_cn0_estimation_counter = 0;
             // Code lock indicator
-            float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+            float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
             d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
             // Carrier lock indicator
-            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
+            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), trk_parameters.cn0_samples);
             // Loss of lock detection
             if (!d_pull_in_transitory)
                 {
@@ -733,7 +733,6 @@ void dll_pll_veml_tracking_fpga::clear_tracking_vars()
     d_code_error_filt_chips = 0.0;
     d_current_symbol = 0;
     d_Prompt_circular_buffer.clear();
-    //d_Prompt_buffer_deque.clear();
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
     d_carr_ph_history.clear();
@@ -1036,28 +1035,28 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
         {
             return 1;
         }
-    auto *abs_VE = new float[num_epoch];
-    auto *abs_E = new float[num_epoch];
-    auto *abs_P = new float[num_epoch];
-    auto *abs_L = new float[num_epoch];
-    auto *abs_VL = new float[num_epoch];
-    auto *Prompt_I = new float[num_epoch];
-    auto *Prompt_Q = new float[num_epoch];
-    auto *PRN_start_sample_count = new uint64_t[num_epoch];
-    auto *acc_carrier_phase_rad = new float[num_epoch];
-    auto *carrier_doppler_hz = new float[num_epoch];
-    auto *carrier_doppler_rate_hz = new float[num_epoch];
-    auto *code_freq_chips = new float[num_epoch];
-    auto *code_freq_rate_chips = new float[num_epoch];
-    auto *carr_error_hz = new float[num_epoch];
-    auto *carr_error_filt_hz = new float[num_epoch];
-    auto *code_error_chips = new float[num_epoch];
-    auto *code_error_filt_chips = new float[num_epoch];
-    auto *CN0_SNV_dB_Hz = new float[num_epoch];
-    auto *carrier_lock_test = new float[num_epoch];
-    auto *aux1 = new float[num_epoch];
-    auto *aux2 = new double[num_epoch];
-    auto *PRN = new uint32_t[num_epoch];
+    auto abs_VE = std::vector<float>(num_epoch);
+    auto abs_E = std::vector<float>(num_epoch);
+    auto abs_P = std::vector<float>(num_epoch);
+    auto abs_L = std::vector<float>(num_epoch);
+    auto abs_VL = std::vector<float>(num_epoch);
+    auto Prompt_I = std::vector<float>(num_epoch);
+    auto Prompt_Q = std::vector<float>(num_epoch);
+    auto PRN_start_sample_count = std::vector<uint64_t>(num_epoch);
+    auto acc_carrier_phase_rad = std::vector<float>(num_epoch);
+    auto carrier_doppler_hz = std::vector<float>(num_epoch);
+    auto carrier_doppler_rate_hz = std::vector<float>(num_epoch);
+    auto code_freq_chips = std::vector<float>(num_epoch);
+    auto code_freq_rate_chips = std::vector<float>(num_epoch);
+    auto carr_error_hz = std::vector<float>(num_epoch);
+    auto carr_error_filt_hz = std::vector<float>(num_epoch);
+    auto code_error_chips = std::vector<float>(num_epoch);
+    auto code_error_filt_chips = std::vector<float>(num_epoch);
+    auto CN0_SNV_dB_Hz = std::vector<float>(num_epoch);
+    auto carrier_lock_test = std::vector<float>(num_epoch);
+    auto aux1 = std::vector<float>(num_epoch);
+    auto aux2 = std::vector<double>(num_epoch);
+    auto PRN = std::vector<uint32_t>(num_epoch);
 
     try
         {
@@ -1094,28 +1093,6 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Problem reading dump file:" << e.what() << std::endl;
-            delete[] abs_VE;
-            delete[] abs_E;
-            delete[] abs_P;
-            delete[] abs_L;
-            delete[] abs_VL;
-            delete[] Prompt_I;
-            delete[] Prompt_Q;
-            delete[] PRN_start_sample_count;
-            delete[] acc_carrier_phase_rad;
-            delete[] carrier_doppler_hz;
-            delete[] carrier_doppler_rate_hz;
-            delete[] code_freq_chips;
-            delete[] code_freq_rate_chips;
-            delete[] carr_error_hz;
-            delete[] carr_error_filt_hz;
-            delete[] code_error_chips;
-            delete[] code_error_filt_chips;
-            delete[] CN0_SNV_dB_Hz;
-            delete[] carrier_lock_test;
-            delete[] aux1;
-            delete[] aux2;
-            delete[] PRN;
             return 1;
         }
 
@@ -1129,117 +1106,95 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);
+            matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("abs_E", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E, 0);
+            matvar = Mat_VarCreate("abs_E", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("abs_P", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_P, 0);
+            matvar = Mat_VarCreate("abs_P", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_P.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("abs_L", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_L, 0);
+            matvar = Mat_VarCreate("abs_L", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_L.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("abs_VL", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VL, 0);
+            matvar = Mat_VarCreate("abs_VL", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VL.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Prompt_I", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, Prompt_I, 0);
+            matvar = Mat_VarCreate("Prompt_I", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, Prompt_I.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Prompt_Q", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, Prompt_Q, 0);
+            matvar = Mat_VarCreate("Prompt_Q", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, Prompt_Q.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("PRN_start_sample_count", MAT_C_UINT64, MAT_T_UINT64, 2, dims, PRN_start_sample_count, 0);
+            matvar = Mat_VarCreate("PRN_start_sample_count", MAT_C_UINT64, MAT_T_UINT64, 2, dims, PRN_start_sample_count.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("acc_carrier_phase_rad", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, acc_carrier_phase_rad, 0);
+            matvar = Mat_VarCreate("acc_carrier_phase_rad", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, acc_carrier_phase_rad.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carrier_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_hz, 0);
+            matvar = Mat_VarCreate("carrier_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_hz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carrier_doppler_rate_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_rate_hz, 0);
+            matvar = Mat_VarCreate("carrier_doppler_rate_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_rate_hz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_freq_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_chips, 0);
+            matvar = Mat_VarCreate("code_freq_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_chips.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_freq_rate_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_rate_chips, 0);
+            matvar = Mat_VarCreate("code_freq_rate_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_rate_chips.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carr_error_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_hz, 0);
+            matvar = Mat_VarCreate("carr_error_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_hz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carr_error_filt_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_filt_hz, 0);
+            matvar = Mat_VarCreate("carr_error_filt_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_filt_hz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_error_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_error_chips, 0);
+            matvar = Mat_VarCreate("code_error_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_error_chips.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_error_filt_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_error_filt_chips, 0);
+            matvar = Mat_VarCreate("code_error_filt_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_error_filt_chips.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("CN0_SNV_dB_Hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, CN0_SNV_dB_Hz, 0);
+            matvar = Mat_VarCreate("CN0_SNV_dB_Hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, CN0_SNV_dB_Hz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carrier_lock_test", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_lock_test, 0);
+            matvar = Mat_VarCreate("carrier_lock_test", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_lock_test.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("aux1", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, aux1, 0);
+            matvar = Mat_VarCreate("aux1", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, aux1.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("aux2", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, aux2, 0);
+            matvar = Mat_VarCreate("aux2", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, aux2.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("PRN", MAT_C_UINT32, MAT_T_UINT32, 2, dims, PRN, 0);
+            matvar = Mat_VarCreate("PRN", MAT_C_UINT32, MAT_T_UINT32, 2, dims, PRN.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }
     Mat_Close(matfp);
-    delete[] abs_VE;
-    delete[] abs_E;
-    delete[] abs_P;
-    delete[] abs_L;
-    delete[] abs_VL;
-    delete[] Prompt_I;
-    delete[] Prompt_Q;
-    delete[] PRN_start_sample_count;
-    delete[] acc_carrier_phase_rad;
-    delete[] carrier_doppler_hz;
-    delete[] carrier_doppler_rate_hz;
-    delete[] code_freq_chips;
-    delete[] code_freq_rate_chips;
-    delete[] carr_error_hz;
-    delete[] carr_error_filt_hz;
-    delete[] code_error_chips;
-    delete[] code_error_filt_chips;
-    delete[] CN0_SNV_dB_Hz;
-    delete[] carrier_lock_test;
-    delete[] aux1;
-    delete[] aux2;
-    delete[] PRN;
     return 0;
 }
 

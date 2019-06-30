@@ -1203,7 +1203,7 @@ inline cl_int getInfoHelper(Func f, cl_uint name, VECTOR_CLASS<T>* param, long)
  * template will provide a better match.
  */
 template <typename Func, typename T>
-inline cl_int getInfoHelper(Func f, cl_uint name, VECTOR_CLASS<T>* param, int, typename T::cl_type = 0)
+inline cl_int getInfoHelper(Func f, cl_uint name, VECTOR_CLASS<T>* param, int, typename T::cl_type = nullptr)
 {
     ::size_t required;
     cl_int err = f(name, 0, nullptr, &required);
@@ -1330,7 +1330,7 @@ struct ReferenceHandler;
  * template will provide a better match.
  */
 template <typename Func, typename T>
-inline cl_int getInfoHelper(Func f, cl_uint name, T* param, int, typename T::cl_type = 0)
+inline cl_int getInfoHelper(Func f, cl_uint name, T* param, int, typename T::cl_type = nullptr)
 {
     typename T::cl_type value;
     cl_int err = f(name, sizeof(value), &value, nullptr);
@@ -3447,7 +3447,7 @@ public:
             }
         else
             {
-                object_ = ::clCreateBuffer(context(), flags, size, 0, &error);
+                object_ = ::clCreateBuffer(context(), flags, size, nullptr, &error);
             }
 
         detail::errHandler(error, __CREATE_BUFFER_ERR);
@@ -3881,7 +3881,7 @@ public:
             {
                 CL_MEM_OBJECT_IMAGE1D,
                 width,
-                0, 0, 0, 0, 0, 0, 0, 0};
+                0, 0, 0, 0, 0, 0, 0, nullptr};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -4048,7 +4048,7 @@ public:
                 0, 0,  // height, depth (unused)
                 arraySize,
                 rowPitch,
-                0, 0, 0, 0};
+                0, 0, 0, nullptr};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -4155,7 +4155,7 @@ public:
                         height,
                         0, 0,  // depth, array size (unused)
                         row_pitch,
-                        0, 0, 0, 0};
+                        0, 0, 0, nullptr};
                 object_ = ::clCreateImage(
                     context(),
                     flags,
@@ -4359,7 +4359,7 @@ public:
                 arraySize,
                 rowPitch,
                 slicePitch,
-                0, 0, 0};
+                0, 0, nullptr};
         object_ = ::clCreateImage(
             context(),
             flags,
@@ -4469,7 +4469,7 @@ public:
                         0,  // array size (unused)
                         row_pitch,
                         slice_pitch,
-                        0, 0, 0};
+                        0, 0, nullptr};
                 object_ = ::clCreateImage(
                     context(),
                     flags,
@@ -5722,11 +5722,11 @@ inline VECTOR_CLASS<char*> cl::Program::getInfo<CL_PROGRAM_BINARIES>(cl_int* err
 {
     VECTOR_CLASS< ::size_t> sizes = getInfo<CL_PROGRAM_BINARY_SIZES>();
     VECTOR_CLASS<char*> binaries;
-    for (VECTOR_CLASS< ::size_t>::iterator s = sizes.begin(); s != sizes.end(); ++s)
+    for (unsigned long & size : sizes)
         {
             char* ptr = nullptr;
-            if (*s != 0)
-                ptr = new char[*s];
+            if (size != 0)
+                ptr = new char[size];
             binaries.push_back(ptr);
         }
 
@@ -6535,8 +6535,8 @@ public:
      * have completed.
      */
     cl_int enqueueMarkerWithWaitList(
-        const VECTOR_CLASS<Event>* events = 0,
-        Event* event = 0)
+        const VECTOR_CLASS<Event>* events = nullptr,
+        Event* event = nullptr)
     {
         cl_event tmp;
         cl_int err = detail::errHandler(
@@ -6565,8 +6565,8 @@ public:
      * before this command to command_queue, have completed.
      */
     cl_int enqueueBarrierWithWaitList(
-        const VECTOR_CLASS<Event>* events = 0,
-        Event* event = 0)
+        const VECTOR_CLASS<Event>* events = nullptr,
+        Event* event = nullptr)
     {
         cl_event tmp;
         cl_int err = detail::errHandler(
@@ -6933,7 +6933,7 @@ Buffer::Buffer(
         }
     else
         {
-            object_ = ::clCreateBuffer(context(), flags, size, 0, &error);
+            object_ = ::clCreateBuffer(context(), flags, size, nullptr, &error);
         }
 
     detail::errHandler(error, __CREATE_BUFFER_ERR);
@@ -6996,7 +6996,7 @@ Buffer::Buffer(
         }
     else
         {
-            object_ = ::clCreateBuffer(context(), flags, size, 0, &error);
+            object_ = ::clCreateBuffer(context(), flags, size, nullptr, &error);
         }
 
     detail::errHandler(error, __CREATE_BUFFER_ERR);
@@ -7185,7 +7185,7 @@ inline cl_int copy(const CommandQueue& queue, IteratorType startIterator, Iterat
     ::size_t byteLength = length * sizeof(DataType);
 
     DataType* pointer =
-        static_cast<DataType*>(queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_WRITE, 0, byteLength, 0, 0, &error));
+        static_cast<DataType*>(queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_WRITE, 0, byteLength, nullptr, nullptr, &error));
     // if exceptions enabled, enqueueMapBuffer will throw
     if (error != CL_SUCCESS)
         {
@@ -7226,7 +7226,7 @@ inline cl_int copy(const CommandQueue& queue, const cl::Buffer& buffer, Iterator
     ::size_t byteLength = length * sizeof(DataType);
 
     DataType* pointer =
-        static_cast<DataType*>(queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_READ, 0, byteLength, 0, 0, &error));
+        static_cast<DataType*>(queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_READ, 0, byteLength, nullptr, nullptr, &error));
     // if exceptions enabled, enqueueMapBuffer will throw
     if (error != CL_SUCCESS)
         {

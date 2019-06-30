@@ -127,7 +127,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             vector_length_ *= 2;
         }
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -167,15 +167,13 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 }
 
 
-GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition()
-{
-    delete[] code_;
-}
+GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition() = default;
 
 
 void GalileoE1PcpsAmbiguousAcquisition::stop_acquisition()
 {
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 {
@@ -243,7 +241,8 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     bool cboc = configuration_->property(
         "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-    auto* code = new std::complex<float>[code_length_];
+    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+    gsl::span<std::complex<float>> code_span(code.get(), code_length_);
 
     if (acquire_pilot_ == true)
         {
@@ -251,12 +250,12 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
             std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(code_span, pilot_signal,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(code_span, pilot_signal,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }
@@ -266,24 +265,23 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
             std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), Signal_,
+                    galileo_e1_code_gen_complex_sampled(code_span, Signal_,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), Signal_,
+                    galileo_e1_code_gen_complex_sampled(code_span, Signal_,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }
 
-    gsl::span<gr_complex> code_span(code_, vector_length_);
+    gsl::span<gr_complex> code__span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
         {
-            std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.get(), code_length_, code__span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 

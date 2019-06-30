@@ -124,7 +124,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
     vector_length_ = code_length_ * sampled_ms_;
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -165,10 +165,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 }
 
 
-GalileoE5aPcpsAcquisition::~GalileoE5aPcpsAcquisition()
-{
-    delete[] code_;
-}
+GalileoE5aPcpsAcquisition::~GalileoE5aPcpsAcquisition() = default;
 
 
 void GalileoE5aPcpsAcquisition::stop_acquisition()
@@ -236,7 +233,7 @@ void GalileoE5aPcpsAcquisition::init()
 
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
-    auto* code = new gr_complex[code_length_];
+    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
     std::array<char, 3> signal_;
     signal_[0] = '5';
     signal_[2] = '\0';
@@ -256,20 +253,19 @@ void GalileoE5aPcpsAcquisition::set_local_code()
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code, code_length_), signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
+            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code.get(), code_length_), signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
         }
     else
         {
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code, code_length_), signal_, gnss_synchro_->PRN, fs_in_, 0);
+            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code.get(), code_length_), signal_, gnss_synchro_->PRN, fs_in_, 0);
         }
-    gsl::span<gr_complex> code_span(code_, vector_length_);
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 

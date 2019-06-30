@@ -110,9 +110,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     // compute all the GALILEO E5 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
+    std::vector<std::complex<float>> code(nsamples_total);          // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new uint32_t[(nsamples_total * GALILEO_E5A_NUMBER_OF_CODES)];  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * GALILEO_E5A_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
     int32_t tmp, tmp2, local_code, fft_data;
@@ -136,7 +136,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     signal_[1] = 'I';
                 }
 
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), signal_, PRN, fs_in, 0);
+            galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), signal_, PRN, fs_in, 0);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -149,7 +149,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
 
-            std::copy_n(code, nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
+            std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                     // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
@@ -177,7 +177,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                 }
         }
 
-    acq_parameters.all_fft_codes = d_all_fft_codes_;
+    acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     // reference for the FPGA FFT-IFFT attenuation factor
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 13);
@@ -193,16 +193,12 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     gnss_synchro_ = nullptr;
 
     // temporary buffers that we can delete
-    delete[] code;
     delete fft_if;
-    delete[] fft_codes_padded;
+    volk_gnsssdr_free(fft_codes_padded);
 }
 
 
-GalileoE5aPcpsAcquisitionFpga::~GalileoE5aPcpsAcquisitionFpga()
-{
-    delete[] d_all_fft_codes_;
-}
+GalileoE5aPcpsAcquisitionFpga::~GalileoE5aPcpsAcquisitionFpga() = default;
 
 
 void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()

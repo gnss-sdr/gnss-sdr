@@ -85,7 +85,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -121,15 +121,13 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 }
 
 
-GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition()
-{
-    delete[] code_;
-}
+GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition() = default;
 
 
 void GpsL1CaPcpsOpenClAcquisition::stop_acquisition()
 {
 }
+
 
 void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
 {
@@ -211,19 +209,17 @@ void GpsL1CaPcpsOpenClAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            auto* code = new std::complex<float>[code_length_];
+            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
 
             gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
 
-            gsl::span<gr_complex> code_span(code_, vector_length_);
+            gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < sampled_ms_; i++)
                 {
-                    std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
+            acquisition_cc_->set_local_code(code_.data());
         }
 }
 

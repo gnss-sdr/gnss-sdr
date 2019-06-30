@@ -80,7 +80,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     acq_parameters.samples_per_ms = vector_length_;
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -109,10 +109,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 }
 
 
-GpsL1CaPcpsAcquisitionFineDoppler::~GpsL1CaPcpsAcquisitionFineDoppler()
-{
-    delete[] code_;
-}
+GpsL1CaPcpsAcquisitionFineDoppler::~GpsL1CaPcpsAcquisitionFineDoppler() = default;
 
 
 void GpsL1CaPcpsAcquisitionFineDoppler::stop_acquisition()
@@ -163,8 +160,8 @@ void GpsL1CaPcpsAcquisitionFineDoppler::init()
 
 void GpsL1CaPcpsAcquisitionFineDoppler::set_local_code()
 {
-    gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code_, vector_length_), gnss_synchro_->PRN, fs_in_, 0);
-    acquisition_cc_->set_local_code(code_);
+    gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code_.data(), vector_length_), gnss_synchro_->PRN, fs_in_, 0);
+    acquisition_cc_->set_local_code(code_.data());
 }
 
 

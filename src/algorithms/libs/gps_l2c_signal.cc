@@ -33,6 +33,7 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
 #include <cmath>
+#include <memory>
 
 
 int32_t gps_l2c_m_shift(int32_t x)
@@ -55,7 +56,7 @@ void gps_l2c_m_code(gsl::span<int32_t> _dest, uint32_t _prn)
 
 void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn)
 {
-    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    std::unique_ptr<int32_t> _code{new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS]};
     gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
@@ -66,14 +67,12 @@ void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _
         {
             _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[i], 0.0);
         }
-
-    delete[] _code;
 }
 
 
 void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 {
-    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    std::unique_ptr<int32_t> _code{new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS]};
     gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
@@ -84,8 +83,6 @@ void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
         {
             _dest[i] = 1.0 - 2.0 * static_cast<float>(_code_span[i]);
         }
-
-    delete[] _code;
 }
 
 
@@ -94,7 +91,7 @@ void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
  */
 void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
-    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    std::unique_ptr<int32_t> _code{new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS]};
     gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
     if (_prn > 0 and _prn < 51)
         {
@@ -131,5 +128,4 @@ void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
                     _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeValueIndex], 0);  //repeat the chip -> upsample
                 }
         }
-    delete[] _code;
 }

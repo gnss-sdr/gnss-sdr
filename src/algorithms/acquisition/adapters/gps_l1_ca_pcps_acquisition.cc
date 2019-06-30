@@ -123,7 +123,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L1_CA_CODE_PERIOD * 1000.0);
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -161,15 +161,13 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 }
 
 
-GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
-{
-    delete[] code_;
-}
+GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition() = default;
 
 
 void GpsL1CaPcpsAcquisition::stop_acquisition()
 {
 }
+
 
 void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
@@ -228,7 +226,7 @@ void GpsL1CaPcpsAcquisition::init()
 
 void GpsL1CaPcpsAcquisition::set_local_code()
 {
-    auto* code = new std::complex<float>[code_length_];
+    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
 
     if (acq_parameters_.use_automatic_resampler)
         {
@@ -238,14 +236,13 @@ void GpsL1CaPcpsAcquisition::set_local_code()
         {
             gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
         }
-    gsl::span<gr_complex> code_span(code_, vector_length_);
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 

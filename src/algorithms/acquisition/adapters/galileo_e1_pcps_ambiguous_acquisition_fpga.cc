@@ -109,10 +109,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     // compute all the GALILEO E1 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
+    //auto code = std::make_shared<std::complex<float>>(nsamples_total);  // buffer for the local code
+    std::vector<std::complex<float>> code(nsamples_total);
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new uint32_t[(nsamples_total * GALILEO_E1_NUMBER_OF_CODES)];  // memory containing all the possible fft codes for PRN 0 to 32
-    float max;                                                                       // temporary maxima search
+    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * GALILEO_E1_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
+    float max;                                                                              // temporary maxima search
     int32_t tmp, tmp2, local_code, fft_data;
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
@@ -123,13 +124,13 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                 {
                     //set local signal generator to Galileo E1 pilot component (1C)
                     std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), pilot_signal,
                         cboc, PRN, fs_in, 0, false);
                 }
             else
                 {
                     std::array<char, 3> data_signal = {{'1', 'B', '\0'}};
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, nsamples_total), data_signal,
+                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), data_signal,
                         cboc, PRN, fs_in, 0, false);
                 }
 
@@ -144,7 +145,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
 
-            std::copy_n(code, nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
+            std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                     // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
@@ -173,7 +174,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                 }
         }
 
-    acq_parameters.all_fft_codes = d_all_fft_codes_;
+    acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
@@ -189,16 +190,12 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     gnss_synchro_ = nullptr;
 
     // temporary buffers that we can delete
-    delete[] code;
     delete fft_if;
-    delete[] fft_codes_padded;
+    volk_gnsssdr_free(fft_codes_padded);
 }
 
 
-GalileoE1PcpsAmbiguousAcquisitionFpga::~GalileoE1PcpsAmbiguousAcquisitionFpga()
-{
-    delete[] d_all_fft_codes_;
-}
+GalileoE1PcpsAmbiguousAcquisitionFpga::~GalileoE1PcpsAmbiguousAcquisitionFpga() = default;
 
 
 void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()

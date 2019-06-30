@@ -70,7 +70,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::make_shared<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -101,10 +101,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 }
 
 
-GpsL1CaPcpsAssistedAcquisition::~GpsL1CaPcpsAssistedAcquisition()
-{
-    delete[] code_;
-}
+GpsL1CaPcpsAssistedAcquisition::~GpsL1CaPcpsAssistedAcquisition() = default;
 
 
 void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
@@ -154,8 +151,8 @@ void GpsL1CaPcpsAssistedAcquisition::init()
 
 void GpsL1CaPcpsAssistedAcquisition::set_local_code()
 {
-    gps_l1_ca_code_gen_complex_sampled(gsl::span<gr_complex>(code_, vector_length_), gnss_synchro_->PRN, fs_in_, 0);
-    acquisition_cc_->set_local_code(code_);
+    gps_l1_ca_code_gen_complex_sampled(gsl::span<gr_complex>(code_.get(), vector_length_), gnss_synchro_->PRN, fs_in_, 0);
+    acquisition_cc_->set_local_code(code_.get());
 }
 
 void GpsL1CaPcpsAssistedAcquisition::reset()

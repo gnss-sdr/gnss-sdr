@@ -115,7 +115,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     dump_filename_ = configuration_->property(role + ".dump_filename",
         default_dump_filename);
 
-    code_ = new gr_complex[code_length_];
+    code_ = std::vector<std::complex<float>>(code_length_);
     LOG(INFO) << "Vector Length: " << vector_length_
               << ", Samples per ms: " << samples_per_ms
               << ", Folding factor: " << folding_factor_
@@ -157,10 +157,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 }
 
 
-GalileoE1PcpsQuickSyncAmbiguousAcquisition::~GalileoE1PcpsQuickSyncAmbiguousAcquisition()
-{
-    delete[] code_;
-}
+GalileoE1PcpsQuickSyncAmbiguousAcquisition::~GalileoE1PcpsQuickSyncAmbiguousAcquisition() = default;
 
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::stop_acquisition()
@@ -251,23 +248,20 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_local_code()
             bool cboc = configuration_->property(
                 "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-            auto* code = new std::complex<float>[code_length_];
+            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
             std::array<char, 3> Signal_;
             std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
 
-            galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), Signal_,
+            galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), Signal_,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
-            gsl::span<gr_complex> code_span(code_, vector_length_);
+            gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < (sampled_ms_ / (folding_factor_ * 4)); i++)
                 {
-                    std::copy_n(code, code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
-            code = nullptr;
+            acquisition_cc_->set_local_code(code_.data());
         }
 }
 
@@ -279,6 +273,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::reset()
             acquisition_cc_->set_active(true);
         }
 }
+
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_state(int state)
 {

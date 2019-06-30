@@ -35,6 +35,7 @@
 #include "Galileo_E5a.h"
 #include "gnss_signal_processing.h"
 #include <gnuradio/gr_complex.h>
+#include <memory>
 
 
 void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, const std::array<char, 3>& _Signal)
@@ -108,7 +109,7 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
     const uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
     const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_HZ;
 
-    auto* _code = new std::complex<float>[_codeLength]();
+    std::unique_ptr<std::complex<float>> _code{new std::complex<float>[_codeLength]};
     gsl::span<std::complex<float>> _code_span(_code, _codeLength);
     galileo_e5_a_code_gen_complex_primary(_code_span, _prn, _Signal);
 
@@ -118,13 +119,9 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
 
     if (_fs != _codeFreqBasis)
         {
-            std::complex<float>* _resampled_signal;
-            if (posix_memalign(reinterpret_cast<void**>(&_resampled_signal), 16, _samplesPerCode * sizeof(gr_complex)) == 0)
-                {
-                };
+            std::unique_ptr<std::complex<float>> _resampled_signal{new std::complex<float>[_samplesPerCode]};
             resampler(_code_span, gsl::span<std::complex<float>>(_resampled_signal, _samplesPerCode), _codeFreqBasis, _fs);  // resamples code to fs
-            delete[] _code;
-            _code = _resampled_signal;
+            _code = std::move(_resampled_signal);
         }
     uint32_t size_code = _codeLength;
     if (_fs != _codeFreqBasis)
@@ -135,13 +132,5 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i + delay) % _samplesPerCode] = _code_span_aux[i];
-        }
-    if (_fs != _codeFreqBasis)
-        {
-            free(_code);
-        }
-    else
-        {
-            delete[] _code;
         }
 }

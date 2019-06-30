@@ -109,16 +109,16 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     // compute all the GPS L5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    auto* code = new gr_complex[nsamples_total];
+    std::vector<std::complex<float>> code(nsamples_total);
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new uint32_t[(nsamples_total * NUM_PRNs)];  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
     int32_t tmp, tmp2, local_code, fft_data;
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l5i_code_gen_complex_sampled(gsl::span<gr_complex>(code, nsamples_total), PRN, fs_in);
+            gps_l5i_code_gen_complex_sampled(gsl::span<gr_complex>(code.data(), nsamples_total), PRN, fs_in);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -130,7 +130,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                     // fill in zero padding
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
-            std::copy_n(code, nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
+            std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                     // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
@@ -158,7 +158,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                 }
         }
 
-    acq_parameters.all_fft_codes = d_all_fft_codes_;
+    acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     // reference for the FPGA FFT-IFFT attenuation factor
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 13);
@@ -174,17 +174,12 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     gnss_synchro_ = nullptr;
 
     // temporary buffers that we can delete
-    delete[] code;
     delete fft_if;
-    delete[] fft_codes_padded;
+    volk_gnsssdr_free(fft_codes_padded);
 }
 
 
-GpsL5iPcpsAcquisitionFpga::~GpsL5iPcpsAcquisitionFpga()
-{
-    //delete[] code_;
-    delete[] d_all_fft_codes_;
-}
+GpsL5iPcpsAcquisitionFpga::~GpsL5iPcpsAcquisitionFpga() = default;
 
 
 void GpsL5iPcpsAcquisitionFpga::stop_acquisition()

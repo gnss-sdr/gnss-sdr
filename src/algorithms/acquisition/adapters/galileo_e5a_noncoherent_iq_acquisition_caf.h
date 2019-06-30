@@ -41,7 +41,9 @@
 #include "channel_fsm.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
 #include "gnss_synchro.h"
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -95,13 +97,14 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_cc_->set_channel_fsm(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -171,8 +174,8 @@ private:
     std::string dump_filename_;
     int Zero_padding;
     int CAF_window_hz_;
-    std::complex<float>* codeI_;
-    std::complex<float>* codeQ_;
+    std::vector<std::complex<float>> codeI_;
+    std::vector<std::complex<float>> codeQ_;
     bool both_signal_components;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;

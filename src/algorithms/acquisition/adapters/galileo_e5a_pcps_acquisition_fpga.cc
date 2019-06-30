@@ -109,8 +109,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     // compute all the GALILEO E5 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    std::vector<std::complex<float>> code(nsamples_total);          // buffer for the local code
+    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));  // Direct FFT
+    std::vector<std::complex<float>> code(nsamples_total);                                                // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * GALILEO_E5A_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
 
@@ -192,8 +192,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
 
-    // temporary buffers that we can delete
-    delete fft_if;
+    // temporary buffers that we can release
     volk_gnsssdr_free(fft_codes_padded);
 }
 

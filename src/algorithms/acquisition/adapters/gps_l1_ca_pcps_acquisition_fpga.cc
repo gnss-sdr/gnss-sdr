@@ -103,7 +103,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
+    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));
     // allocate memory to compute all the PRNs and compute all the possible codes
     std::vector<std::complex<float>> code(nsamples_total);  // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
@@ -154,7 +154,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                 }
         }
 
-    //acq_parameters
+    // acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     // reference for the FPGA FFT-IFFT attenuation factor
@@ -170,8 +170,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
 
-    // temporary buffers that we can delete
-    delete fft_if;
+    // temporary buffers that we can release
     volk_gnsssdr_free(fft_codes_padded);
 }
 

@@ -102,12 +102,13 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     // compute all the GPS L2C PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
+    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
     std::vector<std::complex<float>> code(nsamples_total);  // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
-    float max;                                                            // temporary maxima search
+
+    float max;  // temporary maxima search
     int32_t tmp, tmp2, local_code, fft_data;
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
@@ -150,10 +151,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
-    // temporary buffers that we can delete
-    delete fft_if;
-    volk_gnsssdr_free(fft_codes_padded);
-
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
 
     channel_ = 0;
@@ -161,6 +158,9 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     gnss_synchro_ = nullptr;
 
     threshold_ = 0.0;
+
+    // temporary buffers that we can release
+    volk_gnsssdr_free(fft_codes_padded);
 }
 
 

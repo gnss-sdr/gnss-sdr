@@ -226,24 +226,14 @@ int32_t hybrid_observables_gs::save_matfile()
         {
             return 1;
         }
-    auto **RX_time = new double *[d_nchannels_out];
-    auto **TOW_at_current_symbol_s = new double *[d_nchannels_out];
-    auto **Carrier_Doppler_hz = new double *[d_nchannels_out];
-    auto **Carrier_phase_cycles = new double *[d_nchannels_out];
-    auto **Pseudorange_m = new double *[d_nchannels_out];
-    auto **PRN = new double *[d_nchannels_out];
-    auto **Flag_valid_pseudorange = new double *[d_nchannels_out];
 
-    for (uint32_t i = 0; i < d_nchannels_out; i++)
-        {
-            RX_time[i] = new double[num_epoch];
-            TOW_at_current_symbol_s[i] = new double[num_epoch];
-            Carrier_Doppler_hz[i] = new double[num_epoch];
-            Carrier_phase_cycles[i] = new double[num_epoch];
-            Pseudorange_m[i] = new double[num_epoch];
-            PRN[i] = new double[num_epoch];
-            Flag_valid_pseudorange[i] = new double[num_epoch];
-        }
+    auto RX_time = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
+    auto TOW_at_current_symbol_s = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
+    auto Carrier_Doppler_hz = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
+    auto Carrier_phase_cycles = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
+    auto Pseudorange_m = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
+    auto PRN = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
+    auto Flag_valid_pseudorange = std::vector<std::vector<double>>(d_nchannels_out, std::vector<double>(num_epoch));
 
     try
         {
@@ -268,34 +258,17 @@ int32_t hybrid_observables_gs::save_matfile()
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Problem reading dump file:" << e.what() << std::endl;
-            for (uint32_t i = 0; i < d_nchannels_out; i++)
-                {
-                    delete[] RX_time[i];
-                    delete[] TOW_at_current_symbol_s[i];
-                    delete[] Carrier_Doppler_hz[i];
-                    delete[] Carrier_phase_cycles[i];
-                    delete[] Pseudorange_m[i];
-                    delete[] PRN[i];
-                    delete[] Flag_valid_pseudorange[i];
-                }
-            delete[] RX_time;
-            delete[] TOW_at_current_symbol_s;
-            delete[] Carrier_Doppler_hz;
-            delete[] Carrier_phase_cycles;
-            delete[] Pseudorange_m;
-            delete[] PRN;
-            delete[] Flag_valid_pseudorange;
-
             return 1;
         }
 
-    auto *RX_time_aux = new double[d_nchannels_out * num_epoch];
-    auto *TOW_at_current_symbol_s_aux = new double[d_nchannels_out * num_epoch];
-    auto *Carrier_Doppler_hz_aux = new double[d_nchannels_out * num_epoch];
-    auto *Carrier_phase_cycles_aux = new double[d_nchannels_out * num_epoch];
-    auto *Pseudorange_m_aux = new double[d_nchannels_out * num_epoch];
-    auto *PRN_aux = new double[d_nchannels_out * num_epoch];
-    auto *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
+    auto RX_time_aux = std::vector<double>(d_nchannels_out * num_epoch);
+    auto TOW_at_current_symbol_s_aux = std::vector<double>(d_nchannels_out * num_epoch);
+    auto Carrier_Doppler_hz_aux = std::vector<double>(d_nchannels_out * num_epoch);
+    auto Carrier_phase_cycles_aux = std::vector<double>(d_nchannels_out * num_epoch);
+    auto Pseudorange_m_aux = std::vector<double>(d_nchannels_out * num_epoch);
+    auto PRN_aux = std::vector<double>(d_nchannels_out * num_epoch);
+    auto Flag_valid_pseudorange_aux = std::vector<double>(d_nchannels_out * num_epoch);
+
     uint32_t k = 0U;
     for (int64_t j = 0; j < num_epoch; j++)
         {
@@ -325,61 +298,36 @@ int32_t hybrid_observables_gs::save_matfile()
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, TOW_at_current_symbol_s_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, TOW_at_current_symbol_s_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_Doppler_hz_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_Doppler_hz_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_phase_cycles_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_phase_cycles_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Pseudorange_m_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Pseudorange_m_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, PRN_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, PRN_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Flag_valid_pseudorange_aux, MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Flag_valid_pseudorange_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }
     Mat_Close(matfp);
 
-    for (uint32_t i = 0; i < d_nchannels_out; i++)
-        {
-            delete[] RX_time[i];
-            delete[] TOW_at_current_symbol_s[i];
-            delete[] Carrier_Doppler_hz[i];
-            delete[] Carrier_phase_cycles[i];
-            delete[] Pseudorange_m[i];
-            delete[] PRN[i];
-            delete[] Flag_valid_pseudorange[i];
-        }
-    delete[] RX_time;
-    delete[] TOW_at_current_symbol_s;
-    delete[] Carrier_Doppler_hz;
-    delete[] Carrier_phase_cycles;
-    delete[] Pseudorange_m;
-    delete[] PRN;
-    delete[] Flag_valid_pseudorange;
-
-    delete[] RX_time_aux;
-    delete[] TOW_at_current_symbol_s_aux;
-    delete[] Carrier_Doppler_hz_aux;
-    delete[] Carrier_phase_cycles_aux;
-    delete[] Pseudorange_m_aux;
-    delete[] PRN_aux;
-    delete[] Flag_valid_pseudorange_aux;
     return 0;
 }
 

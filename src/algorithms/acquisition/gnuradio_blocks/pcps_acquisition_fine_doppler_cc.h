@@ -58,6 +58,7 @@
 #include <gnuradio/gr_complex.h>
 #include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -109,8 +110,8 @@ private:
     float** d_grid_data;
     gr_complex** d_grid_doppler_wipeoffs;
 
-    gr::fft::fft_complex* d_fft_if;
-    gr::fft::fft_complex* d_ifft;
+    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
+    std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;

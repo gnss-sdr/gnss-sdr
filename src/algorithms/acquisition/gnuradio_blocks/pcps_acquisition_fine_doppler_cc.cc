@@ -93,10 +93,10 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_10_ms_buffer = static_cast<gr_complex *>(volk_gnsssdr_malloc(50 * d_samples_per_ms * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = conf_.dump;
@@ -168,6 +168,7 @@ unsigned int pcps_acquisition_fine_doppler_cc::nextPowerOf2(unsigned int n)
     return n;
 }
 
+
 void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_step)
 {
     d_doppler_step = doppler_step;
@@ -208,8 +209,6 @@ pcps_acquisition_fine_doppler_cc::~pcps_acquisition_fine_doppler_cc()
     volk_gnsssdr_free(d_fft_codes);
     volk_gnsssdr_free(d_magnitude);
     volk_gnsssdr_free(d_10_ms_buffer);
-    delete d_ifft;
-    delete d_fft_if;
     free_grid_memory();
 }
 

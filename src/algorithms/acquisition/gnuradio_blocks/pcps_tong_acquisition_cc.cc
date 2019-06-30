@@ -113,10 +113,10 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_magnitude = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;
@@ -134,6 +134,7 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_channel = 0;
 }
 
+
 pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
@@ -149,9 +150,6 @@ pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
 
     volk_gnsssdr_free(d_fft_codes);
     volk_gnsssdr_free(d_magnitude);
-
-    delete d_ifft;
-    delete d_fft_if;
 
     try
         {

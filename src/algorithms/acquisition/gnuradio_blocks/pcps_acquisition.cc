@@ -140,10 +140,10 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_input_signal = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
 
     d_gnss_synchro = nullptr;
     d_grid_doppler_wipeoffs = nullptr;
@@ -237,8 +237,6 @@ pcps_acquisition::~pcps_acquisition()
     volk_gnsssdr_free(d_magnitude);
     volk_gnsssdr_free(d_tmp_buffer);
     volk_gnsssdr_free(d_input_signal);
-    delete d_ifft;
-    delete d_fft_if;
     volk_gnsssdr_free(d_data_buffer);
     if (d_cshort)
         {

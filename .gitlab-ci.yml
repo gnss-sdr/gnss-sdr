@@ -440,8 +440,8 @@ coverity-scan:
   script:
     - apt-get update
     - apt-get install -y wget curl ca-certificates
-    - wget -O ./cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --post-data "project=$COVERITY_SCAN_USER%2Fgnss-sdr&token=$COVERITY_SCAN_TOKEN" --no-check-certificate
-    - tar xvzf cov-analysis-linux64.tgz
+    - wget -O cov-analysis-linux64-2019.03.tar.gz https://scan.coverity.com/download/cxx/linux64 --post-data "project=$COVERITY_SCAN_USER%2Fgnss-sdr&token=$COVERITY_SCAN_TOKEN" --no-check-certificate
+    - tar xvzf cov-analysis-linux64-2019.03.tar.gz
     - export PATH=$PATH:$(pwd)/cov-analysis-linux64-2019.03/bin
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest libprotobuf-dev protobuf-compiler
     - cd build

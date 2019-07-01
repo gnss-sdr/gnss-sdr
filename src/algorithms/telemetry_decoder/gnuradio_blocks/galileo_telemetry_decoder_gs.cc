@@ -85,15 +85,13 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
         case 1:  // INAV
             {
                 d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
-                d_samples_per_symbol = GALILEO_E1_B_SAMPLES_PER_SYMBOL;
                 d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 // set the preamble
-                d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS * d_samples_per_symbol;
+                d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 d_preamble_period_symbols = GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS;
                 d_required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + d_samples_per_preamble;
                 // preamble bits to sampled symbols
                 d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-                d_secondary_code_samples = nullptr;
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
@@ -103,31 +101,18 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             }
         case 2:  // FNAV
             {
-                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS);
-                d_samples_per_symbol = GALILEO_FNAV_CODES_PER_SYMBOL;
+                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS * GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                 d_bits_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 // set the preamble
-                d_samples_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS * d_samples_per_symbol;
-                d_preamble_period_symbols = GALILEO_FNAV_CODES_PER_PAGE;
-                d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) * d_samples_per_symbol + d_samples_per_preamble;
+                d_samples_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+                d_preamble_period_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE;
+                d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
                 // preamble bits to sampled symbols
                 d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-                d_secondary_code_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(GALILEO_E5A_I_SECONDARY_CODE_LENGTH * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
-                for (int32_t i = 0; i < GALILEO_E5A_I_SECONDARY_CODE_LENGTH; i++)
-                    {
-                        if (GALILEO_E5A_I_SECONDARY_CODE.at(i) == '1')
-                            {
-                                d_secondary_code_samples[i] = 1;
-                            }
-                        else
-                            {
-                                d_secondary_code_samples[i] = -1;
-                            }
-                    }
-                d_max_symbols_without_valid_frame = GALILEO_FNAV_CODES_PER_PAGE * 10;  //rise alarm 100 seconds without valid tlm
+                d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 10;  //rise alarm 100 seconds without valid tlm
                 break;
             }
         default:
@@ -135,8 +120,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             d_samples_per_preamble = 0;
             d_preamble_period_symbols = 0;
             d_preamble_samples = nullptr;
-            d_secondary_code_samples = nullptr;
-            d_samples_per_symbol = 0U;
             d_PRN_code_period_ms = 0U;
             d_required_symbols = 0U;
             d_frame_length_symbols = 0U;
@@ -147,7 +130,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
         }
 
     d_page_part_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_frame_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
-    int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
             switch (d_frame_type)
@@ -156,45 +138,23 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                     {
                         if (GALILEO_INAV_PREAMBLE.at(i) == '1')
                             {
-                                for (uint32_t j = 0; j < d_samples_per_symbol; j++)
-                                    {
-                                        d_preamble_samples[n] = 1;
-                                        n++;
-                                    }
+                                d_preamble_samples[i] = 1;
                             }
                         else
                             {
-                                for (uint32_t j = 0; j < d_samples_per_symbol; j++)
-                                    {
-                                        d_preamble_samples[n] = -1;
-                                        n++;
-                                    }
+                                d_preamble_samples[i] = -1;
                             }
                         break;
                     }
                 case 2:  // FNAV for E5a-I
                     {
-                        // Galileo E5a data channel (E5a-I) still has a secondary code
-                        int m = 0;
                         if (GALILEO_FNAV_PREAMBLE.at(i) == '1')
                             {
-                                for (uint32_t j = 0; j < d_samples_per_symbol; j++)
-                                    {
-                                        d_preamble_samples[n] = d_secondary_code_samples[m];
-                                        n++;
-                                        m++;
-                                        m = m % GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
-                                    }
+                                d_preamble_samples[i] = 1;
                             }
                         else
                             {
-                                for (uint32_t j = 0; j < d_samples_per_symbol; j++)
-                                    {
-                                        d_preamble_samples[n] = -d_secondary_code_samples[m];
-                                        n++;
-                                        m++;
-                                        m = m % GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
-                                    }
+                                d_preamble_samples[i] = -1;
                             }
                         break;
                     }
@@ -235,10 +195,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
 galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 {
     volk_gnsssdr_free(d_preamble_samples);
-    if (d_frame_type == 2)
-        {
-            volk_gnsssdr_free(d_secondary_code_samples);
-        }
     volk_gnsssdr_free(d_page_part_symbols);
     volk_gnsssdr_free(out0);
     volk_gnsssdr_free(out1);
@@ -497,7 +453,24 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     // add new symbol to the symbol queue
-    d_symbol_history.push_back(current_symbol.Prompt_I);
+    switch (d_frame_type)
+        {
+        case 1:  // INAV
+            {
+                d_symbol_history.push_back(current_symbol.Prompt_I);
+                break;
+            }
+        case 2:  //FNAV
+            {
+                d_symbol_history.push_back(current_symbol.Prompt_Q);
+                break;
+            }
+        default:
+            {
+                d_symbol_history.push_back(current_symbol.Prompt_I);
+                break;
+            }
+        }
     d_sample_counter++;  // count for the processed symbols
     consume_each(1);
     d_flag_preamble = false;
@@ -626,29 +599,21 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 // 0. fetch the symbols into an array
                                 if (flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
                                     {
-                                        int k = 0;
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                d_page_part_symbols[i] = 0;
-                                                for (uint32_t m = 0; m < d_samples_per_symbol; m++)
+                                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                                     {
-                                                        d_page_part_symbols[i] += static_cast<float>(d_secondary_code_samples[k]) * d_symbol_history.at(i * d_samples_per_symbol + d_samples_per_preamble + m);  // because last symbol of the preamble is just received now!
-                                                        k++;
-                                                        k = k % GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
+                                                        d_page_part_symbols[i] = d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
                                                     }
                                             }
                                     }
                                 else  // 180 deg. inverted carrier phase PLL lock
                                     {
-                                        int k = 0;
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                d_page_part_symbols[i] = 0;
-                                                for (uint32_t m = 0; m < d_samples_per_symbol; m++)  // integrate samples into symbols
+                                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                                     {
-                                                        d_page_part_symbols[i] -= static_cast<float>(d_secondary_code_samples[k]) * d_symbol_history.at(i * d_samples_per_symbol + d_samples_per_preamble + m);  // because last symbol of the preamble is just received now!
-                                                        k++;
-                                                        k = k % GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
+                                                        d_page_part_symbols[i] = -d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
                                                     }
                                             }
                                     }
@@ -732,7 +697,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 if (d_fnav_nav.flag_TOW_1 == true)
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_1 * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         //d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_fnav_nav.flag_TOW_1 = false;
                                     }
@@ -740,26 +705,26 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_2 * 1000.0);
                                         //d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         d_fnav_nav.flag_TOW_2 = false;
                                     }
                                 else if (d_fnav_nav.flag_TOW_3 == true)
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_3 * 1000.0);
                                         //d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         d_fnav_nav.flag_TOW_3 = false;
                                     }
                                 else if (d_fnav_nav.flag_TOW_4 == true)
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_4 * 1000.0);
                                         //d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         d_fnav_nav.flag_TOW_4 = false;
                                     }
                                 else
                                     {
-                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                     }
                                 break;
                             }

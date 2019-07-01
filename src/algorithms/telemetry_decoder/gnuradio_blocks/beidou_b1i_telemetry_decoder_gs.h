@@ -39,7 +39,7 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
-#include <gnuradio/types.h>                  // for gr_vector_const_void_star
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -77,19 +77,17 @@ private:
     beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
     beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
-    void decode_subframe(double *symbols);
-    void decode_word(int32_t word_counter, const double *enc_word_symbols, int32_t *dec_word_symbols);
+    void decode_subframe(float *symbols);
+    void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
 
     // Preamble decoding
     int32_t *d_preamble_samples;
-    int32_t *d_secondary_code_symbols;
-    uint32_t d_samples_per_symbol;
     int32_t d_symbols_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_samples;
-    double *d_subframe_symbols;
+    float *d_subframe_symbols;
     uint32_t d_required_symbols;
 
     // Storage for incoming data

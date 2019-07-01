@@ -64,7 +64,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SAMPLES_PER_SYMBOL * GPS_L5_SYMBOLS_PER_BIT * 10;  //rise alarm if 20 consecutive subframes have no valid CRC
+    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10;  //rise alarm if 20 consecutive subframes have no valid CRC
 
     // initialize internal vars
     d_dump = dump;
@@ -74,23 +74,8 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     d_flag_valid_word = false;
     d_TOW_at_current_symbol_ms = 0U;
     d_TOW_at_Preamble_ms = 0U;
-    sym_hist.set_capacity(GPS_L5I_NH_CODE_LENGTH);
-
     // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
-    for (int32_t aux = 0; aux < GPS_L5I_NH_CODE_LENGTH; aux++)
-        {
-            if (GPS_L5I_NH_CODE[aux] == 0)
-                {
-                    bits_NH[aux] = -1.0;
-                }
-            else
-                {
-                    bits_NH[aux] = 1.0;
-                }
-        }
-    sync_NH = false;
-    new_sym = false;
 
     d_sample_counter = 0;
 }
@@ -171,9 +156,6 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
     // 1. Copy the current tracking output
     current_synchro_data = in[0];
     consume_each(1);  // one by one
-    sym_hist.push_back(in[0].Prompt_I);
-    int32_t corr_NH = 0;
-    int32_t symbol_value = 0;
 
     // check if there is a problem with the telemetry of the current satellite
     d_sample_counter++;  // count for the processed symbols
@@ -187,61 +169,18 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 }
         }
 
-    // Search correlation with Neuman-Hofman Code (see IS-GPS-705D)
-    if (sym_hist.size() == GPS_L5I_NH_CODE_LENGTH)
-        {
-            for (int32_t i = 0; i < GPS_L5I_NH_CODE_LENGTH; i++)
-                {
-                    if ((bits_NH[i] * sym_hist[i]) > 0.0)
-                        {
-                            corr_NH += 1;
-                        }
-                    else
-                        {
-                            corr_NH -= 1;
-                        }
-                }
-            if (abs(corr_NH) == GPS_L5I_NH_CODE_LENGTH)
-                {
-                    sync_NH = true;
-                    if (corr_NH > 0)
-                        {
-                            symbol_value = 1;
-                        }
-                    else
-                        {
-                            symbol_value = -1;
-                        }
-                    new_sym = true;
-                    //sym_hist.clear();
-                }
-            else
-                {
-                    sync_NH = false;
-                    new_sym = false;
-                }
-        }
-
-    bool flag_new_cnav_frame = false;
     cnav_msg_t msg;
-    uint32_t delay = 0;
-
-    // add the symbol to the decoder
-    if (new_sym)
-        {
-            uint8_t symbol_clip = static_cast<uint8_t>(symbol_value > 0) * 255;
-            flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
-            new_sym = false;
-        }
+    uint32_t delay;
+    uint8_t symbol_clip = static_cast<uint8_t>(current_synchro_data.Prompt_Q > 0) * 255;
     // 2. Add the telemetry decoder information
     // check if new CNAV frame is available
-    if (flag_new_cnav_frame == true)
+    if (cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay) == true)
         {
             std::bitset<GPS_L5_CNAV_DATA_PAGE_BITS> raw_bits;
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (uint32_t i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS; i++)
                 {
-                    raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1U);
+                    raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1u);
                 }
 
             d_CNAV_Message.decode_page(raw_bits);
@@ -279,7 +218,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             //check TOW update consistency
             uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
-            if (last_d_TOW_at_current_symbol_ms != 0 and abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > 1)
+            if (last_d_TOW_at_current_symbol_ms != 0 and abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > GPS_L5I_SYMBOL_PERIOD_MS)
                 {
                     DLOG(INFO) << "Warning: GPS L5 TOW update in ch " << d_channel
                                << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms) << " ms "
@@ -298,7 +237,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
         {
             if (d_flag_valid_word)
                 {
-                    d_TOW_at_current_symbol_ms += GPS_L5I_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += GPS_L5I_SYMBOL_PERIOD_MS;
                     if (current_synchro_data.Flag_valid_symbol_output == false)
                         {
                             d_flag_valid_word = false;

@@ -41,11 +41,6 @@
  */
 class Rtl_Tcp_Dongle_Info
 {
-private:
-    char magic_[4]{};
-    uint32_t tuner_type_;
-    uint32_t tuner_gain_count_;
-
 public:
     enum
     {
@@ -77,6 +72,11 @@ public:
     {
         return tuner_gain_count_;
     }
+
+private:
+    char magic_[4]{};
+    uint32_t tuner_type_;
+    uint32_t tuner_gain_count_;
 };
 
 

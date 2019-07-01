@@ -47,15 +47,15 @@ channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<Channe
  */
 class channel_msg_receiver_cc : public gr::block
 {
+public:
+    ~channel_msg_receiver_cc();  //!< Default destructor
+
 private:
     std::shared_ptr<ChannelFsm> d_channel_fsm;
     bool d_repeat;  // todo: change FSM to include repeat value
     friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
     void msg_handler_events(pmt::pmt_t msg);
     channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
-
-public:
-    ~channel_msg_receiver_cc();  //!< Default destructor
 };
 
 #endif

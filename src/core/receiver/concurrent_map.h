@@ -46,10 +46,6 @@ template <typename Data>
 class Concurrent_Map
 {
     typedef typename std::map<int, Data>::iterator Data_iterator;  // iterator is scope dependent
-private:
-    std::map<int, Data> the_map;
-    boost::mutex the_mutex;
-
 public:
     void write(int key, Data const& data)
     {
@@ -97,6 +93,10 @@ public:
         lock.unlock();
         return false;
     }
+
+private:
+    std::map<int, Data> the_map;
+    boost::mutex the_mutex;
 };
 
 #endif

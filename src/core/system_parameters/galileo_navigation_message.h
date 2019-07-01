@@ -52,14 +52,9 @@
  */
 class Galileo_Navigation_Message
 {
-private:
-    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum);
-    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-
 public:
+    Galileo_Navigation_Message();
+
     int32_t Page_type_time_stamp;
     int32_t flag_even_word;
     std::string page_Even;
@@ -293,7 +288,12 @@ public:
      */
     Galileo_Almanac_Helper get_almanac();
 
-    Galileo_Navigation_Message();
+private:
+    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum);
+    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
 };
 
 #endif /* GALILEO_NAVIGATION_MESSAGE_H_ */

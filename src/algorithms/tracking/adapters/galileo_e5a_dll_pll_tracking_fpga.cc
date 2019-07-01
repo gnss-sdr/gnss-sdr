@@ -273,10 +273,10 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
 GalileoE5aDllPllTrackingFpga::~GalileoE5aDllPllTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
     if (d_track_pilot)
         {
-            delete[] d_data_codes;
+            volk_gnsssdr_free(d_data_codes);
         }
 }
 

@@ -43,9 +43,11 @@
 #include <volk/volk.h>
 
 class direct_resampler_conditioner_cc;
+
 using direct_resampler_conditioner_cc_sptr = boost::shared_ptr<direct_resampler_conditioner_cc>;
-direct_resampler_conditioner_cc_sptr
-direct_resampler_make_conditioner_cc(double sample_freq_in,
+
+direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
+    double sample_freq_in,
     double sample_freq_out);
 
 /*!
@@ -55,18 +57,6 @@ direct_resampler_make_conditioner_cc(double sample_freq_in,
  */
 class direct_resampler_conditioner_cc : public gr::block
 {
-private:
-    friend direct_resampler_conditioner_cc_sptr
-    direct_resampler_make_conditioner_cc(double sample_freq_in,
-        double sample_freq_out);
-    double d_sample_freq_in;   //! Specifies the sampling frequency of the input signal
-    double d_sample_freq_out;  //! Specifies the sampling frequency of the output signal
-    uint32_t d_phase;
-    uint32_t d_lphase;
-    uint32_t d_phase_step;
-    direct_resampler_conditioner_cc(double sample_freq_in,
-        double sample_freq_out);
-
 public:
     ~direct_resampler_conditioner_cc();
     inline unsigned int sample_freq_in() const
@@ -84,6 +74,21 @@ public:
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
+        double sample_freq_in,
+        double sample_freq_out);
+
+    direct_resampler_conditioner_cc(
+        double sample_freq_in,
+        double sample_freq_out);
+
+    double d_sample_freq_in;   // Sampling frequency of the input signal
+    double d_sample_freq_out;  // Sampling frequency of the output signal
+    uint32_t d_phase;
+    uint32_t d_lphase;
+    uint32_t d_phase_step;
 };
 
 #endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H */

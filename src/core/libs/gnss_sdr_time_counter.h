@@ -45,6 +45,13 @@ gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 
 class gnss_sdr_time_counter : public gr::block
 {
+public:
+    ~gnss_sdr_time_counter();
+    int general_work(int noutput_items __attribute__((unused)),
+        gr_vector_int &ninput_items __attribute__((unused)),
+        gr_vector_const_void_star &input_items __attribute__((unused)),
+        gr_vector_void_star &output_items);
+
 private:
     gnss_sdr_time_counter();
     int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
@@ -57,11 +64,6 @@ private:
     uint32_t current_days;    // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
     friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
-
-public:
-    ~gnss_sdr_time_counter();
-    int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items);
 };
 
 #endif /*GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_*/

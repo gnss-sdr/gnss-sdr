@@ -62,7 +62,7 @@ typedef struct
     int32_t code_length;
     uint32_t select_queue_Fpga;
     std::string device_name;
-    uint32_t* all_fft_codes; // pointer to memory that contains all the code ffts
+    uint32_t* all_fft_codes;  // pointer to memory that contains all the code ffts
     //float downsampling_factor;
     uint32_t downsampling_factor;
     uint32_t total_block_exp;
@@ -78,8 +78,7 @@ class pcps_acquisition_fpga;
 
 using pcps_acquisition_fpga_sptr = boost::shared_ptr<pcps_acquisition_fpga>;
 
-pcps_acquisition_fpga_sptr
-pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition that uses the FPGA.
@@ -89,49 +88,6 @@ pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
  */
 class pcps_acquisition_fpga
 {
-private:
-    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
-
-    pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
-
-    void send_negative_acquisition();
-
-    void send_positive_acquisition();
-
-    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
-
-    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_max);
-
-    pcpsconf_fpga_t acq_parameters;
-    bool d_active;
-    float d_threshold;
-    float d_mag;
-    float d_input_power;
-    uint32_t d_doppler_index;
-    float d_test_statistics;
-    int32_t d_state;
-    uint32_t d_channel;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    uint32_t d_doppler_step;
-    uint32_t d_doppler_max;
-    uint32_t d_fft_size;
-    uint32_t d_num_doppler_bins;
-    uint64_t d_sample_counter;
-    Gnss_Synchro* d_gnss_synchro;
-    std::shared_ptr<Fpga_Acquisition> acquisition_fpga;
-
-    //float d_downsampling_factor;
-    uint32_t d_downsampling_factor;
-    uint32_t d_select_queue_Fpga;
-
-    uint32_t d_total_block_exp;
-
-    bool d_make_2_steps;
-    uint32_t d_num_doppler_bins_step2;
-    float d_doppler_step2;
-    float d_doppler_center_step_two;
-    uint32_t d_max_num_acqs;
-
 public:
     ~pcps_acquisition_fpga();
 
@@ -229,6 +185,39 @@ public:
      * \brief This funciton triggers a HW reset of the FPGA PL.
      */
     void reset_acquisition(void);
+
+private:
+    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
+    pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
+    bool d_active;
+    bool d_make_2_steps;
+    uint32_t d_doppler_index;
+    uint32_t d_channel;
+    uint32_t d_doppler_step;
+    uint32_t d_doppler_max;
+    uint32_t d_fft_size;
+    uint32_t d_num_doppler_bins;
+    uint32_t d_downsampling_factor;
+    uint32_t d_select_queue_Fpga;
+    uint32_t d_total_block_exp;
+    uint32_t d_num_doppler_bins_step2;
+    uint32_t d_max_num_acqs;
+    int32_t d_state;
+    uint64_t d_sample_counter;
+    float d_threshold;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
+    float d_doppler_step2;
+    float d_doppler_center_step_two;
+    pcpsconf_fpga_t acq_parameters;
+    Gnss_Synchro* d_gnss_synchro;
+    std::shared_ptr<Fpga_Acquisition> acquisition_fpga;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    void send_negative_acquisition();
+    void send_positive_acquisition();
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_max);
+    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

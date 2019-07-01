@@ -45,11 +45,6 @@ template <typename Data>
  */
 class Concurrent_Queue
 {
-private:
-    std::queue<Data> the_queue;
-    mutable boost::mutex the_mutex;
-    boost::condition_variable the_condition_variable;
-
 public:
     void push(Data const& data)
     {
@@ -87,5 +82,10 @@ public:
         popped_value = the_queue.front();
         the_queue.pop();
     }
+    
+private:
+    std::queue<Data> the_queue;
+    mutable boost::mutex the_mutex;
+    boost::condition_variable the_condition_variable;
 };
 #endif

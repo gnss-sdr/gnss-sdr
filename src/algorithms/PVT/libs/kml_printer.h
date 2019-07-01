@@ -46,6 +46,13 @@ class Rtklib_Solver;
  */
 class Kml_Printer
 {
+public:
+    Kml_Printer(const std::string& base_path = std::string("."));
+    ~Kml_Printer();
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
+    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
+    bool close_file();
+
 private:
     std::ofstream kml_file;
     std::ofstream tmp_file;
@@ -55,13 +62,6 @@ private:
     std::string tmp_file_str;
     unsigned int point_id;
     std::string indent;
-
-public:
-    Kml_Printer(const std::string& base_path = std::string("."));
-    ~Kml_Printer();
-    bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
-    bool close_file();
 };
 
 #endif

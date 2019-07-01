@@ -113,7 +113,6 @@ private:
 
     int32_t *d_preambles_symbols;
     int32_t d_preamble_length_symbols;
-    //boost::circular_buffer<float> d_symbol_history;
 
     // dll filter buffer
     boost::circular_buffer<float> d_dll_filt_history;
@@ -130,6 +129,7 @@ private:
     float *d_prompt_data_shift;
     Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
     Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
+
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
         Implement this functionality inside multicorrelator class
@@ -163,6 +163,7 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
+    
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;

@@ -271,7 +271,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                 }
         }
 
-    delete[] ca_codes_f;
+    volk_gnsssdr_free(ca_codes_f);
     if (d_track_pilot)
         {
             volk_gnsssdr_free(data_codes_f);
@@ -289,10 +289,10 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 
 GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
     if (d_track_pilot)
         {
-            delete[] d_data_codes;
+            volk_gnsssdr_free(d_data_codes);
         }
 }
 

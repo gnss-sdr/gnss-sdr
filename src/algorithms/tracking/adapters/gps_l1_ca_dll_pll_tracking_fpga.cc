@@ -239,7 +239,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
 
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
 }
 
 

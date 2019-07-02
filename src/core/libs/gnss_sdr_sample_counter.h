@@ -50,9 +50,22 @@ gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(
 
 class gnss_sdr_sample_counter : public gr::sync_decimator
 {
+public:
+    ~gnss_sdr_sample_counter();
+    int work(int noutput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
+
 private:
-    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size);
-    gnss_sdr_sample_counter(double _fs, int32_t _interval_ms, size_t _size);
+    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(
+        double _fs,
+        int32_t _interval_ms,
+        size_t _size);
+
+    gnss_sdr_sample_counter(double _fs,
+        int32_t _interval_ms,
+        size_t _size);
+
     uint32_t samples_per_output;
     double fs;
     uint64_t sample_counter;
@@ -67,12 +80,6 @@ private:
     uint32_t current_days;    // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
     bool flag_enable_send_msg;
-
-public:
-    ~gnss_sdr_sample_counter();
-    int work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items);
 };
 
 #endif /*GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_*/

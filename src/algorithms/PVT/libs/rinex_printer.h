@@ -167,7 +167,7 @@ public:
     /*!
      *  \brief Generates the Mixed GLONASS L1,L2 + BDS B1I, B3I Navigation Data header
      */
-    void rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glo_gnav_utc_model, const Glonass_Gnav_Ephemeris& glo_gnav_eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+    void rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glo_gnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
 
     /*!
      *  \brief Generates the Mixed (Galileo/BDS B1I, B3I) Navigation Data header

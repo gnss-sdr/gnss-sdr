@@ -2192,8 +2192,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if ((gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend()) and (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend()))
                                                                         {
                                                                     		std::string bds_signal("B1");
-                                                                    		rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, bds_signal);
-                                                                    	    rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                    		//rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, bds_signal);
+                                                                    	    //rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                     	    b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2203,8 +2203,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                     		std::string bds_signal("B1");
                                                                     		std::string gal_signal("1B");
-                                                                    		rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, gal_signal, bds_signal);
-                                                                    		rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->galileo_iono, d_pvt_solver->galileo_utc_model, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                    		//rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, gal_signal, bds_signal);
+                                                                    		//rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->galileo_iono, d_pvt_solver->galileo_utc_model, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                     		b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2212,9 +2212,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 503:  // BeiDou B1I + GLONASS L1 C/A
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
-                                                                            rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2222,9 +2222,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 504:  // BeiDou B1I + GPS L1 C/A + Galileo E1B
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
-                                                                            rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2232,9 +2232,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 505:  // BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
-                                                                            rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2242,9 +2242,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 506:  // BeiDou B1I + Beidou B3I
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
-                                                                            rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2262,7 +2262,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2271,7 +2271,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2280,7 +2280,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 

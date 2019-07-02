@@ -41,7 +41,13 @@ class NotchLite;
 
 using notch_lite_sptr = boost::shared_ptr<NotchLite>;
 
-notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
+notch_lite_sptr make_notch_filter_lite(
+    float p_c_factor,
+    float pfa,
+    int32_t length_,
+    int32_t n_segments_est,
+    int32_t n_segments_reset,
+    int32_t n_segments_coeff);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter light version
@@ -49,8 +55,6 @@ notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t leng
 class NotchLite : public gr::block
 {
 public:
-    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
-
     ~NotchLite();
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
@@ -60,6 +64,8 @@ public:
         gr_vector_void_star &output_items);
 
 private:
+    friend notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
+    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
     int32_t length_;
     int32_t n_segments;
     int32_t n_segments_est;

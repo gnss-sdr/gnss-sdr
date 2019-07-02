@@ -174,7 +174,7 @@ int Gnss_Sdr_Supl_Client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
 
     // PERFORM SUPL COMMUNICATION
     std::vector<char> cstr(server_name.length() + 1);
-    for (int i = 0; i != server_name.length(); ++i)
+    for (unsigned int i = 0; i != server_name.length(); ++i)
         {
             cstr[i] = static_cast<char>(server_name[i]);
         }

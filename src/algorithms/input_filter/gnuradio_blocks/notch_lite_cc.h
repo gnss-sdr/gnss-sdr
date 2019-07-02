@@ -46,9 +46,19 @@ notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t leng
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter light version
  */
-
 class NotchLite : public gr::block
 {
+public:
+    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
+
+    ~NotchLite();
+
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
+
 private:
     int32_t length_;
     int32_t n_segments;
@@ -70,17 +80,6 @@ private:
     float angle2;
     float *power_spect;
     std::unique_ptr<gr::fft::fft_complex> d_fft;
-
-public:
-    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
-
-    ~NotchLite();
-
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items);
 };
 
-#endif  //GNSS_SDR_NOTCH_LITE_H_
+#endif  // GNSS_SDR_NOTCH_LITE_H_

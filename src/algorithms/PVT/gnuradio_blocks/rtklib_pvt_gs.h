@@ -77,6 +77,57 @@ rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
  */
 class rtklib_pvt_gs : public gr::sync_block
 {
+public:
+    ~rtklib_pvt_gs();  //!< Default destructor
+
+    /*!
+     * \brief Get latest set of GPS ephemeris from PVT block
+     */
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
+
+    /*!
+     * \brief Get latest set of GPS almanac from PVT block
+     */
+    std::map<int, Gps_Almanac> get_gps_almanac_map() const;
+
+    /*!
+     * \brief Get latest set of Galileo ephemeris from PVT block
+     */
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
+
+    /*!
+     * \brief Get latest set of Galileo almanac from PVT block
+     */
+    std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
+
+    /*!
+     * \brief Get latest set of BeiDou DNAV ephemeris from PVT block
+     */
+    std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
+
+    /*!
+     * \brief Get latest set of BeiDou DNAV almanac from PVT block
+     */
+    std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
+
+    /*!
+     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
+     */
+    void clear_ephemeris();
+
+    /*!
+     * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
+     */
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time) const;
+
+    int work(int noutput_items, gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);  //!< PVT Signal Processing
+
 private:
     friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
@@ -169,57 +220,6 @@ private:
     bool d_show_local_time_zone;
     std::string d_local_time_str;
     boost::posix_time::time_duration d_utc_diff_time;
-
-public:
-    ~rtklib_pvt_gs();  //!< Default destructor
-
-    /*!
-     * \brief Get latest set of GPS ephemeris from PVT block
-     */
-    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
-
-    /*!
-     * \brief Get latest set of GPS almanac from PVT block
-     */
-    std::map<int, Gps_Almanac> get_gps_almanac_map() const;
-
-    /*!
-     * \brief Get latest set of Galileo ephemeris from PVT block
-     */
-    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
-
-    /*!
-     * \brief Get latest set of Galileo almanac from PVT block
-     */
-    std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
-
-    /*!
-     * \brief Get latest set of BeiDou DNAV ephemeris from PVT block
-     */
-    std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
-
-    /*!
-     * \brief Get latest set of BeiDou DNAV almanac from PVT block
-     */
-    std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
-
-    /*!
-     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
-     */
-    void clear_ephemeris();
-
-    /*!
-     * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
-     */
-    bool get_latest_PVT(double* longitude_deg,
-        double* latitude_deg,
-        double* height_m,
-        double* ground_speed_kmh,
-        double* course_over_ground_deg,
-        time_t* UTC_time) const;
-
-    int work(int noutput_items, gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);  //!< PVT Signal Processing
 };
 
 #endif

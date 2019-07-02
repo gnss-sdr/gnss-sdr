@@ -48,14 +48,6 @@
  */
 class Hybrid_Ls_Pvt : public Ls_Pvt
 {
-private:
-    int count_valid_position;
-    bool d_flag_dump_enabled;
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-    int d_nchannels;  // Number of available channels for positioning
-    double d_galileo_current_time;
-
 public:
     Hybrid_Ls_Pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
     ~Hybrid_Ls_Pvt();
@@ -75,6 +67,14 @@ public:
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
+
+private:
+    int count_valid_position;
+    bool d_flag_dump_enabled;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+    int d_nchannels;  // Number of available channels for positioning
+    double d_galileo_current_time;
 };
 
 #endif

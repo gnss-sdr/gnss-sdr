@@ -41,12 +41,6 @@
  */
 class Ls_Pvt : public Pvt_Solution
 {
-private:
-    /*!
-     * \brief Computes the Lorentz inner product between two vectors
-     */
-    double lorentz(const arma::vec& x, const arma::vec& y);
-
 public:
     Ls_Pvt();
 
@@ -59,6 +53,12 @@ public:
      * \brief Computes the Weighted Least Squares position solution
      */
     arma::vec leastSquarePos(const arma::mat& satpos, const arma::vec& obs, const arma::vec& w_vec);
+
+private:
+    /*!
+     * \brief Computes the Lorentz inner product between two vectors
+     */
+    double lorentz(const arma::vec& x, const arma::vec& y);
 };
 
 #endif

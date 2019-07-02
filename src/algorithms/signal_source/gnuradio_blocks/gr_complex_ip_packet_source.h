@@ -45,42 +45,6 @@
 
 class Gr_Complex_Ip_Packet_Source : virtual public gr::sync_block
 {
-private:
-    boost::mutex d_mutex;
-    pcap_t *descr;  //ethernet pcap device descriptor
-
-    char *fifo_buff;
-
-    int fifo_read_ptr;
-    int fifo_write_ptr;
-    int fifo_items;
-    int d_sock_raw;
-    int d_udp_port;
-    struct sockaddr_in si_me;
-    std::string d_src_device;
-    std::string d_origin_address;
-    int d_udp_payload_size;
-    bool d_fifo_full;
-
-    int d_n_baseband_channels;
-    int d_wire_sample_type;
-    int d_bytes_per_sample;
-    size_t d_item_size;
-    bool d_IQ_swap;
-
-    boost::thread *d_pcap_thread;
-    /*!
-	 * \brief
-	 * Opens the ethernet device using libpcap raw capture mode
-	 * If any of these fail, the fuction retuns the error and exits.
-	 */
-    bool open();
-
-    void demux_samples(gr_vector_void_star output_items, int num_samples_readed);
-    void my_pcap_loop_thread(pcap_t *pcap_handle);
-    void pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
-    static void static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
-
 public:
     typedef boost::shared_ptr<Gr_Complex_Ip_Packet_Source> sptr;
     static sptr make(std::string src_device,
@@ -101,15 +65,46 @@ public:
         bool IQ_swap_);
     ~Gr_Complex_Ip_Packet_Source();
 
+    // Called by gnuradio to enable drivers, etc for i/o devices.
+    bool start();
+
+    // Called by gnuradio to disable drivers, etc for i/o devices.
+    bool stop();
+
     // Where all the action really happens
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 
-    // Called by gnuradio to enable drivers, etc for i/o devices.
-    bool start();
-    // Called by gnuradio to disable drivers, etc for i/o devices.
-    bool stop();
+private:
+    boost::mutex d_mutex;
+    pcap_t *descr;  //ethernet pcap device descriptor
+    char *fifo_buff;
+    int fifo_read_ptr;
+    int fifo_write_ptr;
+    int fifo_items;
+    int d_sock_raw;
+    int d_udp_port;
+    struct sockaddr_in si_me;
+    std::string d_src_device;
+    std::string d_origin_address;
+    int d_udp_payload_size;
+    bool d_fifo_full;
+    int d_n_baseband_channels;
+    int d_wire_sample_type;
+    int d_bytes_per_sample;
+    size_t d_item_size;
+    bool d_IQ_swap;
+    boost::thread *d_pcap_thread;
+    void demux_samples(gr_vector_void_star output_items, int num_samples_readed);
+    void my_pcap_loop_thread(pcap_t *pcap_handle);
+    void pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
+    static void static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
+    /*
+     * Opens the ethernet device using libpcap raw capture mode
+     * If any of these fail, the fuction retuns the error and exits.
+     */
+    bool open();
 };
 
 #endif /* GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H */

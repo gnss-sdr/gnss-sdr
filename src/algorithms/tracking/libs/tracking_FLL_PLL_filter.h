@@ -36,6 +36,13 @@
  */
 class Tracking_FLL_PLL_filter
 {
+public:
+    void set_params(float fll_bw_hz, float pll_bw_hz, int order);
+    void initialize(float d_acq_carrier_doppler_hz);
+    float get_carrier_error(float FLL_discriminator, float PLL_discriminator, float correlation_time_s);
+    Tracking_FLL_PLL_filter();
+    ~Tracking_FLL_PLL_filter();
+
 private:
     // FLL + PLL filter parameters
     int d_order;
@@ -49,13 +56,6 @@ private:
     float d_pll_w0p2;
     float d_pll_b3;
     float d_pll_w0p;
-
-public:
-    void set_params(float fll_bw_hz, float pll_bw_hz, int order);
-    void initialize(float d_acq_carrier_doppler_hz);
-    float get_carrier_error(float FLL_discriminator, float PLL_discriminator, float correlation_time_s);
-    Tracking_FLL_PLL_filter();
-    ~Tracking_FLL_PLL_filter();
 };
 
 #endif

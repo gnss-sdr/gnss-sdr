@@ -88,18 +88,6 @@
  */
 class Rtklib_Solver : public Pvt_Solution
 {
-private:
-    rtk_t rtk_;
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-    bool save_matfile();
-
-    bool d_flag_dump_enabled;
-    bool d_flag_dump_mat_enabled;
-    int d_nchannels;  // Number of available channels for positioning
-    std::array<double, 4> dop_;
-    Monitor_Pvt monitor_pvt;
-
 public:
     Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
     ~Rtklib_Solver();
@@ -139,6 +127,17 @@ public:
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
     int count_valid_position;
+
+private:
+    rtk_t rtk_;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+    bool save_matfile();
+    bool d_flag_dump_enabled;
+    bool d_flag_dump_mat_enabled;
+    int d_nchannels;  // Number of available channels for positioning
+    std::array<double, 4> dop_;
+    Monitor_Pvt monitor_pvt;
 };
 
 #endif

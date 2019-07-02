@@ -43,10 +43,6 @@
  */
 class Gnss_Signal
 {
-private:
-    Gnss_Satellite satellite;
-    std::string signal;
-
 public:
     Gnss_Signal();
     Gnss_Signal(const std::string& signal_);
@@ -57,6 +53,10 @@ public:
 
     friend bool operator==(const Gnss_Signal& /*sig1*/, const Gnss_Signal& /*sig2*/);    //!< operator== for comparison
     friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Signal& /*sig*/);  //!< operator<< for pretty printing
+
+private:
+    Gnss_Satellite satellite;
+    std::string signal;
 };
 
 #endif

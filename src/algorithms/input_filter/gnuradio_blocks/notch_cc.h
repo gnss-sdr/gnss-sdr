@@ -41,8 +41,12 @@ class Notch;
 
 using notch_sptr = boost::shared_ptr<Notch>;
 
-notch_sptr make_notch_filter(float pfa, float p_c_factor,
-    int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
+notch_sptr make_notch_filter(
+    float pfa,
+    float p_c_factor,
+    int32_t length_,
+    int32_t n_segments_est,
+    int32_t n_segments_reset);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter
@@ -50,8 +54,6 @@ notch_sptr make_notch_filter(float pfa, float p_c_factor,
 class Notch : public gr::block
 {
 public:
-    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-
     ~Notch();
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
@@ -61,6 +63,8 @@ public:
         gr_vector_void_star &output_items);
 
 private:
+    friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
+    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
     float pfa;
     float noise_pow_est;
     float thres_;

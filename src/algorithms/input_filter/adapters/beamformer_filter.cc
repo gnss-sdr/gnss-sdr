@@ -49,7 +49,7 @@ BeamformerFilter::BeamformerFilter(
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            beamformer_ = make_beamformer();
+            beamformer_ = make_beamformer_sptr();
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << beamformer_->unique_id() << ")";
         }

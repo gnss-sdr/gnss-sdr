@@ -163,22 +163,21 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    Acq_Conf acq_parameters_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;
-    uint32_t vector_length_;
-    uint32_t code_length_;
+    unsigned int vector_length_;
+    unsigned int code_length_;
     bool bit_transition_flag_;
     bool use_CFAR_algorithm_flag_;
-    uint32_t channel_;
+    unsigned int channel_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
-    uint32_t doppler_max_;
-    uint32_t doppler_step_;
-    uint32_t sampled_ms_;
-    uint32_t max_dwells_;
+    unsigned int doppler_max_;
+    unsigned int doppler_step_;
+    unsigned int max_dwells_;
     int64_t fs_in_;
     bool dump_;
     bool blocking_;
@@ -186,8 +185,9 @@ private:
     std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
-    uint32_t in_streams_;
-    uint32_t out_streams_;
+    unsigned int num_codes_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
     float calculate_threshold(float pfa);
 };
 

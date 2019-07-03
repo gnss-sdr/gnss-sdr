@@ -62,10 +62,8 @@ public:
     ~beidou_b1i_telemetry_decoder_gs();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
-    inline void reset()
-    {
-        return;
-    }
+    void reset();
+    
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -105,12 +103,16 @@ private:
     //!< Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;
 
-    //!< Values to populate gnss synchronization structure
+    // Values to populate gnss synchronization structure
+    uint32_t d_symbol_duration_ms;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
+    uint64_t d_last_valid_preamble;
+    bool d_flag_valid_word;
+    bool d_sent_tlm_failed_msg;
     bool Flag_valid_word;
 
-    //!< Satellite Information and logging capacity
+    // Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
     int32_t d_channel;
     bool d_dump;

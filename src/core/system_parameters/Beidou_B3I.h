@@ -52,8 +52,9 @@ const uint32_t BEIDOU_B3I_PREAMBLE_LENGTH_BITS = 11;
 const uint32_t BEIDOU_B3I_PREAMBLE_LENGTH_SYMBOLS = 220;  // **************
 const double BEIDOU_B3I_PREAMBLE_DURATION_S = 0.220;
 const int32_t BEIDOU_B3I_PREAMBLE_DURATION_MS = 220;
-const int32_t BEIDOU_B3I_TELEMETRY_RATE_BITS_SECOND = 50;                                                                               //!< D1 NAV message bit rate [bits/s]
-const int32_t BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT = 20;                                                                                // *************
+const int32_t BEIDOU_B3I_TELEMETRY_RATE_BITS_SECOND = 50;  //!< D1 NAV message bit rate [bits/s]
+const int32_t BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT = 20;
+const int32_t BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT = 2;                                                                             // *************
 const int32_t BEIDOU_B3I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B3I_TELEMETRY_RATE_BITS_SECOND * BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  //************!< NAV message bit rate [symbols/s]
 
 #endif /* GNSS_SDR_BEIDOU_B3I_H_ */

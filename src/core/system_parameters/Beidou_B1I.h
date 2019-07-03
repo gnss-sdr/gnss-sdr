@@ -67,6 +67,7 @@ const double BEIDOU_B1I_PREAMBLE_DURATION_S = 0.220;
 const int BEIDOU_B1I_PREAMBLE_DURATION_MS = 220;
 const int BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND = 50;  //!< D1 NAV message bit rate [bits/s]
 const int BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT = 20;
+const int BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT = 2;
 const int BEIDOU_B1I_TELEMETRY_SYMBOL_PERIOD_MS = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT * BEIDOU_B1I_CODE_PERIOD_MS;
 const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  //************!< NAV message bit rate [symbols/s]
 const int BEIDOU_WORD_LENGTH = 4;                                                                                                   //**************!< CRC + BEIDOU WORD (-2 -1 0 ... 29) Bits = 4 bytes

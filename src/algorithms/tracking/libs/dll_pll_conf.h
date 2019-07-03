@@ -45,6 +45,7 @@ public:
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
     unsigned int pull_in_time_s;
+    unsigned int bit_synchronization_time_limit_s;
     int pll_filter_order;
     int dll_filter_order;
 

@@ -112,7 +112,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
-                d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 10;  //rise alarm 100 seconds without valid tlm
+                d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  //rise alarm 100 seconds without valid tlm
                 break;
             }
         default:
@@ -623,12 +623,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 return -1;
                                 break;
                             }
-
+                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                         if (d_inav_nav.flag_CRC_test == true or d_fnav_nav.flag_CRC_test == true)
                             {
                                 d_CRC_error_counter = 0;
-                                d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
                                 d_last_valid_preamble = d_sample_counter;
                                 if (!d_flag_frame_sync)
                                     {
@@ -639,7 +638,6 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         else
                             {
                                 d_CRC_error_counter++;
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;

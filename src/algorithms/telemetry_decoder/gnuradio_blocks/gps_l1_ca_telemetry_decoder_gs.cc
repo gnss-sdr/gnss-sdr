@@ -76,33 +76,26 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     DLOG(INFO) << "Initializing GPS L1 TELEMETRY DECODER";
 
     d_bits_per_preamble = GPS_CA_PREAMBLE_LENGTH_BITS;
-    //d_samples_per_preamble = d_bits_per_preamble * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
     d_samples_per_preamble = d_bits_per_preamble;
-    d_preamble_period_symbols = GPS_SUBFRAME_BITS;  // * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
+    d_preamble_period_symbols = GPS_SUBFRAME_BITS;
     // set the preamble
-    d_required_symbols = GPS_SUBFRAME_BITS;  // * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
+    d_required_symbols = GPS_SUBFRAME_BITS;
     // preamble bits to sampled symbols
     d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     d_frame_length_symbols = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
-    d_max_symbols_without_valid_frame = d_required_symbols * 10;  // rise alarm 1 minute without valid tlm
+    d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
             if (GPS_CA_PREAMBLE.at(i) == '1')
                 {
-                    //                    for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
-                    //                        {
                     d_preamble_samples[n] = 1;
                     n++;
-                    //                        }
                 }
             else
                 {
-                    //                    for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
-                    //                        {
                     d_preamble_samples[n] = -1;
                     n++;
-                    //                        }
                 }
         }
     d_sample_counter = 0ULL;
@@ -462,7 +455,6 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         else
                             {
                                 d_CRC_error_counter++;
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 if (d_CRC_error_counter > 2)
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;

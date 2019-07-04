@@ -796,9 +796,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // create the msg queue for valve
 
     queue = gr::msg_queue::make(0);
-    boost::shared_ptr<Gnss_Sdr_Valve> reseteable_valve;
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
-    boost::shared_ptr<Gnss_Sdr_Valve> resetable_valve_(new Gnss_Sdr_Valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false));
+    auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
 
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;

@@ -36,7 +36,7 @@
 
 #define GNSS_SDR_BEAMFORMER_CHANNELS 8
 
-beamformer_sptr make_beamformer()
+beamformer_sptr make_beamformer_sptr()
 {
     return beamformer_sptr(new beamformer());
 }

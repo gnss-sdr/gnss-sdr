@@ -36,7 +36,6 @@
 #ifndef GNSS_SDR_FPGA_ACQUISITION_H_
 #define GNSS_SDR_FPGA_ACQUISITION_H_
 
-#include <volk/volk_complex.h>  // for lv_16sc_t
 #include <cstdint>
 #include <string>
 
@@ -46,7 +45,8 @@
 class Fpga_Acquisition
 {
 public:
-    Fpga_Acquisition(std::string device_name,
+    Fpga_Acquisition(
+        std::string device_name,
         uint32_t nsamples,
         uint32_t doppler_max,
         uint32_t nsamples_total,
@@ -57,13 +57,24 @@ public:
         uint32_t excludelimit);
 
     ~Fpga_Acquisition();
+
     bool set_local_code(uint32_t PRN);
+
     void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min);
+
     void run_acquisition(void);
 
-    void read_acquisition_results(uint32_t *max_index, float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp);
+    void read_acquisition_results(
+        uint32_t *max_index,
+        float *firstpeak,
+        float *secondpeak,
+        uint64_t *initial_sample,
+        float *power_sum,
+        uint32_t *doppler_index,
+        uint32_t *total_blk_exp);
 
     void block_samples();
+
     void unblock_samples();
 
     /*!
@@ -100,8 +111,9 @@ public:
 
     void configure_acquisition(void);
 
-    void close_device();
     void open_device();
+
+    void close_device();
 
 private:
     int64_t d_fs_in;

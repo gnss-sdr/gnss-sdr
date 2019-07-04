@@ -95,12 +95,15 @@ TEST(Protobuf, Works)
     Gnss_Synchro gs_read = vgs_read[0];
     uint32_t prn_read = gs_read.PRN;
     uint32_t prn_read2 = vgs_read[1].PRN;
+    std::string system_read(1, gs_read.System);
+    std::string signal_read(gs_read.Signal);
 
     // or without the need of gnss_synchro:
     int obs_size = obs.observable_size();
     uint32_t prn_read3 = obs.observable(0).prn();
 
-    EXPECT_EQ(prn_true, prn_read);
+    EXPECT_EQ(sig, signal_read);
+    EXPECT_EQ(sys, system_read);
     EXPECT_EQ(prn_true2, prn_read2);
     EXPECT_EQ(prn_true, prn_read3);
     EXPECT_EQ(2, obs_size);

@@ -41,12 +41,14 @@
 #include <cstddef>                // for size_t
 #include <cstdint>
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(
+class Gnss_Sdr_Valve;
+
+boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     size_t sizeof_stream_item,
     uint64_t nitems,
     gr::msg_queue::sptr queue);
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(
+boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     size_t sizeof_stream_item,
     uint64_t nitems,
     gr::msg_queue::sptr queue,
@@ -66,12 +68,12 @@ public:
         gr_vector_void_star &output_items);
 
 private:
-    friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(
+    friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
         size_t sizeof_stream_item,
         uint64_t nitems,
         gr::msg_queue::sptr queue);
 
-    friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(
+    friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
         size_t sizeof_stream_item,
         uint64_t nitems,
         gr::msg_queue::sptr queue,

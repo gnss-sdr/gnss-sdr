@@ -101,6 +101,9 @@ find_package_handle_standard_args(GROSMOSDR DEFAULT_MSG GROSMOSDR_LIBRARIES GROS
 
 if(GROSMOSDR_PKG_VERSION)
     set(GROSMOSDR_VERSION ${GROSMOSDR_PKG_VERSION})
+    set(KK "v1.2.3")
+    string(REGEX REPLACE "^v" "" KK_AUX KK)
+    message(STATUS "++++++++++++++++++++${KK_AUX}")
 endif()
 
 set_package_properties(GROSMOSDR PROPERTIES

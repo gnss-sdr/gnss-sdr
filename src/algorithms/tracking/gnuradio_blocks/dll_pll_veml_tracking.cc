@@ -92,6 +92,9 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    this->set_max_output_buffer(128);
+    LOG(INFO) << "current tracking output buffer set to " << this->max_output_buffer(0);
+    std::cout << "current tracking output buffer set to " << this->max_output_buffer(0) << "\n";
     trk_parameters = conf_;
     // Telemetry bit synchronization message port input
     this->message_port_register_out(pmt::mp("events"));
@@ -566,7 +569,6 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 void dll_pll_veml_tracking::start_tracking()
 {
     gr::thread::scoped_lock l(d_setlock);
-
     // correct the code phase according to the delay between acq and trk
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;

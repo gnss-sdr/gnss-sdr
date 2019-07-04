@@ -62,6 +62,10 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     bool dump) : gr::block("gps_navigation_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    this->set_max_output_buffer(128);
+    LOG(INFO) << "current tlm output buffer set to " << this->max_output_buffer(0);
+    std::cout << "current tlm output buffer set to " << this->max_output_buffer(0) << "\n";
+
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block

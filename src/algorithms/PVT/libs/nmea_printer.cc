@@ -283,7 +283,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Rtklib_Solver>& pvt_dat
 }
 
 
-char Nmea_Printer::checkSum(std::string sentence)
+char Nmea_Printer::checkSum(const std::string& sentence)
 {
     char check = 0;
     // iterate over the string, XOR each byte with the total sum:
@@ -441,7 +441,7 @@ std::string Nmea_Printer::get_GPGSA()
     // GSA-GNSS DOP and Active Satellites
     std::stringstream sentence_str;
     unsigned char buff[1024] = {0};
-    outnmea_gsa(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat);
+    outnmea_gsa(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
     sentence_str << buff;
     return sentence_str.str();
 }
@@ -454,7 +454,7 @@ std::string Nmea_Printer::get_GPGSV()
     // Notice that NMEA 2.1 only supports 12 channels
     std::stringstream sentence_str;
     unsigned char buff[1024] = {0};
-    outnmea_gsv(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat);
+    outnmea_gsv(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
     sentence_str << buff;
     return sentence_str.str();
 }

@@ -43,6 +43,27 @@
  */
 class Tracking_loop_filter
 {
+public:
+    float get_noise_bandwidth(void) const;
+    float get_update_interval(void) const;
+    bool get_include_last_integrator(void) const;
+    int get_order(void) const;
+
+    void set_noise_bandwidth(float noise_bandwidth);
+    void set_update_interval(float update_interval);
+    void set_include_last_integrator(bool include_last_integrator);
+    void set_order(int loop_order);
+
+    void initialize(float initial_output = 0.0);
+    float apply(float current_input);
+
+    Tracking_loop_filter(float update_interval, float noise_bandwidth,
+        int loop_order = 2,
+        bool include_last_integrator = false);
+
+    Tracking_loop_filter();
+    ~Tracking_loop_filter();
+
 private:
     // Store the last inputs and outputs:
     std::vector<float> d_inputs;
@@ -71,27 +92,6 @@ private:
 
     // Compute the filter coefficients:
     void update_coefficients(void);
-
-public:
-    float get_noise_bandwidth(void) const;
-    float get_update_interval(void) const;
-    bool get_include_last_integrator(void) const;
-    int get_order(void) const;
-
-    void set_noise_bandwidth(float noise_bandwidth);
-    void set_update_interval(float update_interval);
-    void set_include_last_integrator(bool include_last_integrator);
-    void set_order(int loop_order);
-
-    void initialize(float initial_output = 0.0);
-    float apply(float current_input);
-
-    Tracking_loop_filter(float update_interval, float noise_bandwidth,
-        int loop_order = 2,
-        bool include_last_integrator = false);
-
-    Tracking_loop_filter();
-    ~Tracking_loop_filter();
 };
 
 #endif

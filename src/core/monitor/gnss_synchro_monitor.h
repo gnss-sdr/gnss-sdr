@@ -60,6 +60,12 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
  */
 class gnss_synchro_monitor : public gr::sync_block
 {
+public:
+    ~gnss_synchro_monitor();  //!< Default destructor
+
+    int work(int noutput_items, gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
+
 private:
     friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
         int decimation_factor,
@@ -77,12 +83,6 @@ private:
     int d_decimation_factor;
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
     int count;
-
-public:
-    ~gnss_synchro_monitor();  //!< Default destructor
-
-    int work(int noutput_items, gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
 };
 
 #endif

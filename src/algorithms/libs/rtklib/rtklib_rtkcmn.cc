@@ -778,7 +778,7 @@ unsigned int getbitu(const unsigned char *buff, int pos, int len)
     int i;
     for (i = pos; i < pos + len; i++)
         {
-            bits = (bits << 1) + ((buff[i / 8] >> (7 - i % 8)) & 1u);
+            bits = (bits << 1) + ((buff[i / 8] >> (7 - i % 8)) & 1U);
         }
     return bits;
 }
@@ -787,11 +787,11 @@ unsigned int getbitu(const unsigned char *buff, int pos, int len)
 int getbits(const unsigned char *buff, int pos, int len)
 {
     unsigned int bits = getbitu(buff, pos, len);
-    if (len <= 0 || 32 <= len || !(bits & (1u << (len - 1))))
+    if (len <= 0 || 32 <= len || !(bits & (1U << (len - 1))))
         {
             return static_cast<int>(bits);
         }
-    return static_cast<int>(bits | (~0u << len)); /* extend sign */
+    return static_cast<int>(bits | (~0U << len)); /* extend sign */
 }
 
 
@@ -805,7 +805,7 @@ int getbits(const unsigned char *buff, int pos, int len)
  *-----------------------------------------------------------------------------*/
 void setbitu(unsigned char *buff, int pos, int len, unsigned int data)
 {
-    unsigned int mask = 1u << (len - 1);
+    unsigned int mask = 1U << (len - 1);
     int i;
     if (len <= 0 || 32 < len)
         {
@@ -815,11 +815,11 @@ void setbitu(unsigned char *buff, int pos, int len, unsigned int data)
         {
             if (data & mask)
                 {
-                    buff[i / 8] |= 1u << (7 - i % 8);
+                    buff[i / 8] |= 1U << (7 - i % 8);
                 }
             else
                 {
-                    buff[i / 8] &= ~(1u << (7 - i % 8));
+                    buff[i / 8] &= ~(1U << (7 - i % 8));
                 }
         }
 }
@@ -2080,10 +2080,10 @@ unsigned int tickget(void)
     /* linux kernel > 2.6.28 */
     if (!clock_gettime(CLOCK_MONOTONIC_RAW, &tp))
         {
-            return tp.tv_sec * 1000u + tp.tv_nsec / 1000000u;
+            return tp.tv_sec * 1000U + tp.tv_nsec / 1000000U;
         }
     gettimeofday(&tv, nullptr);
-    return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
+    return tv.tv_sec * 1000U + tv.tv_usec / 1000U;
 
 #else
     gettimeofday(&tv, NULL);

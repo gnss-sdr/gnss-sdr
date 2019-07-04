@@ -34,7 +34,7 @@
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void glonass_l2_ca_code_gen_complex(std::complex<float>* _dest, /* int32_t _prn,*/ uint32_t _chip_shift)
+void glonass_l2_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, /* int32_t _prn,*/ uint32_t _chip_shift)
 {
     const uint32_t _code_length = 511;
     bool G1[_code_length];
@@ -104,7 +104,7 @@ void glonass_l2_ca_code_gen_complex(std::complex<float>* _dest, /* int32_t _prn,
 /*
  *  Generates complex GLONASS L2 C/A code for the desired SV ID and sampled to specific sampling frequency
  */
-void glonass_l2_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* uint32_t _prn,*/ int32_t _fs, uint32_t _chip_shift)
+void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, /* uint32_t _prn,*/ int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[511];
@@ -119,9 +119,9 @@ void glonass_l2_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* uint3
     _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                 // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);      // C/A chip period in sec
-    glonass_l2_ca_code_gen_complex(_code, _chip_shift);  //generate C/A code 1 sample per chip
+    _ts = 1.0 / static_cast<float>(_fs);                                                      // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);                                           // C/A chip period in sec
+    glonass_l2_ca_code_gen_complex(gsl::span<std::complex<float>>(_code, 511), _chip_shift);  //generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {

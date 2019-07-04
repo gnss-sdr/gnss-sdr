@@ -20,6 +20,11 @@
 # Iio::iio
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_LIBIIO libiio)
 
@@ -88,6 +93,20 @@ find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INC
 if(PC_LIBIIO_VERSION)
     set(LIBIIO_VERSION ${PC_LIBIIO_VERSION})
 endif()
+
+if(LIBIIO_FOUND AND LIBIIO_VERSION)
+    set_package_properties(LIBIIO PROPERTIES
+        DESCRIPTION "A library for interfacing with Linux IIO devices (found: v${LIBIIO_VERSION})"
+    )
+else()
+    set_package_properties(LIBIIO PROPERTIES
+        DESCRIPTION "A library for interfacing with Linux IIO devices"
+    )
+endif()
+
+set_package_properties(LIBIIO PROPERTIES
+    URL "https://github.com/analogdevicesinc/libiio"
+)
 
 if(LIBIIO_FOUND AND NOT TARGET Iio::iio)
     add_library(Iio::iio SHARED IMPORTED)

@@ -41,11 +41,15 @@
 #include <cstddef>                // for size_t
 #include <cstdint>
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
+class Gnss_Sdr_Valve;
+
+boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+    size_t sizeof_stream_item,
     uint64_t nitems,
     gr::msg_queue::sptr queue);
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
+boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+    size_t sizeof_stream_item,
     uint64_t nitems,
     gr::msg_queue::sptr queue,
     bool stop_flowgraph);
@@ -56,29 +60,34 @@ boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
  */
 class Gnss_Sdr_Valve : public gr::sync_block
 {
-    friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
+public:
+    void open_valve();
+
+    int work(int noutput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
+
+private:
+    friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+        size_t sizeof_stream_item,
         uint64_t nitems,
         gr::msg_queue::sptr queue);
-    friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
+
+    friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+        size_t sizeof_stream_item,
         uint64_t nitems,
         gr::msg_queue::sptr queue,
         bool stop_flowgraph);
+
+    Gnss_Sdr_Valve(size_t sizeof_stream_item,
+        uint64_t nitems,
+        gr::msg_queue::sptr queue, bool stop_flowgraph);
 
     uint64_t d_nitems;
     uint64_t d_ncopied_items;
     gr::msg_queue::sptr d_queue;
     bool d_stop_flowgraph;
     bool d_open_valve;
-
-public:
-    Gnss_Sdr_Valve(size_t sizeof_stream_item,
-        uint64_t nitems,
-        gr::msg_queue::sptr queue, bool stop_flowgraph);
-    void open_valve();
-
-    int work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items);
 };
 
 #endif /*GNSS_SDR_GNSS_SDR_VALVE_H_*/

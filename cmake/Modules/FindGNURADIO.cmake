@@ -19,6 +19,11 @@
 # Find GNU Radio
 ########################################################################
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 include(FindPackageHandleStandardArgs)
 
@@ -182,6 +187,8 @@ list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
 
 if(NOT PC_GNURADIO_RUNTIME_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
     list(GET GNURADIO_BLOCKS_LIBRARIES 0 FIRST_DIR)
     get_filename_component(GNURADIO_BLOCKS_DIR ${FIRST_DIR} DIRECTORY)
     if(EXISTS ${GNURADIO_BLOCKS_DIR}/cmake/gnuradio/GnuradioConfigVersion.cmake)
@@ -193,6 +200,7 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
     if(PACKAGE_VERSION)
         set(PC_GNURADIO_RUNTIME_VERSION ${PACKAGE_VERSION})
     endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
 endif()
 
 # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
@@ -254,4 +262,15 @@ if(GNURADIO_VERSION)
         endif()
         message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
     endif()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
+    )
+else()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem"
+    )
 endif()
+
+set_package_properties(GNURADIO PROPERTIES
+    URL "https://www.gnuradio.org/"
+)

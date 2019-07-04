@@ -39,6 +39,7 @@
 #include "gps_l2c_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
@@ -126,7 +127,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L2_M_PERIOD * 1000.0);
     vector_length_ = acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms * (acq_parameters_.bit_transition_flag ? 2 : 1);
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -151,7 +152,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
     if (in_streams_ > 1)
         {
@@ -164,10 +165,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 }
 
 
-GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition()
-{
-    delete[] code_;
-}
+GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition() = default;
 
 
 void GpsL2MPcpsAcquisition::stop_acquisition()
@@ -239,27 +237,24 @@ void GpsL2MPcpsAcquisition::init()
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    auto* code = new std::complex<float>[code_length_];
-
+    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs);
+            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), gnss_synchro_->PRN, acq_parameters_.resampled_fs);
         }
     else
         {
-            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), gnss_synchro_->PRN, fs_in_);
         }
 
-
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
-            memcpy(&(code_[i * code_length_]), code,
-                sizeof(gr_complex) * code_length_);
+            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 
@@ -267,6 +262,7 @@ void GpsL2MPcpsAcquisition::reset()
 {
     acquisition_->set_active(true);
 }
+
 
 void GpsL2MPcpsAcquisition::set_state(int state)
 {

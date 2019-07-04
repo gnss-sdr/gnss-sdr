@@ -34,7 +34,6 @@
 
 #include "pcps_acquisition_fpga.h"
 #include "gnss_synchro.h"
-//#include <boost/chrono.hpp>
 #include <glog/logging.h>
 #include <cmath>     // for ceil
 #include <iostream>  // for operator<<
@@ -86,6 +85,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
 
 
 pcps_acquisition_fpga::~pcps_acquisition_fpga() = default;
+
 
 void pcps_acquisition_fpga::set_local_code()
 {
@@ -242,6 +242,7 @@ void pcps_acquisition_fpga::send_negative_acquisition()
             d_channel_fsm.lock()->Event_failed_acquisition_no_repeat();
         }
 }
+
 
 void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min)
 {

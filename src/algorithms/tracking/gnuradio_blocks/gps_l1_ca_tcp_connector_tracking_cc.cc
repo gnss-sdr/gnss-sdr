@@ -149,7 +149,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
+    d_Prompt_buffer = std::vector<gr_complex>(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -223,7 +223,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, (GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), d_acquisition_gnss_synchro->PRN, 0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
     for (int32_t n = 0; n < d_n_correlator_taps; n++)
@@ -276,7 +276,6 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
             volk_gnsssdr_free(d_correlator_outs);
             volk_gnsssdr_free(d_ca_code);
             d_tcp_com.close_tcp_connection(d_port);
-            delete[] d_Prompt_buffer;
             multicorrelator_cpu.free();
         }
     catch (const std::exception &ex)
@@ -450,8 +449,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
 
                     // ###### TRACKING UNLOCK NOTIFICATION #####
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)

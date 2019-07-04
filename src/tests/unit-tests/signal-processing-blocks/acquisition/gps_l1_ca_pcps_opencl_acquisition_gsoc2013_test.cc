@@ -494,50 +494,57 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
 
     acquisition->init();
 
-    ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test.";
-
-    // i = 0 --> satellite in acquisition is visible
-    // i = 1 --> satellite in acquisition is not visible
-    for (unsigned int i = 0; i < 2; i++)
+    if (!acquisition->opencl_ready())
         {
-            init();
+            std::cout << "OpenCL Platform is not ready." << std::endl;
+        }
+    else
+        {
+            ASSERT_NO_THROW({
+                boost::shared_ptr<GenSignalSource> signal_source;
+                SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+                FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
+                signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
+                signal_source->connect(top_block);
+                top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+                top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+            }) << "Failure connecting the blocks of acquisition test.";
 
-            if (i == 0)
+            // i = 0 --> satellite in acquisition is visible
+            // i = 1 --> satellite in acquisition is not visible
+            for (unsigned int i = 0; i < 2; i++)
                 {
-                    gnss_synchro.PRN = 10;  // This satellite is visible
-                }
-            else if (i == 1)
-                {
-                    gnss_synchro.PRN = 20;  // This satellite is not visible
-                }
+                    init();
 
-            acquisition->set_local_code();
-
-            start_queue();
-
-            EXPECT_NO_THROW({
-                top_block->run();  // Start threads and wait
-            }) << "Failure running the top_block.";
-
-            if (i == 0)
-                {
-                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                    if (message == 1)
+                    if (i == 0)
                         {
-                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                            gnss_synchro.PRN = 10;  // This satellite is visible
                         }
-                }
-            else if (i == 1)
-                {
-                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                    else if (i == 1)
+                        {
+                            gnss_synchro.PRN = 20;  // This satellite is not visible
+                        }
+
+                    acquisition->set_local_code();
+
+                    start_queue();
+
+                    EXPECT_NO_THROW({
+                        top_block->run();  // Start threads and wait
+                    }) << "Failure running the top_block.";
+
+                    if (i == 0)
+                        {
+                            EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                            if (message == 1)
+                                {
+                                    EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                                }
+                        }
+                    else if (i == 1)
+                        {
+                            EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                        }
                 }
         }
 }
@@ -575,52 +582,58 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
     }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->init();
-
-    ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test.";
-
-    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
-
-    // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
-    // i = 1 --> satellite in acquisition is not visible (prob of false detection)
-    for (unsigned int i = 0; i < 2; i++)
+    if (!acquisition->opencl_ready())
         {
-            init();
+            std::cout << "OpenCL Platform is not ready." << std::endl;
+        }
+    else
+        {
+            ASSERT_NO_THROW({
+                boost::shared_ptr<GenSignalSource> signal_source;
+                SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+                FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
+                signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
+                signal_source->connect(top_block);
+                top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+                top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+            }) << "Failure connecting the blocks of acquisition test.";
 
-            if (i == 0)
+            std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
+
+            // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
+            // i = 1 --> satellite in acquisition is not visible (prob of false detection)
+            for (unsigned int i = 0; i < 2; i++)
                 {
-                    gnss_synchro.PRN = 10;  // This satellite is visible
-                }
-            else if (i == 1)
-                {
-                    gnss_synchro.PRN = 20;  // This satellite is not visible
-                }
+                    init();
 
-            acquisition->set_local_code();
+                    if (i == 0)
+                        {
+                            gnss_synchro.PRN = 10;  // This satellite is visible
+                        }
+                    else if (i == 1)
+                        {
+                            gnss_synchro.PRN = 20;  // This satellite is not visible
+                        }
 
-            start_queue();
+                    acquisition->set_local_code();
 
-            EXPECT_NO_THROW({
-                top_block->run();  // Start threads and wait
-            }) << "Failure running the top_block.";
+                    start_queue();
 
-            if (i == 0)
-                {
-                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-                }
-            else if (i == 1)
-                {
-                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    EXPECT_NO_THROW({
+                        top_block->run();  // Start threads and wait
+                    }) << "Failure running the top_block.";
+
+                    if (i == 0)
+                        {
+                            std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                            std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                            std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                        }
+                    else if (i == 1)
+                        {
+                            std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                            std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                        }
                 }
         }
 }

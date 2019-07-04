@@ -50,6 +50,7 @@ public:
         GOOGLE_PROTOBUF_VERIFY_VERSION;
         monitor_.New();
     }
+
     ~Serdes_Monitor_Pvt()
     {
         // google::protobuf::ShutdownProtobufLibrary();
@@ -93,7 +94,6 @@ public:
         monitor_.SerializeToString(&data);
         return data;
     }
-
 
     inline Monitor_Pvt readProtobuffer(const gnss_sdr::MonitorPvt& mon)  //!< Deserialization
     {

@@ -34,7 +34,7 @@
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
     bool G1[_code_length];
@@ -116,7 +116,7 @@ void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 }
 
 
-void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
     int32_t ca_code_int[_code_length];
@@ -130,7 +130,7 @@ void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
 }
 
 
-void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
     int32_t ca_code_int[_code_length] = {0};
@@ -139,7 +139,7 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32
 
     for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
-            _dest[ii] = std::complex<float>(static_cast<float>(ca_code_int[ii]), 0.0f);
+            _dest[ii] = std::complex<float>(static_cast<float>(ca_code_int[ii]), 0.0F);
         }
 }
 
@@ -148,7 +148,7 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32
  *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  *  NOTICE: the number of samples is rounded towards zero (integer truncation)
  */
-void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[1023];

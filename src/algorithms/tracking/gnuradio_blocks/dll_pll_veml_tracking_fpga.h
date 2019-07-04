@@ -48,6 +48,7 @@
 #include <memory>                 // for shared_ptr
 #include <string>
 #include <utility>  // for pair
+#include <vector>
 
 class Fpga_Multicorrelator_8sc;
 class Gnss_Synchro;
@@ -213,7 +214,7 @@ private:
     double d_carrier_lock_threshold;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
     //std::deque<gr_complex> d_Prompt_buffer_deque;
-    gr_complex *d_Prompt_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
     Exponential_Smoother d_cn0_smoother;
 
 

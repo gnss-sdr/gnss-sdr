@@ -37,6 +37,7 @@
 #include "gps_sdr_signal_processing.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
@@ -104,7 +105,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     int samples_per_ms = round(code_length_);
-    code_ = new gr_complex[code_length_]();
+    code_ = std::vector<std::complex<float>>(code_length_);
     /*Object relevant information for debugging*/
     LOG(INFO) << "Implementation: " << this->implementation()
               << ", Vector Length: " << vector_length_
@@ -137,7 +138,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -149,15 +150,13 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
 }
 
 
-GpsL1CaPcpsQuickSyncAcquisition::~GpsL1CaPcpsQuickSyncAcquisition()
-{
-    delete[] code_;
-}
+GpsL1CaPcpsQuickSyncAcquisition::~GpsL1CaPcpsQuickSyncAcquisition() = default;
 
 
 void GpsL1CaPcpsQuickSyncAcquisition::stop_acquisition()
 {
 }
+
 
 void GpsL1CaPcpsQuickSyncAcquisition::set_threshold(float threshold)
 {
@@ -236,20 +235,17 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            auto* code = new std::complex<float>[code_length_]();
+            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
 
-            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
 
+            gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < (sampled_ms_ / folding_factor_); i++)
                 {
-                    memcpy(&(code_[i * code_length_]), code,
-                        sizeof(gr_complex) * code_length_);
+                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
-            //memcpy(code_, code,sizeof(gr_complex)*code_length_);
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
+            acquisition_cc_->set_local_code(code_.data());
         }
 }
 

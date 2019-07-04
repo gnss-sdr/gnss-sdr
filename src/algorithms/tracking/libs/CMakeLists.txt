@@ -17,18 +17,6 @@
 #
 
 
-if(ENABLE_CUDA)
-    # Append current NVCC flags by something, eg comput capability
-    # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --gpu-architecture sm_30)
-    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
-    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-    cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    set(LIB_TYPE STATIC) #set the lib type
-    cuda_add_library(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
-    set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
-    set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
-endif()
-
 set(TRACKING_LIB_SOURCES
     cpu_multicorrelator.cc
     cpu_multicorrelator_real_codes.cc
@@ -63,6 +51,22 @@ set(TRACKING_LIB_HEADERS
     exponential_smoother.h
 )
 
+
+if(ENABLE_CUDA)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} cuda_multicorrelator.cu)
+        set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} cuda_multicorrelator.h)
+    else()
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
+        set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+        cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+        set(LIB_TYPE STATIC) #set the lib type
+        cuda_add_library(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
+        set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
+        set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
+    endif()
+endif()
+
 if(ARMADILLO_VERSION_STRING VERSION_GREATER 7.400)
     # sqrtmat_sympd() requires 7.400
     set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} nonlinear_tracking.cc)
@@ -95,10 +99,16 @@ target_link_libraries(tracking_libs
         Glog::glog
 )
 
-target_include_directories(tracking_libs
-    PUBLIC
-        ${OPT_TRACKING_INCLUDES}
-)
+if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
+    target_link_libraries(tracking_libs
+        PUBLIC
+            ${OPT_TRACKING_LIBRARIES}
+    )
+    target_include_directories(tracking_libs
+        PUBLIC
+            ${OPT_TRACKING_INCLUDES}
+    )
+endif()
 
 if(Boost_VERSION VERSION_GREATER "106599")
     target_compile_definitions(tracking_libs

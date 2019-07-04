@@ -73,12 +73,6 @@ if(OPENCL_FOUND)
         opencl/fft_setup.cc # Needs OpenCL
         opencl/fft_kernelstring.cc # Needs OpenCL
     )
-    include_directories(${OPENCL_INCLUDE_DIRS})
-    if(OS_IS_MACOSX)
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else()
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif()
 endif()
 
 list(SORT GNSS_SPLIBS_HEADERS)
@@ -98,6 +92,23 @@ else()
     target_link_libraries(algorithms_libs PRIVATE Boost::filesystem Boost::system)
 endif()
 
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+    #include <span>
+    int main()
+    { std::span<float> sv; }"
+    has_span
+)
+
+if(${has_span})
+    target_compile_definitions(algorithms_libs PUBLIC -DHAS_SPAN=1)
+else()
+    target_include_directories(algorithms_libs
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
+    )
+endif()
+
 target_link_libraries(algorithms_libs
     PUBLIC
         Armadillo::armadillo
@@ -105,13 +116,19 @@ target_link_libraries(algorithms_libs
         Gflags::gflags
         Gnuradio::runtime
         Gnuradio::blocks
-        ${OPT_LIBRARIES}
     PRIVATE
         core_system_parameters
         Volk::volk ${ORC_LIBRARIES}
         Volkgnsssdr::volkgnsssdr
         Glog::glog
 )
+
+if(OPENCL_FOUND)
+    target_link_libraries(algorithms_libs PUBLIC OpenCL::OpenCL)
+    target_include_directories(algorithms_libs PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/opencl
+    )
+endif()
 
 target_include_directories(algorithms_libs
     PUBLIC
@@ -145,7 +162,7 @@ add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(gnss_sdr_flags PRIVATE -DHAS_STD_FILESYSTEM=1)
     if(${find_experimental})
-        add_definitions(-DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+        target_compile_definitions(gnss_sdr_flags PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
     endif()
     target_link_libraries(gnss_sdr_flags PRIVATE std::filesystem)
 else()

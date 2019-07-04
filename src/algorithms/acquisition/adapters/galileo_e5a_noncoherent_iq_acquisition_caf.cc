@@ -42,6 +42,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
@@ -93,8 +94,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    codeI_ = new gr_complex[vector_length_];
-    codeQ_ = new gr_complex[vector_length_];
+    codeI_ = std::vector<std::complex<float>>(vector_length_);
+    codeQ_ = std::vector<std::complex<float>>(vector_length_);
     both_signal_components = false;
 
     std::string sig_ = configuration_->property("Channel.signal", std::string("5X"));
@@ -119,7 +120,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -131,11 +132,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 }
 
 
-GalileoE5aNoncoherentIQAcquisitionCaf::~GalileoE5aNoncoherentIQAcquisitionCaf()
-{
-    delete[] codeI_;
-    delete[] codeQ_;
-}
+GalileoE5aNoncoherentIQAcquisitionCaf::~GalileoE5aNoncoherentIQAcquisitionCaf() = default;
 
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::stop_acquisition()
@@ -223,55 +220,51 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            auto* codeI = new std::complex<float>[code_length_];
-            auto* codeQ = new std::complex<float>[code_length_];
+            std::vector<std::complex<float>> codeI(code_length_);
+            std::vector<std::complex<float>> codeQ(code_length_);
 
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
-                    char a[3];
-                    strcpy(a, "5I");
-                    galileo_e5_a_code_gen_complex_sampled(codeI, a,
+                    std::array<char, 3> a = {{'5', 'I', '\0'}};
+                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeI.data(), code_length_), a,
                         gnss_synchro_->PRN, fs_in_, 0);
 
-                    strcpy(a, "5Q");
-                    galileo_e5_a_code_gen_complex_sampled(codeQ, a,
+                    std::array<char, 3> b = {{'5', 'Q', '\0'}};
+                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeQ.data(), code_length_), b,
                         gnss_synchro_->PRN, fs_in_, 0);
                 }
             else
                 {
-                    galileo_e5_a_code_gen_complex_sampled(codeI, gnss_synchro_->Signal,
+                    std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
+                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeI.data(), code_length_), signal_type_,
                         gnss_synchro_->PRN, fs_in_, 0);
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
             // is generated, and modulated in the 'block'.
+            gsl::span<gr_complex> codeQ_span(codeQ_.data(), vector_length_);
+            gsl::span<gr_complex> codeI_span(codeI_.data(), vector_length_);
             if (Zero_padding == 0)  // if no zero_padding
                 {
                     for (unsigned int i = 0; i < sampled_ms_; i++)
                         {
-                            memcpy(&(codeI_[i * code_length_]), codeI,
-                                sizeof(gr_complex) * code_length_);
+                            std::copy_n(codeI.data(), code_length_, codeI_span.subspan(i * code_length_, code_length_).data());
                             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                                 {
-                                    memcpy(&(codeQ_[i * code_length_]), codeQ,
-                                        sizeof(gr_complex) * code_length_);
+                                    std::copy_n(codeQ.data(), code_length_, codeQ_span.subspan(i * code_length_, code_length_).data());
                                 }
                         }
                 }
             else
                 {
                     // 1ms code + 1ms zero padding
-                    memcpy(&(codeI_[0]), codeI,
-                        sizeof(gr_complex) * code_length_);
+                    std::copy_n(codeI.data(), code_length_, codeI_.data());
                     if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                         {
-                            memcpy(&(codeQ_[0]), codeQ,
-                                sizeof(gr_complex) * code_length_);
+                            std::copy_n(codeQ.data(), code_length_, codeQ_.data());
                         }
                 }
 
-            acquisition_cc_->set_local_code(codeI_, codeQ_);
-            delete[] codeI;
-            delete[] codeQ;
+            acquisition_cc_->set_local_code(codeI_.data(), codeQ_.data());
         }
 }
 

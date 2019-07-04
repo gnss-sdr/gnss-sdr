@@ -140,7 +140,7 @@ bool Rtcm::is_server_running() const
 std::string Rtcm::add_CRC(const std::string& message_without_crc) const
 {
     // ******  Computes Qualcomm CRC-24Q ******
-    boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_RTCM;
+    boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false> CRC_RTCM;
     // 1) Converts the string to a vector of uint8_t:
     boost::dynamic_bitset<uint8_t> frame_bits(message_without_crc);
     std::vector<uint8_t> bytes;
@@ -159,7 +159,7 @@ std::string Rtcm::add_CRC(const std::string& message_without_crc) const
 
 bool Rtcm::check_CRC(const std::string& message) const
 {
-    boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_RTCM_CHECK;
+    boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false> CRC_RTCM_CHECK;
     // Convert message to binary
     std::string message_bin = Rtcm::binary_data_to_bin(message);
     // Check CRC
@@ -2419,7 +2419,7 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int32_t, Gnss_Synchr
             if (it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    observables_vector.push_back(*gnss_synchro_iter);
+                    observables_vector.emplace_back(*gnss_synchro_iter);
                 }
         }
 
@@ -2448,7 +2448,7 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int32_t, Gnss_Syn
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -2556,7 +2556,7 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris& ephNAV,
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -2670,7 +2670,7 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -2786,7 +2786,7 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int32_t, Gnss_Synchr
             if (it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    observables_vector.push_back(*gnss_synchro_iter);
+                    observables_vector.emplace_back(*gnss_synchro_iter);
                 }
         }
 
@@ -2827,7 +2827,7 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -2947,7 +2947,7 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
             if (it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    observables_vector.push_back(*gnss_synchro_iter);
+                    observables_vector.emplace_back(*gnss_synchro_iter);
                 }
         }
 
@@ -2993,7 +2993,7 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -3114,7 +3114,7 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -3234,7 +3234,7 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
          map_iter != observables.cend();
          map_iter++)
         {
-            observables_vector.push_back(*map_iter);
+            observables_vector.emplace_back(*map_iter);
         }
 
     std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
@@ -3685,7 +3685,7 @@ uint32_t Rtcm::msm_extended_lock_time_indicator(uint32_t lock_time_period_s)
     if( 16777216 <= lock_time_period_s && lock_time_period_s < 33554432 ) return (640 + (lock_time_period_s - 16777216) / 524288 );
     if( 33554432 <= lock_time_period_s && lock_time_period_s < 67108864 ) return (672 + (lock_time_period_s - 33554432) / 1048576);
     if( 67108864 <= lock_time_period_s                                  ) return (704                                            );
-     return 1023; // will never happen
+    return 1023; // will never happen
  }
 // clang-format on
 
@@ -5330,7 +5330,7 @@ int32_t Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            rr_mod_ms = static_cast<uint32_t>(std::floor(rough_range_m / meters_to_miliseconds / TWO_N10) + 0.5) & 0x3FFu;
+            rr_mod_ms = static_cast<uint32_t>(std::floor(rough_range_m / meters_to_miliseconds / TWO_N10) + 0.5) & 0x3FFU;
         }
     DF398 = std::bitset<10>(rr_mod_ms);
     return 0;

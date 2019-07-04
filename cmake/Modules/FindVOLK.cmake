@@ -23,7 +23,11 @@
 ########################################################################
 # Find VOLK (Vector-Optimized Library of Kernels)
 ########################################################################
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_VOLK volk QUIET)
 
@@ -84,6 +88,8 @@ if(PC_VOLK_VERSION)
 endif()
 
 if(NOT VOLK_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
     list(GET VOLK_LIBRARIES 0 FIRST_DIR)
     get_filename_component(VOLK_LIB_DIR ${FIRST_DIR} DIRECTORY)
     if(EXISTS ${VOLK_LIB_DIR}/cmake/volk/VolkConfigVersion.cmake)
@@ -92,6 +98,21 @@ if(NOT VOLK_VERSION)
     if(PACKAGE_VERSION)
         set(VOLK_VERSION ${PACKAGE_VERSION})
     endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
+set_package_properties(VOLK PROPERTIES
+    URL "http://libvolk.org"
+)
+
+if(VOLK_FOUND AND VOLK_VERSION)
+    set_package_properties(VOLK PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels (found: v${VOLK_VERSION})"
+    )
+else()
+    set_package_properties(VOLK PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels"
+    )
 endif()
 
 mark_as_advanced(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)

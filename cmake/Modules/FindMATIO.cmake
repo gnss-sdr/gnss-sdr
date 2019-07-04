@@ -62,6 +62,10 @@
 #=============================================================================
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 # Look for the header file.
 find_path(MATIO_INCLUDE_DIR
     NAMES matio.h
@@ -100,7 +104,6 @@ if(MATIO_INCLUDE_DIR)
     endif()
 
     if(MATIO_CONFIG_FILE)
-
         # Read and parse MATIO config header file for version number
         file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
 
@@ -130,6 +133,20 @@ else()
   set(MATIO_LIBRARIES)
   set(MATIO_INCLUDE_DIRS)
 endif()
+
+if(MATIO_FOUND AND MATIO_VERSION_STRING)
+    set_package_properties(MATIO PROPERTIES
+        DESCRIPTION "MATLAB MAT File I/O Library (found: v${MATIO_VERSION_STRING})"
+    )
+else()
+    set_package_properties(MATIO PROPERTIES
+        DESCRIPTION "MATLAB MAT File I/O Library"
+    )
+endif()
+
+set_package_properties(MATIO PROPERTIES
+    URL "https://github.com/tbeu/matio"
+)
 
 if(MATIO_FOUND AND NOT TARGET Matio::matio)
     add_library(Matio::matio SHARED IMPORTED)

@@ -81,7 +81,6 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     int64_t fs_in,
     uint32_t sampled_ms __attribute__((unused)),
     uint32_t select_queue,
-    //lv_16sc_t *all_fft_codes,
     uint32_t *all_fft_codes,
     uint32_t excludelimit)
 {
@@ -209,6 +208,7 @@ void Fpga_Acquisition::set_block_exp(uint32_t total_block_exp)
     d_map_base[11] = total_block_exp;
 }
 
+
 void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min)
 {
     float phase_step_rad_real;
@@ -233,7 +233,6 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 void Fpga_Acquisition::configure_acquisition()
 {
     //Fpga_Acquisition::open_device();
-
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
@@ -318,6 +317,7 @@ void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor
     // only the total scale factor is used for the tests (fw scale factor to be removed)
     *fw_scale_factor = 0;
 }
+
 
 void Fpga_Acquisition::read_result_valid(uint32_t *result_valid)
 {

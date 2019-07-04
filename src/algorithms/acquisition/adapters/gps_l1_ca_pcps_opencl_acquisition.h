@@ -36,7 +36,9 @@
 #include "gnss_synchro.h"
 #include "pcps_opencl_acquisition_cc.h"
 #include <gnuradio/blocks/stream_to_vector.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -94,13 +96,14 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_cc_->set_channel_fsm(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -144,6 +147,12 @@ public:
 
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
+    inline bool opencl_ready() const
+    {
+        bool ready = this->acquisition_cc_->opencl_ready();
+        return ready;
+    }
+
 private:
     ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;
@@ -163,12 +172,11 @@ private:
     int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
     float calculate_threshold(float pfa);
 };
 

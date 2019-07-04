@@ -172,10 +172,18 @@ if(GNUPLOT_FOUND)
 endif()
 set_package_properties(Gnuplot PROPERTIES
     URL "http://www.gnuplot.info"
-    DESCRIPTION "A portable command-line driven graphing utility"
     PURPOSE "Used to generate plots in some tests."
     TYPE OPTIONAL
 )
+if(GNUPLOT_FOUND AND GNUPLOT_VERSION_STRING)
+    set_package_properties(Gnuplot PROPERTIES
+        DESCRIPTION "A portable command-line driven graphing utility (found: v${GNUPLOT_VERSION_STRING})"
+    )
+else()
+    set_package_properties(Gnuplot PROPERTIES
+        DESCRIPTION "A portable command-line driven graphing utility"
+    )
+endif()
 
 if(ENABLE_UNIT_TESTING_MINIMAL)
     add_definitions(-DUNIT_TESTING_MINIMAL=1)
@@ -183,18 +191,15 @@ endif()
 
 
 ################################################################################
-# Optional generator
+# GPSTk and optional generator
 ################################################################################
-option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
-add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 
 find_package(GPSTK)
 set_package_properties(GPSTK PROPERTIES
-    URL "http://www.gpstk.org"
-    DESCRIPTION "Library and suite of applications for satellite navigation"
     PURPOSE "Used in some Extra Tests."
     TYPE OPTIONAL
 )
+
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)
         set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
@@ -436,7 +441,7 @@ if(ENABLE_UNIT_TESTING)
             )
         endif()
     endif()
-    if(ENABLE_CUDA)
+    if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
         target_link_libraries(run_tests
             PUBLIC
                 ${CUDA_LIBRARIES}

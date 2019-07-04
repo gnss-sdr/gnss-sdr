@@ -23,7 +23,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.12...3.14.5)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -34,73 +34,53 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 # Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ..'
 ################################################################################
 include(FeatureSummary)
+
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
-add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
 
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source" OFF)
-add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
 
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
-add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio.")
 
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
-add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
 
 option(ENABLE_AD9361 "Enable the use of AD9361 direct to FPGA hardware, requires libiio" OFF)
-add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio.")
 
 option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
-add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNU Radio driver" OFF)
-add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
-add_feature_info(ENABLE_GN3S ENABLE_GN3S "Enables Gn3s_Signal_Source for using the GN3S v2 dongle. Requires gr-gn3s.")
 
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
-add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
-add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 
 option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
-add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
 
 # Code correctness
 option(ENABLE_CLANG_TIDY "Enable the use of clang-tidy when compiling" OFF)
-add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")
 
 # Acceleration
 option(ENABLE_PROFILING "Enable execution of volk_gnsssdr_profile at the end of the building" OFF)
-add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
 
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
-add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
 
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
-add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
 
 option(ENABLE_FPGA "Enable building of processing blocks implemented with FPGA" OFF)
-add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
-add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
-add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
-add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
 
 option(ENABLE_OWN_ARMADILLO "Download and build Armadillo locally" OFF)
-add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
 
 option(ENABLE_LOG "Enable logging" ON)
-add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
 
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
@@ -108,25 +88,26 @@ endif()
 
 # Testing
 option(ENABLE_UNIT_TESTING "Build unit tests" ON)
-add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")
 
 option(ENABLE_UNIT_TESTING_MINIMAL "Build a minimal set of unit tests" OFF)
-add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enables building a minimal set of Unit Tests.")
 
 option(ENABLE_UNIT_TESTING_EXTRA "Download external files and build extra unit tests" OFF)
-add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables building of Extra Unit Tests and downloading of external data files.")
 
 option(ENABLE_SYSTEM_TESTING "Build system tests" OFF)
-add_feature_info(ENABLE_SYSTEM_TESTING ENABLE_SYSTEM_TESTING "Enables building of System Tests.")
 
 option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra system tests" OFF)
-add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enables building of Extra System Tests and downloading of external tools.")
+
+option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
+
+if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))
+    set(ENABLE_GNSS_SIM_INSTALL OFF)
+endif()
 
 if(ENABLE_SYSTEM_TESTING_EXTRA)
     set(ENABLE_SYSTEM_TESTING ON)
 endif()
+
 option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system tests, even if it is already installed" OFF)
-add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
 
 option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
 if(ENABLE_FPGA)
@@ -143,7 +124,7 @@ if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
         URL "https://git-scm.com"
-        DESCRIPTION "A free and open source distributed version control system (found: ${GIT_VERSION_STRING})"
+        DESCRIPTION "A free and open source distributed version control system (found: v${GIT_VERSION_STRING})"
         PURPOSE "Manage version control, get MINOR_VERSION name for version number."
         TYPE REQUIRED
     )
@@ -391,7 +372,6 @@ endif()
 if(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "${CMAKE_MAKE_PROGRAM}")
 endif()
-add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 
 
 
@@ -421,7 +401,7 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.500.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.15")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.16")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.8.0")
 
@@ -589,8 +569,6 @@ endif()
 
 find_package(GOOGLETEST)
 set_package_properties(GOOGLETEST PROPERTIES
-    URL "https://github.com/google/googletest"
-    DESCRIPTION "Source code of Google's Testing Framework"
     PURPOSE "Used for Unit and System Tests."
     TYPE REQUIRED
 )
@@ -609,38 +587,19 @@ set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
-    URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
     PURPOSE "Used for communication with front-ends of the USRP family."
     TYPE OPTIONAL
 )
 if(ENABLE_UHD)
     if(NOT UHD_FOUND)
         set(ENABLE_UHD OFF)
-        set_package_properties(UHD PROPERTIES
-            DESCRIPTION "USRP Hardware Driver"
-        )
     else()
         set(GR_REQUIRED_COMPONENTS ${GR_REQUIRED_COMPONENTS} UHD)
-        if(UHD_VERSION)
-            set_package_properties(UHD PROPERTIES
-                DESCRIPTION "USRP Hardware Driver (found: v${UHD_VERSION})"
-            )
-        else()
-            set_package_properties(UHD PROPERTIES
-                DESCRIPTION "USRP Hardware Driver"
-            )
-        endif()
     endif()
-else()
-    set_package_properties(UHD PROPERTIES
-        DESCRIPTION "USRP Hardware Driver"
-    )
 endif()
 
 find_package(GNURADIO)
 set_package_properties(GNURADIO PROPERTIES
-    URL "https://www.gnuradio.org/"
-    DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )
@@ -652,8 +611,6 @@ set_package_properties(GNURADIO PROPERTIES
 ################################################################################
 find_package(LOG4CPP)
 set_package_properties(LOG4CPP PROPERTIES
-    URL "http://log4cpp.sourceforge.net/"
-    DESCRIPTION "Library of C++ classes for flexible logging to files"
     PURPOSE "Required by GNU Radio."
     TYPE REQUIRED
 )
@@ -670,10 +627,7 @@ set(FILESYSTEM_FOUND FALSE)
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        if(POLICY CMP0057)
-            cmake_policy(SET CMP0057 NEW)
-        endif()
-        if(NOT ENABLE_UNIT_TESTING_EXTRA) # Workaround for GPSTk
+        if((NOT ENABLE_UNIT_TESTING_EXTRA) AND (NOT ENABLE_SYSTEM_TESTING_EXTRA) AND (NOT ENABLE_FPGA)) # Workaround for GPSTk
             find_package(FILESYSTEM COMPONENTS Final Experimental)
             set_package_properties(FILESYSTEM PROPERTIES
                 URL "https://en.cppreference.com/w/cpp/filesystem"
@@ -730,11 +684,11 @@ set_package_properties(Boost PROPERTIES
 
 if(CMAKE_VERSION VERSION_GREATER 3.14)
     set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: ${Boost_VERSION_STRING})"
+        DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
     )
 else()
     set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
+        DESCRIPTION "Portable C++ source libraries (found: v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
     )
 endif()
 
@@ -828,8 +782,6 @@ if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
 endif()
 set_package_properties(VOLK PROPERTIES
-    URL "http://libvolk.org"
-    DESCRIPTION "Vector-Optimized Library of Kernels (found: ${VOLK_VERSION})"
     PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
     TYPE REQUIRED
 )
@@ -841,7 +793,6 @@ set_package_properties(VOLK PROPERTIES
 ################################################################################
 find_package(VOLKGNSSSDR)
 set_package_properties(VOLKGNSSSDR PROPERTIES
-    DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR."
     PURPOSE "Accelerates math routines targeting several SIMD processors."
     TYPE REQUIRED
 )
@@ -864,7 +815,7 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     #  Mako
     if(NOT MAKO_FOUND)
-        message(STATUS "Mako template library not found. See http://www.makotemplates.org/ ")
+        message(STATUS "Mako template library not found. See http://www.makotemplates.org/")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install ${PYTHON_NAME}-mako")
@@ -878,7 +829,7 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     # Six
     if(NOT SIX_FOUND)
-        message(STATUS "python-six not found. See https://pythonhosted.org/six/ ")
+        message(STATUS "python-six not found. See https://pythonhosted.org/six/")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install ${PYTHON_NAME}-six")
@@ -889,29 +840,36 @@ if(NOT VOLKGNSSSDR_FOUND)
         endif()
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif()
-
-    if(Python3_FOUND)
+    if(CMAKE_VERSION VERSION_GREATER 3.12)
         set_package_properties(Python3 PROPERTIES
             URL "https://www.python.org/"
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python3_VERSION})"
             PURPOSE "Required to build volk_gnsssdr."
             TYPE REQUIRED
         )
-    endif()
-
-    if(Python2_FOUND)
-        set_package_properties(Python2 PROPERTIES
-            URL "https://www.python.org/"
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${Python2_VERSION})"
-            PURPOSE "Required to build volk_gnsssdr."
-            TYPE REQUIRED
-        )
+        if(Python3_FOUND)
+            set_package_properties(Python3 PROPERTIES
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${Python3_VERSION})"
+            )
+        else()
+            set_package_properties(Python3 PROPERTIES
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language"
+                PURPOSE "Another Python version will be used."
+            )
+        endif()
+        if(Python2_FOUND)
+            set_package_properties(Python2 PROPERTIES
+                URL "https://www.python.org/"
+                DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${Python2_VERSION})"
+                PURPOSE "Required to build volk_gnsssdr."
+                TYPE REQUIRED
+            )
+        endif()
     endif()
 
     if(PYTHONINTERP_FOUND)
         set_package_properties(PythonInterp PROPERTIES
             URL "https://www.python.org/"
-            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: ${PYTHON_VERSION_STRING})"
+            DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${PYTHON_VERSION_STRING})"
             PURPOSE "Required to build volk_gnsssdr."
             TYPE REQUIRED
         )
@@ -986,11 +944,10 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
     find_package(ORC)
     set_package_properties(ORC PROPERTIES
-        URL "https://gstreamer.freedesktop.org/modules/orc.html"
-        DESCRIPTION "The Optimized Inner Loops Runtime Compiler"
         PURPOSE "Used by volk_gnsssdr."
         TYPE OPTIONAL
     )
+
     if(NOT ORC_FOUND)
         set(ORC_LIBRARIES "")
         set(ORC_INCLUDE_DIRS "")
@@ -1045,14 +1002,12 @@ endif()
 set(LOCAL_GFLAGS false)
 find_package(GFLAGS)
 set_package_properties(GFLAGS PROPERTIES
-    URL "https://github.com/gflags/gflags"
-    DESCRIPTION "C++ library that implements commandline flags processing"
     PURPOSE "Used for commandline flags management."
     TYPE REQUIRED
 )
 if(NOT GFLAGS_FOUND)
     message(STATUS " gflags library has not been found.")
-    message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically ")
+    message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing 'make'.")
 
     if(CMAKE_VERSION VERSION_LESS 3.2)
@@ -1123,8 +1078,6 @@ if(NOT ${ENABLE_OWN_GLOG})
     endif()
 endif()
 set_package_properties(GLOG PROPERTIES
-    URL "https://github.com/google/glog"
-    DESCRIPTION "C++ implementation of the Google logging module"
     PURPOSE "Used for runtime internal logging."
     TYPE REQUIRED
 )
@@ -1133,7 +1086,7 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
     if(NOT GFLAGS_FOUND)
         message(STATUS " or it is likely not linked to gflags.")
     endif()
-    message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built automatically ")
+    message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing 'make'.")
     if(NOT ${LOCAL_GFLAGS})
         add_library(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} UNKNOWN IMPORTED)
@@ -1398,8 +1351,6 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     if(NOT OS_IS_MACOSX)
         find_package(GFORTRAN)
         set_package_properties(GFORTRAN PROPERTIES
-            URL "http://gcc.gnu.org/wiki/GFortran"
-            DESCRIPTION "GNU Fortran project"
             PURPOSE "Required by Armadillo."
             TYPE REQUIRED
         )
@@ -1478,10 +1429,18 @@ endif()
 find_package(GnuTLS)
 set_package_properties(GnuTLS PROPERTIES
     URL "https://www.gnutls.org/"
-    DESCRIPTION "Transport Layer Security Library"
     PURPOSE "Used for the SUPL protocol implementation."
     TYPE REQUIRED
 )
+if(GnuTLS_FOUND AND GNUTLS_VERSION_STRING)
+    set_package_properties(GnuTLS PROPERTIES
+        DESCRIPTION "Transport Layer Security Library (found: v${GNUTLS_VERSION_STRING})"
+    )
+else()
+    set_package_properties(GnuTLS PROPERTIES
+        DESCRIPTION "Transport Layer Security Library"
+    )
+endif()
 find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
     HINTS /usr/lib
         /usr/lib64
@@ -1560,7 +1519,6 @@ endif()
 ################################################################################
 find_package(MATIO)
 set_package_properties(MATIO PROPERTIES
-    URL "https://github.com/tbeu/matio"
     PURPOSE "Used to store processing block's results in MAT files readable from MATLAB/Octave."
     TYPE REQUIRED
 )
@@ -1570,16 +1528,21 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     endif()
     message(STATUS " Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
-    set_package_properties(MATIO PROPERTIES
-        DESCRIPTION "MATLAB MAT File I/O Library"
-    )
     find_package(ZLIB)
     set_package_properties(ZLIB PROPERTIES
         URL "https://www.zlib.net/"
-        DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library"
         PURPOSE "Required to build Matio."
         TYPE REQUIRED
     )
+    if(ZLIB_FOUND AND ZLIB_VERSION_STRING)
+        set_package_properties(ZLIB PROPERTIES
+            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (found: v${ZLIB_VERSION_STRING})"
+        )
+    else()
+        set_package_properties(ZLIB PROPERTIES
+            DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library"
+        )
+    endif()
     if(ZLIB_FOUND)
         get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
         if(OS_IS_LINUX)
@@ -1619,10 +1582,18 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         find_package(HDF5)
         set_package_properties(HDF5 PROPERTIES
             URL "https://support.hdfgroup.org/HDF5/"
-            DESCRIPTION "A versatile data model, a portable file format and a software library"
             PURPOSE "Required to build Matio."
             TYPE REQUIRED
         )
+        if(HDF5_FOUND AND HDF5_VERSION)
+            set_package_properties(HDF5 PROPERTIES
+                DESCRIPTION "A versatile data model, a portable file format and a software library (found: v${HDF5_VERSION})"
+            )
+        else()
+            set_package_properties(HDF5 PROPERTIES
+                DESCRIPTION "A versatile data model, a portable file format and a software library"
+            )
+        endif()
         if(HDF5_FOUND)
             list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
             get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
@@ -1703,10 +1674,6 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     set_package_properties(MATIO PROPERTIES
         PURPOSE "Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
-else()
-    set_package_properties(MATIO PROPERTIES
-        DESCRIPTION "MATLAB MAT File I/O Library (found: v${MATIO_VERSION_STRING})"
-    )
 endif()
 
 
@@ -1716,14 +1683,10 @@ endif()
 ################################################################################
 find_package(PUGIXML)
 set_package_properties(PUGIXML PROPERTIES
-    URL "https://pugixml.org/"
     PURPOSE "Used to handle Galileo almanac XML files published by the European GNSS Service Centre."
     TYPE REQUIRED
 )
 if(NOT PUGIXML_FOUND)
-    set_package_properties(PUGIXML PROPERTIES
-        DESCRIPTION "Light-weight, simple and fast XML parser for C++"
-    )
     message(STATUS " PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(PUGIXML_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
     set(TOOLCHAIN_ARG "")
@@ -1773,16 +1736,6 @@ if(NOT PUGIXML_FOUND)
     set_package_properties(PUGIXML PROPERTIES
         PURPOSE "PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
-else()
-    if(PUGIXML_VERSION)
-        set_package_properties(PUGIXML PROPERTIES
-            DESCRIPTION "Light-weight, simple and fast XML parser for C++ (found: ${PUGIXML_VERSION})"
-        )
-    else()
-        set_package_properties(PUGIXML PROPERTIES
-            DESCRIPTION "Light-weight, simple and fast XML parser for C++"
-        )
-    endif()
 endif()
 
 
@@ -2017,10 +1970,18 @@ endif()
 find_package(Doxygen)
 set_package_properties(Doxygen PROPERTIES
     URL "http://www.doxygen.nl"
-    DESCRIPTION "Generates documentation from annotated C++ sources"
     PURPOSE "Used to generate code documentation by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'"
     TYPE OPTIONAL
 )
+if(DOXYGEN_FOUND AND DOXYGEN_VERSION)
+    set_package_properties(Doxygen PROPERTIES
+        DESCRIPTION "Generates documentation from annotated C++ sources (found: v${DOXYGEN_VERSION})"
+    )
+else()
+    set_package_properties(Doxygen PROPERTIES
+        DESCRIPTION "Generates documentation from annotated C++ sources"
+    )
+endif()
 find_package(LATEX)
 set_package_properties(LATEX PROPERTIES
     URL "https://www.latex-project.org"
@@ -2072,7 +2033,7 @@ if(DOXYGEN_FOUND)
 else()
     message(STATUS " Doxygen has not been found in your system.")
     message(STATUS " You can get nice code documentation by using it!")
-    message(STATUS " Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
+    message(STATUS " Get it from http://www.doxygen.nl/download.html")
     if(OS_IS_LINUX)
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " or simply by doing 'sudo yum install doxygen-latex'.")
@@ -2092,8 +2053,6 @@ endif()
 ################################################################################
 find_package(OPENCL QUIET)
 set_package_properties(OPENCL PROPERTIES
-    URL "https://www.khronos.org/opencl/"
-    DESCRIPTION "Library for parallel programming"
     PURPOSE "Used in some processing block implementations."
     TYPE OPTIONAL
 )
@@ -2107,7 +2066,7 @@ if(ENABLE_OPENCL)
     else()
         if(OPENCL_FOUND)
             message(STATUS "OpenCL has been found and will be used by some processing blocks")
-            message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..' ")
+            message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..'")
         endif()
     endif()
     if(ENABLE_GENERIC_ARCH)
@@ -2117,8 +2076,6 @@ if(ENABLE_OPENCL)
     if(NOT OPENCL_FOUND)
         message(STATUS "Processing blocks using OpenCL will not be built.")
     endif()
-else()
-    set(OPENCL_FOUND FALSE)
 endif()
 
 
@@ -2132,13 +2089,33 @@ if(DEFINED ENV{CUDA_GPU_ACCEL})
 endif()
 
 if(ENABLE_CUDA)
-    find_package(CUDA REQUIRED)
-    set_package_properties(CUDA PROPERTIES
-        URL "https://developer.nvidia.com/cuda-downloads"
-        DESCRIPTION "Library for parallel programming in Nvidia GPUs"
-        PURPOSE "Used in some processing block implementations."
-        TYPE REQUIRED
-    )
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        include(CheckLanguage)
+        check_language(CUDA)
+        if(CMAKE_CUDA_COMPILER)
+            enable_language(CUDA)
+            set(CUDA_FOUND TRUE)
+            if(NOT DEFINED CMAKE_CUDA_STANDARD)
+                set(CMAKE_CUDA_STANDARD 11)
+                set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+            endif()
+        else()
+            set(ENABLE_CUDA OFF)
+        endif()
+    else()
+        find_package(CUDA REQUIRED)
+        set_package_properties(CUDA PROPERTIES
+            URL "https://developer.nvidia.com/cuda-downloads"
+            DESCRIPTION "Library for parallel programming in Nvidia GPUs"
+            PURPOSE "Used in some processing block implementations."
+            TYPE REQUIRED
+        )
+        if(NOT CUDA_FOUND)
+            set(ENABLE_CUDA OFF)
+        endif()
+    endif()
+endif()
+if(ENABLE_CUDA)
     message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_CUDA=OFF ..'")
 else()
@@ -2153,13 +2130,14 @@ endif()
 ################################################################################
 find_package(PCAP)
 set_package_properties(PCAP PROPERTIES
-    URL "https://www.tcpdump.org"
-    DESCRIPTION "A portable C/C++ library for network traffic capture"
     PURPOSE "Used for the custom UDP IP packet source."
     TYPE OPTIONAL
 )
+if(PCAP_FOUND)
+    set(ENABLE_RAW_UDP ON)
+endif()
 if(ENABLE_RAW_UDP)
-    message(STATUS "High-optimized custom UDP IP packet source is enabled.")
+    message(STATUS "Highly-optimized custom UDP IP packet source is enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ..'")
     if(NOT PCAP_FOUND)
         message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (with ENABLE_RAW_UDP=ON)")
@@ -2196,7 +2174,6 @@ endif()
 
 find_package(GROSMOSDR)
 set_package_properties(GROSMOSDR PROPERTIES
-    URL "https://osmocom.org/projects/gr-osmosdr/wiki"
     PURPOSE "Used for communication with OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.)."
     TYPE OPTIONAL
 )
@@ -2204,29 +2181,15 @@ if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
         message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled.")
         message(STATUS " You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ..'")
-        if(GROSMOSDR_VERSION)
-            set_package_properties(GROSMOSDR PROPERTIES
-                DESCRIPTION "osmocom GNU Radio blocks (found: ${GROSMOSDR_VERSION})"
-            )
-        else()
-            set_package_properties(GROSMOSDR PROPERTIES
-                DESCRIPTION "osmocom GNU Radio blocks"
-            )
-        endif()
     else()
-        set_package_properties(GROSMOSDR PROPERTIES
-            DESCRIPTION "osmocom GNU Radio blocks"
-        )
         if(ENABLE_PACKAGING)
             message(WARNING "gr-osmosdr has not been found. Source blocks depending on it will NOT be built.")
         else()
             message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
         endif()
+        set(ENABLE_OSMOSDR OFF)
     endif()
 else()
-    set_package_properties(GROSMOSDR PROPERTIES
-        DESCRIPTION "osmocom GNU Radio blocks"
-    )
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled.")
     message(STATUS " Enable it with 'cmake -DENABLE_OSMOSDR=ON ..' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
 endif()
@@ -2239,20 +2202,9 @@ endif()
 ##############################################
 find_package(GRIIO)
 set_package_properties(GRIIO PROPERTIES
-    URL "https://github.com/analogdevicesinc/gr-iio"
     PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
     TYPE OPTIONAL
 )
-if(GRIIO_FOUND AND GRIIO_VERSION)
-    set_package_properties(GRIIO PROPERTIES
-        DESCRIPTION "IIO blocks for GNU Radio (found: v${GRIIO_VERSION})"
-    )
-else()
-    set_package_properties(GRIIO PROPERTIES
-        DESCRIPTION "IIO blocks for GNU Radio"
-    )
-endif()
-
 
 
 #####################################################################
@@ -2262,19 +2214,9 @@ endif()
 #####################################################################
 find_package(LIBIIO)
 set_package_properties(LIBIIO PROPERTIES
-    URL "https://github.com/analogdevicesinc/libiio"
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
-if(LIBIIO_FOUND AND LIBIIO_VERSION)
-    set_package_properties(LIBIIO PROPERTIES
-        DESCRIPTION "A library for interfacing with Linux IIO devices (found: v${LIBIIO_VERSION})"
-    )
-else()
-    set_package_properties(LIBIIO PROPERTIES
-        DESCRIPTION "A library for interfacing with Linux IIO devices"
-    )
-endif()
 
 
 ##############################################
@@ -2298,7 +2240,6 @@ else()
 endif()
 find_package(TELEORBIT)
 set_package_properties(TELEORBIT PROPERTIES
-    DESCRIPTION "The Teleorbit's Flexiband GNU Radio block."
     PURPOSE "Used for communication with the Flexiband front-end."
     TYPE OPTIONAL
 )
@@ -2369,8 +2310,6 @@ endif()
 ################################################################################
 find_package(GPERFTOOLS)
 set_package_properties(GPERFTOOLS PROPERTIES
-    URL "https://github.com/gperftools/gperftools"
-    DESCRIPTION "Collection of performance analysis tools"
     PURPOSE "Used for performance analysis."
     TYPE OPTIONAL
 )
@@ -2507,6 +2446,36 @@ add_subdirectory(src)
 ################################################################################
 # Print summary
 ################################################################################
+add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
+add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
+add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio.")
+add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
+add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio.")
+add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
+add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
+add_feature_info(ENABLE_GN3S ENABLE_GN3S "Enables Gn3s_Signal_Source for using the GN3S v2 dongle. Requires gr-gn3s.")
+add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
+add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
+add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
+add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")
+add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
+add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
+add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
+add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
+add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
+add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
+add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
+add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
+add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
+add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")
+add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enables building a minimal set of Unit Tests.")
+add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables building of Extra Unit Tests and downloading of external data files.")
+add_feature_info(ENABLE_SYSTEM_TESTING ENABLE_SYSTEM_TESTING "Enables building of System Tests.")
+add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enables building of Extra System Tests and downloading of external tools.")
+add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
+add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
+add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
+
 message(STATUS "")
 message(STATUS "***************************************")
 message(STATUS "*           SUMMARY REPORT            *")

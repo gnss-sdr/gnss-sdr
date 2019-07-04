@@ -2075,10 +2075,10 @@ int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
             trace(4, "N(2)=");
             tracemat(4, b + nb, 1, nb, 10, 3);
 
-            rtk->sol.ratio = s[0] > 0 ? static_cast<float>(s[1] / s[0]) : 0.0f;
+            rtk->sol.ratio = s[0] > 0 ? static_cast<float>(s[1] / s[0]) : 0.0F;
             if (rtk->sol.ratio > 999.9)
                 {
-                    rtk->sol.ratio = 999.9f;
+                    rtk->sol.ratio = 999.9F;
                 }
 
             /* validation by popular ratio-test */

@@ -34,7 +34,7 @@
 
 #include "gnss_synchro.h"
 #include "gnss_synchro.pb.h"  // file created by Protocol Buffers at compile time
-#include <cstring>            // for memcpy
+#include <array>
 #include <vector>
 
 
@@ -52,6 +52,7 @@ public:
         GOOGLE_PROTOBUF_VERIFY_VERSION;
         observables.New();
     }
+
     ~Serdes_Gnss_Synchro()
     {
         google::protobuf::ShutdownProtobufLibrary();
@@ -60,21 +61,17 @@ public:
     inline std::string createProtobuffer(const std::vector<Gnss_Synchro>& vgs)  //!< Serialization into a string
     {
         observables.Clear();
-
         std::string data;
         for (auto gs : vgs)
             {
                 gnss_sdr::GnssSynchro* obs = observables.add_observable();
-                char c[2];
-                c[0] = gs.System;
-                c[1] = '\0';
-                const std::string sys(c);
+                char c = gs.System;
+                const std::string sys(1, c);
 
-                char cc[3];
+                std::array<char, 2> cc;
                 cc[0] = gs.Signal[0];
                 cc[1] = gs.Signal[1];
-                cc[2] = '\0';
-                const std::string sig(cc);
+                const std::string sig(cc.cbegin(), cc.cend());
 
                 obs->set_system(sys);
                 obs->set_signal(sig);
@@ -109,20 +106,18 @@ public:
         return data;
     }
 
-
-    inline std::vector<Gnss_Synchro> readProtobuffer(const gnss_sdr::Observables& obs)  //!< Deserialization
+    inline std::vector<Gnss_Synchro> readProtobuffer(const gnss_sdr::Observables& obs) const  //!< Deserialization
     {
         std::vector<Gnss_Synchro> vgs;
         vgs.reserve(obs.observable_size());
-
         for (int i = 0; i < obs.observable_size(); ++i)
             {
                 const gnss_sdr::GnssSynchro& gs_read = obs.observable(i);
                 Gnss_Synchro gs = Gnss_Synchro();
-                const std::string& sys = gs_read.system();
-                gs.System = *sys.c_str();
-                const std::string& sig = gs_read.signal();
-                std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                gs.System = gs_read.system()[0];
+                gs.Signal[0] = gs_read.signal()[0];
+                gs.Signal[1] = gs_read.signal()[1];
+                gs.Signal[2] = '\0';
                 gs.PRN = gs_read.prn();
                 gs.Channel_ID = gs_read.channel_id();
 
@@ -153,6 +148,7 @@ public:
             }
         return vgs;
     }
+
 private:
     gnss_sdr::Observables observables;
 };

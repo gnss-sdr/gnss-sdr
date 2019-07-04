@@ -114,7 +114,6 @@ public:
             {
                 const gnss_sdr::GnssSynchro& gs_read = obs.observable(i);
                 Gnss_Synchro gs = Gnss_Synchro();
-                const std::string& sys = gs_read.system();
                 gs.System = gs_read.system()[0];
                 gs.Signal[0] = gs_read.signal()[0];
                 gs.Signal[1] = gs_read.signal()[1];

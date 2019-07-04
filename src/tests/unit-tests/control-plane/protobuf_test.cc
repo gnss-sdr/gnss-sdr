@@ -106,5 +106,6 @@ TEST(Protobuf, Works)
     EXPECT_EQ(sys, system_read);
     EXPECT_EQ(prn_true2, prn_read2);
     EXPECT_EQ(prn_true, prn_read3);
+    EXPECT_EQ(prn_read, prn_read3);
     EXPECT_EQ(2, obs_size);
 }

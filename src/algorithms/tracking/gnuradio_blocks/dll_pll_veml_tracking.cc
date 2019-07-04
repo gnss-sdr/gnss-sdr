@@ -92,6 +92,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    //prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     trk_parameters = conf_;
     // Telemetry bit synchronization message port input

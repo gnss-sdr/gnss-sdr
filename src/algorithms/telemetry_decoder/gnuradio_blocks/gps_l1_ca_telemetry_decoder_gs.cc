@@ -62,7 +62,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     bool dump) : gr::block("gps_navigation_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //this->set_max_output_buffer(128);
+    //prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
 
     // Ephemeris data port out

@@ -66,6 +66,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     bool dump) : gr::block("galileo_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    //prevent telemetry symbols accumulation in output buffers
+    this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block

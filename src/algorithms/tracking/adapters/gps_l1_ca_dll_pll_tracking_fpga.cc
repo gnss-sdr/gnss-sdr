@@ -155,9 +155,9 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
             symbols_extended_correlator = 1;
             std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
         }
-    else if (symbols_extended_correlator > 20)
+    else if (symbols_extended_correlator > GPS_CA_BIT_DURATION_MS)
         {
-            symbols_extended_correlator = 20;
+    		symbols_extended_correlator = GPS_CA_BIT_DURATION_MS;
             std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
         }
     trk_param_fpga.extend_correlation_symbols = symbols_extended_correlator;
@@ -243,17 +243,6 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
 				trk_param_fpga.extended_correlation_in_fpga = true;
 				trk_param_fpga.fpga_integration_period = symbols_extended_correlator;
 				printf("correlation in fpga true\n");
-			}
-		}
-		else
-		{
-			if (symbols_extended_correlator % GPS_CA_BIT_DURATION_MS == 0)
-			{
-				trk_param_fpga.extended_correlation_in_fpga = true;
-				trk_param_fpga.extend_fpga_integration_periods = symbols_extended_correlator/GPS_CA_BIT_DURATION_MS;
-				trk_param_fpga.fpga_integration_period = GPS_CA_BIT_DURATION_MS;
-				printf("correlation in fpga true\n");
-				printf("extend fpga integration periods true\n");
 			}
 		}
 	}

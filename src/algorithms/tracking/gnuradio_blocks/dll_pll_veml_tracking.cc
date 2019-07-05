@@ -1009,7 +1009,7 @@ void dll_pll_veml_tracking::run_dll_pll()
             if (d_dll_filt_history.full())
                 {
                     float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0) / static_cast<float>(d_dll_filt_history.capacity());
-                    if (fabs(avg_code_error_chips_s) > 0.025)
+                    if (fabs(avg_code_error_chips_s) > 0.10)
                         {
                             float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                             LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);

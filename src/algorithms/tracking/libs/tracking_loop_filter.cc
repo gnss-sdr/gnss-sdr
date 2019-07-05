@@ -71,6 +71,25 @@ Tracking_loop_filter::Tracking_loop_filter()
 Tracking_loop_filter::~Tracking_loop_filter() = default;
 
 
+// Move assignment operator
+Tracking_loop_filter& Tracking_loop_filter::operator=(Tracking_loop_filter&& other)
+{
+    if (this != &other)
+        {
+            this->d_inputs = other.d_inputs;
+            this->d_outputs = other.d_outputs;
+            this->d_input_coefficients = other.d_input_coefficients;
+            this->d_output_coefficients = other.d_output_coefficients;
+            this->d_loop_order = other.d_loop_order;
+            this->d_current_index = other.d_current_index;
+            this->d_include_last_integrator = other.d_include_last_integrator;
+            this->d_noise_bandwidth = other.d_noise_bandwidth;
+            this->d_update_interval = other.d_update_interval;
+        }
+    return *this;
+}
+
+
 float Tracking_loop_filter::apply(float current_input)
 {
     // Now apply the filter coefficients:

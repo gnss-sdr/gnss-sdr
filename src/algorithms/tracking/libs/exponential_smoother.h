@@ -56,6 +56,7 @@ public:
     void set_offset(float offset);
     float smooth(float raw);
     double smooth(double raw);
+    Exponential_Smoother& operator=(Exponential_Smoother&& other);  //!< Move assignment operator
 private:
     float alpha_;  // takes value 0.0001 if not set
     int samples_for_initialization_;

@@ -51,6 +51,24 @@ Exponential_Smoother::Exponential_Smoother()
 Exponential_Smoother::~Exponential_Smoother() = default;
 
 
+// Move assignment operator
+Exponential_Smoother& Exponential_Smoother::operator=(Exponential_Smoother&& other)
+{
+    if (this != &other)
+        {
+            this->alpha_ = other.alpha_;
+            this->old_value_ = other.old_value_;
+            this->one_minus_alpha_ = 1.0 - other.alpha_;
+            this->samples_for_initialization_ = other.samples_for_initialization_;
+            this->initializing_ = other.initializing_;
+            this->init_counter_ = other.init_counter_;
+            this->min_value_ = other.min_value_;
+            this->offset_ = other.offset_;
+        }
+    return *this;
+}
+
+
 void Exponential_Smoother::set_alpha(float alpha)
 {
     alpha_ = alpha;

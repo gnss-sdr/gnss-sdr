@@ -126,7 +126,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
 // Move constructor
 Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other)
 {
-    *this = std::move(other);
+    *this = other;
 }
 
 
@@ -137,9 +137,9 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other)
         {
             this->reset();
             this->system = std::move(other.get_system());
-            this->PRN = std::move(other.get_PRN());
+            this->PRN = other.get_PRN();
             this->block = std::move(other.get_block());
-            this->rf_link = std::move(other.get_rf_link());
+            this->rf_link = other.get_rf_link();
         }
     return *this;
 }

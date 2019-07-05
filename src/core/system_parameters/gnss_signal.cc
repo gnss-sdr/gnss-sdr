@@ -77,7 +77,7 @@ Gnss_Signal& Gnss_Signal::operator=(const Gnss_Signal& rhs)
 // Move constructor
 Gnss_Signal::Gnss_Signal(const Gnss_Signal& other)
 {
-    *this = std::move(other);
+    *this = other;
 }
 
 

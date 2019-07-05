@@ -50,12 +50,41 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-        observables.New();
     }
 
     ~Serdes_Gnss_Synchro()
     {
         google::protobuf::ShutdownProtobufLibrary();
+    }
+
+    inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other)  //!< Copy constructor
+    {
+        this->observables = other.observables;
+    }
+
+    inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs)  //!< Copy assignment operator
+    {
+        // Only do assignment if RHS is a different object from this.
+        if (this != &rhs)
+            {
+                // Deallocate, allocate new space, copy values...
+                this->observables = rhs.observables;
+            }
+        return *this;
+    }
+
+    inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other)  //!< Move constructor
+    {
+        this->observables = std::move(other.observables);
+    }
+
+    inline Serdes_Gnss_Synchro& operator=(Serdes_Gnss_Synchro&& other)  //!< Move assignment operator
+    {
+        if (this != &other)
+            {
+                this->observables = std::move(other.observables);
+            }
+        return *this;
     }
 
     inline std::string createProtobuffer(const std::vector<Gnss_Synchro>& vgs)  //!< Serialization into a string
@@ -101,6 +130,8 @@ public:
                 obs->set_rx_time(gs.RX_time);
                 obs->set_flag_valid_pseudorange(gs.Flag_valid_pseudorange);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
+
+                obs->CheckInitialized();
             }
         observables.SerializeToString(&data);
         return data;

@@ -69,6 +69,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
     max_code_lock_fail = FLAGS_max_lock_fail;
     carrier_lock_th = FLAGS_carrier_lock_th;
+    enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';
     char sig_[3] = "1C";

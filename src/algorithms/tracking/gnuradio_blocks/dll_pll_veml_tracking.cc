@@ -286,16 +286,17 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_code_period = BEIDOU_B1I_CODE_PERIOD;
                     d_code_chip_rate = BEIDOU_B1I_CODE_RATE_HZ;
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
-                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+                    //d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT; //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = 1;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = true;
+                    d_secondary = false;
                     trk_parameters.track_pilot = false;
                     // synchronize and remove data secondary code
                     d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
                     d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
-                    d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
-                    d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
+                    //d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
+                    //d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
                 }
             else if (signal_type == "B3")
                 {
@@ -304,15 +305,16 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_code_period = BEIDOU_B3I_CODE_PERIOD;
                     d_code_chip_rate = BEIDOU_B3I_CODE_RATE_HZ;
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B3I_CODE_LENGTH_CHIPS);
-                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;
+                    //d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT; //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = 1;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = true;
+                    d_secondary = false;
                     trk_parameters.track_pilot = false;
                     d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
-                    d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
-                    d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
+                    //d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
+                    //d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
                 }
             else
                 {
@@ -649,7 +651,8 @@ void dll_pll_veml_tracking::start_tracking()
             // GEO Satellites use different secondary code
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
-                    d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;
+                    //d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;//todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = 1;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = false;
@@ -662,16 +665,17 @@ void dll_pll_veml_tracking::start_tracking()
                 }
             else
                 {
-                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+                    //d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;//todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = 1;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = true;
+                    d_secondary = false;
                     trk_parameters.track_pilot = false;
                     // synchronize and remove data secondary code
                     d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
                     d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
-                    d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
-                    d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
+                    //d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
+                    //d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
                 }
         }
@@ -682,7 +686,8 @@ void dll_pll_veml_tracking::start_tracking()
             // Update secondary code settings for geo satellites
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
-                    d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;
+                    //d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;//todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = 1;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = false;
@@ -695,16 +700,17 @@ void dll_pll_veml_tracking::start_tracking()
                 }
             else
                 {
-                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;
+                    //d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT; //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = 1;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = true;
+                    d_secondary = false;
                     trk_parameters.track_pilot = false;
                     // synchronize and remove data secondary code
                     d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
-                    d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
-                    d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
+                    //d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
+                    //d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
                 }
         }
@@ -1002,21 +1008,24 @@ void dll_pll_veml_tracking::run_dll_pll()
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
 
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
-    if (d_pull_in_transitory == false and d_corrected_doppler == false)
+    if (trk_parameters.enable_doppler_correction == true)
         {
-            d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
-
-            if (d_dll_filt_history.full())
+            if (d_pull_in_transitory == false and d_corrected_doppler == false)
                 {
-                    float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0) / static_cast<float>(d_dll_filt_history.capacity());
-                    if (fabs(avg_code_error_chips_s) > 0.10)
+                    d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
+
+                    if (d_dll_filt_history.full())
                         {
-                            float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
-                            LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
-                            d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
-                            d_corrected_doppler = true;
+                            float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0) / static_cast<float>(d_dll_filt_history.capacity());
+                            if (fabs(avg_code_error_chips_s) > 1.0)
+                                {
+                                    float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
+                                    LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
+                                    d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
+                                    d_corrected_doppler = true;
+                                }
+                            d_dll_filt_history.clear();
                         }
-                    d_dll_filt_history.clear();
                 }
         }
 }

@@ -75,6 +75,7 @@ public:
     uint32_t smoother_length;
     double carrier_lock_th;
     bool track_pilot;
+    bool enable_doppler_correction;
     char system;
     char signal[3]{};
 

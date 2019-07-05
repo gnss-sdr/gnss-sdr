@@ -53,6 +53,46 @@ Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& si
 Gnss_Signal::~Gnss_Signal() = default;
 
 
+// Copy constructor
+Gnss_Signal::Gnss_Signal(Gnss_Signal&& other)
+{
+    *this = std::move(other);
+}
+
+
+// Copy assignment operator
+Gnss_Signal& Gnss_Signal::operator=(const Gnss_Signal& rhs)
+{
+    // Only do assignment if RHS is a different object from this.
+    if (this != &rhs)
+        {
+            // Deallocate, allocate new space, copy values...
+            this->satellite = rhs.get_satellite();
+            this->signal = rhs.get_signal_str();
+        }
+    return *this;
+}
+
+
+// Move constructor
+Gnss_Signal::Gnss_Signal(const Gnss_Signal& other)
+{
+    *this = std::move(other);
+}
+
+
+// Move assignment operator
+Gnss_Signal& Gnss_Signal::operator=(Gnss_Signal&& other)
+{
+    if (this != &other)
+        {
+            this->satellite = std::move(other.get_satellite());
+            this->signal = std::move(other.get_signal_str());
+        }
+    return *this;
+}
+
+
 std::string Gnss_Signal::get_signal_str() const
 {
     return this->signal;

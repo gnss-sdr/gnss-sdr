@@ -130,8 +130,6 @@ public:
                 obs->set_rx_time(gs.RX_time);
                 obs->set_flag_valid_pseudorange(gs.Flag_valid_pseudorange);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
-
-                obs->CheckInitialized();
             }
         observables.SerializeToString(&data);
         return data;

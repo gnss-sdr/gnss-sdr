@@ -120,8 +120,6 @@ public:
         monitor_.set_hdop(monitor.hdop);
         monitor_.set_vdop(monitor.vdop);
 
-        monitor_.CheckInitialized();
-
         monitor_.SerializeToString(&data);
         return data;
     }

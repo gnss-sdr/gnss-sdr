@@ -45,13 +45,16 @@ const uint32_t BEIDOU_B3I_CODE_PERIOD_MS = 1;         //!< GPS L1 C/A code perio
 const int32_t BEIDOU_B3I_SECONDARY_CODE_LENGTH = 20;
 const std::string BEIDOU_B3I_SECONDARY_CODE = "00000100110101001110";
 const std::string BEIDOU_B3I_SECONDARY_CODE_STR = "00000100110101001110";
+const std::string BEIDOU_B3I_GEO_PREAMBLE_SYMBOLS_STR = {"1111110000001100001100"};
+const int32_t BEIDOU_B3I_GEO_PREAMBLE_LENGTH_SYMBOLS = 22;
 const std::string BEIDOU_B3I_D2_SECONDARY_CODE_STR = "00";
 const uint32_t BEIDOU_B3I_PREAMBLE_LENGTH_BITS = 11;
 const uint32_t BEIDOU_B3I_PREAMBLE_LENGTH_SYMBOLS = 220;  // **************
 const double BEIDOU_B3I_PREAMBLE_DURATION_S = 0.220;
 const int32_t BEIDOU_B3I_PREAMBLE_DURATION_MS = 220;
-const int32_t BEIDOU_B3I_TELEMETRY_RATE_BITS_SECOND = 50;                                                                               //!< D1 NAV message bit rate [bits/s]
-const int32_t BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT = 20;                                                                                // *************
+const int32_t BEIDOU_B3I_TELEMETRY_RATE_BITS_SECOND = 50;  //!< D1 NAV message bit rate [bits/s]
+const int32_t BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT = 20;
+const int32_t BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT = 2;                                                                             // *************
 const int32_t BEIDOU_B3I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B3I_TELEMETRY_RATE_BITS_SECOND * BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  //************!< NAV message bit rate [symbols/s]
 
 #endif /* GNSS_SDR_BEIDOU_B3I_H_ */

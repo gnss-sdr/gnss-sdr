@@ -85,7 +85,7 @@ private:
     void update_tracking_vars();
     void clear_tracking_vars();
     void save_correlation_results();
-    void log_data(bool integrating);
+    void log_data();
     int32_t save_matfile();
 
     // tracking configuration vars
@@ -97,22 +97,22 @@ private:
 
     // Signal parameters
     bool d_secondary;
-    bool interchange_iq;
     double d_signal_carrier_freq;
     double d_code_period;
     double d_code_chip_rate;
     uint32_t d_secondary_code_length;
+    uint32_t d_data_secondary_code_length;
     uint32_t d_code_length_chips;
     uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
     int32_t d_symbols_per_bit;
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
+    std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
     int32_t *d_preambles_symbols;
     int32_t d_preamble_length_symbols;
-    boost::circular_buffer<float> d_symbol_history;
 
     // dll filter buffer
     boost::circular_buffer<float> d_dll_filt_history;
@@ -129,6 +129,7 @@ private:
     float *d_prompt_data_shift;
     Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
     Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
+
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
         Implement this functionality inside multicorrelator class
@@ -144,6 +145,7 @@ private:
     bool d_enable_extended_integration;
     int32_t d_extend_correlation_symbols_count;
     int32_t d_current_symbol;
+    int32_t d_current_data_symbol;
 
     gr_complex d_VE_accu;
     gr_complex d_E_accu;
@@ -152,6 +154,7 @@ private:
     gr_complex d_L_accu;
     gr_complex d_VL_accu;
 
+    gr_complex d_P_data_accu;
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;
@@ -160,6 +163,7 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
+    
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;

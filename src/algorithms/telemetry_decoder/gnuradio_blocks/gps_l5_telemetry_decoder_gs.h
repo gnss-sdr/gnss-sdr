@@ -91,10 +91,6 @@ private:
     uint32_t d_max_symbols_without_valid_frame;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
-    float bits_NH[GPS_L5I_NH_CODE_LENGTH]{};
-    boost::circular_buffer<float> sym_hist;
-    bool sync_NH;
-    bool new_sym;
 };
 
 

@@ -54,10 +54,6 @@ public:
     friend bool operator==(const Gnss_Signal& /*sig1*/, const Gnss_Signal& /*sig2*/);    //!< operator== for comparison
     friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Signal& /*sig*/);  //!< operator<< for pretty printing
 
-    /*Gnss_Signal(Gnss_Signal&& other);             //!< Copy constructor
-    Gnss_Signal& operator=(const Gnss_Signal&);   //!< Copy assignment operator
-    Gnss_Signal(const Gnss_Signal& other);        //!< Move constructor
-    Gnss_Signal& operator=(Gnss_Signal&& other);  //!< Move assignment operator */
 private:
     Gnss_Satellite satellite{};
     std::string signal{};

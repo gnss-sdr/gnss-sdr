@@ -56,7 +56,7 @@ public:
     {
         google::protobuf::ShutdownProtobufLibrary();
     }
-
+    /*
     inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other)  //!< Copy constructor
     {
         this->observables = other.observables;
@@ -85,7 +85,7 @@ public:
                 this->observables = std::move(other.observables);
             }
         return *this;
-    }
+    }*/
 
     inline std::string createProtobuffer(const std::vector<Gnss_Synchro>& vgs)  //!< Serialization into a string
     {
@@ -179,7 +179,7 @@ public:
     }
 
 private:
-    gnss_sdr::Observables observables;
+    gnss_sdr::Observables observables{};
 };
 
 #endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H_

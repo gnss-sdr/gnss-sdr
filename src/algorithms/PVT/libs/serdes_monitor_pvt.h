@@ -55,7 +55,6 @@ public:
         // google::protobuf::ShutdownProtobufLibrary();
     }
 
-    /*
     inline Serdes_Monitor_Pvt(Serdes_Monitor_Pvt&& other)  //!< Copy constructor
     {
         this->monitor_ = other.monitor_;
@@ -63,12 +62,7 @@ public:
 
     inline Serdes_Monitor_Pvt& operator=(const Serdes_Monitor_Pvt& rhs)  //!< Copy assignment operator
     {
-        // Only do assignment if RHS is a different object from this.
-        if (this != &rhs)
-            {
-                // Deallocate, allocate new space, copy values...
-                this->monitor_ = rhs.monitor_;
-            }
+        this->monitor_ = rhs.monitor_;
         return *this;
     }
 
@@ -84,7 +78,7 @@ public:
                 this->monitor_ = std::move(other.monitor_);
             }
         return *this;
-    }*/
+    }
 
     inline std::string createProtobuffer(const Monitor_Pvt& monitor)  //!< Serialization into a string
     {

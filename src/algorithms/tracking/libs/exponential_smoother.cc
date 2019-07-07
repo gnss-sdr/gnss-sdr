@@ -48,13 +48,6 @@ Exponential_Smoother::Exponential_Smoother()
 }
 
 
-Exponential_Smoother::~Exponential_Smoother() = default;
-
-
-// Move assignment operator
-Exponential_Smoother& Exponential_Smoother::operator=(Exponential_Smoother&& other) = default;
-
-
 void Exponential_Smoother::set_alpha(float alpha)
 {
     alpha_ = alpha;

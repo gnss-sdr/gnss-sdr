@@ -56,7 +56,7 @@ public:
     {
         google::protobuf::ShutdownProtobufLibrary();
     }
-    /*
+
     inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other)  //!< Copy constructor
     {
         this->observables = other.observables;
@@ -64,12 +64,7 @@ public:
 
     inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs)  //!< Copy assignment operator
     {
-        // Only do assignment if RHS is a different object from this.
-        if (this != &rhs)
-            {
-                // Deallocate, allocate new space, copy values...
-                this->observables = rhs.observables;
-            }
+        this->observables = rhs.observables;
         return *this;
     }
 
@@ -85,7 +80,7 @@ public:
                 this->observables = std::move(other.observables);
             }
         return *this;
-    }*/
+    }
 
     inline std::string createProtobuffer(const std::vector<Gnss_Synchro>& vgs)  //!< Serialization into a string
     {

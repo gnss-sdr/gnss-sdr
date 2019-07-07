@@ -68,13 +68,6 @@ Tracking_loop_filter::Tracking_loop_filter()
 }
 
 
-Tracking_loop_filter::~Tracking_loop_filter() = default;
-
-
-// Move assignment operator
-Tracking_loop_filter& Tracking_loop_filter::operator=(Tracking_loop_filter&& other) = default;
-
-
 float Tracking_loop_filter::apply(float current_input)
 {
     // Now apply the filter coefficients:
@@ -237,6 +230,7 @@ void Tracking_loop_filter::set_update_interval(float update_interval)
     d_update_interval = update_interval;
     update_coefficients();
 }
+
 
 float Tracking_loop_filter::get_update_interval(void) const
 {

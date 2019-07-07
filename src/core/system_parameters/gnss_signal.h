@@ -47,20 +47,20 @@ public:
     Gnss_Signal();
     Gnss_Signal(const std::string& signal_);
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
-    ~Gnss_Signal();
+    ~Gnss_Signal() = default;
     std::string get_signal_str() const;    //!< Get the satellite signal {"1C" for GPS L1 C/A, "2S" for GPS L2C (M), "L5" for GPS L5, "1G" for GLONASS L1 C/A, "1B" for Galileo E1B, "5X" for Galileo E5a.
     Gnss_Satellite get_satellite() const;  //!< Get the Gnss_Satellite associated to the signal
 
     friend bool operator==(const Gnss_Signal& /*sig1*/, const Gnss_Signal& /*sig2*/);    //!< operator== for comparison
     friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Signal& /*sig*/);  //!< operator<< for pretty printing
 
-    Gnss_Signal(Gnss_Signal&& other);             //!< Copy constructor
+    /*Gnss_Signal(Gnss_Signal&& other);             //!< Copy constructor
     Gnss_Signal& operator=(const Gnss_Signal&);   //!< Copy assignment operator
     Gnss_Signal(const Gnss_Signal& other);        //!< Move constructor
-    Gnss_Signal& operator=(Gnss_Signal&& other);  //!< Move assignment operator
+    Gnss_Signal& operator=(Gnss_Signal&& other);  //!< Move assignment operator */
 private:
-    Gnss_Satellite satellite;
-    std::string signal;
+    Gnss_Satellite satellite{};
+    std::string signal{};
 };
 
 #endif

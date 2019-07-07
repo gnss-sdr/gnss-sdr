@@ -47,17 +47,8 @@ Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 }
 
 
-Gnss_Satellite::~Gnss_Satellite() = default;
-
-
 void Gnss_Satellite::reset()
 {
-    system_set = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"};
-    satelliteSystem["GPS"] = "G";
-    satelliteSystem["Glonass"] = "R";
-    satelliteSystem["SBAS"] = "S";
-    satelliteSystem["Galileo"] = "E";
-    satelliteSystem["Beidou"] = "C";
     PRN = 0;
     system = std::string("");
     block = std::string("");
@@ -102,7 +93,7 @@ bool operator==(const Gnss_Satellite& sat1, const Gnss_Satellite& sat2)
 // Copy constructor
 Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other)
 {
-    *this = std::move(other);
+    *this = other;
 }
 
 
@@ -112,12 +103,10 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
     // Only do assignment if RHS is a different object from this.
     if (this != &rhs)
         {
-            // Deallocate, allocate new space, copy values...
-            this->reset();
-            this->set_system(rhs.get_system());
-            this->set_PRN(rhs.get_PRN());
-            this->set_block(rhs.get_system(), rhs.get_PRN());
-            this->set_rf_link(rhs.get_rf_link());
+            this->system = rhs.system;
+            this->PRN = rhs.PRN;
+            this->block = rhs.block;
+            this->rf_link = rhs.rf_link;
         }
     return *this;
 }
@@ -126,7 +115,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
 // Move constructor
 Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other)
 {
-    *this = other;
+    *this = std::move(other);
 }
 
 
@@ -135,7 +124,6 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other)
 {
     if (this != &other)
         {
-            this->reset();
             this->system = std::move(other.get_system());
             this->PRN = other.get_PRN();
             this->block = std::move(other.get_block());

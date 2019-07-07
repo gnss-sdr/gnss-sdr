@@ -50,9 +50,7 @@ Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& si
 }
 
 
-Gnss_Signal::~Gnss_Signal() = default;
-
-
+/*
 // Copy constructor
 Gnss_Signal::Gnss_Signal(Gnss_Signal&& other)
 {
@@ -91,7 +89,7 @@ Gnss_Signal& Gnss_Signal::operator=(Gnss_Signal&& other)
         }
     return *this;
 }
-
+*/
 
 std::string Gnss_Signal::get_signal_str() const
 {

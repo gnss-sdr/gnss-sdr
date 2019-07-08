@@ -50,12 +50,36 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-        observables.New();
     }
 
     ~Serdes_Gnss_Synchro()
     {
         google::protobuf::ShutdownProtobufLibrary();
+    }
+
+    inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other)  //!< Copy constructor
+    {
+        this->observables = other.observables;
+    }
+
+    inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs)  //!< Copy assignment operator
+    {
+        this->observables = rhs.observables;
+        return *this;
+    }
+
+    inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other)  //!< Move constructor
+    {
+        this->observables = std::move(other.observables);
+    }
+
+    inline Serdes_Gnss_Synchro& operator=(Serdes_Gnss_Synchro&& other)  //!< Move assignment operator
+    {
+        if (this != &other)
+            {
+                this->observables = std::move(other.observables);
+            }
+        return *this;
     }
 
     inline std::string createProtobuffer(const std::vector<Gnss_Synchro>& vgs)  //!< Serialization into a string
@@ -150,7 +174,7 @@ public:
     }
 
 private:
-    gnss_sdr::Observables observables;
+    gnss_sdr::Observables observables{};
 };
 
 #endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H_

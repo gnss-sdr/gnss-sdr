@@ -79,7 +79,7 @@ private:
     std::shared_ptr<INIReader> ini_reader_;
     std::shared_ptr<InMemoryConfiguration> overrided_;
     std::unique_ptr<StringConverter> converter_;
-    int error_;
+    int error_{};
 };
 
 #endif /*GNSS_SDR_FILE_CONFIGURATION_H_*/

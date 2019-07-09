@@ -45,8 +45,8 @@
 
 
 # This is performed before the scripts in the stages step
-#before_script:
-#  - source /etc/profile
+before_script:
+  - source /etc/profile
 
 
 # Defines stages which are to be executed
@@ -736,44 +736,6 @@ position-static-4in1:
     paths:
       - position-test/L1E1L5E5/*
   allow_failure: true
-
-
-position-GLO-L1:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
-  stage: test
-  tags:
-    - kepler
-  script:
-    - volk_profile -v 8111
-    - volk_gnsssdr_profile -v 2053
-    - mkdir position-test && cd position-test
-    - export DISPLAY=unknown
-    - cp /captures/gitlab_test_signals/static/glonass/gnss-sdr_GLONASS_L1_CA_ibyte.conf ./gnss-sdr_GLONASS_L1_CA_ibyte.conf
-    - position_test --config_file_ptest=gnss-sdr_GLONASS_L1_CA_ibyte.conf --static_position="40.007988,-105.262707,1655" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
-    - mkdir GLOL1 && cp *.* ./GLOL1
-  artifacts:
-    paths:
-      - position-test/GLOL1/*
-  allow_failure: true
-
-
- position-GLO-L2:
-   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
-   stage: test
-   tags:
-     - kepler
-   script:
-     - volk_profile -v 8111
-     - volk_gnsssdr_profile -v 2053
-     - mkdir position-test && cd position-test
-     - export DISPLAY=unknown
-     - cp /captures/gitlab_test_signals/static/glonass/gnss-sdr_GLONASS_L2_CA_ibyte.conf ./gnss-sdr_GLONASS_L2_CA_ibyte.conf
-     - position_test --config_file_ptest=gnss-sdr_GLONASS_L2_CA_ibyte.conf --static_position="40.007988,-105.262707,1655" --static_scenario=1 --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
-     - mkdir GLOL2 && cp *.* ./GLOL2
-   artifacts:
-     paths:
-       - position-test/GLOL2/*
-   allow_failure: true
 
 
 position-leo:

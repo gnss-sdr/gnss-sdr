@@ -512,7 +512,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 {
     /*!
      * TODO:     High sensitivity acquisition algorithm:
-     *             State Mechine:
+     *             State Machine:
      *             S0. StandBy. If d_active==1 -> S1
      *             S1. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
      *                 Accumulate the search grid matrix (#doppler_bins x #fft_size)

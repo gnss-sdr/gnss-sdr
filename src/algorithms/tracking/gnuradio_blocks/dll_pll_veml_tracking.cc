@@ -1655,7 +1655,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_P_accu = *d_Prompt;
                 d_L_accu = *d_Late;
 
-                //fail-safe: check if the secondary code or bit synchronization has not succedded in a limited time period
+                //fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                 if (trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
                     {
                         d_carrier_lock_fail_counter = 300000;  //force loss-of-lock condition

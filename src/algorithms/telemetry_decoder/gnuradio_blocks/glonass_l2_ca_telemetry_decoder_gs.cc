@@ -294,7 +294,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
             // ******* preamble correlation ********
             for (int32_t i = 0; i < d_symbols_per_preamble; i++)
                 {
-                    if (d_symbol_history.[i].Prompt_I < 0.0)  // symbols clipping
+                    if (d_symbol_history[i].Prompt_I < 0.0)  // symbols clipping
                         {
                             corr_value -= d_preambles_symbols[i];
                         }

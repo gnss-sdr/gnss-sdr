@@ -45,8 +45,8 @@
 
 
 # This is performed before the scripts in the stages step
-before_script:
-  - source /etc/profile
+#before_script:
+#  - source /etc/profile
 
 
 # Defines stages which are to be executed

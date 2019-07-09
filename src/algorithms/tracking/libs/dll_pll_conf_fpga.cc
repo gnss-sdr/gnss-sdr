@@ -46,7 +46,8 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     dump_filename = std::string("./dll_pll_dump.dat");
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
-    pull_in_time_s = 2;
+    pull_in_time_s = 10;
+    bit_synchronization_time_limit_s = pull_in_time_s + 60;
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;
@@ -66,6 +67,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     cn0_min = 25;
     max_lock_fail = 50;
     carrier_lock_th = 0.85;
+    enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';
     char sig_[3] = "1C";

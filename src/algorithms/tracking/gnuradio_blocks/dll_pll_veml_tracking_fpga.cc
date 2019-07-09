@@ -58,6 +58,7 @@
 #include <exception>
 #include <iostream>
 #include <map>
+#include <numeric>
 #include <vector>
 
 #if HAS_STD_FILESYSTEM
@@ -96,6 +97,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
+    d_dll_filt_history.set_capacity(2000);
     d_veml = false;
     d_cloop = true;
     d_pull_in_transitory = true;
@@ -563,11 +565,15 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_num_current_syncrho_repetitions = 1;
 
 
+    d_corrected_doppler = false;
+
     // debug - erase previous outfile contents
     std::ofstream outfile;
     outfile.open("trk_out.txt", std::ios_base::trunc);
     outfile.close();
     d_worker_is_done = false;
+
+
 }
 
 void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
@@ -622,6 +628,8 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
 
+
+    d_corrected_doppler = false;
 
     boost::mutex::scoped_lock lock(d_mutex);
     d_worker_is_done = true;
@@ -847,6 +855,29 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
 
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
+
+    // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
+    if (trk_parameters.enable_doppler_correction == true)
+        {
+            if (d_pull_in_transitory == false and d_corrected_doppler == false)
+                {
+                    d_dll_filt_history.push_back(static_cast<float>(d_code_error_filt_chips));
+
+                    if (d_dll_filt_history.full())
+                        {
+                            float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0) / static_cast<float>(d_dll_filt_history.capacity());
+                            if (fabs(avg_code_error_chips_s) > 1.0)
+                                {
+                                    float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
+                                    LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
+                                    d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
+                                    d_corrected_doppler = true;
+                                }
+                            d_dll_filt_history.clear();
+                        }
+                }
+        }
+
 }
 
 
@@ -1973,6 +2004,14 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 d_E_accu = *d_Early;
                 d_P_accu = *d_Prompt;
                 d_L_accu = *d_Late;
+
+                //fail-safe: check if the secondary code or bit synchronization has not succedded in a limited time period
+                if (trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
+                    {
+                        d_carrier_lock_fail_counter = 300000;  //force loss-of-lock condition
+                        LOG(INFO) << systemName << " " << signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
+                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                    }
 
                 // Check lock status
 

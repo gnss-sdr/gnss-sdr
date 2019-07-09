@@ -124,6 +124,8 @@ private:
     int32_t d_preamble_length_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
+    // dll filter buffer
+    boost::circular_buffer<float> d_dll_filt_history;
     // tracking state machine
     int32_t d_state;
 
@@ -180,6 +182,7 @@ private:
 
     // tracking vars
     bool d_pull_in_transitory;
+    bool d_corrected_doppler;
     double d_current_correlation_time_s;
     double d_carr_phase_error_hz;
     double d_carr_freq_error_hz;

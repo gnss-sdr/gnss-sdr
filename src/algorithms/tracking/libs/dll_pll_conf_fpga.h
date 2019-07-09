@@ -46,6 +46,7 @@ public:
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
     unsigned int pull_in_time_s;  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
+    unsigned int bit_synchronization_time_limit_s;
     int pll_filter_order;
     int dll_filter_order;
 
@@ -74,6 +75,7 @@ public:
     uint32_t smoother_length;
     double carrier_lock_th;
     bool track_pilot;
+    bool enable_doppler_correction;
     char system;
     char signal[3];
     std::string device_name;

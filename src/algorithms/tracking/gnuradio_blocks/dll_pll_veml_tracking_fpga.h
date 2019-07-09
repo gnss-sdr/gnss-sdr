@@ -92,8 +92,8 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void save_correlation_results_extended_integration_in_FPGA();
-    void log_data(bool integrating);
-    void log_data_extended_integration_in_FPGA(bool integrating, bool extended_correlation_in_fpga_enabled);
+    void log_data();
+    void log_data_extended_integration_in_FPGA(bool extended_correlation_in_fpga_enabled);
     int32_t save_matfile();
 
     //void run_state_2(Gnss_Synchro &current_synchro_data);
@@ -112,12 +112,14 @@ private:
     double d_code_period;
     double d_code_chip_rate;
     uint32_t d_secondary_code_length;
+    uint32_t d_data_secondary_code_length;
     uint32_t d_code_length_chips;
     uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
     int32_t d_symbols_per_bit;
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
+    std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
     int32_t *d_preambles_symbols;
@@ -146,6 +148,8 @@ private:
     bool d_enable_extended_integration;
     int32_t d_extend_correlation_symbols_count;
     int32_t d_current_symbol;
+    int32_t d_current_data_symbol;
+
 
     gr_complex d_VE_accu;
     gr_complex d_E_accu;
@@ -157,6 +161,7 @@ private:
 //    gr_complex d_P_data_accu; // when the extended integration is done in the FPGA we need to accumulate the pilot correlator results too
     uint32_t d_num_current_syncrho_repetitions;
 
+    gr_complex d_P_data_accu;
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;

@@ -97,7 +97,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
-    d_dll_filt_history.set_capacity(2000);
+    d_dll_filt_history.set_capacity(1000);
     d_veml = false;
     d_cloop = true;
     d_pull_in_transitory = true;
@@ -1153,7 +1153,7 @@ void dll_pll_veml_tracking_fpga::save_correlation_results_extended_integration_i
         }
 }
 
-void dll_pll_veml_tracking_fpga::log_data(bool integrating)
+void dll_pll_veml_tracking_fpga::log_data()
 {
     if (d_dump)
         {
@@ -1203,20 +1203,20 @@ void dll_pll_veml_tracking_fpga::log_data(bool integrating)
             tmp_E = std::abs<float>(d_E_accu);
             tmp_P = std::abs<float>(d_P_accu);
             tmp_L = std::abs<float>(d_L_accu);
-            if (integrating)
-                {
-                    //TODO: Improve this solution!
-                    // It compensates the amplitude difference while integrating
-                    if (d_extend_correlation_symbols_count > 0)
-                        {
-                            float scale_factor = static_cast<float>(trk_parameters.extend_correlation_symbols) / static_cast<float>(d_extend_correlation_symbols_count);
-                            tmp_VE *= scale_factor;
-                            tmp_E *= scale_factor;
-                            tmp_P *= scale_factor;
-                            tmp_L *= scale_factor;
-                            tmp_VL *= scale_factor;
-                        }
-                }
+//            if (integrating)
+//                {
+//                    //TODO: Improve this solution!
+//                    // It compensates the amplitude difference while integrating
+//                    if (d_extend_correlation_symbols_count > 0)
+//                        {
+//                            float scale_factor = static_cast<float>(trk_parameters.extend_correlation_symbols) / static_cast<float>(d_extend_correlation_symbols_count);
+//                            tmp_VE *= scale_factor;
+//                            tmp_E *= scale_factor;
+//                            tmp_P *= scale_factor;
+//                            tmp_L *= scale_factor;
+//                            tmp_VL *= scale_factor;
+//                        }
+//                }
 
             try
                 {
@@ -1280,7 +1280,7 @@ void dll_pll_veml_tracking_fpga::log_data(bool integrating)
 }
 
 
-void dll_pll_veml_tracking_fpga::log_data_extended_integration_in_FPGA(bool integrating, bool extended_correlation_in_fpga_enabled)
+void dll_pll_veml_tracking_fpga::log_data_extended_integration_in_FPGA(bool extended_correlation_in_fpga_enabled)
 {
     if (d_dump)
         {
@@ -2032,7 +2032,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_num_current_syncrho_repetitions = 1;
 
                         // enable write dump file this cycle (valid DLL/PLL cycle)
-                        log_data(false);
+                        log_data();
 
                         if (d_secondary)
                             {
@@ -2278,7 +2278,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_state = 4;
                     }
                 d_num_current_syncrho_repetitions = 1;
-                log_data(true);
+                log_data();
                 break;
             }
         case 4:  // narrow tracking
@@ -2343,7 +2343,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
 
 			d_num_current_syncrho_repetitions = 1;
-                        log_data(false);
+                        log_data();
                         // reset extended correlator
                         d_VE_accu = gr_complex(0.0, 0.0);
                         d_E_accu = gr_complex(0.0, 0.0);
@@ -2430,7 +2430,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                     }
 
 
-                log_data_extended_integration_in_FPGA(false, true);
+                log_data_extended_integration_in_FPGA(true);
                 break;
             }
 
@@ -2513,7 +2513,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_extend_correlation_symbols_count = 0;
 
                         // enable write dump file this cycle (valid DLL/PLL cycle)
-                        log_data_extended_integration_in_FPGA(false, true);
+                        log_data_extended_integration_in_FPGA(true);
                         // reset extended correlator
                         d_VE_accu = gr_complex(0.0, 0.0);
                         d_E_accu = gr_complex(0.0, 0.0);

@@ -100,7 +100,7 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
                 }
         }
 
-    d_symbol_history.set_capacity(GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS);
+    d_symbol_history.set_capacity(GLONASS_GNAV_STRING_SYMBOLS);
     d_sample_counter = 0ULL;
     d_stat = 0;
     d_preamble_index = 0ULL;
@@ -289,13 +289,12 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
 
     d_flag_preamble = false;
 
-    if (d_symbol_history.size() == GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS)
+    if (static_cast<int32_t>(d_symbol_history.size()) >= d_symbols_per_preamble)
         {
             // ******* preamble correlation ********
-            int i = 0;
-            for (const auto &iter : d_symbol_history)
+            for (int32_t i = 0; i < d_symbols_per_preamble; i++)
                 {
-                    if (iter.Prompt_I < 0.0)  // symbols clipping
+                    if (d_symbol_history[i].Prompt_I < 0.0)  // symbols clipping
                         {
                             corr_value -= d_preambles_symbols[i];
                         }
@@ -303,7 +302,6 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         {
                             corr_value += d_preambles_symbols[i];
                         }
-                    i++;
                 }
         }
 

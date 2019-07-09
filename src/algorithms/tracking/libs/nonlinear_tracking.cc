@@ -1,8 +1,8 @@
 /*!
- * \file cubature_filter.cc
+ * \file nonlinear_tracking.cc
  * \brief Interface of a library for nonlinear tracking algorithms
  *
- * Cubature_Filter implements the functionality of the Cubature Kalman
+ * CubatureFilter implements the functionality of the Cubature Kalman
  * Filter, which uses multidimensional cubature rules to estimate the
  * time evolution of a nonlinear system. UnscentedFilter implements
  * an Unscented Kalman Filter which uses Unscented Transform rules to
@@ -42,9 +42,7 @@
 
 #include "nonlinear_tracking.h"
 
-/***************** CUBATURE KALMAN FILTER *****************/
-
-CubatureFilter::CubatureFilter()
+GaussianFilter::GaussianFilter()
 {
     int nx = 1;
     x_pred_out = arma::zeros(nx, 1);
@@ -55,7 +53,7 @@ CubatureFilter::CubatureFilter()
 }
 
 
-CubatureFilter::CubatureFilter(int nx)
+GaussianFilter::GaussianFilter(int nx)
 {
     x_pred_out = arma::zeros(nx, 1);
     P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
@@ -65,7 +63,7 @@ CubatureFilter::CubatureFilter(int nx)
 }
 
 
-CubatureFilter::CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0)
+GaussianFilter::GaussianFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0)
 {
     x_pred_out = x_pred_0;
     P_x_pred_out = P_x_pred_0;
@@ -75,10 +73,10 @@ CubatureFilter::CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_p
 }
 
 
-CubatureFilter::~CubatureFilter() = default;
+GaussianFilter::~GaussianFilter() = default;
 
 
-void CubatureFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
+void GaussianFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
 {
     x_pred_out = x_pred_0;
     P_x_pred_out = P_x_pred_0;
@@ -87,6 +85,30 @@ void CubatureFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_
     P_x_est = P_x_pred_out;
 }
 
+arma::mat GaussianFilter::get_x_pred() const
+{
+    return x_pred_out;
+}
+
+
+arma::mat GaussianFilter::get_P_x_pred() const
+{
+    return P_x_pred_out;
+}
+
+
+arma::mat GaussianFilter::get_x_est() const
+{
+    return x_est;
+}
+
+
+arma::mat GaussianFilter::get_P_x_est() const
+{
+    return P_x_est;
+}
+
+/***************** CUBATURE KALMAN FILTER *****************/
 
 /*
  * Perform the prediction step of the cubature Kalman filter
@@ -177,77 +199,10 @@ void CubatureFilter::update_sequential(const arma::vec& z_upd, const arma::vec& 
     P_x_est = P_x_pred - W_k * P_zz_pred * W_k.t();
 }
 
-
-arma::mat CubatureFilter::get_x_pred() const
-{
-    return x_pred_out;
-}
-
-
-arma::mat CubatureFilter::get_P_x_pred() const
-{
-    return P_x_pred_out;
-}
-
-
-arma::mat CubatureFilter::get_x_est() const
-{
-    return x_est;
-}
-
-
-arma::mat CubatureFilter::get_P_x_est() const
-{
-    return P_x_est;
-}
 /***************** END CUBATURE KALMAN FILTER *****************/
 
 
 /***************** UNSCENTED KALMAN FILTER *****************/
-
-UnscentedFilter::UnscentedFilter()
-{
-    int nx = 1;
-    x_pred_out = arma::zeros(nx, 1);
-    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
-}
-
-
-UnscentedFilter::UnscentedFilter(int nx)
-{
-    x_pred_out = arma::zeros(nx, 1);
-    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
-}
-
-
-UnscentedFilter::UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0)
-{
-    x_pred_out = x_pred_0;
-    P_x_pred_out = P_x_pred_0;
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
-}
-
-
-UnscentedFilter::~UnscentedFilter() = default;
-
-
-void UnscentedFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
-{
-    x_pred_out = x_pred_0;
-    P_x_pred_out = P_x_pred_0;
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
-}
-
 
 /*
  * Perform the prediction step of the Unscented Kalman filter
@@ -361,30 +316,6 @@ void UnscentedFilter::update_sequential(const arma::vec& z_upd, const arma::vec&
     // Estimate and store the updated mean and error covariance
     x_est = x_pred + W_k * (z_upd - z_pred);
     P_x_est = P_x_pred - W_k * P_zz_pred * W_k.t();
-}
-
-
-arma::mat UnscentedFilter::get_x_pred() const
-{
-    return x_pred_out;
-}
-
-
-arma::mat UnscentedFilter::get_P_x_pred() const
-{
-    return P_x_pred_out;
-}
-
-
-arma::mat UnscentedFilter::get_x_est() const
-{
-    return x_est;
-}
-
-
-arma::mat UnscentedFilter::get_P_x_est() const
-{
-    return P_x_est;
 }
 
 /***************** END UNSCENTED KALMAN FILTER *****************/

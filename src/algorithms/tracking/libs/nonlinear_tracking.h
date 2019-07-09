@@ -55,21 +55,17 @@ public:
     virtual ~ModelFunction() = default;
 };
 
-class CubatureFilter
+class GaussianFilter
 {
 public:
     // Constructors and destructors
-    CubatureFilter();
-    CubatureFilter(int nx);
-    CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~CubatureFilter();
+    GaussianFilter();
+    GaussianFilter(int nx);
+    GaussianFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
+    ~GaussianFilter();
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
-
-    // Prediction and estimation
-    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
-    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
 
     // Getters
     arma::mat get_x_pred() const;
@@ -77,40 +73,30 @@ public:
     arma::mat get_x_est() const;
     arma::mat get_P_x_est() const;
 
-private:
+    // Prediction and Estimation
+    //void run_sequential(const arma::vec& z_upd, const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, ModelFunction* measurement_fcn, const arma::mat& process_covariance, const arma::mat& measurement_covariance);
+
+protected:
     arma::vec x_pred_out;
     arma::mat P_x_pred_out;
     arma::vec x_est;
     arma::mat P_x_est;
 };
 
-class UnscentedFilter
+class CubatureFilter : public GaussianFilter
 {
 public:
-    // Constructors and destructors
-    UnscentedFilter();
-    UnscentedFilter(int nx);
-    UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~UnscentedFilter();
-
-    // Reinitialization function
-    void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
-
     // Prediction and estimation
     void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
     void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
+};
 
-    // Getters
-    arma::mat get_x_pred() const;
-    arma::mat get_P_x_pred() const;
-    arma::mat get_x_est() const;
-    arma::mat get_P_x_est() const;
-
-private:
-    arma::vec x_pred_out;
-    arma::mat P_x_pred_out;
-    arma::vec x_est;
-    arma::mat P_x_est;
+class UnscentedFilter : public GaussianFilter
+{
+public:
+    // Prediction and estimation
+    void predict_sequential(const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, const arma::mat& noise_covariance);
+    void update_sequential(const arma::vec& z_upd, const arma::vec& x_pred, const arma::mat& P_x_pred, ModelFunction* measurement_fcn, const arma::mat& noise_covariance);
 };
 
 #endif

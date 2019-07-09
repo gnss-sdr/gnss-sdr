@@ -501,7 +501,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_carrier_phase_step_rad = 0.0;
     d_carrier_phase_rate_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
-    d_state = 0;  // initial state: standby
+    d_state = 1;  // initial state: standby
     clear_tracking_vars();
 
     if (trk_parameters.smoother_length > 0)
@@ -567,6 +567,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     std::ofstream outfile;
     outfile.open("trk_out.txt", std::ios_base::trunc);
     outfile.close();
+    d_worker_is_done = false;
 }
 
 void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
@@ -621,8 +622,14 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
 
+
+    boost::mutex::scoped_lock lock(d_mutex);
+    d_worker_is_done = true;
+    m_condition.notify_one();
+
+
     // enable tracking pull-in
-    d_state = 1;
+    //d_state = 1;
 }
 
 
@@ -1814,7 +1821,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 void dll_pll_veml_tracking_fpga::stop_tracking()
 {
 	printf("stop tracking called\n");
-    d_state = 0;
+    d_state = 1;
 }
 
 
@@ -1850,14 +1857,34 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
     switch (d_state)
         {
-        case 0:  // Standby - Consume samples at full throttle, do nothing
-            {
-                *out[0] = *d_acquisition_gnss_synchro;
-                usleep(1000);
-                return 1;
-            }
+//        case 0:  // Standby - Consume samples at full throttle, do nothing
+//            {
+//
+//            	// EL MUTEX NO FA FALTA !! GNURADIO JA EN TE UN ARREGLAR
+//            	printf("in state 0\n");
+//            	d_worker_is_done = false;
+//
+//
+//            	boost::mutex::scoped_lock lock(d_mutex);
+//            	while (!d_worker_is_done) m_condition.wait(lock);
+//
+//            	d_state = 1;
+//
+//                //*out[0] = *d_acquisition_gnss_synchro;
+//                ////usleep(1000);
+//                //return 1;
+//            }
         case 1:  // Pull-in
             {
+
+            	// EL MUTEX NO FA FALTA !! GNURADIO JA EN TE UN ARREGLAR
+            	printf("in state 1\n");
+            	d_worker_is_done = false;
+
+
+            	boost::mutex::scoped_lock lock(d_mutex);
+            	while (!d_worker_is_done) m_condition.wait(lock);
+
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
 
                 int64_t acq_trk_diff_samples;
@@ -1952,7 +1979,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 if (!cn0_and_tracking_lock_status(d_code_period))
                     {
                         clear_tracking_vars();
-                        d_state = 0;  // loss-of-lock detected
+                        d_state = 1;  // loss-of-lock detected
                     }
                 else
                     {
@@ -2230,7 +2257,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(trk_parameters.extend_correlation_symbols)))
                     {
                         clear_tracking_vars();
-                        d_state = 0;  // loss-of-lock detected
+                        d_state = 1;  // loss-of-lock detected
                     }
                 else
                     {
@@ -2397,7 +2424,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(trk_parameters.extend_correlation_symbols)))
                     {
                         clear_tracking_vars();
-                        d_state = 0;  // loss-of-lock detected
+                        d_state = 1;  // loss-of-lock detected
                     }
                 else
                     {

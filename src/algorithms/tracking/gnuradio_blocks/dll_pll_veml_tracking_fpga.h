@@ -281,6 +281,11 @@ private:
 
     uint32_t d_fpga_integration_period;
 
+    bool d_worker_is_done;
+
+    boost::condition_variable m_condition;
+    boost::mutex d_mutex;
+
 
 };
 

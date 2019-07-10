@@ -849,6 +849,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_gps[1] = gps_utc_model.d_A1;
                     nav_data.utc_gps[2] = gps_utc_model.d_t_OT;
                     nav_data.utc_gps[3] = gps_utc_model.i_WN_T;
+                    nav_data.leaps = gps_utc_model.d_DeltaT_LS;
                 }
             if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
                 {
@@ -856,6 +857,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_gps[1] = gps_cnav_utc_model.d_A1;
                     nav_data.utc_gps[2] = gps_cnav_utc_model.d_t_OT;
                     nav_data.utc_gps[3] = gps_cnav_utc_model.i_WN_T;
+                    nav_data.leaps = gps_cnav_utc_model.d_DeltaT_LS;
                 }
             if (glonass_gnav_utc_model.valid)
                 {
@@ -870,6 +872,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_gal[1] = galileo_utc_model.A1_6;
                     nav_data.utc_gal[2] = galileo_utc_model.t0t_6;
                     nav_data.utc_gal[3] = galileo_utc_model.WNot_6;
+                    nav_data.leaps = galileo_utc_model.Delta_tLS_6;
                 }
             if (beidou_dnav_utc_model.valid)
                 {
@@ -877,6 +880,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
                     nav_data.utc_cmp[2] = 0.0;  // ??
                     nav_data.utc_cmp[3] = 0.0;  // ??
+                    nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
                 }
 
             for (auto &lambda_ : nav_data.lam)

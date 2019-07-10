@@ -798,25 +798,100 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
         {
             int result = 0;
             int sat = 0;
-            nav_t nav_data;
+            nav_t nav_data{};
             nav_data.eph = eph_data.data();
             nav_data.geph = geph_data.data();
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
-
-            for (auto &i : nav_data.lam)
+            if (gps_iono.valid)
                 {
-                    i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
-                    i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
-                    i[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
+                    nav_data.ion_gps[0] = gps_iono.d_alpha0;
+                    nav_data.ion_gps[1] = gps_iono.d_alpha1;
+                    nav_data.ion_gps[2] = gps_iono.d_alpha2;
+                    nav_data.ion_gps[3] = gps_iono.d_alpha3;
+                    nav_data.ion_gps[4] = gps_iono.d_beta0;
+                    nav_data.ion_gps[5] = gps_iono.d_beta1;
+                    nav_data.ion_gps[6] = gps_iono.d_beta2;
+                    nav_data.ion_gps[7] = gps_iono.d_beta3;
+                }
+            if (!(gps_iono.valid) and gps_cnav_iono.valid)
+                {
+                    nav_data.ion_gps[0] = gps_cnav_iono.d_alpha0;
+                    nav_data.ion_gps[1] = gps_cnav_iono.d_alpha1;
+                    nav_data.ion_gps[2] = gps_cnav_iono.d_alpha2;
+                    nav_data.ion_gps[3] = gps_cnav_iono.d_alpha3;
+                    nav_data.ion_gps[4] = gps_cnav_iono.d_beta0;
+                    nav_data.ion_gps[5] = gps_cnav_iono.d_beta1;
+                    nav_data.ion_gps[6] = gps_cnav_iono.d_beta2;
+                    nav_data.ion_gps[7] = gps_cnav_iono.d_beta3;
+                }
+            if (galileo_iono.ai0_5 != 0.0)
+                {
+                    nav_data.ion_gal[0] = galileo_iono.ai0_5;
+                    nav_data.ion_gal[1] = galileo_iono.ai1_5;
+                    nav_data.ion_gal[2] = galileo_iono.ai2_5;
+                    nav_data.ion_gal[3] = 0.0;
+                }
+            if (beidou_dnav_iono.valid)
+                {
+                    nav_data.ion_cmp[0] = beidou_dnav_iono.d_alpha0;
+                    nav_data.ion_cmp[1] = beidou_dnav_iono.d_alpha1;
+                    nav_data.ion_cmp[2] = beidou_dnav_iono.d_alpha2;
+                    nav_data.ion_cmp[3] = beidou_dnav_iono.d_alpha3;
+                    nav_data.ion_cmp[4] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[5] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[6] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[7] = beidou_dnav_iono.d_beta3;
+                }
+            if (gps_utc_model.valid)
+                {
+                    nav_data.utc_gps[0] = gps_utc_model.d_A0;
+                    nav_data.utc_gps[1] = gps_utc_model.d_A1;
+                    nav_data.utc_gps[2] = gps_utc_model.d_t_OT;
+                    nav_data.utc_gps[3] = gps_utc_model.i_WN_T;
+                }
+            if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
+                {
+                    nav_data.utc_gps[0] = gps_cnav_utc_model.d_A0;
+                    nav_data.utc_gps[1] = gps_cnav_utc_model.d_A1;
+                    nav_data.utc_gps[2] = gps_cnav_utc_model.d_t_OT;
+                    nav_data.utc_gps[3] = gps_cnav_utc_model.i_WN_T;
+                }
+            if (glonass_gnav_utc_model.valid)
+                {
+                    nav_data.utc_glo[0] = glonass_gnav_utc_model.d_tau_c;  // ??
+                    nav_data.utc_glo[1] = 0.0;                             // ??
+                    nav_data.utc_glo[2] = 0.0;                             // ??
+                    nav_data.utc_glo[3] = 0.0;                             // ??
+                }
+            if (galileo_utc_model.A0_6 != 0.0)
+                {
+                    nav_data.utc_gal[0] = galileo_utc_model.A0_6;
+                    nav_data.utc_gal[1] = galileo_utc_model.A1_6;
+                    nav_data.utc_gal[2] = galileo_utc_model.t0t_6;
+                    nav_data.utc_gal[3] = galileo_utc_model.WNot_6;
+                }
+            if (beidou_dnav_utc_model.valid)
+                {
+                    nav_data.utc_cmp[0] = beidou_dnav_utc_model.d_A0_UTC;
+                    nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
+                    nav_data.utc_cmp[2] = 0.0;  // ??
+                    nav_data.utc_cmp[3] = 0.0;  // ??
+                }
+
+            for (auto &lambda_ : nav_data.lam)
+                {
+                    lambda_[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
+                    lambda_[1] = SPEED_OF_LIGHT / FREQ2;  // L2
+                    lambda_[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
 
                     // Keep update on sat number
                     sat++;
                     if (sat > NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS and sat < NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS)
                         {
-                            i[0] = SPEED_OF_LIGHT / FREQ1_BDS;  // B1I
-                            i[1] = SPEED_OF_LIGHT / FREQ3_BDS;  // B3I
-                            i[2] = SPEED_OF_LIGHT / FREQ5;      // L5/E5
+                            lambda_[0] = SPEED_OF_LIGHT / FREQ1_BDS;  // B1I
+                            lambda_[1] = SPEED_OF_LIGHT / FREQ3_BDS;  // B3I
+                            lambda_[2] = SPEED_OF_LIGHT / FREQ5;      // L5/E5
                         }
                 }
 

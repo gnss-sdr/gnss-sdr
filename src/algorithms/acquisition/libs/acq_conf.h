@@ -1,7 +1,7 @@
 /*!
  * \file acq_conf.h
  * \brief Class that contains all the configuration parameters for generic
- * acquisition block based on the PCPS algoritm.
+ * acquisition block based on the PCPS algorithm.
  * \author Carles Fernandez, 2018. cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------

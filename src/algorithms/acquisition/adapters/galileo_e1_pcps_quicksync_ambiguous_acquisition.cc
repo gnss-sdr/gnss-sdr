@@ -76,7 +76,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     This may be a bug, but acquisition also work by variying the folding factor at va-
     lues different that the expressed in the paper. In adition, it is important to point
     out that by making the folding factor smaller we were able to get QuickSync work with
-    Galileo. Future work should be directed to test this asumption statistically.*/
+    Galileo. Future work should be directed to test this assumption statistically.*/
 
     //folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", 2);

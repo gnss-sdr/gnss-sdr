@@ -121,7 +121,7 @@ private:
     int32_t d_fd;                   // driver descriptor
     volatile uint32_t *d_map_base;  // driver memory map
     uint32_t *d_all_fft_codes;      // memory that contains all the code ffts
-    uint32_t d_vector_length;       // number of samples incluing padding and number of ms
+    uint32_t d_vector_length;       // number of samples including padding and number of ms
     uint32_t d_excludelimit;
     uint32_t d_nsamples_total;  // number of samples including padding
     uint32_t d_nsamples;        // number of samples not including padding

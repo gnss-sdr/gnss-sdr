@@ -463,7 +463,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                                         complex_acumulator[i] += (corr_output[j]);
                                                     }
                                             }
-                                        /*Obtain maximun value of correlation given the possible delay selected */
+                                        /*Obtain maximum value of correlation given the possible delay selected */
                                         volk_32fc_magnitude_squared_32f(d_corr_output_f, complex_acumulator, d_folding_factor);
                                         volk_gnsssdr_32f_index_max_32u(&indext, d_corr_output_f, d_folding_factor);
 

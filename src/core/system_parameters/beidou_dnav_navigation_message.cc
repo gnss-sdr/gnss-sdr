@@ -458,7 +458,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
 
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_FRAID));
 
-    // Perform crc computtaion (tbd)
+    // Perform crc computation (tbd)
     flag_crc_test = true;
 
     // Decode all 5 sub-frames
@@ -753,7 +753,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_FRAID));
     page_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_PNUM));
 
-    // Perform crc computtaion (tbd)
+    // Perform crc computation (tbd)
     flag_crc_test = true;
 
     // Decode all 5 sub-frames

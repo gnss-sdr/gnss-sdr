@@ -353,7 +353,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
 {
     /*!
      * TODO:     High sensitivity acquisition algorithm:
-     *             State Mechine:
+     *             State Machine:
      *             S0. StandBy. If d_active==1 -> S1
      *             S1. GetAssist. Define search grid with assistance information. Reset grid matrix -> S2
      *             S2. ComputeGrid. Perform the FFT acqusition doppler and delay grid.

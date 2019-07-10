@@ -182,7 +182,7 @@ public:
     }
 
     /*!
-     * \brief This funciton triggers a HW reset of the FPGA PL.
+     * \brief This function triggers a HW reset of the FPGA PL.
      */
     void reset_acquisition(void);
 

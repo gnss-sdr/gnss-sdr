@@ -183,7 +183,7 @@ if(CPU_IS_x86)
     # eliminate AVX if cvtpi32_ps intrinsic fails like some versions of clang
     #########################################################################
 
-    # check to see if the compiler/linker works with cvtpi32_ps instrinsic when using AVX
+    # check to see if the compiler/linker works with cvtpi32_ps intrinsic when using AVX
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c "#include <immintrin.h>\nint main (void) {__m128 __a; __m64 __b; __m128 foo = _mm_cvtpi32_ps(__a, __b); return (0); }")
         execute_process(COMMAND ${CMAKE_C_COMPILER} -mavx -o
@@ -192,7 +192,7 @@ if(CPU_IS_x86)
           OUTPUT_QUIET ERROR_QUIET
           RESULT_VARIABLE avx_compile_result)
         if(NOT ${avx_compile_result} EQUAL 0)
-          overrule_arch(avx "Compiler missing cvtpi32_ps instrinsic")
+          overrule_arch(avx "Compiler missing cvtpi32_ps intrinsic")
         elseif(NOT CROSSCOMPILE_MULTILIB)
           execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
             OUTPUT_QUIET ERROR_QUIET
@@ -216,7 +216,7 @@ if(CPU_IS_x86)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
       # Figure out the version of Clang
       if(CMAKE_VERSION VERSION_LESS "2.8.10")
-        # Exctract the Clang version from the --version string.
+        # Extract the Clang version from the --version string.
         # In cmake 2.8.10, we can just use CMAKE_C_COMPILER_VERSION
         # without having to go through these string manipulations
         execute_process(COMMAND ${CMAKE_C_COMPILER} --version

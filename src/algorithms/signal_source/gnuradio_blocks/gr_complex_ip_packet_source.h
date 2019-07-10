@@ -102,7 +102,7 @@ private:
     static void static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
     /*
      * Opens the ethernet device using libpcap raw capture mode
-     * If any of these fail, the fuction retuns the error and exits.
+     * If any of these fail, the function returns the error and exits.
      */
     bool open();
 };

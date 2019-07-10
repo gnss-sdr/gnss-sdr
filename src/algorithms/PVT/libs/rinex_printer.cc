@@ -29,8 +29,7 @@
  */
 
 #include "rinex_printer.h"
-#include "Beidou_B1I.h"
-#include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -11572,7 +11571,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // CARRIER PHASE
-                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Carrier_phase_rads / (BEIDOU_TWO_PI), 3), 14);
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Carrier_phase_rads / (BEIDOU_DNAV_TWO_PI), 3), 14);
                     if (lli == 0)
                         {
                             lineObs += std::string(1, ' ');

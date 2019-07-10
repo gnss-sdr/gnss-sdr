@@ -42,7 +42,6 @@ const double BEIDOU_B3I_CODE_LENGTH_CHIPS = 10230.0;  //!< BeiDou B3I code lengt
 const double BEIDOU_B3I_CODE_PERIOD = 0.001;          //!< BeiDou B3I code period [seconds]
 const uint32_t BEIDOU_B3I_CODE_PERIOD_MS = 1;         //!< BeiDou B3I code period [ms]
 const int32_t BEIDOU_B3I_SECONDARY_CODE_LENGTH = 20;
-const std::string BEIDOU_B3I_SECONDARY_CODE = "00000100110101001110";
 const std::string BEIDOU_B3I_SECONDARY_CODE_STR = "00000100110101001110";
 const std::string BEIDOU_B3I_GEO_PREAMBLE_SYMBOLS_STR = {"1111110000001100001100"};
 const int32_t BEIDOU_B3I_GEO_PREAMBLE_LENGTH_SYMBOLS = 22;

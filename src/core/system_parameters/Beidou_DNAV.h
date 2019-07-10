@@ -51,6 +51,11 @@ const double BEIDOU_D1NAV_SYMBOL_RATE_SPS = 50;
 const double BEIDOU_D2NAV_SYMBOL_RATE_SPS = 500;
 const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
 
+// Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
+const int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
+// Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch
+const int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
+
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
 // GENERAL
 const std::vector<std::pair<int32_t, int32_t> > D1_PRE({{1, 11}});

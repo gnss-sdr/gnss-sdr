@@ -611,7 +611,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
         // update TOW at the preamble instant
         {
             // Reporting sow as gps time of week
-            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + 14) * 1000.0);
+            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
             d_TOW_at_current_symbol_ms =
                 d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) *
                                                              BEIDOU_B3I_CODE_PERIOD_MS);

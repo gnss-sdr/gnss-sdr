@@ -33,6 +33,7 @@
 
 #include "beidou_b1i_telemetry_decoder_gs.h"
 #include "Beidou_B1I.h"
+#include "Beidou_DNAV.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
@@ -546,7 +547,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
         // update TOW at the preamble instant
         {
             // Reporting sow as gps time of week
-            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + 14) * 1000.0);
+            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
             d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * BEIDOU_B1I_CODE_PERIOD_MS);
             flag_SOW_set = true;
             d_nav.flag_new_SOW_available = false;

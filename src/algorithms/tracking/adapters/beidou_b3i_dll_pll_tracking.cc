@@ -58,16 +58,39 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     trk_param.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param.dump_mat = dump_mat;
+    trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: BEIDOU B3I. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+        }
     trk_param.pll_bw_hz = pll_bw_hz;
-    float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
-    trk_param.pll_bw_narrow_hz = pll_bw_narrow_hz;
-    float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
-    trk_param.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+        }
     trk_param.dll_bw_hz = dll_bw_hz;
+    float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
+    trk_param.pll_bw_narrow_hz = pll_bw_narrow_hz;
+    float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
+    trk_param.dll_bw_narrow_hz = dll_bw_narrow_hz;
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    trk_param.early_late_space_chips = early_late_space_chips;
 
     int dll_filter_order = configuration->property(role + ".dll_filter_order", 2);
     if (dll_filter_order < 1)
@@ -110,16 +133,12 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     trk_param.fll_bw_hz = fll_bw_hz;
     trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
-    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
-    trk_param.early_late_space_chips = early_late_space_chips;
-    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
-    trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param.dump_filename = dump_filename;
-    int vector_length = std::round(fs_in / (BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS));
+    int vector_length = std::round(static_cast<double>(fs_in) / (BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
+    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
+    trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
+    bool track_pilot = configuration->property(role + ".track_pilot", false);
     if (symbols_extended_correlator < 1)
         {
             symbols_extended_correlator = 1;
@@ -131,18 +150,9 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
             std::cout << TEXT_RED << "WARNING: BEIDOU B3I. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
         }
     trk_param.extend_correlation_symbols = symbols_extended_correlator;
-    bool track_pilot = configuration->property(role + ".track_pilot", false);
-    if (track_pilot)
-        {
-            std::cout << TEXT_RED << "WARNING: BEIDOU B3I does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
-        }
-    if ((symbols_extended_correlator > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
-        {
-            std::cout << TEXT_RED << "WARNING: BEIDOU B3I. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
-        }
+    trk_param.track_pilot = track_pilot;
     trk_param.very_early_late_space_chips = 0.0;
     trk_param.very_early_late_space_narrow_chips = 0.0;
-    trk_param.track_pilot = false;
     trk_param.system = 'C';
     char sig_[3] = "B3";
     std::memcpy(trk_param.signal, sig_, 3);

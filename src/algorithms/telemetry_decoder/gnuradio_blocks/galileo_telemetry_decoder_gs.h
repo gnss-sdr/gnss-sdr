@@ -85,8 +85,6 @@ private:
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
     int32_t *d_preamble_samples;
-    int32_t *d_secondary_code_samples;
-    uint32_t d_samples_per_symbol;
     uint32_t d_PRN_code_period_ms;
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;

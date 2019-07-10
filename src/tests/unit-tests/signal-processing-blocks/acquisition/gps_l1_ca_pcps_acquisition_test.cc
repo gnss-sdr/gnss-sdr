@@ -88,7 +88,7 @@ private:
 
 public:
     int rx_message;
-    ~GpsL1CaPcpsAcquisitionTest_msg_rx();  //!< Default destructor
+    ~GpsL1CaPcpsAcquisitionTest_msg_rx() override;  //!< Default destructor
 };
 
 
@@ -139,7 +139,7 @@ protected:
         doppler_step = 100;
     }
 
-    ~GpsL1CaPcpsAcquisitionTest() = default;
+    ~GpsL1CaPcpsAcquisitionTest() override = default;
 
     void init();
     void plot_grid();

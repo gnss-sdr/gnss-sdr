@@ -48,11 +48,36 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
-        monitor_.New();
     }
+
     ~Serdes_Monitor_Pvt()
     {
         // google::protobuf::ShutdownProtobufLibrary();
+    }
+
+    inline Serdes_Monitor_Pvt(Serdes_Monitor_Pvt&& other)  //!< Copy constructor
+    {
+        this->monitor_ = other.monitor_;
+    }
+
+    inline Serdes_Monitor_Pvt& operator=(const Serdes_Monitor_Pvt& rhs)  //!< Copy assignment operator
+    {
+        this->monitor_ = rhs.monitor_;
+        return *this;
+    }
+
+    inline Serdes_Monitor_Pvt(const Serdes_Monitor_Pvt& other)  //!< Move constructor
+    {
+        this->monitor_ = std::move(other.monitor_);
+    }
+
+    inline Serdes_Monitor_Pvt& operator=(Serdes_Monitor_Pvt&& other)  //!< Move assignment operator
+    {
+        if (this != &other)
+            {
+                this->monitor_ = std::move(other.monitor_);
+            }
+        return *this;
     }
 
     inline std::string createProtobuffer(const Monitor_Pvt& monitor)  //!< Serialization into a string
@@ -94,7 +119,6 @@ public:
         return data;
     }
 
-
     inline Monitor_Pvt readProtobuffer(const gnss_sdr::MonitorPvt& mon)  //!< Deserialization
     {
         Monitor_Pvt monitor;
@@ -132,7 +156,7 @@ public:
     }
 
 private:
-    gnss_sdr::MonitorPvt monitor_;
+    gnss_sdr::MonitorPvt monitor_{};
 };
 
 #endif  // GNSS_SDR_SERDES_MONITOR_PVT_H_

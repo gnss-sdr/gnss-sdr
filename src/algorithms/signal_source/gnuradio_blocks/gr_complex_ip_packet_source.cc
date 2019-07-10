@@ -290,7 +290,10 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                                     // write all in a single memcpy
                                     memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], payload_length_bytes);  // size in bytes
                                     fifo_write_ptr += payload_length_bytes;
-                                    if (fifo_write_ptr == FIFO_SIZE) fifo_write_ptr = 0;
+                                    if (fifo_write_ptr == FIFO_SIZE)
+                                        {
+                                            fifo_write_ptr = 0;
+                                        }
                                     fifo_items += payload_length_bytes;
                                 }
                             else
@@ -378,7 +381,10 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(gr_vector_void_star output_items
                     std::cout << "Unknown wire sample type\n";
                     exit(0);
                 }
-            if (fifo_read_ptr == FIFO_SIZE) fifo_read_ptr = 0;
+            if (fifo_read_ptr == FIFO_SIZE)
+                {
+                    fifo_read_ptr = 0;
+                }
         }
 }
 
@@ -389,7 +395,10 @@ int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
 {
     // send samples to next GNU Radio block
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
-    if (fifo_items == 0) return 0;
+    if (fifo_items == 0)
+        {
+            return 0;
+        }
 
     if (output_items.size() > static_cast<uint64_t>(d_n_baseband_channels))
         {

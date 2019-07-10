@@ -45,7 +45,7 @@ using b_io_context = boost::asio::io_service;
 class Monitor_Pvt_Udp_Sink
 {
 public:
-    Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port, bool protobuf_enabled);
+    Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t &port, bool protobuf_enabled);
     bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
 
 private:
@@ -53,7 +53,7 @@ private:
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    Monitor_Pvt monitor_pvt;
+    Monitor_Pvt monitor_pvt{};
     Serdes_Monitor_Pvt serdes;
     bool use_protobuf;
 };

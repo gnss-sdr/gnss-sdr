@@ -188,7 +188,7 @@ int decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
             t0 = sbssat->sat[j].fcorr.t0;
             prc = sbssat->sat[j].fcorr.prc;
             sbssat->sat[j].fcorr.t0 = gpst2time(msg->week, msg->tow);
-            sbssat->sat[j].fcorr.prc = getbits(msg->msg, 18 + i * 12, 12) * 0.125f;
+            sbssat->sat[j].fcorr.prc = getbits(msg->msg, 18 + i * 12, 12) * 0.125F;
             sbssat->sat[j].fcorr.udre = udre + 1;
             dt = timediff(sbssat->sat[j].fcorr.t0, t0);
             if (t0.time == 0 || dt <= 0.0 || 18.0 < dt || sbssat->sat[j].fcorr.ai == 0)
@@ -468,7 +468,7 @@ int decode_sbstype24(const sbsmsg_t *msg, sbssat_t *sbssat)
             udre = getbitu(msg->msg, 86 + 4 * i, 4);
 
             sbssat->sat[j].fcorr.t0 = gpst2time(msg->week, msg->tow);
-            sbssat->sat[j].fcorr.prc = getbits(msg->msg, 14 + i * 12, 12) * 0.125f;
+            sbssat->sat[j].fcorr.prc = getbits(msg->msg, 14 + i * 12, 12) * 0.125F;
             sbssat->sat[j].fcorr.udre = udre + 1;
             sbssat->sat[j].fcorr.iodf = iodf;
         }
@@ -509,7 +509,7 @@ int decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
 
             delay = getbitu(msg->msg, 22 + i * 13, 9);
             sbsion[band].igp[j].t0 = gpst2time(msg->week, msg->tow);
-            sbsion[band].igp[j].delay = delay == 0x1FF ? 0.0f : delay * 0.125f;
+            sbsion[band].igp[j].delay = delay == 0x1FF ? 0.0F : delay * 0.125F;
             sbsion[band].igp[j].give = give + 1;
 
             if (sbsion[band].igp[j].give >= 16)

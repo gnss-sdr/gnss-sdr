@@ -64,6 +64,7 @@
 #include <matio.h>
 #include <exception>
 #include <utility>
+#include <vector>
 
 
 Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
@@ -76,16 +77,7 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (double &i : dop_)
-        {
-            i = 0.0;
-        }
-    pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
-    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
-    for (auto &i : pvt_ssat)
-        {
-            i = ssat0;
-        }
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -103,35 +95,6 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
                         }
                 }
         }
-    // PVT MONITOR
-    monitor_pvt.TOW_at_current_symbol_ms = 0U;
-    monitor_pvt.week = 0U;
-    monitor_pvt.RX_time = 0.0;
-    monitor_pvt.user_clk_offset = 0.0;
-    monitor_pvt.pos_x = 0.0;
-    monitor_pvt.pos_y = 0.0;
-    monitor_pvt.pos_z = 0.0;
-    monitor_pvt.vel_x = 0.0;
-    monitor_pvt.vel_y = 0.0;
-    monitor_pvt.vel_z = 0.0;
-    monitor_pvt.cov_xx = 0.0;
-    monitor_pvt.cov_yy = 0.0;
-    monitor_pvt.cov_zz = 0.0;
-    monitor_pvt.cov_xy = 0.0;
-    monitor_pvt.cov_yz = 0.0;
-    monitor_pvt.cov_zx = 0.0;
-    monitor_pvt.latitude = 0.0;
-    monitor_pvt.longitude = 0.0;
-    monitor_pvt.height = 0.0;
-    monitor_pvt.valid_sats = 0;
-    monitor_pvt.solution_status = 0;
-    monitor_pvt.solution_type = 0;
-    monitor_pvt.AR_ratio_factor = 0.0;
-    monitor_pvt.AR_ratio_threshold = 0.0;
-    monitor_pvt.gdop = 0.0;
-    monitor_pvt.pdop = 0.0;
-    monitor_pvt.hdop = 0.0;
-    monitor_pvt.vdop = 0.0;
 }
 
 bool Rtklib_Solver::save_matfile()
@@ -172,34 +135,34 @@ bool Rtklib_Solver::save_matfile()
             return false;
         }
 
-    auto *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
-    auto *week = new uint32_t[num_epoch];
-    auto *RX_time = new double[num_epoch];
-    auto *user_clk_offset = new double[num_epoch];
-    auto *pos_x = new double[num_epoch];
-    auto *pos_y = new double[num_epoch];
-    auto *pos_z = new double[num_epoch];
-    auto *vel_x = new double[num_epoch];
-    auto *vel_y = new double[num_epoch];
-    auto *vel_z = new double[num_epoch];
-    auto *cov_xx = new double[num_epoch];
-    auto *cov_yy = new double[num_epoch];
-    auto *cov_zz = new double[num_epoch];
-    auto *cov_xy = new double[num_epoch];
-    auto *cov_yz = new double[num_epoch];
-    auto *cov_zx = new double[num_epoch];
-    auto *latitude = new double[num_epoch];
-    auto *longitude = new double[num_epoch];
-    auto *height = new double[num_epoch];
-    auto *valid_sats = new uint8_t[num_epoch];
-    auto *solution_status = new uint8_t[num_epoch];
-    auto *solution_type = new uint8_t[num_epoch];
-    auto *AR_ratio_factor = new float[num_epoch];
-    auto *AR_ratio_threshold = new float[num_epoch];
-    auto *gdop = new double[num_epoch];
-    auto *pdop = new double[num_epoch];
-    auto *hdop = new double[num_epoch];
-    auto *vdop = new double[num_epoch];
+    auto TOW_at_current_symbol_ms = std::vector<uint32_t>(num_epoch);
+    auto week = std::vector<uint32_t>(num_epoch);
+    auto RX_time = std::vector<double>(num_epoch);
+    auto user_clk_offset = std::vector<double>(num_epoch);
+    auto pos_x = std::vector<double>(num_epoch);
+    auto pos_y = std::vector<double>(num_epoch);
+    auto pos_z = std::vector<double>(num_epoch);
+    auto vel_x = std::vector<double>(num_epoch);
+    auto vel_y = std::vector<double>(num_epoch);
+    auto vel_z = std::vector<double>(num_epoch);
+    auto cov_xx = std::vector<double>(num_epoch);
+    auto cov_yy = std::vector<double>(num_epoch);
+    auto cov_zz = std::vector<double>(num_epoch);
+    auto cov_xy = std::vector<double>(num_epoch);
+    auto cov_yz = std::vector<double>(num_epoch);
+    auto cov_zx = std::vector<double>(num_epoch);
+    auto latitude = std::vector<double>(num_epoch);
+    auto longitude = std::vector<double>(num_epoch);
+    auto height = std::vector<double>(num_epoch);
+    auto valid_sats = std::vector<uint8_t>(num_epoch);
+    auto solution_status = std::vector<uint8_t>(num_epoch);
+    auto solution_type = std::vector<uint8_t>(num_epoch);
+    auto AR_ratio_factor = std::vector<float>(num_epoch);
+    auto AR_ratio_threshold = std::vector<float>(num_epoch);
+    auto gdop = std::vector<double>(num_epoch);
+    auto pdop = std::vector<double>(num_epoch);
+    auto hdop = std::vector<double>(num_epoch);
+    auto vdop = std::vector<double>(num_epoch);
 
     try
         {
@@ -242,35 +205,6 @@ bool Rtklib_Solver::save_matfile()
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Problem reading dump file:" << e.what() << std::endl;
-            delete[] TOW_at_current_symbol_ms;
-            delete[] week;
-            delete[] RX_time;
-            delete[] user_clk_offset;
-            delete[] pos_x;
-            delete[] pos_y;
-            delete[] pos_z;
-            delete[] vel_x;
-            delete[] vel_y;
-            delete[] vel_z;
-            delete[] cov_xx;
-            delete[] cov_yy;
-            delete[] cov_zz;
-            delete[] cov_xy;
-            delete[] cov_yz;
-            delete[] cov_zx;
-            delete[] latitude;
-            delete[] longitude;
-            delete[] height;
-            delete[] valid_sats;
-            delete[] solution_status;
-            delete[] solution_type;
-            delete[] AR_ratio_factor;
-            delete[] AR_ratio_threshold;
-            delete[] gdop;
-            delete[] pdop;
-            delete[] hdop;
-            delete[] vdop;
-
             return false;
         }
 
@@ -284,149 +218,120 @@ bool Rtklib_Solver::save_matfile()
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms, 0);
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims, week, 0);
+            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims, week.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time, 0);
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, user_clk_offset, 0);
+            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, user_clk_offset.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_x, 0);
+            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_x.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_y, 0);
+            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_y.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_z, 0);
+            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_z.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_x, 0);
+            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_x.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_y, 0);
+            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_y.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_z, 0);
+            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_z.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xx, 0);
+            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yy, 0);
+            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yy.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zz, 0);
+            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xy, 0);
+            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xy.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yz, 0);
+            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zx, 0);
+            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, latitude, 0);
+            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, latitude.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, longitude, 0);
+            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, longitude.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, height, 0);
+            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, height.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims, valid_sats, 0);
+            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims, valid_sats.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_status, 0);
+            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_status.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_type, 0);
+            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_type.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_factor, 0);
+            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_factor.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_threshold, 0);
+            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_threshold.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, gdop, 0);
+            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, gdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pdop, 0);
+            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, hdop, 0);
+            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, hdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vdop, 0);
+            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }
 
     Mat_Close(matfp);
-    delete[] TOW_at_current_symbol_ms;
-    delete[] week;
-    delete[] RX_time;
-    delete[] user_clk_offset;
-    delete[] pos_x;
-    delete[] pos_y;
-    delete[] pos_z;
-    delete[] vel_x;
-    delete[] vel_y;
-    delete[] vel_z;
-    delete[] cov_xx;
-    delete[] cov_yy;
-    delete[] cov_zz;
-    delete[] cov_xy;
-    delete[] cov_yz;
-    delete[] cov_zx;
-    delete[] latitude;
-    delete[] longitude;
-    delete[] height;
-    delete[] valid_sats;
-    delete[] solution_status;
-    delete[] solution_type;
-    delete[] AR_ratio_factor;
-    delete[] AR_ratio_threshold;
-    delete[] gdop;
-    delete[] pdop;
-    delete[] hdop;
-    delete[] vdop;
-
     return true;
 }
 
@@ -507,9 +412,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    obsd_t obs_data[MAXOBS];
-    eph_t eph_data[MAXOBS];
-    geph_t geph_data[MAXOBS];
+    std::array<obsd_t, MAXOBS> obs_data{};
+    std::array<eph_t, MAXOBS> eph_data{};
+    std::array<geph_t, MAXOBS> geph_data{};
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -894,8 +799,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             int result = 0;
             int sat = 0;
             nav_t nav_data;
-            nav_data.eph = eph_data;
-            nav_data.geph = geph_data;
+            nav_data.eph = eph_data.data();
+            nav_data.geph = geph_data.data();
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
 
@@ -915,7 +820,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
 
-            result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
+            result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 
             if (result == 0)
                 {
@@ -976,7 +881,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
 
-                    //compute Ground speed and COG
+                    // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
                     double pos[3];
                     double enuv[3];
@@ -1015,9 +920,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
 
-
-                    // PVT MONITOR
-
+                    // ######## PVT MONITOR #########
                     // TOW
                     monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
                     // WEEK
@@ -1066,7 +969,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     monitor_pvt.pdop = dop_[1];
                     monitor_pvt.hdop = dop_[2];
                     monitor_pvt.vdop = dop_[3];
-
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

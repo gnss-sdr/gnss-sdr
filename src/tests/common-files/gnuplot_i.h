@@ -1023,7 +1023,7 @@ Gnuplot &Gnuplot::plot_xyz(const X &x,
 // define static member function: set Gnuplot path manual
 //   for windows: path with slash '/' not backslash '\'
 //
-bool Gnuplot::set_GNUPlotPath(const std::string &path)
+inline bool Gnuplot::set_GNUPlotPath(const std::string &path)
 {
     std::string tmp = path + "/" + Gnuplot::m_sGNUPlotFileName;
 
@@ -1047,7 +1047,7 @@ bool Gnuplot::set_GNUPlotPath(const std::string &path)
 // define static member function: set standard terminal, used by showonscreen
 //  defaults: Windows - win, Linux - x11, Mac - aqua
 //
-void Gnuplot::set_terminal_std(const std::string &type)
+inline void Gnuplot::set_terminal_std(const std::string &type)
 {
 #if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
     if (type.find("x11") != std::string::npos && std::getenv("DISPLAY") == nullptr)
@@ -1128,7 +1128,7 @@ Gnuplot::~Gnuplot()
 //
 // Resets a gnuplot session (next plot will erase previous ones)
 //
-Gnuplot &Gnuplot::reset_plot()
+inline Gnuplot &Gnuplot::reset_plot()
 {
     //  remove_tmpfiles();
     nplots = 0;
@@ -1140,7 +1140,7 @@ Gnuplot &Gnuplot::reset_plot()
 //
 // resets a gnuplot session and sets all variables to default
 //
-Gnuplot &Gnuplot::reset_all()
+inline Gnuplot &Gnuplot::reset_all()
 {
     //  remove_tmpfiles();
     nplots = 0;
@@ -1157,7 +1157,7 @@ Gnuplot &Gnuplot::reset_all()
 //
 // Change the plotting style of a gnuplot session
 //
-Gnuplot &Gnuplot::set_style(const std::string &stylestr)
+inline Gnuplot &Gnuplot::set_style(const std::string &stylestr)
 {
     if (stylestr.find("lines") == std::string::npos &&
         stylestr.find("points") == std::string::npos &&
@@ -1202,7 +1202,7 @@ Gnuplot &Gnuplot::set_style(const std::string &stylestr)
 //
 // smooth: interpolation and approximation of data
 //
-Gnuplot &Gnuplot::set_smooth(const std::string &stylestr)
+inline Gnuplot &Gnuplot::set_smooth(const std::string &stylestr)
 {
     if (stylestr.find("unique") == std::string::npos &&
         stylestr.find("frequency") == std::string::npos &&
@@ -1226,7 +1226,7 @@ Gnuplot &Gnuplot::set_smooth(const std::string &stylestr)
 //
 // Disable screen output
 //
-Gnuplot &Gnuplot::disablescreen()
+inline Gnuplot &Gnuplot::disablescreen()
 {
     cmd("set output");
     cmd("set terminal unknown");
@@ -1237,7 +1237,7 @@ Gnuplot &Gnuplot::disablescreen()
 //
 // sets terminal type to windows / x11
 //
-Gnuplot &Gnuplot::showonscreen()
+inline Gnuplot &Gnuplot::showonscreen()
 {
     std::string persist(" persist");
 #ifdef __APPLE__
@@ -1254,7 +1254,7 @@ Gnuplot &Gnuplot::showonscreen()
 //
 // saves a gnuplot session to a pdf file
 //
-Gnuplot &Gnuplot::savetopdf(const std::string &filename, unsigned int font_size)
+inline Gnuplot &Gnuplot::savetopdf(const std::string &filename, unsigned int font_size)
 {
     std::ostringstream cmdstr;
     cmdstr << "set term pdfcairo enhanced color font \"Times-New-Roman," + std::to_string(font_size) + "\"\n";
@@ -1270,7 +1270,7 @@ Gnuplot &Gnuplot::savetopdf(const std::string &filename, unsigned int font_size)
 //
 // saves a gnuplot session to a postscript file
 //
-Gnuplot &Gnuplot::savetops(const std::string &filename)
+inline Gnuplot &Gnuplot::savetops(const std::string &filename)
 {
     std::ostringstream cmdstr;
     cmdstr << "set term postscript landscape enhanced color dashed \"Times-Roman\" 18\n";
@@ -1286,7 +1286,7 @@ Gnuplot &Gnuplot::savetops(const std::string &filename)
 //
 // Switches legend on
 //
-Gnuplot &Gnuplot::set_legend(const std::string &position)
+inline Gnuplot &Gnuplot::set_legend(const std::string &position)
 {
     std::ostringstream cmdstr;
     cmdstr << "set key " << position;
@@ -1301,7 +1301,7 @@ Gnuplot &Gnuplot::set_legend(const std::string &position)
 //
 // turns on log scaling for the x axis
 //
-Gnuplot &Gnuplot::set_xlogscale(const double base)
+inline Gnuplot &Gnuplot::set_xlogscale(const double base)
 {
     std::ostringstream cmdstr;
 
@@ -1316,7 +1316,7 @@ Gnuplot &Gnuplot::set_xlogscale(const double base)
 //
 // turns on log scaling for the y axis
 //
-Gnuplot &Gnuplot::set_ylogscale(const double base)
+inline Gnuplot &Gnuplot::set_ylogscale(const double base)
 {
     std::ostringstream cmdstr;
 
@@ -1331,7 +1331,7 @@ Gnuplot &Gnuplot::set_ylogscale(const double base)
 //
 // turns on log scaling for the z axis
 //
-Gnuplot &Gnuplot::set_zlogscale(const double base)
+inline Gnuplot &Gnuplot::set_zlogscale(const double base)
 {
     std::ostringstream cmdstr;
 
@@ -1346,7 +1346,7 @@ Gnuplot &Gnuplot::set_zlogscale(const double base)
 //
 // scales the size of the points used in plots
 //
-Gnuplot &Gnuplot::set_pointsize(const double pointsize)
+inline Gnuplot &Gnuplot::set_pointsize(const double pointsize)
 {
     std::ostringstream cmdstr;
     cmdstr << "set pointsize " << pointsize;
@@ -1360,7 +1360,7 @@ Gnuplot &Gnuplot::set_pointsize(const double pointsize)
 //
 // set isoline density (grid) for plotting functions as surfaces
 //
-Gnuplot &Gnuplot::set_samples(const int samples)
+inline Gnuplot &Gnuplot::set_samples(const int samples)
 {
     std::ostringstream cmdstr;
     cmdstr << "set samples " << samples;
@@ -1374,7 +1374,7 @@ Gnuplot &Gnuplot::set_samples(const int samples)
 //
 // set isoline density (grid) for plotting functions as surfaces
 //
-Gnuplot &Gnuplot::set_isosamples(const int isolines)
+inline Gnuplot &Gnuplot::set_isosamples(const int isolines)
 {
     std::ostringstream cmdstr;
     cmdstr << "set isosamples " << isolines;
@@ -1388,7 +1388,7 @@ Gnuplot &Gnuplot::set_isosamples(const int isolines)
 //
 // enables contour drawing for surfaces set contour {base | surface | both}
 //
-Gnuplot &Gnuplot::set_contour(const std::string &position)
+inline Gnuplot &Gnuplot::set_contour(const std::string &position)
 {
     if (position.find("base") == std::string::npos &&
         position.find("surface") == std::string::npos &&
@@ -1410,7 +1410,7 @@ Gnuplot &Gnuplot::set_contour(const std::string &position)
 // set labels
 //
 // set the xlabel
-Gnuplot &Gnuplot::set_xlabel(const std::string &label)
+inline Gnuplot &Gnuplot::set_xlabel(const std::string &label)
 {
     std::ostringstream cmdstr;
 
@@ -1424,7 +1424,7 @@ Gnuplot &Gnuplot::set_xlabel(const std::string &label)
 //------------------------------------------------------------------------------
 // set the ylabel
 //
-Gnuplot &Gnuplot::set_ylabel(const std::string &label)
+inline Gnuplot &Gnuplot::set_ylabel(const std::string &label)
 {
     std::ostringstream cmdstr;
 
@@ -1438,7 +1438,7 @@ Gnuplot &Gnuplot::set_ylabel(const std::string &label)
 //------------------------------------------------------------------------------
 // set the zlabel
 //
-Gnuplot &Gnuplot::set_zlabel(const std::string &label)
+inline Gnuplot &Gnuplot::set_zlabel(const std::string &label)
 {
     std::ostringstream cmdstr;
 
@@ -1454,7 +1454,7 @@ Gnuplot &Gnuplot::set_zlabel(const std::string &label)
 // set range
 //
 // set the xrange
-Gnuplot &Gnuplot::set_xrange(const double iFrom,
+inline Gnuplot &Gnuplot::set_xrange(const double iFrom,
     const double iTo)
 {
     std::ostringstream cmdstr;
@@ -1469,7 +1469,7 @@ Gnuplot &Gnuplot::set_xrange(const double iFrom,
 //------------------------------------------------------------------------------
 // set the yrange
 //
-Gnuplot &Gnuplot::set_yrange(const double iFrom,
+inline Gnuplot &Gnuplot::set_yrange(const double iFrom,
     const double iTo)
 {
     std::ostringstream cmdstr;
@@ -1484,7 +1484,7 @@ Gnuplot &Gnuplot::set_yrange(const double iFrom,
 //------------------------------------------------------------------------------
 // set the zrange
 //
-Gnuplot &Gnuplot::set_zrange(const double iFrom,
+inline Gnuplot &Gnuplot::set_zrange(const double iFrom,
     const double iTo)
 {
     std::ostringstream cmdstr;
@@ -1500,7 +1500,7 @@ Gnuplot &Gnuplot::set_zrange(const double iFrom,
 //
 // set the palette range
 //
-Gnuplot &Gnuplot::set_cbrange(const double iFrom,
+inline Gnuplot &Gnuplot::set_cbrange(const double iFrom,
     const double iTo)
 {
     std::ostringstream cmdstr;
@@ -1517,7 +1517,7 @@ Gnuplot &Gnuplot::set_cbrange(const double iFrom,
 // Plots a linear equation y=ax+b (where you supply the
 // slope a and intercept b)
 //
-Gnuplot &Gnuplot::plot_slope(const double a,
+inline Gnuplot &Gnuplot::plot_slope(const double a,
     const double b,
     const std::string &title)
 {
@@ -1560,7 +1560,7 @@ Gnuplot &Gnuplot::plot_slope(const double a,
 //
 // Plot an equation supplied as a std::string y=f(x) (only f(x) expected)
 //
-Gnuplot &Gnuplot::plot_equation(const std::string &equation,
+inline Gnuplot &Gnuplot::plot_equation(const std::string &equation,
     const std::string &title)
 {
     std::ostringstream cmdstr;
@@ -1602,7 +1602,7 @@ Gnuplot &Gnuplot::plot_equation(const std::string &equation,
 //
 // plot an equation supplied as a std::string y=(x)
 //
-Gnuplot &Gnuplot::plot_equation3d(const std::string &equation,
+inline Gnuplot &Gnuplot::plot_equation3d(const std::string &equation,
     const std::string &title)
 {
     std::ostringstream cmdstr;
@@ -1644,7 +1644,7 @@ Gnuplot &Gnuplot::plot_equation3d(const std::string &equation,
 //
 // Plots a 2d graph from a list of doubles (x) saved in a file
 //
-Gnuplot &Gnuplot::plotfile_x(const std::string &filename,
+inline Gnuplot &Gnuplot::plotfile_x(const std::string &filename,
     const unsigned int column,
     const std::string &title)
 {
@@ -1699,7 +1699,7 @@ Gnuplot &Gnuplot::plotfile_x(const std::string &filename,
 //
 // Plots a 2d graph from a list of doubles (x y) saved in a file
 //
-Gnuplot &Gnuplot::plotfile_xy(const std::string &filename,
+inline Gnuplot &Gnuplot::plotfile_xy(const std::string &filename,
     const unsigned int column_x,
     const unsigned int column_y,
     const std::string &title,
@@ -1756,7 +1756,7 @@ Gnuplot &Gnuplot::plotfile_xy(const std::string &filename,
 //
 // Plots a 2d graph with errorbars from a list of doubles (x y dy) in a file
 //
-Gnuplot &Gnuplot::plotfile_xy_err(const std::string &filename,
+inline Gnuplot &Gnuplot::plotfile_xy_err(const std::string &filename,
     const unsigned int column_x,
     const unsigned int column_y,
     const unsigned int column_dy,
@@ -1806,7 +1806,7 @@ Gnuplot &Gnuplot::plotfile_xy_err(const std::string &filename,
 //
 // Plots a 3d graph from a list of doubles (x y z) saved in a file
 //
-Gnuplot &Gnuplot::plotfile_xyz(const std::string &filename,
+inline Gnuplot &Gnuplot::plotfile_xyz(const std::string &filename,
     const unsigned int column_x,
     const unsigned int column_y,
     const unsigned int column_z,
@@ -1855,7 +1855,7 @@ Gnuplot &Gnuplot::plotfile_xyz(const std::string &filename,
 //
 /// *  note that this function is not valid for versions of GNUPlot below 4.2
 //
-Gnuplot &Gnuplot::plot_image(const unsigned char *ucPicBuf,
+inline Gnuplot &Gnuplot::plot_image(const unsigned char *ucPicBuf,
     const unsigned int iWidth,
     const unsigned int iHeight,
     const std::string &title)
@@ -1914,7 +1914,7 @@ Gnuplot &Gnuplot::plot_image(const unsigned char *ucPicBuf,
 }
 
 
-Gnuplot &Gnuplot::plot_circle(double east, double north, double radius, const std::string &label)
+inline Gnuplot &Gnuplot::plot_circle(double east, double north, double radius, const std::string &label)
 {
     std::ostringstream cmdstr;
     //
@@ -1952,7 +1952,7 @@ Gnuplot &Gnuplot::plot_circle(double east, double north, double radius, const st
 //
 // Sends a command to an active gnuplot session
 //
-Gnuplot &Gnuplot::cmd(const std::string &cmdstr)
+inline Gnuplot &Gnuplot::cmd(const std::string &cmdstr)
 {
     if (!(valid))
         {
@@ -1996,7 +1996,7 @@ Gnuplot &Gnuplot::cmd(const std::string &cmdstr)
 //
 // Opens up a gnuplot session, ready to receive commands
 //
-void Gnuplot::init()
+inline void Gnuplot::init()
 {
 // char * getenv ( const char * name );  get value of environment variable
 // Retrieves a C string containing the value of the environment variable
@@ -2058,7 +2058,7 @@ void Gnuplot::init()
 //
 // Find out if a command lives in m_sGNUPlotPath or in PATH
 //
-bool Gnuplot::get_program_path()
+inline bool Gnuplot::get_program_path()
 {
     //
     // first look in m_sGNUPlotPath for Gnuplot
@@ -2129,7 +2129,7 @@ bool Gnuplot::get_program_path()
 //
 // check if file exists
 //
-bool Gnuplot::file_exists(const std::string &filename, int mode)
+inline bool Gnuplot::file_exists(const std::string &filename, int mode)
 {
     if (mode < 0 || mode > 7)
         {
@@ -2161,7 +2161,7 @@ bool Gnuplot::file_exists(const std::string &filename, int mode)
 }
 
 
-bool Gnuplot::file_available(const std::string &filename)
+inline bool Gnuplot::file_available(const std::string &filename)
 {
     std::ostringstream except;
     if (Gnuplot::file_exists(filename, 0))  // check existence
@@ -2187,7 +2187,7 @@ bool Gnuplot::file_available(const std::string &filename)
 //
 // Opens a temporary file
 //
-std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
+inline std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
 {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     char name[] = "gnuplotiXXXXXX";  //tmp file in working directory
@@ -2256,7 +2256,7 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
 }
 
 
-void Gnuplot::remove_tmpfiles()
+inline void Gnuplot::remove_tmpfiles()
 {
     if (!(tmpfile_list).empty())
         {

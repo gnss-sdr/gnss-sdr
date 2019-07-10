@@ -35,7 +35,9 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -86,13 +88,14 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_->set_channel_fsm(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -143,29 +146,23 @@ public:
     /*!
      * \brief Sets the resampler latency to account it in the acquisition code delay estimation
      */
-
     void set_resampler_latency(uint32_t latency_samples) override;
 
 private:
     float calculate_threshold(float pfa);
-
     ConfigurationInterface* configuration_;
-
     pcps_acquisition_sptr acquisition_;
     Acq_Conf acq_parameters_;
     size_t item_size_;
-
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
-
     bool bit_transition_flag_;
     bool dump_;
     bool acq_pilot_;
     bool use_CFAR_;
     bool blocking_;
     bool acq_iq_;
-
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
@@ -176,18 +173,10 @@ private:
     unsigned int max_dwells_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
     int64_t fs_in_;
-
     float threshold_;
-
-    /*
-    std::complex<float>* codeI_;
-    std::complex<float>* codeQ_;
-    */
-
-    gr_complex* code_;
-
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
 };
+
 #endif /* GALILEO_E5A_PCPS_ACQUISITION_H_ */

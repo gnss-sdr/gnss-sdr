@@ -209,14 +209,14 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, co
                     for (j = 0; j < 4; j++)
                         {
                             peph.pos[i][j] = 0.0;
-                            peph.std[i][j] = 0.0f;
+                            peph.std[i][j] = 0.0F;
                             peph.vel[i][j] = 0.0;
-                            peph.vst[i][j] = 0.0f;
+                            peph.vst[i][j] = 0.0F;
                         }
                     for (j = 0; j < 3; j++)
                         {
-                            peph.cov[i][j] = 0.0f;
-                            peph.vco[i][j] = 0.0f;
+                            peph.cov[i][j] = 0.0F;
+                            peph.vco[i][j] = 0.0F;
                         }
                 }
             for (i = pred_o = pred_c = v = 0; i < n && fgets(buff, sizeof(buff), fp); i++)

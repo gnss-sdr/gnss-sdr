@@ -37,7 +37,9 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fine_doppler_cc.h"
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -95,13 +97,14 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_cc_->set_channel_fsm(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -161,7 +164,7 @@ private:
     int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

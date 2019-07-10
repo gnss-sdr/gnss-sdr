@@ -145,10 +145,10 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
         }
 
     // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;
@@ -209,9 +209,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisi
                     volk_gnsssdr_free(d_CAF_vector_Q);
                 }
         }
-
-    delete d_fft_if;
-    delete d_ifft;
 
     try
         {

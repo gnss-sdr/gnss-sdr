@@ -56,9 +56,9 @@
  */
 
 /** GPS L2C preamble */
-const uint32_t GPS_CNAV_PREAMBLE1 = 0x8Bu; /* (0b10001011u) */
+const uint32_t GPS_CNAV_PREAMBLE1 = 0x8BU; /* (0b10001011u) */
 /** Inverted GPS L2C preamble */
-const uint32_t GPS_CNAV_PREAMBLE2 = 0x74u; /* (0b01110100u) */
+const uint32_t GPS_CNAV_PREAMBLE2 = 0x74U; /* (0b01110100u) */
 /** GPS L2C preamble length in bits */
 #define GPS_CNAV_PREAMBLE_LENGTH (8)
 /** GPS L2C CNAV message length in bits */
@@ -307,7 +307,7 @@ static void _cnav_msg_invert(cnav_v27_part_t *part)
     size_t i = 0;
     for (i = 0; i < sizeof(part->decoded); i++)
         {
-            part->decoded[i] ^= 0xFFu;
+            part->decoded[i] ^= 0xFFU;
         }
 }
 

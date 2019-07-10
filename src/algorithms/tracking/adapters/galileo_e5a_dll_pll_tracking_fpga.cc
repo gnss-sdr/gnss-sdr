@@ -217,14 +217,15 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
-            galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(sig_));
+            std::array<char, 3> sig_a = {'5', 'X', '\0'};
+            galileo_e5_a_code_gen_complex_primary(gsl::span<gr_complex>(aux_code, code_length_chips * code_samples_per_chip), PRN, sig_a);
 
             if (trk_param_fpga.track_pilot)
                 {
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(aux_code[s].imag());
+                            auto tmp_value = static_cast<int32_t>(aux_code[s].imag());
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
@@ -246,7 +247,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(aux_code[s].real());
+                            auto tmp_value = static_cast<int32_t>(aux_code[s].real());
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
@@ -272,10 +273,10 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
 GalileoE5aDllPllTrackingFpga::~GalileoE5aDllPllTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
     if (d_track_pilot)
         {
-            delete[] d_data_codes;
+            volk_gnsssdr_free(d_data_codes);
         }
 }
 

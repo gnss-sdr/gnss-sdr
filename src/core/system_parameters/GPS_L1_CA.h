@@ -55,6 +55,7 @@ const double GPS_L1_CA_CODE_RATE_HZ = 1.023e6;      //!< GPS L1 C/A code rate [c
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length [chips]
 const double GPS_L1_CA_CODE_PERIOD = 0.001;         //!< GPS L1 C/A code period [seconds]
 const uint32_t GPS_L1_CA_CODE_PERIOD_MS = 1U;       //!< GPS L1 C/A code period [ms]
+const uint32_t GPS_L1_CA_BIT_PERIOD_MS = 20U;       //!< GPS L1 C/A bit period [ms]
 const double GPS_L1_CA_CHIP_PERIOD = 9.7752e-07;    //!< GPS L1 C/A chip period [seconds]
 
 //optimum parameters
@@ -84,6 +85,7 @@ const int32_t GPS_L1_CA_HISTORY_DEEP = 100;
         1, 0, 0, 0, 1, 0, 1, 1 \
     }
 const std::string GPS_CA_PREAMBLE = {"10001011"};
+const std::string GPS_CA_PREAMBLE_SYMBOLS_STR = {"1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111000000000000000000001111111111111111111111111111111111111111"};
 const int32_t GPS_CA_PREAMBLE_LENGTH_BITS = 8;
 const int32_t GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
 const double GPS_CA_PREAMBLE_DURATION_S = 0.160;

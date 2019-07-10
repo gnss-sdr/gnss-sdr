@@ -36,6 +36,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <algorithm>
 
 
 GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
@@ -89,7 +90,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
     int samples_per_ms = code_length_ / 4;
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -114,7 +115,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -126,10 +127,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 }
 
 
-GalileoE1PcpsTongAmbiguousAcquisition::~GalileoE1PcpsTongAmbiguousAcquisition()
-{
-    delete[] code_;
-}
+GalileoE1PcpsTongAmbiguousAcquisition::~GalileoE1PcpsTongAmbiguousAcquisition() = default;
 
 
 void GalileoE1PcpsTongAmbiguousAcquisition::stop_acquisition()
@@ -220,20 +218,19 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
             bool cboc = configuration_->property(
                 "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-            auto* code = new std::complex<float>[code_length_];
-
-            galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+            std::array<char, 3> Signal_;
+            std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
+            galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), Signal_,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
+            gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
                 {
-                    memcpy(&(code_[i * code_length_]), code,
-                        sizeof(gr_complex) * code_length_);
+                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
+            acquisition_cc_->set_local_code(code_.data());
         }
 }
 
@@ -245,6 +242,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::reset()
             acquisition_cc_->set_active(true);
         }
 }
+
 
 void GalileoE1PcpsTongAmbiguousAcquisition::set_state(int state)
 {

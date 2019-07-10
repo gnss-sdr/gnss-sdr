@@ -62,19 +62,10 @@ extern "C"
  */
 class Gnss_Sdr_Supl_Client
 {
-private:
-    // GSM CELL INFO
-    int mcc;
-    int mns;
-    int lac;
-    int ci;
-    // assistance protocol structure
-    supl_ctx_t ctx{};
-    // assistance data
-    supl_assist_t assist{};
-    bool read_gal_almanac_from_gsa(const std::string& file_name);
-
 public:
+    Gnss_Sdr_Supl_Client();
+    ~Gnss_Sdr_Supl_Client();
+
     // SUPL SERVER INFO
     std::string server_name;
     int server_port;
@@ -113,6 +104,7 @@ public:
      * \return Error code -> 0 no errors.
      */
     int get_assistance(int i_mcc, int i_mns, int i_lac, int i_ci);
+
     /*
      * \brief Read the received SUPL data and stores it into the corresponding class members (gps_ephemeris_map, gps_almanac_map, gps_iono, gps_time, gps_utc, gps_acq_map, and gps_ref_loc)
      *
@@ -270,8 +262,17 @@ public:
      */
     void print_assistance();
 
-    Gnss_Sdr_Supl_Client();
-    ~Gnss_Sdr_Supl_Client();
+private:
+    // GSM CELL INFO
+    int mcc;
+    int mns;
+    int lac;
+    int ci;
+    // assistance protocol structure
+    supl_ctx_t ctx{};
+    // assistance data
+    supl_assist_t assist{};
+    bool read_gal_almanac_from_gsa(const std::string& file_name);
 };
 
 #endif

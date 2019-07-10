@@ -47,6 +47,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
     pull_in_time_s = 10;
+    bit_synchronization_time_limit_s = pull_in_time_s + 60;
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;
@@ -68,6 +69,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
     max_code_lock_fail = FLAGS_max_lock_fail;
     carrier_lock_th = FLAGS_carrier_lock_th;
+    enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';
     char sig_[3] = "1C";

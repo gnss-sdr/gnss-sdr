@@ -60,6 +60,8 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    //prevent telemetry symbols accumulation in output buffers
+    this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
@@ -190,7 +192,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (uint32_t i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS; i++)
                 {
-                    raw_bits[GPS_L2_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1u);
+                    raw_bits[GPS_L2_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1U);
                 }
 
             d_CNAV_Message.decode_page(raw_bits);

@@ -106,9 +106,9 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_code = new gr_complex[d_samples_per_code]();
 
     // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
     // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;
@@ -122,7 +122,6 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_threshold = 0;
     d_doppler_step = 0;
     d_grid_doppler_wipeoffs = nullptr;
-    d_fft_if2 = nullptr;
     d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
@@ -150,8 +149,6 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     volk_gnsssdr_free(d_magnitude);
     volk_gnsssdr_free(d_magnitude_folded);
 
-    delete d_ifft;
-    delete d_fft_if;
     delete d_code;
     delete d_possible_delay;
     delete d_corr_output_f;

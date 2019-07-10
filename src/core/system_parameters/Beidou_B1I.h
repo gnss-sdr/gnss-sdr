@@ -34,8 +34,7 @@
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
-#include <utility>  // std::pair
-#include <vector>
+#include <string>
 
 // Physical constants
 const double BEIDOU_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
@@ -48,22 +47,27 @@ const double BEIDOU_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)
 
 
 // carrier and code frequencies
-const double BEIDOU_B1I_FREQ_HZ = 1.561098e9;        //!< b1I [Hz]
-const double BEIDOU_B1I_CODE_RATE_HZ = 2.046e6;      //!< beidou b1I code rate [chips/s]
-const double BEIDOU_B1I_CODE_LENGTH_CHIPS = 2046.0;  //!< beidou b1I code length [chips]
-const double BEIDOU_B1I_CODE_PERIOD = 0.001;         //!< beidou b1I code period [seconds]
-const uint32_t BEIDOU_B1I_CODE_PERIOD_MS = 1;        //!< beidou b1I L1 C/A code period [ms]
-const double BEIDOU_B1I_CHIP_PERIOD = 4.8875e-07;    //!< beidou b1I chip period [seconds]
+const double BEIDOU_B1I_FREQ_HZ = 1.561098e9;        //!< B1I [Hz]
+const double BEIDOU_B1I_CODE_RATE_HZ = 2.046e6;      //!< Beidou B1I code rate [chips/s]
+const double BEIDOU_B1I_CODE_LENGTH_CHIPS = 2046.0;  //!< Beidou B1I code length [chips]
+const double BEIDOU_B1I_CODE_PERIOD = 0.001;         //!< Beidou B1I code period [seconds]
+const uint32_t BEIDOU_B1I_CODE_PERIOD_MS = 1;        //!< Beidou B1I code period [ms]
+const double BEIDOU_B1I_CHIP_PERIOD = 4.8875e-07;    //!< Beidou B1I chip period [seconds]
 const int32_t BEIDOU_B1I_SECONDARY_CODE_LENGTH = 20;
 const std::string BEIDOU_B1I_SECONDARY_CODE = "00000100110101001110";
 const std::string BEIDOU_B1I_SECONDARY_CODE_STR = "00000100110101001110";
+const std::string BEIDOU_B1I_GEO_PREAMBLE_SYMBOLS_STR = {"1111110000001100001100"};
+const int32_t BEIDOU_B1I_GEO_PREAMBLE_LENGTH_SYMBOLS = 22;
+
 const std::string BEIDOU_B1I_D2_SECONDARY_CODE_STR = "00";
 const int BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;
 const int BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = 220;  // **************
 const double BEIDOU_B1I_PREAMBLE_DURATION_S = 0.220;
 const int BEIDOU_B1I_PREAMBLE_DURATION_MS = 220;
-const int BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND = 50;                                                                               //!< D1 NAV message bit rate [bits/s]
-const int BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT = 20;                                                                                // *************
+const int BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND = 50;  //!< D1 NAV message bit rate [bits/s]
+const int BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT = 20;
+const int BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT = 2;
+const int BEIDOU_B1I_TELEMETRY_SYMBOL_PERIOD_MS = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT * BEIDOU_B1I_CODE_PERIOD_MS;
 const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  //************!< NAV message bit rate [symbols/s]
 const int BEIDOU_WORD_LENGTH = 4;                                                                                                   //**************!< CRC + BEIDOU WORD (-2 -1 0 ... 29) Bits = 4 bytes
 const int BEIDOU_SUBFRAME_LENGTH = 40;                                                                                              //**************!< BEIDOU_WORD_LENGTH x 10 = 40 bytes

@@ -77,16 +77,7 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (double &i : dop_)
-        {
-            i = 0.0;
-        }
-    pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
-    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
-    for (auto &i : pvt_ssat)
-        {
-            i = ssat0;
-        }
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -104,35 +95,6 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
                         }
                 }
         }
-    // PVT MONITOR
-    monitor_pvt.TOW_at_current_symbol_ms = 0U;
-    monitor_pvt.week = 0U;
-    monitor_pvt.RX_time = 0.0;
-    monitor_pvt.user_clk_offset = 0.0;
-    monitor_pvt.pos_x = 0.0;
-    monitor_pvt.pos_y = 0.0;
-    monitor_pvt.pos_z = 0.0;
-    monitor_pvt.vel_x = 0.0;
-    monitor_pvt.vel_y = 0.0;
-    monitor_pvt.vel_z = 0.0;
-    monitor_pvt.cov_xx = 0.0;
-    monitor_pvt.cov_yy = 0.0;
-    monitor_pvt.cov_zz = 0.0;
-    monitor_pvt.cov_xy = 0.0;
-    monitor_pvt.cov_yz = 0.0;
-    monitor_pvt.cov_zx = 0.0;
-    monitor_pvt.latitude = 0.0;
-    monitor_pvt.longitude = 0.0;
-    monitor_pvt.height = 0.0;
-    monitor_pvt.valid_sats = 0;
-    monitor_pvt.solution_status = 0;
-    monitor_pvt.solution_type = 0;
-    monitor_pvt.AR_ratio_factor = 0.0;
-    monitor_pvt.AR_ratio_threshold = 0.0;
-    monitor_pvt.gdop = 0.0;
-    monitor_pvt.pdop = 0.0;
-    monitor_pvt.hdop = 0.0;
-    monitor_pvt.vdop = 0.0;
 }
 
 bool Rtklib_Solver::save_matfile()
@@ -450,9 +412,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    std::array<obsd_t, MAXOBS> obs_data;
-    std::array<eph_t, MAXOBS> eph_data;
-    std::array<geph_t, MAXOBS> geph_data;
+    std::array<obsd_t, MAXOBS> obs_data{};
+    std::array<eph_t, MAXOBS> eph_data{};
+    std::array<geph_t, MAXOBS> geph_data{};
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;

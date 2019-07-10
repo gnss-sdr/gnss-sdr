@@ -32,11 +32,15 @@
 #define GNSS_SDR_BEAMFORMER_H
 
 #include <gnuradio/sync_block.h>
+#include <vector>
 
 class beamformer;
+
 using beamformer_sptr = boost::shared_ptr<beamformer>;
 
 beamformer_sptr make_beamformer_sptr();
+
+const int GNSS_SDR_BEAMFORMER_CHANNELS = 8;
 
 /*!
  * \brief This class implements a real-time software-defined spatial filter using the CTTC GNSS experimental antenna array input and a set of dynamically reloadable weights
@@ -44,14 +48,14 @@ beamformer_sptr make_beamformer_sptr();
 class beamformer : public gr::sync_block
 {
 public:
-    ~beamformer();
+    ~beamformer() = default;
     int work(int noutput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 
 private:
     friend beamformer_sptr make_beamformer_sptr();
     beamformer();
-    gr_complex *weight_vector;
+    std::vector<gr_complex> weight_vector = std::vector<gr_complex>(GNSS_SDR_BEAMFORMER_CHANNELS, gr_complex(1.0, 0.0));
 };
 
 #endif

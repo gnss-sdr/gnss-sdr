@@ -48,9 +48,6 @@ Exponential_Smoother::Exponential_Smoother()
 }
 
 
-Exponential_Smoother::~Exponential_Smoother() = default;
-
-
 void Exponential_Smoother::set_alpha(float alpha)
 {
     alpha_ = alpha;

@@ -67,7 +67,7 @@ DEFINE_int32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimat
 
 DEFINE_int32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz).");
 
-DEFINE_int32(max_carrier_lock_fail, 10000, "Maximum number of carrier lock failures before dropping a satellite.");
+DEFINE_int32(max_carrier_lock_fail, 5000, "Maximum number of carrier lock failures before dropping a satellite.");
 
 DEFINE_int32(max_lock_fail, 50, "Maximum number of code lock failures before dropping a satellite.");
 

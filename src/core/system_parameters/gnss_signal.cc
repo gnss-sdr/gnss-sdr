@@ -50,9 +50,6 @@ Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& si
 }
 
 
-Gnss_Signal::~Gnss_Signal() = default;
-
-
 std::string Gnss_Signal::get_signal_str() const
 {
     return this->signal;

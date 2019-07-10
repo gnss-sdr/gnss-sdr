@@ -44,6 +44,16 @@
 class Tracking_loop_filter
 {
 public:
+    Tracking_loop_filter();
+    ~Tracking_loop_filter() = default;
+
+    Tracking_loop_filter(float update_interval, float noise_bandwidth,
+        int loop_order = 2,
+        bool include_last_integrator = false);
+
+    Tracking_loop_filter(Tracking_loop_filter&&) = default;                       //!< Move operator
+    Tracking_loop_filter& operator=(Tracking_loop_filter&& /*other*/) = default;  //!< Move assignment operator
+
     float get_noise_bandwidth(void) const;
     float get_update_interval(void) const;
     bool get_include_last_integrator(void) const;
@@ -56,13 +66,6 @@ public:
 
     void initialize(float initial_output = 0.0);
     float apply(float current_input);
-
-    Tracking_loop_filter(float update_interval, float noise_bandwidth,
-        int loop_order = 2,
-        bool include_last_integrator = false);
-
-    Tracking_loop_filter();
-    ~Tracking_loop_filter();
 
 private:
     // Store the last inputs and outputs:

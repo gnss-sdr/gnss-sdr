@@ -282,6 +282,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                                     PC = P2 + P1_P2 - ISCl5i;
                                 }
                         }
+                    if (sys == SYS_BDS)
+                        {
+                            P2 += P2_C2; /* C2->P2 */
+                            PC = P2; // no tgd corrections for B3I
+                        }
                     else if (sys == SYS_GAL or sys == SYS_GLO or sys == SYS_BDS)  // Gal. E5a single freq.
                         {
                             P2 += P2_C2; /* C2->P2 */

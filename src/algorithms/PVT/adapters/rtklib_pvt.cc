@@ -180,18 +180,25 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
      *
      *
      *    Skipped previous values to avoid overlapping
-     *    50   |  Beidou B1I
-     *    51   |  Beidou B1I + GPS L1 C/A
-     *    52   |  Beidou B1I + Galileo E1B
-     *    53   |  Beidou B1I + GLONASS L1 C/A
-     *    54   |  Beidou B1I + GPS L1 C/A + Galileo E1B
-     *    55   |  Beidou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
-     *    56   |  Beidou B1I + Beidou B3I
+     *    500   |  BeiDou B1I
+     *    501   |  BeiDou B1I + GPS L1 C/A
+     *    502   |  BeiDou B1I + Galileo E1B
+     *    503   |  BeiDou B1I + GLONASS L1 C/A
+     *    504   |  BeiDou B1I + GPS L1 C/A + Galileo E1B
+     *    505   |  BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+     *    506   |  BeiDou B1I + Beidou B3I
      *    Skipped previous values to avoid overlapping
-     *    60   |  Beidou B3I
-     *    61   |  Beidou B3I + GPS L2C
-     *    62   |  Beidou B3I + GLONASS L2 C/A
-     *    63   |  Beidou B3I + GPS L2C + GLONASS L2 C/A
+     *    600   |  BeiDou B3I
+     *    601   |  BeiDou B3I + GPS L2C
+     *    602   |  BeiDou B3I + GLONASS L2 C/A
+     *    603   |  BeiDou B3I + GPS L2C + GLONASS L2 C/A
+     *    604   |  BeiDou B3I + GPS L1 C/A
+     *    605   |  BeiDou B3I + Galileo E1B
+     *    606   |  BeiDou B3I + GLONASS L1 C/A
+     *    607   |  BeiDou B3I + GPS L1 C/A + Galileo E1B
+     *    608   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + BeiDou B1I
+     *    609   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A
+     *    610   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A + BeiDou B1I
      */
     int gps_1C_count = configuration->property("Channels_1C.count", 0);
     int gps_2S_count = configuration->property("Channels_2S.count", 0);
@@ -330,48 +337,48 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     // BeiDou B1I Receiver
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
         {
-            pvt_output_parameters.type_of_receiver = 50;  // Beidou B1I
+            pvt_output_parameters.type_of_receiver = 500;  // Beidou B1I
         }
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
         {
-            pvt_output_parameters.type_of_receiver = 51;  // Beidou B1I + GPS L1 C/A
+            pvt_output_parameters.type_of_receiver = 501;  // Beidou B1I + GPS L1 C/A
         }
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
         {
-            pvt_output_parameters.type_of_receiver = 52;  // Beidou B1I + Galileo E1B
+            pvt_output_parameters.type_of_receiver = 502;  // Beidou B1I + Galileo E1B
         }
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
         {
-            pvt_output_parameters.type_of_receiver = 53;  // Beidou B1I + GLONASS L1 C/A
+            pvt_output_parameters.type_of_receiver = 503;  // Beidou B1I + GLONASS L1 C/A
         }
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
         {
-            pvt_output_parameters.type_of_receiver = 54;  // Beidou B1I + GPS L1 C/A + Galileo E1B
+            pvt_output_parameters.type_of_receiver = 504;  // Beidou B1I + GPS L1 C/A + Galileo E1B
         }
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
         {
-            pvt_output_parameters.type_of_receiver = 55;  // Beidou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+            pvt_output_parameters.type_of_receiver = 505;  // Beidou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
         }
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count != 0))
         {
-            pvt_output_parameters.type_of_receiver = 56;  // Beidou B1I + Beidou B3I
+            pvt_output_parameters.type_of_receiver = 506;  // Beidou B1I + Beidou B3I
         }
     // BeiDou B3I Receiver
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count == 0) && (bds_B3_count != 0))
         {
-            pvt_output_parameters.type_of_receiver = 60;  // Beidou B3I
+            pvt_output_parameters.type_of_receiver = 600;  // Beidou B3I
         }
     if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count == 0) && (bds_B3_count != 0))
         {
-            pvt_output_parameters.type_of_receiver = 61;  // Beidou B3I + GPS L2C
+            pvt_output_parameters.type_of_receiver = 601;  // Beidou B3I + GPS L2C
         }
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0) && (bds_B1_count == 0) && (bds_B3_count != 0))
         {
-            pvt_output_parameters.type_of_receiver = 62;  // Beidou B3I + GLONASS L2 C/A
+            pvt_output_parameters.type_of_receiver = 602;  // Beidou B3I + GLONASS L2 C/A
         }
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count != 0) && (bds_B1_count == 0) && (bds_B3_count != 0))
         {
-            pvt_output_parameters.type_of_receiver = 63;  // Beidou B3I + GPS L2C + GLONASS L2 C/A
+            pvt_output_parameters.type_of_receiver = 603;  // Beidou B3I + GPS L2C + GLONASS L2 C/A
         }
 
     // RTKLIB PVT solver options

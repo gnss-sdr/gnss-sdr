@@ -2178,7 +2178,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
                                                                     break;
-                                                                case 50:  // BDS B1I only
+                                                                case 500:  // BDS B1I only
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
@@ -2188,11 +2188,99 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
 
                                                                     break;
-                                                                case 60:  // BDS B1I only
+                                                                case 501:  // BeiDou B1I + GPS L1 C/A
+                                                                    if ((gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend()) and (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend()))
+                                                                        {
+                                                                    		std::string bds_signal("B1");
+                                                                    		//rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, bds_signal);
+                                                                    	    //rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                    	    b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 502:  // BeiDou B1I + Galileo E1B
+                                                                    if ((galileo_ephemeris_iter != d_pvt_solver->galileo_ephemeris_map.cend()) and (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend()))
+                                                                        {
+                                                                    		std::string bds_signal("B1");
+                                                                    		std::string gal_signal("1B");
+                                                                    		//rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, gal_signal, bds_signal);
+                                                                    		//rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->galileo_iono, d_pvt_solver->galileo_utc_model, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                    		b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 503:  // BeiDou B1I + GLONASS L1 C/A
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 504:  // BeiDou B1I + GPS L1 C/A + Galileo E1B
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 505:  // BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 506:  // BeiDou B1I + Beidou B3I
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            //rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 600:  // BDS B3I only
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
                                                                             rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 601:  // BeiDou B3I + GPS L2C
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 602:  // BeiDou B3I + GLONASS L2 C/A
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                                        }
+
+                                                                    break;
+                                                                case 603:  // BeiDou B3I + GPS L2C + GLONASS L2 C/A
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
+                                                                            //rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 

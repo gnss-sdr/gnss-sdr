@@ -36,20 +36,29 @@
 #include <utility>
 #include <vector>
 
-const double BEIDOU_DNAV_C_M_S = 299792458.0;         //!< The speed of light, [m/s]
-const double BEIDOU_DNAV_C_M_MS = 299792.4580;        //!< The speed of light, [m/ms]
-const double BEIDOU_DNAV_PI = 3.1415926535898;        //!< Pi
-const double BEIDOU_DNAV_TWO_PI = 6.283185307179586;  //!< 2Pi
+const double BEIDOU_DNAV_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
+const double BEIDOU_DNAV_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
+const double BEIDOU_DNAV_PI = 3.1415926535898;            //!< BeiDou DNAV Pi
+const double BEIDOU_DNAV_TWO_PI = 6.2831853071796;        //!< BeiDou DNAV 2Pi
+const double BEIDOU_DNAV_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
+const double BEIDOU_DNAV_GM = 3.986004418e14;             //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] as defined in CGCS2000
+const double BEIDOU_DNAV_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)] F=-2(GM)^.5/C^2
+
 const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
 const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
 const double BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
 const double BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
-const double BEIDOU_DNAV_DATA_BITS = 300;
+const int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
 const double BEIDOU_DNAV_WORDS_SUBFRAME = 10;
 const double BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
 const double BEIDOU_D1NAV_SYMBOL_RATE_SPS = 50;
 const double BEIDOU_D2NAV_SYMBOL_RATE_SPS = 500;
 const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
+
+// Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
+const int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
+// Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch
+const int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
 // GENERAL

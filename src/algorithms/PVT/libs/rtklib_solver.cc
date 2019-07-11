@@ -54,6 +54,7 @@
 #include "rtklib_solver.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -730,7 +731,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
-                                            beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
+                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                             0);
                                         valid_obs++;
                                     }
@@ -752,7 +753,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
-                                                            beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
+                                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                                             1);  // Band 3 (L2/G2/B3)
                                                         found_B1I_obs = true;
                                                         break;
@@ -770,7 +771,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
+                                                    beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                                     1);  // Band 2 (L2/G2)
                                                 valid_obs++;
                                             }

@@ -89,6 +89,7 @@ private:
     uint32_t T_rx_TOW_ms;
     uint32_t T_rx_remnant_to_20ms;
     uint32_t T_rx_step_ms;
+    uint32_t T_status_report_timer_ms;
     uint32_t d_nchannels_in;
     uint32_t d_nchannels_out;
     double T_rx_offset_ms;

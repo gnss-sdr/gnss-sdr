@@ -126,9 +126,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
+    // Send PVT status to gnss_flowgraph
+    this->message_port_register_out(pmt::mp("status"));
 
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
+    d_report_rate_ms = 1000;  //report every second PVT to gnss_synchro
     d_dump = conf_.dump;
     d_dump_mat = conf_.dump_mat and d_dump;
     d_dump_filename = conf_.dump_filename;
@@ -3729,10 +3732,19 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
 
                     // PVT MONITOR
-                    if (d_pvt_solver->is_valid_position() and flag_monitor_pvt_enabled)
+                    if (d_pvt_solver->is_valid_position())
                         {
-                            Monitor_Pvt monitor_pvt = d_pvt_solver->get_monitor_pvt();
-                            udp_sink_ptr->write_monitor_pvt(monitor_pvt);
+                            std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_pvt_solver->get_monitor_pvt());
+
+                            //publish new position to the gnss_flowgraph channel status monitor
+                            if (current_RX_time_ms % d_report_rate_ms == 0)
+                                {
+                                    this->message_port_pub(pmt::mp("status"), pmt::make_any(monitor_pvt));
+                                }
+                            if (flag_monitor_pvt_enabled)
+                                {
+                                    udp_sink_ptr->write_monitor_pvt(monitor_pvt);
+                                }
                         }
                 }
         }

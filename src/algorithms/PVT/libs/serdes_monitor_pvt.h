@@ -34,7 +34,7 @@
 
 #include "monitor_pvt.h"
 #include "monitor_pvt.pb.h"  // file created by Protocol Buffers at compile time
-
+#include <memory>
 
 /*!
  * \brief This class implements serialization and deserialization of
@@ -80,40 +80,40 @@ public:
         return *this;
     }
 
-    inline std::string createProtobuffer(const Monitor_Pvt& monitor)  //!< Serialization into a string
+    inline std::string createProtobuffer(std::shared_ptr<Monitor_Pvt> monitor)  //!< Serialization into a string
     {
         monitor_.Clear();
 
         std::string data;
 
-        monitor_.set_tow_at_current_symbol_ms(monitor.TOW_at_current_symbol_ms);
-        monitor_.set_week(monitor.week);
-        monitor_.set_rx_time(monitor.RX_time);
-        monitor_.set_user_clk_offset(monitor.user_clk_offset);
-        monitor_.set_pos_x(monitor.pos_x);
-        monitor_.set_pos_y(monitor.pos_y);
-        monitor_.set_pos_z(monitor.pos_z);
-        monitor_.set_vel_x(monitor.vel_x);
-        monitor_.set_vel_y(monitor.vel_y);
-        monitor_.set_vel_z(monitor.vel_z);
-        monitor_.set_cov_xx(monitor.cov_xx);
-        monitor_.set_cov_yy(monitor.cov_yy);
-        monitor_.set_cov_zz(monitor.cov_zz);
-        monitor_.set_cov_xy(monitor.cov_xy);
-        monitor_.set_cov_yz(monitor.cov_yz);
-        monitor_.set_cov_zx(monitor.cov_zx);
-        monitor_.set_latitude(monitor.latitude);
-        monitor_.set_longitude(monitor.longitude);
-        monitor_.set_height(monitor.height);
-        monitor_.set_valid_sats(monitor.valid_sats);
-        monitor_.set_solution_status(monitor.solution_status);
-        monitor_.set_solution_type(monitor.solution_type);
-        monitor_.set_ar_ratio_factor(monitor.AR_ratio_factor);
-        monitor_.set_ar_ratio_threshold(monitor.AR_ratio_threshold);
-        monitor_.set_gdop(monitor.gdop);
-        monitor_.set_pdop(monitor.pdop);
-        monitor_.set_hdop(monitor.hdop);
-        monitor_.set_vdop(monitor.vdop);
+        monitor_.set_tow_at_current_symbol_ms(monitor->TOW_at_current_symbol_ms);
+        monitor_.set_week(monitor->week);
+        monitor_.set_rx_time(monitor->RX_time);
+        monitor_.set_user_clk_offset(monitor->user_clk_offset);
+        monitor_.set_pos_x(monitor->pos_x);
+        monitor_.set_pos_y(monitor->pos_y);
+        monitor_.set_pos_z(monitor->pos_z);
+        monitor_.set_vel_x(monitor->vel_x);
+        monitor_.set_vel_y(monitor->vel_y);
+        monitor_.set_vel_z(monitor->vel_z);
+        monitor_.set_cov_xx(monitor->cov_xx);
+        monitor_.set_cov_yy(monitor->cov_yy);
+        monitor_.set_cov_zz(monitor->cov_zz);
+        monitor_.set_cov_xy(monitor->cov_xy);
+        monitor_.set_cov_yz(monitor->cov_yz);
+        monitor_.set_cov_zx(monitor->cov_zx);
+        monitor_.set_latitude(monitor->latitude);
+        monitor_.set_longitude(monitor->longitude);
+        monitor_.set_height(monitor->height);
+        monitor_.set_valid_sats(monitor->valid_sats);
+        monitor_.set_solution_status(monitor->solution_status);
+        monitor_.set_solution_type(monitor->solution_type);
+        monitor_.set_ar_ratio_factor(monitor->AR_ratio_factor);
+        monitor_.set_ar_ratio_threshold(monitor->AR_ratio_threshold);
+        monitor_.set_gdop(monitor->gdop);
+        monitor_.set_pdop(monitor->pdop);
+        monitor_.set_hdop(monitor->hdop);
+        monitor_.set_vdop(monitor->vdop);
 
         monitor_.SerializeToString(&data);
         return data;

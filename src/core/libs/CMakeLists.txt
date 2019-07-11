@@ -24,6 +24,7 @@ set(CORE_LIBS_SOURCES
     string_converter.cc
     gnss_sdr_supl_client.cc
     gnss_sdr_sample_counter.cc
+    channel_status_msg_receiver.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -32,6 +33,7 @@ set(CORE_LIBS_HEADERS
     string_converter.h
     gnss_sdr_supl_client.h
     gnss_sdr_sample_counter.h
+    channel_status_msg_receiver.h
 )
 
 if(ENABLE_FPGA)
@@ -60,6 +62,7 @@ target_link_libraries(core_libs
         Gnuradio::runtime
         core_libs_supl
         core_system_parameters
+        pvt_libs
     PRIVATE
         Boost::serialization
         Gflags::gflags

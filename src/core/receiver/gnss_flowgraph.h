@@ -37,6 +37,7 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
+#include "channel_status_msg_receiver.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
 #include "pvt_interface.h"
@@ -149,7 +150,12 @@ private:
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
-    Gnss_Signal search_next_signal(const std::string& searched_signal, bool pop, bool tracked = false);
+    Gnss_Signal search_next_signal(const std::string& searched_signal,
+        const bool pop,
+        bool& is_primary_frequency,
+        bool& assistance_available,
+        float& estimated_doppler,
+        double& RX_time);
     bool connected_;
     bool running_;
     int sources_count_;
@@ -203,6 +209,7 @@ private:
     std::map<std::string, StringValue> mapStringValues_;
 
     std::vector<unsigned int> channels_state_;
+    channel_status_msg_receiver_sptr channels_status_;  //class that receives and stores the current status of the receiver channels
     std::mutex signal_list_mutex;
 
     bool enable_monitor_;

@@ -104,6 +104,9 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
     this->set_msg_handler(pmt::mp("pvt_to_observables"), boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
 
+    // Send Channel status to gnss_flowgraph
+    this->message_port_register_out(pmt::mp("status"));
+
     d_dump = dump;
     d_dump_mat = dump_mat and d_dump;
     d_dump_filename = std::move(dump_filename);
@@ -160,7 +163,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     T_rx_remnant_to_20ms = 0;
     T_rx_step_ms = 20;  //read from config at the adapter GNSS-SDR.observable_interval_ms!!
     T_rx_TOW_set = false;
-
+    T_status_report_timer_ms = 0;
     // rework
     d_Rx_clock_buffer.set_capacity(10);  // 10*20 ms = 200 ms of data in buffer
     d_Rx_clock_buffer.clear();           // Clear all the elements in the buffer
@@ -601,6 +604,20 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     out[n][0] = epoch_data.at(n);
                 }
+
+            //report channel status every second
+            T_status_report_timer_ms += T_rx_step_ms;
+            if (T_status_report_timer_ms >= 1000)
+                {
+                    for (uint32_t n = 0; n < d_nchannels_out; n++)
+                        {
+                            std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data.at(n));
+                            //publish valid gnss_synchro to the gnss_flowgraph channel status monitor
+                            this->message_port_pub(pmt::mp("status"), pmt::make_any(gnss_synchro_sptr));
+                        }
+                    T_status_report_timer_ms = 0;
+                }
+
             if (d_dump)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file

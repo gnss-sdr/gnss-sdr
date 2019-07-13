@@ -267,21 +267,24 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
     // do not overwrite volk_gnsssdr_config when using a regex.
     if (!fs::exists(config_path.parent_path()))
         {
-            std::cout << "Creating " << config_path.parent_path() << " ..." << std::endl;
             try
                 {
-                    fs::create_directories(config_path.parent_path());
-                }
-            catch (const fs::filesystem_error &e)
-                {
-                    std::cerr << "ERROR: Could not create folder " << config_path.parent_path() << std::endl;
-                    std::cerr << "Reason: " << e.what() << std::endl;
-                    return;
+                    std::cout << "Creating " << config_path.parent_path() << " ..." << std::endl;
+                    try
+                        {
+                            fs::create_directories(config_path.parent_path());
+                        }
+                    catch (const fs::filesystem_error &e)
+                        {
+                            std::cerr << "ERROR: Could not create folder " << config_path.parent_path() << std::endl;
+                            std::cerr << "Reason: " << e.what() << std::endl;
+                            return;
+                        }
                 }
             catch (...)
                 {
                     // Catch exception when using std::experimental
-                    std::cerr << "ERROR: Could not create folder " << config_path.parent_path() << std::endl;
+                    std::cerr << "ERROR: Could not create folder" << std::endl;
                     return;
                 }
         }

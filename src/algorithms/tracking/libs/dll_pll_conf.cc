@@ -32,7 +32,6 @@
 
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
-#include <cstring>
 
 Dll_Pll_Conf::Dll_Pll_Conf()
 {
@@ -72,6 +71,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';
-    char sig_[3] = "1C";
-    std::memcpy(signal, sig_, 3);
+    signal[0] = '1';
+    signal[1] = 'C';
+    signal[2] = '\0';
 }

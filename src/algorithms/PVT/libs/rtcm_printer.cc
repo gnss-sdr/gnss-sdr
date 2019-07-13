@@ -40,7 +40,6 @@
 #include "gps_ephemeris.h"
 #include "rtcm.h"
 #include <glog/logging.h>
-#include <cstdio>     // for remove
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <fcntl.h>    // for O_RDWR
@@ -221,7 +220,8 @@ Rtcm_Printer::~Rtcm_Printer()
                 }
             if (pos == 0)
                 {
-                    if (remove(rtcm_filename.c_str()) != 0)
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(rtcm_filename), ec))
                         {
                             LOG(INFO) << "Error deleting temporary RTCM file";
                         }

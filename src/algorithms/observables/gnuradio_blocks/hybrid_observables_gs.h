@@ -40,6 +40,7 @@
 #include <gnuradio/types.h>           // for gr_vector_int
 #include <cstdint>                    // for int32_t
 #include <fstream>                    // for string, ofstream
+#include <memory>                     // for shared_ptr
 #include <vector>                     // for vector
 
 class Gnss_Synchro;
@@ -94,8 +95,8 @@ private:
     double T_rx_offset_ms;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    boost::circular_buffer<uint64_t> d_Rx_clock_buffer;         // time history
-    Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;  // Tracking observable history
+    boost::circular_buffer<uint64_t> d_Rx_clock_buffer;                         // time history
+    std::shared_ptr<Gnss_circular_deque<Gnss_Synchro>> d_gnss_synchro_history;  // Tracking observable history
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     double compute_T_rx_s(const Gnss_Synchro& a);
     bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const uint32_t& ch, const uint64_t& rx_clock);

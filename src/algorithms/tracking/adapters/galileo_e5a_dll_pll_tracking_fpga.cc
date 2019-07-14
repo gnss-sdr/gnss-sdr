@@ -40,6 +40,7 @@
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>  // for round
 #include <complex>
 #include <cstring>  // for memcpy
@@ -165,8 +166,8 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.very_early_late_space_chips = 0.0;
     trk_param_fpga.very_early_late_space_narrow_chips = 0.0;
     trk_param_fpga.system = 'E';
-    char sig_[3] = "5X";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'5', 'X', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20)
         {

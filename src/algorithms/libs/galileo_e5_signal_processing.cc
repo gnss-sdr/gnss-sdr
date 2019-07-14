@@ -35,6 +35,7 @@
 #include "Galileo_E5a.h"
 #include "gnss_signal_processing.h"
 #include <gnuradio/gr_complex.h>
+#include <array>
 #include <memory>
 
 
@@ -42,7 +43,7 @@ void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest,
 {
     uint32_t prn = _prn - 1;
     uint32_t index = 0;
-    int32_t a[4];
+    std::array<int32_t, 4> a{};
     if ((_prn < 1) || (_prn > 50))
         {
             return;
@@ -81,7 +82,7 @@ void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest,
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'X')
         {
-            int32_t b[4];
+            std::array<int32_t, 4> b{};
             for (size_t i = 0; i < GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1; i++)
                 {
                     hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(i));

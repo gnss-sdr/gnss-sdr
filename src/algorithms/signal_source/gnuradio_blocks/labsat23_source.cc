@@ -32,6 +32,7 @@
 #include "labsat23_source.h"
 #include "control_message_factory.h"
 #include <gnuradio/io_signature.h>
+#include <array>
 #include <exception>
 #include <iostream>
 #include <sstream>
@@ -215,8 +216,8 @@ int labsat23_source::general_work(int noutput_items,
         {
             if (binary_input_file->eof() == false)
                 {
-                    char memblock[1024];
-                    binary_input_file->read(memblock, 1024);
+                    std::array<char, 1024> memblock{};
+                    binary_input_file->read(memblock.data(), 1024);
                     // parse Labsat header
                     // check preamble
                     int byte_counter = 0;

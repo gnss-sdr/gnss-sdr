@@ -45,10 +45,10 @@
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
 #include <iostream>
-
 
 #define NUM_PRNs 32
 
@@ -98,8 +98,8 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.pll_bw_narrow_hz = 0.0;
     trk_param_fpga.dll_bw_narrow_hz = 0.0;
     trk_param_fpga.system = 'G';
-    char sig_[3] = "2S";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'2', 'S', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
     trk_param_fpga.cn0_samples = cn0_samples;

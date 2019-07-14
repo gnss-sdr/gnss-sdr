@@ -31,14 +31,15 @@
  */
 
 #include "glonass_l1_signal_processing.h"
+#include <array>
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, /* int32_t  _prn,*/ uint32_t _chip_shift)
 {
     const uint32_t _code_length = 511;
-    bool G1[_code_length];
-    bool G1_register[9];
+    std::array<bool, _code_length> G1{};
+    std::array<bool, 9> G1_register{};
     bool feedback1;
     bool aux;
     uint32_t delay;
@@ -107,21 +108,22 @@ void glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, /* int
 void glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, /* uint32_t _prn,*/ int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
-    std::complex<float> _code[511];
+    std::array<std::complex<float>, 511> _code{};
     int32_t _samplesPerCode, _codeValueIndex;
     float _ts;
     float _tc;
     float aux;
-    const int32_t _codeFreqBasis = 511000;  //Hz
+    const int32_t _codeFreqBasis = 511000;  // Hz
     const int32_t _codeLength = 511;
 
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                                                      // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);                                           // C/A chip period in sec
-    glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>>(_code, 511), _chip_shift);  //generate C/A code 1 sample per chip
+    _ts = 1.0 / static_cast<float>(_fs);             // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
+
+    glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>>(_code.data(), 511), _chip_shift);  // generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {

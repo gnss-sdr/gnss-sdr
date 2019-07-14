@@ -41,7 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-
+#include <array>
 
 GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     ConfigurationInterface* configuration, const std::string& role,
@@ -138,8 +138,8 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.pll_bw_narrow_hz = 0.0;
     trk_param.dll_bw_narrow_hz = 0.0;
     trk_param.system = 'G';
-    char sig_[3] = "2S";
-    std::memcpy(trk_param.signal, sig_, 3);
+    std::array<char, 3> sig_{'2', 'S', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
     trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
     trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
     trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);

@@ -49,7 +49,6 @@
 
 #include <gflags/gflags.h>
 #include <cmath>
-#include <cstdio>
 #include <cstdlib>  // for getenv()
 #include <cstring>  // for strncpy
 #include <fstream>

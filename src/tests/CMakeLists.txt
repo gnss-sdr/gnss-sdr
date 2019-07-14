@@ -744,6 +744,16 @@ add_executable(matio_test
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/arithmetic/matio_test.cc
 )
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(matio_test PRIVATE -DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        target_compile_definitions(matio_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(matio_test PRIVATE std::filesystem)
+else()
+    target_link_libraries(matio_test PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(matio_test
     PUBLIC
         Gflags::gflags

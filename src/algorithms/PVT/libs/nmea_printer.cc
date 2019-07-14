@@ -133,6 +133,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 
 Nmea_Printer::~Nmea_Printer()
 {
+    auto pos = nmea_file_descriptor.tellp();
     try
         {
             if (nmea_file_descriptor.is_open())
@@ -147,6 +148,14 @@ Nmea_Printer::~Nmea_Printer()
     catch (const std::exception& e)
         {
             std::cerr << e.what() << '\n';
+        }
+    if (pos == 0)
+        {
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(nmea_filename), ec))
+                {
+                    std::cerr << "Problem removing NMEA temporary file: " << nmea_filename << '\n';
+                }
         }
     try
         {

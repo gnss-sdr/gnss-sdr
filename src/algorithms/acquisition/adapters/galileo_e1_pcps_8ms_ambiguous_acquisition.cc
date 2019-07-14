@@ -203,7 +203,6 @@ signed int GalileoE1Pcps8msAmbiguousAcquisition::mag()
 void GalileoE1Pcps8msAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -215,8 +214,10 @@ void GalileoE1Pcps8msAmbiguousAcquisition::set_local_code()
                 "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
             std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
-            std::array<char, 3> Signal_;
-            std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
+            std::array<char, 3> Signal_{};
+            Signal_[0] = gnss_synchro_->Signal[0];
+            Signal_[1] = gnss_synchro_->Signal[1];
+            Signal_[2] = '\0';
 
             galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), Signal_,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);

@@ -83,7 +83,10 @@ bool gnss_sdr_create_directory(const std::string& foldername)
             errorlib::error_code ec;
             os_test_file.close();
 
-            fs::remove(test_file, ec);
+            if (!fs::remove(test_file, ec))
+                {
+                    return false;
+                }
             if (static_cast<bool>(ec))
                 {
                     return false;

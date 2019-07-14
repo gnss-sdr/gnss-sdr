@@ -34,7 +34,6 @@
 #include "rtklib_solver.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <cstdio>     // for remove
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<
@@ -251,7 +250,8 @@ Gpx_Printer::~Gpx_Printer()
         }
     if (!positions_printed)
         {
-            if (remove(gpx_filename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(gpx_filename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary GPX file";
                 }

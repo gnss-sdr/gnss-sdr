@@ -34,7 +34,6 @@
 #include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <cstdio>     // for remove
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<
@@ -240,7 +239,8 @@ bool GeoJSON_Printer::close_file()
             // if nothing is written, erase the file
             if (first_pos == true)
                 {
-                    if (remove(filename_.c_str()) != 0)
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(filename_), ec))
                         {
                             LOG(INFO) << "Error deleting temporary file";
                         }

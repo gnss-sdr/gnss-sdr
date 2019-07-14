@@ -56,7 +56,6 @@
 #include <glog/logging.h>
 #include <algorithm>  // for min and max
 #include <cmath>      // for floor
-#include <cstring>    // for memcpy
 #include <exception>
 #include <iostream>  // for cout
 #include <iterator>
@@ -267,51 +266,59 @@ Rinex_Printer::~Rinex_Printer()
             std::cerr << e.what() << '\n';
         }
     // If nothing written, erase the files.
+
     if (posn == 0)
         {
-            if (remove(navfilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(navfilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
         }
     if (poso == 0)
         {
-            if (remove(obsfilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(obsfilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
         }
     if (poss == 0)
         {
-            if (remove(sbsfilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(sbsfilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
         }
     if (posng == 0)
         {
-            if (remove(navGalfilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(navGalfilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
         }
     if (posmn == 0)
         {
-            if (remove(navMixfilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(navMixfilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
         }
     if (posnr == 0)
         {
-            if (remove(navGlofilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(navGlofilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
         }
     if (posnc == 0)
         {
-            if (remove(navBdsfilename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(navBdsfilename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
@@ -10171,10 +10178,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
             if ((total_mmap.count(mmap_iter->second.PRN)) == 1 && (mmap_iter->second.PRN != 0))
                 {
                     Gnss_Synchro gs = Gnss_Synchro();
-                    std::string sys = "G";
-                    gs.System = *sys.c_str();
-                    std::string sig = "2S";
-                    std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                    gs.System = 'G';
+                    gs.Signal[0] = '2';
+                    gs.Signal[1] = 'S';
+                    gs.Signal[2] = '\0';
                     gs.PRN = mmap_iter->second.PRN;
                     total_mmap.insert(std::pair<uint32_t, Gnss_Synchro>(mmap_iter->second.PRN, gs));
                 }
@@ -10401,10 +10408,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                             if (found_1B != std::string::npos)
                                 {
                                     Gnss_Synchro gs = Gnss_Synchro();
-                                    std::string sys = "E";
-                                    gs.System = *sys.c_str();
-                                    std::string sig = "1B";
-                                    std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                                    gs.System = 'E';
+                                    gs.Signal[0] = '1';
+                                    gs.Signal[1] = 'B';
+                                    gs.Signal[2] = '\0';
                                     gs.PRN = prn_;
                                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
                                 }
@@ -10426,20 +10433,20 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                             if (found_1B != std::string::npos)
                                 {
                                     Gnss_Synchro gs = Gnss_Synchro();
-                                    std::string sys = "E";
-                                    gs.System = *sys.c_str();
-                                    std::string sig = "1B";
-                                    std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                                    gs.System = 'E';
+                                    gs.Signal[0] = '1';
+                                    gs.Signal[1] = 'B';
+                                    gs.Signal[2] = '\0';
                                     gs.PRN = prn_;
                                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
                                 }
                             if (found_E5a != std::string::npos)
                                 {
                                     Gnss_Synchro gs = Gnss_Synchro();
-                                    std::string sys = "E";
-                                    gs.System = *sys.c_str();
-                                    std::string sig = "5X";
-                                    std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                                    gs.System = 'E';
+                                    gs.Signal[0] = '5';
+                                    gs.Signal[1] = 'X';
+                                    gs.Signal[2] = '\0';
                                     gs.PRN = prn_;
                                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
                                 }
@@ -10452,10 +10459,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                                     if ((total_map.count(prn_)) == 1)
                                         {
                                             Gnss_Synchro gs = Gnss_Synchro();
-                                            std::string sys = "E";
-                                            gs.System = *sys.c_str();
-                                            std::string sig = "5X";
-                                            std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                                            gs.System = 'E';
+                                            gs.Signal[0] = '5';
+                                            gs.Signal[1] = 'X';
+                                            gs.Signal[2] = '\0';
                                             gs.PRN = prn_;
                                             total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
                                         }
@@ -11521,10 +11528,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
                             if (found_B1 != std::string::npos)
                                 {
                                     Gnss_Synchro gs = Gnss_Synchro();
-                                    std::string sys = "C";
-                                    gs.System = *sys.c_str();
-                                    std::string sig = "B1";
-                                    std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
+                                    gs.System = 'C';
+                                    gs.Signal[0] = 'B';
+                                    gs.Signal[1] = '1';
+                                    gs.Signal[2] = '\0';
                                     gs.PRN = prn_;
                                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
                                 }

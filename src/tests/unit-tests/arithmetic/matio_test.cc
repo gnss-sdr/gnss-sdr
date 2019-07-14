@@ -33,7 +33,25 @@
 #include <gnuradio/gr_complex.h>
 #include <gtest/gtest.h>
 #include <matio.h>
-#include <cstdio>
+
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 TEST(MatioTest, WriteAndReadDoubles)
 {
@@ -73,7 +91,8 @@ TEST(MatioTest, WriteAndReadDoubles)
             EXPECT_DOUBLE_EQ(x[i], x_read[i]);
         }
     Mat_VarFree(matvar_read);
-    ASSERT_EQ(remove(filename.c_str()), 0);
+    errorlib::error_code ec;
+    ASSERT_EQ(fs::remove(fs::path(filename), ec), true);
 }
 
 
@@ -156,5 +175,6 @@ TEST(MatioTest, WriteAndReadGrComplex)
             EXPECT_FLOAT_EQ(x_v[i].real(), x_v_read[i].real());
             EXPECT_FLOAT_EQ(x_v[i].imag(), x_v_read[i].imag());
         }
-    ASSERT_EQ(remove(filename.c_str()), 0);
+    errorlib::error_code ec;
+    ASSERT_EQ(fs::remove(fs::path(filename), ec), true);
 }

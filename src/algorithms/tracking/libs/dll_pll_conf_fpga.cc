@@ -32,7 +32,6 @@
 
 
 #include "dll_pll_conf_fpga.h"
-#include <cstring>
 
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 {
@@ -68,8 +67,9 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     carrier_lock_th = 0.85;
     track_pilot = false;
     system = 'G';
-    char sig_[3] = "1C";
-    std::memcpy(signal, sig_, 3);
+    signal[0] = '1';
+    signal[1] = 'C';
+    signal[2] = '\0';
     device_name = "/dev/uio";
     device_base = 1U;
     multicorr_type = 0U;

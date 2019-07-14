@@ -67,6 +67,25 @@
 #include <utility>
 #include <vector>
 
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
+
 
 Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
 {
@@ -341,6 +360,7 @@ Rtklib_Solver::~Rtklib_Solver()
 {
     if (d_dump_file.is_open() == true)
         {
+            auto pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -348,6 +368,15 @@ Rtklib_Solver::~Rtklib_Solver()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_flag_dump_mat_enabled = false;
                 }
         }
     if (d_flag_dump_mat_enabled)

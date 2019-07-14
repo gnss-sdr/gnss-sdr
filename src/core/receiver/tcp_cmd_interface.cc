@@ -33,6 +33,7 @@
 #include "control_message_factory.h"
 #include "pvt_interface.h"
 #include <boost/asio.hpp>
+#include <array>
 #include <cmath>      // for isnan
 #include <exception>  // for exception
 #include <iomanip>    // for setprecision
@@ -151,10 +152,10 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             &UTC_time) == true)
         {
             struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
-            char buf1[80];
+            std::array<char, 80> buf1{};
             tstruct = *gmtime(&UTC_time);
-            strftime(buf1, sizeof(buf1), "%d/%m/%Y %H:%M:%S", &tstruct);
-            std::string str_time = std::string(buf1);
+            strftime(buf1.data(), sizeof(buf1), "%d/%m/%Y %H:%M:%S", &tstruct);
+            std::string str_time = std::string(buf1.data());
             str_stream << "- Receiver UTC Time: " << str_time << std::endl;
             str_stream << std::setprecision(9);
             str_stream << "- Receiver Position WGS84 [Lat, Long, H]: "

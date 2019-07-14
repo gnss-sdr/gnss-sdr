@@ -31,6 +31,7 @@
 
 #include "unpack_2bit_samples.h"
 #include <gnuradio/io_signature.h>
+#include <array>
 
 struct byte_2bit_struct
 {
@@ -53,7 +54,7 @@ bool systemIsBigEndian()
     union
     {
         uint32_t i;
-        char c[4];
+        std::array<char, 4> c{};
     } test_int = {0x01020304};
 
     return test_int.c[0] == 1;

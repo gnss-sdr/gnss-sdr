@@ -38,12 +38,13 @@
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
-#include <cmath>            // for floor, round
-#include <cstdlib>          // for abs, malloc
-#include <cstring>          // for memcpy
-#include <exception>        // for exception
-#include <iostream>         // for cout
-#include <memory>           // for shared_ptr, make_shared
+#include <array>
+#include <cmath>      // for floor, round
+#include <cstdlib>    // for abs, malloc
+#include <cstring>    // for memcpy
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr, make_shared
 
 #define CRC_ERROR_LIMIT 6
 
@@ -75,11 +76,11 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     d_samples_per_symbol = (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS) / GLONASS_L2_CA_SYMBOL_RATE_BPS;
 
     // Set the preamble information
-    uint16_t preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
+    std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> preambles_bits{GLONASS_GNAV_PREAMBLE};
     // Since preamble rate is different than navigation data rate we use a constant
     d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
-    memcpy(static_cast<uint16_t *>(this->d_preambles_bits), static_cast<uint16_t *>(preambles_bits), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(uint16_t));
+    memcpy(static_cast<uint16_t *>(this->d_preambles_bits), preambles_bits.data(), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(uint16_t));
 
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
@@ -351,7 +352,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
                     int32_t string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
-                    double string_symbols[GLONASS_GNAV_DATA_SYMBOLS] = {0};
+                    std::array<double, GLONASS_GNAV_DATA_SYMBOLS> string_symbols{};
 
                     // ******* SYMBOL TO BIT *******
                     for (int32_t i = 0; i < string_length; i++)
@@ -367,7 +368,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         }
 
                     // call the decoder
-                    decode_string(string_symbols, string_length);
+                    decode_string(string_symbols.data(), string_length);
                     if (d_nav.flag_CRC_test == true)
                         {
                             d_CRC_error_counter = 0;

@@ -41,7 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-
+#include <array>
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     ConfigurationInterface* configuration, const std::string& role,
@@ -159,8 +159,8 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     int vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     trk_param.system = 'E';
-    char sig_[3] = "1B";
-    std::memcpy(trk_param.signal, sig_, 3);
+    std::array<char, 3> sig_{'1', 'B', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
     trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
     trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
     trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);

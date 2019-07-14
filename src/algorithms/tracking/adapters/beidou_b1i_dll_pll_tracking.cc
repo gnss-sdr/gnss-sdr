@@ -41,6 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
+#include <array>
 
 
 BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
@@ -149,8 +150,8 @@ BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
     trk_param.very_early_late_space_narrow_chips = 0.0;
     trk_param.track_pilot = false;
     trk_param.system = 'C';
-    char sig_[3] = "B1";
-    std::memcpy(trk_param.signal, sig_, 3);
+    std::array<char, 3> sig_{'B', '1', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
 
     trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
     trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);

@@ -55,7 +55,8 @@
 #include <boost/date_time/time_zone_base.hpp>
 #include <glog/logging.h>
 #include <algorithm>  // for min and max
-#include <cmath>      // for floor
+#include <array>
+#include <cmath>  // for floor
 #include <exception>
 #include <iostream>  // for cout
 #include <iterator>
@@ -431,11 +432,11 @@ std::string Rinex_Printer::getLocalTime()
     line += std::string("GNSS-SDR");
     line += std::string(12, ' ');
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -2390,11 +2391,11 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out)
     line.clear();
     line += Rinex_Printer::leftJustify("GNSS-SDR", 20);
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -4834,11 +4835,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -5160,11 +5161,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -5515,11 +5516,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -5824,11 +5825,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -6147,11 +6148,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -6404,11 +6405,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -6655,11 +6656,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -6936,11 +6937,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -7282,11 +7283,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -7600,11 +7601,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -7867,11 +7868,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -8149,11 +8150,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
-    char c_username[20] = {0};
-    int32_t nGet = getlogin_r(c_username, sizeof(c_username) - 1);
+    std::array<char, 20> c_username{};
+    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
     if (nGet == 0)
         {
-            username = c_username;
+            username = c_username.data();
         }
     else
         {
@@ -11610,7 +11611,7 @@ void Rinex_Printer::to_date_time(int32_t gps_week, int32_t gps_tow, int& year, i
 {
     // represents GPS time (week, TOW) in the date time format of the Gregorian calendar.
     // -> Leap years are considered, but leap seconds are not.
-    int32_t days_per_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    std::array<int32_t, 12> days_per_month{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
     // seconds in a not leap year
     const int32_t secs_per_day = 24 * 60 * 60;

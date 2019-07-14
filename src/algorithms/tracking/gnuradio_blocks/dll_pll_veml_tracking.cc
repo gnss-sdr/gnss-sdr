@@ -578,8 +578,10 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_phase_rate_step_rad = 0.0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
-    std::array<char, 3> Signal_;
-    std::memcpy(Signal_.data(), d_acquisition_gnss_synchro->Signal, 3);
+    std::array<char, 3> Signal_{};
+    Signal_[0] = d_acquisition_gnss_synchro->Signal[0];
+    Signal_[1] = d_acquisition_gnss_synchro->Signal[1];
+    Signal_[2] = d_acquisition_gnss_synchro->Signal[2];
 
     if (systemName == "GPS" and signal_type == "1C")
         {

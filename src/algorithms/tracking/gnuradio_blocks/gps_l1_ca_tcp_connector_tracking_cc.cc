@@ -500,11 +500,11 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             d_tcp_com.send_receive_tcp_packet_gps_l1_ca(tx_variables_array, &tcp_data);
         }
 
-    //assign the GNURadio block output data
+    // assign the GNU Radio block output data
     current_synchro_data.System = {'G'};
-    std::string str_aux = "1C";
-    const char *str = str_aux.c_str();  // get a C style null terminated string
-    std::memcpy(static_cast<void *>(current_synchro_data.Signal), str, 3);
+    current_synchro_data.Signal[0] = '1';
+    current_synchro_data.Signal[1] = 'C';
+    current_synchro_data.Signal[2] = '\0';
 
     current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;

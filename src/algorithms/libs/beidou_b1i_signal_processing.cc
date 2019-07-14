@@ -70,8 +70,8 @@ void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _c
             G1[lcv] = G1_register[0];
             G2[lcv] = G2_register[-(phase1[prn_idx] - 11)] ^ G2_register[-(phase2[prn_idx] - 11)];
 
-            feedback1 = (G1_register[0] + G1_register[1] + G1_register[2] + G1_register[3] + G1_register[4] + G1_register[10]) & 0x1;
-            feedback2 = (G2_register[0] + G2_register[2] + G2_register[3] + G2_register[6] + G2_register[7] + G2_register[8] + G2_register[9] + G2_register[10]) & 0x1;
+            feedback1 = G1_register[0] xor G1_register[1] xor G1_register[2] xor G1_register[3] xor G1_register[4] xor G1_register[10];
+            feedback2 = G2_register[0] xor G2_register[2] xor G2_register[3] xor G2_register[6] xor G2_register[7] xor G2_register[8] xor G2_register[9] xor G2_register[10];
 
             for (lcv2 = 0; lcv2 < 10; lcv2++)
                 {

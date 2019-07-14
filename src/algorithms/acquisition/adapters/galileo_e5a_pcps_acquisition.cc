@@ -234,7 +234,7 @@ void GalileoE5aPcpsAcquisition::init()
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
     std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
-    std::array<char, 3> signal_;
+    std::array<char, 3> signal_{};
     signal_[0] = '5';
     signal_[2] = '\0';
 

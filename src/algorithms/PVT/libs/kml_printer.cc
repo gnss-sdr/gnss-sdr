@@ -34,9 +34,7 @@
 #include "rtklib_solver.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <cstdio>     // for remove
 #include <cstdlib>    // for mkstemp
-#include <cstring>    // for strncpy
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
@@ -366,7 +364,8 @@ Kml_Printer::~Kml_Printer()
         }
     if (!positions_printed)
         {
-            if (remove(kml_filename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(kml_filename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary KML file";
                 }

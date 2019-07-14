@@ -91,7 +91,7 @@ bool operator==(const Gnss_Satellite& sat1, const Gnss_Satellite& sat2)
 
 
 // Copy constructor
-Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other)
+Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other) noexcept
 {
     *this = other;
 }
@@ -113,14 +113,14 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
 
 
 // Move constructor
-Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other)
+Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other) noexcept
 {
-    *this = std::move(other);
+    *this = other;
 }
 
 
 // Move assignment operator
-Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other)
+Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 {
     if (this != &other)
         {

@@ -232,7 +232,6 @@ signed int GalileoE1PcpsAmbiguousAcquisition::mag()
 void GalileoE1PcpsAmbiguousAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
@@ -246,7 +245,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
 
     if (acquire_pilot_ == true)
         {
-            //set local signal generator to Galileo E1 pilot component (1C)
+            // set local signal generator to Galileo E1 pilot component (1C)
             std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
             if (acq_parameters_.use_automatic_resampler)
                 {
@@ -261,8 +260,10 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
         }
     else
         {
-            std::array<char, 3> Signal_;
-            std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
+            std::array<char, 3> Signal_{};
+            Signal_[0] = gnss_synchro_->Signal[0];
+            Signal_[1] = gnss_synchro_->Signal[1];
+            Signal_[2] = '\0';
             if (acq_parameters_.use_automatic_resampler)
                 {
                     galileo_e1_code_gen_complex_sampled(code_span, Signal_,

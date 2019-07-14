@@ -46,6 +46,7 @@
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
 #include <iostream>
@@ -172,8 +173,8 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.very_early_late_space_chips = 0.0;
     trk_param_fpga.very_early_late_space_narrow_chips = 0.0;
     trk_param_fpga.system = 'G';
-    char sig_[3] = "L5";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'L', '5', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20)
         {

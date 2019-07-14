@@ -38,6 +38,7 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>      // for round
 #include <cstring>    // for memcpy
 #include <exception>  // for exception
@@ -205,7 +206,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 
 bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
 {
-    char subframe[GPS_SUBFRAME_LENGTH];
+    std::array<char, GPS_SUBFRAME_LENGTH> subframe{};
     int32_t frame_bit_index = 0;
     int32_t word_index = 0;
     uint32_t GPS_frame_4bytes = 0;
@@ -265,7 +266,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     // NEW GPS SUBFRAME HAS ARRIVED!
     if (subframe_synchro_confirmation)
         {
-            int32_t subframe_ID = d_nav.subframe_decoder(subframe);  // decode the subframe
+            int32_t subframe_ID = d_nav.subframe_decoder(subframe.data());  // decode the subframe
             if (subframe_ID > 0 and subframe_ID < 6)
                 {
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "

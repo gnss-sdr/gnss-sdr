@@ -52,6 +52,7 @@
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <fstream>
@@ -361,16 +362,16 @@ int PositionSystemTest::run_receiver()
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     FILE* fp;
     std::string argum2 = std::string("/bin/ls *kml | tail -1");
-    char buffer[1035];
+    std::array<char, 1035> buffer{};
     fp = popen(&argum2[0], "r");
     if (fp == nullptr)
         {
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    while (fgets(buffer, sizeof(buffer), fp) != nullptr)
+    while (fgets(buffer.data(), sizeof(buffer), fp) != nullptr)
         {
-            std::string aux = std::string(buffer);
+            std::string aux = std::string(buffer.data());
             EXPECT_EQ(aux.empty(), false);
             PositionSystemTest::generated_kml_file = aux.erase(aux.length() - 1, 1);
         }
@@ -392,12 +393,12 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
-                    size_t dims[2] = {1, x->size()};
-                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    std::array<size_t, 2> dims{1, x->size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
 
-                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &y[0], 0);
+                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &y[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
                 }
@@ -415,6 +416,7 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
         }
 }
 
+
 bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename)
 {
     try
@@ -427,8 +429,8 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
-                    size_t dims[2] = {1, x->size()};
-                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    std::array<size_t, 2> dims{1, x->size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
                 }
@@ -445,6 +447,7 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             return false;
         }
 }
+
 
 void PositionSystemTest::check_results()
 {
@@ -930,6 +933,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                 }
         }
 }
+
 
 TEST_F(PositionSystemTest /*unused*/, Position_system_test /*unused*/)
 {

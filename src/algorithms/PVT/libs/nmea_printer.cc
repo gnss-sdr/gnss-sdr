@@ -37,6 +37,7 @@
 #include "rtklib_solution.h"
 #include "rtklib_solver.h"
 #include <glog/logging.h>
+#include <array>
 #include <cstdint>
 #include <exception>
 #include <fcntl.h>
@@ -133,6 +134,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 
 Nmea_Printer::~Nmea_Printer()
 {
+    auto pos = nmea_file_descriptor.tellp();
     try
         {
             if (nmea_file_descriptor.is_open())
@@ -147,6 +149,14 @@ Nmea_Printer::~Nmea_Printer()
     catch (const std::exception& e)
         {
             std::cerr << e.what() << '\n';
+        }
+    if (pos == 0)
+        {
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(nmea_filename), ec))
+                {
+                    std::cerr << "Problem removing NMEA temporary file: " << nmea_filename << '\n';
+                }
         }
     try
         {
@@ -428,9 +438,9 @@ std::string Nmea_Printer::get_GPRMC()
 {
     // Sample -> $GPRMC,161229.487,A,3723.2475,N,12158.3416,W,0.13,309.62,120598,*10
     std::stringstream sentence_str;
-    unsigned char buff[1024] = {0};
-    outnmea_rmc(buff, &d_PVT_data->pvt_sol);
-    sentence_str << buff;
+    std::array<unsigned char, 1024> buff{};
+    outnmea_rmc(buff.data(), &d_PVT_data->pvt_sol);
+    sentence_str << buff.data();
     return sentence_str.str();
 }
 
@@ -440,9 +450,9 @@ std::string Nmea_Printer::get_GPGSA()
     // $GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
     // GSA-GNSS DOP and Active Satellites
     std::stringstream sentence_str;
-    unsigned char buff[1024] = {0};
-    outnmea_gsa(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
-    sentence_str << buff;
+    std::array<unsigned char, 1024> buff{};
+    outnmea_gsa(buff.data(), &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
+    sentence_str << buff.data();
     return sentence_str.str();
 }
 
@@ -453,9 +463,9 @@ std::string Nmea_Printer::get_GPGSV()
     // $GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
     // Notice that NMEA 2.1 only supports 12 channels
     std::stringstream sentence_str;
-    unsigned char buff[1024] = {0};
-    outnmea_gsv(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
-    sentence_str << buff;
+    std::array<unsigned char, 1024> buff{};
+    outnmea_gsv(buff.data(), &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat.data());
+    sentence_str << buff.data();
     return sentence_str.str();
 }
 
@@ -463,9 +473,9 @@ std::string Nmea_Printer::get_GPGSV()
 std::string Nmea_Printer::get_GPGGA()
 {
     std::stringstream sentence_str;
-    unsigned char buff[1024] = {0};
-    outnmea_gga(buff, &d_PVT_data->pvt_sol);
-    sentence_str << buff;
+    std::array<unsigned char, 1024> buff{};
+    outnmea_gga(buff.data(), &d_PVT_data->pvt_sol);
+    sentence_str << buff.data();
     return sentence_str.str();
     // $GPGGA,104427.591,5920.7009,N,01803.2938,E,1,05,3.3,78.2,M,23.2,M,0.0,0000*4A
 }

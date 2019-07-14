@@ -37,7 +37,6 @@
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <glog/logging.h>
-#include <cstring>  // for memcpy
 #include <utility>  // for std::move
 
 
@@ -209,9 +208,9 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     std::lock_guard<std::mutex> lk(mx);
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
-    const char* str = str_aux.c_str();                              // get a C style null terminated string
-    std::memcpy(static_cast<void*>(gnss_synchro_.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-    gnss_synchro_.Signal[2] = 0;                                    // make sure that string length is only two characters
+    gnss_synchro_.Signal[0] = str_aux[0];
+    gnss_synchro_.Signal[1] = str_aux[1];
+    gnss_synchro_.Signal[2] = '\0';  // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
     acq_->set_local_code();

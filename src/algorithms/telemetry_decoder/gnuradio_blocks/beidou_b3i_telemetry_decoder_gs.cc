@@ -42,6 +42,7 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cstdlib>    // for abs
 #include <exception>  // for exception
 #include <iostream>   // for cout
@@ -137,8 +138,9 @@ beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits,
     int32_t *decbits)
 {
-    int32_t bit, err, reg[4] = {1, 1, 1, 1};
-    int32_t errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
+    int32_t bit, err;
+    std::array<int32_t, 4> reg{1, 1, 1, 1};
+    const std::array<int32_t, 15> errind{14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
 
     for (uint32_t i = 0; i < 15; i++)
         {
@@ -169,7 +171,9 @@ void beidou_b3i_telemetry_decoder_gs::decode_word(
     const float *enc_word_symbols,
     int32_t *dec_word_symbols)
 {
-    int32_t bitsbch[30], first_branch[15], second_branch[15];
+    std::array<int32_t, 30> bitsbch{};
+    std::array<int32_t, 15> first_branch{};
+    std::array<int32_t, 15> second_branch{};
 
     if (word_counter == 1)
         {
@@ -188,8 +192,8 @@ void beidou_b3i_telemetry_decoder_gs::decode_word(
                         }
                 }
 
-            decode_bch15_11_01(&bitsbch[0], first_branch);
-            decode_bch15_11_01(&bitsbch[15], second_branch);
+            decode_bch15_11_01(&bitsbch[0], first_branch.data());
+            decode_bch15_11_01(&bitsbch[15], second_branch.data());
 
             for (uint32_t j = 0; j < 11; j++)
                 {
@@ -210,13 +214,13 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
 {
     // 1. Transform from symbols to bits
     std::string data_bits;
-    int32_t dec_word_bits[30];
+    std::array<int32_t, 30> dec_word_bits{};
 
     // Decode each word in subframe
     for (uint32_t ii = 0; ii < BEIDOU_DNAV_WORDS_SUBFRAME; ii++)
         {
             // decode the word
-            decode_word((ii + 1), &frame_symbols[ii * 30], dec_word_bits);
+            decode_word((ii + 1), &frame_symbols[ii * 30], dec_word_bits.data());
 
             // Save word to string format
             for (uint32_t jj = 0; jj < (BEIDOU_DNAV_WORD_LENGTH_BITS); jj++)

@@ -44,9 +44,10 @@
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>     // for round
 #include <cstring>   // for memcpy
-#include <iostream>  // for operator<<,
+#include <iostream>  // for operator<<
 
 // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
 // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
@@ -171,8 +172,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     int32_t vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     trk_param_fpga.system = 'E';
-    char sig_[3] = "1B";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'1', 'B', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20)
         {

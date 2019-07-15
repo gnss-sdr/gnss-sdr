@@ -32,16 +32,17 @@
 
 #include "gps_sdr_signal_processing.h"
 #include <array>
+#include <bitset>
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
-    std::array<bool, _code_length> G1{};
-    std::array<bool, _code_length> G2{};
-    std::array<bool, 10> G1_register{};
-    std::array<bool, 10> G2_register{};
+    std::bitset<_code_length> G1{};
+    std::bitset<_code_length> G2{};
+    std::bitset<10> G1_register{};
+    std::bitset<10> G2_register{};
     bool feedback1, feedback2;
     bool aux;
     uint32_t lcv, lcv2;

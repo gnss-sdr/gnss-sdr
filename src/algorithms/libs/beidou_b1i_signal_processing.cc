@@ -32,17 +32,20 @@
 
 #include "beidou_b1i_signal_processing.h"
 #include <array>
+#include <bitset>
+#include <string>
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 2046;
-    std::array<bool, _code_length> G1{};
-    std::array<bool, _code_length> G2{};
+    std::bitset<_code_length> G1{};
+    std::bitset<_code_length> G2{};
 
-    std::array<bool, 11> G1_register{false, true, false, true, false, true, false, true, false, true, false};
-    std::array<bool, 11> G2_register{false, true, false, true, false, true, false, true, false, true, false};
+    std::bitset<11> G1_register(std::string("01010101010"));
+    std::bitset<11> G2_register(std::string("01010101010"));
+
     bool feedback1, feedback2;
     bool aux;
     uint32_t lcv, lcv2;

@@ -414,8 +414,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
     std::array<obsd_t, MAXOBS> obs_data{};
-    std::array<eph_t, MAXOBS> eph_data{};
-    std::array<geph_t, MAXOBS> geph_data{};
+    std::vector<eph_t> eph_data(MAXOBS);
+    std::vector<geph_t> geph_data(MAXOBS);
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -754,7 +754,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                            1);  // Band 3 (L2/G2/B3)
+                                                            2);  // Band 3 (L2/G2/B3)
                                                         found_B1I_obs = true;
                                                         break;
                                                     }
@@ -772,7 +772,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                    1);  // Band 2 (L2/G2)
+                                                    2);  // Band 2 (L2/G2)
                                                 valid_obs++;
                                             }
                                     }
@@ -884,21 +884,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
                 }
 
-            for (auto &lambda_ : nav_data.lam)
-                {
-                    lambda_[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
-                    lambda_[1] = SPEED_OF_LIGHT / FREQ2;  // L2
-                    lambda_[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
-
-                    // Keep update on sat number
-                    sat++;
-                    if (sat > NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS and sat < NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS)
-                        {
-                            lambda_[0] = SPEED_OF_LIGHT / FREQ1_BDS;  // B1I
-                            lambda_[1] = SPEED_OF_LIGHT / FREQ3_BDS;  // B3I
-                            lambda_[2] = SPEED_OF_LIGHT / FREQ5;      // L5/E5
-                        }
-                }
+            /* update carrier wave length using native function call in RTKlib */
+            uniqnav(&nav_data);
 
             result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 

@@ -166,9 +166,8 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-
-    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (sys == SYS_GAL or sys == SYS_SBS)
+    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS */
+    if (sys == SYS_GAL or sys == SYS_SBS or sys == SYS_BDS)
         {
             j = 2;
         }
@@ -285,7 +284,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     if (sys == SYS_BDS)
                         {
                             P2 += P2_C2; /* C2->P2 */
-                            PC = P2; // no tgd corrections for B3I
+                            PC = P2;     // no tgd corrections for B3I
                         }
                     else if (sys == SYS_GAL or sys == SYS_GLO or sys == SYS_BDS)  // Gal. E5a single freq.
                         {

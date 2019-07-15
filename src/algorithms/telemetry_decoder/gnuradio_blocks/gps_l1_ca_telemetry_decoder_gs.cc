@@ -146,12 +146,12 @@ bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
     //   check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
     //   and-xor loops.
     d1 = gpsword & 0xFBFFBF00U;
-    d2 = _rotl(gpsword, 1) & 0x07FFBF01U;
-    d3 = _rotl(gpsword, 2) & 0xFC0F8100U;
-    d4 = _rotl(gpsword, 3) & 0xF81FFE02U;
-    d5 = _rotl(gpsword, 4) & 0xFC00000EU;
-    d6 = _rotl(gpsword, 5) & 0x07F00001U;
-    d7 = _rotl(gpsword, 6) & 0x00003000U;
+    d2 = _rotl(gpsword, 1U) & 0x07FFBF01U;
+    d3 = _rotl(gpsword, 2U) & 0xFC0F8100U;
+    d4 = _rotl(gpsword, 3U) & 0xF81FFE02U;
+    d5 = _rotl(gpsword, 4U) & 0xFC00000EU;
+    d6 = _rotl(gpsword, 5U) & 0x07F00001U;
+    d7 = _rotl(gpsword, 6U) & 0x00003000U;
     t = d1 ^ d2 ^ d3 ^ d4 ^ d5 ^ d6 ^ d7;
     // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
     parity = t ^ _rotl(t, 6U) ^ _rotl(t, 12U) ^ _rotl(t, 18U) ^ _rotl(t, 24U);

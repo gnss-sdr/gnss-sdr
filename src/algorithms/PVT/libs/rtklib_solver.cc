@@ -443,8 +443,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
     std::array<obsd_t, MAXOBS> obs_data{};
-    std::array<eph_t, MAXOBS> eph_data{};
-    std::array<geph_t, MAXOBS> geph_data{};
+    std::vector<eph_t> eph_data(MAXOBS);
+    std::vector<geph_t> geph_data(MAXOBS);
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;

@@ -827,7 +827,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
-            int sat = 0;
             nav_t nav_data{};
             nav_data.eph = eph_data.data();
             nav_data.geph = geph_data.data();

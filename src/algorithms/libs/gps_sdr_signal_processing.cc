@@ -83,7 +83,7 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
             G2[lcv] = G2_register[0];
 
             feedback1 = G1_register[7] ^ G1_register[0];
-            feedback2 = (G2_register[8] + G2_register[7] + G2_register[4] + G2_register[2] + G2_register[1] + G2_register[0]) & 0x1;
+            feedback2 = G2_register[8] xor G2_register[7] xor G2_register[4] xor G2_register[2] xor G2_register[1] xor G2_register[0];
 
             for (lcv2 = 0; lcv2 < 9; lcv2++)
                 {

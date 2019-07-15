@@ -129,10 +129,9 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
             G2[lcv] = G2_register[0];
 
             //feedback1 = (test_G1_register[0]+test_G1_register[2]+test_G1_register[3]+test_G1_register[12]) & 0x1;
-            feedback1 = (G1_register[0] + G1_register[9] + G1_register[10] + G1_register[12]) & 0x01;
-            feedback2 = (G2_register[0] + G2_register[1] + G2_register[3] + G2_register[4] +
-                            G2_register[6] + G2_register[7] + G2_register[8] + G2_register[12]) &
-                        0x01;
+            feedback1 = G1_register[0] xor G1_register[9] xor G1_register[10] xor G1_register[12];
+            feedback2 = G2_register[0] xor G2_register[1] xor G2_register[3] xor G2_register[4] xor
+                        G2_register[6] xor G2_register[7] xor G2_register[8] xor G2_register[12];
 
             for (lcv2 = 0; lcv2 < 12; lcv2++)
                 {
@@ -157,7 +156,7 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
     // Generate PRN from G1 and G2 Registers
     for (lcv = 0; lcv < _code_length; lcv++)
         {
-            aux = (G1[(lcv + _chip_shift) % _code_length] + G2[delay]) & 0x01;
+            aux = G1[(lcv + _chip_shift) % _code_length] xor G2[delay];
             if (aux == true)
                 {
                     _dest[lcv] = 1;

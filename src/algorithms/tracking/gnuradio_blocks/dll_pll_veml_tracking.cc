@@ -578,8 +578,10 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_phase_rate_step_rad = 0.0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
-    std::array<char, 3> Signal_;
-    std::memcpy(Signal_.data(), d_acquisition_gnss_synchro->Signal, 3);
+    std::array<char, 3> Signal_{};
+    Signal_[0] = d_acquisition_gnss_synchro->Signal[0];
+    Signal_[1] = d_acquisition_gnss_synchro->Signal[1];
+    Signal_[2] = d_acquisition_gnss_synchro->Signal[2];
 
     if (systemName == "GPS" and signal_type == "1C")
         {
@@ -665,7 +667,7 @@ void dll_pll_veml_tracking::start_tracking()
                     d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = false;
+                    d_secondary = true;
                     trk_parameters.track_pilot = false;
                     // synchronize and remove data secondary code
                     d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
@@ -685,7 +687,7 @@ void dll_pll_veml_tracking::start_tracking()
                     d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = true;
+                    d_secondary = false;
                     trk_parameters.track_pilot = false;
                     // set the preamble in the secondary code acquisition
                     d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_GEO_PREAMBLE_LENGTH_SYMBOLS);

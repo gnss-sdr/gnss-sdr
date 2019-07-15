@@ -467,9 +467,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
         }
     //assign the GNURadio block output data
     current_synchro_data.System = {'E'};
-    std::string str_aux = "1B";
-    const char *str = str_aux.c_str();  // get a C style null terminated string
-    std::memcpy(static_cast<void *>(current_synchro_data.Signal), str, 3);
+    current_synchro_data.Signal[0] = '1';
+    current_synchro_data.Signal[1] = 'B';
+    current_synchro_data.Signal[2] = '\0';
 
     current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;

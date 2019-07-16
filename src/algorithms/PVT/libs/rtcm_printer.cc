@@ -46,6 +46,7 @@
 #include <iostream>   // for cout, cerr
 #include <termios.h>  // for tcgetattr
 #include <unistd.h>   // for close, write
+#include <boost/exception/diagnostic_information.hpp>
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>

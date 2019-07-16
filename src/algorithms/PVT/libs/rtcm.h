@@ -55,6 +55,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <list>
 
 #if BOOST_GREATER_1_65
 using b_io_context = boost::asio::io_context;

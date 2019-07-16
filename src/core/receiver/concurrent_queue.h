@@ -31,10 +31,11 @@
 #ifndef GNSS_SDR_CONCURRENT_QUEUE_H
 #define GNSS_SDR_CONCURRENT_QUEUE_H
 
-#include <mutex>
-#include <thread>
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <queue>
+#include <thread>
 
 template <typename Data>
 
@@ -50,7 +51,7 @@ class Concurrent_Queue
 public:
     void push(Data const& data)
     {
-    	std::unique_lock<std::mutex> lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         the_queue.push(data);
         lock.unlock();
         the_condition_variable.notify_one();
@@ -58,13 +59,13 @@ public:
 
     bool empty() const
     {
-    	std::unique_lock<std::mutex> lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         return the_queue.empty();
     }
 
     bool try_pop(Data& popped_value)
     {
-    	std::unique_lock<std::mutex> lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         if (the_queue.empty())
             {
                 return false;
@@ -76,7 +77,7 @@ public:
 
     void wait_and_pop(Data& popped_value)
     {
-    	std::unique_lock<std::mutex> lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         while (the_queue.empty())
             {
                 the_condition_variable.wait(lock);
@@ -84,16 +85,16 @@ public:
         popped_value = the_queue.front();
         the_queue.pop();
     }
-    
+
     bool timed_wait_and_pop(Data& popped_value, int wait_ms)
     {
-    	std::unique_lock<std::mutex> lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         if (the_queue.empty())
             {
-                the_condition_variable.wait_for(lock,std::chrono::milliseconds(wait_ms));
+                the_condition_variable.wait_for(lock, std::chrono::milliseconds(wait_ms));
                 if (the_queue.empty())
                     {
-                	return false;
+                        return false;
                     }
             }
         popped_value = the_queue.front();

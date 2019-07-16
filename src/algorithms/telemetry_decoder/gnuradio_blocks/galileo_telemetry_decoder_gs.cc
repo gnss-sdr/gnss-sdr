@@ -181,9 +181,9 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_symbol_history.set_capacity(d_required_symbols + 1);
 
     // vars for Viterbi decoder
-    int32_t max_states = 1 << mm;  // 2^mm
-    g_encoder[0] = 121;            // Polynomial G1
-    g_encoder[1] = 91;             // Polynomial G2
+    int32_t max_states = 1U << static_cast<uint32_t>(mm);  // 2^mm
+    g_encoder[0] = 121;                                    // Polynomial G1
+    g_encoder[1] = 91;                                     // Polynomial G2
     out0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     out1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     state0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));

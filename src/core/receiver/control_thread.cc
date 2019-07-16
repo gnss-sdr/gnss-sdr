@@ -34,9 +34,7 @@
 
 #include "control_thread.h"
 #include "concurrent_map.h"
-#include "concurrent_queue.h"
 #include "configuration_interface.h"
-#include "control_message_factory.h"
 #include "file_configuration.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
@@ -110,7 +108,7 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
-    control_queue_ = gr::msg_queue::make(0);
+    control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
     try
         {
@@ -120,7 +118,6 @@ void ControlThread::init()
         {
             std::cout << "Caught bad lexical cast with error " << e.what() << std::endl;
         }
-    control_message_factory_ = std::make_shared<ControlMessageFactory>();
     stop_ = false;
     processed_control_messages_ = 0;
     applied_actions_ = 0;
@@ -287,12 +284,13 @@ int ControlThread::run()
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
-            //TODO re-enable the blocking read messages functions and fork the process
-            read_control_messages();
-            if (control_messages_ != nullptr)
-                {
-                    process_control_messages();
-                }
+            //TODO call here the new sat dispatcher and receiver controller
+            //            read_control_messages();
+            //            if (control_messages_ != nullptr)
+            //                {
+            //                    process_control_messages();
+            //                }
+            std::cout << "tick\n";
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
@@ -325,7 +323,7 @@ int ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(const gr::msg_queue::sptr control_queue)  // NOLINT(performance-unnecessary-value-param)
+void ControlThread::set_control_queue(const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue)  // NOLINT(performance-unnecessary-value-param)
 {
     if (flowgraph_->running())
         {
@@ -794,42 +792,42 @@ void ControlThread::assist_GNSS()
 void ControlThread::read_control_messages()
 {
     DLOG(INFO) << "Reading control messages from queue";
-    gr::message::sptr queue_message = control_queue_->delete_head();
-    if (queue_message != nullptr)
-        {
-            control_messages_ = control_message_factory_->GetControlMessages(queue_message);
-        }
-    else
-        {
-            control_messages_->clear();
-        }
+    //    gr::message::sptr queue_message = control_queue_->delete_head();
+    //    if (queue_message != nullptr)
+    //        {
+    //            control_messages_ = control_message_factory_->GetControlMessages(queue_message);
+    //        }
+    //    else
+    //        {
+    //            control_messages_->clear();
+    //        }
 }
 
 
 // Apply the corresponding control actions
 void ControlThread::process_control_messages()
 {
-    for (auto &i : *control_messages_)
-        {
-            if (stop_)
-                {
-                    break;
-                }
-            if (i->who == 200)
-                {
-                    apply_action(i->what);
-                }
-            else
-                {
-                    if (i->who == 300)  // some TC commands require also actions from control_thread
-                        {
-                            apply_action(i->what);
-                        }
-                    flowgraph_->apply_action(i->who, i->what);
-                }
-            processed_control_messages_++;
-        }
-    control_messages_->clear();
+    //    for (auto &i : *control_messages_)
+    //        {
+    //            if (stop_)
+    //                {
+    //                    break;
+    //                }
+    //            if (i->who == 200)
+    //                {
+    //                    apply_action(i->what);
+    //                }
+    //            else
+    //                {
+    //                    if (i->who == 300)  // some TC commands require also actions from control_thread
+    //                        {
+    //                            apply_action(i->what);
+    //                        }
+    //                    flowgraph_->apply_action(i->who, i->what);
+    //                }
+    //            processed_control_messages_++;
+    //        }
+    //    control_messages_->clear();
     DLOG(INFO) << "Processed all control messages";
 }
 
@@ -1092,11 +1090,12 @@ void ControlThread::sysv_queue_listener()
                     if ((std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()))
                         {
                             std::cout << "Quit order received, stopping GNSS-SDR !!" << std::endl;
-                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                            if (control_queue_ != gr::msg_queue::sptr())
-                                {
-                                    control_queue_->handle(cmf->GetQueueMessage(200, 0));
-                                }
+                            //todo: remplace old shutdown mechanism
+                            //                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+                            //                            if (control_queue_ != std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>())
+                            //                                {
+                            //                                    control_queue_->handle(cmf->GetQueueMessage(200, 0));
+                            //                                }
                             read_queue = false;
                         }
                 }
@@ -1114,11 +1113,12 @@ void ControlThread::keyboard_listener()
             if (c == 'q')
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;
-                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                    if (control_queue_ != gr::msg_queue::sptr())
-                        {
-                            control_queue_->handle(cmf->GetQueueMessage(200, 0));
-                        }
+                    //todo: remplace old shutdown mechanism
+                    //                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+                    //                    if (control_queue_ != std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>())
+                    //                        {
+                    //                            control_queue_->handle(cmf->GetQueueMessage(200, 0));
+                    //                        }
                     read_keys = false;
                 }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

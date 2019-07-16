@@ -46,7 +46,7 @@
 #include "in_memory_configuration.h"
 #include "notch_filter_lite.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 #include <gtest/gtest.h>
 
 

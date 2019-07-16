@@ -62,7 +62,7 @@
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/gr_complex.h>    // for gr_complex
 #include <gnuradio/io_signature.h>  // for io_signature
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 #include <gnuradio/runtime_types.h>  // for block_sptr
 #include <gnuradio/top_block.h>
 #include <pmt/pmt.h>        // for pmt_t, to_long

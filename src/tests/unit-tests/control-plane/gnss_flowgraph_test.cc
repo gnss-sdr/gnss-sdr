@@ -40,7 +40,7 @@
 #include "in_memory_configuration.h"
 #include "pass_through.h"
 #include "tracking_interface.h"
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 #include <gtest/gtest.h>
 
 

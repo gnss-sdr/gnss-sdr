@@ -47,7 +47,7 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -265,7 +265,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);

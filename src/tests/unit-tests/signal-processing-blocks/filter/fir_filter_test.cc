@@ -48,7 +48,7 @@
 #include "interleaved_byte_to_complex_byte.h"
 #include "interleaved_short_to_complex_short.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 #include <gtest/gtest.h>
 
 

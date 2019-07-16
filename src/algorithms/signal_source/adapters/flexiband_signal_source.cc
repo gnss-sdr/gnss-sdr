@@ -34,7 +34,6 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <teleorbit/frontend.h>
 #include <utility>
 
@@ -43,10 +42,10 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
-    gr::msg_queue::sptr queue) : role_(role),
-                                 in_stream_(in_stream),
-                                 out_stream_(out_stream),
-                                 queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
+                                                           in_stream_(in_stream),
+                                                           out_stream_(out_stream),
+                                                           queue_(std::move(queue))
 {
     std::string default_item_type = "byte";
     item_type_ = configuration->property(role + ".item_type", default_item_type);

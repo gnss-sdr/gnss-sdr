@@ -38,11 +38,11 @@
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
 #include "channel_status_msg_receiver.h"
+#include "concurrent_queue.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
 #include "pvt_interface.h"
 #include <gnuradio/blocks/null_sink.h>  //for null_sink
-#include <gnuradio/msg_queue.h>         // for msg_queue, msg_queue::sptr
 #include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
 #include <pmt/pmt.h>                    // for pmt_t
 #include <list>                         // for list
@@ -72,7 +72,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr queue);  // NOLINT(performance-unnecessary-value-param)
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);  // NOLINT(performance-unnecessary-value-param)
 
     /*!
      * \brief Destructor
@@ -107,6 +107,10 @@ public:
      * \param[in] what  What is the action. 0: acquisition failed; 1: acquisition success; 2: tracking lost
      */
     void apply_action(unsigned int who, unsigned int what);
+
+
+    void push_back_signal(Gnss_Signal gs);
+    void remove_signal(Gnss_Signal gs);
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
@@ -181,7 +185,7 @@ private:
     gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
 #endif
     gr::top_block_sptr top_block_;
-    gr::msg_queue::sptr queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 
     std::list<Gnss_Signal> available_GPS_1C_signals_;
     std::list<Gnss_Signal> available_GPS_2S_signals_;

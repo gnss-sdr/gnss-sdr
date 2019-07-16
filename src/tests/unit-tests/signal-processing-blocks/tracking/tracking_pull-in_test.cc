@@ -36,7 +36,7 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
-#include "control_message_factory.h"
+#include "concurrent_queue.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
@@ -61,7 +61,6 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/filter/firdes.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -229,7 +228,7 @@ public:
     Gnss_Synchro gnss_synchro;
     size_t item_size;
 
-    gr::msg_queue::sptr queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 };
 
 

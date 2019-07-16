@@ -38,6 +38,7 @@ target_link_libraries(channel_libs
         Gnuradio::runtime
         Gnuradio::pmt
         core_system_parameters
+        core_receiver
     PRIVATE
         Boost::boost
         Gflags::gflags

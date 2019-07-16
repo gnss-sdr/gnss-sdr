@@ -32,7 +32,7 @@
 
 
 #include "control_thread.h"
-#include "control_message_factory.h"
+#include "concurrent_queue.h"
 #include "in_memory_configuration.h"
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
@@ -40,7 +40,6 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/message.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
 #include <chrono>
 #include <exception>
@@ -121,7 +120,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages /*unused*/)
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
-    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue = gr::msg_queue::make(0);
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
 
@@ -182,7 +181,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
-    gr::msg_queue::sptr control_queue2 = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue2 = gr::msg_queue::make(0);
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
@@ -245,7 +244,7 @@ TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
-    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue = gr::msg_queue::make(0);
     control_thread->set_control_queue(control_queue);
 
     std::thread stop_receiver_thread(stop_receiver);

@@ -40,11 +40,11 @@
 #endif
 #include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 
 TEST(ValveTest, CheckEventSentAfter100Samples)
 {
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
 
     gr::top_block_sptr top_block = gr::make_top_block("gnss_sdr_valve_test");
 

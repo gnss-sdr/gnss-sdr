@@ -42,8 +42,8 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
     const unsigned int _code_length = 10230;
     std::bitset<_code_length> G1{};
     std::bitset<_code_length> G2{};
-    auto G1_register = std::move(std::bitset<13>{}.set());  // All true {true, true, true, true, true, true, true, true, true, true, true, true, true};
-    auto G2_register = std::move(std::bitset<13>{}.set());  // All true {true, true, true, true, true, true, true, true, true, true, true, true, true};
+    auto G1_register = std::move(std::bitset<13>{}.set());  // All true
+    auto G2_register = std::move(std::bitset<13>{}.set());  // All true
     auto G1_register_reset = std::move(std::bitset<13>{}.set());
     G1_register_reset.reset(0);
     G1_register_reset.reset(1);  // {false, false, true, true, true, true, true, true, true, true, true, true, true};
@@ -126,21 +126,12 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
     // Assign shifted G2 register based on prn number
     G2_register = G2_register_shifted[prn_idx];
 
-    // std::reverse(G2_register.begin(), G2_register.end());
-    for (std::size_t i = 0; i < 6; ++i)
-        {
-            bool t = G2_register[i];
-            G2_register[i] = G2_register[13 - i - 1];
-            G2_register[13 - i - 1] = t;
-        }
-
     // Generate G1 and G2 Register
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
             G2[lcv] = G2_register[0];
 
-            //feedback1 = (test_G1_register[0]+test_G1_register[2]+test_G1_register[3]+test_G1_register[12]) & 0x1;
             feedback1 = G1_register[0] xor G1_register[9] xor G1_register[10] xor G1_register[12];
             feedback2 = G2_register[0] xor G2_register[1] xor G2_register[3] xor G2_register[4] xor
                         G2_register[6] xor G2_register[7] xor G2_register[8] xor G2_register[12];
@@ -157,7 +148,7 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
             // Reset G1 register if sequence found
             if (G1_register == G1_register_reset)
                 {
-                    G1_register = std::move(std::bitset<13>{}.set());  // All true {{true, true, true, true, true, true, true, true, true, true, true, true, true}};
+                    G1_register = std::move(std::bitset<13>{}.set());  // All true
                 }
         }
 

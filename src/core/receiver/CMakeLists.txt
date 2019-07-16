@@ -24,7 +24,6 @@ set(GNSS_RECEIVER_SOURCES
     gnss_flowgraph.cc
     in_memory_configuration.cc
     tcp_cmd_interface.cc
-    channel_event.cc
     command_event.cc
 )
 
@@ -38,7 +37,6 @@ set(GNSS_RECEIVER_HEADERS
     concurrent_map.h
     concurrent_queue.h
     control_message.h
-    channel_event.h
     command_event.h
 )
 

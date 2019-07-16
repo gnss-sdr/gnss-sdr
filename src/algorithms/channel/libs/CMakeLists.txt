@@ -24,7 +24,7 @@ set(CHANNEL_FSM_SOURCES
 set(CHANNEL_FSM_HEADERS
     channel_fsm.h
     channel_msg_receiver_cc.h
-) 
+)
 
 list(SORT CHANNEL_FSM_HEADERS)
 list(SORT CHANNEL_FSM_SOURCES)
@@ -35,15 +35,14 @@ add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
 target_link_libraries(channel_libs
     PUBLIC
+        core_libs
+        core_system_parameters
         Gnuradio::runtime
         Gnuradio::pmt
-        core_system_parameters
-        core_receiver
     PRIVATE
         Boost::boost
         Gflags::gflags
         Glog::glog
-        core_receiver
 )
 
 if(ENABLE_CLANG_TIDY)

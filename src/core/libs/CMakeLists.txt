@@ -25,6 +25,7 @@ set(CORE_LIBS_SOURCES
     gnss_sdr_supl_client.cc
     gnss_sdr_sample_counter.cc
     channel_status_msg_receiver.cc
+    channel_event.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -34,6 +35,7 @@ set(CORE_LIBS_HEADERS
     gnss_sdr_supl_client.h
     gnss_sdr_sample_counter.h
     channel_status_msg_receiver.h
+    channel_event.h
 )
 
 if(ENABLE_FPGA)

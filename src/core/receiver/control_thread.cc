@@ -33,6 +33,8 @@
  */
 
 #include "control_thread.h"
+#include "channel_event.h"
+#include "command_event.h"
 #include "concurrent_map.h"
 #include "configuration_interface.h"
 #include "file_configuration.h"
@@ -60,7 +62,6 @@
 #include "rtklib_rtkcmn.h"         // for utc2gpst
 #include <boost/lexical_cast.hpp>  // for bad_lexical_cast
 #include <glog/logging.h>          // for LOG
-#include <gnuradio/message.h>      // for message::sptr
 #include <pmt/pmt.h>               // for make_any
 #include <algorithm>               // for find, min
 #include <chrono>                  // for milliseconds
@@ -282,15 +283,49 @@ int ControlThread::run()
         flowgraph_);
 #endif
     // Main loop to read and process the control messages
+    pmt::pmt_t msg;
     while (flowgraph_->running() && !stop_)
         {
             //TODO call here the new sat dispatcher and receiver controller
-            //            read_control_messages();
-            //            if (control_messages_ != nullptr)
-            //                {
-            //                    process_control_messages();
-            //                }
-            std::cout << "tick\n";
+            bool valid_event = control_queue_->timed_wait_and_pop(msg, 100);
+            if (valid_event)
+                {
+                    if (pmt::any_ref(msg).type() == typeid(channel_event_sptr))
+                        {
+                            channel_event_sptr new_event;
+                            new_event = boost::any_cast<channel_event_sptr>(pmt::any_ref(msg));
+                            DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
+                                       << " what: " << new_event->event_type;
+                            flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
+                        }
+                    else if (pmt::any_ref(msg).type() == typeid(command_event_sptr))
+                        {
+                            command_event_sptr new_event;
+                            new_event = boost::any_cast<command_event_sptr>(pmt::any_ref(msg));
+                            DLOG(INFO) << "New command event rx from ch id: " << new_event->command_id
+                                       << " what: " << new_event->event_type;
+
+                            if (new_event->command_id == 200)
+                                {
+                                    apply_action(new_event->event_type);
+                                }
+                            else
+                                {
+                                    if (new_event->command_id == 300)  // some TC commands require also actions from control_thread
+                                        {
+                                            apply_action(new_event->event_type);
+                                        }
+                                    flowgraph_->apply_action(new_event->command_id, new_event->event_type);
+                                }
+                        }
+                    else
+                        {
+                            DLOG(INFO) << "Control Queue: unknown object type!\n";
+                        }
+                }
+            else
+                {
+                }
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
@@ -788,50 +823,6 @@ void ControlThread::assist_GNSS()
         }
 }
 
-
-void ControlThread::read_control_messages()
-{
-    DLOG(INFO) << "Reading control messages from queue";
-    //    gr::message::sptr queue_message = control_queue_->delete_head();
-    //    if (queue_message != nullptr)
-    //        {
-    //            control_messages_ = control_message_factory_->GetControlMessages(queue_message);
-    //        }
-    //    else
-    //        {
-    //            control_messages_->clear();
-    //        }
-}
-
-
-// Apply the corresponding control actions
-void ControlThread::process_control_messages()
-{
-    //    for (auto &i : *control_messages_)
-    //        {
-    //            if (stop_)
-    //                {
-    //                    break;
-    //                }
-    //            if (i->who == 200)
-    //                {
-    //                    apply_action(i->what);
-    //                }
-    //            else
-    //                {
-    //                    if (i->who == 300)  // some TC commands require also actions from control_thread
-    //                        {
-    //                            apply_action(i->what);
-    //                        }
-    //                    flowgraph_->apply_action(i->who, i->what);
-    //                }
-    //            processed_control_messages_++;
-    //        }
-    //    control_messages_->clear();
-    DLOG(INFO) << "Processed all control messages";
-}
-
-
 void ControlThread::apply_action(unsigned int what)
 {
     std::shared_ptr<PvtInterface> pvt_ptr;
@@ -1090,12 +1081,7 @@ void ControlThread::sysv_queue_listener()
                     if ((std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()))
                         {
                             std::cout << "Quit order received, stopping GNSS-SDR !!" << std::endl;
-                            //todo: remplace old shutdown mechanism
-                            //                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                            //                            if (control_queue_ != std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>())
-                            //                                {
-                            //                                    control_queue_->handle(cmf->GetQueueMessage(200, 0));
-                            //                                }
+                            control_queue_->push(pmt::make_any(command_event_make(200, 0)));
                             read_queue = false;
                         }
                 }
@@ -1113,12 +1099,7 @@ void ControlThread::keyboard_listener()
             if (c == 'q')
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;
-                    //todo: remplace old shutdown mechanism
-                    //                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                    //                    if (control_queue_ != std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>())
-                    //                        {
-                    //                            control_queue_->handle(cmf->GetQueueMessage(200, 0));
-                    //                        }
+                    control_queue_->push(pmt::make_any(command_event_make(200, 0)));
                     read_keys = false;
                 }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

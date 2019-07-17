@@ -63,6 +63,7 @@
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <cstdint>
 #include <utility>
@@ -794,13 +795,9 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
     // create the msg queue for valve
 
-    queue = gr::msg_queue::make(0);
+    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
     auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
-
-    std::shared_ptr<ControlMessageFactory> control_message_factory_;
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
-
 
     //CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;
@@ -882,15 +879,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                         top_block->start();
                                         std::cout << " Waiting for valve...\n";
                                         //wait the valve message indicating the circulation of the amount of samples of the delay
-                                        gr::message::sptr queue_message = queue->delete_head();
-                                        if (queue_message != nullptr)
-                                            {
-                                                control_messages_ = control_message_factory_->GetControlMessages(queue_message);
-                                            }
-                                        else
-                                            {
-                                                control_messages_->clear();
-                                            }
+                                        pmt::pmt_t msg;
+                                        queue->wait_and_pop(msg);
                                         std::cout << " Starting tracking...\n";
                                         tracking->start_tracking();
                                         resetable_valve_->open_valve();

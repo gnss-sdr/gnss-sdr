@@ -114,7 +114,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     init();
-    queue = gr::msg_queue::make(0);
+    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
@@ -161,7 +161,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     int num_samples = 80000000;           // 8 Msps
     unsigned int skiphead_sps = 8000000;  // 8 Msps
     init();
-    queue = gr::msg_queue::make(0);
+    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory

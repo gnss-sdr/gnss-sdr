@@ -110,7 +110,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     int fs_in = 32000000;
     int nsamples = 32000000 * 5;
     init();
-    queue = gr::msg_queue::make(0);
+    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory

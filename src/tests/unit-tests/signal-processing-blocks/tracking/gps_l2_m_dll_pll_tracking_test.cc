@@ -160,7 +160,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     int nsamples = fs_in * 9;
 
     init();
-    queue = gr::msg_queue::make(0);
+    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_2S", 1, 1);
     boost::shared_ptr<GpsL2MDllPllTrackingTest_msg_rx> msg_rx = GpsL2MDllPllTrackingTest_msg_rx_make();

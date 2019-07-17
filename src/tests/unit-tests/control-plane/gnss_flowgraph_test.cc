@@ -30,17 +30,17 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_flowgraph.h"
 #include "acquisition_interface.h"
 #include "channel.h"
 #include "channel_interface.h"
+#include "concurrent_queue.h"
 #include "file_configuration.h"
 #include "file_signal_source.h"
 #include "gnss_block_interface.h"
-#include "gnss_flowgraph.h"
 #include "in_memory_configuration.h"
 #include "pass_through.h"
 #include "tracking_interface.h"
-#include "concurrent_queue.h"
 #include <gtest/gtest.h>
 
 
@@ -68,7 +68,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopOldNotation /*unused*/
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
 
-    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
+    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, std::make_shared<Concurrent_Queue<pmt::pmt_t>>());
 
     EXPECT_NO_THROW(flowgraph->connect());
     EXPECT_TRUE(flowgraph->connected());
@@ -103,7 +103,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStop /*unused*/)
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
 
-    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
+    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, std::make_shared<Concurrent_Queue<pmt::pmt_t>>());
 
     EXPECT_NO_THROW(flowgraph->connect());
     EXPECT_TRUE(flowgraph->connected());
@@ -137,7 +137,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopGalileoE1B /*unused*/)
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
 
-    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
+    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, std::make_shared<Concurrent_Queue<pmt::pmt_t>>());
 
     EXPECT_NO_THROW(flowgraph->connect());
     EXPECT_TRUE(flowgraph->connected());
@@ -253,7 +253,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopHybrid /*unused*/)
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
 
-    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
+    std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, std::make_shared<Concurrent_Queue<pmt::pmt_t>>());
 
     EXPECT_NO_THROW(flowgraph->connect());
     EXPECT_TRUE(flowgraph->connected());

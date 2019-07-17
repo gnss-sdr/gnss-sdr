@@ -38,13 +38,14 @@
 #else
 #include <gnuradio/analog/sig_source_f.h>
 #endif
+#include "concurrent_queue.h"
 #include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/null_sink.h>
-#include "concurrent_queue.h"
+#include <pmt/pmt.h>
 
 TEST(ValveTest, CheckEventSentAfter100Samples)
 {
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
 
     gr::top_block_sptr top_block = gr::make_top_block("gnss_sdr_valve_test");
 
@@ -52,8 +53,9 @@ TEST(ValveTest, CheckEventSentAfter100Samples)
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(float), 100, queue);
     gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(float));
 
-    unsigned int expected0 = 0;
-    EXPECT_EQ(expected0, queue->count());
+    bool expected0 = false;
+    pmt::pmt_t msg;
+    EXPECT_EQ(expected0, queue->timed_wait_and_pop(msg, 100));
 
     top_block->connect(source, 0, valve, 0);
     top_block->connect(valve, 0, sink, 0);
@@ -61,6 +63,6 @@ TEST(ValveTest, CheckEventSentAfter100Samples)
     top_block->run();
     top_block->stop();
 
-    unsigned int expected1 = 1;
-    EXPECT_EQ(expected1, queue->count());
+    bool expected1 = true;
+    EXPECT_EQ(expected1, queue->timed_wait_and_pop(msg, 100));
 }

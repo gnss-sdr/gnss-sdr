@@ -60,9 +60,8 @@
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/gr_complex.h>    // for gr_complex
-#include <gnuradio/io_signature.h>  // for io_signature
-#include "concurrent_queue.h"
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/runtime_types.h>  // for block_sptr
 #include <gnuradio/top_block.h>
 #include <pmt/pmt.h>        // for pmt_t, to_long
@@ -189,9 +188,9 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     std::shared_ptr<GNSSBlockInterface> source;

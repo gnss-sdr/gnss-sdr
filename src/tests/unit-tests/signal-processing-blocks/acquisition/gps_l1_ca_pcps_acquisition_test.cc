@@ -262,7 +262,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
     int nsamples = 4000;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
 
     top_block = gr::make_top_block("Acquisition test");
     init();

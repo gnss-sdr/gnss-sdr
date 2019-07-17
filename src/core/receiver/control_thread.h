@@ -95,7 +95,7 @@ public:
     /*!
      * \brief Sets the control_queue
      *
-     * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
+     * \param[in] std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue
      */
     void set_control_queue(const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);  // NOLINT(performance-unnecessary-value-param)
 
@@ -139,10 +139,6 @@ private:
 
     // Save {ephemeris, iono, utc, ref loc, ref time} assistance to a local XML file
     //bool save_assistance_to_XML();
-
-    void read_control_messages();
-
-    void process_control_messages();
 
     /*
      * Blocking function that reads the GPS assistance queue

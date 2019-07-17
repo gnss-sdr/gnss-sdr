@@ -31,9 +31,10 @@
  */
 
 
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "Galileo_E1.h"
 #include "acquisition_dump_reader.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -47,9 +48,9 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include "concurrent_queue.h"
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
 
@@ -200,7 +201,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 
     std::vector<int>* doppler = &acq_dump.doppler;
     std::vector<unsigned int>* samples = &acq_dump.samples;
-    std::vector<std::vector<float> >* mag = &acq_dump.mag;
+    std::vector<std::vector<float>>* mag = &acq_dump.mag;
 
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())
@@ -265,7 +266,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);

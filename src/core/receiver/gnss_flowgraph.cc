@@ -1262,9 +1262,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             else
                                 {
                                     push_back_signal(gnss_signal);
-                                    //todo: rewrite all
-                                    //                                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                                    //                                    queue_->handle(cmf->GetQueueMessage(i, 0));
                                     DLOG(INFO) << "Channel " << ch_index << " secondary frequency acquisition assistance not available in " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
                                 }
                         }
@@ -1327,9 +1324,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             else
                                 {
                                     push_back_signal(gnss_signal);
-                                    //todo: rewrite all
-                                    //                                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                                    //                                    queue_->handle(cmf->GetQueueMessage(i, 0));
                                     DLOG(INFO) << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
                                     std::cout << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
                                 }

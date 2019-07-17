@@ -39,6 +39,7 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+#include "concurrent_queue.h"
 #include "file_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -46,7 +47,6 @@
 #include "in_memory_configuration.h"
 #include "pulse_blanking_filter.h"
 #include <gnuradio/blocks/null_sink.h>
-#include "concurrent_queue.h"
 #include <gtest/gtest.h>
 
 
@@ -57,7 +57,7 @@ class PulseBlankingFilterTest : public ::testing::Test
 protected:
     PulseBlankingFilterTest()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_pb_filter_test_nsamples;
@@ -66,7 +66,7 @@ protected:
 
     void init();
     void configure_gr_complex_gr_complex();
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;

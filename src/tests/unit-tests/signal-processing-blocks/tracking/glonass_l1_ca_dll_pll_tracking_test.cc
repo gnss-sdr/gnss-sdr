@@ -156,7 +156,7 @@ TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)
     int nsamples = fs_in * 4e-3 * 2;
 
     init();
-    queue = gr::msg_queue::make(0);
+    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GlonassL1CaDllPllTracking>(config.get(), "Tracking_1G", 1, 1);
     boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx> msg_rx = GlonassL1CaDllPllTrackingTest_msg_rx_make();

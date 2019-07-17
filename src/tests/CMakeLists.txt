@@ -869,7 +869,6 @@ endif()
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(control_thread_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_message_factory_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_thread_test.cc
     )
     if(${FILESYSTEM_FOUND})

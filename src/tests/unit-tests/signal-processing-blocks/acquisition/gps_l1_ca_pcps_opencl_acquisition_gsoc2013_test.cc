@@ -118,7 +118,7 @@ class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test : public ::testing::Test
 protected:
     GpsL1CaPcpsOpenClAcquisitionGSoC2013Test()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
         top_block = gr::make_top_block("Acquisition test");
         item_size = sizeof(gr_complex);
         stop = false;

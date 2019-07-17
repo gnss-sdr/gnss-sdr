@@ -36,14 +36,15 @@
 #include "gnss_block_factory.h"
 #include "acquisition_interface.h"
 #include "channel.h"
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "observables_interface.h"
 #include "pvt_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
-#include "concurrent_queue.h"
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <vector>
 
 TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
@@ -53,7 +54,7 @@ TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
     configuration->set_property("SignalSource.filename", filename);
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     // Example of a factory as a shared_ptr
     std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
     // Example of a block as a shared_ptr
@@ -67,7 +68,7 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongSignalSource)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("SignalSource.implementation", "Pepito");
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     // Example of a factory as a unique_ptr
     std::unique_ptr<GNSSBlockFactory> factory;
     // Example of a block as a unique_ptr
@@ -90,7 +91,7 @@ TEST(GNSSBlockFactoryTest, InstantiateSignalConditioner)
 TEST(GNSSBlockFactoryTest, InstantiateFIRFilter)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     configuration->set_property("InputFilter.implementation", "Fir_Filter");
 
@@ -123,7 +124,7 @@ TEST(GNSSBlockFactoryTest, InstantiateFIRFilter)
 TEST(GNSSBlockFactoryTest, InstantiateFreqXlatingFIRFilter)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     configuration->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
 
@@ -158,7 +159,7 @@ TEST(GNSSBlockFactoryTest, InstantiateFreqXlatingFIRFilter)
 TEST(GNSSBlockFactoryTest, InstantiatePulseBlankingFilter)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     configuration->set_property("InputFilter.implementation", "Pulse_Blanking_Filter");
 
     std::unique_ptr<GNSSBlockFactory> factory;
@@ -171,7 +172,7 @@ TEST(GNSSBlockFactoryTest, InstantiatePulseBlankingFilter)
 TEST(GNSSBlockFactoryTest, InstantiateNotchFilter)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     configuration->set_property("InputFilter.implementation", "Notch_Filter");
 
     std::unique_ptr<GNSSBlockFactory> factory;
@@ -184,7 +185,7 @@ TEST(GNSSBlockFactoryTest, InstantiateNotchFilter)
 TEST(GNSSBlockFactoryTest, InstantiateNotchFilterLite)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     configuration->set_property("InputFilter.implementation", "Notch_Filter_Lite");
 
     std::unique_ptr<GNSSBlockFactory> factory;
@@ -309,7 +310,7 @@ TEST(GNSSBlockFactoryTest, InstantiateChannels)
     configuration->set_property("Channel0.item_type", "gr_complex");
     configuration->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
     configuration->set_property("Channel1.item_type", "gr_complex");
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = factory->GetChannels(configuration, queue);
     EXPECT_EQ(static_cast<unsigned int>(2), channels->size());

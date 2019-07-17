@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -39,12 +39,8 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
-#include <gnuradio/runtime_types.h>
-#include <cstddef>
 #include <string>
 
-
-class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -73,7 +69,7 @@ public:
 
     inline size_t item_size() override
     {
-        return sizeof(int);
+        return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -101,6 +97,7 @@ public:
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
+    size_t item_size_;
     uint32_t channel_;
     std::string role_;
     uint32_t in_streams_;

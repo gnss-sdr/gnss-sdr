@@ -32,6 +32,7 @@
 
 
 #include "dll_pll_conf_fpga.h"
+#include "gnss_sdr_flags.h"
 #include <cstring>
 
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
@@ -63,10 +64,12 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     early_late_space_narrow_chips = 0.1;
     very_early_late_space_narrow_chips = 0.1;
     extend_correlation_symbols = 5;
-    cn0_samples = 20;
-    cn0_min = 25;
-    max_lock_fail = 50;
-    carrier_lock_th = 0.85;
+    cn0_samples = FLAGS_cn0_samples;
+    cn0_min = FLAGS_cn0_min;
+    max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
+    max_code_lock_fail = FLAGS_max_lock_fail;
+    carrier_lock_th = FLAGS_carrier_lock_th;
+    //max_lock_fail = 50;
     enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';

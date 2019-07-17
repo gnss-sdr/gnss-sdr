@@ -42,6 +42,7 @@ class Dll_Pll_Conf_Fpga
 {
 public:
     /* DLL/PLL tracking configuration */
+
     int fll_filter_order;
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
@@ -49,7 +50,6 @@ public:
     unsigned int bit_synchronization_time_limit_s;
     int pll_filter_order;
     int dll_filter_order;
-
 
     double fs_in;
     uint32_t vector_length;
@@ -71,7 +71,9 @@ public:
     bool high_dyn;
     int32_t cn0_samples;
     int32_t cn0_min;
-    int32_t max_lock_fail;
+    int32_t max_code_lock_fail;
+    int32_t max_carrier_lock_fail;
+    //int32_t max_lock_fail;
     uint32_t smoother_length;
     double carrier_lock_th;
     bool track_pilot;

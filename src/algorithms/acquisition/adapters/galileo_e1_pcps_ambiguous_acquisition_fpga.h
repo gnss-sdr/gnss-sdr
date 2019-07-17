@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,16 +32,15 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 
+#include "acq_conf.h"
 #include "channel_fsm.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <volk/volk_complex.h>       // for lv_16sc_t
-#include <cstddef>                   // for size_t
 #include <memory>
 #include <string>
 #include <vector>
 
-class Gnss_Synchro;
+
 class ConfigurationInterface;
 
 /*!
@@ -73,8 +72,7 @@ public:
 
     size_t item_size() override
     {
-        size_t item_size = sizeof(lv_16sc_t);
-        return item_size;
+        return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -85,7 +83,7 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     * tracking blocks
+     *  tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -157,6 +155,7 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
+    size_t item_size_;
     bool acquire_pilot_;
     uint32_t channel_;
     std::weak_ptr<ChannelFsm> channel_fsm_;

@@ -83,7 +83,7 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
             G1[lcv] = G1_register[0];
             G2[lcv] = G2_register[0];
 
-            feedback1 = G1_register[7] ^ G1_register[0];
+            feedback1 = G1_register[7] xor G1_register[0];
             feedback2 = G2_register[8] xor G2_register[7] xor G2_register[4] xor G2_register[2] xor G2_register[1] xor G2_register[0];
 
             for (lcv2 = 0; lcv2 < 9; lcv2++)
@@ -104,7 +104,7 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
     // Generate PRN from G1 and G2 Registers
     for (lcv = 0; lcv < _code_length; lcv++)
         {
-            aux = G1[(lcv + _chip_shift) % _code_length] ^ G2[delay];
+            aux = G1[(lcv + _chip_shift) % _code_length] xor G2[delay];
             if (aux == true)
                 {
                     _dest[lcv] = 1;

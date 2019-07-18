@@ -51,11 +51,11 @@ static const uint8_t BITN[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4}
  */
 uint8_t parity(uint32_t x)
 {
-    x ^= x >> 16;
-    x ^= x >> 8;
-    x ^= x >> 4;
-    x &= 0xF;
-    return (0x6996 >> x) & 1;
+    x ^= x >> 16U;
+    x ^= x >> 8U;
+    x ^= x >> 4U;
+    x &= 0xFU;
+    return (0x6996U >> x) & 1U;
 }
 
 
@@ -74,7 +74,7 @@ uint32_t getbitu(const uint8_t *buff, uint32_t pos, uint8_t len)
     uint32_t i = 0;
     for (i = pos; i < pos + len; i++)
         {
-            bits = (bits << 1) +
+            bits = (bits << 1U) +
                    ((buff[i / 8] >> (7 - i % 8)) & 1U);
         }
 
@@ -121,7 +121,7 @@ void setbitu(uint8_t *buff, uint32_t pos, uint32_t len, uint32_t data)
             return;
         }
     uint32_t i = 0;
-    for (i = pos; i < pos + len; i++, mask >>= 1)
+    for (i = pos; i < pos + len; i++, mask >>= 1U)
         {
             if (data & mask)
                 {
@@ -246,10 +246,10 @@ void bitcopy(void *dst, uint32_t dst_index, const void *src, uint32_t src_index,
 uint8_t count_bits_u64(uint64_t v, uint8_t bv)
 {
     uint8_t r = 0;
-    int i = 0;
+    uint32_t i = 0;
     for (i = 0; i < 16; i++)
         {
-            r += BITN[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4U)) & 0xFU];
         }
     return bv == 1 ? r : 64 - r;
 }
@@ -265,10 +265,10 @@ uint8_t count_bits_u64(uint64_t v, uint8_t bv)
 uint8_t count_bits_u32(uint32_t v, uint8_t bv)
 {
     uint8_t r = 0;
-    int i = 0;
+    uint32_t i = 0;
     for (i = 0; i < 8; i++)
         {
-            r += BITN[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4U)) & 0xFU];
         }
     return bv == 1 ? r : 32 - r;
 }
@@ -284,10 +284,10 @@ uint8_t count_bits_u32(uint32_t v, uint8_t bv)
 uint8_t count_bits_u16(uint16_t v, uint8_t bv)
 {
     uint8_t r = 0;
-    int i = 0;
+    uint32_t i = 0;
     for (i = 0; i < 4; i++)
         {
-            r += BITN[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4U)) & 0xFU];
         }
     return bv == 1 ? r : 16 - r;
 }
@@ -303,10 +303,10 @@ uint8_t count_bits_u16(uint16_t v, uint8_t bv)
 uint8_t count_bits_u8(uint8_t v, uint8_t bv)
 {
     uint8_t r = 0;
-    int i = 0;
+    uint32_t i = 0;
     for (i = 0; i < 2; i++)
         {
-            r += BITN[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4U)) & 0xFU];
         }
     return bv == 1 ? r : 8 - r;
 }

@@ -154,6 +154,8 @@ void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from)
             _dest[2] = -1;
             _dest[3] = -1;
             break;
+        default:
+            break;
         }
 }
 

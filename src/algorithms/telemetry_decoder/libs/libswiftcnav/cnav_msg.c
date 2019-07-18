@@ -106,7 +106,7 @@ static uint32_t _cnav_extract_crc(const cnav_v27_part_t *part)
         GPS_CNAV_MSG_CRC_LENGTH);
     if (part->invert)
         {
-            crc ^= 0xFFFFFF;
+            crc ^= 0xFFFFFFU;
         }
     return crc;
 }

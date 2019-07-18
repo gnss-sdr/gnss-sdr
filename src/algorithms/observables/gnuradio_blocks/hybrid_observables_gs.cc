@@ -38,6 +38,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
+#include <array>
 #include <cmath>      // for round
 #include <cstdlib>    // for size_t, llabs
 #include <exception>  // for exception
@@ -46,6 +47,8 @@
 #include <utility>    // for move
 
 #if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
@@ -54,41 +57,18 @@ namespace fs = std::experimental::filesystem;
 namespace fs = std::filesystem;
 #endif
 #else
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
 namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
 #endif
 
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
     return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
-}
-
-void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg)
-{
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    try
-        {
-            if (pmt::any_ref(msg).type() == typeid(double))
-                {
-                    double new_rx_clock_offset_s;
-                    new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
-                    T_rx_offset_ms = new_rx_clock_offset_s * 1000.0;
-                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(T_rx_offset_ms));
-                    T_rx_remnant_to_20ms = (T_rx_TOW_ms % 20);
-                    //d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
-                    for (uint32_t n = 0; n < d_nchannels_out; n++)
-                        {
-                            d_gnss_synchro_history->clear(n);
-                        }
-
-                    LOG(INFO) << "Corrected new RX Time offset: " << T_rx_offset_ms << "[ms]";
-                }
-        }
-    catch (boost::bad_any_cast &e)
-        {
-            LOG(WARNING) << "msg_handler_pvt_to_observables Bad any cast!";
-        }
 }
 
 
@@ -110,7 +90,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
     T_rx_offset_ms = 0;
-    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(500, d_nchannels_out);
+    d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(500, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -169,9 +149,9 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
 
 hybrid_observables_gs::~hybrid_observables_gs()
 {
-    delete d_gnss_synchro_history;
     if (d_dump_file.is_open())
         {
+            auto pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -179,6 +159,15 @@ hybrid_observables_gs::~hybrid_observables_gs()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_dump_mat = false;
                 }
         }
     if (d_dump_mat)
@@ -191,6 +180,34 @@ hybrid_observables_gs::~hybrid_observables_gs()
                 {
                     LOG(WARNING) << "Error saving the .mat file: " << ex.what();
                 }
+        }
+}
+
+
+void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    try
+        {
+            if (pmt::any_ref(msg).type() == typeid(double))
+                {
+                    double new_rx_clock_offset_s;
+                    new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
+                    T_rx_offset_ms = new_rx_clock_offset_s * 1000.0;
+                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(T_rx_offset_ms));
+                    T_rx_remnant_to_20ms = (T_rx_TOW_ms % 20);
+                    //d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
+                    for (uint32_t n = 0; n < d_nchannels_out; n++)
+                        {
+                            d_gnss_synchro_history->clear(n);
+                        }
+
+                    LOG(INFO) << "Corrected new RX Time offset: " << T_rx_offset_ms << "[ms]";
+                }
+        }
+    catch (boost::bad_any_cast &e)
+        {
+            LOG(WARNING) << "msg_handler_pvt_to_observables Bad any cast!";
         }
 }
 
@@ -297,32 +314,32 @@ int32_t hybrid_observables_gs::save_matfile()
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
-            size_t dims[2] = {static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux.data(), MAT_F_DONT_COPY_DATA);
+            std::array<size_t, 2> dims{static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), RX_time_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, TOW_at_current_symbol_s_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), TOW_at_current_symbol_s_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_Doppler_hz_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Carrier_Doppler_hz_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_phase_cycles_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Carrier_phase_cycles_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Pseudorange_m_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Pseudorange_m_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, PRN_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), PRN_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Flag_valid_pseudorange_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Flag_valid_pseudorange_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }

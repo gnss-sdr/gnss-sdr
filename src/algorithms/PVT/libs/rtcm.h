@@ -34,12 +34,12 @@
 
 
 #include "concurrent_queue.h"
+#include "galileo_ephemeris.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
-#include <galileo_ephemeris.h>
-#include <gps_ephemeris.h>
-#include <gps_cnav_ephemeris.h>
-#include <glonass_gnav_ephemeris.h>
-#include <glonass_gnav_utc_model.h>
+#include "gps_cnav_ephemeris.h"
+#include "gps_ephemeris.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
@@ -48,6 +48,7 @@
 #include <cstdint>
 #include <cstring>  // for memcpy
 #include <deque>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>

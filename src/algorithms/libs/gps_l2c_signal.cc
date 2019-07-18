@@ -36,19 +36,19 @@
 #include <memory>
 
 
-int32_t gps_l2c_m_shift(int32_t x)
+uint32_t gps_l2c_m_shift(uint32_t x)
 {
-    return static_cast<int32_t>((x >> 1) ^ ((x & 1) * 0445112474));
+    return static_cast<uint32_t>((x >> 1U) ^ ((x & 1U) * 0445112474U));
 }
 
 
 void gps_l2c_m_code(gsl::span<int32_t> _dest, uint32_t _prn)
 {
-    int32_t x;
+    uint32_t x;
     x = GPS_L2C_M_INIT_REG[_prn - 1];
     for (int32_t n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
         {
-            _dest[n] = static_cast<int8_t>(x & 1);
+            _dest[n] = static_cast<int8_t>(x & 1U);
             x = gps_l2c_m_shift(x);
         }
 }

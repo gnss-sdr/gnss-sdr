@@ -45,10 +45,10 @@
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
 #include <iostream>
-
 
 #define NUM_PRNs 32
 
@@ -98,8 +98,8 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.pll_bw_narrow_hz = 0.0;
     trk_param_fpga.dll_bw_narrow_hz = 0.0;
     trk_param_fpga.system = 'G';
-    char sig_[3] = "2S";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'2', 'S', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     trk_param_fpga.cn0_samples = configuration->property(role + ".cn0_samples", trk_param_fpga.cn0_samples);
     trk_param_fpga.cn0_min = configuration->property(role + ".cn0_min", trk_param_fpga.cn0_min);
     trk_param_fpga.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param_fpga.max_code_lock_fail);
@@ -112,7 +112,6 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 //            max_lock_fail = FLAGS_max_lock_fail;
 //        }
 //    trk_param_fpga.max_lock_fail = max_lock_fail;
-
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";

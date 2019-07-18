@@ -1065,7 +1065,7 @@ bool GNSSFlowgraph::send_telemetry_msg(const pmt::pmt_t& msg)
  * \param[in] what  What is the action:
  * --- actions from channels ---
  * -> 0 acquisition failed
- * -> 1 acquisition succesfull
+ * -> 1 acquisition successful
  * -> 2 tracking lost
  * --- actions from TC receiver control ---
  * -> 10 TC request standby mode

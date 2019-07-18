@@ -54,6 +54,7 @@
 #include "rtklib_solver.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -65,6 +66,25 @@
 #include <exception>
 #include <utility>
 #include <vector>
+
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 
 Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
@@ -217,116 +237,116 @@ bool Rtklib_Solver::save_matfile()
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
-            size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms.data(), 0);
+            std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims, week.data(), 0);
+            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), week.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time.data(), 0);
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), RX_time.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, user_clk_offset.data(), 0);
+            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_x.data(), 0);
+            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_x.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_y.data(), 0);
+            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_y.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_z.data(), 0);
+            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_z.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_x.data(), 0);
+            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_x.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_y.data(), 0);
+            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_y.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_z.data(), 0);
+            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_z.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xx.data(), 0);
+            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_xx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yy.data(), 0);
+            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_yy.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zz.data(), 0);
+            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xy.data(), 0);
+            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_xy.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yz.data(), 0);
+            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_yz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zx.data(), 0);
+            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, latitude.data(), 0);
+            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), latitude.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, longitude.data(), 0);
+            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), longitude.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, height.data(), 0);
+            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), height.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims, valid_sats.data(), 0);
+            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), valid_sats.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_status.data(), 0);
+            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), solution_status.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_type.data(), 0);
+            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), solution_type.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_factor.data(), 0);
+            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), AR_ratio_factor.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_threshold.data(), 0);
+            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), AR_ratio_threshold.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, gdop.data(), 0);
+            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), gdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pdop.data(), 0);
+            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, hdop.data(), 0);
+            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), hdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vdop.data(), 0);
+            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }
@@ -340,6 +360,7 @@ Rtklib_Solver::~Rtklib_Solver()
 {
     if (d_dump_file.is_open() == true)
         {
+            auto pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -347,6 +368,15 @@ Rtklib_Solver::~Rtklib_Solver()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_flag_dump_mat_enabled = false;
                 }
         }
     if (d_flag_dump_mat_enabled)
@@ -413,8 +443,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
     std::array<obsd_t, MAXOBS> obs_data{};
-    std::array<eph_t, MAXOBS> eph_data{};
-    std::array<geph_t, MAXOBS> geph_data{};
+    std::vector<eph_t> eph_data(MAXOBS);
+    std::vector<geph_t> geph_data(MAXOBS);
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -730,7 +760,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
-                                            beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
+                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                             0);
                                         valid_obs++;
                                     }
@@ -752,8 +782,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
-                                                            beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
-                                                            1);  // Band 3 (L2/G2/B3)
+                                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                            2);  // Band 3 (L2/G2/B3)
                                                         found_B1I_obs = true;
                                                         break;
                                                     }
@@ -770,8 +800,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
-                                                    1);  // Band 2 (L2/G2)
+                                                    beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                    2);  // Band 2 (L2/G2)
                                                 valid_obs++;
                                             }
                                     }
@@ -797,28 +827,93 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
-            int sat = 0;
-            nav_t nav_data;
+            nav_t nav_data{};
             nav_data.eph = eph_data.data();
             nav_data.geph = geph_data.data();
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
-
-            for (auto &i : nav_data.lam)
+            if (gps_iono.valid)
                 {
-                    i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
-                    i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
-                    i[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
-
-                    // Keep update on sat number
-                    sat++;
-                    if (sat > NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS and sat < NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS)
-                        {
-                            i[0] = SPEED_OF_LIGHT / FREQ1_BDS;  // B1I
-                            i[1] = SPEED_OF_LIGHT / FREQ3_BDS;  // B3I
-                            i[2] = SPEED_OF_LIGHT / FREQ5;      // L5/E5
-                        }
+                    nav_data.ion_gps[0] = gps_iono.d_alpha0;
+                    nav_data.ion_gps[1] = gps_iono.d_alpha1;
+                    nav_data.ion_gps[2] = gps_iono.d_alpha2;
+                    nav_data.ion_gps[3] = gps_iono.d_alpha3;
+                    nav_data.ion_gps[4] = gps_iono.d_beta0;
+                    nav_data.ion_gps[5] = gps_iono.d_beta1;
+                    nav_data.ion_gps[6] = gps_iono.d_beta2;
+                    nav_data.ion_gps[7] = gps_iono.d_beta3;
                 }
+            if (!(gps_iono.valid) and gps_cnav_iono.valid)
+                {
+                    nav_data.ion_gps[0] = gps_cnav_iono.d_alpha0;
+                    nav_data.ion_gps[1] = gps_cnav_iono.d_alpha1;
+                    nav_data.ion_gps[2] = gps_cnav_iono.d_alpha2;
+                    nav_data.ion_gps[3] = gps_cnav_iono.d_alpha3;
+                    nav_data.ion_gps[4] = gps_cnav_iono.d_beta0;
+                    nav_data.ion_gps[5] = gps_cnav_iono.d_beta1;
+                    nav_data.ion_gps[6] = gps_cnav_iono.d_beta2;
+                    nav_data.ion_gps[7] = gps_cnav_iono.d_beta3;
+                }
+            if (galileo_iono.ai0_5 != 0.0)
+                {
+                    nav_data.ion_gal[0] = galileo_iono.ai0_5;
+                    nav_data.ion_gal[1] = galileo_iono.ai1_5;
+                    nav_data.ion_gal[2] = galileo_iono.ai2_5;
+                    nav_data.ion_gal[3] = 0.0;
+                }
+            if (beidou_dnav_iono.valid)
+                {
+                    nav_data.ion_cmp[0] = beidou_dnav_iono.d_alpha0;
+                    nav_data.ion_cmp[1] = beidou_dnav_iono.d_alpha1;
+                    nav_data.ion_cmp[2] = beidou_dnav_iono.d_alpha2;
+                    nav_data.ion_cmp[3] = beidou_dnav_iono.d_alpha3;
+                    nav_data.ion_cmp[4] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[5] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[6] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[7] = beidou_dnav_iono.d_beta3;
+                }
+            if (gps_utc_model.valid)
+                {
+                    nav_data.utc_gps[0] = gps_utc_model.d_A0;
+                    nav_data.utc_gps[1] = gps_utc_model.d_A1;
+                    nav_data.utc_gps[2] = gps_utc_model.d_t_OT;
+                    nav_data.utc_gps[3] = gps_utc_model.i_WN_T;
+                    nav_data.leaps = gps_utc_model.d_DeltaT_LS;
+                }
+            if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
+                {
+                    nav_data.utc_gps[0] = gps_cnav_utc_model.d_A0;
+                    nav_data.utc_gps[1] = gps_cnav_utc_model.d_A1;
+                    nav_data.utc_gps[2] = gps_cnav_utc_model.d_t_OT;
+                    nav_data.utc_gps[3] = gps_cnav_utc_model.i_WN_T;
+                    nav_data.leaps = gps_cnav_utc_model.d_DeltaT_LS;
+                }
+            if (glonass_gnav_utc_model.valid)
+                {
+                    nav_data.utc_glo[0] = glonass_gnav_utc_model.d_tau_c;  // ??
+                    nav_data.utc_glo[1] = 0.0;                             // ??
+                    nav_data.utc_glo[2] = 0.0;                             // ??
+                    nav_data.utc_glo[3] = 0.0;                             // ??
+                }
+            if (galileo_utc_model.A0_6 != 0.0)
+                {
+                    nav_data.utc_gal[0] = galileo_utc_model.A0_6;
+                    nav_data.utc_gal[1] = galileo_utc_model.A1_6;
+                    nav_data.utc_gal[2] = galileo_utc_model.t0t_6;
+                    nav_data.utc_gal[3] = galileo_utc_model.WNot_6;
+                    nav_data.leaps = galileo_utc_model.Delta_tLS_6;
+                }
+            if (beidou_dnav_utc_model.valid)
+                {
+                    nav_data.utc_cmp[0] = beidou_dnav_utc_model.d_A0_UTC;
+                    nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
+                    nav_data.utc_cmp[2] = 0.0;  // ??
+                    nav_data.utc_cmp[3] = 0.0;  // ??
+                    nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
+                }
+
+            /* update carrier wave length using native function call in RTKlib */
+            uniqnav(&nav_data);
 
             result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 
@@ -883,11 +978,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
-                    double pos[3];
-                    double enuv[3];
-                    ecef2pos(pvt_sol.rr, pos);
-                    ecef2enu(pos, &pvt_sol.rr[3], enuv);
-                    this->set_speed_over_ground(norm_rtk(enuv, 2));
+                    std::array<double, 3> pos{};
+                    std::array<double, 3> enuv{};
+                    ecef2pos(pvt_sol.rr, pos.data());
+                    ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
+                    this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
                     double new_cog;
                     if (ground_speed_ms >= 1.0)
                         {

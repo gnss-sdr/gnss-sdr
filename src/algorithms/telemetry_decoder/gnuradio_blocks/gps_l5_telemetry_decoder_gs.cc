@@ -182,7 +182,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (uint32_t i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS; i++)
                 {
-                    raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1u);
+                    raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1U);
                 }
 
             d_CNAV_Message.decode_page(raw_bits);

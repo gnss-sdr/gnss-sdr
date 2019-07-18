@@ -38,6 +38,7 @@
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 
 // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
 // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
@@ -159,8 +160,8 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.very_early_late_space_chips = 0.0;
     trk_param_fpga.very_early_late_space_narrow_chips = 0.0;
     trk_param_fpga.system = 'E';
-    char sig_[3] = "5X";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'5', 'X', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     trk_param_fpga.cn0_samples = configuration->property(role + ".cn0_samples", trk_param_fpga.cn0_samples);
     trk_param_fpga.cn0_min = configuration->property(role + ".cn0_min", trk_param_fpga.cn0_min);
     trk_param_fpga.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param_fpga.max_code_lock_fail);

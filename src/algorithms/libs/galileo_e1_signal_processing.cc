@@ -34,6 +34,7 @@
 #include "Galileo_E1.h"
 #include "gnss_signal_processing.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <memory>
 #include <string>
 
@@ -110,8 +111,8 @@ void galileo_e1_code_gen_sinboc11_float(gsl::span<float> _dest, const std::array
 {
     std::string _galileo_signal = _Signal.data();
     const auto _codeLength = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
-    int32_t primary_code_E1_chips[4092];                            // _codeLength not accepted by Clang
-    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  //generate Galileo E1 code, 1 sample per chip
+    std::array<int32_t, 4092> primary_code_E1_chips{};                                               // _codeLength not accepted by Clang
+    galileo_e1_code_gen_int(gsl::span<int32_t>(primary_code_E1_chips.data(), 4092), _Signal, _prn);  //generate Galileo E1 code, 1 sample per chip
     for (uint32_t i = 0; i < _codeLength; i++)
         {
             _dest[2 * i] = static_cast<float>(primary_code_E1_chips[i]);
@@ -127,13 +128,13 @@ void galileo_e1_gen_float(gsl::span<float> _dest, gsl::span<int> _prn, const std
     const float alpha = sqrt(10.0 / 11.0);
     const float beta = sqrt(1.0 / 11.0);
 
-    int32_t sinboc_11[12 * 4092] = {0};  //  _codeLength not accepted by Clang
-    int32_t sinboc_61[12 * 4092] = {0};
-    gsl::span<int32_t> sinboc_11_(sinboc_11, _codeLength);
-    gsl::span<int32_t> sinboc_61_(sinboc_61, _codeLength);
+    std::array<int32_t, 12 * 4092> sinboc_11{};
+    std::array<int32_t, 12 * 4092> sinboc_61{};
+    gsl::span<int32_t> sinboc_11_(sinboc_11.data(), _codeLength);
+    gsl::span<int32_t> sinboc_61_(sinboc_61.data(), _codeLength);
 
-    galileo_e1_sinboc_11_gen_int(sinboc_11_, _prn);  //generate sinboc(1,1) 12 samples per chip
-    galileo_e1_sinboc_61_gen_int(sinboc_61_, _prn);  //generate sinboc(6,1) 12 samples per chip
+    galileo_e1_sinboc_11_gen_int(sinboc_11_, _prn);  // generate sinboc(1,1) 12 samples per chip
+    galileo_e1_sinboc_61_gen_int(sinboc_61_, _prn);  // generate sinboc(6,1) 12 samples per chip
 
     if (_galileo_signal.rfind("1B") != std::string::npos && _galileo_signal.length() >= 2)
         {

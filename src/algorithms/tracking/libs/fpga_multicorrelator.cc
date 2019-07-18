@@ -38,7 +38,6 @@
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
-#include <cstdio>
 #include <fcntl.h>  // for O_RDWR, O_RSYNC
 #include <string>
 #include <sys/mman.h>  // for PROT_READ, PROT_WRITE, MAP_SHARED

@@ -34,9 +34,10 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
-#include <cmath>            // for abs
-#include <exception>        // for exception
-#include <iomanip>          // for operator<<, setw
+#include <array>
+#include <cmath>      // for abs
+#include <exception>  // for exception
+#include <iomanip>    // for operator<<, setw
 
 // logging levels
 #define EVENT 2      // logs important events which don't occur every block
@@ -130,7 +131,7 @@ void sbas_l1_telemetry_decoder_gs::Sample_Aligner::reset()
  */
 bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(const std::vector<double> &samples, std::vector<double> &symbols)
 {
-    double smpls[3] = {};
+    std::array<double, 3> smpls{};
     double corr_diff;
     bool stand_by = true;
     double sym;
@@ -191,12 +192,10 @@ sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::Symbol_Aligner_And_Dec
     // convolutional code properties
     d_KK = 7;
     const int32_t nn = 2;
-    int32_t g_encoder[nn];
-    g_encoder[0] = 121;
-    g_encoder[1] = 91;
+    std::array<int32_t, nn> g_encoder{121, 91};
 
-    d_vd1 = new Viterbi_Decoder(g_encoder, d_KK, nn);
-    d_vd2 = new Viterbi_Decoder(g_encoder, d_KK, nn);
+    d_vd1 = new Viterbi_Decoder(g_encoder.data(), d_KK, nn);
+    d_vd2 = new Viterbi_Decoder(g_encoder.data(), d_KK, nn);
     d_past_symbol = 0;
 }
 

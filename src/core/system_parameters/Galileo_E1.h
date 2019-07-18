@@ -65,7 +65,7 @@ const int32_t GALILEO_E1_NUMBER_OF_CODES = 50;
 
 
 //optimum parameters
-const uint32_t GALILEO_E1_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+const uint32_t GALILEO_E1_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 
 const double GALILEO_STARTOFFSET_MS = 68.802;  //[ms] Initial sign. travel time (this cannot go here)

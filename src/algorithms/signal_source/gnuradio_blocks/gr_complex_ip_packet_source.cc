@@ -32,6 +32,7 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
+#include <array>
 #include <cstdint>
 #include <utility>
 
@@ -184,14 +185,14 @@ bool Gr_Complex_Ip_Packet_Source::stop()
 
 bool Gr_Complex_Ip_Packet_Source::open()
 {
-    char errbuf[PCAP_ERRBUF_SIZE];
+    std::array<char, PCAP_ERRBUF_SIZE> errbuf{};
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     // open device for reading
-    descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf);
+    descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf.data());
     if (descr == nullptr)
         {
             std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
-            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf) << std::endl;
+            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf.data()) << std::endl;
             return false;
         }
     // bind UDP port to avoid automatic reply with ICMP port unreachable packets from kernel

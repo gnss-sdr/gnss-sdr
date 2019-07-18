@@ -138,7 +138,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
+    d_Prompt_buffer = std::vector<gr_complex>(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -217,7 +217,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_code_loop_filter.initialize();                             // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS)), d_acquisition_gnss_synchro->PRN, 0);
 
     multicorrelator_gpu->set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips, d_n_correlator_taps);
 
@@ -270,7 +270,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
             cudaFreeHost(d_correlator_outs);
             cudaFreeHost(d_local_code_shift_chips);
             cudaFreeHost(d_ca_code);
-            delete[] d_Prompt_buffer;
             multicorrelator_gpu->free_cuda();
             delete (multicorrelator_gpu);
         }
@@ -327,11 +326,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
     double code_error_chips_Ti = 0.0;
     double code_error_filt_chips = 0.0;
     double code_error_filt_secs_Ti = 0.0;
-    double CURRENT_INTEGRATION_TIME_S;
-    double CORRECTED_INTEGRATION_TIME_S;
+    double CURRENT_INTEGRATION_TIME_S = 0.001;
+    double CORRECTED_INTEGRATION_TIME_S = 0.001;
     double dll_code_error_secs_Ti = 0.0;
     double carr_phase_error_secs_Ti = 0.0;
-    double old_d_rem_code_phase_samples;
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -406,8 +404,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples - dll_code_error_secs_Ti * static_cast<double>(d_fs_in);
 
-            d_correlation_length_samples = round(K_blk_samples);  //round to a discrete samples
-            old_d_rem_code_phase_samples = d_rem_code_phase_samples;
+            d_correlation_length_samples = round(K_blk_samples);                                           //round to a discrete samples
             d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_correlation_length_samples);  //rounding error < 1 sample
 
             // UPDATE REMNANT CARRIER PHASE
@@ -439,9 +436,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
                     // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
@@ -524,14 +521,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     tmp_float = d_code_freq_chips;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    tmp_float = 1.0 / (d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
+                    tmp_float = 1.0 / (carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = 1.0 / (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S);
+                    tmp_float = 1.0 / (code_error_filt_secs_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
-                    tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
+                    tmp_float = code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_code_error_filt_chips_Ti;
+                    tmp_float = code_error_filt_secs_Ti;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
                     tmp_float = d_CN0_SNV_dB_Hz;
@@ -539,7 +536,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     tmp_float = d_carrier_lock_test;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
+                    tmp_float = code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));

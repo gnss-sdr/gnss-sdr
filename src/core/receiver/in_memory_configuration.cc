@@ -128,7 +128,7 @@ void InMemoryConfiguration::set_property(std::string property_name, std::string 
 }
 
 
-void InMemoryConfiguration::supersede_property(std::string property_name, std::string value)
+void InMemoryConfiguration::supersede_property(const std::string& property_name, const std::string& value)
 {
     properties_.erase(property_name);
     properties_.insert(std::make_pair(property_name, value));

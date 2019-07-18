@@ -125,18 +125,18 @@ uint32_t crc24q_bits(uint32_t crc, const uint8_t *buf, uint32_t n_bits, bool inv
             acc = (acc << 8) | *buf++;
             if (invert)
                 {
-                    acc ^= 0xFFu;
+                    acc ^= 0xFFU;
                 }
-            b = (acc >> shift) & 0xFFu;
-            crc = ((crc << 8) & 0xFFFFFFu) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFu];
+            b = (acc >> shift) & 0xFFU;
+            crc = ((crc << 8) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFU];
         }
     acc = (acc << 8) | *buf;
     if (invert)
         {
-            acc ^= 0xFFu;
+            acc ^= 0xFFU;
         }
-    b = (acc >> shift) & 0xFFu;
-    crc = ((crc << 8) & 0xFFFFFFu) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFu];
+    b = (acc >> shift) & 0xFFU;
+    crc = ((crc << 8) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFU];
 
     return crc;
 }

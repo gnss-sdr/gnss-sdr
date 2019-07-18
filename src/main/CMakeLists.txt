@@ -19,10 +19,18 @@
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(gnss-sdr PRIVATE -DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        target_compile_definitions(gnss-sdr PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(gnss-sdr PRIVATE std::filesystem)
+else()
+    target_link_libraries(gnss-sdr PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(gnss-sdr
     PUBLIC
-        Boost::filesystem
-        Boost::system
         Gflags::gflags
         Glog::glog
         Threads::Threads
@@ -37,14 +45,16 @@ if(NOT ENABLE_LOG)
 endif()
 
 if(ENABLE_CUDA)
-    target_link_libraries(gnss-sdr
-        PUBLIC
-            ${CUDA_LIBRARIES}
-    )
-    target_include_directories(gnss-sdr
-        PUBLIC
-            ${CUDA_INCLUDE_DIRS}
-    )
+    if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
+        target_link_libraries(gnss-sdr
+            PUBLIC
+                ${CUDA_LIBRARIES}
+        )
+        target_include_directories(gnss-sdr
+            PUBLIC
+                ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
     target_compile_definitions(gnss-sdr PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 

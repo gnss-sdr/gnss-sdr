@@ -131,10 +131,10 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     if (d_opencl != 0)
         {
             // Direct FFT
-            d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
+            d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
             // Inverse FFT
-            d_ifft = new gr::fft::fft_complex(d_fft_size, false);
+            d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
         }
 
     // For dumping samples into a file
@@ -179,11 +179,6 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 
             clFFT_DestroyPlan(d_cl_fft_plan);
         }
-    else
-        {
-            delete d_ifft;
-            delete d_fft_if;
-        }
 
     try
         {
@@ -209,7 +204,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
     std::vector<cl::Platform> all_platforms;
     cl::Platform::get(&all_platforms);
 
-    if (all_platforms.size() == 0)
+    if (all_platforms.empty())
         {
             std::cout << "No OpenCL platforms found. Check OpenCL installation!" << std::endl;
             return 1;
@@ -223,7 +218,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
     std::vector<cl::Device> gpu_devices;
     d_cl_platform.getDevices(CL_DEVICE_TYPE_GPU, &gpu_devices);
 
-    if (gpu_devices.size() == 0)
+    if (gpu_devices.empty())
         {
             std::cout << "No GPU devices found. Check OpenCL installation!" << std::endl;
             return 2;

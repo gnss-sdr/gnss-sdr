@@ -32,10 +32,27 @@
 #include "nmea_printer.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"
-#include <cstdio>
 #include <fstream>
 #include <string>
 
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 class NmeaPrinterTest : public ::testing::Test
 {
@@ -196,5 +213,6 @@ TEST_F(NmeaPrinterTest, PrintLine)
                 }
             test_file.close();
         }
-    EXPECT_EQ(0, remove(filename.c_str())) << "Failure deleting a temporary file.";
+    errorlib::error_code ec;
+    EXPECT_EQ(true, fs::remove(fs::path(filename), ec)) << "Failure deleting a temporary file.";
 }

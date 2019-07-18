@@ -28,6 +28,16 @@ source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
 
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(obs_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        target_compile_definitions(obs_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(obs_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(obs_gr_blocks PRIVATE Boost::filesystem)
+endif()
+
 target_include_directories(obs_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
@@ -42,7 +52,6 @@ target_link_libraries(obs_gr_blocks
         core_system_parameters
         Gflags::gflags
         Glog::glog
-        Boost::filesystem
         Matio::matio
 )
 

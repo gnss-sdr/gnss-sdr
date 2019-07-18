@@ -55,7 +55,6 @@
 #include "tracking_tests_flags.h"
 #include "tracking_true_obs_reader.h"
 #include <armadillo>
-#include <boost/filesystem.hpp>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
@@ -69,10 +68,24 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
+
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
+#endif
+
+#if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #endif
 
 
@@ -783,9 +796,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // create the msg queue for valve
 
     queue = gr::msg_queue::make(0);
-    boost::shared_ptr<Gnss_Sdr_Valve> reseteable_valve;
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
-    boost::shared_ptr<Gnss_Sdr_Valve> resetable_valve_(new Gnss_Sdr_Valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false));
+    auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
 
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
@@ -965,8 +977,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                         {
                                             try
                                                 {
-                                                    boost::filesystem::path p(gnuplot_executable);
-                                                    boost::filesystem::path dir = p.parent_path();
+                                                    fs::path p(gnuplot_executable);
+                                                    fs::path dir = p.parent_path();
                                                     const std::string& gnuplot_path = dir.native();
                                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
                                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);

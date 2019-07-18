@@ -26,6 +26,13 @@
 # LIBGTEST_DEV_DIR
 # GTEST_INCLUDE_DIRS
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+include(FindPkgConfig)
+pkg_check_modules(PC_GTEST gtest)
 
 find_path(LIBGTEST_DEV_DIR
     NAMES src/gtest-all.cc
@@ -33,6 +40,7 @@ find_path(LIBGTEST_DEV_DIR
         ${GTEST_DIR}
         ${GTEST_DIR}/googletest
         /usr/src/googletest/googletest
+        /usr/local/src/googletest/googletest
         /usr/src/gtest
         /usr/include/gtest
         /opt/local/src/gtest-1.7.0
@@ -44,8 +52,25 @@ find_path(GTEST_INCLUDE_DIRS
         ${GTEST_DIR}/googletest/include
         /usr/include
         /opt/local/src/gtest-1.7.0/include
+        ${PC_GTEST_INCLUDEDIR}
 )
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GOOGLETEST DEFAULT_MSG LIBGTEST_DEV_DIR GTEST_INCLUDE_DIRS)
+
+if(GOOGLETEST_FOUND AND PC_GTEST_VERSION)
+    set(GOOGLETEST_VERSION ${PC_GTEST_VERSION})
+    set_package_properties(GOOGLETEST PROPERTIES
+        DESCRIPTION "Source code of Google's Testing Framework (found: v${GOOGLETEST_VERSION})"
+    )
+else()
+    set_package_properties(GOOGLETEST PROPERTIES
+        DESCRIPTION "Source code of Google's Testing Framework"
+    )
+endif()
+
+set_package_properties(GOOGLETEST PROPERTIES
+    URL "https://github.com/google/googletest"
+)
+
 mark_as_advanced(LIBGTEST_DEV_DIR GTEST_INCLUDE_DIRS)

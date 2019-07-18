@@ -39,10 +39,10 @@
 #include <glog/logging.h>
 #include <pugixml.hpp>
 #include <cmath>      // for pow
-#include <cstring>    // for strcpy
 #include <exception>  // for exception
 #include <iostream>   // for cerr
 #include <utility>    // for pair
+#include <vector>
 
 Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
 {
@@ -173,14 +173,16 @@ int Gnss_Sdr_Supl_Client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     supl_set_gsm_cell(&ctx, mcc, mns, lac, ci);
 
     // PERFORM SUPL COMMUNICATION
-    char* cstr = new char[server_name.length() + 1];
-    strcpy(cstr, server_name.c_str());
+    std::vector<char> cstr(server_name.length() + 1);
+    for (unsigned int i = 0; i != server_name.length(); ++i)
+        {
+            cstr[i] = static_cast<char>(server_name[i]);
+        }
 
     int err;
     ctx.p.request = request;  // select assistance info request from a pre-defined set
 
-    //std::cout<<"mcc="<<mcc<<"mns="<<mns<<"lac="<<lac<<"ci="<<ci<<std::endl;
-    err = supl_get_assist(&ctx, cstr, &assist);
+    err = supl_get_assist(&ctx, cstr.data(), &assist);
     if (err == 0)
         {
             read_supl_data();
@@ -191,12 +193,11 @@ int Gnss_Sdr_Supl_Client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     else
         {
             /*
-	   * If supl_get_assist() fails, the connection remains open
-	   * and the memory/files are not released.
-	   */
+	         * If supl_get_assist() fails, the connection remains open
+	         * and the memory/files are not released.
+	         */
             supl_close(&ctx);
         }
-    delete[] cstr;
     return err;
 }
 

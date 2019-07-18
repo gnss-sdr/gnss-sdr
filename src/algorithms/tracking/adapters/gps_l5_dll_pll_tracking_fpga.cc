@@ -46,6 +46,7 @@
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
 #include <iostream>
@@ -172,8 +173,8 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.very_early_late_space_chips = 0.0;
     trk_param_fpga.very_early_late_space_narrow_chips = 0.0;
     trk_param_fpga.system = 'G';
-    char sig_[3] = "L5";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'L', '5', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20)
         {
@@ -236,13 +237,13 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
         {
             if (track_pilot)
                 {
-                    gps_l5q_code_gen_float(tracking_code, PRN);
-                    gps_l5i_code_gen_float(data_code, PRN);
+                    gps_l5q_code_gen_float(gsl::span<float>(tracking_code, code_length_chips), PRN);
+                    gps_l5i_code_gen_float(gsl::span<float>(data_code, code_length_chips), PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(tracking_code[s]);
+                            auto tmp_value = static_cast<int32_t>(tracking_code[s]);
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
@@ -261,12 +262,12 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                 }
             else
                 {
-                    gps_l5i_code_gen_float(tracking_code, PRN);
+                    gps_l5i_code_gen_float(gsl::span<float>(tracking_code, code_length_chips), PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(tracking_code[s]);
+                            auto tmp_value = static_cast<int32_t>(tracking_code[s]);
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;

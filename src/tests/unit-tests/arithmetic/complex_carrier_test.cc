@@ -34,6 +34,12 @@
 #include <armadillo>
 #include <chrono>
 #include <complex>
+#if HAS_SPAN
+#include <span>
+namespace gsl = std;
+#else
+#include <gsl/gsl>
+#endif
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 
@@ -120,7 +126,7 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    complex_exp_gen(output, _f, _fs, static_cast<unsigned int>(FLAGS_size_carrier_test));
+    complex_exp_gen(gsl::span<std::complex<float>>(output, static_cast<unsigned int>(FLAGS_size_carrier_test)), _f, _fs);
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;

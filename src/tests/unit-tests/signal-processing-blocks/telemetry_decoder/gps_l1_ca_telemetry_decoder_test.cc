@@ -48,7 +48,6 @@
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "in_memory_configuration.h"

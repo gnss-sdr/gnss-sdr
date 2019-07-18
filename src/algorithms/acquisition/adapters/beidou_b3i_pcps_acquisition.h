@@ -41,7 +41,9 @@
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <vector>
 
 
 class ConfigurationInterface;
@@ -99,14 +101,13 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_->set_channel_fsm(channel_fsm);
     }
-
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -158,11 +159,10 @@ public:
      */
     void set_resampler_latency(uint32_t latency_samples) override;
 
-
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    Acq_Conf acq_parameters_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
@@ -176,18 +176,17 @@ private:
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int sampled_ms_;
     unsigned int max_dwells_;
     int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
+    unsigned int num_codes_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
     float calculate_threshold(float pfa);
 };
 

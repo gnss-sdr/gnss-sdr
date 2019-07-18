@@ -1,9 +1,14 @@
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Accuracy
+
+- Local clock correction based on PVT solution (error kept below 1 ms).
+
+
 ### Improvements in Availability
 
 - Fixed bug that caused a random deadlock in the Observables block, preventing the computation of PVT fixes.
-- Fixed bug in Galileo INAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
+- Fixed bug in Galileo INAV/FNAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
 - Fixed PVT computation continuity through the TOW rollover.
 
 
@@ -11,7 +16,7 @@
 
 - Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average per channel).
 - Shortened Acquisition to Tracking transition time.
-- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-copy-initialization, performance-unnecessary-value-param, readability-string-compare.
+- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-value-param, readability-string-compare.
 
 
 ### Improvements in Flexibility:
@@ -27,7 +32,7 @@
 - Fix bug in GLONASS dual frequency receiver.
 - Added a custom UDP/IP output for PVT data streaming.
 - Improved Monitor block with UDP/IP output for internal receiver's data streaming.
-- Custom output formats described with .proto files, making easier to other applications reading them in a forward and backward-compatible fashion upon future format changes.
+- Custom output formats described with .proto files, making easier to other applications reading them in a forward and backward-compatible fashion upon future format changes. New dependency: Protocol Buffers >= 3.0.0
 - Fixes in RINEX generation: week rollover, annotations are not repeated anymore in navigation files. Parameter rinexnav_rate_ms has been removed, annotations are made as new ephemeris arrive.
 - Fixes in RTCM messages generation: week rollover.
 
@@ -45,10 +50,13 @@
 - Added interfaces for FPGA off-loading.
 - CMake scripts now follow a modern approach (targets and properties) but still work with 2.8.12.
 - Improvements for macOS users using Homebrew.
+- The volk_gnsssdr library can now be built without requiring Boost if the compiler supports C++17 or higher.
+- CMake scripts automatically select among C++11, C++14, C++17 or C++20 standards, the most recent as possible, depending on compiler and dependencies versions.
 
 
 ### Improvements in Reliability
 
+- Included the Guidelines Support Library. General improvement of memory management, replacement of raw pointers by containers or smart pointers.
 - Applied clang-tidy checks and fixes related to High Integrity C++: performance-move-const-arg, modernize-use-auto, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr, cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp, cert-err60-cpp.
 
 
@@ -57,8 +65,9 @@
 - The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
 - Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
 - The Labsat_Signal_Source now terminates the receiver's execution when the end of file(s) is reached. It now accepts LabSat 2 filenames and series of LabSat 3 files.
-- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
+- Added configuration parameters to set the annotation rate in KML, GPX, GeoJSON and NMEA outputs, set by default to 1 s.
 - New parameter PVT.show_local_time_zone displays time in the local time zone. Subject to the proper system configuration of the machine running the software receiver.
+- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
 - Improved information provided to the user in case of failure.
 
 

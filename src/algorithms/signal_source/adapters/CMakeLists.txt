@@ -103,8 +103,6 @@ if(ENABLE_ARRAY)
         message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
         message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
     endif()
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_DBFCTTC_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_DBFCTTC_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} raw_array_signal_source.h)
 endif()
@@ -129,6 +127,7 @@ endif()
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
     file_signal_source.cc
+    multichannel_file_signal_source.cc
     gen_signal_source.cc
     nsr_file_signal_source.cc
     spir_file_signal_source.cc
@@ -142,6 +141,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
 
 set(SIGNAL_SOURCE_ADAPTER_HEADERS
     file_signal_source.h
+    multichannel_file_signal_source.h
     gen_signal_source.h
     nsr_file_signal_source.h
     spir_file_signal_source.h

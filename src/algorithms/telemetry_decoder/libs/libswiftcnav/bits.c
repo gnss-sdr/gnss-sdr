@@ -75,7 +75,7 @@ uint32_t getbitu(const uint8_t *buff, uint32_t pos, uint8_t len)
     for (i = pos; i < pos + len; i++)
         {
             bits = (bits << 1) +
-                   ((buff[i / 8] >> (7 - i % 8)) & 1u);
+                   ((buff[i / 8] >> (7 - i % 8)) & 1U);
         }
 
     return bits;
@@ -99,7 +99,7 @@ int32_t getbits(const uint8_t *buff, uint32_t pos, uint8_t len)
     /* Sign extend, taken from:
      * http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
      */
-    int32_t m = 1u << (len - 1);
+    int32_t m = 1U << (len - 1);
     return (bits ^ m) - m;
 }
 
@@ -114,7 +114,7 @@ int32_t getbits(const uint8_t *buff, uint32_t pos, uint8_t len)
  */
 void setbitu(uint8_t *buff, uint32_t pos, uint32_t len, uint32_t data)
 {
-    uint32_t mask = 1u << (len - 1);
+    uint32_t mask = 1U << (len - 1);
 
     if (len <= 0 || 32 < len)
         {
@@ -125,11 +125,11 @@ void setbitu(uint8_t *buff, uint32_t pos, uint32_t len, uint32_t data)
         {
             if (data & mask)
                 {
-                    buff[i / 8] |= 1u << (7 - i % 8);
+                    buff[i / 8] |= 1U << (7 - i % 8);
                 }
             else
                 {
-                    buff[i / 8] &= ~(1u << (7 - i % 8));
+                    buff[i / 8] &= ~(1U << (7 - i % 8));
                 }
         }
 }

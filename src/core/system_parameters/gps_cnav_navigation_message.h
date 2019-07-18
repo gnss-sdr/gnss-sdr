@@ -55,16 +55,12 @@
  */
 class Gps_CNAV_Navigation_Message
 {
-private:
-    uint64_t read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    int64_t read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-
-    Gps_CNAV_Ephemeris ephemeris_record;
-    Gps_CNAV_Iono iono_record;
-    Gps_CNAV_Utc_Model utc_model_record;
-
 public:
+    /*!
+     * Default constructor
+     */
+    Gps_CNAV_Navigation_Message();
+
     int32_t d_TOW;
     bool b_flag_ephemeris_1;
     bool b_flag_ephemeris_2;
@@ -122,10 +118,14 @@ public:
      */
     bool have_new_ephemeris();
 
-    /*!
-     * Default constructor
-     */
-    Gps_CNAV_Navigation_Message();
+private:
+    uint64_t read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+
+    Gps_CNAV_Ephemeris ephemeris_record;
+    Gps_CNAV_Iono iono_record;
+    Gps_CNAV_Utc_Model utc_model_record;
 };
 
 #endif

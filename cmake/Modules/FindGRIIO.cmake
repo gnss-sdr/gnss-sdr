@@ -20,7 +20,11 @@
 # Gnuradio::iio
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_IIO gnuradio-iio)
 
@@ -91,6 +95,23 @@ find_library(IIO_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GRIIO DEFAULT_MSG IIO_LIBRARIES IIO_INCLUDE_DIRS)
+
+if(PC_IIO_VERSION)
+    set(GRIIO_VERSION ${PC_IIO_VERSION})
+endif()
+
+set_package_properties(GRIIO PROPERTIES
+    URL "https://github.com/analogdevicesinc/gr-iio"
+)
+if(GRIIO_FOUND AND GRIIO_VERSION)
+    set_package_properties(GRIIO PROPERTIES
+        DESCRIPTION "IIO blocks for GNU Radio (found: v${GRIIO_VERSION})"
+    )
+else()
+    set_package_properties(GRIIO PROPERTIES
+        DESCRIPTION "IIO blocks for GNU Radio"
+    )
+endif()
 
 if(GRIIO_FOUND AND NOT TARGET Gnuradio::iio)
     add_library(Gnuradio::iio SHARED IMPORTED)

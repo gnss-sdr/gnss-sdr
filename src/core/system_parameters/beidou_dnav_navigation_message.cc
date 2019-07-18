@@ -382,7 +382,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     tk = check_t(transmitTime - d_Toe_sf2);
 
     // Computed mean motion
-    n0 = sqrt(BEIDOU_GM / (a * a * a));
+    n0 = sqrt(BEIDOU_DNAV_GM / (a * a * a));
 
     // Corrected mean motion
     n = n0 + d_Delta_n;
@@ -391,7 +391,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * BEIDOU_PI), (2 * BEIDOU_PI));
+    M = fmod((M + 2 * BEIDOU_DNAV_PI), (2 * BEIDOU_DNAV_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -401,7 +401,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
         {
             E_old = E;
             E = M + d_eccentricity * sin(E);
-            dE = fmod(E - E_old, 2 * BEIDOU_PI);
+            dE = fmod(E - E_old, 2 * BEIDOU_DNAV_PI);
             if (fabs(dE) < 1e-12)
                 {
                     //Necessary precision is reached, exit from the loop
@@ -410,7 +410,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
         }
 
     // Compute relativistic correction term
-    d_dtr = BEIDOU_F * d_eccentricity * d_sqrt_A * sin(E);
+    d_dtr = BEIDOU_DNAV_F * d_eccentricity * d_sqrt_A * sin(E);
 
     // Compute the true anomaly
     double tmp_Y = sqrt(1.0 - d_eccentricity * d_eccentricity) * sin(E);
@@ -421,7 +421,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2 * BEIDOU_PI));
+    phi = fmod((phi), (2 * BEIDOU_DNAV_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
@@ -433,10 +433,10 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe_sf2;
+    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_DNAV_OMEGA_EARTH_DOT) * tk - BEIDOU_DNAV_OMEGA_EARTH_DOT * d_Toe_sf2;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2 * BEIDOU_PI), (2 * BEIDOU_PI));
+    Omega = fmod((Omega + 2 * BEIDOU_DNAV_PI), (2 * BEIDOU_DNAV_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
@@ -444,7 +444,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
-    double Omega_dot = d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT;
+    double Omega_dot = d_OMEGA_DOT - BEIDOU_DNAV_OMEGA_EARTH_DOT;
     d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
@@ -458,7 +458,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
 
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_FRAID));
 
-    // Perform crc computtaion (tbd)
+    // Perform crc computation (tbd)
     flag_crc_test = true;
 
     // Decode all 5 sub-frames
@@ -753,7 +753,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_FRAID));
     page_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D2_PNUM));
 
-    // Perform crc computtaion (tbd)
+    // Perform crc computation (tbd)
     flag_crc_test = true;
 
     // Decode all 5 sub-frames

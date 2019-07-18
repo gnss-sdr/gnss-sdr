@@ -39,6 +39,7 @@
 #include "gps_sdr_signal_processing.h"
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <fstream>
 #include <utility>
 
@@ -158,7 +159,7 @@ void signal_generator_c::generate_codes()
         {
             sampled_code_data_[sat] = static_cast<gr_complex *>(std::malloc(vector_length_ * sizeof(gr_complex)));
 
-            gr_complex code[64000];  //[samples_per_code_[sat]];
+            std::array<gr_complex, 64000> code{};  //[samples_per_code_[sat]];
 
             if (system_[sat] == "G")
                 {
@@ -179,7 +180,7 @@ void signal_generator_c::generate_codes()
                     for (unsigned int i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {
                             memcpy(&(sampled_code_data_[sat][i * samples_per_code_[sat]]),
-                                code, sizeof(gr_complex) * samples_per_code_[sat]);
+                                code.data(), sizeof(gr_complex) * samples_per_code_[sat]);
                         }
                 }
             else if (system_[sat] == "R")
@@ -201,17 +202,16 @@ void signal_generator_c::generate_codes()
                     for (unsigned int i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {
                             memcpy(&(sampled_code_data_[sat][i * samples_per_code_[sat]]),
-                                code, sizeof(gr_complex) * samples_per_code_[sat]);
+                                code.data(), sizeof(gr_complex) * samples_per_code_[sat]);
                         }
                 }
             else if (system_[sat] == "E")
                 {
                     if (signal_[sat].at(0) == '5')
                         {
-                            char signal[3];
-                            strcpy(signal, "5X");
+                            std::array<char, 3> signal = {{'5', 'X', '\0'}};
 
-                            galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat], signal, PRN_[sat], fs_in_,
+                            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(sampled_code_data_[sat], vector_length_), signal, PRN_[sat], fs_in_,
                                 static_cast<int>(GALILEO_E5A_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
                             //noise
                             if (noise_flag_)
@@ -226,8 +226,7 @@ void signal_generator_c::generate_codes()
                         {
                             // Generate one code-period of E1B signal
                             bool cboc = true;
-                            char signal[3];
-                            strcpy(signal, "1B");
+                            std::array<char, 3> signal = {{'1', 'B', '\0'}};
 
                             galileo_e1_code_gen_complex_sampled(code, signal, cboc, PRN_[sat], fs_in_,
                                 static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
@@ -245,15 +244,15 @@ void signal_generator_c::generate_codes()
                             for (unsigned int i = 0; i < num_of_codes_per_vector_[sat]; i++)
                                 {
                                     memcpy(&(sampled_code_data_[sat][i * samples_per_code_[sat]]),
-                                        code, sizeof(gr_complex) * samples_per_code_[sat]);
+                                        code.data(), sizeof(gr_complex) * samples_per_code_[sat]);
                                 }
 
                             // Generate E1C signal (25 code-periods, with secondary code)
                             sampled_code_pilot_[sat] = static_cast<gr_complex *>(std::malloc(vector_length_ * sizeof(gr_complex)));
 
-                            strcpy(signal, "1C");
+                            std::array<char, 3> signal_1C = {{'1', 'C', '\0'}};
 
-                            galileo_e1_code_gen_complex_sampled(sampled_code_pilot_[sat], signal, cboc, PRN_[sat], fs_in_,
+                            galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(sampled_code_pilot_[sat], vector_length_), signal_1C, cboc, PRN_[sat], fs_in_,
                                 static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS) - delay_chips_[sat], true);
 
                             // Obtain the desired CN0 assuming that Pn = 1.

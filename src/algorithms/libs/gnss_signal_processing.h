@@ -38,42 +38,45 @@
 #include <complex>
 #include <cstdint>
 
+#if HAS_SPAN
+#include <span>
+namespace gsl = std;
+#else
+#include <gsl/gsl>
+#endif
+
 
 /*!
  * \brief This function generates a complex exponential in _dest.
  *
  */
-void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs,
-    uint32_t _samps);
+void complex_exp_gen(gsl::span<std::complex<float>> _dest, double _f, double _fs);
 
 /*!
  * \brief This function generates a conjugate complex exponential in _dest.
  *
  */
-void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs,
-    uint32_t _samps);
-
+void complex_exp_gen_conj(gsl::span<std::complex<float>> _dest, double _f, double _fs);
 
 /*!
  * \brief This function makes a conversion from hex (the input is a char)
  *  to binary (the output are 4 ints with +1 or -1 values).
  *
  */
-void hex_to_binary_converter(int32_t* _dest, char _from);
+void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from);
 
 /*!
  * \brief This function resamples a sequence of float values.
  *
  */
-void resampler(const float* _from, float* _dest,
-    float _fs_in, float _fs_out, uint32_t _length_in,
-    uint32_t _length_out);
+void resampler(const gsl::span<float> _from, gsl::span<float> _dest,
+    float _fs_in, float _fs_out);
+
 /*!
  * \brief This function resamples a sequence of complex values.
  *
  */
-void resampler(const std::complex<float>* _from, std::complex<float>* _dest,
-    float _fs_in, float _fs_out, uint32_t _length_in,
-    uint32_t _length_out);
+void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::complex<float>> _dest,
+    float _fs_in, float _fs_out);
 
 #endif /* GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_ */

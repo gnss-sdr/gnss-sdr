@@ -26,6 +26,14 @@
 # Log4cpp::log4cpp
 #
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+include(FindPkgConfig)
+pkg_check_modules(PC_LOG4CPP log4cpp QUIET)
+
 if(LOG4CPP_INCLUDE_DIR)
   # Already in cache, be silent
   set(LOG4CPP_FIND_QUIETLY TRUE)
@@ -37,13 +45,28 @@ find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
   /usr/include
   ${LOG4CPP_ROOT}/include
   $ENV{LOG4CPP_ROOT}/include
+  ${PC_LOG4CPP_INCLUDEDIR}
 )
+
+if(LOG4CPP_INCLUDE_DIR)
+    file(STRINGS ${LOG4CPP_INCLUDE_DIR}/log4cpp/Priority.hh _log4cpp_Priority)
+    set(_log4cpp_cxx17 TRUE)
+    foreach(_loop_var IN LISTS _log4cpp_Priority)
+        string(STRIP "${_loop_var}" _file_line)
+        if("throw(std::invalid_argument);" STREQUAL "${_file_line}")
+            set(_log4cpp_cxx17 FALSE)
+        endif()
+    endforeach()
+    if(${_log4cpp_cxx17})
+        set(LOG4CPP_READY_FOR_CXX17 TRUE)
+    endif()
+endif()
 
 set(LOG4CPP_NAMES log4cpp)
 find_library(LOG4CPP_LIBRARY
   NAMES ${LOG4CPP_NAMES}
   HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
-        ${PC_LIBDIR}
+        ${PC_LOG4CPP_LIBDIR}
         ${CMAKE_INSTALL_PREFIX}/lib/
   PATHS /usr/local/lib
         /usr/lib/x86_64-linux-gnu
@@ -71,7 +94,6 @@ find_library(LOG4CPP_LIBRARY
         /usr/lib/alpha-linux-gnu
         /usr/lib64
         /usr/lib
-        /usr/local/lib
         /opt/local/lib
         ${LOG4CPP_ROOT}/lib
         $ENV{LOG4CPP_ROOT}/lib
@@ -93,6 +115,30 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LOG4CPP DEFAULT_MSG LOG4CPP_INCLUDE_DIRS LOG4CPP_LIBRARIES)
+
+set_package_properties(LOG4CPP PROPERTIES
+    URL "http://log4cpp.sourceforge.net/"
+)
+
+if(LOG4CPP_FOUND AND PC_LOG4CPP_VERSION)
+    set(LOG4CPP_VERSION ${PC_LOG4CPP_VERSION})
+endif()
+
+if(LOG4CPP_FOUND AND LOG4CPP_VERSION)
+    if(LOG4CPP_READY_FOR_CXX17)
+        set_package_properties(LOG4CPP PROPERTIES
+            DESCRIPTION "Library of C++ classes for flexible logging (found: v${LOG4CPP_VERSION}, C++17-ready)"
+        )
+    else()
+        set_package_properties(LOG4CPP PROPERTIES
+            DESCRIPTION "Library of C++ classes for flexible logging (found: v${LOG4CPP_VERSION})"
+        )
+    endif()
+else()
+    set_package_properties(LOG4CPP PROPERTIES
+        DESCRIPTION "Library of C++ classes for flexible logging"
+    )
+endif()
 
 if (LOG4CPP_FOUND AND NOT TARGET Log4cpp::log4cpp)
   add_library(Log4cpp::log4cpp SHARED IMPORTED)

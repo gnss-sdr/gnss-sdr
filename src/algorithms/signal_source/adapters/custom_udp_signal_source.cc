@@ -81,7 +81,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
         {
             for (int n = 0; n < channels_in_udp_; n++)
                 {
-                    null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
+                    null_sinks_.emplace_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
                 }
         }
     else
@@ -95,7 +95,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
             for (int n = 0; n < channels_in_udp_; n++)
                 {
                     DLOG(INFO) << "Dumping output into file " << (dump_filename_ + "c_h" + std::to_string(n) + ".bin");
-                    file_sink_.push_back(gr::blocks::file_sink::make(item_size_, (dump_filename_ + "_ch" + std::to_string(n) + ".bin").c_str()));
+                    file_sink_.emplace_back(gr::blocks::file_sink::make(item_size_, (dump_filename_ + "_ch" + std::to_string(n) + ".bin").c_str()));
                 }
         }
     if (in_stream_ > 0)

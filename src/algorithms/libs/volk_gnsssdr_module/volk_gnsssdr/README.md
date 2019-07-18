@@ -6,7 +6,7 @@ VOLK's. Please see http://libvolk.org for documentation, source code,
 and contact information about the original VOLK library.
 
 The boilerplate of this code was initially generated with
-```volk_modtool```, an application provided by VOLK that creates the
+`volk_modtool`, an application provided by VOLK that creates the
 skeleton that can then be filled with custom kernels. Some modifications
 were added to accommodate the specificities of Global Navigation
 Satellite Systems (GNSS) signal processing. Those changes are clearly
@@ -16,7 +16,7 @@ This library contains kernels of hand-written SIMD code for different
 mathematical operations, mainly with 8-bit and 16-bit real and complex
 data types, offering a platform/architecture agnostic version that will
 run in all machines, plus other versions for different SIMD instruction
-sets. Then, the application ```volk_gnsssdr_profile``` runs some
+sets. Then, the application `volk_gnsssdr_profile` runs some
 iterations of all versions that your machine can execute and annotates
 which is the fastest, which will then be selected at runtime when
 executing GNSS-SDR. In this way, we can address at the same time
@@ -49,6 +49,12 @@ $ sudo apt-get install cmake python-mako python-six libboost-dev \
   libboost-filesystem-dev libboost-system-dev
 ~~~~~~
 
+Please note that if you are using a compiler supporting the C++17 standard
+(for instance, gcc >= 8.0), specifically the std::filesystem library, packages
+`libboost-dev`, `libboost-filesystem-dev` and `libboost-system-dev` are no
+longer required dependencies. The CMake script will detect that availability for
+you.
+
 In order to build and install the library, go to the base folder of the
 source code and do:
 
@@ -62,7 +68,7 @@ $ sudo make install
 
 That's it!
 
-Before its first use, please execute ```volk_gnsssdr_profile``` to let
+Before its first use, please execute `volk_gnsssdr_profile` to let
 your system know which is the fastest available implementation. This
 only has to be done once:
 
@@ -74,7 +80,7 @@ From now on, GNSS-SDR (and any other program of your own that makes use
 of VOLK_GNSSSDR) will benefit from the acceleration provided by SIMD
 instructions available in your processor.
 
-The execution of ```volk_gnsssdr_profile``` can be set automatically
+The execution of `volk_gnsssdr_profile` can be set automatically
 after building, leaving your system ready to use:
 
 ~~~~~~

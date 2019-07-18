@@ -43,10 +43,12 @@
  */
 class Gps_CNAV_Ephemeris
 {
-private:
-    double check_t(double time);
-
 public:
+    /*!
+     * Default constructor
+     */
+    Gps_CNAV_Ephemeris();
+
     uint32_t i_satellite_PRN;  // SV PRN NUMBER
 
     // Message Types 10 and 11 Parameters (1 of 2)
@@ -122,6 +124,24 @@ public:
     double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
+    /*!
+     * \brief Compute the ECEF SV coordinates and ECEF velocity
+     * Implementation of Table 20-IV (IS-GPS-200E)
+     */
+    double satellitePosition(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    double sv_clock_drift(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    double sv_clock_relativistic_term(double transmitTime);
+
     template <class Archive>
 
     /*!
@@ -170,27 +190,8 @@ public:
         archive& make_nvp("b_antispoofing_flag", b_antispoofing_flag);  //!<  If true, the AntiSpoofing mode is ON in that SV
     }
 
-    /*!
-     * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Table 20-IV (IS-GPS-200E)
-     */
-    double satellitePosition(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200E,  20.3.3.3.3.1)
-     */
-    double sv_clock_drift(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200E,  20.3.3.3.3.1)
-     */
-    double sv_clock_relativistic_term(double transmitTime);
-    /*!
-     * Default constructor
-     */
-    Gps_CNAV_Ephemeris();
+private:
+    double check_t(double time);
 };
 
 #endif

@@ -45,9 +45,6 @@
 #include "gps_acq_assist.h"
 #include <boost/exception/diagnostic_information.hpp>  // for diagnostic_informatio
 #include <boost/exception/exception.hpp>               // for exception
-#include <boost/filesystem/operations.hpp>             // for create_directories, exists
-#include <boost/filesystem/path.hpp>                   // for path, operator<<
-#include <boost/system/error_code.hpp>                 // for error_code
 #include <boost/thread/exceptions.hpp>                 // for thread_resource_error
 #include <gflags/gflags.h>                             // for ShutDownCommandLineFlags
 #include <glog/logging.h>                              // for FLAGS_log_dir
@@ -62,6 +59,24 @@
 #include <cuda_runtime.h>
 #endif
 
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 /*
 * Concurrent queues that communicates the Telemetry Decoder
@@ -103,22 +118,22 @@ int main(int argc, char** argv)
             if (FLAGS_log_dir.empty())
                 {
                     std::cout << "Logging will be written at "
-                              << boost::filesystem::temp_directory_path()
+                              << fs::temp_directory_path()
                               << std::endl
                               << "Use gnss-sdr --log_dir=/path/to/log to change that."
                               << std::endl;
                 }
             else
                 {
-                    const boost::filesystem::path p(FLAGS_log_dir);
-                    if (!boost::filesystem::exists(p))
+                    const fs::path p(FLAGS_log_dir);
+                    if (!fs::exists(p))
                         {
                             std::cout << "The path "
                                       << FLAGS_log_dir
                                       << " does not exist, attempting to create it."
                                       << std::endl;
-                            boost::system::error_code ec;
-                            if (!boost::filesystem::create_directory(p, ec))
+                            errorlib::error_code ec;
+                            if (!fs::create_directory(p, ec))
                                 {
                                     std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
                                     google::ShutDownCommandLineFlags();

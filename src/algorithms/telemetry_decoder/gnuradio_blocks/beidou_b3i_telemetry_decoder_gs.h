@@ -60,10 +60,8 @@ public:
     ~beidou_b3i_telemetry_decoder_gs();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
-    inline void reset()
-    {
-        return;
-    }
+    void reset();
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -77,27 +75,24 @@ private:
         bool dump);
     beidou_b3i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
-    void decode_subframe(double *symbols);
-    void decode_word(int32_t word_counter, const double *enc_word_symbols,
+    void decode_subframe(float *symbols);
+    void decode_word(int32_t word_counter, const float *enc_word_symbols,
         int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
     // Preamble decoding
     int32_t *d_preamble_samples;
-    int32_t *d_secondary_code_symbols;
-    uint32_t d_samples_per_symbol;
     int32_t d_symbols_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_samples;
-    double *d_subframe_symbols;
+    float *d_subframe_symbols;
     uint32_t d_required_symbols;
 
     // Storage for incoming data
     boost::circular_buffer<float> d_symbol_history;
 
     // Variables for internal functionality
-    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc)
-                                  // indicating number of samples processed
+    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
     uint64_t d_preamble_index;    // Index of sample number where preamble was found
     uint32_t d_stat;              // Status of decoder
     bool d_flag_frame_sync;       // Indicate when a frame sync is achieved
@@ -109,8 +104,12 @@ private:
     Beidou_Dnav_Navigation_Message d_nav;
 
     // Values to populate gnss synchronization structure
+    uint32_t d_symbol_duration_ms;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
+    uint64_t d_last_valid_preamble;
+    bool d_flag_valid_word;
+    bool d_sent_tlm_failed_msg;
     bool Flag_valid_word;
 
     // Satellite Information and logging capacity

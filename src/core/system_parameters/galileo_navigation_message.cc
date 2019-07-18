@@ -38,7 +38,7 @@
 #include <iostream>                  // for operator<<
 
 
-using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
+using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 
 
 void Galileo_Navigation_Message::reset()

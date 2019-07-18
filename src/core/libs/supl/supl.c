@@ -326,11 +326,19 @@ static int server_connect(char *server)
                 }
             if (connect(fd, aip->ai_addr, aip->ai_addrlen) != 0)
                 {
+                    freeaddrinfo(aip);
+                    if (close(fd) != 0)
+                        {
+                            // avoid warning
+                        }
                     return -1;
                 }
-            break;
+            else
+                {
+                    break;
+                }
         }
-
+    freeaddrinfo(aip);
     return fd;
 }
 

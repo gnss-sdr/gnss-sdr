@@ -40,7 +40,9 @@
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <volk/volk_complex.h>       // for lv_16sc_t
 #include <cstddef>                   // for size_t
+#include <memory>
 #include <string>
+#include <vector>
 
 class Gnss_Synchro;
 class ConfigurationInterface;
@@ -99,8 +101,8 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
@@ -167,9 +169,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
-    uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
-
+    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     float calculate_threshold(float pfa);
 };
 

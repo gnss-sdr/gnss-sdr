@@ -30,6 +30,7 @@
  */
 
 #include "geofunctions.h"
+#include <array>
 #include <cmath>  // for sin, cos, sqrt, abs, pow
 
 const double STRP_PI = 3.1415926535898;  // Pi as defined in IS-GPS-200E
@@ -302,7 +303,9 @@ double mstokph(double MetersPerSeconds)
 arma::vec CTM_to_Euler(const arma::mat &C)
 {
     // Calculate Euler angles using (2.23)
-    arma::mat CTM(C);
+    arma::mat CTM = {{C(0, 0), C(0, 1), C(0, 2)},
+        {C(1, 0), C(1, 1), C(1, 2)},
+        {C(2, 0), C(2, 1), C(2, 2)}};
     arma::vec eul = arma::zeros(3, 1);
     eul(0) = atan2(CTM(1, 2), CTM(2, 2));  // roll
     if (CTM(0, 2) < -1.0)
@@ -348,8 +351,8 @@ arma::mat Euler_to_CTM(const arma::vec &eul)
 
 arma::vec cart2geo(const arma::vec &XYZ, int elipsoid_selection)
 {
-    const double a[5] = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
-    const double f[5] = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
+    const std::array<double, 5> a{6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
+    const std::array<double, 5> f{1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
 
     double lambda = atan2(XYZ[1], XYZ[0]);
     double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));

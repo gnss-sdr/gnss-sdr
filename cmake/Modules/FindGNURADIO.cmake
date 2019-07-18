@@ -19,6 +19,11 @@
 # Find GNU Radio
 ########################################################################
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 include(FindPackageHandleStandardArgs)
 
@@ -143,6 +148,21 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
         set(GNURADIO_FOUND FALSE) # Trick for feature_summary
     endif()
 
+    # Create imported target
+    string(TOLOWER ${EXTVAR} gnuradio_component)
+    if(NOT TARGET Gnuradio::${gnuradio_component})
+        add_library(Gnuradio::${gnuradio_component} SHARED IMPORTED)
+        set(GNURADIO_LIBRARY ${GNURADIO_${EXTVAR}_LIBRARIES})
+        list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
+        get_filename_component(GNURADIO_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::${gnuradio_component} PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_${EXTVAR}_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
+        )
+    endif()
+
     mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
 endfunction()
 
@@ -166,34 +186,51 @@ gr_module(WAVELET gnuradio-wavelet gnuradio/wavelet/api.h gnuradio-wavelet)
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
 
+if(NOT PC_GNURADIO_RUNTIME_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET GNURADIO_BLOCKS_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(GNURADIO_BLOCKS_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${GNURADIO_BLOCKS_DIR}/cmake/gnuradio/GnuradioConfigVersion.cmake)
+        set(PACKAGE_FIND_VERSION_MAJOR 3)
+        set(PACKAGE_FIND_VERSION_MINOR 7)
+        set(PACKAGE_FIND_VERSION_PATCH 4)
+        include(${GNURADIO_BLOCKS_DIR}/cmake/gnuradio/GnuradioConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(PC_GNURADIO_RUNTIME_VERSION ${PACKAGE_VERSION})
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
 # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
 if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
-              NAMES gnuradio/blocks/tsb_vector_sink_f.h
-              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-                    ${CMAKE_INSTALL_PREFIX}/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-              PATHS /usr/local/include
-                    /usr/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-                    ${GNURADIO_ROOT}/include
-                    $ENV{GNURADIO_ROOT}/include
-              )
+        NAMES gnuradio/blocks/tsb_vector_sink_f.h
+        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+        PATHS /usr/local/include
+              /usr/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+              ${GNURADIO_ROOT}/include
+              $ENV{GNURADIO_ROOT}/include
+    )
     if(GNURADIO_VERSION_GREATER_THAN_373)
         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
     endif()
 
     find_file(GNURADIO_VERSION_GREATER_THAN_38
-              NAMES gnuradio/filter/mmse_resampler_cc.h
-              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-                    ${CMAKE_INSTALL_PREFIX}/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-              PATHS /usr/local/include
-                    /usr/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-                    ${GNURADIO_ROOT}/include
-                    $ENV{GNURADIO_ROOT}/include
-              )
+        NAMES gnuradio/filter/mmse_resampler_cc.h
+        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+        PATHS /usr/local/include
+              /usr/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+              ${GNURADIO_ROOT}/include
+              $ENV{GNURADIO_ROOT}/include
+    )
     if(GNURADIO_VERSION_GREATER_THAN_38)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
     endif()
@@ -204,3 +241,36 @@ if(NOT DEFINED GNURADIO_FOUND)
     set(GNURADIO_FOUND TRUE)
 endif()
 set(GNURADIO_VERSION ${PC_GNURADIO_RUNTIME_VERSION})
+
+if(NOT GNSSSDR_GNURADIO_MIN_VERSION)
+    set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
+endif()
+
+if(GNURADIO_VERSION)
+    if(GNURADIO_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
+        unset(GNURADIO_RUNTIME_FOUND)
+        message(STATUS "The GNU Radio version installed in your system (v${GNURADIO_VERSION}) is too old.")
+        if(OS_IS_LINUX)
+            message("Go to https://github.com/gnuradio/pybombs")
+            message("and follow the instructions to install GNU Radio in your system.")
+        endif()
+        if(OS_IS_MACOSX)
+            message("You can install it easily via Macports:")
+            message("  sudo port install gnuradio ")
+            message("Alternatively, you can use homebrew:")
+            message("  brew install gnuradio")
+        endif()
+        message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
+    endif()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
+    )
+else()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem"
+    )
+endif()
+
+set_package_properties(GNURADIO PROPERTIES
+    URL "https://www.gnuradio.org/"
+)

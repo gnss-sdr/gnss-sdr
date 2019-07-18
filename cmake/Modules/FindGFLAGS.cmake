@@ -31,6 +31,11 @@
 # Gflags::gflags
 #
 
+
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 if(APPLE)
     find_path(GFlags_ROOT_DIR
       libgflags.dylib
@@ -110,6 +115,35 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GFLAGS DEFAULT_MSG GFlags_LIBS GFlags_INCLUDE_DIRS)
+
+if(GFLAGS_FOUND)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET GFlags_LIBS 0 FIRST_DIR)
+    get_filename_component(GFlags_LIBS_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
+        include(${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(GFLAGS_VERSION ${PACKAGE_VERSION})
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing (found: v${GFLAGS_VERSION})"
+        )
+    else()
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing"
+        )
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+else()
+    set_package_properties(GFLAGS PROPERTIES
+        DESCRIPTION "C++ library that implements commandline flags processing"
+    )
+endif()
+
+set_package_properties(GFLAGS PROPERTIES
+    URL "https://github.com/gflags/gflags"
+)
 
 if(GFLAGS_FOUND AND NOT TARGET Gflags::gflags)
     add_library(Gflags::gflags SHARED IMPORTED)

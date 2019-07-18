@@ -45,10 +45,10 @@
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
 #include <iostream>
-
 
 #define NUM_PRNs 32
 
@@ -98,8 +98,8 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.pll_bw_narrow_hz = 0.0;
     trk_param_fpga.dll_bw_narrow_hz = 0.0;
     trk_param_fpga.system = 'G';
-    char sig_[3] = "2S";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'2', 'S', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
     trk_param_fpga.cn0_samples = cn0_samples;
@@ -128,7 +128,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l2c_m_code_gen_float(ca_codes_f, PRN);
+            gps_l2c_m_code_gen_float(gsl::span<float>(ca_codes_f, static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS)), PRN);
             for (unsigned int s = 0; s < 2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)
                 {
                     d_ca_codes[static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS) * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);

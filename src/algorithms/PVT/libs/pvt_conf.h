@@ -41,6 +41,10 @@ public:
     uint32_t type_of_receiver;
     int32_t output_rate_ms;
     int32_t display_rate_ms;
+    int32_t kml_rate_ms;
+    int32_t gpx_rate_ms;
+    int32_t geojson_rate_ms;
+    int32_t nmea_rate_ms;
 
     int32_t rinex_version;
     int32_t rinexobs_rate_ms;

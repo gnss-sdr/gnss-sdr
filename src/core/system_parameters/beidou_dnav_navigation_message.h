@@ -54,19 +54,6 @@
  */
 class Beidou_Dnav_Navigation_Message
 {
-private:
-    uint64_t read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    int64_t read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    void print_beidou_word_bytes(uint32_t BEIDOU_word);
-    /*
-     * Accounts for the beginning or end of week crossover
-     *
-     * \param[in]  -  time in seconds
-     * \param[out] -  corrected time, in seconds
-     */
-    double check_t(double time);
-
 public:
     /*!
      * Default constructor
@@ -207,7 +194,7 @@ public:
 
     // satellite identification info
     int32_t i_channel_ID;
-    int32_t i_signal_type;     //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
+    int32_t i_signal_type;  //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
     uint32_t i_satellite_PRN;
 
     // time synchro
@@ -321,6 +308,20 @@ public:
      * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
      */
     bool have_new_almanac();
+
+private:
+    uint64_t read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    void print_beidou_word_bytes(uint32_t BEIDOU_word);
+    
+    /*
+     * Accounts for the beginning or end of week crossover
+     *
+     * \param[in]  -  time in seconds
+     * \param[out] -  corrected time, in seconds
+     */
+    double check_t(double time);
 };
 
 #endif

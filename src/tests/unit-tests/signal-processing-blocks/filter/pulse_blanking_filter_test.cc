@@ -62,7 +62,7 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_pb_filter_test_nsamples;
     }
-    ~PulseBlankingFilterTest() = default;
+    ~PulseBlankingFilterTest() override = default;
 
     void init();
     void configure_gr_complex_gr_complex();

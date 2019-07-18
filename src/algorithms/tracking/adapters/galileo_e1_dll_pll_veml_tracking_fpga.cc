@@ -44,9 +44,10 @@
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>     // for round
 #include <cstring>   // for memcpy
-#include <iostream>  // for operator<<,
+#include <iostream>  // for operator<<
 
 // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
 // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
@@ -171,8 +172,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     int32_t vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     trk_param_fpga.system = 'E';
-    char sig_[3] = "1B";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
+    std::array<char, 3> sig_{'1', 'B', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20)
         {
@@ -227,17 +228,17 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
-            char data_signal[3] = "1B";
+            std::array<char, 3> data_signal = {'1', 'B', '\0'};
             if (d_track_pilot)
                 {
-                    char pilot_signal[3] = "1C";
-                    galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
-                    galileo_e1_code_gen_sinboc11_float(data_codes_f, data_signal, PRN);
+                    std::array<char, 3> pilot_signal = {'1', 'C', '\0'};
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(ca_codes_f, static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), pilot_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(data_codes_f, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), data_signal, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(ca_codes_f[s]);
+                            auto tmp_value = static_cast<int32_t>(ca_codes_f[s]);
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
@@ -255,12 +256,12 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                 }
             else
                 {
-                    galileo_e1_code_gen_sinboc11_float(ca_codes_f, data_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(ca_codes_f, static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), data_signal, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
-                            int32_t tmp_value = static_cast<int32_t>(ca_codes_f[s]);
+                            auto tmp_value = static_cast<int32_t>(ca_codes_f[s]);
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
@@ -271,7 +272,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                 }
         }
 
-    delete[] ca_codes_f;
+    volk_gnsssdr_free(ca_codes_f);
     if (d_track_pilot)
         {
             volk_gnsssdr_free(data_codes_f);
@@ -289,10 +290,10 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 
 GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
     if (d_track_pilot)
         {
-            delete[] d_data_codes;
+            volk_gnsssdr_free(d_data_codes);
         }
 }
 

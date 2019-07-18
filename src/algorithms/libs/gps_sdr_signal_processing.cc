@@ -83,7 +83,7 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
             G1[lcv] = G1_register[0];
             G2[lcv] = G2_register[0];
 
-            feedback1 = G1_register[7] ^ G1_register[0];
+            feedback1 = G1_register[7] xor G1_register[0];
             feedback2 = G2_register[8] xor G2_register[7] xor G2_register[4] xor G2_register[2] xor G2_register[1] xor G2_register[0];
 
             for (lcv2 = 0; lcv2 < 9; lcv2++)
@@ -104,7 +104,7 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
     // Generate PRN from G1 and G2 Registers
     for (lcv = 0; lcv < _code_length; lcv++)
         {
-            aux = G1[(lcv + _chip_shift) % _code_length] ^ G2[delay];
+            aux = G1[(lcv + _chip_shift) % _code_length] xor G2[delay];
             if (aux == true)
                 {
                     _dest[lcv] = 1;
@@ -172,28 +172,27 @@ void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
-            //=== Digitizing =======================================================
+            //=== Digitizing ===================================================
 
-            //--- Make index array to read C/A code values -------------------------
+            //--- Make index array to read C/A code values ---------------------
             // The length of the index array depends on the sampling frequency -
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             aux = (_ts * (i + 1)) / _tc;
             _codeValueIndex = auxCeil(aux) - 1;
 
-            //--- Make the digitized version of the C/A code -----------------------
+            //--- Make the digitized version of the C/A code -------------------
             // The "upsampled" code is made by selecting values form the CA code
             // chip array (caCode) for the time instances of each sample.
             if (i == _samplesPerCode - 1)
                 {
-                    //--- Correct the last index (due to number rounding issues) -----------
+                    //--- Correct the last index (due to number rounding issues)
                     _dest[i] = _code[_codeLength - 1];
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex];  //repeat the chip -> upsample
+                    _dest[i] = _code[_codeValueIndex];  // repeat the chip -> upsample
                 }
         }
 }

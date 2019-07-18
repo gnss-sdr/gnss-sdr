@@ -42,9 +42,9 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
     const unsigned int _code_length = 10230;
     std::bitset<_code_length> G1{};
     std::bitset<_code_length> G2{};
-    auto G1_register = std::move(std::bitset<13>{}.set());  // All true
-    auto G2_register = std::move(std::bitset<13>{}.set());  // All true
-    auto G1_register_reset = std::move(std::bitset<13>{}.set());
+    auto G1_register = std::bitset<13>{}.set();  // All true
+    auto G2_register = std::bitset<13>{}.set();  // All true
+    auto G1_register_reset = std::bitset<13>{}.set();
     G1_register_reset.reset(0);
     G1_register_reset.reset(1);  // {false, false, true, true, true, true, true, true, true, true, true, true, true};
 
@@ -148,7 +148,7 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
             // Reset G1 register if sequence found
             if (G1_register == G1_register_reset)
                 {
-                    G1_register = std::move(std::bitset<13>{}.set());  // All true
+                    G1_register = std::bitset<13>{}.set();  // All true
                 }
         }
 

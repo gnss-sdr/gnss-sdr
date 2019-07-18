@@ -286,6 +286,7 @@ GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
 
 void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
 {
+    tracking_fpga_sc->stop_tracking();
 }
 
 

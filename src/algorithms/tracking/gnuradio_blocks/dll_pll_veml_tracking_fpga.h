@@ -74,10 +74,6 @@ public:
 
     void reset(void);
 
-    //bool stop(void);
-//    void stop(void);
-
-
 private:
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);

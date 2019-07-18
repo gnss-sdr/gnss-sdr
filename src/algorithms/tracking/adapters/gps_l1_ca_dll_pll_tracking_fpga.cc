@@ -252,6 +252,7 @@ void GpsL1CaDllPllTrackingFpga::start_tracking()
 
 void GpsL1CaDllPllTrackingFpga::stop_tracking()
 {
+    tracking_fpga_sc->stop_tracking();
 }
 
 

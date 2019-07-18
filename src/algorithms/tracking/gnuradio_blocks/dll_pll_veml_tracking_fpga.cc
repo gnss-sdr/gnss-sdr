@@ -527,13 +527,6 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
 }
 
-////bool dll_pll_veml_tracking_fpga::stop()
-//void dll_pll_veml_tracking_fpga::stop()
-//{
-//	d_stop_tracking = true;
-//	//return true;
-//}
-
 dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 {
 
@@ -1487,7 +1480,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
 void dll_pll_veml_tracking_fpga::stop_tracking()
 {
-    d_state = 1;
+	d_stop_tracking = true;
 }
 
 
@@ -2005,13 +1998,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
             *out[0] = current_synchro_data;
             return 1;
         }
-//    else
-//		{
-//			current_synchro_data = *d_acquisition_gnss_synchro;
-//			current_synchro_data.Flag_valid_symbol_output = false;
-//			*out[0] = *d_acquisition_gnss_synchro;
-//			return 1;
-//		}
     return 0;
 
 

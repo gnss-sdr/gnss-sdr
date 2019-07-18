@@ -38,7 +38,7 @@
 
 TEST(FileSignalSource, Instantiate)
 {
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Test.samples", "0");
@@ -57,7 +57,7 @@ TEST(FileSignalSource, Instantiate)
 
 TEST(FileSignalSource, InstantiateFileNotExists)
 {
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Test.samples", "0");

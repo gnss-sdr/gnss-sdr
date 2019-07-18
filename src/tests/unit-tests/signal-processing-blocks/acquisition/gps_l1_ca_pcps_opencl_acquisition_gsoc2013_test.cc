@@ -31,13 +31,14 @@
  */
 
 
+#include "gps_l1_ca_pcps_opencl_acquisition.h"
+#include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_opencl_acquisition.h"
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
@@ -45,7 +46,6 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include "concurrent_queue.h"
 #include <gnuradio/top_block.h>
 #include <chrono>
 #include <thread>
@@ -118,7 +118,7 @@ class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test : public ::testing::Test
 protected:
     GpsL1CaPcpsOpenClAcquisitionGSoC2013Test()
     {
-        queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         top_block = gr::make_top_block("Acquisition test");
         item_size = sizeof(gr_complex);
         stop = false;

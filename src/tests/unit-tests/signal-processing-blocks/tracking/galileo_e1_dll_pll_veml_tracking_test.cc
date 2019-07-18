@@ -32,6 +32,7 @@
 
 
 #include "galileo_e1_dll_pll_veml_tracking.h"
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -41,7 +42,6 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include "concurrent_queue.h"
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -114,7 +114,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     init();
-    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
@@ -161,7 +161,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     int num_samples = 80000000;           // 8 Msps
     unsigned int skiphead_sps = 8000000;  // 8 Msps
     init();
-    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory

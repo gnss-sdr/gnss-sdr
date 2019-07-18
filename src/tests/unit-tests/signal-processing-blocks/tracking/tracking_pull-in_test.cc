@@ -795,7 +795,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
     // create the msg queue for valve
 
-    queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
     auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
 

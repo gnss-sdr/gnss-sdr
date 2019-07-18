@@ -45,7 +45,7 @@
 
 TEST(ValveTest, CheckEventSentAfter100Samples)
 {
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     gr::top_block_sptr top_block = gr::make_top_block("gnss_sdr_valve_test");
 

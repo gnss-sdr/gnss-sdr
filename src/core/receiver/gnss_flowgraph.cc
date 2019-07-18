@@ -1245,25 +1245,25 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                     start_acquisition = true;
                                 }
                             //todo: add configuration parameter to enable the mandatory acquisition assistance in secondary freq
-                            if (start_acquisition == true)
-                                {
-                                    channels_state_[ch_index] = 1;
-                                    acq_channels_count_++;
-                                    std::cout << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-                                    DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            //                            if (start_acquisition == true)
+                            //                                {
+                            channels_state_[ch_index] = 1;
+                            acq_channels_count_++;
+                            std::cout << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
 #ifndef ENABLE_FPGA
-                                    channels_[ch_index]->start_acquisition();
+                            channels_[ch_index]->start_acquisition();
 #else
-                                    // create a task for the FPGA such that it doesn't stop the flow
-                                    std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                                    tmp_thread.detach();
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
+                            tmp_thread.detach();
 #endif
-                                }
-                            else
-                                {
-                                    push_back_signal(gnss_signal);
-                                    DLOG(INFO) << "Channel " << ch_index << " secondary frequency acquisition assistance not available in " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-                                }
+                            //                                }
+                            //                            else
+                            //                                {
+                            //                                    push_back_signal(gnss_signal);
+                            //                                    DLOG(INFO) << "Channel " << ch_index << " secondary frequency acquisition assistance not available in " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            //                                }
                         }
                     DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
                 }
@@ -1307,26 +1307,26 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                 }
 
                             //todo: add configuration parameter to enable the mandatory acquisition assistance in secondary freq
-                            if (start_acquisition == true)
-                                {
-                                    channels_state_[i] = 1;
-                                    acq_channels_count_++;
-                                    DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
+                            //                            if (start_acquisition == true)
+                            //                                {
+                            channels_state_[i] = 1;
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
 #ifndef ENABLE_FPGA
-                                    channels_[i]->start_acquisition();
+                            channels_[i]->start_acquisition();
 #else
-                                    // create a task for the FPGA such that it doesn't stop the flow
-                                    std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
-                                    tmp_thread.detach();
-                                    start_acquisition = is_primary_freq or assistance_available;
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
+                            tmp_thread.detach();
+                            start_acquisition = is_primary_freq or assistance_available;
 #endif
-                                }
-                            else
-                                {
-                                    push_back_signal(gnss_signal);
-                                    DLOG(INFO) << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
-                                    std::cout << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
-                                }
+                            //                                }
+                            //                            else
+                            //                                {
+                            //                                    push_back_signal(gnss_signal);
+                            //                                    DLOG(INFO) << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
+                            //                                    std::cout << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str()<<"\n";
+                            //                                }
                         }
                     DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
                 }

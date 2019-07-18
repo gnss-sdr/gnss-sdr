@@ -57,7 +57,7 @@ class NotchFilterLiteTest : public ::testing::Test
 protected:
     NotchFilterLiteTest()
     {
-        queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_notch_filter_lite_test_nsamples;

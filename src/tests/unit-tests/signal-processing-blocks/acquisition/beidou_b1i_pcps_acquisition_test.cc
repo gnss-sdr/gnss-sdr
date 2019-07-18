@@ -262,7 +262,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
     int nsamples = 25000;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     top_block = gr::make_top_block("Acquisition test");
     init();

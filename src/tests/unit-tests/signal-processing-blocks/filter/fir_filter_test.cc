@@ -59,7 +59,7 @@ class FirFilterTest : public ::testing::Test
 protected:
     FirFilterTest()
     {
-        queue = std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>();
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }

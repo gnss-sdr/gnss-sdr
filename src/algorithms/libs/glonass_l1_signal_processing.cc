@@ -119,7 +119,7 @@ void glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest
     _ts = 1.0 / static_cast<float>(_fs);             // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
 
-    glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>>(_code.data(), 511), _chip_shift);  // generate C/A code 1 sample per chip
+    glonass_l1_ca_code_gen_complex(_code, _chip_shift);  // generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
@@ -130,7 +130,6 @@ void glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             aux = (_ts * (i + 1)) / _tc;
             _codeValueIndex = auxCeil(aux) - 1;
 
@@ -144,7 +143,7 @@ void glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex];  //repeat the chip -> upsample
+                    _dest[i] = _code[_codeValueIndex];  // repeat the chip -> upsample
                 }
         }
 }

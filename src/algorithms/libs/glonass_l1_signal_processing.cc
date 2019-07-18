@@ -32,30 +32,26 @@
 
 #include "glonass_l1_signal_processing.h"
 #include <array>
+#include <bitset>
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, /* int32_t  _prn,*/ uint32_t _chip_shift)
 {
     const uint32_t _code_length = 511;
-    std::array<bool, _code_length> G1{};
-    std::array<bool, 9> G1_register{};
+    std::bitset<_code_length> G1{};
+    auto G1_register = std::bitset<9>{}.set();  // All true
     bool feedback1;
     bool aux;
     uint32_t delay;
     uint32_t lcv, lcv2;
-
-    for (lcv = 0; lcv < 9; lcv++)
-        {
-            G1_register[lcv] = true;
-        }
 
     /* Generate G1 Register */
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[2];
 
-            feedback1 = G1_register[4] ^ G1_register[0];
+            feedback1 = G1_register[4] xor G1_register[0];
 
             for (lcv2 = 0; lcv2 < 8; lcv2++)
                 {

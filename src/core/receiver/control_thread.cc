@@ -228,6 +228,7 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
 {
     if (valid_event)
         {
+            processed_control_messages_++;
             if (pmt::any_ref(msg).type() == typeid(channel_event_sptr))
                 {
                     channel_event_sptr new_event;
@@ -834,18 +835,17 @@ void ControlThread::apply_action(unsigned int what)
 {
     std::shared_ptr<PvtInterface> pvt_ptr;
     std::vector<std::pair<int, Gnss_Satellite>> visible_satellites;
+    applied_actions_++;
     switch (what)
         {
         case 0:
             LOG(INFO) << "Received action STOP";
             stop_ = true;
-            applied_actions_++;
             break;
         case 1:
             LOG(INFO) << "Received action RESTART";
             stop_ = true;
             restart_ = true;
-            applied_actions_++;
             break;
         case 11:
             LOG(INFO) << "Receiver action COLDSTART";

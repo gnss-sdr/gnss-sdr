@@ -32,12 +32,13 @@
 #ifndef GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 #define GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -54,7 +55,7 @@ class CustomUDPSignalSource : public GNSSBlockInterface
 public:
     CustomUDPSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     virtual ~CustomUDPSignalSource();
 
@@ -98,7 +99,7 @@ private:
     std::vector<boost::shared_ptr<gr::block>> null_sinks_;
     Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H */

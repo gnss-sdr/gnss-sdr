@@ -42,7 +42,7 @@
 
 // Constructor
 GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-    std::string role, boost::shared_ptr<gr::msg_queue> queue) : signal_generator_(signal_generator),
+    std::string role, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : signal_generator_(signal_generator),
                                                                 filter_(filter),
                                                                 role_(std::move(role)),
                                                                 queue_(std::move(queue))

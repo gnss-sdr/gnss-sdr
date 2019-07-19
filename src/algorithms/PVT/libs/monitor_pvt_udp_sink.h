@@ -45,8 +45,8 @@ using b_io_context = boost::asio::io_service;
 class Monitor_Pvt_Udp_Sink
 {
 public:
-    Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t &port, bool protobuf_enabled);
-    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
+    Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled);
+    bool write_monitor_pvt(std::shared_ptr<Monitor_Pvt> monitor_pvt);
 
 private:
     b_io_context io_context;

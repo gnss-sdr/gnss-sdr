@@ -31,6 +31,7 @@
  */
 
 
+#include "concurrent_queue.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -41,7 +42,6 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -69,7 +69,7 @@ protected:
 
     void init();
 
-    gr::msg_queue::sptr queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -110,7 +110,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     int fs_in = 32000000;
     int nsamples = 32000000 * 5;
     init();
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory

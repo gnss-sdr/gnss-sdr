@@ -182,7 +182,7 @@ GNSSBlockFactory::~GNSSBlockFactory() = default;
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr queue, int ID)  // NOLINT(performance-unnecessary-value-param)
+    const std::shared_ptr<ConfigurationInterface>& configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue, int ID)  // NOLINT(performance-unnecessary-value-param)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource";  //backwards compatibility for old conf files
@@ -321,7 +321,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const std::shared_p
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     //"appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
     //can find their specific configurations when they read the config
@@ -389,7 +389,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
@@ -453,7 +453,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -520,7 +520,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -587,7 +587,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -655,7 +655,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -723,7 +723,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -790,7 +790,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -857,7 +857,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    gr::msg_queue::sptr queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -921,7 +921,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
 
 
 std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFactory::GetChannels(
-    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr queue)  // NOLINT(performance-unnecessary-value-param)
+    const std::shared_ptr<ConfigurationInterface>& configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
 {
     std::string default_implementation = "Pass_Through";
     std::string tracking_implementation;
@@ -1241,7 +1241,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& role,
     const std::string& implementation, unsigned int in_streams,
-    unsigned int out_streams, const gr::msg_queue::sptr queue)  // NOLINT(performance-unnecessary-value-param)
+    unsigned int out_streams, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
 {
     std::unique_ptr<GNSSBlockInterface> block;
 

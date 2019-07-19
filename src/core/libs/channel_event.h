@@ -1,7 +1,7 @@
 /*!
- * \file serdes_monitor_pvt_test.cc
- * \brief Implements Unit Test for the serdes_monitor_pvt class.
- * \author Carles Fernandez_prades, 2019. cfernandez(at)cttc.es
+ * \file channel_event.h
+ * \brief Class that defines a channel event
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -28,21 +28,26 @@
  * -------------------------------------------------------------------------
  */
 
-#include "serdes_monitor_pvt.h"
+#ifndef GNSS_SDR_CHANNEL_EVENT_H
+#define GNSS_SDR_CHANNEL_EVENT_H
+
 #include <memory>
 
-TEST(Serdes_Monitor_Pvt_Test, Simpletest)
+class channel_event;
+
+using channel_event_sptr = std::shared_ptr<channel_event>;
+
+channel_event_sptr channel_event_make(int channel_id, int event_type);
+
+class channel_event
 {
-    std::shared_ptr<Monitor_Pvt> monitor = std::make_shared<Monitor_Pvt>(Monitor_Pvt());
-    double true_latitude = 23.4;
-    monitor->latitude = true_latitude;
+public:
+    int channel_id;
+    int event_type;
+private:
+    friend channel_event_sptr channel_event_make(int channel_id, int event_type);
+    channel_event(int channel_id_, int event_type_);
 
-    Serdes_Monitor_Pvt serdes = Serdes_Monitor_Pvt();
-    std::string serialized_data = serdes.createProtobuffer(monitor);
+};
 
-    gnss_sdr::MonitorPvt mon;
-    mon.ParseFromString(serialized_data);
-
-    double read_latitude = mon.latitude();
-    EXPECT_NEAR(true_latitude, read_latitude, 0.000001);
-}
+#endif

@@ -38,10 +38,11 @@
 #include "channel_fsm.h"
 #include "channel_interface.h"
 #include "channel_msg_receiver_cc.h"
+#include "concurrent_queue.h"
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -66,7 +67,7 @@ public:
     //! Constructor
     Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-        std::string role, std::string implementation, gr::msg_queue::sptr queue);
+        std::string role, std::string implementation, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     virtual ~Channel();  //!< Virtual destructor
 
@@ -105,7 +106,7 @@ private:
     bool connected_;
     bool repeat_;
     std::shared_ptr<ChannelFsm> channel_fsm_;
-    gr::msg_queue::sptr queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     std::mutex mx;
 };
 

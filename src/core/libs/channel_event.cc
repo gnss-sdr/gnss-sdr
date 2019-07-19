@@ -1,7 +1,7 @@
 /*!
- * \file serdes_monitor_pvt_test.cc
- * \brief Implements Unit Test for the serdes_monitor_pvt class.
- * \author Carles Fernandez_prades, 2019. cfernandez(at)cttc.es
+ * \file channel_event.cc
+ * \brief Class that defines a channel event
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -28,21 +28,15 @@
  * -------------------------------------------------------------------------
  */
 
-#include "serdes_monitor_pvt.h"
-#include <memory>
+#include "channel_event.h"
 
-TEST(Serdes_Monitor_Pvt_Test, Simpletest)
+channel_event_sptr channel_event_make(int channel_id, int event_type)
 {
-    std::shared_ptr<Monitor_Pvt> monitor = std::make_shared<Monitor_Pvt>(Monitor_Pvt());
-    double true_latitude = 23.4;
-    monitor->latitude = true_latitude;
+    return channel_event_sptr(new channel_event(channel_id, event_type));
+}
 
-    Serdes_Monitor_Pvt serdes = Serdes_Monitor_Pvt();
-    std::string serialized_data = serdes.createProtobuffer(monitor);
-
-    gnss_sdr::MonitorPvt mon;
-    mon.ParseFromString(serialized_data);
-
-    double read_latitude = mon.latitude();
-    EXPECT_NEAR(true_latitude, read_latitude, 0.000001);
+channel_event::channel_event(int channel_id_, int event_type_)
+{
+    channel_id = channel_id_;
+    event_type = event_type_;
 }

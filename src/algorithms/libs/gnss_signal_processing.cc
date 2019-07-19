@@ -154,6 +154,8 @@ void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from)
             _dest[2] = -1;
             _dest[3] = -1;
             break;
+        default:
+            break;
         }
 }
 
@@ -168,13 +170,12 @@ void resampler(const gsl::span<float> _from, gsl::span<float> _dest, float _fs_i
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
     for (uint32_t i = 0; i < _dest.size() - 1; i++)
         {
-            //=== Digitizing =======================================================
-            //--- compute index array to read sampled values -------------------------
-            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            //=== Digitizing ===================================================
+            //--- compute index array to read sampled values -------------------
             aux = (_t_out * (i + 1)) / _t_in;
             _codeValueIndex = auxCeil2(aux) - 1;
 
-            //if repeat the chip -> upsample by nearest neighborhood interpolation
+            // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }
     //--- Correct the last index (due to number rounding issues) -----------
@@ -192,13 +193,12 @@ void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::comple
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
     for (uint32_t i = 0; i < _dest.size() - 1; i++)
         {
-            //=== Digitizing =======================================================
-            //--- compute index array to read sampled values -------------------------
-            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            //=== Digitizing ===================================================
+            //--- compute index array to read sampled values -------------------
             aux = (_t_out * (i + 1)) / _t_in;
             _codeValueIndex = auxCeil2(aux) - 1;
 
-            //if repeat the chip -> upsample by nearest neighborhood interpolation
+            // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }
     //--- Correct the last index (due to number rounding issues) -----------

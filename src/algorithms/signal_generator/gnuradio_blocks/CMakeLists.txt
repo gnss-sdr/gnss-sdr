@@ -28,7 +28,6 @@ add_library(signal_generator_gr_blocks
 
 target_link_libraries(signal_generator_gr_blocks
     PUBLIC
-        Boost::boost
         Gnuradio::runtime
         core_system_parameters
     PRIVATE

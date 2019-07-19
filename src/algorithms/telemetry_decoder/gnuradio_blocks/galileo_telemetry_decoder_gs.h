@@ -43,6 +43,8 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <array>
 
 class galileo_telemetry_decoder_gs;
 
@@ -84,11 +86,11 @@ private:
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
-    int32_t *d_preamble_samples;
+    std::vector<int32_t> d_preamble_samples;
     uint32_t d_PRN_code_period_ms;
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;
-    double *d_page_part_symbols;
+    std::vector<double> d_page_part_symbols;
 
     boost::circular_buffer<float> d_symbol_history;
 
@@ -118,14 +120,17 @@ private:
     uint32_t d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
-    double delta_t;  //GPS-GALILEO time offset
+    double delta_t;  // GPS-GALILEO time offset
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
     // vars for Viterbi decoder
-    int32_t *out0, *out1, *state0, *state1;
-    int32_t g_encoder[2]{};
+    std::vector<int32_t> out0;
+    std::vector<int32_t> out1;
+    std::vector<int32_t> state0;
+    std::vector<int32_t> state1;
+    std::array<int32_t,2> g_encoder{};
     const int32_t nn = 2;  // Coding rate 1/n
     const int32_t KK = 7;  // Constraint Length
     int32_t mm = KK - 1;

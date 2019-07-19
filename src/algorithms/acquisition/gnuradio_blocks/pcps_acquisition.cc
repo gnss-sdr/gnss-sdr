@@ -284,9 +284,8 @@ void pcps_acquisition::update_local_carrier(gsl::span<gr_complex> carrier_vector
         {
             phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.fs_in);
         }
-    float _phase[1];
-    _phase[0] = 0.0;
-    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase, carrier_vector.length());
+    std::array<float, 1> _phase{};
+    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.length());
 }
 
 

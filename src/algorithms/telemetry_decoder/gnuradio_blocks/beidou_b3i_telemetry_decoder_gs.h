@@ -40,14 +40,15 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <array>
 
 class beidou_b3i_telemetry_decoder_gs;
 
 using beidou_b3i_telemetry_decoder_gs_sptr =
     boost::shared_ptr<beidou_b3i_telemetry_decoder_gs>;
 
-beidou_b3i_telemetry_decoder_gs_sptr
-beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
+beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
     bool dump);
 
 /*!
@@ -81,11 +82,11 @@ private:
     void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
     // Preamble decoding
-    int32_t *d_preamble_samples;
+    std::array<int32_t, BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS> d_preamble_samples{};
     int32_t d_symbols_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_samples;
-    float *d_subframe_symbols;
+    std::array<float, BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS> d_subframe_symbols{};
     uint32_t d_required_symbols;
 
     // Storage for incoming data

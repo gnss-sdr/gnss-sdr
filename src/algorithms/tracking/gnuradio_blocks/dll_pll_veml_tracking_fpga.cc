@@ -446,6 +446,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_sample_counter_next = 0ULL;
 }
 
+
 void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
@@ -455,19 +456,12 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
                     int tlm_event;
                     tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
 
-                    switch (tlm_event)
+                    if (tlm_event == 1)
                         {
-                        case 1:  //tlm fault in current channel
-                            {
-                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
+                            DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
+                            gr::thread::scoped_lock lock(d_setlock);
+                            d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
+                            break;
                         }
                 }
         }

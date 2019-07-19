@@ -32,7 +32,6 @@
 #define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
 #include "gnss_signal.h"
-#include <boost/scoped_array.hpp>
 #include <gnuradio/block.h>
 #include <random>
 #include <string>
@@ -83,7 +82,7 @@ signal_generator_c_sptr signal_make_generator_c(
 class signal_generator_c : public gr::block
 {
 public:
-    ~signal_generator_c();  // public destructor
+    ~signal_generator_c() = default;  // public destructor
 
     // Where all the action really happens
     int general_work(int noutput_items,
@@ -146,9 +145,9 @@ private:
     std::vector<signed int> current_data_bit_int_;
     std::vector<signed int> data_modulation_;
     std::vector<signed int> pilot_modulation_;
-    boost::scoped_array<gr_complex *> sampled_code_data_;
-    boost::scoped_array<gr_complex *> sampled_code_pilot_;
-    gr_complex *complex_phase_;
+    std::vector<std::vector<gr_complex>> sampled_code_data_;
+    std::vector<std::vector<gr_complex>> sampled_code_pilot_;
+    std::vector<gr_complex> complex_phase_;
     unsigned int work_counter_;
     std::random_device r;
     std::default_random_engine e1;

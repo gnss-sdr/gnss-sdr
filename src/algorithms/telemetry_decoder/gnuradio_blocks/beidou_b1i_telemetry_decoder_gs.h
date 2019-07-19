@@ -43,6 +43,7 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <array>
 
 
 class beidou_b1i_telemetry_decoder_gs;
@@ -63,7 +64,7 @@ public:
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
     void reset();
-    
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -79,13 +80,12 @@ private:
     void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
-
     // Preamble decoding
-    int32_t *d_preamble_samples;
+    std::array<int32_t, BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS> d_preamble_samples{};
     int32_t d_symbols_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_samples;
-    float *d_subframe_symbols;
+    std::array<float, BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS> d_subframe_symbols{};
     uint32_t d_required_symbols;
 
     // Storage for incoming data
@@ -100,7 +100,7 @@ private:
     int32_t d_CRC_error_counter;  // Number of failed CRC operations
     bool flag_SOW_set;            // Indicates when time of week is set
 
-    //!< Navigation Message variable
+    // Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;
 
     // Values to populate gnss synchronization structure

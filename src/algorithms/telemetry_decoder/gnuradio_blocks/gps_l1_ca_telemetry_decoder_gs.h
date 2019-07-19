@@ -39,6 +39,7 @@
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <array>                 // for array
 #include <cstdint>               // for int32_t
 #include <fstream>               // for ofstream
 #include <string>                // for string
@@ -80,7 +81,7 @@ private:
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
-    int32_t *d_preamble_samples;
+    std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples;
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;
     bool flag_PLL_180_deg_phase_locked;

@@ -93,7 +93,7 @@ uint32_t crc24q(const uint8_t *buf, uint32_t len, uint32_t crc)
     uint32_t i = 0;
     for (i = 0; i < len; i++)
         {
-            crc = ((crc << 8) & 0xFFFFFF) ^ CRC24QTAB[((crc >> 16) ^ buf[i]) & 0xff];
+            crc = ((crc << 8U) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16U) ^ buf[i]) & 0xFFU];
         }
     return crc;
 }
@@ -122,21 +122,21 @@ uint32_t crc24q_bits(uint32_t crc, const uint8_t *buf, uint32_t n_bits, bool inv
     uint32_t i = 0;
     for (i = 0; i < n_bits / 8; ++i)
         {
-            acc = (acc << 8) | *buf++;
+            acc = (acc << 8U) | *buf++;
             if (invert)
                 {
                     acc ^= 0xFFU;
                 }
             b = (acc >> shift) & 0xFFU;
-            crc = ((crc << 8) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFU];
+            crc = ((crc << 8U) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16U) ^ b) & 0xFFU];
         }
-    acc = (acc << 8) | *buf;
+    acc = (acc << 8U) | *buf;
     if (invert)
         {
             acc ^= 0xFFU;
         }
     b = (acc >> shift) & 0xFFU;
-    crc = ((crc << 8) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFU];
+    crc = ((crc << 8U) & 0xFFFFFFU) ^ CRC24QTAB[((crc >> 16U) ^ b) & 0xFFU];
 
     return crc;
 }

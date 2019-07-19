@@ -175,12 +175,12 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
     trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
 
-//    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-//    if (FLAGS_max_lock_fail != 50)
-//        {
-//            max_lock_fail = FLAGS_max_lock_fail;
-//        }
-//    trk_param_fpga.max_lock_fail = max_lock_fail;
+    //    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
+    //    if (FLAGS_max_lock_fail != 50)
+    //        {
+    //            max_lock_fail = FLAGS_max_lock_fail;
+    //        }
+    //    trk_param_fpga.max_lock_fail = max_lock_fail;
 
 
     // FPGA configuration parameters
@@ -265,8 +265,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.code_length_chips = GALILEO_E1_B_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
     trk_param_fpga.extended_correlation_in_fpga = false;
-    trk_param_fpga.extend_fpga_integration_periods = 1; // (number of FPGA integrations that are combined in the SW)
-    trk_param_fpga.fpga_integration_period = 1; // (number of symbols that are effectively integrated in the FPGA)
+    trk_param_fpga.extend_fpga_integration_periods = 1;  // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1;          // (number of symbols that are effectively integrated in the FPGA)
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

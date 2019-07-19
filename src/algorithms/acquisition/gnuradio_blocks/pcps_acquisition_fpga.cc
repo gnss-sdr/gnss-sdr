@@ -134,56 +134,52 @@ void pcps_acquisition_fpga::set_state(int32_t state)
 
 void pcps_acquisition_fpga::send_positive_acquisition()
 {
+    // debug L5
+    //	d_gnss_synchro->Acq_delay_samples = 2694;
+    //	d_gnss_synchro->Acq_doppler_hz = 2650;
+    //	d_gnss_synchro->Acq_samplestamp_samples = 56500224;
+    //	d_gnss_synchro->Flag_valid_word = 0;
+    //	d_gnss_synchro->Flag_valid_pseudorange = 0;
+    //	d_gnss_synchro->Flag_valid_symbol_output = 0;
+    //	d_gnss_synchro->Flag_valid_acquisition = 0;
 
-	// debug L5
-//	d_gnss_synchro->Acq_delay_samples = 2694;
-//	d_gnss_synchro->Acq_doppler_hz = 2650;
-//	d_gnss_synchro->Acq_samplestamp_samples = 56500224;
-//	d_gnss_synchro->Flag_valid_word = 0;
-//	d_gnss_synchro->Flag_valid_pseudorange = 0;
-//	d_gnss_synchro->Flag_valid_symbol_output = 0;
-//	d_gnss_synchro->Flag_valid_acquisition = 0;
+    //	d_gnss_synchro->Acq_delay_samples = 10846;
+    //	d_gnss_synchro->Acq_doppler_hz = 2575;
+    //	d_gnss_synchro->Acq_samplestamp_samples = 399605760;
+    //	d_gnss_synchro->Flag_valid_word = 0;
+    //	d_gnss_synchro->Flag_valid_pseudorange = 0;
+    //	d_gnss_synchro->Flag_valid_symbol_output = 0;
+    //	d_gnss_synchro->Flag_valid_acquisition = 0;
 
-//	d_gnss_synchro->Acq_delay_samples = 10846;
-//	d_gnss_synchro->Acq_doppler_hz = 2575;
-//	d_gnss_synchro->Acq_samplestamp_samples = 399605760;
-//	d_gnss_synchro->Flag_valid_word = 0;
-//	d_gnss_synchro->Flag_valid_pseudorange = 0;
-//	d_gnss_synchro->Flag_valid_symbol_output = 0;
-//	d_gnss_synchro->Flag_valid_acquisition = 0;
+    //	if (d_channel == 0)
+    //	{
+    //		d_gnss_synchro->Acq_delay_samples = 401;
+    //		d_gnss_synchro->Acq_doppler_hz = 2650;
+    //		d_gnss_synchro->Acq_samplestamp_samples = 96591872;
+    //		d_gnss_synchro->Flag_valid_word = 0;
+    //		d_gnss_synchro->Flag_valid_pseudorange = 0;
+    //		d_gnss_synchro->Flag_valid_symbol_output = 0;
+    //		d_gnss_synchro->Flag_valid_acquisition = 0;
 
-//	if (d_channel == 0)
-//	{
-//		d_gnss_synchro->Acq_delay_samples = 401;
-//		d_gnss_synchro->Acq_doppler_hz = 2650;
-//		d_gnss_synchro->Acq_samplestamp_samples = 96591872;
-//		d_gnss_synchro->Flag_valid_word = 0;
-//		d_gnss_synchro->Flag_valid_pseudorange = 0;
-//		d_gnss_synchro->Flag_valid_symbol_output = 0;
-//		d_gnss_synchro->Flag_valid_acquisition = 0;
+    //		d_gnss_synchro->Acq_delay_samples = 1505;
+    //		d_gnss_synchro->Acq_doppler_hz = 2575;
+    //		d_gnss_synchro->Acq_samplestamp_samples = 194265553;
+    //		d_gnss_synchro->Flag_valid_word = 0;
+    //		d_gnss_synchro->Flag_valid_pseudorange = 0;
+    //		d_gnss_synchro->Flag_valid_symbol_output = 0;
+    //		d_gnss_synchro->Flag_valid_acquisition = 0;
 
-//		d_gnss_synchro->Acq_delay_samples = 1505;
-//		d_gnss_synchro->Acq_doppler_hz = 2575;
-//		d_gnss_synchro->Acq_samplestamp_samples = 194265553;
-//		d_gnss_synchro->Flag_valid_word = 0;
-//		d_gnss_synchro->Flag_valid_pseudorange = 0;
-//		d_gnss_synchro->Flag_valid_symbol_output = 0;
-//		d_gnss_synchro->Flag_valid_acquisition = 0;
-
-//	}
-
-
-	// debug E5a
-//	d_gnss_synchro->Acq_delay_samples = 2012;
-//	d_gnss_synchro->Acq_doppler_hz = -1125;
-//	d_gnss_synchro->Acq_samplestamp_samples = 363462656;
-//	d_gnss_synchro->Flag_valid_word = 0;
-//	d_gnss_synchro->Flag_valid_pseudorange = 0;
-//	d_gnss_synchro->Flag_valid_symbol_output = 0;
-//	d_gnss_synchro->Flag_valid_acquisition = 0;
+    //	}
 
 
-
+    // debug E5a
+    //	d_gnss_synchro->Acq_delay_samples = 2012;
+    //	d_gnss_synchro->Acq_doppler_hz = -1125;
+    //	d_gnss_synchro->Acq_samplestamp_samples = 363462656;
+    //	d_gnss_synchro->Flag_valid_word = 0;
+    //	d_gnss_synchro->Flag_valid_pseudorange = 0;
+    //	d_gnss_synchro->Flag_valid_symbol_output = 0;
+    //	d_gnss_synchro->Flag_valid_acquisition = 0;
 
 
     // Declare positive acquisition using a message port
@@ -199,21 +195,21 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", input signal power " << d_input_power;
 
 
-//    std::cout << "positive acquisition"
-//               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-//               << ", sample_stamp " << d_sample_counter
-//               << ", test statistics value " << d_test_statistics
-//               << ", test statistics threshold " << d_threshold
-//               << ", code phase " << d_gnss_synchro->Acq_delay_samples
-//               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
-//               << ", magnitude " << d_mag
-//               << ", input signal power " << d_input_power
-//			   << ", d_gnss_synchro->Acq_samplestamp_samples " << d_gnss_synchro->Acq_samplestamp_samples
-//			   << ", d_gnss_synchro->Flag_valid_word " << d_gnss_synchro->Flag_valid_word
-//			   << ", Flag_valid_pseudorange " << d_gnss_synchro->Flag_valid_pseudorange
-//			   << ", d_gnss_synchro->Flag_valid_symbol_output " <<  d_gnss_synchro->Flag_valid_symbol_output
-//			   << ", d_gnss_synchro->Flag_valid_acquisition " << d_gnss_synchro->Flag_valid_acquisition
-//			   << std::endl;
+    //    std::cout << "positive acquisition"
+    //               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+    //               << ", sample_stamp " << d_sample_counter
+    //               << ", test statistics value " << d_test_statistics
+    //               << ", test statistics threshold " << d_threshold
+    //               << ", code phase " << d_gnss_synchro->Acq_delay_samples
+    //               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
+    //               << ", magnitude " << d_mag
+    //               << ", input signal power " << d_input_power
+    //			   << ", d_gnss_synchro->Acq_samplestamp_samples " << d_gnss_synchro->Acq_samplestamp_samples
+    //			   << ", d_gnss_synchro->Flag_valid_word " << d_gnss_synchro->Flag_valid_word
+    //			   << ", Flag_valid_pseudorange " << d_gnss_synchro->Flag_valid_pseudorange
+    //			   << ", d_gnss_synchro->Flag_valid_symbol_output " <<  d_gnss_synchro->Flag_valid_symbol_output
+    //			   << ", d_gnss_synchro->Flag_valid_acquisition " << d_gnss_synchro->Flag_valid_acquisition
+    //			   << std::endl;
 
     //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
     d_channel_fsm.lock()->Event_valid_acquisition();

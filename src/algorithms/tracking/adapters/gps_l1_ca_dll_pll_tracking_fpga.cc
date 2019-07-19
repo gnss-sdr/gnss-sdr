@@ -152,7 +152,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
         }
     else if (symbols_extended_correlator > GPS_CA_BIT_DURATION_MS)
         {
-    		symbols_extended_correlator = GPS_CA_BIT_DURATION_MS;
+            symbols_extended_correlator = GPS_CA_BIT_DURATION_MS;
             std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
         }
     trk_param_fpga.extend_correlation_symbols = symbols_extended_correlator;
@@ -214,21 +214,21 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
-    trk_param_fpga.extended_correlation_in_fpga = false; // by default
-    trk_param_fpga.extend_fpga_integration_periods = 1; // (number of FPGA integrations that are combined in the SW)
-    trk_param_fpga.fpga_integration_period = 1; // (number of symbols that are effectively integrated in the FPGA)
-	if (symbols_extended_correlator >1)
-	{
-		if (symbols_extended_correlator <= GPS_CA_BIT_DURATION_MS)
-		{
-			if ((GPS_CA_BIT_DURATION_MS % symbols_extended_correlator) == 0)
-			{
-				trk_param_fpga.extended_correlation_in_fpga = true;
-				trk_param_fpga.fpga_integration_period = symbols_extended_correlator;
-				printf("correlation in fpga true\n");
-			}
-		}
-	}
+    trk_param_fpga.extended_correlation_in_fpga = false;  // by default
+    trk_param_fpga.extend_fpga_integration_periods = 1;   // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1;           // (number of symbols that are effectively integrated in the FPGA)
+    if (symbols_extended_correlator > 1)
+        {
+            if (symbols_extended_correlator <= GPS_CA_BIT_DURATION_MS)
+                {
+                    if ((GPS_CA_BIT_DURATION_MS % symbols_extended_correlator) == 0)
+                        {
+                            trk_param_fpga.extended_correlation_in_fpga = true;
+                            trk_param_fpga.fpga_integration_period = symbols_extended_correlator;
+                            printf("correlation in fpga true\n");
+                        }
+                }
+        }
 
 
     //################# MAKE TRACKING GNURadio object ###################

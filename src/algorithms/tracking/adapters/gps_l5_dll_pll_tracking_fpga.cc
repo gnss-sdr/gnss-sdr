@@ -273,35 +273,35 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.code_length_chips = code_length_chips;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
 
-    trk_param_fpga.extended_correlation_in_fpga = false; // by default
-    trk_param_fpga.extend_fpga_integration_periods = 1; // (number of FPGA integrations that are combined in the SW)
-    trk_param_fpga.fpga_integration_period = 1; // (number of symbols that are effectively integrated in the FPGA)
+    trk_param_fpga.extended_correlation_in_fpga = false;  // by default
+    trk_param_fpga.extend_fpga_integration_periods = 1;   // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1;           // (number of symbols that are effectively integrated in the FPGA)
     if (d_track_pilot)
-    {
-    	if (extend_correlation_symbols > 1)
-    	{
-			if (extend_correlation_symbols <= GPS_L5I_NH_CODE_LENGTH)
-			{
-				if ((GPS_L5I_NH_CODE_LENGTH % extend_correlation_symbols) == 0)
-				{
-					trk_param_fpga.extended_correlation_in_fpga = true;
-					trk_param_fpga.fpga_integration_period = extend_correlation_symbols;
-					printf("correlation in fpga true\n");
-				}
-			}
-			else
-			{
-				if (extend_correlation_symbols % GPS_L5I_NH_CODE_LENGTH == 0)
-				{
-					trk_param_fpga.extended_correlation_in_fpga = true;
-					trk_param_fpga.extend_fpga_integration_periods = extend_correlation_symbols/GPS_L5I_NH_CODE_LENGTH;
-					trk_param_fpga.fpga_integration_period = GPS_L5I_NH_CODE_LENGTH;
-					printf("correlation in fpga true\n");
-					printf("extend fpga integration periods true\n");
-				}
-			}
-    	}
-    }
+        {
+            if (extend_correlation_symbols > 1)
+                {
+                    if (extend_correlation_symbols <= GPS_L5I_NH_CODE_LENGTH)
+                        {
+                            if ((GPS_L5I_NH_CODE_LENGTH % extend_correlation_symbols) == 0)
+                                {
+                                    trk_param_fpga.extended_correlation_in_fpga = true;
+                                    trk_param_fpga.fpga_integration_period = extend_correlation_symbols;
+                                    printf("correlation in fpga true\n");
+                                }
+                        }
+                    else
+                        {
+                            if (extend_correlation_symbols % GPS_L5I_NH_CODE_LENGTH == 0)
+                                {
+                                    trk_param_fpga.extended_correlation_in_fpga = true;
+                                    trk_param_fpga.extend_fpga_integration_periods = extend_correlation_symbols / GPS_L5I_NH_CODE_LENGTH;
+                                    trk_param_fpga.fpga_integration_period = GPS_L5I_NH_CODE_LENGTH;
+                                    printf("correlation in fpga true\n");
+                                    printf("extend fpga integration periods true\n");
+                                }
+                        }
+                }
+        }
 
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;

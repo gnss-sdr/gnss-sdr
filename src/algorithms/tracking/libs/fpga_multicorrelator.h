@@ -73,12 +73,12 @@
 #define SAMPLE_COUNTER_REG_ADDR_MSW 14
 
 // FPGA-related constants
-#define SECONDARY_CODE_WORD_SIZE 20 // the secondary codes are written in to the FPGA in words of SECONDARY_CODE_WORD_SIZE bits
-#define SECONDARY_CODE_WR_STROBE 0x800000	// write strobe position in the secondary code write register
-#define SECONDARY_CODE_ADDR_BITS 0x100000	// memory address position in the secondary code write register
-#define DROP_SAMPLES 1						// bit 0 of DROP_SAMPLES_REG_ADDR
-#define ENABLE_SECONDARY_CODE 2				// bit 1 of DROP_SAMPLES_REG_ADDR
-#define INIT_SECONDARY_CODE_ADDRESSES 4		// bit 2 of DROP_SAMPLES_REG_ADDR
+#define SECONDARY_CODE_WORD_SIZE 20        // the secondary codes are written in to the FPGA in words of SECONDARY_CODE_WORD_SIZE bits
+#define SECONDARY_CODE_WR_STROBE 0x800000  // write strobe position in the secondary code write register
+#define SECONDARY_CODE_ADDR_BITS 0x100000  // memory address position in the secondary code write register
+#define DROP_SAMPLES 1                     // bit 0 of DROP_SAMPLES_REG_ADDR
+#define ENABLE_SECONDARY_CODE 2            // bit 1 of DROP_SAMPLES_REG_ADDR
+#define INIT_SECONDARY_CODE_ADDRESSES 4    // bit 2 of DROP_SAMPLES_REG_ADDR
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -105,15 +105,15 @@ public:
     uint64_t read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
-//    void initialize_secondary_codes(bool track_pilot,
-//    		uint32_t secondary_code_length_data, std::string *secondary_code_string_data,
-//			uint32_t secondary_code_length_pilot, std::string *secondary_code_string_pilot);
+    //    void initialize_secondary_codes(bool track_pilot,
+    //    		uint32_t secondary_code_length_data, std::string *secondary_code_string_data,
+    //			uint32_t secondary_code_length_pilot, std::string *secondary_code_string_pilot);
     void set_secondary_code_lengths(uint32_t secondary_code_0_length, uint32_t secondary_code_1_length);
     void initialize_secondary_code(uint32_t secondary_code, std::string *secondary_code_string);
     void update_secondary_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code);
     void enable_secondary_codes();
     void disable_secondary_codes();
-//    void init_secondary_code_indices();
+    //    void init_secondary_code_indices();
 
 
 private:

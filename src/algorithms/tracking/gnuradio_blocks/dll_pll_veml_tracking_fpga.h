@@ -153,7 +153,7 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
-    
+
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     double d_rem_code_phase_samples_prev;
@@ -221,7 +221,6 @@ private:
     boost::mutex d_mutex;
 
     bool d_stop_tracking;
-
 };
 
 #endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

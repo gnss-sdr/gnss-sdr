@@ -106,12 +106,12 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
     trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
 
-//    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-//    if (FLAGS_max_lock_fail != 50)
-//        {
-//            max_lock_fail = FLAGS_max_lock_fail;
-//        }
-//    trk_param_fpga.max_lock_fail = max_lock_fail;
+    //    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
+    //    if (FLAGS_max_lock_fail != 50)
+    //        {
+    //            max_lock_fail = FLAGS_max_lock_fail;
+    //        }
+    //    trk_param_fpga.max_lock_fail = max_lock_fail;
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";

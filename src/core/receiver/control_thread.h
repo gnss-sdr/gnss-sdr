@@ -123,6 +123,10 @@ private:
     //Telecommand TCP interface
     TcpCmdInterface cmd_interface_;
     void telecommand_listener();
+    /*
+     * New receiver event dispatcher
+     */
+    void event_dispatcher(bool &valid_event, pmt::pmt_t &msg);
     std::thread cmd_interface_thread_;
     //SUPL assistance classes
     Gnss_Sdr_Supl_Client supl_client_acquisition_;
@@ -149,7 +153,7 @@ private:
      * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues
      * returns a vector filled with the available satellites ordered from high elevation to low elevation angle.
      */
-    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const arma::vec& LLH);
+    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const arma::vec &LLH);
 
     /*
      * Read initial GNSS assistance from SUPL server or local XML files

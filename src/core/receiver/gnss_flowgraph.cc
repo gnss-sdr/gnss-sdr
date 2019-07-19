@@ -1161,6 +1161,84 @@ void GNSSFlowgraph::remove_signal(Gnss_Signal gs)
             break;
         }
 }
+
+void GNSSFlowgraph::acquisition_manager(unsigned int who)
+{
+    unsigned int current_channel;
+    for (unsigned int i = 0; i < channels_count_; i++)
+        {
+            current_channel = (i + who + 1) % channels_count_;
+            unsigned int sat_ = 0;
+            try
+                {
+                    sat_ = configuration_->property("Channel" + std::to_string(current_channel) + ".satellite", 0);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+            if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[current_channel] == 0))
+                {
+                    bool is_primary_freq = true;
+                    bool assistance_available = false;
+                    bool start_acquisition = false;
+                    Gnss_Signal gnss_signal;
+                    if (sat_ == 0)
+                        {
+                            float estimated_doppler;
+                            double RX_time;
+                            gnss_signal = search_next_signal(channels_[current_channel]->get_signal().get_signal_str(),
+                                true,
+                                is_primary_freq,
+                                assistance_available,
+                                estimated_doppler,
+                                RX_time);
+                            channels_[current_channel]->set_signal(gnss_signal);
+                            start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", false);
+                            //                            if (assistance_available)
+                            //                                {
+                            //                                    std::cout << "Channel " << current_channel
+                            //                                              << " assistance available for " << channels_[current_channel]->get_signal().get_satellite()
+                            //                                              << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << "\n";
+                            //                                }
+                        }
+                    else
+                        {
+                            start_acquisition = true;
+                        }
+
+                    if (start_acquisition == true)
+                        {
+                            channels_state_[current_channel] = 1;
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << current_channel
+                                       << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
+                                       << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
+#ifndef ENABLE_FPGA
+                            channels_[current_channel]->start_acquisition();
+#else
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[current_channel]);
+                            tmp_thread.detach();
+#endif
+                        }
+                    else
+                        {
+                            push_back_signal(gnss_signal);
+                            DLOG(INFO) << "Channel " << current_channel
+                                       << " secondary frequency acquisition assistance not available in "
+                                       << channels_[current_channel]->get_signal().get_satellite()
+                                       << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
+
+                            //                            std::cout << "Channel " << current_channel
+                            //                                      << " secondary frequency acquisition assistance not available in "
+                            //                                      << channels_[current_channel]->get_signal().get_satellite()
+                            //                                      << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << "\n";
+                        }
+                }
+            DLOG(INFO) << "Channel " << current_channel << " in state " << channels_state_[current_channel];
+        }
+}
 /*
  * Applies an action to the flow graph
  *
@@ -1188,8 +1266,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     //todo: the acquisition events are initiated from the acquisition success or failure queued msg. If the acquisition is disabled for non-assisted secondary freq channels, the engine stops..
 
     std::lock_guard<std::mutex> lock(signal_list_mutex);
-    std::cout << "Received " << what << " from " << who << ". acq_channels_count_ = " << acq_channels_count_ << "\n";
-    DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
+    DLOG(INFO) << "Received " << what << " from " << who;
     unsigned int sat = 0;
     if (who < 200)
         {
@@ -1213,134 +1290,28 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             channels_state_[who] = 0;
             if (acq_channels_count_ > 0) acq_channels_count_--;
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            bool is_primary_freq = true;
-                            bool assistance_available = false;
-                            bool start_acquisition = false;
-                            Gnss_Signal gnss_signal;
-                            if (sat_ == 0)
-                                {
-                                    float estimated_doppler;
-                                    double RX_time;
-
-                                    gnss_signal = search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), false, is_primary_freq, assistance_available, estimated_doppler, RX_time);
-                                    channels_[ch_index]->set_signal(gnss_signal);
-                                    start_acquisition = is_primary_freq or assistance_available;
-                                }
-                            else
-                                {
-                                    start_acquisition = true;
-                                }
-                            //todo: add configuration parameter to enable the mandatory acquisition assistance in secondary freq
-                            //                            if (start_acquisition == true)
-                            //                                {
-                            channels_state_[ch_index] = 1;
-                            acq_channels_count_++;
-                            std::cout << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                            //                                }
-                            //                            else
-                            //                                {
-                            //                                    push_back_signal(gnss_signal);
-                            //                                    DLOG(INFO) << "Channel " << ch_index << " secondary frequency acquisition assistance not available in " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-                            //                                }
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
-
         case 1:
-            LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_[who]->get_signal().get_satellite();
-
+            DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_[who]->get_signal().get_satellite();
             // If the satellite is in the list of available ones, remove it.
             remove_signal(channels_[who]->get_signal());
 
             channels_state_[who] = 2;
             if (acq_channels_count_ > 0) acq_channels_count_--;
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
-                        {
-                            bool is_primary_freq = true;
-                            bool assistance_available = false;
-                            bool start_acquisition = false;
-                            Gnss_Signal gnss_signal;
-                            if (sat_ == 0)
-                                {
-                                    float estimated_doppler;
-                                    double RX_time;
-                                    gnss_signal = search_next_signal(channels_[i]->get_signal().get_signal_str(), true, is_primary_freq, assistance_available, estimated_doppler, RX_time);
-                                    channels_[i]->set_signal(gnss_signal);
-                                }
-                            else
-                                {
-                                    start_acquisition = true;
-                                }
-
-                            //todo: add configuration parameter to enable the mandatory acquisition assistance in secondary freq
-                            //                            if (start_acquisition == true)
-                            //                                {
-                            channels_state_[i] = 1;
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[i]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
-                            tmp_thread.detach();
-                            start_acquisition = is_primary_freq or assistance_available;
-#endif
-                            //                                }
-                            //                            else
-                            //                                {
-                            //                                    push_back_signal(gnss_signal);
-                            //                                    DLOG(INFO) << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
-                            //                                    std::cout << "Channel " << i << " secondary frequency acquisition assistance not available in " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str()<<"\n";
-                            //                                }
-                        }
-                    DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-                }
+            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
 
         case 2:
-            LOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_[who]->get_signal().get_satellite();
-            DLOG(INFO) << "Number of channels in acquisition = " << acq_channels_count_;
-
+            DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_[who]->get_signal().get_satellite();
             if (acq_channels_count_ < max_acq_channels_)
                 {
+                    //try to acquire the same satellite
                     channels_state_[who] = 1;
                     acq_channels_count_++;
-                    LOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
+                    DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
 #ifndef ENABLE_FPGA
                     channels_[who]->start_acquisition();
 #else
@@ -1377,124 +1348,22 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         case 11:  // request coldstart mode
             LOG(INFO) << "TC request flowgraph coldstart";
-            // start again the satellite acquisitions
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    bool is_primary_freq;
-                                    bool assistance_available;
-                                    float estimated_doppler;
-                                    double RX_time;
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true, is_primary_freq, assistance_available, estimated_doppler, RX_time));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
         case 12:  // request hotstart mode
             LOG(INFO) << "TC request flowgraph hotstart";
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    bool is_primary_freq;
-                                    bool assistance_available;
-                                    float estimated_doppler;
-                                    double RX_time;
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true, is_primary_freq, assistance_available, estimated_doppler, RX_time));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
         case 13:  // request warmstart mode
             LOG(INFO) << "TC request flowgraph warmstart";
-            // start again the satellite acquisitions
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    bool is_primary_freq;
-                                    bool assistance_available;
-                                    float estimated_doppler;
-                                    double RX_time;
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true, is_primary_freq, assistance_available, estimated_doppler, RX_time));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
         default:
             break;
         }
-    applied_actions_++;
 }
 
 
@@ -1690,7 +1559,6 @@ void GNSSFlowgraph::init()
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
     set_channels_state();
-    applied_actions_ = 0;
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
 
     /*
@@ -2007,6 +1875,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     double& RX_time)
 {
     is_primary_frequency = false;
+    assistance_available = false;
     Gnss_Signal result;
     bool found_signal = false;
     switch (mapStringValues_[searched_signal])
@@ -2039,7 +1908,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
                                     if (it2 != available_GPS_2S_signals_.end())
                                         {
-                                            std::cout << " Channel: " << it->first << " => Doppler: " << it->second->Carrier_Doppler_hz << "[Hz] \n";
+                                            estimated_doppler = it->second->Carrier_Doppler_hz;
+                                            RX_time = it->second->RX_time;
+                                            //std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             //3. return the GPS L2 satellite and remove it from list
                                             result = *it2;
                                             if (pop)
@@ -2047,7 +1918,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                     available_GPS_2S_signals_.erase(it2);
                                                 }
                                             found_signal = true;
-
+                                            assistance_available = true;
                                             break;
                                         }
                                 }
@@ -2090,7 +1961,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
                                     if (it2 != available_GPS_L5_signals_.end())
                                         {
-                                            std::cout << " Channel: " << it->first << " => Doppler: " << it->second->Carrier_Doppler_hz << "[Hz] \n";
+                                            estimated_doppler = it->second->Carrier_Doppler_hz;
+                                            RX_time = it->second->RX_time;
+                                            //std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             //3. return the GPS L5 satellite and remove it from list
                                             result = *it2;
                                             if (pop)
@@ -2098,6 +1971,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                     available_GPS_L5_signals_.erase(it2);
                                                 }
                                             found_signal = true;
+                                            assistance_available = true;
                                             break;
                                         }
                                 }
@@ -2126,11 +2000,47 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             break;
 
         case evGAL_5X:
-            result = available_GAL_5X_signals_.front();
-            available_GAL_5X_signals_.pop_front();
-            if (!pop)
+
+            if (configuration_->property("Channels_1B.count", 0) > 0)
                 {
-                    available_GAL_5X_signals_.push_back(result);
+                    //1. Get the current channel status map
+                    std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
+                    //2. search the currently tracked Galileo E1 satellites and assist the Galileo E5 acquisition if the satellite is not tracked on E5
+                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
+                        {
+                            if (std::string(it->second->Signal) == "1B")
+                                {
+                                    std::list<Gnss_Signal>::iterator it2;
+                                    it2 = std::find_if(std::begin(available_GAL_5X_signals_), std::end(available_GAL_5X_signals_),
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+
+                                    if (it2 != available_GAL_5X_signals_.end())
+                                        {
+                                            estimated_doppler = it->second->Carrier_Doppler_hz;
+                                            RX_time = it->second->RX_time;
+                                            //std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            //3. return the Gal 5X satellite and remove it from list
+                                            result = *it2;
+                                            if (pop)
+                                                {
+                                                    available_GAL_5X_signals_.erase(it2);
+                                                }
+                                            found_signal = true;
+                                            assistance_available = true;
+                                            break;
+                                        }
+                                }
+                        }
+                }
+            //fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
+            if (found_signal == false)
+                {
+                    result = available_GAL_5X_signals_.front();
+                    available_GAL_5X_signals_.pop_front();
+                    if (!pop)
+                        {
+                            available_GAL_5X_signals_.push_back(result);
+                        }
                 }
             break;
 
@@ -2182,290 +2092,4 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             break;
         }
     return result;
-
-
-    //old
-    //    bool untracked_satellite = true;
-    //    switch (mapStringValues_[searched_signal])
-    //        {
-    //        case evGPS_1C:
-    //            result = available_GPS_1C_signals_.front();
-    //            available_GPS_1C_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GPS_1C_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if ((configuration_->property("Channels_2S.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1C"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
-    //                                    available_GPS_2S_signals_.remove(gs);
-    //                                    available_GPS_2S_signals_.push_front(gs);
-    //                                }
-    //                            if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
-    //                                    available_GPS_L5_signals_.remove(gs);
-    //                                    available_GPS_L5_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evGPS_2S:
-    //            result = available_GPS_2S_signals_.front();
-    //            available_GPS_2S_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GPS_2S_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if ((configuration_->property("Channels_1C.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2S"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
-    //                                    available_GPS_1C_signals_.remove(gs);
-    //                                    available_GPS_1C_signals_.push_front(gs);
-    //                                }
-    //                            if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
-    //                                    available_GPS_L5_signals_.remove(gs);
-    //                                    available_GPS_L5_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evGPS_L5:
-    //            result = available_GPS_L5_signals_.front();
-    //            available_GPS_L5_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GPS_L5_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if ((configuration_->property("Channels_1C.count", 0) > 0) or (configuration_->property("Channels_2S.count", 0) > 0))
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "L5"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
-    //                                    available_GPS_1C_signals_.remove(gs);
-    //                                    available_GPS_1C_signals_.push_front(gs);
-    //                                }
-    //                            if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
-    //                                    available_GPS_2S_signals_.remove(gs);
-    //                                    available_GPS_2S_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evGAL_1B:
-    //            result = available_GAL_1B_signals_.front();
-    //            available_GAL_1B_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GAL_1B_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if (configuration_->property("Channels_5X.count", 0) > 0)
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1B"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5X");
-    //                                    available_GAL_5X_signals_.remove(gs);
-    //                                    available_GAL_5X_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evGAL_5X:
-    //            result = available_GAL_5X_signals_.front();
-    //            available_GAL_5X_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GAL_5X_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if (configuration_->property("Channels_1B.count", 0) > 0)
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "5X"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1B");
-    //                                    available_GAL_1B_signals_.remove(gs);
-    //                                    available_GAL_1B_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evGLO_1G:
-    //            result = available_GLO_1G_signals_.front();
-    //            available_GLO_1G_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GLO_1G_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if (configuration_->property("Channels_2G.count", 0) > 0)
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1G"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2G");
-    //                                    available_GLO_2G_signals_.remove(gs);
-    //                                    available_GLO_2G_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evGLO_2G:
-    //            result = available_GLO_2G_signals_.front();
-    //            available_GLO_2G_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_GLO_2G_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if (configuration_->property("Channels_1G.count", 0) > 0)
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1G");
-    //                                    available_GLO_1G_signals_.remove(gs);
-    //                                    available_GLO_1G_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evBDS_B1:
-    //            result = available_BDS_B1_signals_.front();
-    //            available_BDS_B1_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_BDS_B1_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if (configuration_->property("Channels_B3.count", 0) > 0)
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "B3");
-    //                                    available_BDS_B3_signals_.remove(gs);
-    //                                    available_BDS_B3_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        case evBDS_B3:
-    //            result = available_BDS_B3_signals_.front();
-    //            available_BDS_B3_signals_.pop_front();
-    //            if (!pop)
-    //                {
-    //                    available_BDS_B3_signals_.push_back(result);
-    //                }
-    //            if (tracked)
-    //                {
-    //                    if (configuration_->property("Channels_B1.count", 0) > 0)
-    //                        {
-    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-    //                                {
-    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G"))
-    //                                        {
-    //                                            untracked_satellite = false;
-    //                                        }
-    //                                }
-    //                            if (untracked_satellite)
-    //                                {
-    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "B1");
-    //                                    available_BDS_B1_signals_.remove(gs);
-    //                                    available_BDS_B1_signals_.push_front(gs);
-    //                                }
-    //                        }
-    //                }
-    //            break;
-    //
-    //        default:
-    //            LOG(ERROR) << "This should not happen :-(";
-    //            result = available_GPS_1C_signals_.front();
-    //            if (pop)
-    //                {
-    //                    available_GPS_1C_signals_.pop_front();
-    //                }
-    //            break;
-    //        }
-    //    return result;
 }

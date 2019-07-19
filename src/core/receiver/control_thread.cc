@@ -224,6 +224,49 @@ void ControlThread::telecommand_listener()
         }
 }
 
+void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
+{
+    if (valid_event)
+        {
+            if (pmt::any_ref(msg).type() == typeid(channel_event_sptr))
+                {
+                    channel_event_sptr new_event;
+                    new_event = boost::any_cast<channel_event_sptr>(pmt::any_ref(msg));
+                    DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
+                               << " what: " << new_event->event_type;
+                    flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
+                }
+            else if (pmt::any_ref(msg).type() == typeid(command_event_sptr))
+                {
+                    command_event_sptr new_event;
+                    new_event = boost::any_cast<command_event_sptr>(pmt::any_ref(msg));
+                    DLOG(INFO) << "New command event rx from ch id: " << new_event->command_id
+                               << " what: " << new_event->event_type;
+
+                    if (new_event->command_id == 200)
+                        {
+                            apply_action(new_event->event_type);
+                        }
+                    else
+                        {
+                            if (new_event->command_id == 300)  // some TC commands require also actions from control_thread
+                                {
+                                    apply_action(new_event->event_type);
+                                }
+                            flowgraph_->apply_action(new_event->command_id, new_event->event_type);
+                        }
+                }
+            else
+                {
+                    DLOG(INFO) << "Control Queue: unknown object type!\n";
+                }
+        }
+    else
+        {
+            //perform non-priority tasks
+            flowgraph_->acquisition_manager(0);  //start acquisition of untracked satellites
+        }
+}
 
 /*
  * Runs the control thread that manages the receiver control plane
@@ -286,46 +329,10 @@ int ControlThread::run()
     pmt::pmt_t msg;
     while (flowgraph_->running() && !stop_)
         {
-            //TODO call here the new sat dispatcher and receiver controller
+            //read event messages, triggered by event signaling with a 100 ms timeout to perform low priority receiver management tasks
             bool valid_event = control_queue_->timed_wait_and_pop(msg, 100);
-            if (valid_event)
-                {
-                    if (pmt::any_ref(msg).type() == typeid(channel_event_sptr))
-                        {
-                            channel_event_sptr new_event;
-                            new_event = boost::any_cast<channel_event_sptr>(pmt::any_ref(msg));
-                            DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
-                                       << " what: " << new_event->event_type;
-                            flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
-                        }
-                    else if (pmt::any_ref(msg).type() == typeid(command_event_sptr))
-                        {
-                            command_event_sptr new_event;
-                            new_event = boost::any_cast<command_event_sptr>(pmt::any_ref(msg));
-                            DLOG(INFO) << "New command event rx from ch id: " << new_event->command_id
-                                       << " what: " << new_event->event_type;
-
-                            if (new_event->command_id == 200)
-                                {
-                                    apply_action(new_event->event_type);
-                                }
-                            else
-                                {
-                                    if (new_event->command_id == 300)  // some TC commands require also actions from control_thread
-                                        {
-                                            apply_action(new_event->event_type);
-                                        }
-                                    flowgraph_->apply_action(new_event->command_id, new_event->event_type);
-                                }
-                        }
-                    else
-                        {
-                            DLOG(INFO) << "Control Queue: unknown object type!\n";
-                        }
-                }
-            else
-                {
-                }
+            //call the new sat dispatcher and receiver controller
+            event_dispatcher(valid_event, msg);
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();

@@ -100,6 +100,8 @@ public:
 
     void perform_hw_reset();
 #endif
+
+    void acquisition_manager(unsigned int who);
     /*!
      * \brief Applies an action to the flow graph
      *
@@ -113,11 +115,6 @@ public:
     void remove_signal(Gnss_Signal gs);
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
-
-    unsigned int applied_actions() const
-    {
-        return applied_actions_;
-    }
 
     bool connected() const
     {
@@ -167,7 +164,6 @@ private:
     unsigned int channels_count_;
     unsigned int acq_channels_count_;
     unsigned int max_acq_channels_;
-    unsigned int applied_actions_;
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
 

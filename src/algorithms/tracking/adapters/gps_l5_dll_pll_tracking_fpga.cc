@@ -286,7 +286,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                                 {
                                     trk_param_fpga.extended_correlation_in_fpga = true;
                                     trk_param_fpga.fpga_integration_period = extend_correlation_symbols;
-                                    printf("correlation in fpga true\n");
                                 }
                         }
                     else
@@ -296,8 +295,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                                     trk_param_fpga.extended_correlation_in_fpga = true;
                                     trk_param_fpga.extend_fpga_integration_periods = extend_correlation_symbols / GPS_L5I_NH_CODE_LENGTH;
                                     trk_param_fpga.fpga_integration_period = GPS_L5I_NH_CODE_LENGTH;
-                                    printf("correlation in fpga true\n");
-                                    printf("extend fpga integration periods true\n");
                                 }
                         }
                 }

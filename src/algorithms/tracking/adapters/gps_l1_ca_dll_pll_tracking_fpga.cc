@@ -225,7 +225,6 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
                         {
                             trk_param_fpga.extended_correlation_in_fpga = true;
                             trk_param_fpga.fpga_integration_period = symbols_extended_correlator;
-                            printf("correlation in fpga true\n");
                         }
                 }
         }

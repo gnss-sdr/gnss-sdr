@@ -261,7 +261,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                                 {
                                     trk_param_fpga.extended_correlation_in_fpga = true;
                                     trk_param_fpga.fpga_integration_period = extend_correlation_symbols;
-                                    printf("correlation in fpga true\n");
                                 }
                         }
                     else
@@ -271,8 +270,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                                     trk_param_fpga.extended_correlation_in_fpga = true;
                                     trk_param_fpga.extend_fpga_integration_periods = extend_correlation_symbols / GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
                                     trk_param_fpga.fpga_integration_period = GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
-                                    printf("correlation in fpga true\n");
-                                    printf("extend fpga integration periods true\n");
                                 }
                         }
                 }

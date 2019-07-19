@@ -90,6 +90,13 @@ public:
     void stop_tracking() override;
 
 private:
+
+    // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;      // flag that enables WE (Write Enable) of the local code FPGA
+    static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
+
+
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
     uint32_t channel_;

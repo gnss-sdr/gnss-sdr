@@ -45,13 +45,6 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
 
-#define NUM_PRNs 32  // total number of PRNs
-#define GPS_CA_BIT_DURATION_MS 20
-#define GPS_CA_CODE_PERIOD_MS 1
-// the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
-// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
-#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000  // flag that enables WE (Write Enable) of the local code FPGA
-
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

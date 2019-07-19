@@ -1421,6 +1421,8 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
             d_carrier_lock_test = 1.0;
             d_CN0_SNV_dB_Hz = 0.0;
 
+            d_code_phase_rate_step_chips = 0.0;
+
             if (d_veml)
                 {
                     d_local_code_shift_chips[0] = -trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
@@ -1461,6 +1463,10 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_current_fpga_integration_period = 1;
             d_current_extended_correlation_in_fpga = false;
+
+            d_cn0_smoother.reset();
+            d_carrier_lock_test_smoother.reset();
+
         }
 }
 
@@ -1517,10 +1523,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         int64_t acq_trk_diff_samples;
                         double acq_trk_diff_seconds;
                         double delta_trk_to_acq_prn_start_samples;
+                        uint64_t absolute_samples_offset;
 
                         multicorrelator_fpga->lock_channel();
                         uint64_t counter_value = multicorrelator_fpga->read_sample_counter();
-                        uint64_t absolute_samples_offset;
                         if (counter_value > (d_acq_sample_stamp + d_acq_code_phase_samples))
                             {
                                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
@@ -1546,7 +1552,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         multicorrelator_fpga->set_initial_sample(absolute_samples_offset);
                         //d_absolute_samples_offset = absolute_samples_offset;
                         d_sample_counter = absolute_samples_offset;
-                        current_synchro_data.Tracking_sample_counter = absolute_samples_offset;
                         d_sample_counter_next = d_sample_counter;
 
                         // Doppler effect Fd = (C / (C + Vr)) * F
@@ -1554,24 +1559,17 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // new chip and PRN sequence periods based on acq Doppler
                         d_code_freq_chips = radial_velocity * d_code_chip_rate;
                         d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
-                        d_code_phase_rate_step_chips = 0.0;
 
                         d_acq_code_phase_samples = absolute_samples_offset;
 
-                        d_current_integration_length_samples = trk_parameters.vector_length;
-
-                        d_next_integration_length_samples = d_current_integration_length_samples;
-
                         int32_t samples_offset = round(d_acq_code_phase_samples);
                         d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
+
                         d_state = 2;
-                        d_cn0_smoother.reset();
-                        d_carrier_lock_test_smoother.reset();
 
                         LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                         DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
                                    << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
-
 
                         //                // DEBUG OUTPUT
                         //                std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;

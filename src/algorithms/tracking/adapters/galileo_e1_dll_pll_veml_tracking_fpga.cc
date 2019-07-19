@@ -45,12 +45,6 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
 
-// the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
-// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
-#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000      // flag that enables WE (Write Enable) of the local code FPGA
-#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
-
-
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

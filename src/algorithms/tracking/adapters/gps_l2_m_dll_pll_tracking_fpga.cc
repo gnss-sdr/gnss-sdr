@@ -50,9 +50,6 @@
 #include <cstring>  // for memcpy
 #include <iostream>
 
-#define NUM_PRNs 32
-
-
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -126,7 +123,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 
     //################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
+    for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l2c_m_code_gen_float(gsl::span<float>(ca_codes_f, static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS)), PRN);
             for (unsigned int s = 0; s < 2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)

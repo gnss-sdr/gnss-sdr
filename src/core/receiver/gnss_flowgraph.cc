@@ -1063,7 +1063,7 @@ bool GNSSFlowgraph::send_telemetry_msg(const pmt::pmt_t& msg)
 }
 
 
-void GNSSFlowgraph::push_back_signal(Gnss_Signal gs)
+void GNSSFlowgraph::push_back_signal(const Gnss_Signal& gs)
 {
     switch (mapStringValues_[gs.get_signal_str()])
         {
@@ -1119,7 +1119,7 @@ void GNSSFlowgraph::push_back_signal(Gnss_Signal gs)
 }
 
 
-void GNSSFlowgraph::remove_signal(Gnss_Signal gs)
+void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
 {
     switch (mapStringValues_[gs.get_signal_str()])
         {

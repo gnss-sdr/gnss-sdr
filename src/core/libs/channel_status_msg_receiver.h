@@ -65,7 +65,7 @@ private:
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
 
     Monitor_Pvt d_pvt_status{};
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_events(const pmt::pmt_t& msg);
 };
 
 #endif

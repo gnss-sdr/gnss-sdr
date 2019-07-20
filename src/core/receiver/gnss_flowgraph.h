@@ -111,8 +111,8 @@ public:
     void apply_action(unsigned int who, unsigned int what);
 
 
-    void push_back_signal(Gnss_Signal gs);
-    void remove_signal(Gnss_Signal gs);
+    void push_back_signal(const Gnss_Signal& gs);
+    void remove_signal(const Gnss_Signal& gs);
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 

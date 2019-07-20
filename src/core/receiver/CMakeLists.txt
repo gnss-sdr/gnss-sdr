@@ -36,7 +36,6 @@ set(GNSS_RECEIVER_HEADERS
     tcp_cmd_interface.h
     concurrent_map.h
     concurrent_queue.h
-    control_message.h
     command_event.h
 )
 

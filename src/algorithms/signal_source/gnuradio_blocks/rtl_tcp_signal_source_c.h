@@ -110,7 +110,7 @@ private:
     size_t unread_;
 
     // lookup for scaling data
-    boost::array<float, 0xff> lookup_;
+    boost::array<float, 0xff> lookup_{};
 
     // async read callback
     void handle_read(const boost::system::error_code &ec,

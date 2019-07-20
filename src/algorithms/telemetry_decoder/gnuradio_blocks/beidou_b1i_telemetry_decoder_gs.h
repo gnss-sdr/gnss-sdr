@@ -40,17 +40,19 @@
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <array>
 #include <cstdint>
 #include <fstream>
 #include <string>
-#include <array>
 
 
 class beidou_b1i_telemetry_decoder_gs;
 
 using beidou_b1i_telemetry_decoder_gs_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_gs>;
 
-beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 
 /*!
@@ -72,8 +74,10 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend beidou_b1i_telemetry_decoder_gs_sptr
-    beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
+
     beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(float *symbols);

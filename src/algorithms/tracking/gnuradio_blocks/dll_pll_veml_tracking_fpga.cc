@@ -460,8 +460,7 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
-                            d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
-                            break;
+                            d_carrier_lock_fail_counter = 10000;  // force loss-of-lock condition
                         }
                 }
         }

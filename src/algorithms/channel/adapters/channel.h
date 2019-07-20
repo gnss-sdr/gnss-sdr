@@ -101,7 +101,7 @@ private:
     std::string implementation_;
     bool flag_enable_fpga;
     uint32_t channel_;
-    Gnss_Synchro gnss_synchro_;
+    Gnss_Synchro gnss_synchro_{};
     Gnss_Signal gnss_signal_;
     bool connected_;
     bool repeat_;

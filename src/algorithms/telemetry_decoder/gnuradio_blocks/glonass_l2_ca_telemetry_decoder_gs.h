@@ -50,7 +50,9 @@ class glonass_l2_ca_telemetry_decoder_gs;
 
 using glonass_l2_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
 
-glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
 * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
@@ -74,8 +76,10 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend glonass_l2_ca_telemetry_decoder_gs_sptr
-    glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
+
     glonass_l2_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_string(const double *symbols, int32_t frame_length);

@@ -385,7 +385,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     d_symbol_history.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue

@@ -1,7 +1,6 @@
 /*!
  * \file gps_l2c_telemetry_decoder_gs.h
- * \brief Interface of a CNAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
+ * \brief Interface of a CNAV message demodulator block
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -41,7 +40,8 @@
 #include <fstream>
 #include <string>
 
-extern "C" {
+extern "C"
+{
 #include "cnav_msg.h"
 }
 
@@ -50,12 +50,12 @@ class gps_l2c_telemetry_decoder_gs;
 
 using gps_l2c_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_gs>;
 
-gps_l2c_telemetry_decoder_gs_sptr
-gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
- * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
- *
+ * \brief This class implements a block that decodes CNAV data defined in IS-GPS-200K
  */
 class gps_l2c_telemetry_decoder_gs : public gr::block
 {
@@ -64,6 +64,7 @@ public:
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
     void reset();
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -71,8 +72,10 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend gps_l2c_telemetry_decoder_gs_sptr
-    gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
+
     gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     bool d_dump;

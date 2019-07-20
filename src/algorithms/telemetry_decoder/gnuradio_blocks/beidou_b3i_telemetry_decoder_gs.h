@@ -53,7 +53,6 @@ beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
 
 /*!
  * \brief This class implements a block that decodes the BeiDou DNAV data.
- *
  */
 class beidou_b3i_telemetry_decoder_gs : public gr::block
 {
@@ -71,9 +70,10 @@ public:
         gr_vector_void_star &output_items);
 
 private:
-    friend beidou_b3i_telemetry_decoder_gs_sptr
-    beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
+    friend beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
         bool dump);
+
     beidou_b3i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(float *symbols);

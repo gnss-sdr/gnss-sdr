@@ -384,7 +384,7 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
     int32_t fd = 0;
-    struct termios options;
+    struct termios options{};
     int64_t BAUD;
     int64_t DATABITS;
     int64_t STOPBITS;

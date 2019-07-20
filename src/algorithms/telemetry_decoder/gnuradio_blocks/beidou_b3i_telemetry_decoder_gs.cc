@@ -408,7 +408,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization
                                   // information and send the output object to the
                                   // next block
     // 1. Copy the current tracking output

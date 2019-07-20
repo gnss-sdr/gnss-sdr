@@ -85,7 +85,7 @@ private:
     int fifo_items;
     int d_sock_raw;
     int d_udp_port;
-    struct sockaddr_in si_me;
+    struct sockaddr_in si_me{};
     std::string d_src_device;
     std::string d_origin_address;
     int d_udp_payload_size;

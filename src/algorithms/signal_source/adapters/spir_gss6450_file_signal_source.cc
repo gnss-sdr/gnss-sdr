@@ -148,7 +148,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 
     for (uint32_t i = 0; i < (n_channels_); i++)
         {
-            valve_vec_.push_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_));
+            valve_vec_.emplace_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_));
             if (dump_)
                 {
                     std::string tmp_str = dump_filename_ + "_ch" + std::to_string(i);

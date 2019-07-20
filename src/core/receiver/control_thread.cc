@@ -64,6 +64,7 @@
 #include <glog/logging.h>          // for LOG
 #include <pmt/pmt.h>               // for make_any
 #include <algorithm>               // for find, min
+#include <array>                   // for array
 #include <chrono>                  // for milliseconds
 #include <cmath>                   // for floor, fmod, log
 #include <ctime>                   // for gmtime, strftime
@@ -831,6 +832,7 @@ void ControlThread::assist_GNSS()
         }
 }
 
+
 void ControlThread::apply_action(unsigned int what)
 {
     std::shared_ptr<PvtInterface> pvt_ptr;
@@ -916,10 +918,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     for (auto &it : gps_eph_map)
         {
             eph_t rtklib_eph = eph_to_rtklib(it.second);
-            double r_sat[3];
+            std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;
-            eph2pos(gps_gtime, &rtklib_eph, &r_sat[0], &clock_bias_s,
+            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
                 &sat_pos_variance_m2);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
@@ -939,10 +941,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     for (auto &it : gal_eph_map)
         {
             eph_t rtklib_eph = eph_to_rtklib(it.second);
-            double r_sat[3];
+            std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;
-            eph2pos(gps_gtime, &rtklib_eph, &r_sat[0], &clock_bias_s,
+            eph2pos(gps_gtime, &rtklib_eph, r_sat.data(), &clock_bias_s,
                 &sat_pos_variance_m2);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
@@ -962,12 +964,12 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     for (auto &it : gps_alm_map)
         {
             alm_t rtklib_alm = alm_to_rtklib(it.second);
-            double r_sat[3];
+            std::array<double, 3> r_sat{};
             double clock_bias_s;
             gtime_t aux_gtime;
             aux_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
             aux_gtime.sec = 0.0;
-            alm2pos(aux_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
+            alm2pos(aux_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
@@ -990,12 +992,12 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     for (auto &it : gal_alm_map)
         {
             alm_t rtklib_alm = alm_to_rtklib(it.second);
-            double r_sat[3];
+            std::array<double, 3> r_sat{};
             double clock_bias_s;
             gtime_t gal_gtime;
             gal_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
             gal_gtime.sec = 0.0;
-            alm2pos(gal_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
+            alm2pos(gal_gtime, &rtklib_alm, r_sat.data(), &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;

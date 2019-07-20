@@ -216,7 +216,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             if (samples_.at(i) != 0ULL)
                 {
                     LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
-                    valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
+                    valve_.emplace_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 

@@ -428,6 +428,8 @@ void GNSSFlowgraph::connect()
                                         case evBDS_B3:
                                             acq_fs = fs;
                                             break;
+                                        default:
+                                            break;
                                         }
 
                                     if (acq_fs < fs)
@@ -528,7 +530,6 @@ void GNSSFlowgraph::connect()
                     DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
                 }
 #endif
-
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
                 {
@@ -544,7 +545,7 @@ void GNSSFlowgraph::connect()
                 }
         }
 
-    //check for unconnected signal conditioners and connect null_sinks in order to provide configuration flexibility to multiband files or signal sources
+    // check for unconnected signal conditioners and connect null_sinks in order to provide configuration flexibility to multiband files or signal sources
     if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
         {
             for (size_t n = 0; n < sig_conditioner_.size(); n++)
@@ -1061,6 +1062,7 @@ bool GNSSFlowgraph::send_telemetry_msg(const pmt::pmt_t& msg)
     return true;
 }
 
+
 void GNSSFlowgraph::push_back_signal(Gnss_Signal gs)
 {
     switch (mapStringValues_[gs.get_signal_str()])
@@ -1116,6 +1118,7 @@ void GNSSFlowgraph::push_back_signal(Gnss_Signal gs)
         }
 }
 
+
 void GNSSFlowgraph::remove_signal(Gnss_Signal gs)
 {
     switch (mapStringValues_[gs.get_signal_str()])
@@ -1162,6 +1165,7 @@ void GNSSFlowgraph::remove_signal(Gnss_Signal gs)
         }
 }
 
+
 void GNSSFlowgraph::acquisition_manager(unsigned int who)
 {
     unsigned int current_channel;
@@ -1195,12 +1199,12 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 RX_time);
                             channels_[current_channel]->set_signal(gnss_signal);
                             start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", false);
-                            //                            if (assistance_available)
-                            //                                {
-                            //                                    std::cout << "Channel " << current_channel
-                            //                                              << " assistance available for " << channels_[current_channel]->get_signal().get_satellite()
-                            //                                              << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << "\n";
-                            //                                }
+                            // if (assistance_available)
+                            //     {
+                            //         std::cout << "Channel " << current_channel
+                            //                   << " assistance available for " << channels_[current_channel]->get_signal().get_satellite()
+                            //                   << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << std::endl;
+                            //     }
                         }
                     else
                         {
@@ -1230,15 +1234,17 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
 
-                            //                            std::cout << "Channel " << current_channel
-                            //                                      << " secondary frequency acquisition assistance not available in "
-                            //                                      << channels_[current_channel]->get_signal().get_satellite()
-                            //                                      << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << "\n";
+                            // std::cout << "Channel " << current_channel
+                            //           << " secondary frequency acquisition assistance not available in "
+                            //           << channels_[current_channel]->get_signal().get_satellite()
+                            //           << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << std::endl;
                         }
                 }
             DLOG(INFO) << "Channel " << current_channel << " in state " << channels_state_[current_channel];
         }
 }
+
+
 /*
  * Applies an action to the flow graph
  *
@@ -1250,7 +1256,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
  * \param[in] what  What is the action:
  * --- actions from channels ---
  * -> 0 acquisition failed
- * -> 1 acquisition succesfull
+ * -> 1 acquisition successful
  * -> 2 tracking lost
  * --- actions from TC receiver control ---
  * -> 10 TC request standby mode
@@ -1290,7 +1296,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             channels_state_[who] = 0;
             if (acq_channels_count_ > 0) acq_channels_count_--;
-            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
         case 1:
@@ -1300,7 +1306,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 
             channels_state_[who] = 2;
             if (acq_channels_count_ > 0) acq_channels_count_--;
-            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
 
@@ -1308,7 +1314,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_[who]->get_signal().get_satellite();
             if (acq_channels_count_ < max_acq_channels_)
                 {
-                    //try to acquire the same satellite
+                    // try to acquire the same satellite
                     channels_state_[who] = 1;
                     acq_channels_count_++;
                     DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
@@ -1334,9 +1340,9 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             LOG(INFO) << "TC request standby mode";
             for (size_t n = 0; n < channels_.size(); n++)
                 {
-                    if (channels_state_[n] == 1 or channels_state_[n] == 2)  //channel in acquisition or in tracking
+                    if (channels_state_[n] == 1 or channels_state_[n] == 2)  // channel in acquisition or in tracking
                         {
-                            //recover the satellite assigned
+                            // recover the satellite assigned
                             Gnss_Signal gs = channels_[n]->get_signal();
                             push_back_signal(gs);
 
@@ -1348,17 +1354,17 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         case 11:  // request coldstart mode
             LOG(INFO) << "TC request flowgraph coldstart";
-            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
         case 12:  // request hotstart mode
             LOG(INFO) << "TC request flowgraph hotstart";
-            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
         case 13:  // request warmstart mode
             LOG(INFO) << "TC request flowgraph warmstart";
-            //call the acquisition manager to assign new satellite and start next acquisition (if required)
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
         default:
@@ -1810,9 +1816,7 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_B1.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of BeiDou B1C signals
-             */
+            // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
                  available_gnss_prn_iter != available_beidou_prn.cend();
                  available_gnss_prn_iter++)
@@ -1825,9 +1829,7 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_B3.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of BeiDou B1C signals
-             */
+            // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
                  available_gnss_prn_iter != available_beidou_prn.cend();
                  available_gnss_prn_iter++)
@@ -1888,15 +1890,15 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_GPS_1C_signals_.push_back(result);
                 }
-            is_primary_frequency = true;  //indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGPS_2S:
             if (configuration_->property("Channels_1C.count", 0) > 0)
                 {
-                    //1. Get the current channel status map
+                    // 1. Get the current channel status map
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
-                    //2. search the currently tracked GPS L1 satellites and assist the GPS L2 acquisition if the satellite is not tracked on L2
+                    // 2. search the currently tracked GPS L1 satellites and assist the GPS L2 acquisition if the satellite is not tracked on L2
                     bool found_signal = false;
                     for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
                         {
@@ -1910,8 +1912,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                         {
                                             estimated_doppler = it->second->Carrier_Doppler_hz;
                                             RX_time = it->second->RX_time;
-                                            //std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
-                                            //3. return the GPS L2 satellite and remove it from list
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the GPS L2 satellite and remove it from list
                                             result = *it2;
                                             if (pop)
                                                 {
@@ -1923,7 +1925,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                         }
                                 }
                         }
-                    //fallback: pick the front satellite because there is no tracked satellites in L1 to assist L2
+                    // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L2
                     if (found_signal == false)
                         {
                             result = available_GPS_2S_signals_.front();
@@ -1948,9 +1950,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         case evGPS_L5:
             if (configuration_->property("Channels_1C.count", 0) > 0)
                 {
-                    //1. Get the current channel status map
+                    // 1. Get the current channel status map
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
-                    //2. search the currently tracked GPS L1 satellites and assist the GPS L5 acquisition if the satellite is not tracked on L5
+                    // 2. search the currently tracked GPS L1 satellites and assist the GPS L5 acquisition if the satellite is not tracked on L5
                     for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
                         {
                             if (std::string(it->second->Signal) == "1C")
@@ -1963,8 +1965,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                         {
                                             estimated_doppler = it->second->Carrier_Doppler_hz;
                                             RX_time = it->second->RX_time;
-                                            //std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
-                                            //3. return the GPS L5 satellite and remove it from list
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the GPS L5 satellite and remove it from list
                                             result = *it2;
                                             if (pop)
                                                 {
@@ -1977,7 +1979,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                 }
                         }
                 }
-            //fallback: pick the front satellite because there is no tracked satellites in L1 to assist L5
+            // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L5
             if (found_signal == false)
                 {
                     result = available_GPS_L5_signals_.front();
@@ -1996,16 +1998,15 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_GAL_1B_signals_.push_back(result);
                 }
-            is_primary_frequency = true;  //indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGAL_5X:
-
             if (configuration_->property("Channels_1B.count", 0) > 0)
                 {
-                    //1. Get the current channel status map
+                    // 1. Get the current channel status map
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
-                    //2. search the currently tracked Galileo E1 satellites and assist the Galileo E5 acquisition if the satellite is not tracked on E5
+                    // 2. search the currently tracked Galileo E1 satellites and assist the Galileo E5 acquisition if the satellite is not tracked on E5
                     for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
                         {
                             if (std::string(it->second->Signal) == "1B")
@@ -2018,8 +2019,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                         {
                                             estimated_doppler = it->second->Carrier_Doppler_hz;
                                             RX_time = it->second->RX_time;
-                                            //std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
-                                            //3. return the Gal 5X satellite and remove it from list
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the Gal 5X satellite and remove it from list
                                             result = *it2;
                                             if (pop)
                                                 {
@@ -2032,7 +2033,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                 }
                         }
                 }
-            //fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
+            // fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
             if (found_signal == false)
                 {
                     result = available_GAL_5X_signals_.front();
@@ -2051,7 +2052,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_GLO_1G_signals_.push_back(result);
                 }
-            is_primary_frequency = true;  //indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGLO_2G:
@@ -2070,7 +2071,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_BDS_B1_signals_.push_back(result);
                 }
-            is_primary_frequency = true;  //indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evBDS_B3:

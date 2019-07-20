@@ -124,7 +124,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
     std::vector<uint32_t> string_bits(GLONASS_GNAV_STRING_BITS);
 
     // Populate data and hamming code vectors
-    for (int32_t i = 0; i < string_bits.size(); i++)
+    for (uint32_t i = 0; i < string_bits.size(); i++)
         {
             string_bits[i] = static_cast<uint32_t>(bits[i]);
         }

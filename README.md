@@ -341,7 +341,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
  |-----utils    <- some utilities (e.g. Matlab scripts).
 ~~~~~~
 
-By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to try the latest developments, you can use the 'next' branch by going to the newly created gnss-sdr folder doing:
+By default, you will be in the 'master' branch of the Git repository, which corresponds to the latest stable release. If you want to try the latest developments, you can use the 'next' branch by going to the newly created gnss-sdr folder doing:
 
 ~~~~~~
 $ git checkout next

@@ -58,7 +58,7 @@ extern "C"
  */
     int32_t per_get_few_bits(asn_per_data_t *pd, int get_nbits);
 
-    /* Undo the immediately preceeding "get_few_bits" operation */
+    /* Undo the immediately preceding "get_few_bits" operation */
     void per_get_undo(asn_per_data_t *pd, int get_nbits);
 
     /*

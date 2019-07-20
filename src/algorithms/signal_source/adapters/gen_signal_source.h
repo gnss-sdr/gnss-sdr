@@ -34,8 +34,9 @@
 #define GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <string>
 
 /*!
@@ -47,7 +48,7 @@ class GenSignalSource : public GNSSBlockInterface
 public:
     //! Constructor
     GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-        std::string role, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     //! Virtual destructor
     virtual ~GenSignalSource();
@@ -58,20 +59,17 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
     inline std::string role() override { return role_; }
-
     //! Returns "Signal Source"
     inline std::string implementation() override { return "Signal Source"; }
     inline size_t item_size() override { return 0; }
-
     inline GNSSBlockInterface *signal_generator() const { return signal_generator_; }
-
 private:
     GNSSBlockInterface *signal_generator_;
     GNSSBlockInterface *filter_;
     std::string role_;
     std::string implementation_;
     bool connected_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_GEN_SIGNAL_SOURCE_H*/

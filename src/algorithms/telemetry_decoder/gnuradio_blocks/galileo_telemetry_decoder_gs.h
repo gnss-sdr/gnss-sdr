@@ -40,15 +40,20 @@
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <array>
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <vector>
 
 class galileo_telemetry_decoder_gs;
 
 using galileo_telemetry_decoder_gs_sptr = boost::shared_ptr<galileo_telemetry_decoder_gs>;
 
-galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
+galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    int frame_type,
+    bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
@@ -69,8 +74,11 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend galileo_telemetry_decoder_gs_sptr
-    galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
+    friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        int frame_type,
+        bool dump);
+
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
@@ -84,11 +92,11 @@ private:
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
-    int32_t *d_preamble_samples;
+    std::vector<int32_t> d_preamble_samples;
     uint32_t d_PRN_code_period_ms;
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;
-    double *d_page_part_symbols;
+    std::vector<double> d_page_part_symbols;
 
     boost::circular_buffer<float> d_symbol_history;
 
@@ -118,14 +126,17 @@ private:
     uint32_t d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
-    double delta_t;  //GPS-GALILEO time offset
+    double delta_t;  // GPS-GALILEO time offset
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
     // vars for Viterbi decoder
-    int32_t *out0, *out1, *state0, *state1;
-    int32_t g_encoder[2]{};
+    std::vector<int32_t> out0;
+    std::vector<int32_t> out1;
+    std::vector<int32_t> state0;
+    std::vector<int32_t> state1;
+    std::array<int32_t, 2> g_encoder{};
     const int32_t nn = 2;  // Coding rate 1/n
     const int32_t KK = 7;  // Constraint Length
     int32_t mm = KK - 1;

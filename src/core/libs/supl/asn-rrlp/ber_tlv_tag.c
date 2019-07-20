@@ -42,7 +42,7 @@ ber_fetch_tag(const void *ptr, size_t size, ber_tlv_tag_t *tag_r) {
 			 */
 			if(val >> ((8 * sizeof(val)) - 9)) {
 				/*
-				 * We would not be able to accomodate
+				 * We would not be able to accommodate
 				 * any more tag bits.
 				 */
 				return -1;
@@ -141,4 +141,3 @@ ber_tlv_tag_serialize(ber_tlv_tag_t tag, void *bufp, size_t size) {
 
 	return required_size + 1;
 }
-

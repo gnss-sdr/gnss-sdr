@@ -29,12 +29,13 @@
  */
 
 #include "serdes_monitor_pvt.h"
+#include <memory>
 
 TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 {
-    Monitor_Pvt monitor = Monitor_Pvt();
+    std::shared_ptr<Monitor_Pvt> monitor = std::make_shared<Monitor_Pvt>(Monitor_Pvt());
     double true_latitude = 23.4;
-    monitor.latitude = true_latitude;
+    monitor->latitude = true_latitude;
 
     Serdes_Monitor_Pvt serdes = Serdes_Monitor_Pvt();
     std::string serialized_data = serdes.createProtobuffer(monitor);

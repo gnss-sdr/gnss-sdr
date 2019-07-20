@@ -36,7 +36,7 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
-#include "control_message_factory.h"
+#include "concurrent_queue.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
@@ -61,9 +61,9 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/filter/firdes.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <cstdint>
 #include <utility>
@@ -229,7 +229,7 @@ public:
     Gnss_Synchro gnss_synchro;
     size_t item_size;
 
-    gr::msg_queue::sptr queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 };
 
 
@@ -450,7 +450,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             System_and_Signal = "Galileo E5a";
             config->set_property("Acquisition_5X.coherent_integration_time_ms", "1");
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
-            config->set_property("Acquisition.CAF_window_hz", "0");  //  **Only for E5a** Resolves doppler ambiguity averaging the specified BW in the winner code delay. If set to 0 CAF filter is desactivated. Recommended value 3000 Hz
+            config->set_property("Acquisition.CAF_window_hz", "0");  //  **Only for E5a** Resolves doppler ambiguity averaging the specified BW in the winner code delay. If set to 0 CAF filter is deactivated. Recommended value 3000 Hz
             config->set_property("Acquisition.Zero_padding", "0");   //**Only for E5a** Avoids power loss and doppler ambiguity in bit transitions by correlating one code with twice the input data length, ensuring that at least one full code is present without transitions. If set to 1 it is ON, if set to 0 it is OFF.
             config->set_property("Acquisition.bit_transition_flag", "false");
             acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 0);
@@ -795,13 +795,9 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
     // create the msg queue for valve
 
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
     auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
-
-    std::shared_ptr<ControlMessageFactory> control_message_factory_;
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
-
 
     //CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;
@@ -883,15 +879,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                         top_block->start();
                                         std::cout << " Waiting for valve...\n";
                                         //wait the valve message indicating the circulation of the amount of samples of the delay
-                                        gr::message::sptr queue_message = queue->delete_head();
-                                        if (queue_message != nullptr)
-                                            {
-                                                control_messages_ = control_message_factory_->GetControlMessages(queue_message);
-                                            }
-                                        else
-                                            {
-                                                control_messages_->clear();
-                                            }
+                                        pmt::pmt_t msg;
+                                        queue->wait_and_pop(msg);
                                         std::cout << " Starting tracking...\n";
                                         tracking->start_tracking();
                                         resetable_valve_->open_valve();

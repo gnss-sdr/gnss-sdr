@@ -2,9 +2,9 @@
  * Generic converter template for a selected ASN.1 type.
  * Copyright (c) 2005, 2006, 2007 Lev Walkin <vlm@lionet.info>.
  * All rights reserved.
- * 
+ *
  * To compile with your own ASN.1 type, please redefine the PDU as shown:
- * 
+ *
  * cc -DPDU=MyCustomType -o myDecoder.o -c converter-sample.c
  */
 #ifdef	HAVE_CONFIG_H
@@ -32,7 +32,7 @@ extern asn_TYPE_descriptor_t *asn_pdu_collection[];
 #endif
 
 /*
- * Open file and parse its contens.
+ * Open file and parse its contents.
  */
 static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType,
 	FILE *file, const char *name, ssize_t suggested_bufsize, int first_pdu);
@@ -96,7 +96,7 @@ main(int ac, char *av[]) {
 		iform = INP_PER;
 
 	/*
-	 * Pocess the command-line argments.
+	 * Process the command-line arguments.
 	 */
 	while((ch = getopt(ac, av, "i:o:1b:cdn:p:hs:" JUNKOPT)) != -1)
 	switch(ch) {
@@ -390,14 +390,14 @@ buffer_dump() {
 
 /*
  * Move the buffer content left N bits, possibly joining it with
- * preceeding content.
+ * preceding content.
  */
 static void
 buffer_shift_left(size_t offset, int bits) {
 	uint8_t *ptr = DynamicBuffer.data + DynamicBuffer.offset + offset;
 	uint8_t *end = DynamicBuffer.data + DynamicBuffer.offset
 			+ DynamicBuffer.length - 1;
-	
+
 	if(!bits) return;
 
 	DEBUG("Shifting left %d bits off %ld (o=%ld, u=%ld, l=%ld)",
@@ -480,7 +480,7 @@ buffer_shift_left(size_t offset, int bits) {
 		(long)DynamicBuffer.offset,
 		(long)DynamicBuffer.unbits,
 		(long)DynamicBuffer.length);
-	
+
 
 }
 
@@ -555,7 +555,7 @@ data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file, const char *na
 	asn_codec_ctx_t *opt_codec_ctx = 0;
 	void *structure = 0;
 	asn_dec_rval_t rval;
-	size_t old_offset;	
+	size_t old_offset;
 	size_t new_offset;
 	int tolerate_eof;
 	size_t rd;
@@ -831,4 +831,3 @@ junk_bytes_with_probability(uint8_t *buf, size_t size, double prob) {
 	}
 }
 #endif	/* JUNKTEST */
-

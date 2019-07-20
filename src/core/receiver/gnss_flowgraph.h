@@ -37,11 +37,12 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
+#include "channel_status_msg_receiver.h"
+#include "concurrent_queue.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
 #include "pvt_interface.h"
 #include <gnuradio/blocks/null_sink.h>  //for null_sink
-#include <gnuradio/msg_queue.h>         // for msg_queue, msg_queue::sptr
 #include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
 #include <pmt/pmt.h>                    // for pmt_t
 #include <list>                         // for list
@@ -71,7 +72,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr queue);  // NOLINT(performance-unnecessary-value-param)
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);  // NOLINT(performance-unnecessary-value-param)
 
     /*!
      * \brief Destructor
@@ -99,6 +100,8 @@ public:
 
     void perform_hw_reset();
 #endif
+
+    void acquisition_manager(unsigned int who);
     /*!
      * \brief Applies an action to the flow graph
      *
@@ -107,12 +110,11 @@ public:
      */
     void apply_action(unsigned int who, unsigned int what);
 
-    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
-    unsigned int applied_actions() const
-    {
-        return applied_actions_;
-    }
+    void push_back_signal(const Gnss_Signal& gs);
+    void remove_signal(const Gnss_Signal& gs);
+
+    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
     bool connected() const
     {
@@ -149,7 +151,12 @@ private:
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
-    Gnss_Signal search_next_signal(const std::string& searched_signal, bool pop, bool tracked = false);
+    Gnss_Signal search_next_signal(const std::string& searched_signal,
+        const bool pop,
+        bool& is_primary_frequency,
+        bool& assistance_available,
+        float& estimated_doppler,
+        double& RX_time);
     bool connected_;
     bool running_;
     int sources_count_;
@@ -157,7 +164,6 @@ private:
     unsigned int channels_count_;
     unsigned int acq_channels_count_;
     unsigned int max_acq_channels_;
-    unsigned int applied_actions_;
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
 
@@ -175,7 +181,7 @@ private:
     gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
 #endif
     gr::top_block_sptr top_block_;
-    gr::msg_queue::sptr queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 
     std::list<Gnss_Signal> available_GPS_1C_signals_;
     std::list<Gnss_Signal> available_GPS_2S_signals_;
@@ -203,6 +209,7 @@ private:
     std::map<std::string, StringValue> mapStringValues_;
 
     std::vector<unsigned int> channels_state_;
+    channel_status_msg_receiver_sptr channels_status_;  //class that receives and stores the current status of the receiver channels
     std::mutex signal_list_mutex;
 
     bool enable_monitor_;

@@ -57,11 +57,11 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
+#include <array>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <utility>
 
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
@@ -324,9 +324,8 @@ void pcps_opencl_acquisition_cc::init()
 
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler / static_cast<float>(d_fs_in);
-            float _phase[1];
-            _phase[0] = 0;
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase.data(), d_fft_size);
 
             if (d_opencl == 0)
                 {

@@ -1,6 +1,6 @@
 /*!
  * \file bayesian_estimation_test.cc
- * \brief  This file implements feasability test for the BCE library.
+ * \brief  This file implements feasibility test for the BCE library.
  * \author Gerald LaMountain, 2018. gerald(at)ece.neu.edu
  *
  *

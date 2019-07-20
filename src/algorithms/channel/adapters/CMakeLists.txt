@@ -31,6 +31,7 @@ target_link_libraries(channel_adapters
         Gnuradio::runtime
         channel_libs
         core_system_parameters
+        core_receiver
     PRIVATE
         Gflags::gflags
         Glog::glog

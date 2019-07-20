@@ -385,7 +385,6 @@ void FrontEndCal::GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_
     double f_rf_err = (f_bb_meas_Hz - f_bb_true_Hz) - f_bb_err_pll;
     double f_osc_err_hz = (f_rf_err * R) / (N + X / Y);
 
-    // OJO,segun los datos gnss, la IF positiva hace disminuir la fs!!
     f_osc_err_hz = -f_osc_err_hz;
     *f_osc_err_ppm = f_osc_err_hz / (f_osc_n / 1e6);
 

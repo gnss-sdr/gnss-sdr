@@ -546,7 +546,7 @@ int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
  * read differential code bias (dcb) parameters
  * args   : char   *file       I   dcb parameters file (wild-card * expanded)
  *          nav_t  *nav        IO  navigation data
- *          sta_t  *sta        I   station info data to inport receiver dcb
+ *          sta_t  *sta        I   station info data to import receiver dcb
  *                                 (NULL: no use)
  * return : status (1:ok,0:error)
  * notes  : currently only p1-c1 bias of code *.dcb file

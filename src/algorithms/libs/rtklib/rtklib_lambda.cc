@@ -296,7 +296,7 @@ int search(int n, int m, const double *L, const double *D,
  *          double *F     O  fixed solutions (n x m)
  *          double *s     O  sum of squared residulas of fixed solutions (1 x m)
  * return : status (0:ok,other:error)
- * notes  : matrix stored by column-major order (fortran convension)
+ * notes  : matrix stored by column-major order (fortran convention)
  *-----------------------------------------------------------------------------*/
 int lambda(int n, int m, const double *a, const double *Q, double *F,
     double *s)

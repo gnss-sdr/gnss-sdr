@@ -21,6 +21,7 @@
 
 ### Improvements in Flexibility:
 
+- Rewritten Control Thread and GNSS Flowgraph for increased control of channels' status and smarter assignation of satellites in multi-band configurations.
 - New Tracking parameters allow the configuration of PLL and DLL filters order.
 - Added parameter to enable FLL during pull-in time.
 - Configurable pull-in time in the Tracking loops.
@@ -28,7 +29,7 @@
 
 ### Improvements in Interoperability:
 
-- Added the BeiDou B1I receiver chain.
+- Added the BeiDou B1I and B3I receiver chains.
 - Fix bug in GLONASS dual frequency receiver.
 - Added a custom UDP/IP output for PVT data streaming.
 - Improved Monitor block with UDP/IP output for internal receiver's data streaming.
@@ -43,6 +44,7 @@
 - Applied clang-tidy checks and fixes related to readability: readability-container-size-empty, readability-identifier-naming, readability-inconsistent-declaration-parameter-name, readability-named-parameter, readability-non-const-parameter, readability-string-compare.
 - Improved includes selection following suggestions by include-what-you-use (see https://include-what-you-use.org/), allowing faster compiles, fewer recompiles and making refactoring easier.
 - Deprecated boost::asio::io_service replaced by boost::asio::io_context if Boost > 1.65
+- The internal communication mechanism based on gr::msg_queue has been replaced by asynchronous message passing.
 
 
 ### Improvements in Portability:

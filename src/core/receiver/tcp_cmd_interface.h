@@ -32,8 +32,9 @@
 #define GNSS_SDR_TCP_CMD_INTERFACE_H_
 
 
+#include "concurrent_queue.h"
 #include <armadillo>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <ctime>
 #include <functional>
@@ -50,7 +51,7 @@ public:
     TcpCmdInterface();
     virtual ~TcpCmdInterface();
     void run_cmd_server(int tcp_port);
-    void set_msg_queue(gr::msg_queue::sptr control_queue);
+    void set_msg_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);
 
     /*!
      * \brief gets the UTC time parsed from the last TC command issued
@@ -77,7 +78,7 @@ private:
 
     void register_functions();
 
-    gr::msg_queue::sptr control_queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
     bool keep_running_;
 
     time_t receiver_utc_time_;

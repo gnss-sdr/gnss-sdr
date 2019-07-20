@@ -75,7 +75,7 @@
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
 
-GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr queue)  // NOLINT(performance-unnecessary-value-param)
+GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
 {
     connected_ = false;
     running_ = false;
@@ -428,6 +428,8 @@ void GNSSFlowgraph::connect()
                                         case evBDS_B3:
                                             acq_fs = fs;
                                             break;
+                                        default:
+                                            break;
                                         }
 
                                     if (acq_fs < fs)
@@ -528,7 +530,6 @@ void GNSSFlowgraph::connect()
                     DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
                 }
 #endif
-
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
                 {
@@ -544,7 +545,7 @@ void GNSSFlowgraph::connect()
                 }
         }
 
-    //check for unconnected signal conditioners and connect null_sinks in order to provide configuration flexibility to multiband files or signal sources
+    // check for unconnected signal conditioners and connect null_sinks in order to provide configuration flexibility to multiband files or signal sources
     if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
         {
             for (size_t n = 0; n < sig_conditioner_.size(); n++)
@@ -598,7 +599,11 @@ void GNSSFlowgraph::connect()
                 }
             if (sat == 0)
                 {
-                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
+                    bool assistance_available;
+                    float estimated_doppler;
+                    double RX_time;
+                    bool is_primary_freq;
+                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, false, is_primary_freq, assistance_available, estimated_doppler, RX_time));
                 }
             else
                 {
@@ -680,7 +685,11 @@ void GNSSFlowgraph::connect()
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
+
+            top_block_->msg_connect(observables_->get_right_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
+
             top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_observables"), observables_->get_right_block(), pmt::mp("pvt_to_observables"));
+            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
         }
     catch (const std::exception& e)
         {
@@ -1054,6 +1063,188 @@ bool GNSSFlowgraph::send_telemetry_msg(const pmt::pmt_t& msg)
 }
 
 
+void GNSSFlowgraph::push_back_signal(const Gnss_Signal& gs)
+{
+    switch (mapStringValues_[gs.get_signal_str()])
+        {
+        case evGPS_1C:
+            available_GPS_1C_signals_.remove(gs);
+            available_GPS_1C_signals_.push_back(gs);
+            break;
+
+        case evGPS_2S:
+            available_GPS_2S_signals_.remove(gs);
+            available_GPS_2S_signals_.push_back(gs);
+            break;
+
+        case evGPS_L5:
+            available_GPS_L5_signals_.remove(gs);
+            available_GPS_L5_signals_.push_back(gs);
+            break;
+
+        case evGAL_1B:
+            available_GAL_1B_signals_.remove(gs);
+            available_GAL_1B_signals_.push_back(gs);
+            break;
+
+        case evGAL_5X:
+            available_GAL_5X_signals_.remove(gs);
+            available_GAL_5X_signals_.push_back(gs);
+            break;
+
+        case evGLO_1G:
+            available_GLO_1G_signals_.remove(gs);
+            available_GLO_1G_signals_.push_back(gs);
+            break;
+
+        case evGLO_2G:
+            available_GLO_2G_signals_.remove(gs);
+            available_GLO_2G_signals_.push_back(gs);
+            break;
+
+        case evBDS_B1:
+            available_BDS_B1_signals_.remove(gs);
+            available_BDS_B1_signals_.push_back(gs);
+            break;
+
+        case evBDS_B3:
+            available_BDS_B3_signals_.remove(gs);
+            available_BDS_B3_signals_.push_back(gs);
+            break;
+
+        default:
+            LOG(ERROR) << "This should not happen :-(";
+            break;
+        }
+}
+
+
+void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
+{
+    switch (mapStringValues_[gs.get_signal_str()])
+        {
+        case evGPS_1C:
+            available_GPS_1C_signals_.remove(gs);
+            break;
+
+        case evGPS_2S:
+            available_GPS_2S_signals_.remove(gs);
+            break;
+
+        case evGPS_L5:
+            available_GPS_L5_signals_.remove(gs);
+            break;
+
+        case evGAL_1B:
+            available_GAL_1B_signals_.remove(gs);
+            break;
+
+        case evGAL_5X:
+            available_GAL_5X_signals_.remove(gs);
+            break;
+
+        case evGLO_1G:
+            available_GLO_1G_signals_.remove(gs);
+            break;
+
+        case evGLO_2G:
+            available_GLO_2G_signals_.remove(gs);
+            break;
+
+        case evBDS_B1:
+            available_BDS_B1_signals_.remove(gs);
+            break;
+
+        case evBDS_B3:
+            available_BDS_B3_signals_.remove(gs);
+            break;
+
+        default:
+            LOG(ERROR) << "This should not happen :-(";
+            break;
+        }
+}
+
+
+void GNSSFlowgraph::acquisition_manager(unsigned int who)
+{
+    unsigned int current_channel;
+    for (unsigned int i = 0; i < channels_count_; i++)
+        {
+            current_channel = (i + who + 1) % channels_count_;
+            unsigned int sat_ = 0;
+            try
+                {
+                    sat_ = configuration_->property("Channel" + std::to_string(current_channel) + ".satellite", 0);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+            if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[current_channel] == 0))
+                {
+                    bool is_primary_freq = true;
+                    bool assistance_available = false;
+                    bool start_acquisition = false;
+                    Gnss_Signal gnss_signal;
+                    if (sat_ == 0)
+                        {
+                            float estimated_doppler;
+                            double RX_time;
+                            gnss_signal = search_next_signal(channels_[current_channel]->get_signal().get_signal_str(),
+                                true,
+                                is_primary_freq,
+                                assistance_available,
+                                estimated_doppler,
+                                RX_time);
+                            channels_[current_channel]->set_signal(gnss_signal);
+                            start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", false);
+                            // if (assistance_available)
+                            //     {
+                            //         std::cout << "Channel " << current_channel
+                            //                   << " assistance available for " << channels_[current_channel]->get_signal().get_satellite()
+                            //                   << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << std::endl;
+                            //     }
+                        }
+                    else
+                        {
+                            start_acquisition = true;
+                        }
+
+                    if (start_acquisition == true)
+                        {
+                            channels_state_[current_channel] = 1;
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << current_channel
+                                       << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
+                                       << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
+#ifndef ENABLE_FPGA
+                            channels_[current_channel]->start_acquisition();
+#else
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[current_channel]);
+                            tmp_thread.detach();
+#endif
+                        }
+                    else
+                        {
+                            push_back_signal(gnss_signal);
+                            DLOG(INFO) << "Channel " << current_channel
+                                       << " secondary frequency acquisition assistance not available in "
+                                       << channels_[current_channel]->get_signal().get_satellite()
+                                       << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
+
+                            // std::cout << "Channel " << current_channel
+                            //           << " secondary frequency acquisition assistance not available in "
+                            //           << channels_[current_channel]->get_signal().get_satellite()
+                            //           << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << std::endl;
+                        }
+                }
+            DLOG(INFO) << "Channel " << current_channel << " in state " << channels_state_[current_channel];
+        }
+}
+
+
 /*
  * Applies an action to the flow graph
  *
@@ -1078,8 +1269,10 @@ bool GNSSFlowgraph::send_telemetry_msg(const pmt::pmt_t& msg)
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
+    //todo: the acquisition events are initiated from the acquisition success or failure queued msg. If the acquisition is disabled for non-assisted secondary freq channels, the engine stops..
+
     std::lock_guard<std::mutex> lock(signal_list_mutex);
-    DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
+    DLOG(INFO) << "Received " << what << " from " << who;
     unsigned int sat = 0;
     if (who < 200)
         {
@@ -1099,183 +1292,32 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             if (sat == 0)
                 {
                     Gnss_Signal gs = channels_[who]->get_signal();
-                    switch (mapStringValues_[gs.get_signal_str()])
-                        {
-                        case evGPS_1C:
-                            available_GPS_1C_signals_.remove(gs);
-                            available_GPS_1C_signals_.push_back(gs);
-                            break;
-
-                        case evGPS_2S:
-                            available_GPS_2S_signals_.remove(gs);
-                            available_GPS_2S_signals_.push_back(gs);
-                            break;
-
-                        case evGPS_L5:
-                            available_GPS_L5_signals_.remove(gs);
-                            available_GPS_L5_signals_.push_back(gs);
-                            break;
-
-                        case evGAL_1B:
-                            available_GAL_1B_signals_.remove(gs);
-                            available_GAL_1B_signals_.push_back(gs);
-                            break;
-
-                        case evGAL_5X:
-                            available_GAL_5X_signals_.remove(gs);
-                            available_GAL_5X_signals_.push_back(gs);
-                            break;
-
-                        case evGLO_1G:
-                            available_GLO_1G_signals_.remove(gs);
-                            available_GLO_1G_signals_.push_back(gs);
-                            break;
-
-                        case evGLO_2G:
-                            available_GLO_2G_signals_.remove(gs);
-                            available_GLO_2G_signals_.push_back(gs);
-                            break;
-
-                        case evBDS_B1:
-                            available_BDS_B1_signals_.remove(gs);
-                            available_BDS_B1_signals_.push_back(gs);
-                            break;
-
-                        case evBDS_B3:
-                            available_BDS_B3_signals_.remove(gs);
-                            available_BDS_B3_signals_.push_back(gs);
-                            break;
-
-                        default:
-                            LOG(ERROR) << "This should not happen :-(";
-                            break;
-                        }
+                    push_back_signal(gs);
                 }
             channels_state_[who] = 0;
-            acq_channels_count_--;
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            if (acq_channels_count_ > 0) acq_channels_count_--;
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
-
         case 1:
-            LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_[who]->get_signal().get_satellite();
-
+            DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_[who]->get_signal().get_satellite();
             // If the satellite is in the list of available ones, remove it.
-            switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
-                {
-                case evGPS_1C:
-                    available_GPS_1C_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evGPS_2S:
-                    available_GPS_2S_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evGPS_L5:
-                    available_GPS_L5_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evGAL_1B:
-                    available_GAL_1B_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evGAL_5X:
-                    available_GAL_5X_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evGLO_1G:
-                    available_GLO_1G_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evGLO_2G:
-                    available_GLO_2G_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evBDS_B1:
-                    available_BDS_B1_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                case evBDS_B3:
-                    available_BDS_B3_signals_.remove(channels_[who]->get_signal());
-                    break;
-
-                default:
-                    LOG(ERROR) << "This should not happen :-(";
-                    break;
-                }
+            remove_signal(channels_[who]->get_signal());
 
             channels_state_[who] = 2;
-            acq_channels_count_--;
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
-                        {
-                            channels_state_[i] = 1;
-                            if (sat_ == 0)
-                                {
-                                    channels_[i]->set_signal(search_next_signal(channels_[i]->get_signal().get_signal_str(), true, true));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[i]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-                }
+            if (acq_channels_count_ > 0) acq_channels_count_--;
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
 
         case 2:
-            LOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_[who]->get_signal().get_satellite();
-            DLOG(INFO) << "Number of channels in acquisition = " << acq_channels_count_;
-
+            DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_[who]->get_signal().get_satellite();
             if (acq_channels_count_ < max_acq_channels_)
                 {
+                    // try to acquire the same satellite
                     channels_state_[who] = 1;
                     acq_channels_count_++;
-                    LOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
+                    DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
 #ifndef ENABLE_FPGA
                     channels_[who]->start_acquisition();
 #else
@@ -1290,48 +1332,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     LOG(INFO) << "Channel " << who << " Idle state";
                     if (sat == 0)
                         {
-                            switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
-                                {
-                                case evGPS_1C:
-                                    available_GPS_1C_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evGPS_2S:
-                                    available_GPS_2S_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evGPS_L5:
-                                    available_GPS_L5_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evGAL_1B:
-                                    available_GAL_1B_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evGAL_5X:
-                                    available_GAL_5X_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evGLO_1G:
-                                    available_GLO_1G_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evGLO_2G:
-                                    available_GLO_2G_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evBDS_B1:
-                                    available_BDS_B1_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                case evBDS_B3:
-                                    available_BDS_B3_signals_.push_back(channels_[who]->get_signal());
-                                    break;
-
-                                default:
-                                    LOG(ERROR) << "This should not happen :-(";
-                                    break;
-                                }
+                            push_back_signal(channels_[who]->get_signal());
                         }
                 }
             break;
@@ -1339,61 +1340,12 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             LOG(INFO) << "TC request standby mode";
             for (size_t n = 0; n < channels_.size(); n++)
                 {
-                    if (channels_state_[n] == 1 or channels_state_[n] == 2)  //channel in acquisition or in tracking
+                    if (channels_state_[n] == 1 or channels_state_[n] == 2)  // channel in acquisition or in tracking
                         {
-                            //recover the satellite assigned
+                            // recover the satellite assigned
                             Gnss_Signal gs = channels_[n]->get_signal();
-                            switch (mapStringValues_[gs.get_signal_str()])
-                                {
-                                case evGPS_1C:
-                                    available_GPS_1C_signals_.remove(gs);
-                                    available_GPS_1C_signals_.push_back(gs);
-                                    break;
+                            push_back_signal(gs);
 
-                                case evGPS_2S:
-                                    available_GPS_2S_signals_.remove(gs);
-                                    available_GPS_2S_signals_.push_back(gs);
-                                    break;
-
-                                case evGPS_L5:
-                                    available_GPS_L5_signals_.remove(gs);
-                                    available_GPS_L5_signals_.push_back(gs);
-                                    break;
-
-                                case evGAL_1B:
-                                    available_GAL_1B_signals_.remove(gs);
-                                    available_GAL_1B_signals_.push_back(gs);
-                                    break;
-
-                                case evGAL_5X:
-                                    available_GAL_5X_signals_.remove(gs);
-                                    available_GAL_5X_signals_.push_back(gs);
-                                    break;
-
-                                case evGLO_1G:
-                                    available_GLO_1G_signals_.remove(gs);
-                                    available_GLO_1G_signals_.push_back(gs);
-                                    break;
-
-                                case evGLO_2G:
-                                    available_GLO_2G_signals_.remove(gs);
-                                    available_GLO_2G_signals_.push_back(gs);
-                                    break;
-
-                                case evBDS_B1:
-                                    available_BDS_B1_signals_.remove(gs);
-                                    available_BDS_B1_signals_.push_back(gs);
-                                    break;
-
-                                case evBDS_B3:
-                                    available_BDS_B3_signals_.remove(gs);
-                                    available_BDS_B3_signals_.push_back(gs);
-                                    break;
-
-                                default:
-                                    LOG(ERROR) << "This should not happen :-(";
-                                    break;
-                                }
                             channels_[n]->stop_channel();  // stop the acquisition or tracking operation
                             channels_state_[n] = 0;
                         }
@@ -1402,112 +1354,22 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         case 11:  // request coldstart mode
             LOG(INFO) << "TC request flowgraph coldstart";
-            // start again the satellite acquisitions
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
         case 12:  // request hotstart mode
             LOG(INFO) << "TC request flowgraph hotstart";
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
         case 13:  // request warmstart mode
             LOG(INFO) << "TC request flowgraph warmstart";
-            // start again the satellite acquisitions
-            for (unsigned int i = 0; i < channels_count_; i++)
-                {
-                    unsigned int ch_index = (who + i + 1) % channels_count_;
-                    unsigned int sat_ = 0;
-                    try
-                        {
-                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << e.what();
-                        }
-                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
-                        {
-                            channels_state_[ch_index] = 1;
-                            if (sat_ == 0)
-                                {
-                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
-                                }
-                            acq_channels_count_++;
-                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-#ifndef ENABLE_FPGA
-                            channels_[ch_index]->start_acquisition();
-#else
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
-                            tmp_thread.detach();
-#endif
-                        }
-                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
-                }
+            // call the acquisition manager to assign new satellite and start next acquisition (if required)
+            acquisition_manager(who);
             break;
         default:
             break;
         }
-    applied_actions_++;
 }
 
 
@@ -1610,6 +1472,8 @@ void GNSSFlowgraph::init()
      */
     std::unique_ptr<GNSSBlockFactory> block_factory_(new GNSSBlockFactory());
 
+    channels_status_ = channel_status_msg_receiver_make();
+
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     sources_count_ = configuration_->property("Receiver.sources_count", 1);
 
@@ -1701,7 +1565,6 @@ void GNSSFlowgraph::init()
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
     set_channels_state();
-    applied_actions_ = 0;
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
 
     /*
@@ -1953,9 +1816,7 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_B1.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of BeiDou B1C signals
-             */
+            // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
                  available_gnss_prn_iter != available_beidou_prn.cend();
                  available_gnss_prn_iter++)
@@ -1968,9 +1829,7 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_B3.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of BeiDou B1C signals
-             */
+            // Loop to create the list of BeiDou B1C signals
             for (available_gnss_prn_iter = available_beidou_prn.cbegin();
                  available_gnss_prn_iter != available_beidou_prn.cend();
                  available_gnss_prn_iter++)
@@ -2010,110 +1869,124 @@ void GNSSFlowgraph::set_channels_state()
 }
 
 
-Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal, bool pop, bool tracked)
+Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal,
+    const bool pop,
+    bool& is_primary_frequency,
+    bool& assistance_available,
+    float& estimated_doppler,
+    double& RX_time)
 {
+    is_primary_frequency = false;
+    assistance_available = false;
     Gnss_Signal result;
-    bool untracked_satellite = true;
+    bool found_signal = false;
     switch (mapStringValues_[searched_signal])
         {
         case evGPS_1C:
+            //todo: assist the satellite selection with almanac and current PVT here (rehuse priorize_satellite function used in control_thread)
             result = available_GPS_1C_signals_.front();
             available_GPS_1C_signals_.pop_front();
             if (!pop)
                 {
                     available_GPS_1C_signals_.push_back(result);
                 }
-            if (tracked)
-                {
-                    if ((configuration_->property("Channels_2S.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
-                        {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                                {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1C"))
-                                        {
-                                            untracked_satellite = false;
-                                        }
-                                }
-                            if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
-                                    available_GPS_2S_signals_.remove(gs);
-                                    available_GPS_2S_signals_.push_front(gs);
-                                }
-                            if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
-                                    available_GPS_L5_signals_.remove(gs);
-                                    available_GPS_L5_signals_.push_front(gs);
-                                }
-                        }
-                }
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGPS_2S:
-            result = available_GPS_2S_signals_.front();
-            available_GPS_2S_signals_.pop_front();
-            if (!pop)
+            if (configuration_->property("Channels_1C.count", 0) > 0)
                 {
-                    available_GPS_2S_signals_.push_back(result);
-                }
-            if (tracked)
-                {
-                    if ((configuration_->property("Channels_1C.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
+                    // 1. Get the current channel status map
+                    std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
+                    // 2. search the currently tracked GPS L1 satellites and assist the GPS L2 acquisition if the satellite is not tracked on L2
+                    bool found_signal = false;
+                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
                         {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                            if (std::string(it->second->Signal) == "1C")
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2S"))
+                                    std::list<Gnss_Signal>::iterator it2;
+                                    it2 = std::find_if(std::begin(available_GPS_2S_signals_), std::end(available_GPS_2S_signals_),
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+
+                                    if (it2 != available_GPS_2S_signals_.end())
                                         {
-                                            untracked_satellite = false;
+                                            estimated_doppler = it->second->Carrier_Doppler_hz;
+                                            RX_time = it->second->RX_time;
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the GPS L2 satellite and remove it from list
+                                            result = *it2;
+                                            if (pop)
+                                                {
+                                                    available_GPS_2S_signals_.erase(it2);
+                                                }
+                                            found_signal = true;
+                                            assistance_available = true;
+                                            break;
                                         }
                                 }
-                            if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
+                        }
+                    // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L2
+                    if (found_signal == false)
+                        {
+                            result = available_GPS_2S_signals_.front();
+                            available_GPS_2S_signals_.pop_front();
+                            if (!pop)
                                 {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
-                                    available_GPS_1C_signals_.remove(gs);
-                                    available_GPS_1C_signals_.push_front(gs);
+                                    available_GPS_2S_signals_.push_back(result);
                                 }
-                            if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
-                                    available_GPS_L5_signals_.remove(gs);
-                                    available_GPS_L5_signals_.push_front(gs);
-                                }
+                        }
+                }
+            else
+                {
+                    result = available_GPS_2S_signals_.front();
+                    available_GPS_2S_signals_.pop_front();
+                    if (!pop)
+                        {
+                            available_GPS_2S_signals_.push_back(result);
                         }
                 }
             break;
 
         case evGPS_L5:
-            result = available_GPS_L5_signals_.front();
-            available_GPS_L5_signals_.pop_front();
-            if (!pop)
+            if (configuration_->property("Channels_1C.count", 0) > 0)
                 {
-                    available_GPS_L5_signals_.push_back(result);
-                }
-            if (tracked)
-                {
-                    if ((configuration_->property("Channels_1C.count", 0) > 0) or (configuration_->property("Channels_2S.count", 0) > 0))
+                    // 1. Get the current channel status map
+                    std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
+                    // 2. search the currently tracked GPS L1 satellites and assist the GPS L5 acquisition if the satellite is not tracked on L5
+                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
                         {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                            if (std::string(it->second->Signal) == "1C")
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "L5"))
+                                    std::list<Gnss_Signal>::iterator it2;
+                                    it2 = std::find_if(std::begin(available_GPS_L5_signals_), std::end(available_GPS_L5_signals_),
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+
+                                    if (it2 != available_GPS_L5_signals_.end())
                                         {
-                                            untracked_satellite = false;
+                                            estimated_doppler = it->second->Carrier_Doppler_hz;
+                                            RX_time = it->second->RX_time;
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the GPS L5 satellite and remove it from list
+                                            result = *it2;
+                                            if (pop)
+                                                {
+                                                    available_GPS_L5_signals_.erase(it2);
+                                                }
+                                            found_signal = true;
+                                            assistance_available = true;
+                                            break;
                                         }
                                 }
-                            if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
-                                    available_GPS_1C_signals_.remove(gs);
-                                    available_GPS_1C_signals_.push_front(gs);
-                                }
-                            if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
-                                    available_GPS_2S_signals_.remove(gs);
-                                    available_GPS_2S_signals_.push_front(gs);
-                                }
+                        }
+                }
+            // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L5
+            if (found_signal == false)
+                {
+                    result = available_GPS_L5_signals_.front();
+                    available_GPS_L5_signals_.pop_front();
+                    if (!pop)
+                        {
+                            available_GPS_L5_signals_.push_back(result);
                         }
                 }
             break;
@@ -2125,51 +1998,49 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_GAL_1B_signals_.push_back(result);
                 }
-            if (tracked)
-                {
-                    if (configuration_->property("Channels_5X.count", 0) > 0)
-                        {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                                {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1B"))
-                                        {
-                                            untracked_satellite = false;
-                                        }
-                                }
-                            if (untracked_satellite)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5X");
-                                    available_GAL_5X_signals_.remove(gs);
-                                    available_GAL_5X_signals_.push_front(gs);
-                                }
-                        }
-                }
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGAL_5X:
-            result = available_GAL_5X_signals_.front();
-            available_GAL_5X_signals_.pop_front();
-            if (!pop)
+            if (configuration_->property("Channels_1B.count", 0) > 0)
                 {
-                    available_GAL_5X_signals_.push_back(result);
-                }
-            if (tracked)
-                {
-                    if (configuration_->property("Channels_1B.count", 0) > 0)
+                    // 1. Get the current channel status map
+                    std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
+                    // 2. search the currently tracked Galileo E1 satellites and assist the Galileo E5 acquisition if the satellite is not tracked on E5
+                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
                         {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                            if (std::string(it->second->Signal) == "1B")
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "5X"))
+                                    std::list<Gnss_Signal>::iterator it2;
+                                    it2 = std::find_if(std::begin(available_GAL_5X_signals_), std::end(available_GAL_5X_signals_),
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+
+                                    if (it2 != available_GAL_5X_signals_.end())
                                         {
-                                            untracked_satellite = false;
+                                            estimated_doppler = it->second->Carrier_Doppler_hz;
+                                            RX_time = it->second->RX_time;
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the Gal 5X satellite and remove it from list
+                                            result = *it2;
+                                            if (pop)
+                                                {
+                                                    available_GAL_5X_signals_.erase(it2);
+                                                }
+                                            found_signal = true;
+                                            assistance_available = true;
+                                            break;
                                         }
                                 }
-                            if (untracked_satellite)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1B");
-                                    available_GAL_1B_signals_.remove(gs);
-                                    available_GAL_1B_signals_.push_front(gs);
-                                }
+                        }
+                }
+            // fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
+            if (found_signal == false)
+                {
+                    result = available_GAL_5X_signals_.front();
+                    available_GAL_5X_signals_.pop_front();
+                    if (!pop)
+                        {
+                            available_GAL_5X_signals_.push_back(result);
                         }
                 }
             break;
@@ -2181,25 +2052,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_GLO_1G_signals_.push_back(result);
                 }
-            if (tracked)
-                {
-                    if (configuration_->property("Channels_2G.count", 0) > 0)
-                        {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                                {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1G"))
-                                        {
-                                            untracked_satellite = false;
-                                        }
-                                }
-                            if (untracked_satellite)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2G");
-                                    available_GLO_2G_signals_.remove(gs);
-                                    available_GLO_2G_signals_.push_front(gs);
-                                }
-                        }
-                }
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGLO_2G:
@@ -2208,25 +2061,6 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (!pop)
                 {
                     available_GLO_2G_signals_.push_back(result);
-                }
-            if (tracked)
-                {
-                    if (configuration_->property("Channels_1G.count", 0) > 0)
-                        {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                                {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G"))
-                                        {
-                                            untracked_satellite = false;
-                                        }
-                                }
-                            if (untracked_satellite)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1G");
-                                    available_GLO_1G_signals_.remove(gs);
-                                    available_GLO_1G_signals_.push_front(gs);
-                                }
-                        }
                 }
             break;
 
@@ -2237,25 +2071,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 {
                     available_BDS_B1_signals_.push_back(result);
                 }
-            if (tracked)
-                {
-                    if (configuration_->property("Channels_B3.count", 0) > 0)
-                        {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                                {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G"))
-                                        {
-                                            untracked_satellite = false;
-                                        }
-                                }
-                            if (untracked_satellite)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "B3");
-                                    available_BDS_B3_signals_.remove(gs);
-                                    available_BDS_B3_signals_.push_front(gs);
-                                }
-                        }
-                }
+            is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evBDS_B3:
@@ -2264,25 +2080,6 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (!pop)
                 {
                     available_BDS_B3_signals_.push_back(result);
-                }
-            if (tracked)
-                {
-                    if (configuration_->property("Channels_B1.count", 0) > 0)
-                        {
-                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                                {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G"))
-                                        {
-                                            untracked_satellite = false;
-                                        }
-                                }
-                            if (untracked_satellite)
-                                {
-                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "B1");
-                                    available_BDS_B1_signals_.remove(gs);
-                                    available_BDS_B1_signals_.push_front(gs);
-                                }
-                        }
                 }
             break;
 

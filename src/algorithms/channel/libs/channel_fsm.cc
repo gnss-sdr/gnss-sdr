@@ -31,7 +31,7 @@
  */
 
 #include "channel_fsm.h"
-#include "control_message_factory.h"
+#include "channel_event.h"
 #include <glog/logging.h>
 #include <utility>
 
@@ -179,7 +179,7 @@ void ChannelFsm::set_telemetry(std::shared_ptr<TelemetryDecoderInterface> teleme
 }
 
 
-void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
+void ChannelFsm::set_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::lock_guard<std::mutex> lk(mx);
     queue_ = std::move(queue);
@@ -215,29 +215,17 @@ void ChannelFsm::start_acquisition()
 void ChannelFsm::start_tracking()
 {
     trk_->start_tracking();
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 1));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 1)));
 }
 
 
 void ChannelFsm::request_satellite()
 {
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 0));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 0)));
 }
 
 
 void ChannelFsm::notify_stop_tracking()
 {
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 2));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 2)));
 }

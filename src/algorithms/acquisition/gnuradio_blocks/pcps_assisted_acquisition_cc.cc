@@ -38,6 +38,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <exception>
 #include <sstream>
 #include <utility>
@@ -233,9 +234,8 @@ void pcps_assisted_acquisition_cc::redefine_grid()
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
-            float _phase[1];
-            _phase[0] = 0;
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase, d_fft_size);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
         }
 }
 

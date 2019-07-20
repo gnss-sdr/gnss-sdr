@@ -34,6 +34,7 @@
 
 #include <cstddef>  // for size_t
 #include <deque>
+#include <vector>
 
 /*!
  * \brief Class that implements a Viterbi decoder
@@ -42,7 +43,7 @@ class Viterbi_Decoder
 {
 public:
     Viterbi_Decoder(const int g_encoder[], const int KK, const int nn);
-    ~Viterbi_Decoder();
+    ~Viterbi_Decoder() = default;
     void reset();
 
     /*!
@@ -94,16 +95,16 @@ private:
     int d_number_symbols;
 
     // trellis definition
-    int* d_out0;
-    int* d_state0;
-    int* d_out1;
-    int* d_state1;
+    std::vector<int> d_out0;
+    std::vector<int> d_state0;
+    std::vector<int> d_out1;
+    std::vector<int> d_state1;
 
     // trellis state
-    float* d_pm_t;
+    std::vector<float> d_pm_t;
     std::deque<Prev> d_trellis_paths;
-    float* d_metric_c;  /* Set of all possible branch metrics */
-    float* d_rec_array; /* Received values for one trellis section */
+    std::vector<float> d_metric_c;  /* Set of all possible branch metrics */
+    std::vector<float> d_rec_array; /* Received values for one trellis section */
     bool d_trellis_state_is_initialised;
 
     // measures

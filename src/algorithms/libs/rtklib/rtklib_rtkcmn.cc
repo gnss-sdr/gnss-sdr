@@ -223,11 +223,12 @@ const unsigned int TBL_CR_C24_Q[] = {
     0x42FA2F, 0xC4B6D4, 0xC82F22, 0x4E63D9, 0xD11CCE, 0x575035, 0x5BC9C3, 0xDD8538};
 
 
-extern "C" {
-void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-extern void dgetrf_(int *, int *, double *, int *, int *, int *);
-extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
-extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
+extern "C"
+{
+    void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+    extern void dgetrf_(int *, int *, double *, int *, int *, int *);
+    extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
+    extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
 }
 
 
@@ -3619,7 +3620,7 @@ void freeobs(obs_t *obs)
 /* free navigation data ---------------------------------------------------------
  * free memory for navigation data
  * args   : nav_t *nav    IO     navigation data
- *          int   opt     I      option (or of followings)
+ *          int   opt     I      option (one of the following)
  *                               (0x01: gps/qzs ephmeris, 0x02: glonass ephemeris,
  *                                0x04: sbas ephemeris,   0x08: precise ephemeris,
  *                                0x10: precise clock     0x20: almanac,

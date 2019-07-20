@@ -31,12 +31,13 @@
 #ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 #define GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/uhd/usrp_source.h>
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -52,7 +53,7 @@ class UhdSignalSource : public GNSSBlockInterface
 public:
     UhdSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     virtual ~UhdSignalSource();
 
@@ -107,7 +108,7 @@ private:
     std::vector<boost::shared_ptr<gr::block>> valve_;
     std::vector<gr::blocks::file_sink::sptr> file_sink_;
 
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_UHD_SIGNAL_SOURCE_H_*/

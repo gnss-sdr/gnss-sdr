@@ -32,10 +32,11 @@
 #ifndef GNSS_SDR_GN3S_SIGNAL_SOURCE_H_
 #define GNSS_SDR_GN3S_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <string>
 
 
@@ -49,7 +50,7 @@ class Gn3sSignalSource : public GNSSBlockInterface
 public:
     Gn3sSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
-        unsigned int out_stream, gr::msg_queue::sptr queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     virtual ~Gn3sSignalSource();
 
@@ -87,7 +88,7 @@ private:
     std::string dump_filename_;
     gr::block_sptr gn3s_source_;
     gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_GN3S_SIGNAL_SOURCE_H_*/

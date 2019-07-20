@@ -40,9 +40,9 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <exception>
 #include <sstream>
-#include <utility>
 
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
@@ -310,9 +310,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GALILEO_TWO_PI * doppler / static_cast<float>(d_fs_in);
-            float _phase[1];
-            _phase[0] = 0;
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase.data(), d_fft_size);
         }
 
     /* CAF Filtering to resolve doppler ambiguity. Phase and quadrature must be processed

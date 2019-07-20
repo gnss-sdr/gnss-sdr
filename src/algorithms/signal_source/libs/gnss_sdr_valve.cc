@@ -32,17 +32,17 @@
  */
 
 #include "gnss_sdr_valve.h"
-#include "control_message_factory.h"  // for ControlMessageFactory
-#include <glog/logging.h>             // for LOG
-#include <gnuradio/io_signature.h>    // for io_signature
-#include <algorithm>                  // for min
-#include <cstring>                    // for memcpy
-#include <unistd.h>                   // for usleep
+#include "command_event.h"
+#include <glog/logging.h>           // for LOG
+#include <gnuradio/io_signature.h>  // for io_signature
+#include <algorithm>                // for min
+#include <cstring>                  // for memcpy
+#include <unistd.h>                 // for usleep
 #include <utility>
 
 Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
     uint64_t nitems,
-    gr::msg_queue::sptr queue,
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue,
     bool stop_flowgraph) : gr::sync_block("valve",
                                gr::io_signature::make(1, 20, sizeof_stream_item),
                                gr::io_signature::make(1, 20, sizeof_stream_item)),
@@ -55,14 +55,14 @@ Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
 }
 
 
-boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
+boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue, bool stop_flowgraph)
 {
     boost::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
     return valve_;
 }
 
 
-boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue)
+boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     boost::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), true));
     return valve_;
@@ -83,10 +83,8 @@ int Gnss_Sdr_Valve::work(int noutput_items,
         {
             if (d_ncopied_items >= d_nitems)
                 {
-                    auto *cmf = new ControlMessageFactory();
-                    d_queue->handle(cmf->GetQueueMessage(200, 0));
                     LOG(INFO) << "Stopping receiver, " << d_ncopied_items << " samples processed";
-                    delete cmf;
+                    d_queue->push(pmt::make_any(command_event_make(200, 0)));
                     if (d_stop_flowgraph)
                         {
                             return -1;  // Done!

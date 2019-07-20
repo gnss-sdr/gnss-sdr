@@ -37,13 +37,11 @@
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <array>
-#include <cmath>      // for round
-#include <cstring>    // for memcpy
-#include <exception>  // for exception
-#include <iostream>   // for cout
-#include <memory>     // for shared_ptr
+#include <cmath>            // for round
+#include <cstring>          // for memcpy
+#include <exception>        // for exception
+#include <iostream>         // for cout
+#include <memory>           // for shared_ptr
 
 
 #ifndef _rotl
@@ -63,7 +61,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     bool dump) : gr::block("gps_navigation_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
 
     // Ephemeris data port out
@@ -72,7 +70,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-
 
     // initialize internal vars
     d_dump = dump;
@@ -85,7 +82,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     // set the preamble
     d_required_symbols = GPS_SUBFRAME_BITS;
     // preamble bits to sampled symbols
-    d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     d_frame_length_symbols = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
     d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
     int32_t n = 0;
@@ -123,7 +119,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 
 gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 {
-    volk_gnsssdr_free(d_preamble_samples);
     if (d_dump_file.is_open() == true)
         {
             try

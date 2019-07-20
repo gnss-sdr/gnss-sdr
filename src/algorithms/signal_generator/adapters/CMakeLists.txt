@@ -34,6 +34,7 @@ target_link_libraries(signal_generator_adapters
         Gflags::gflags
         Glog::glog
         algorithms_libs
+        core_receiver
 )
 
 target_include_directories(signal_generator_adapters

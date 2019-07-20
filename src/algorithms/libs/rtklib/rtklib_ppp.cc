@@ -331,7 +331,7 @@ int is_depend(int sat1, int sat2, int *flgs, int *max_flg)
         }
     else
         {
-            return 0; /* linear depenent */
+            return 0; /* linear dependent */
         }
     return 1;
 }

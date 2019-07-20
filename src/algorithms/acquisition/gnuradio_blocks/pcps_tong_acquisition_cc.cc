@@ -54,9 +54,9 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <exception>
 #include <sstream>
-#include <utility>
 
 
 pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
@@ -211,9 +211,8 @@ void pcps_tong_acquisition_cc::init()
 
             int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
-            float _phase[1];
-            _phase[0] = 0;
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase.data(), d_fft_size);
 
             d_grid_data[doppler_index] = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 

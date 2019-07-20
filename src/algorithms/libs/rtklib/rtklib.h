@@ -577,7 +577,7 @@ typedef struct
 
 typedef struct
 {                          /* SBAS message type */
-    int week, tow;         /* receiption time */
+    int week, tow;         /* reception time */
     int prn;               /* SBAS satellite PRN number */
     unsigned char msg[29]; /* SBAS message (226bit) padded by 0 */
 } sbsmsg_t;
@@ -912,7 +912,7 @@ typedef struct
     unsigned char buff[1200];                    /* message buffer */
     unsigned int word;                           /* word buffer for rtcm 2 */
     unsigned int nmsg2[100];                     /* message count of RTCM 2 (1-99:1-99,0:other) */
-    unsigned int nmsg3[400];                     /* message count of RTCM 3 (1-299:1001-1299,300-399:2000-2099,0:ohter) */
+    unsigned int nmsg3[400];                     /* message count of RTCM 3 (1-299:1001-1299,300-399:2000-2099,0:other) */
     char opt[256];                               /* RTCM dependent options */
 } rtcm_t;
 

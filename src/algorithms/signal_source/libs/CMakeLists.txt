@@ -71,10 +71,10 @@ target_link_libraries(signal_source_libs
     PUBLIC
         Boost::boost
         Gnuradio::runtime
+        core_receiver
     PRIVATE
         Gflags::gflags
         Glog::glog
-        core_receiver
 )
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)

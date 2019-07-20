@@ -42,7 +42,7 @@
 
 Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-    std::string role, std::string implementation, gr::msg_queue::sptr queue)
+    std::string role, std::string implementation, std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue)
 {
     acq_ = std::move(acq);
     trk_ = std::move(trk);

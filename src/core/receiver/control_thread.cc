@@ -60,6 +60,8 @@
 #include "rtklib_conversions.h"    // for alm_to_rtklib
 #include "rtklib_ephemeris.h"      // for alm2pos, eph2pos
 #include "rtklib_rtkcmn.h"         // for utc2gpst
+#include <armadillo>               // for interaction with geofunctions
+#include <boost/chrono.hpp>        // for steady_clock
 #include <boost/lexical_cast.hpp>  // for bad_lexical_cast
 #include <glog/logging.h>          // for LOG
 #include <pmt/pmt.h>               // for make_any
@@ -67,7 +69,6 @@
 #include <array>                   // for array
 #include <chrono>                  // for milliseconds
 #include <cmath>                   // for floor, fmod, log
-#include <ctime>                   // for gmtime, strftime
 #include <exception>               // for exception
 #include <iostream>                // for operator<<, endl
 #include <limits>                  // for numeric_limits
@@ -225,6 +226,7 @@ void ControlThread::telecommand_listener()
         }
 }
 
+
 void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
 {
     if (valid_event)
@@ -269,6 +271,7 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
             flowgraph_->acquisition_manager(0);  //start acquisition of untracked satellites
         }
 }
+
 
 /*
  * Runs the control thread that manages the receiver control plane
@@ -813,9 +816,9 @@ void ControlThread::assist_GNSS()
     if ((agnss_ref_location_.valid == true) and ((enable_gps_supl_assistance == true) or (enable_agnss_xml == true)))
         {
             // Get the list of visible satellites
-            arma::vec ref_LLH = arma::zeros(3, 1);
-            ref_LLH(0) = agnss_ref_location_.lat;
-            ref_LLH(1) = agnss_ref_location_.lon;
+            std::array<float, 3> ref_LLH{};
+            ref_LLH[0] = agnss_ref_location_.lat;
+            ref_LLH[1] = agnss_ref_location_.lon;
             time_t ref_rx_utc_time = 0;
             if (agnss_ref_time_.valid == true)
                 {
@@ -885,10 +888,10 @@ void ControlThread::apply_action(unsigned int what)
 }
 
 
-std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time_t rx_utc_time, const arma::vec &LLH)
+std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time_t rx_utc_time, const std::array<float, 3> &LLH)
 {
     // 1. Compute rx ECEF position from LLH WGS84
-    arma::vec LLH_rad = arma::vec{degtorad(LLH(0)), degtorad(LLH(1)), LLH(2)};
+    arma::vec LLH_rad = arma::vec{degtorad(LLH[0]), degtorad(LLH[1]), LLH[2]};
     arma::mat C_tmp = arma::zeros(3, 3);
     arma::vec r_eb_e = arma::zeros(3, 1);
     arma::vec v_eb_e = arma::zeros(3, 1);
@@ -912,7 +915,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);
     std::string str_time = std::string(buf);
     std::cout << "Get visible satellites at " << str_time
-              << "UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
+              << "UTC, assuming RX position " << LLH[0] << " [deg], " << LLH[1] << " [deg], " << LLH[2] << " [m]" << std::endl;
 
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (auto &it : gps_eph_map)

@@ -32,10 +32,10 @@
 
 channel_event_sptr channel_event_make(int channel_id, int event_type)
 {
-    return channel_event_sptr(new channel_event(channel_id, event_type));
+    return channel_event_sptr(new Channel_Event(channel_id, event_type));
 }
 
-channel_event::channel_event(int channel_id_, int event_type_)
+Channel_Event::Channel_Event(int channel_id_, int event_type_)
 {
     channel_id = channel_id_;
     event_type = event_type_;

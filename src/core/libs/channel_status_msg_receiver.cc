@@ -1,11 +1,11 @@
 /*!
  * \file channel_status_msg_receiver.cc
  * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
- * \author Javier Arribas, 2016. jarribas(at)cttc.es
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -75,12 +75,12 @@ void channel_status_msg_receiver::msg_handler_events(const pmt::pmt_t& msg)
                             d_channel_status_map.erase(gnss_synchro_obj->Channel_ID);
                         }
 
-                    //                    std::cout << "-------- \n\n";
-                    //                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = d_channel_status_map.begin(); it != d_channel_status_map.end(); ++it)
-                    //                        {
-                    //                            std::cout << " Channel: " << it->first << " => Doppler: " << it->second->Carrier_Doppler_hz << "[Hz] \n";
-                    //                        }
-                    //                    std::cout << "-------- \n\n";
+                    // std::cout << "-------- " << std::endl << std::endl;
+                    // for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = d_channel_status_map.begin(); it != d_channel_status_map.end(); ++it)
+                    //     {
+                    //         std::cout << " Channel: " << it->first << " => Doppler: " << it->second->Carrier_Doppler_hz << "[Hz] " << std::endl;
+                    //     }
+                    // std::cout << "-------- " << std::endl << std::endl;
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Monitor_Pvt>))
                 {
@@ -88,10 +88,10 @@ void channel_status_msg_receiver::msg_handler_events(const pmt::pmt_t& msg)
                     std::shared_ptr<Monitor_Pvt> monitor_pvt_obj;
                     monitor_pvt_obj = boost::any_cast<std::shared_ptr<Monitor_Pvt>>(pmt::any_ref(msg));
                     d_pvt_status = *monitor_pvt_obj.get();
-                    //
-                    //                    std::cout << "-------- \n\n";
-                    //                    std::cout << "PVT TOW: " << d_pvt_status->TOW_at_current_symbol_ms << std::endl;
-                    //                    std::cout << "-------- \n\n";
+
+                    // std::cout << "-------- " << std::endl << std::endl;
+                    // std::cout << "PVT TOW: " << d_pvt_status->TOW_at_current_symbol_ms << std::endl;
+                    // std::cout << "-------- " << std::endl << std::endl;
                 }
             else
                 {
@@ -104,11 +104,14 @@ void channel_status_msg_receiver::msg_handler_events(const pmt::pmt_t& msg)
         }
 }
 
+
 std::map<int, std::shared_ptr<Gnss_Synchro>> channel_status_msg_receiver::get_current_status_map()
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_events function called by the scheduler
     return d_channel_status_map;
 }
+
+
 Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt()
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_events function called by the scheduler

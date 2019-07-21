@@ -71,10 +71,15 @@ target_link_libraries(signal_source_libs
     PUBLIC
         Boost::boost
         Gnuradio::runtime
-        core_receiver
     PRIVATE
         Gflags::gflags
         Glog::glog
+        core_libs
+)
+
+target_include_directories(signal_source_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)

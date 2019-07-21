@@ -64,7 +64,6 @@
 #include <set>                       // for set
 #include <stdexcept>                 // for invalid_argument
 #include <thread>                    // for thread
-#include <utility>                   // for move
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
@@ -1295,7 +1294,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     push_back_signal(gs);
                 }
             channels_state_[who] = 0;
-            if (acq_channels_count_ > 0) acq_channels_count_--;
+            if (acq_channels_count_ > 0)
+                {
+                    acq_channels_count_--;
+                }
             // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
@@ -1305,7 +1307,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             remove_signal(channels_[who]->get_signal());
 
             channels_state_[who] = 2;
-            if (acq_channels_count_ > 0) acq_channels_count_--;
+            if (acq_channels_count_ > 0)
+                {
+                    acq_channels_count_--;
+                }
             // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
             break;
@@ -1900,18 +1905,18 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
                     // 2. search the currently tracked GPS L1 satellites and assist the GPS L2 acquisition if the satellite is not tracked on L2
                     bool found_signal = false;
-                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
+                    for (auto& current_status : current_channels_status)
                         {
-                            if (std::string(it->second->Signal) == "1C")
+                            if (std::string(current_status.second->Signal) == "1C")
                                 {
                                     std::list<Gnss_Signal>::iterator it2;
                                     it2 = std::find_if(std::begin(available_GPS_2S_signals_), std::end(available_GPS_2S_signals_),
-                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
 
                                     if (it2 != available_GPS_2S_signals_.end())
                                         {
-                                            estimated_doppler = it->second->Carrier_Doppler_hz;
-                                            RX_time = it->second->RX_time;
+                                            estimated_doppler = current_status.second->Carrier_Doppler_hz;
+                                            RX_time = current_status.second->RX_time;
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the GPS L2 satellite and remove it from list
                                             result = *it2;
@@ -1953,18 +1958,18 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     // 1. Get the current channel status map
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
                     // 2. search the currently tracked GPS L1 satellites and assist the GPS L5 acquisition if the satellite is not tracked on L5
-                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
+                    for (auto& current_status : current_channels_status)
                         {
-                            if (std::string(it->second->Signal) == "1C")
+                            if (std::string(current_status.second->Signal) == "1C")
                                 {
                                     std::list<Gnss_Signal>::iterator it2;
                                     it2 = std::find_if(std::begin(available_GPS_L5_signals_), std::end(available_GPS_L5_signals_),
-                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
 
                                     if (it2 != available_GPS_L5_signals_.end())
                                         {
-                                            estimated_doppler = it->second->Carrier_Doppler_hz;
-                                            RX_time = it->second->RX_time;
+                                            estimated_doppler = current_status.second->Carrier_Doppler_hz;
+                                            RX_time = current_status.second->RX_time;
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the GPS L5 satellite and remove it from list
                                             result = *it2;
@@ -2007,18 +2012,18 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     // 1. Get the current channel status map
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
                     // 2. search the currently tracked Galileo E1 satellites and assist the Galileo E5 acquisition if the satellite is not tracked on E5
-                    for (std::map<int, std::shared_ptr<Gnss_Synchro>>::iterator it = current_channels_status.begin(); it != current_channels_status.end(); ++it)
+                    for (auto& current_status : current_channels_status)
                         {
-                            if (std::string(it->second->Signal) == "1B")
+                            if (std::string(current_status.second->Signal) == "1B")
                                 {
                                     std::list<Gnss_Signal>::iterator it2;
                                     it2 = std::find_if(std::begin(available_GAL_5X_signals_), std::end(available_GAL_5X_signals_),
-                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == it->second->PRN; });
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
 
                                     if (it2 != available_GAL_5X_signals_.end())
                                         {
-                                            estimated_doppler = it->second->Carrier_Doppler_hz;
-                                            RX_time = it->second->RX_time;
+                                            estimated_doppler = current_status.second->Carrier_Doppler_hz;
+                                            RX_time = current_status.second->RX_time;
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the Gal 5X satellite and remove it from list
                                             result = *it2;

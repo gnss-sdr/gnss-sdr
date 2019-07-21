@@ -60,13 +60,18 @@ add_library(signal_source_gr_blocks
 
 target_link_libraries(signal_source_gr_blocks
     PUBLIC
+        signal_source_libs
         Boost::thread
         Gnuradio::runtime
-        signal_source_libs
     PRIVATE
-        core_receiver
+        core_libs
         Gflags::gflags
         Glog::glog
+)
+
+target_include_directories(signal_source_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_RAW_UDP AND PCAP_FOUND)

@@ -34,12 +34,12 @@ target_link_libraries(signal_generator_adapters
         Gflags::gflags
         Glog::glog
         algorithms_libs
-        core_receiver
 )
 
 target_include_directories(signal_generator_adapters
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_CLANG_TIDY)

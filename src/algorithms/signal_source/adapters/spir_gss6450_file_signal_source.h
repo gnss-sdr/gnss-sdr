@@ -61,7 +61,7 @@ public:
     SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~SpirGSS6450FileSignalSource();
+    ~SpirGSS6450FileSignalSource() = default;
     inline std::string role() override
     {
         return role_;

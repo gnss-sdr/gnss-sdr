@@ -50,7 +50,7 @@ public:
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 
-    virtual ~DirectResamplerConditioner();
+    ~DirectResamplerConditioner() = default;
 
     inline std::string role() override
     {

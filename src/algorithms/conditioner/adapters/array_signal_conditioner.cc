@@ -54,10 +54,6 @@ ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configura
 }
 
 
-// Destructor
-ArraySignalConditioner::~ArraySignalConditioner() = default;
-
-
 void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
 {
     // note: the array signal conditioner do not have data type adapter, and must use the array input filter (multichannel)

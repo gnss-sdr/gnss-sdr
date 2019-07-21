@@ -93,9 +93,6 @@ Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter()
 }
 
 
-Tracking_2nd_PLL_filter::~Tracking_2nd_PLL_filter() = default;
-
-
 void Tracking_2nd_PLL_filter::set_pdi(float pdi_carr)
 {
     d_pdi_carr = pdi_carr;  // Summation interval for code

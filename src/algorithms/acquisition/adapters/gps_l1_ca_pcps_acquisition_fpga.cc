@@ -175,9 +175,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 }
 
 
-GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga() = default;
-
-
 void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
 {
     // this command causes the SW to reset the HW.

@@ -60,7 +60,7 @@ public:
         unsigned int out_stream,
         std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~RtlTcpSignalSource();
+    ~RtlTcpSignalSource() = default;
 
     inline std::string role() override
     {

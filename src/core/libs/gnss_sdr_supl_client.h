@@ -64,7 +64,7 @@ class Gnss_Sdr_Supl_Client
 {
 public:
     Gnss_Sdr_Supl_Client();
-    ~Gnss_Sdr_Supl_Client();
+    ~Gnss_Sdr_Supl_Client() = default;
 
     // SUPL SERVER INFO
     std::string server_name;

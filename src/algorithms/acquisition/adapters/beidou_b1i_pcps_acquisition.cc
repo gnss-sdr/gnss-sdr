@@ -133,10 +133,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
         {
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
-}
-
-
-BeidouB1iPcpsAcquisition::~BeidouB1iPcpsAcquisition() = default;
+};
 
 
 void BeidouB1iPcpsAcquisition::stop_acquisition()

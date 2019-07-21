@@ -161,9 +161,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 }
 
 
-GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition() = default;
-
-
 void GpsL1CaPcpsAcquisition::stop_acquisition()
 {
 }

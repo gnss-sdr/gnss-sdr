@@ -180,9 +180,6 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
 }
 
 
-SpirFileSignalSource::~SpirFileSignalSource() = default;
-
-
 void SpirFileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)

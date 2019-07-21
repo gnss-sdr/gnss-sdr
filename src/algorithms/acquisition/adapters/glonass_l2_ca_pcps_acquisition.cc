@@ -137,9 +137,6 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
 }
 
 
-GlonassL2CaPcpsAcquisition::~GlonassL2CaPcpsAcquisition() = default;
-
-
 void GlonassL2CaPcpsAcquisition::stop_acquisition()
 {
 }

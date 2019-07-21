@@ -155,9 +155,6 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
 }
 
 
-OsmosdrSignalSource::~OsmosdrSignalSource() = default;
-
-
 void OsmosdrSignalSource::driver_instance()
 {
     try

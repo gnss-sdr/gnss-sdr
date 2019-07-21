@@ -36,5 +36,3 @@ Tcp_Packet_Data::Tcp_Packet_Data()
     proc_pack_carr_error = 0;
     proc_pack_carrier_doppler_hz = 0;
 }
-
-Tcp_Packet_Data::~Tcp_Packet_Data() = default;

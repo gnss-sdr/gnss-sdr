@@ -181,9 +181,6 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
 }
 
 
-NsrFileSignalSource::~NsrFileSignalSource() = default;
-
-
 void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)

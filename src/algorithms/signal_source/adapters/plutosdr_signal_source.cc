@@ -103,9 +103,6 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
 }
 
 
-PlutosdrSignalSource::~PlutosdrSignalSource() = default;
-
-
 void PlutosdrSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)

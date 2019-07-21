@@ -53,7 +53,7 @@ public:
     float get_carrier_nco(float PLL_discriminator);
     Tracking_2nd_PLL_filter(float pdi_carr);
     Tracking_2nd_PLL_filter();
-    ~Tracking_2nd_PLL_filter();
+    ~Tracking_2nd_PLL_filter() = default;
 
 private:
     // PLL filter parameters

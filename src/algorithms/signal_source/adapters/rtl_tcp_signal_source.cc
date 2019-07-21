@@ -46,9 +46,9 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     unsigned int in_stream,
     unsigned int out_stream,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
-                                              in_stream_(in_stream),
-                                              out_stream_(out_stream),
-                                              queue_(std::move(queue))
+                                                           in_stream_(in_stream),
+                                                           out_stream_(out_stream),
+                                                           queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -141,9 +141,6 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-RtlTcpSignalSource::~RtlTcpSignalSource() = default;
 
 
 void RtlTcpSignalSource::MakeBlock()

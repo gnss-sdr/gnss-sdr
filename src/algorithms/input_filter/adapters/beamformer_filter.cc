@@ -77,9 +77,6 @@ BeamformerFilter::BeamformerFilter(
 }
 
 
-BeamformerFilter::~BeamformerFilter() = default;
-
-
 void BeamformerFilter::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

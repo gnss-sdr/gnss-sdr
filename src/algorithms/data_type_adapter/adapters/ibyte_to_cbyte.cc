@@ -76,9 +76,6 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, const std::str
 }
 
 
-IbyteToCbyte::~IbyteToCbyte() = default;
-
-
 void IbyteToCbyte::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

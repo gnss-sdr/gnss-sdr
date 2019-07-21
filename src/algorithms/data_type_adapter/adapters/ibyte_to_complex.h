@@ -51,7 +51,7 @@ public:
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~IbyteToComplex();
+    ~IbyteToComplex() = default;
 
     inline std::string role() override
     {

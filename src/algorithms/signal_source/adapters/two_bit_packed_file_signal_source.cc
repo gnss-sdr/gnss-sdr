@@ -48,9 +48,9 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     unsigned int in_streams,
     unsigned int out_streams,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
-                                              in_streams_(in_streams),
-                                              out_streams_(out_streams),
-                                              queue_(std::move(queue))
+                                                           in_streams_(in_streams),
+                                                           out_streams_(out_streams),
+                                                           queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -248,9 +248,6 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-TwoBitPackedFileSignalSource::~TwoBitPackedFileSignalSource() = default;
 
 
 void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)

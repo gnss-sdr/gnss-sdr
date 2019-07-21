@@ -59,7 +59,7 @@ public:
         unsigned int in_streams, unsigned int out_streams,
         std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~MultichannelFileSignalSource();
+    ~MultichannelFileSignalSource() = default;
 
     inline std::string role() override
     {

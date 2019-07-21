@@ -123,9 +123,6 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
 }
 
 
-GalileoE1Pcps8msAmbiguousAcquisition::~GalileoE1Pcps8msAmbiguousAcquisition() = default;
-
-
 void GalileoE1Pcps8msAmbiguousAcquisition::stop_acquisition()
 {
 }

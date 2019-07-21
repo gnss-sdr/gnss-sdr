@@ -6,10 +6,10 @@
  * the properties of a stochastic process based on a sequence of
  * discrete samples of the sequence.
  *
- * [1]: LaMountain, Gerald, Vilà-Valls, Jordi, Closas, Pau, "Bayesian 
- * Covariance Estimation for Kalman Filter based Digital Carrier 
+ * [1]: LaMountain, Gerald, Vilà-Valls, Jordi, Closas, Pau, "Bayesian
+ * Covariance Estimation for Kalman Filter based Digital Carrier
  * Synchronization," Proceedings of the 31st International Technical Meeting
- * of the Satellite Division of The Institute of Navigation 
+ * of the Satellite Division of The Institute of Navigation
  * (ION GNSS+ 2018), Miami, Florida, September 2018, pp. 3575-3586.
  * https://doi.org/10.33012/2018.15911
  *
@@ -67,7 +67,7 @@ public:
     Bayesian_estimator();
     Bayesian_estimator(int ny);
     Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
-    ~Bayesian_estimator();
+    ~Bayesian_estimator() = default;
 
     void init(const arma::mat& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
 

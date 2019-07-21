@@ -109,9 +109,6 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
 }
 
 
-CustomUDPSignalSource::~CustomUDPSignalSource() = default;
-
-
 void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)
 {
     // connect null sinks to unused streams

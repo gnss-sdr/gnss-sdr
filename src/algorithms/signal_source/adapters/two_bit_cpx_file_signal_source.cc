@@ -46,9 +46,9 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
     unsigned int in_streams,
     unsigned int out_streams,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
-                                              in_streams_(in_streams),
-                                              out_streams_(out_streams),
-                                              queue_(std::move(queue))
+                                                           in_streams_(in_streams),
+                                                           out_streams_(out_streams),
+                                                           queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -184,9 +184,6 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-TwoBitCpxFileSignalSource::~TwoBitCpxFileSignalSource() = default;
 
 
 void TwoBitCpxFileSignalSource::connect(gr::top_block_sptr top_block)

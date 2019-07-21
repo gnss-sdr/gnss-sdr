@@ -55,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL2MDllPllTracking();
+    ~GpsL2MDllPllTracking() = default;
 
     inline std::string role() override
     {
@@ -90,6 +90,7 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+
     /*!
      * \brief Stop running tracking
      */

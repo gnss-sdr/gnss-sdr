@@ -58,7 +58,7 @@ public:
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 
-    virtual ~MmseResamplerConditioner();
+    ~MmseResamplerConditioner() = default;
 
     inline std::string role() override
     {

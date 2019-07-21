@@ -51,7 +51,7 @@ class unpack_byte_2bit_cpx_samples : public gr::sync_interpolator
 {
 public:
     unpack_byte_2bit_cpx_samples();
-    ~unpack_byte_2bit_cpx_samples();
+    ~unpack_byte_2bit_cpx_samples() = default;
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

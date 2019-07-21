@@ -43,8 +43,8 @@
 class StringConverter
 {
 public:
-    StringConverter();
-    virtual ~StringConverter();
+    StringConverter() = default;
+    ~StringConverter() = default;
 
     bool convert(const std::string& value, bool default_value);
     int64_t convert(const std::string& value, int64_t default_value);

@@ -118,9 +118,6 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 }
 
 
-Channel::~Channel() = default;
-
-
 void Channel::connect(gr::top_block_sptr top_block)
 {
     if (!flag_enable_fpga)

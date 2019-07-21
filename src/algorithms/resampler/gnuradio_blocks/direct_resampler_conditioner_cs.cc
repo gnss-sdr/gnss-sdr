@@ -71,9 +71,6 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
 }
 
 
-direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs() = default;
-
-
 void direct_resampler_conditioner_cs::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {

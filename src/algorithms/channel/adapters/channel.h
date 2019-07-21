@@ -69,7 +69,7 @@ public:
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
         std::string role, std::string implementation, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~Channel();  //!< Virtual destructor
+    ~Channel() = default;  //!< Destructor
 
     void connect(gr::top_block_sptr top_block) override;  //!< connects the tracking block to the top_block and to the telemetry
     void disconnect(gr::top_block_sptr top_block) override;

@@ -164,9 +164,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 }
 
 
-GpsL2MPcpsAcquisitionFpga::~GpsL2MPcpsAcquisitionFpga() = default;
-
-
 void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
 {
 }

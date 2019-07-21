@@ -56,8 +56,8 @@ class TelemetryDecoderInterface;
 class GNSSBlockFactory
 {
 public:
-    GNSSBlockFactory();
-    virtual ~GNSSBlockFactory();
+    GNSSBlockFactory() = default;
+    ~GNSSBlockFactory() = default;
 
     std::unique_ptr<GNSSBlockInterface> GetSignalSource(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue, int ID = -1);  // NOLINT(performance-unnecessary-value-param)

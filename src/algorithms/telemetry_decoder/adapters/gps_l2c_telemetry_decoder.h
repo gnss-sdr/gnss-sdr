@@ -53,7 +53,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL2CTelemetryDecoder();
+    ~GpsL2CTelemetryDecoder() = default;
 
     inline std::string role() override
     {

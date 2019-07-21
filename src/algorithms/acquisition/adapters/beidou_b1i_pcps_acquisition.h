@@ -60,7 +60,7 @@ public:
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~BeidouB1iPcpsAcquisition();
+    ~BeidouB1iPcpsAcquisition() = default;
 
     inline std::string role() override
     {

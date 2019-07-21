@@ -89,7 +89,7 @@ pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 class pcps_acquisition_fpga
 {
 public:
-    ~pcps_acquisition_fpga();
+    ~pcps_acquisition_fpga() = default;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer

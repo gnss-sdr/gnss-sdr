@@ -73,7 +73,7 @@ public:
         unsigned int out_streams);
 
     //! Destructor
-    virtual ~FirFilter();
+    ~FirFilter() = default;
 
     inline std::string role() override
     {

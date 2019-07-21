@@ -179,9 +179,6 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 }
 
 
-SpirGSS6450FileSignalSource::~SpirGSS6450FileSignalSource() = default;
-
-
 void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)

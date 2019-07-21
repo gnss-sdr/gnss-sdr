@@ -28,18 +28,18 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_command_EVENT_H
-#define GNSS_SDR_command_EVENT_H
+#ifndef GNSS_SDR_COMMAND_EVENT_H
+#define GNSS_SDR_COMMAND_EVENT_H
 
 #include <memory>
 
-class command_event;
+class Command_Event;
 
-using command_event_sptr = std::shared_ptr<command_event>;
+using command_event_sptr = std::shared_ptr<Command_Event>;
 
 command_event_sptr command_event_make(int command_id, int event_type);
 
-class command_event
+class Command_Event
 {
 public:
     int command_id;
@@ -47,7 +47,7 @@ public:
 
 private:
     friend command_event_sptr command_event_make(int command_id, int event_type);
-    command_event(int command_id_, int event_type_);
+    Command_Event(int command_id_, int event_type_);
 };
 
 #endif

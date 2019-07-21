@@ -31,7 +31,6 @@ target_link_libraries(channel_adapters
         Gnuradio::runtime
         channel_libs
         core_system_parameters
-        core_receiver
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -41,6 +40,7 @@ target_link_libraries(channel_adapters
 target_include_directories(channel_adapters
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_CLANG_TIDY)

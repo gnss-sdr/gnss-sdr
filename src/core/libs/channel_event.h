@@ -33,21 +33,21 @@
 
 #include <memory>
 
-class channel_event;
+class Channel_Event;
 
-using channel_event_sptr = std::shared_ptr<channel_event>;
+using channel_event_sptr = std::shared_ptr<Channel_Event>;
 
 channel_event_sptr channel_event_make(int channel_id, int event_type);
 
-class channel_event
+class Channel_Event
 {
 public:
     int channel_id;
     int event_type;
+
 private:
     friend channel_event_sptr channel_event_make(int channel_id, int event_type);
-    channel_event(int channel_id_, int event_type_);
-
+    Channel_Event(int channel_id_, int event_type_);
 };
 
 #endif

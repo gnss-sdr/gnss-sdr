@@ -35,14 +35,19 @@ add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
 target_link_libraries(channel_libs
     PUBLIC
-        core_libs
         core_system_parameters
         Gnuradio::runtime
         Gnuradio::pmt
     PRIVATE
+        core_libs
         Boost::boost
         Gflags::gflags
         Glog::glog
+)
+
+target_include_directories(channel_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_CLANG_TIDY)

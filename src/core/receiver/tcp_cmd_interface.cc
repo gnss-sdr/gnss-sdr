@@ -33,7 +33,6 @@
 #include "command_event.h"
 #include "pvt_interface.h"
 #include <boost/asio.hpp>
-#include <array>
 #include <cmath>      // for isnan
 #include <exception>  // for exception
 #include <iomanip>    // for setprecision
@@ -51,9 +50,9 @@ TcpCmdInterface::TcpCmdInterface()
     register_functions();
     keep_running_ = true;
     control_queue_ = nullptr;
-    rx_latitude_ = 0;
-    rx_longitude_ = 0;
-    rx_altitude_ = 0;
+    rx_latitude_ = 0.0;
+    rx_longitude_ = 0.0;
+    rx_altitude_ = 0.0;
     receiver_utc_time_ = 0;
 }
 
@@ -85,9 +84,9 @@ time_t TcpCmdInterface::get_utc_time()
 }
 
 
-arma::vec TcpCmdInterface::get_LLH()
+std::array<float, 3> TcpCmdInterface::get_LLH() const
 {
-    return arma::vec{rx_latitude_, rx_longitude_, rx_altitude_};
+    return std::array<float, 3>{rx_latitude_, rx_longitude_, rx_altitude_};
 }
 
 
@@ -192,9 +191,9 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
-            rx_latitude_ = std::stod(commandLine.at(3).c_str());
-            rx_longitude_ = std::stod(commandLine.at(4).c_str());
-            rx_altitude_ = std::stod(commandLine.at(5).c_str());
+            rx_latitude_ = std::stof(commandLine.at(3).c_str());
+            rx_longitude_ = std::stof(commandLine.at(4).c_str());
+            rx_altitude_ = std::stof(commandLine.at(5).c_str());
 
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {

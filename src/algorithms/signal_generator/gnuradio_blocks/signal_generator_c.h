@@ -148,7 +148,7 @@ private:
     std::vector<std::vector<gr_complex>> sampled_code_data_;
     std::vector<std::vector<gr_complex>> sampled_code_pilot_;
     std::vector<gr_complex> complex_phase_;
-    unsigned int work_counter_;
+    unsigned int work_counter_{};
     std::random_device r;
     std::default_random_engine e1;
     std::default_random_engine e2;

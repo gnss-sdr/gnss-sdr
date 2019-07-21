@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,7 +42,7 @@
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
 #include "pvt_interface.h"
-#include <gnuradio/blocks/null_sink.h>  //for null_sink
+#include <gnuradio/blocks/null_sink.h>  // for null_sink
 #include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
 #include <pmt/pmt.h>                    // for pmt_t
 #include <list>                         // for list
@@ -79,10 +79,14 @@ public:
      */
     ~GNSSFlowgraph();
 
-    //! \brief Start the flow graph
+    /*!
+     * \brief Start the flow graph
+     */
     void start();
 
-    //! \brief Stop the flow graph
+    /*!
+     * \brief Stop the flow graph
+     */
     void stop();
 
     /*!
@@ -92,16 +96,27 @@ public:
      */
     void connect();
 
+    /*!
+     * \brief Disconnect the blocks in the flow graph
+     */
     void disconnect();
 
+    /*!
+     * \brief Wait for a flowgraph to complete.
+     *
+     * Flowgraphs complete when either
+     * (1) all blocks indicate that they are done, or
+     * (2) after stop() has been called to request shutdown.
+     */
     void wait();
-#ifdef ENABLE_FPGA
-    void start_acquisition_helper();
 
-    void perform_hw_reset();
-#endif
-
+    /*!
+     * \brief Manage satellite acquisition
+     *
+     * \param[in] who   Channel ID
+     */
     void acquisition_manager(unsigned int who);
+
     /*!
      * \brief Applies an action to the flow graph
      *
@@ -110,10 +125,9 @@ public:
      */
     void apply_action(unsigned int who, unsigned int what);
 
-
-    void push_back_signal(const Gnss_Signal& gs);
-    void remove_signal(const Gnss_Signal& gs);
-
+    /*!
+     * \brief Set flow graph configuratiob
+     */
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
     bool connected() const
@@ -127,7 +141,7 @@ public:
     }
 
     /*!
-     * \brief Sends a GNURadio asynchronous message from telemetry to PVT
+     * \brief Sends a GNU Radio asynchronous message from telemetry to PVT
      *
      * It is used to assist the receiver with external ephemeris data
      */
@@ -146,6 +160,12 @@ public:
      */
     void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);
 
+#ifdef ENABLE_FPGA
+    void start_acquisition_helper();
+
+    void perform_hw_reset();
+#endif
+
 private:
     void init();  // Populates the SV PRN list available for acquisition and tracking
     void set_signals_list();
@@ -157,6 +177,10 @@ private:
         bool& assistance_available,
         float& estimated_doppler,
         double& RX_time);
+
+    void push_back_signal(const Gnss_Signal& gs);
+    void remove_signal(const Gnss_Signal& gs);
+
     bool connected_;
     bool running_;
     int sources_count_;
@@ -209,7 +233,7 @@ private:
     std::map<std::string, StringValue> mapStringValues_;
 
     std::vector<unsigned int> channels_state_;
-    channel_status_msg_receiver_sptr channels_status_;  //class that receives and stores the current status of the receiver channels
+    channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
     std::mutex signal_list_mutex;
 
     bool enable_monitor_;
@@ -217,4 +241,4 @@ private:
     std::vector<std::string> split_string(const std::string& s, char delim);
 };
 
-#endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/
+#endif /* GNSS_SDR_GNSS_FLOWGRAPH_H_ */

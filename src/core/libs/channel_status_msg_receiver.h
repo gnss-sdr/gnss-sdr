@@ -1,11 +1,11 @@
 /*!
  * \file channel_msg_receiver_cc.h
  * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
- * \author Javier Arribas, 2016. jarribas(at)cttc.es
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,10 +50,12 @@ class channel_status_msg_receiver : public gr::block
 {
 public:
     ~channel_status_msg_receiver();  //!< Default destructor
+
     /*!
      * \brief return the current status map of all channels with valid telemetry
      */
     std::map<int, std::shared_ptr<Gnss_Synchro>> get_current_status_map();
+
     /*!
      * \brief return the current receiver PVT
      */
@@ -63,7 +65,6 @@ private:
     friend channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
     channel_status_msg_receiver();
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
-
     Monitor_Pvt d_pvt_status{};
     void msg_handler_events(const pmt::pmt_t& msg);
 };

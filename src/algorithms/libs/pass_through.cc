@@ -109,7 +109,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::str
         }
 
     kludge_copy_ = gr::blocks::copy::make(item_size_);
-    unsigned long int max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0);
+    uint64_t max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0ULL);
     if (max_source_buffer_samples > 0)
         {
             kludge_copy_->set_max_output_buffer(max_source_buffer_samples);

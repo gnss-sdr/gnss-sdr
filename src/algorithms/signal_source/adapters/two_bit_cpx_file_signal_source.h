@@ -62,7 +62,7 @@ public:
         unsigned int out_streams,
         std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~TwoBitCpxFileSignalSource();
+    ~TwoBitCpxFileSignalSource() = default;
     inline std::string role() override
     {
         return role_;

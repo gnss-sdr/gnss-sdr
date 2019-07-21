@@ -156,9 +156,6 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 }
 
 
-SignalGenerator::~SignalGenerator() = default;
-
-
 void SignalGenerator::connect(gr::top_block_sptr top_block)
 {
     if (item_type_ == "gr_complex")

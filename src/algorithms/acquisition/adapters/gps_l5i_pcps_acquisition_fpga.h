@@ -59,7 +59,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL5iPcpsAcquisitionFpga();
+    ~GpsL5iPcpsAcquisitionFpga() = default;
 
     inline std::string role() override
     {

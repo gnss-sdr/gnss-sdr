@@ -194,9 +194,6 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
 }
 
 
-GpsL1CaDllPllTracking::~GpsL1CaDllPllTracking() = default;
-
-
 void GpsL1CaDllPllTracking::stop_tracking()
 {
     tracking_->stop_tracking();

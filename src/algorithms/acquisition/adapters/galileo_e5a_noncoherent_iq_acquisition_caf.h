@@ -55,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
+    ~GalileoE5aNoncoherentIQAcquisitionCaf() = default;
 
     inline std::string role() override
     {

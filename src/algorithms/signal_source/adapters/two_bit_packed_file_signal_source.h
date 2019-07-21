@@ -61,7 +61,7 @@ public:
         unsigned int in_streams, unsigned int out_streams,
         std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~TwoBitPackedFileSignalSource();
+    ~TwoBitPackedFileSignalSource() = default;
     inline std::string role() override
     {
         return role_;

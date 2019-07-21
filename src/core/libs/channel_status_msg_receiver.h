@@ -49,7 +49,7 @@ channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
 class channel_status_msg_receiver : public gr::block
 {
 public:
-    ~channel_status_msg_receiver();  //!< Default destructor
+    ~channel_status_msg_receiver() = default;  //!< Default destructor
 
     /*!
      * \brief return the current status map of all channels with valid telemetry

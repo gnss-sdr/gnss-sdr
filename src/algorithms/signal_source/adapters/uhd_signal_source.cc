@@ -238,9 +238,6 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 }
 
 
-UhdSignalSource::~UhdSignalSource() = default;
-
-
 void UhdSignalSource::connect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)

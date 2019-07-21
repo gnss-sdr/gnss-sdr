@@ -57,7 +57,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaKfTracking();
+    ~GpsL1CaKfTracking() = default;
 
     inline std::string role() override
     {

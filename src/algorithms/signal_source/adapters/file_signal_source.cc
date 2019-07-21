@@ -255,9 +255,6 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 }
 
 
-FileSignalSource::~FileSignalSource() = default;
-
-
 void FileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)

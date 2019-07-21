@@ -206,9 +206,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
 }
 
 
-pcps_acquisition::~pcps_acquisition() = default;
-
-
 void pcps_acquisition::set_resampler_latency(uint32_t latency_samples)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler

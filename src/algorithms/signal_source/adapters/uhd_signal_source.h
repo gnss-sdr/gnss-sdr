@@ -55,7 +55,7 @@ public:
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~UhdSignalSource();
+    ~UhdSignalSource() = default;
 
     inline std::string role() override
     {

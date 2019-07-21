@@ -75,11 +75,6 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
 }
 
 
-Gn3sSignalSource::~Gn3sSignalSource()
-{
-}
-
-
 void Gn3sSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

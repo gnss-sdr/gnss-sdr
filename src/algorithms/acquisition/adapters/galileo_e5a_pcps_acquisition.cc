@@ -165,9 +165,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 }
 
 
-GalileoE5aPcpsAcquisition::~GalileoE5aPcpsAcquisition() = default;
-
-
 void GalileoE5aPcpsAcquisition::stop_acquisition()
 {
 }

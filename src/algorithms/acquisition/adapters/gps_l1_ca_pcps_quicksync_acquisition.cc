@@ -150,9 +150,6 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
 }
 
 
-GpsL1CaPcpsQuickSyncAcquisition::~GpsL1CaPcpsQuickSyncAcquisition() = default;
-
-
 void GpsL1CaPcpsQuickSyncAcquisition::stop_acquisition()
 {
 }

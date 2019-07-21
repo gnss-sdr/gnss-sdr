@@ -34,12 +34,6 @@
 #include <sstream>
 
 
-StringConverter::StringConverter() = default;
-
-
-StringConverter::~StringConverter() = default;
-
-
 bool StringConverter::convert(const std::string& value, bool default_value)
 {
     if (value == "true")

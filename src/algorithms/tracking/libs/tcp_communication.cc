@@ -38,9 +38,6 @@
 Tcp_Communication::Tcp_Communication() : tcp_socket_(io_context_) {}  // NOLINT
 
 
-Tcp_Communication::~Tcp_Communication() = default;
-
-
 int Tcp_Communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 {
     try

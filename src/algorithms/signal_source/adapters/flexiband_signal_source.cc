@@ -111,9 +111,6 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
 }
 
 
-FlexibandSignalSource::~FlexibandSignalSource() = default;
-
-
 void FlexibandSignalSource::connect(gr::top_block_sptr top_block)
 {
     for (int n = 0; n < (n_channels_ * 2); n++)

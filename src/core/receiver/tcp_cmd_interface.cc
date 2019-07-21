@@ -57,9 +57,6 @@ TcpCmdInterface::TcpCmdInterface()
 }
 
 
-TcpCmdInterface::~TcpCmdInterface() = default;
-
-
 void TcpCmdInterface::register_functions()
 {
     functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);

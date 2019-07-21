@@ -160,9 +160,6 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
 }
 
 
-GpsL5iPcpsAcquisition::~GpsL5iPcpsAcquisition() = default;
-
-
 void GpsL5iPcpsAcquisition::stop_acquisition()
 {
 }

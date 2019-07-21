@@ -105,9 +105,6 @@ MmseResamplerConditioner::MmseResamplerConditioner(
 }
 
 
-MmseResamplerConditioner::~MmseResamplerConditioner() = default;
-
-
 void MmseResamplerConditioner::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

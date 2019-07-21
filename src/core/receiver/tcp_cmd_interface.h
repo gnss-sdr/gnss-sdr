@@ -49,7 +49,7 @@ class TcpCmdInterface
 {
 public:
     TcpCmdInterface();
-    virtual ~TcpCmdInterface();
+    ~TcpCmdInterface() = default;
     void run_cmd_server(int tcp_port);
     void set_msg_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);
 

@@ -108,9 +108,6 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
 }
 
 
-GlonassL1CaDllPllTracking::~GlonassL1CaDllPllTracking() = default;
-
-
 void GlonassL1CaDllPllTracking::stop_tracking()
 {
 }

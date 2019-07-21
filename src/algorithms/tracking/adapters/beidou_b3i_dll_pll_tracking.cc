@@ -187,9 +187,6 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
 }
 
 
-BeidouB3iDllPllTracking::~BeidouB3iDllPllTracking() = default;
-
-
 void BeidouB3iDllPllTracking::start_tracking()
 {
     tracking_->start_tracking();

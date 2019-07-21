@@ -249,9 +249,6 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
 }
 
 
-MultichannelFileSignalSource::~MultichannelFileSignalSource() = default;
-
-
 void MultichannelFileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)

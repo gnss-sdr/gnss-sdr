@@ -53,9 +53,6 @@ channel_status_msg_receiver::channel_status_msg_receiver() : gr::block("channel_
 }
 
 
-channel_status_msg_receiver::~channel_status_msg_receiver() = default;
-
-
 void channel_status_msg_receiver::msg_handler_events(const pmt::pmt_t& msg)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_events function called by the scheduler

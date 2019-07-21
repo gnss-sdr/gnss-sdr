@@ -194,9 +194,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 }
 
 
-GalileoE1PcpsAmbiguousAcquisitionFpga::~GalileoE1PcpsAmbiguousAcquisitionFpga() = default;
-
-
 void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
 {
     // this command causes the SW to reset the HW.

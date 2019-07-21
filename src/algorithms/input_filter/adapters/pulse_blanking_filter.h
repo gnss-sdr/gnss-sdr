@@ -51,7 +51,7 @@ public:
         std::string role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~PulseBlankingFilter();
+    ~PulseBlankingFilter() = default;
 
     inline std::string role() override
     {

@@ -367,7 +367,6 @@ int main(int argc, char** argv)
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     configuration->set_property("Acquisition.max_dwells", "10");
 
-    GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);

@@ -62,7 +62,7 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-if(Boost_VERSION LESS 105800)
+if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
     target_compile_definitions(pvt_gr_blocks PRIVATE -DOLD_BOOST=1)
 endif()
 

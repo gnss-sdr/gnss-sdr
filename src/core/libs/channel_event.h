@@ -1,11 +1,11 @@
 /*!
- * \file control_message.h
- * \brief Interface for the different control messages.
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \file channel_event.h
+ * \brief Class that defines a channel event
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,20 +28,26 @@
  * -------------------------------------------------------------------------
  */
 
+#ifndef GNSS_SDR_CHANNEL_EVENT_H
+#define GNSS_SDR_CHANNEL_EVENT_H
 
-#ifndef GNSS_SDR_CONTROL_MESSAGE_H_
-#define GNSS_SDR_CONTROL_MESSAGE_H_
+#include <memory>
 
-/*!
- * \brief This class defines the different Control Messages
- */
-class ControlMessage
+class Channel_Event;
+
+using channel_event_sptr = std::shared_ptr<Channel_Event>;
+
+channel_event_sptr channel_event_make(int channel_id, int event_type);
+
+class Channel_Event
 {
 public:
-    static unsigned int const ack_success = 0;
-    static unsigned int const ack_failed = 1;
-    static unsigned int const trk_failed = 2;
-    static unsigned int const channel_init = 3;
+    int channel_id;
+    int event_type;
+
+private:
+    friend channel_event_sptr channel_event_make(int channel_id, int event_type);
+    Channel_Event(int channel_id_, int event_type_);
 };
 
-#endif /*GNSS_SDR_CONTROL_MESSAGE_H_*/
+#endif

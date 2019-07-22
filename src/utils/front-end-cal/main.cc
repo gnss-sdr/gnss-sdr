@@ -60,9 +60,8 @@
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/gr_complex.h>    // for gr_complex
-#include <gnuradio/io_signature.h>  // for io_signature
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/runtime_types.h>  // for block_sptr
 #include <gnuradio/top_block.h>
 #include <pmt/pmt.h>        // for pmt_t, to_long
@@ -189,9 +188,9 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     std::shared_ptr<GNSSBlockInterface> source;
@@ -368,7 +367,6 @@ int main(int argc, char** argv)
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     configuration->set_property("Acquisition.max_dwells", "10");
 
-    GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);

@@ -55,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GlonassL2CaDllPllTracking();
+    ~GlonassL2CaDllPllTracking() = default;
 
     inline std::string role() override
     {

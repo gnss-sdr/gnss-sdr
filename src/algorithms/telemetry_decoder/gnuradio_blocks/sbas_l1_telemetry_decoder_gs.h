@@ -114,10 +114,10 @@ private:
     private:
         int32_t d_n_smpls_in_history;
         double d_iir_par;
-        double d_corr_paired;
-        double d_corr_shifted;
-        bool d_aligned;
-        double d_past_sample;
+        double d_corr_paired{};
+        double d_corr_shifted{};
+        bool d_aligned{};
+        double d_past_sample{};
     } d_sample_aligner;
 
     // helper class for symbol alignment and Viterbi decoding

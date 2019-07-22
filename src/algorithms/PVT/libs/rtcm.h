@@ -43,6 +43,7 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <pmt/pmt.h>
 #include <bitset>
 #include <cstddef>  // for size_t
 #include <cstdint>

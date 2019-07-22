@@ -257,7 +257,7 @@ void tide_pole(gtime_t tut, const double *pos, const double *erpv,
  * displacements by earth tides
  * args   : gtime_t tutc     I   time in utc
  *          double *rr       I   site position (ecef) (m)
- *          int    opt       I   options (or of the followings)
+ *          int    opt       I   options (one of the following)
  *                                 1: solid earth tide
  *                                 2: ocean tide loading
  *                                 4: pole tide

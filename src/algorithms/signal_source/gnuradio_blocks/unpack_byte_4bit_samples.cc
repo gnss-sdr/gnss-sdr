@@ -47,9 +47,6 @@ unpack_byte_4bit_samples::unpack_byte_4bit_samples() : sync_interpolator("unpack
 }
 
 
-unpack_byte_4bit_samples::~unpack_byte_4bit_samples() = default;
-
-
 int unpack_byte_4bit_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)

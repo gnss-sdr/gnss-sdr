@@ -90,7 +90,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public gr::block
 {
 public:
-    ~pcps_acquisition();
+    ~pcps_acquisition() = default;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer

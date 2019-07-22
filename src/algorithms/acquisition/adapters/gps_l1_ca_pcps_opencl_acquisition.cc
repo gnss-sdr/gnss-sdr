@@ -121,9 +121,6 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 }
 
 
-GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition() = default;
-
-
 void GpsL1CaPcpsOpenClAcquisition::stop_acquisition()
 {
 }

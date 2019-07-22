@@ -109,9 +109,6 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 }
 
 
-GpsL1CaPcpsAcquisitionFineDoppler::~GpsL1CaPcpsAcquisitionFineDoppler() = default;
-
-
 void GpsL1CaPcpsAcquisitionFineDoppler::stop_acquisition()
 {
 }

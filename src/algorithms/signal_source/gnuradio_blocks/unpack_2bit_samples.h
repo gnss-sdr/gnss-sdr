@@ -89,7 +89,7 @@ unpack_2bit_samples_sptr make_unpack_2bit_samples(
 class unpack_2bit_samples : public gr::sync_interpolator
 {
 public:
-    ~unpack_2bit_samples();
+    ~unpack_2bit_samples() = default;
 
     unpack_2bit_samples(bool big_endian_bytes,
         size_t item_size,

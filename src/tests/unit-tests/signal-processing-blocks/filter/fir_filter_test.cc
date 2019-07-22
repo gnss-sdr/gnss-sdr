@@ -39,6 +39,7 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+#include "concurrent_queue.h"
 #include "file_signal_source.h"
 #include "fir_filter.h"
 #include "gnss_block_factory.h"
@@ -48,7 +49,6 @@
 #include "interleaved_byte_to_complex_byte.h"
 #include "interleaved_short_to_complex_short.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
 
 
@@ -59,7 +59,7 @@ class FirFilterTest : public ::testing::Test
 protected:
     FirFilterTest()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
@@ -70,7 +70,7 @@ protected:
     void configure_cbyte_gr_complex();
     void configure_gr_complex_gr_complex();
     void configure_cshort_cshort();
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;

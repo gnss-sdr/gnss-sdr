@@ -165,9 +165,6 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 }
 
 
-GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition() = default;
-
-
 void GpsL2MPcpsAcquisition::stop_acquisition()
 {
 }

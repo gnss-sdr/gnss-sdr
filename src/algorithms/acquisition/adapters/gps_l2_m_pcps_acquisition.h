@@ -59,7 +59,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL2MPcpsAcquisition();
+    ~GpsL2MPcpsAcquisition() = default;
 
     inline std::string role() override
     {

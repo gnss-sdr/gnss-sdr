@@ -108,9 +108,6 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
 }
 
 
-Fpga_Acquisition::~Fpga_Acquisition() = default;
-
-
 bool Fpga_Acquisition::set_local_code(uint32_t PRN)
 {
     // select the code with the chosen PRN

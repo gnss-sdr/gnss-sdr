@@ -42,7 +42,8 @@
 #include <fstream>
 #include <string>
 
-extern "C" {
+extern "C"
+{
 #include "cnav_msg.h"
 }
 
@@ -51,8 +52,9 @@ class gps_l5_telemetry_decoder_gs;
 
 using gps_l5_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l5_telemetry_decoder_gs>;
 
-gps_l5_telemetry_decoder_gs_sptr
-gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
  * \brief This class implements a GPS L5 Telemetry decoder
@@ -69,8 +71,10 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend gps_l5_telemetry_decoder_gs_sptr
-    gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
+
     gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     bool d_dump;

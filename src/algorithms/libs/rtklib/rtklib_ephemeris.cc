@@ -75,7 +75,7 @@ const double ERREPH_GLO = 5.0;    /* error of glonass ephemeris (m) */
 const double TSTEP = 60.0;        /* integration step glonass ephemeris (s) */
 const double RTOL_KEPLER = 1e-13; /* relative tolerance for Kepler equation */
 
-const double DEFURASSR = 0.15;                   /* default accurary of ssr corr (m) */
+const double DEFURASSR = 0.15;                   /* default accuracy of ssr corr (m) */
 const double MAXECORSSR = 10.0;                  /* max orbit correction of ssr (m) */
 const double MAXCCORSSR = 1e-6 * SPEED_OF_LIGHT; /* max clock correction of ssr (m) */
 const double MAXAGESSR = 90.0;                   /* max age of ssr orbit and clock (s) */
@@ -473,7 +473,7 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 }
 
 
-/* select ephememeris --------------------------------------------------------*/
+/* select ephemeris --------------------------------------------------------*/
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
 {
     double t, tmax, tmin;
@@ -532,7 +532,7 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
 }
 
 
-/* select glonass ephememeris ------------------------------------------------*/
+/* select glonass ephemeris ------------------------------------------------*/
 geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav)
 {
     double t, tmax = MAXDTOE_GLO, tmin = tmax + 1.0;
@@ -574,7 +574,7 @@ geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav)
 }
 
 
-/* select sbas ephememeris ---------------------------------------------------*/
+/* select sbas ephemeris ---------------------------------------------------*/
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
 {
     double t, tmax = MAXDTOE_SBS, tmin = tmax + 1.0;

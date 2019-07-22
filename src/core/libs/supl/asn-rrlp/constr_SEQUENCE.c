@@ -130,7 +130,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	int edx;			/* SEQUENCE element's index */
 
 	ASN_DEBUG("Decoding %s as SEQUENCE", td->name);
-	
+
 	/*
 	 * Create the target structure if it is not present already.
 	 */
@@ -145,7 +145,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	 * Restore parsing context.
 	 */
 	ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
-	
+
 	/*
 	 * Start to parse where left previously
 	 */
@@ -166,7 +166,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		}
 
 		if(ctx->left >= 0)
-			ctx->left += rval.consumed; /* ?Substracted below! */
+			ctx->left += rval.consumed; /* ?Subtracted below! */
 		ADVANCE(rval.consumed);
 
 		NEXT_PHASE(ctx);
@@ -389,7 +389,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		ctx->step |= 1;		/* Confirm entering next microphase */
 	microphase2:
 		ASN_DEBUG("Inside SEQUENCE %s MF2", td->name);
-		
+
 		/*
 		 * Compute the position of the member inside a structure,
 		 * and also a type of containment (it may be contained
@@ -431,7 +431,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		case RC_FAIL: /* Fatal error */
 			RETURN(RC_FAIL);
 		} /* switch(rval) */
-		
+
 		ADVANCE(rval.consumed);
 	  }	/* for(all structure members) */
 
@@ -501,7 +501,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 
 		PHASE_OUT(ctx);
 	}
-	
+
 	RETURN(RC_OK);
 }
 
@@ -1420,4 +1420,3 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 
 	_ASN_ENCODED_OK(er);
 }
-

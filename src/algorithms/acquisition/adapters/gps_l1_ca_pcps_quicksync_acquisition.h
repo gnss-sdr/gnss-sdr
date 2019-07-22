@@ -56,7 +56,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaPcpsQuickSyncAcquisition();
+    ~GpsL1CaPcpsQuickSyncAcquisition() = default;
 
     inline std::string role() override
     {

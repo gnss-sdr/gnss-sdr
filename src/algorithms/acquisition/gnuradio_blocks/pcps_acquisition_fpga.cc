@@ -84,9 +84,6 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
 }
 
 
-pcps_acquisition_fpga::~pcps_acquisition_fpga() = default;
-
-
 void pcps_acquisition_fpga::set_local_code()
 {
     acquisition_fpga->set_local_code(d_gnss_synchro->PRN);

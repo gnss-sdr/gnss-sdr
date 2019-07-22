@@ -170,12 +170,10 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
 }
 
 
-GpsL2MDllPllTracking::~GpsL2MDllPllTracking() = default;
-
-
 void GpsL2MDllPllTracking::stop_tracking()
 {
 }
+
 
 void GpsL2MDllPllTracking::start_tracking()
 {

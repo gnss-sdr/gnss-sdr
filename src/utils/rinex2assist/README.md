@@ -10,7 +10,7 @@ This program is built along with GNSS-SDR if the options `ENABLE_UNIT_TESTING_EX
 ```
 $ cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
 $ make
-$ sudo make intall
+$ sudo make install
 ```
 
 The last step is optional. Without it, you will get the executable at `../install/rinex2assist`.

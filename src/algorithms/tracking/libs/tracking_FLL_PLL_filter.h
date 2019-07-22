@@ -41,7 +41,7 @@ public:
     void initialize(float d_acq_carrier_doppler_hz);
     float get_carrier_error(float FLL_discriminator, float PLL_discriminator, float correlation_time_s);
     Tracking_FLL_PLL_filter();
-    ~Tracking_FLL_PLL_filter();
+    ~Tracking_FLL_PLL_filter() = default;
 
 private:
     // FLL + PLL filter parameters

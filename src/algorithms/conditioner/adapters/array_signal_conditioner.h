@@ -55,8 +55,8 @@ public:
         std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
         std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
 
-    //! Virtual destructor
-    virtual ~ArraySignalConditioner();
+    //! Destructor
+    ~ArraySignalConditioner() = default;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;

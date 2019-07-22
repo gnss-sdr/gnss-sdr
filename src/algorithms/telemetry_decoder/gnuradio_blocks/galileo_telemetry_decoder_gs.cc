@@ -43,12 +43,11 @@
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <cmath>      // for fmod
-#include <cstdlib>    // for abs
-#include <exception>  // for exception
-#include <iostream>   // for cout
-#include <memory>     // for shared_ptr, make_shared
+#include <cmath>            // for fmod
+#include <cstdlib>          // for abs
+#include <exception>        // for exception
+#include <iostream>         // for cout
+#include <memory>           // for shared_ptr, make_shared
 
 
 #define CRC_ERROR_LIMIT 6
@@ -66,7 +65,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     bool dump) : gr::block("galileo_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
@@ -74,7 +73,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-
 
     // initialize internal vars
     d_dump = dump;
@@ -93,7 +91,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_period_symbols = GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS;
                 d_required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + d_samples_per_preamble;
                 // preamble bits to sampled symbols
-                d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
@@ -110,7 +108,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_period_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE;
                 d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
                 // preamble bits to sampled symbols
-                d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
@@ -121,7 +119,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             d_bits_per_preamble = 0;
             d_samples_per_preamble = 0;
             d_preamble_period_symbols = 0;
-            d_preamble_samples = nullptr;
             d_PRN_code_period_ms = 0U;
             d_required_symbols = 0U;
             d_frame_length_symbols = 0U;
@@ -131,7 +128,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             std::cout << "Galileo unified telemetry decoder error: Unknown frame type " << std::endl;
         }
 
-    d_page_part_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_frame_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
+    d_page_part_symbols.reserve(d_frame_length_symbols);
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
             switch (d_frame_type)
@@ -184,24 +181,18 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     int32_t max_states = 1U << static_cast<uint32_t>(mm);  // 2^mm
     g_encoder[0] = 121;                                    // Polynomial G1
     g_encoder[1] = 91;                                     // Polynomial G2
-    out0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-    out1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-    state0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-    state1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    out0.reserve(max_states);
+    out1.reserve(max_states);
+    state0.reserve(max_states);
+    state1.reserve(max_states);
     // create appropriate transition matrices
-    nsc_transit(out0, state0, 0, g_encoder, KK, nn);
-    nsc_transit(out1, state1, 1, g_encoder, KK, nn);
+    nsc_transit(out0.data(), state0.data(), 0, g_encoder.data(), KK, nn);
+    nsc_transit(out1.data(), state1.data(), 1, g_encoder.data(), KK, nn);
 }
 
 
 galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 {
-    volk_gnsssdr_free(d_preamble_samples);
-    volk_gnsssdr_free(d_page_part_symbols);
-    volk_gnsssdr_free(out0);
-    volk_gnsssdr_free(out1);
-    volk_gnsssdr_free(state0);
-    volk_gnsssdr_free(state1);
     if (d_dump_file.is_open() == true)
         {
             try
@@ -218,7 +209,7 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 
 void galileo_telemetry_decoder_gs::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
 {
-    Viterbi(page_part_bits, out0, state0, out1, state1,
+    Viterbi(page_part_bits, out0.data(), state0.data(), out1.data(), state1.data(),
         page_part_symbols, KK, nn, DataLength);
 }
 
@@ -238,8 +229,8 @@ void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, con
 void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    auto *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
-    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
+    std::vector<double> page_part_symbols_deint(frame_length);
+    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint.data());
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -252,9 +243,8 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, i
                 }
         }
 
-    auto *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-    viterbi_decoder(page_part_symbols_deint, page_part_bits);
-    volk_gnsssdr_free(page_part_symbols_deint);
+    std::vector<int32_t> page_part_bits(frame_length / 2);
+    viterbi_decoder(page_part_symbols_deint.data(), page_part_bits.data());
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -290,7 +280,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, i
             d_inav_nav.split_page(page_String, flag_even_word_arrived);
             flag_even_word_arrived = 1;
         }
-    volk_gnsssdr_free(page_part_bits);
 
     // 4. Push the new navigation data to the queues
     if (d_inav_nav.have_new_ephemeris() == true)
@@ -332,8 +321,8 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, i
 void galileo_telemetry_decoder_gs::decode_FNAV_word(double *page_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    auto *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
-    deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
+    std::vector<double> page_symbols_deint(frame_length);
+    deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint.data());
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -345,9 +334,8 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(double *page_symbols, int32_
                     page_symbols_deint[i] = -page_symbols_deint[i];
                 }
         }
-    auto *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-    viterbi_decoder(page_symbols_deint, page_bits);
-    volk_gnsssdr_free(page_symbols_deint);
+    std::vector<int32_t> page_bits(frame_length / 2);
+    viterbi_decoder(page_symbols_deint.data(), page_bits.data());
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -362,7 +350,6 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(double *page_symbols, int32_
                     page_String.push_back('0');
                 }
         }
-    volk_gnsssdr_free(page_bits);
 
     // DECODE COMPLETE WORD (even + odd) and TEST CRC
     d_fnav_nav.split_page(page_String);
@@ -462,7 +449,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 d_symbol_history.push_back(current_symbol.Prompt_I);
                 break;
             }
-        case 2:  //FNAV
+        case 2:  // FNAV
             {
                 d_symbol_history.push_back(current_symbol.Prompt_Q);
                 break;
@@ -494,7 +481,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
         case 0:  // no preamble information
             {
-                //correlate with preamble
+                // correlate with preamble
                 int32_t corr_value = 0;
                 if (d_symbol_history.size() > d_required_symbols)
                     {
@@ -522,7 +509,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         case 1:  // possible preamble lock
             {
-                //correlate with preamble
+                // correlate with preamble
                 int32_t corr_value = 0;
                 int32_t preamble_diff = 0;
                 if (d_symbol_history.size() > d_required_symbols)
@@ -594,7 +581,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                                 d_page_part_symbols[i] = -d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
                                             }
                                     }
-                                decode_INAV_word(d_page_part_symbols, d_frame_length_symbols);
+                                decode_INAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             case 2:  // FNAV
                                      // NEW Galileo page part is received
@@ -619,7 +606,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                                     }
                                             }
                                     }
-                                decode_FNAV_word(d_page_part_symbols, d_frame_length_symbols);
+                                decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             default:
                                 return -1;

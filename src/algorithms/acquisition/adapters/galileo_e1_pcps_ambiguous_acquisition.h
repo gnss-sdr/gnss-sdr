@@ -58,7 +58,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE1PcpsAmbiguousAcquisition();
+    ~GalileoE1PcpsAmbiguousAcquisition() = default;
 
     inline std::string role() override
     {

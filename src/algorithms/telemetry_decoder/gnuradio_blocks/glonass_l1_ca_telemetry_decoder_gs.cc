@@ -38,13 +38,11 @@
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
-#include <array>
-#include <cmath>      // for floor, round
-#include <cstdlib>    // for abs, malloc
-#include <cstring>    // for memcpy
-#include <exception>  // for exception
-#include <iostream>   // for cout
-#include <memory>     // for shared_ptr, make_shared
+#include <cmath>            // for floor, round
+#include <cstdlib>          // for abs
+#include <exception>        // for exception
+#include <iostream>         // for cout
+#include <memory>           // for shared_ptr, make_shared
 
 #define CRC_ERROR_LIMIT 6
 
@@ -61,7 +59,7 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
     bool dump) : gr::block("glonass_l1_ca_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
@@ -71,19 +69,8 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY DECODING";
-    // Define the number of sampes per symbol. Notice that GLONASS has 2 rates,
-    // one for the navigation data and the other for the preamble information
-    d_samples_per_symbol = (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
-
-    // Set the preamble information
-    std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> preambles_bits{GLONASS_GNAV_PREAMBLE};
-    // Since preamble rate is different than navigation data rate we use a constant
-    d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
-
-    memcpy(static_cast<uint16_t *>(this->d_preambles_bits), preambles_bits.data(), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(uint16_t));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
     int32_t n = 0;
     for (uint16_t d_preambles_bit : d_preambles_bits)
         {
@@ -120,7 +107,6 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
 
 glonass_l1_ca_telemetry_decoder_gs::~glonass_l1_ca_telemetry_decoder_gs()
 {
-    delete d_preambles_symbols;
     if (d_dump_file.is_open() == true)
         {
             try

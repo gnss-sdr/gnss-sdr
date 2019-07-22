@@ -162,8 +162,8 @@ extern "C"
     {
         ber_tlv_tag_t el_tag; /* Outmost tag of the member */
         int el_no;            /* Index of the associated member, base 0 */
-        int toff_first;       /* First occurence of the el_tag, relative */
-        int toff_last;        /* Last occurence of the el_tag, relatvie */
+        int toff_first;       /* First occurrence of the el_tag, relative */
+        int toff_last;        /* Last occurrence of the el_tag, relatvie */
     } asn_TYPE_tag2member_t;
 
     /*

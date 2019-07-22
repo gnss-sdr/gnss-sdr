@@ -56,7 +56,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GlonassL2CaPcpsAcquisition();
+    ~GlonassL2CaPcpsAcquisition() = default;
 
     inline std::string role() override
     {

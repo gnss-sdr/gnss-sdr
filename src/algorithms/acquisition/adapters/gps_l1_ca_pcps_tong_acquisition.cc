@@ -112,9 +112,6 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 }
 
 
-GpsL1CaPcpsTongAcquisition::~GpsL1CaPcpsTongAcquisition() = default;
-
-
 void GpsL1CaPcpsTongAcquisition::stop_acquisition()
 {
 }

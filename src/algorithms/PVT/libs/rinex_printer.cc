@@ -6217,7 +6217,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     if (version == 2)
         {
-            // --------- WAVELENGHT FACTOR
+            // --------- WAVELENGTH FACTOR
             // put here real data!
             line.clear();
             line += Rinex_Printer::rightJustify("1", 6);

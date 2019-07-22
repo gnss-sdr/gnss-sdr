@@ -48,7 +48,7 @@ channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<Channe
 class channel_msg_receiver_cc : public gr::block
 {
 public:
-    ~channel_msg_receiver_cc();  //!< Default destructor
+    ~channel_msg_receiver_cc() = default;  //!< Default destructor
 
 private:
     friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);

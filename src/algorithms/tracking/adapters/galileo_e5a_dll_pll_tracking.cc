@@ -188,9 +188,6 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
 }
 
 
-GalileoE5aDllPllTracking::~GalileoE5aDllPllTracking() = default;
-
-
 void GalileoE5aDllPllTracking::stop_tracking()
 {
 }

@@ -19,7 +19,6 @@
 
 set(GNSS_RECEIVER_SOURCES
     control_thread.cc
-    control_message_factory.cc
     file_configuration.cc
     gnss_block_factory.cc
     gnss_flowgraph.cc
@@ -29,7 +28,6 @@ set(GNSS_RECEIVER_SOURCES
 
 set(GNSS_RECEIVER_HEADERS
     control_thread.h
-    control_message_factory.h
     file_configuration.h
     gnss_block_factory.h
     gnss_flowgraph.h
@@ -37,7 +35,6 @@ set(GNSS_RECEIVER_HEADERS
     tcp_cmd_interface.h
     concurrent_map.h
     concurrent_queue.h
-    control_message.h
 )
 
 list(SORT GNSS_RECEIVER_HEADERS)
@@ -136,17 +133,11 @@ endif()
 
 target_link_libraries(core_receiver
     PUBLIC
-        Armadillo::armadillo
-        Boost::boost
-        Boost::thread
-        Gnuradio::runtime
-        channel_libs
         core_libs
         core_monitor
+        Boost::thread
+        Gnuradio::runtime
     PRIVATE
-        Boost::chrono
-        Gflags::gflags
-        Glog::glog
         signal_source_adapters
         data_type_adapters
         input_filter_adapters
@@ -158,6 +149,11 @@ target_link_libraries(core_receiver
         telemetry_decoder_adapters
         obs_adapters
         pvt_adapters
+        Boost::boost
+        Boost::chrono
+        Gflags::gflags
+        Glog::glog
+        Armadillo::armadillo
 )
 
 # Fix for Boost Asio < 1.70

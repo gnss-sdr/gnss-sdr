@@ -2132,7 +2132,7 @@ int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
 
 
 /* output solution extended ----------------------------------------------------
- * output solution exteneded information
+ * output solution extended information
  * args   : unsigned char *buff IO output buffer
  *          sol_t  *sol      I   solution
  *          ssat_t *ssat     I   satellite status
@@ -2232,7 +2232,7 @@ void outsol(FILE *fp, const sol_t *sol, const double *rb,
 
 
 /* output solution extended ----------------------------------------------------
- * output solution exteneded information to file
+ * output solution extended information to file
  * args   : FILE   *fp       I   output file pointer
  *          sol_t  *sol      I   solution
  *          ssat_t *ssat     I   satellite status

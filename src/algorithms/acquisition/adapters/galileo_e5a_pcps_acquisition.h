@@ -49,7 +49,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE5aPcpsAcquisition();
+    ~GalileoE5aPcpsAcquisition() = default;
 
     inline std::string role() override
     {

@@ -56,7 +56,7 @@ public:
         unsigned int in_stream,
         unsigned int out_stream);
 
-    virtual ~Pass_Through();
+    ~Pass_Through() = default;
 
     inline std::string role() override
     {

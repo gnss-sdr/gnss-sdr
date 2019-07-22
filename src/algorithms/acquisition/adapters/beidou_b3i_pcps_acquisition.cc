@@ -134,9 +134,6 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
 }
 
 
-BeidouB3iPcpsAcquisition::~BeidouB3iPcpsAcquisition() = default;
-
-
 void BeidouB3iPcpsAcquisition::stop_acquisition()
 {
 }

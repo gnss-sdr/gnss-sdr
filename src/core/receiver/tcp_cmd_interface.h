@@ -32,8 +32,9 @@
 #define GNSS_SDR_TCP_CMD_INTERFACE_H_
 
 
-#include <armadillo>
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
+#include <pmt/pmt.h>
+#include <array>
 #include <cstdint>
 #include <ctime>
 #include <functional>
@@ -48,9 +49,9 @@ class TcpCmdInterface
 {
 public:
     TcpCmdInterface();
-    virtual ~TcpCmdInterface();
+    ~TcpCmdInterface() = default;
     void run_cmd_server(int tcp_port);
-    void set_msg_queue(gr::msg_queue::sptr control_queue);
+    void set_msg_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);
 
     /*!
      * \brief gets the UTC time parsed from the last TC command issued
@@ -60,7 +61,7 @@ public:
     /*!
      * \brief gets the Latitude, Longitude and Altitude vector from the last TC command issued
      */
-    arma::vec get_LLH();
+    std::array<float, 3> get_LLH() const;
 
     void set_pvt(std::shared_ptr<PvtInterface> PVT_sptr);
 
@@ -77,14 +78,14 @@ private:
 
     void register_functions();
 
-    gr::msg_queue::sptr control_queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
     bool keep_running_;
 
     time_t receiver_utc_time_;
 
-    double rx_latitude_;
-    double rx_longitude_;
-    double rx_altitude_;
+    float rx_latitude_;
+    float rx_longitude_;
+    float rx_altitude_;
 
     std::shared_ptr<PvtInterface> PVT_sptr_;
 };

@@ -138,9 +138,6 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
 }
 
 
-GlonassL1CaPcpsAcquisition::~GlonassL1CaPcpsAcquisition() = default;
-
-
 void GlonassL1CaPcpsAcquisition::stop_acquisition()
 {
 }

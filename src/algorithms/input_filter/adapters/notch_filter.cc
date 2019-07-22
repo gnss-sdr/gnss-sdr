@@ -90,9 +90,6 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, const std::strin
 }
 
 
-NotchFilter::~NotchFilter() = default;
-
-
 void NotchFilter::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

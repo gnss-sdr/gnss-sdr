@@ -127,9 +127,6 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 }
 
 
-GalileoE1PcpsTongAmbiguousAcquisition::~GalileoE1PcpsTongAmbiguousAcquisition() = default;
-
-
 void GalileoE1PcpsTongAmbiguousAcquisition::stop_acquisition()
 {
 }

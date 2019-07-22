@@ -33,13 +33,13 @@
 #include "fec.h"
 #include <stdlib.h>
 
-static inline int parity(int x)
+static inline unsigned int parity(unsigned int x)
 {
-    x ^= x >> 16;
-    x ^= x >> 8;
-    x ^= x >> 4;
-    x &= 0xf;
-    return (0x6996 >> x) & 1;
+    x ^= x >> 16U;
+    x ^= x >> 8U;
+    x ^= x >> 4U;
+    x &= 0xFU;
+    return (0x6996U >> x) & 1U;
 }
 
 
@@ -101,12 +101,12 @@ void v27_init(v27_t *v, v27_decision_t *decisions, unsigned int decisions_count,
         m1 = v->old_metrics[(i) + 32] + (510 - metric);             \
         decision = (signed int)(m0 - m1) > 0;                       \
         v->new_metrics[2 * (i)] = decision ? m1 : m0;               \
-        d->w[(i) / 16] |= decision << ((2 * (i)) & 31);             \
+        d->w[(i) / 16] |= decision << ((2U * (i)) & 31U);           \
         m0 -= (metric + metric - 510);                              \
         m1 += (metric + metric - 510);                              \
         decision = (signed int)(m0 - m1) > 0;                       \
         v->new_metrics[2 * (i) + 1] = decision ? m1 : m0;           \
-        d->w[(i) / 16] |= decision << ((2 * (i) + 1) & 31);         \
+        d->w[(i) / 16] |= decision << ((2U * (i) + 1U) & 31U);      \
     }
 
 /** Update a v27_t decoder with a block of symbols.
@@ -130,44 +130,44 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
             sym0 = *syms++;
             sym1 = *syms++;
 
-            BFLY(0);
-            BFLY(1);
-            BFLY(2);
-            BFLY(3);
-            BFLY(4);
-            BFLY(5);
-            BFLY(6);
-            BFLY(7);
-            BFLY(8);
-            BFLY(9);
-            BFLY(10);
-            BFLY(11);
-            BFLY(12);
-            BFLY(13);
-            BFLY(14);
-            BFLY(15);
-            BFLY(16);
-            BFLY(17);
-            BFLY(18);
-            BFLY(19);
-            BFLY(20);
-            BFLY(21);
-            BFLY(22);
-            BFLY(23);
-            BFLY(24);
-            BFLY(25);
-            BFLY(26);
-            BFLY(27);
-            BFLY(28);
-            BFLY(29);
-            BFLY(30);
-            BFLY(31);
+            BFLY(0U);
+            BFLY(1U);
+            BFLY(2U);
+            BFLY(3U);
+            BFLY(4U);
+            BFLY(5U);
+            BFLY(6U);
+            BFLY(7U);
+            BFLY(8U);
+            BFLY(9U);
+            BFLY(10U);
+            BFLY(11U);
+            BFLY(12U);
+            BFLY(13U);
+            BFLY(14U);
+            BFLY(15U);
+            BFLY(16U);
+            BFLY(17U);
+            BFLY(18U);
+            BFLY(19U);
+            BFLY(20U);
+            BFLY(21U);
+            BFLY(22U);
+            BFLY(23U);
+            BFLY(24U);
+            BFLY(25U);
+            BFLY(26U);
+            BFLY(27U);
+            BFLY(28U);
+            BFLY(29U);
+            BFLY(30U);
+            BFLY(31U);
 
             /* Normalize metrics if they are nearing overflow */
-            if (v->new_metrics[0] > (1 << 30))
+            if (v->new_metrics[0] > (1U << 30U))
                 {
                     int i;
-                    unsigned int minmetric = 1 << 31;
+                    unsigned int minmetric = 1U << 31U;
 
                     for (i = 0; i < 64; i++)
                         {
@@ -210,11 +210,11 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
 void v27_chainback_fixed(v27_t *v, unsigned char *data, unsigned int nbits,
     unsigned char final_state)
 {
-    int k;
+    unsigned int k;
     unsigned int decisions_index = v->decisions_index;
 
     final_state %= 64;
-    final_state <<= 2;
+    final_state <<= 2U;
 
     while (nbits-- != 0)
         {
@@ -222,12 +222,12 @@ void v27_chainback_fixed(v27_t *v, unsigned char *data, unsigned int nbits,
             decisions_index = (decisions_index == 0) ? v->decisions_count - 1 : decisions_index - 1;
 
             v27_decision_t *d = &v->decisions[decisions_index];
-            k = (d->w[(final_state >> 2) / 32] >> ((final_state >> 2) % 32)) & 1;
+            k = (d->w[(final_state >> 2U) / 32] >> ((final_state >> 2U) % 32)) & 1U;
             /* The store into data[] only needs to be done every 8 bits.
              * But this avoids a conditional branch, and the writes will
              * combine in the cache anyway
              */
-            data[nbits >> 3] = final_state = (final_state >> 1) | (k << 7);
+            data[nbits >> 3U] = final_state = (final_state >> 1U) | (k << 7U);
         }
 }
 

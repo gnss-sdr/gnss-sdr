@@ -69,9 +69,6 @@ gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
 }
 
 
-gnss_synchro_monitor::~gnss_synchro_monitor() = default;
-
-
 int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {

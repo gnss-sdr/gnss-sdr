@@ -54,7 +54,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~BeidouB1iTelemetryDecoder();
+    ~BeidouB1iTelemetryDecoder() = default;
 
     inline std::string role() override
     {

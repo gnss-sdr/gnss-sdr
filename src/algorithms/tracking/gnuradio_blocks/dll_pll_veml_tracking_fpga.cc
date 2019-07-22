@@ -463,6 +463,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_stop_tracking = false;
 }
 
+
 void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
@@ -472,19 +473,11 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
                     int tlm_event;
                     tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
 
-                    switch (tlm_event)
+                    if (tlm_event == 1)
                         {
-                        case 1:  // tlm fault in current channel
-                            {
-                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_carrier_lock_fail_counter = 200000;  //force loss-of-lock condition
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
+                            DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
+                            gr::thread::scoped_lock lock(d_setlock);
+                            d_carrier_lock_fail_counter = 200000;  //force loss-of-lock condition
                         }
                 }
         }
@@ -1571,9 +1564,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
                                    << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
 
-                        //                // DEBUG OUTPUT
-                        //                std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-                        //                DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+                        // DEBUG OUTPUT
+                        std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                        DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
                         //                DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                         //                std::cout << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)" << std::endl;

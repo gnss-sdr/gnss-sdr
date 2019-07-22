@@ -157,9 +157,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 }
 
 
-GalileoE1PcpsQuickSyncAmbiguousAcquisition::~GalileoE1PcpsQuickSyncAmbiguousAcquisition() = default;
-
-
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::stop_acquisition()
 {
 }

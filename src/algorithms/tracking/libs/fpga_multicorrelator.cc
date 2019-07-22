@@ -72,7 +72,8 @@
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     std::string device_name, uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
-    uint32_t multicorr_type, uint32_t code_samples_per_chip)
+    uint32_t code_samples_per_chip)
+
 {
     d_n_correlators = n_correlators;
     d_device_name = std::move(device_name);
@@ -114,7 +115,6 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     d_code_length_chips = code_length_chips;
     d_ca_codes = ca_codes;
     d_data_codes = data_codes;
-    d_multicorr_type = multicorr_type;
     d_code_samples_per_chip = code_samples_per_chip;
     d_code_length_samples = d_code_length_chips * d_code_samples_per_chip;
 
@@ -142,8 +142,8 @@ Fpga_Multicorrelator_8sc::~Fpga_Multicorrelator_8sc()
 uint64_t Fpga_Multicorrelator_8sc::read_sample_counter()
 {
     uint64_t sample_counter_tmp, sample_counter_msw_tmp;
-    sample_counter_tmp = d_map_base[SAMPLE_COUNTER_REG_ADDR_LSW];
-    sample_counter_msw_tmp = d_map_base[SAMPLE_COUNTER_REG_ADDR_MSW];
+    sample_counter_tmp = d_map_base[sample_counter_reg_addr_lsw];
+    sample_counter_msw_tmp = d_map_base[sample_counter_reg_addr_msw];
     sample_counter_msw_tmp = sample_counter_msw_tmp << 32;
     sample_counter_tmp = sample_counter_tmp + sample_counter_msw_tmp;  // 2^32
     return sample_counter_tmp;
@@ -153,8 +153,8 @@ uint64_t Fpga_Multicorrelator_8sc::read_sample_counter()
 void Fpga_Multicorrelator_8sc::set_initial_sample(uint64_t samples_offset)
 {
     d_initial_sample_counter = samples_offset;
-    d_map_base[INITIAL_COUNTER_VALUE_REG_ADDR_LSW] = (d_initial_sample_counter & 0xFFFFFFFF);
-    d_map_base[INITIAL_COUNTER_VALUE_REG_ADDR_MSW] = (d_initial_sample_counter >> 32) & 0xFFFFFFFF;
+    d_map_base[initial_counter_value_reg_addr_lsw] = (d_initial_sample_counter & 0xFFFFFFFF);
+    d_map_base[initial_counter_value_reg_addr_msw] = (d_initial_sample_counter >> 32) & 0xFFFFFFFF;
 }
 
 
@@ -212,18 +212,11 @@ void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     // release secondary code indices, keep channel locked
     if (d_secondary_code_enabled == true)
         {
-            //printf("in the right place\n");
-            // debug - force reset counter every time
-            //d_map_base[DROP_SAMPLES_REG_ADDR] = ENABLE_SECONDARY_CODE | INIT_SECONDARY_CODE_ADDRESSES;
-            d_map_base[DROP_SAMPLES_REG_ADDR] = ENABLE_SECONDARY_CODE;  // keep secondary code enabled
-
-            //    	//printf("do not enable secondary code on purpose\n");
-            //    	d_map_base[DROP_SAMPLES_REG_ADDR] = 0; // block samples
+            d_map_base[drop_samples_reg_addr] = enable_secondary_code;  // keep secondary code enabled
         }
     else
         {
-            //printf("in the wrong place\n");
-            d_map_base[DROP_SAMPLES_REG_ADDR] = 0;  // block samples
+            d_map_base[drop_samples_reg_addr] = 0;  // block samples
         }
     Fpga_Multicorrelator_8sc::read_tracking_gps_results();
 }
@@ -308,9 +301,9 @@ uint32_t Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(
 {
     uint32_t readval = 0;
     // write value to test register
-    d_map_base[TEST_REG_ADDR] = writeval;
+    d_map_base[test_reg_addr] = writeval;
     // read value from test register
-    readval = d_map_base[TEST_REG_ADDR];
+    readval = d_map_base[test_reg_addr];
     // return read value
     return readval;
 }
@@ -320,21 +313,21 @@ void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
 {
     uint32_t k;
 
-    d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
+    d_map_base[prog_mems_addr] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
     for (k = 0; k < d_code_length_samples; k++)
         {
-            d_map_base[PROG_MEMS_ADDR] = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
+            d_map_base[prog_mems_addr] = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
         }
     if (d_track_pilot)
         {
-            d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
+            d_map_base[prog_mems_addr] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
             for (k = 0; k < d_code_length_samples; k++)
                 {
-                    d_map_base[PROG_MEMS_ADDR] = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
+                    d_map_base[prog_mems_addr] = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
                 }
         }
 
-    d_map_base[CODE_LENGTH_MINUS_1_REG_ADDR] = (d_code_length_samples)-1;  // number of samples - 1
+    d_map_base[code_length_minus_1_reg_addr] = (d_code_length_samples)-1;  // number of samples - 1
 }
 
 
@@ -386,13 +379,13 @@ void Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
 {
     for (uint32_t i = 0; i < d_n_correlators; i++)
         {
-            d_map_base[INITIAL_INDEX_REG_BASE_ADDR + i] = d_initial_index[i];
-            d_map_base[INITIAL_INTERP_COUNTER_REG_BASE_ADDR + i] = d_initial_interp_counter[i];
+            d_map_base[initial_index_reg_base_addr + i] = d_initial_index[i];
+            d_map_base[initial_interp_counter_reg_base_addr + i] = d_initial_interp_counter[i];
         }
     if (d_track_pilot)
         {
-            d_map_base[INITIAL_INDEX_REG_BASE_ADDR + d_n_correlators] = d_initial_index[d_n_correlators];
-            d_map_base[INITIAL_INTERP_COUNTER_REG_BASE_ADDR + d_n_correlators] = d_initial_interp_counter[d_n_correlators];
+            d_map_base[initial_index_reg_base_addr + d_n_correlators] = d_initial_index[d_n_correlators];
+            d_map_base[initial_interp_counter_reg_base_addr + d_n_correlators] = d_initial_interp_counter[d_n_correlators];
         }
 }
 
@@ -425,17 +418,17 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
 
 void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
 {
-    d_map_base[CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR] = d_code_phase_step_chips_num;  // code phase step
+    d_map_base[code_phase_step_chips_num_reg_addr] = d_code_phase_step_chips_num;  // code phase step
 
-    d_map_base[CODE_PHASE_STEP_CHIPS_RATE] = d_code_phase_rate_step_chips_num;  // code phase step rate
+    d_map_base[code_phase_step_chips_rate_reg_addr] = d_code_phase_rate_step_chips_num;  // code phase step rate
 
-    d_map_base[NSAMPLES_MINUS_1_REG_ADDR] = d_correlator_length_samples - 1;  // number of samples
+    d_map_base[nsamples_minus_1_reg_addr] = d_correlator_length_samples - 1;  // number of samples
 
-    d_map_base[REM_CARR_PHASE_RAD_REG_ADDR] = d_rem_carr_phase_rad_int;  // initial nco phase
+    d_map_base[rem_carr_phase_rad_reg_addr] = d_rem_carr_phase_rad_int;  // initial nco phase
 
-    d_map_base[PHASE_STEP_RAD_REG_ADDR] = d_phase_step_rad_int;  // nco phase step
+    d_map_base[phase_step_rad_reg_addr] = d_phase_step_rad_int;  // nco phase step
 
-    d_map_base[PHASE_STEP_RATE_REG_ADDR] = d_carrier_phase_rate_step_rad_int;  // nco phase step rate
+    d_map_base[phase_step_rate_reg_addr] = d_carrier_phase_rate_step_rad_int;  // nco phase step rate
 }
 
 
@@ -449,7 +442,7 @@ void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
             std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
         }
     // writing 1 to reg 14 launches the tracking
-    d_map_base[START_FLAG_ADDR] = 1;
+    d_map_base[start_flag_addr] = 1;
 }
 
 
@@ -460,14 +453,14 @@ void Fpga_Multicorrelator_8sc::read_tracking_gps_results(void)
 
     for (uint32_t k = 0; k < d_n_correlators; k++)
         {
-            readval_real = d_map_base[RESULT_REG_REAL_BASE_ADDR + k];
-            readval_imag = d_map_base[RESULT_REG_IMAG_BASE_ADDR + k];
+            readval_real = d_map_base[result_reg_real_base_addr + k];
+            readval_imag = d_map_base[result_reg_imag_base_addr + k];
             d_corr_out[k] = gr_complex(readval_real, readval_imag);
         }
     if (d_track_pilot)
         {
-            readval_real = d_map_base[RESULT_REG_REAL_BASE_ADDR + d_n_correlators];
-            readval_imag = d_map_base[RESULT_REG_IMAG_BASE_ADDR + d_n_correlators];
+            readval_real = d_map_base[result_reg_real_base_addr + d_n_correlators];
+            readval_imag = d_map_base[result_reg_imag_base_addr + d_n_correlators];
             d_Prompt_Data[0] = gr_complex(readval_real, readval_imag);
         }
 }
@@ -476,8 +469,8 @@ void Fpga_Multicorrelator_8sc::read_tracking_gps_results(void)
 void Fpga_Multicorrelator_8sc::unlock_channel(void)
 {
     // unlock the channel to let the next samples go through
-    d_map_base[DROP_SAMPLES_REG_ADDR] = DROP_SAMPLES;  // unlock the channel and disable secondary codes
-    d_map_base[STOP_TRACKING_REG_ADDR] = 1;            // set the tracking module back to idle
+    d_map_base[drop_samples_reg_addr] = drop_samples;  // unlock the channel and disable secondary codes
+    d_map_base[stop_tracking_reg_addr] = 1;            // set the tracking module back to idle
 
     d_secondary_code_enabled = false;
 }
@@ -497,7 +490,7 @@ void Fpga_Multicorrelator_8sc::close_device()
 void Fpga_Multicorrelator_8sc::lock_channel(void)
 {
     // lock the channel for processing
-    d_map_base[DROP_SAMPLES_REG_ADDR] = 0;  // lock the channel
+    d_map_base[drop_samples_reg_addr] = 0;  // lock the channel
 }
 
 
@@ -506,24 +499,16 @@ void Fpga_Multicorrelator_8sc::set_secondary_code_lengths(uint32_t secondary_cod
     d_secondary_code_0_length = secondary_code_0_length;
     d_secondary_code_1_length = secondary_code_1_length;
 
-    // debug
-    //printf("warning extending the code length 0 to 20\n");
-    //d_secondary_code_0_length = 20;
-
     uint32_t secondary_code_length_0_minus_1 = d_secondary_code_0_length - 1;
     uint32_t secondary_code_length_1_minus_1 = d_secondary_code_1_length - 1;
 
-    d_map_base[SECONDARY_CODE_LENGTHS_REG_ADDR] = secondary_code_length_1_minus_1 * 256 + secondary_code_length_0_minus_1;
-
-    //std::cout << "setting secondary code lengths : \n";
-    //std::cout << "initialized correlator 1 sec code length = " << d_secondary_code_1_length << " correlator 0 sec code length = " << d_secondary_code_0_length << std::endl;
+    d_map_base[secondary_code_lengths_reg_addr] = secondary_code_length_1_minus_1 * 256 + secondary_code_length_0_minus_1;
 }
 
 void Fpga_Multicorrelator_8sc::update_secondary_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code)
 {
-    d_map_base[FIRST_PRN_LENGTH_MINUS_1_REG_ADDR] = first_length_secondary_code - 1;
-    d_map_base[NEXT_PRN_LENGTH_MINUS_1_REG_ADDR] = next_length_secondary_code - 1;
-    //std::cout << " first_length_secondary_code = " << first_length_secondary_code << " next_length_secondary_code =  " << next_length_secondary_code << " sum = " << first_length_secondary_code + next_length_secondary_code << std::endl;
+    d_map_base[first_prn_length_minus_1_reg_addr] = first_length_secondary_code - 1;
+    d_map_base[next_prn_length_minus_1_reg_addr] = next_length_secondary_code - 1;
 }
 
 void Fpga_Multicorrelator_8sc::initialize_secondary_code(uint32_t secondary_code, std::string *secondary_code_string)
@@ -533,67 +518,26 @@ void Fpga_Multicorrelator_8sc::initialize_secondary_code(uint32_t secondary_code
     if (secondary_code == 0)
         {
             secondary_code_length = d_secondary_code_0_length;
-            reg_addr = PROG_SECONDARY_CODE_0_DATA_REG_ADDR;
+            reg_addr = prog_secondary_code_0_data_reg_addr;
         }
     else
         {
             secondary_code_length = d_secondary_code_1_length;
-            reg_addr = PROG_SECONDARY_CODE_1_DATA_REG_ADDR;
+            reg_addr = prog_secondary_code_1_data_reg_addr;
         }
     Fpga_Multicorrelator_8sc::write_secondary_code(secondary_code_length, secondary_code_string, reg_addr);
 }
 
 
-//void Fpga_Multicorrelator_8sc::initialize_secondary_codes(bool track_pilot,
-//		uint32_t secondary_code_length_data, std::string *secondary_code_string_data,
-//		uint32_t secondary_code_length_pilot, std::string *secondary_code_string_pilot)
-//{
-//	if (track_pilot)
-//	{
-//		// write secondary_code_length_pilot | secondary_code_length_data << 8
-//		d_map_base[SECONDARY_CODE_LENGTHS_REG_ADDR] = secondary_code_length_pilot + secondary_code_length_data*256;
-//
-//		// write pilot secondary code
-//		Fpga_Multicorrelator_8sc::write_secondary_code(secondary_code_length_pilot, secondary_code_string_pilot, PROG_SECONDARY_CODE_0_DATA_REG_ADDR);
-//
-//		// write data secondary code
-//		Fpga_Multicorrelator_8sc::write_secondary_code(secondary_code_length_data, secondary_code_string_pilot, PROG_SECONDARY_CODE_1_DATA_REG_ADDR);
-//
-//	}
-//	else
-//	{
-//		d_map_base[SECONDARY_CODE_LENGTHS_REG_ADDR] = secondary_code_length_data;
-//
-//		// write data secondary code
-//		Fpga_Multicorrelator_8sc::write_secondary_code(secondary_code_length_data, secondary_code_string_pilot, PROG_SECONDARY_CODE_0_DATA_REG_ADDR);
-//	}
-//
-//	std::cout << "going to print string " << std::endl;
-//	std::cout << secondary_code_string_data << std::endl;
-//
-//
-//}
-
 void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr)
 {
-    uint32_t num_words = ceil(((float)secondary_code_length) / SECONDARY_CODE_WORD_SIZE);
-    uint32_t last_word_size = secondary_code_length % SECONDARY_CODE_WORD_SIZE;
-    //uint32_t initial_pointer;
+    uint32_t num_words = ceil(((float)secondary_code_length) / secondary_code_word_size);
+    uint32_t last_word_size = secondary_code_length % secondary_code_word_size;
 
     if (last_word_size == 0)
         {
-            last_word_size = SECONDARY_CODE_WORD_SIZE;
+            last_word_size = secondary_code_word_size;
         }
-    // debug
-    //std::cout << "secondary_code_length = " << secondary_code_length << std::endl;
-    //std::cout << "secondary code string = " << *secondary_code_string << std::endl;
-    //std::cout << "reg_addr = " << reg_addr << std::endl;
-
-
-    // debug
-    //std::cout << "num_words = " << num_words << std::endl;
-    //std::cout << "last_word_size = " << last_word_size << std::endl;
-
 
     uint32_t write_val = 0U;
     uint32_t pow_k;
@@ -602,134 +546,42 @@ void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_leng
         {
             for (mem_addr = 0; mem_addr < num_words - 1; mem_addr++)
                 {
-                    //std::cout << "------------------------------------------------------ going to write word " << mem_addr << std::endl;
                     write_val = 0U;
                     pow_k = 1;
-                    for (unsigned int k = 0; k < SECONDARY_CODE_WORD_SIZE; k++)
+                    for (unsigned int k = 0; k < secondary_code_word_size; k++)
                         {
-                            // debug
-                            //std::cout << "reading bit position = " << mem_addr*SECONDARY_CODE_WORD_SIZE + k << std::endl;
-                            //std::cout << "bit shift = " << pow_k << std::endl;
-
-                            std::string string_tmp(1, secondary_code_string->at(mem_addr * SECONDARY_CODE_WORD_SIZE + k));
+                            std::string string_tmp(1, secondary_code_string->at(mem_addr * secondary_code_word_size + k));
                             write_val = write_val | std::stoi(string_tmp) * pow_k;
-
-                            // debug
-                            //std::cout << "computing bit k = " << k << " bit k value = "<< std::stoi(string_tmp) << std::endl;
-                            //std::cout << "computing bit k displaced = " << std::stoi(string_tmp)*pow_k << std::endl;
-                            //std::cout << "write val = " << write_val << std::endl;
-
                             pow_k = pow_k * 2;
                         }
-
-                    //std::cout << "writing secondary code reg addr " << reg_addr << "secondary code value " << write_val << std::endl;
-
-
-                    // debug
-                    //write_val = 0;
-
-                    write_val = write_val | mem_addr * SECONDARY_CODE_ADDR_BITS | SECONDARY_CODE_WR_STROBE;
+                    write_val = write_val | mem_addr * secondary_code_addr_bits | secondary_code_wr_strobe;
                     d_map_base[reg_addr] = write_val;
-
-                    //std::cout << "writing fpga register value " << write_val << std::endl;
-
-
-                    // debug
-                    //			std::cout << "wrote word " << mem_addr << "value is ";
-                    //			while (write_val) {
-                    //			    if (write_val & 1)
-                    //			        printf("1");
-                    //			    else
-                    //			        printf("0");
-                    //
-                    //			    write_val >>= 1;
-                    //			}
-                    //			printf("\n");
                 }
         }
     write_val = 0U;
     pow_k = 1;
     mem_addr = num_words - 1;
 
-    //std::cout << "------------------------------------------------------ going to write word " << mem_addr << std::endl;
-
     for (unsigned int k = 0; k < last_word_size; k++)
         {
-            // debug
-            //std::cout << "reading bit position = " << mem_addr*SECONDARY_CODE_WORD_SIZE + k << std::endl;
-            //std::cout << "bit shift = " << pow_k << std::endl;
-
-            std::string string_tmp(1, secondary_code_string->at(mem_addr * SECONDARY_CODE_WORD_SIZE + k));
+            std::string string_tmp(1, secondary_code_string->at(mem_addr * secondary_code_word_size + k));
             write_val = write_val | std::stoi(string_tmp) * pow_k;
-
-            // debug
-            //std::cout << "computing bit k = " << k << " bit k value = "<< std::stoi(string_tmp) << std::endl;
-            //std::cout << "computing bit k displaced = " << std::stoi(string_tmp)*pow_k << std::endl;
-            //std::cout << "write val = " << write_val << std::endl;
-
             pow_k = pow_k * 2;
         }
 
-    // debug
-    //write_val = 0;
-
-    //std::cout << "writing secondary code reg addr " << reg_addr << "secondary code value " << write_val << std::endl;
-
-    write_val = write_val | (mem_addr * SECONDARY_CODE_ADDR_BITS) | (SECONDARY_CODE_WR_STROBE);
+    write_val = write_val | (mem_addr * secondary_code_addr_bits) | (secondary_code_wr_strobe);
     d_map_base[reg_addr] = write_val;
 
-    //std::cout << "writing fpga register value " << write_val << std::endl;
-
-
-    //	// debug
-    //	write_val = write_val | 705200;
-    //	d_map_base[reg_addr] = write_val;
-    //	printf("warning : extending the code length to 20\n");
-    //	std::cout << "writing fpga register value " << write_val << std::endl;
-
-    //	// debug
-    //	//write_val = (SECONDARY_CODE_WR_STROBE) | 0x00055400;
-    //	write_val = (SECONDARY_CODE_WR_STROBE) | 0x00000155;
-    //	d_map_base[reg_addr] = write_val;
-    //	for (unsigned int k=1;k<5;k++)
-    //	{
-    //		write_val = (k*SECONDARY_CODE_ADDR_BITS) | (SECONDARY_CODE_WR_STROBE) | 0x00055555;
-    //		d_map_base[reg_addr] = write_val;
-    //	}
-
-    //	// debug
-    //	std::cout << "wrote word " << mem_addr << " value is " << write_val << " = ";
-    //	while (write_val) {
-    //	    if (write_val & 1)
-    //	        printf("1");
-    //	    else
-    //	        printf("0");
-    //
-    //	    write_val >>= 1;
-    //	}
-    //	printf("\n");
-    //printf("\n=============================================================================* END OF THIS\n");
 }
-
-//void Fpga_Multicorrelator_8sc::init_secondary_code_indices(void)
-//{
-//	d_map_base[DROP_SAMPLES_REG_ADDR] = 5; // leave channel unlocked,  and init
-//}
 
 void Fpga_Multicorrelator_8sc::enable_secondary_codes()
 {
-    d_map_base[DROP_SAMPLES_REG_ADDR] = INIT_SECONDARY_CODE_ADDRESSES | ENABLE_SECONDARY_CODE;  // enable secondary codes and clear secondary code indices
+    d_map_base[drop_samples_reg_addr] = init_secondary_code_addresses | enable_secondary_code;  // enable secondary codes and clear secondary code indices
     d_secondary_code_enabled = true;
-    //std::cout << "enabling secondary codes d_map_base[DROP_SAMPLES_REG_ADDR] = " << (INIT_SECONDARY_CODE_ADDRESSES | ENABLE_SECONDARY_CODE) << std::endl;
-
-    //	// debug
-    //	printf("do not enable secondary code on purpose\n");
-    //	d_map_base[DROP_SAMPLES_REG_ADDR]  = 0;
 }
 
 void Fpga_Multicorrelator_8sc::disable_secondary_codes()
 {
     // this function is to be called before starting the tracking process in order to disable the secondary codes by default
-    //printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx disabling secondary codes in fpga\n");
-    d_map_base[DROP_SAMPLES_REG_ADDR] = DROP_SAMPLES;
+    d_map_base[drop_samples_reg_addr] = drop_samples;
 }

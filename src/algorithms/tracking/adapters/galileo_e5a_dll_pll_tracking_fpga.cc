@@ -162,14 +162,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
     trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
 
-    //    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    //    if (FLAGS_max_lock_fail != 50)
-    //        {
-    //            max_lock_fail = FLAGS_max_lock_fail;
-    //        }
-    //    trk_param_fpga.max_lock_fail = max_lock_fail;
-
-
     d_data_codes = nullptr;
 
     // FPGA configuration parameters
@@ -178,7 +170,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.device_name = device_name;
     uint32_t device_base = configuration->property(role + ".device_base", 27);
     trk_param_fpga.device_base = device_base;
-    trk_param_fpga.multicorr_type = 1;  // 0 -> 3 correlators, 1 -> up to 5+1 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 1;

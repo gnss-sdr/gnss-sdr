@@ -78,7 +78,6 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     signal[2] = '\0';
     device_name = "/dev/uio";
     device_base = 1U;
-    multicorr_type = 0U;
     code_length_chips = 0U;
     code_samples_per_chip = 0U;
     ca_codes = nullptr;

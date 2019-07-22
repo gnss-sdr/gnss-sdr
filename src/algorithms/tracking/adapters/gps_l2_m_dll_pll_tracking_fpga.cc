@@ -116,8 +116,6 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.device_name = device_name;
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
-    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
-    trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     auto* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 

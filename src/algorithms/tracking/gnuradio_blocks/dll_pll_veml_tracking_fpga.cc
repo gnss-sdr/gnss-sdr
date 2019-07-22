@@ -806,8 +806,8 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     K_blk_samples = T_prn_samples * d_current_fpga_integration_period + d_rem_code_phase_samples;  // initially d_rem_code_phase_samples is zero. It is updated at the end of this function
 
     int32_t actual_blk_length = static_cast<int32_t>(std::floor(K_blk_samples));
-    d_next_integration_length_samples = 2 * actual_blk_length - d_current_integration_length_samples;
-
+    //d_next_integration_length_samples = 2 * actual_blk_length - d_current_integration_length_samples;
+    d_next_integration_length_samples = actual_blk_length;
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;

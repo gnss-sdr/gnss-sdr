@@ -49,6 +49,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
     glonass_l2_ca_dll_pll_c_aid_tracking_cc.cc
     glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc
     dll_pll_veml_tracking.cc
+    mixed_veml_tracking.cc
     ${OPT_TRACKING_BLOCKS_SOURCES}
 )
 
@@ -62,6 +63,7 @@ set(TRACKING_GR_BLOCKS_HEADERS
     glonass_l2_ca_dll_pll_tracking_cc.h
     glonass_l2_ca_dll_pll_c_aid_tracking_cc.h
     glonass_l2_ca_dll_pll_c_aid_tracking_sc.h
+    mixed_veml_tracking.h
     dll_pll_veml_tracking.h
     ${OPT_TRACKING_BLOCKS_HEADERS}
 )

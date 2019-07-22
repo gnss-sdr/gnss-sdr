@@ -132,7 +132,6 @@ void CubatureFilter::predict_sequential(const arma::vec& x_post, const arma::mat
     // Propagate and evaluate cubature points
     arma::vec Xi_post;
     arma::vec Xi_pred;
-
     for (uint8_t i = 0; i < np; i++)
         {
             Xi_post = Sm_post * (std::sqrt(static_cast<float>(np) / 2.0) * gen_one.col(i)) + x_post;

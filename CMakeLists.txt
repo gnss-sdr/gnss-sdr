@@ -685,6 +685,9 @@ set_package_properties(Boost PROPERTIES
 if(CMAKE_VERSION VERSION_LESS 3.14)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
+if(POLICY CMP0093)
+    cmake_policy(SET CMP0093 NEW)  # FindBoost reports Boost_VERSION in x.y.z format.
+endif()
 set_package_properties(Boost PROPERTIES
     DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
 )

@@ -129,7 +129,7 @@ beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 
 
 void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits,
-    int32_t *decbits)
+    std::array<int32_t, 15> &decbits)
 {
     int32_t bit, err;
     std::array<int32_t, 4> reg{1, 1, 1, 1};
@@ -185,8 +185,8 @@ void beidou_b3i_telemetry_decoder_gs::decode_word(
                         }
                 }
 
-            decode_bch15_11_01(&bitsbch[0], first_branch.data());
-            decode_bch15_11_01(&bitsbch[15], second_branch.data());
+            decode_bch15_11_01(&bitsbch[0], first_branch);
+            decode_bch15_11_01(&bitsbch[15], second_branch);
 
             for (uint32_t j = 0; j < 11; j++)
                 {
@@ -409,8 +409,8 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
     Gnss_Synchro current_symbol{};  // structure to save the synchronization
-                                  // information and send the output object to the
-                                  // next block
+                                    // information and send the output object to the
+                                    // next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     d_symbol_history.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue

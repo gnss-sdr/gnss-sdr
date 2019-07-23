@@ -323,7 +323,7 @@ void pcps_acquisition::init()
                     d_magnitude_grid[doppler_index][k] = 0.0;
                 }
             int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(gsl::span<gr_complex>(d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size), d_old_freq + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_old_freq + doppler);
         }
 
     d_worker_active = false;
@@ -342,7 +342,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(gsl::span<gr_complex>(d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size), d_old_freq + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_old_freq + doppler);
         }
 }
 
@@ -352,7 +352,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
         {
             float doppler = (static_cast<float>(doppler_index) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2;
-            update_local_carrier(gsl::span<gr_complex>(d_grid_doppler_wipeoffs_step_two[doppler_index].data(), d_fft_size), d_doppler_center_step_two + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_doppler_center_step_two + doppler);
         }
 }
 

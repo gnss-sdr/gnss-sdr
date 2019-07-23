@@ -41,6 +41,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 class galileo_pcps_8ms_acquisition_cc;
 
@@ -206,17 +207,17 @@ private:
     uint32_t d_well_count;
     uint32_t d_fft_size;
     uint64_t d_sample_counter;
-    gr_complex** d_grid_doppler_wipeoffs;
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
-    gr_complex* d_fft_code_A;
-    gr_complex* d_fft_code_B;
+    std::vector<gr_complex> d_fft_code_A;
+    std::vector<gr_complex> d_fft_code_B;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;
     float d_mag;
-    float* d_magnitude;
+    std::vector<float> d_magnitude;
     float d_input_power;
     float d_test_statistics;
     std::ofstream d_dump_file;
@@ -228,4 +229,4 @@ private:
     std::string d_dump_filename;
 };
 
-#endif /* GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_ */

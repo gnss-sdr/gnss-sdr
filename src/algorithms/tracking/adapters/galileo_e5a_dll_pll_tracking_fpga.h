@@ -44,32 +44,61 @@ class ConfigurationInterface;
 class GalileoE5aDllPllTrackingFpga : public TrackingInterface
 {
 public:
+    /*!
+     * \brief Constructor
+     */
     GalileoE5aDllPllTrackingFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
+    /*!
+     * \brief Destructor
+     */
     virtual ~GalileoE5aDllPllTrackingFpga();
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "Galileo_E5a_DLL_PLL_Tracking_Fpga"
+    /*!
+     * \brief Returns "Galileo_E5a_DLL_PLL_Tracking_Fpga"
+     */
     inline std::string implementation() override
     {
         return "Galileo_E5a_DLL_PLL_Tracking_Fpga";
     }
 
-    inline size_t item_size() override
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
+    size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
@@ -83,9 +112,13 @@ public:
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-    void start_tracking() override;
     /*!
-     * \brief Stop running tracking
+     * \brief Start the tracking process in the FPGA
+     */
+    void start_tracking() override;
+
+    /*!
+     * \brief Stop the tracking process in the FPGA
      */
     void stop_tracking() override;
 
@@ -98,7 +131,6 @@ private:
 
 
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
     uint32_t channel_;
     std::string role_;
     uint32_t in_streams_;

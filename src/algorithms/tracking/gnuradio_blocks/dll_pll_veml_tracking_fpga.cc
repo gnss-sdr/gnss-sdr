@@ -1851,10 +1851,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // this must be computed for the secondary prn code
                         if (d_secondary)
                             {
-                                uint32_t first_length_secondary_code = d_current_integration_length_samples - (d_fpga_integration_period - 1) * static_cast<int32_t>(std::floor(T_prn_samples));
-                                uint32_t next_length_secondary_code = static_cast<int32_t>(std::floor(T_prn_samples));
+                                uint32_t first_prn_length = d_current_integration_length_samples - (d_fpga_integration_period - 1) * static_cast<int32_t>(std::floor(T_prn_samples));
+                                uint32_t next_prn_length = static_cast<int32_t>(std::floor(T_prn_samples));
 
-                                multicorrelator_fpga->update_secondary_code_length(first_length_secondary_code, next_length_secondary_code);
+                                multicorrelator_fpga->update_prn_code_length(first_prn_length, next_prn_length);
                             }
 
                         // perform a correlation step
@@ -1898,10 +1898,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // this must be computed for the secondary prn code
                         if (d_secondary)
                             {
-                                uint32_t first_length_secondary_code = d_current_integration_length_samples - (d_fpga_integration_period - 1) * static_cast<int32_t>(std::floor(T_prn_samples));
-                                uint32_t next_length_secondary_code = static_cast<int32_t>(std::floor(T_prn_samples));
+                                uint32_t first_prn_length = d_current_integration_length_samples - (d_fpga_integration_period - 1) * static_cast<int32_t>(std::floor(T_prn_samples));
+                                uint32_t next_prn_length = static_cast<int32_t>(std::floor(T_prn_samples));
 
-                                multicorrelator_fpga->update_secondary_code_length(first_length_secondary_code, next_length_secondary_code);
+                                multicorrelator_fpga->update_prn_code_length(first_prn_length, next_prn_length);
                             }
 
                         // perform a correlation step

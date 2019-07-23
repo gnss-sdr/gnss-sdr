@@ -491,10 +491,10 @@ void Fpga_Multicorrelator_8sc::set_secondary_code_lengths(uint32_t secondary_cod
     d_map_base[secondary_code_lengths_reg_addr] = secondary_code_length_1_minus_1 * 256 + secondary_code_length_0_minus_1;
 }
 
-void Fpga_Multicorrelator_8sc::update_secondary_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code)
+void Fpga_Multicorrelator_8sc::update_prn_code_length(uint32_t first_prn_length, uint32_t next_prn_length)
 {
-    d_map_base[first_prn_length_minus_1_reg_addr] = first_length_secondary_code - 1;
-    d_map_base[next_prn_length_minus_1_reg_addr] = next_length_secondary_code - 1;
+    d_map_base[first_prn_length_minus_1_reg_addr] = first_prn_length - 1;
+    d_map_base[next_prn_length_minus_1_reg_addr] = next_prn_length - 1;
 }
 
 void Fpga_Multicorrelator_8sc::initialize_secondary_code(uint32_t secondary_code, std::string *secondary_code_string)

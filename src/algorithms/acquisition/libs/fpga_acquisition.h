@@ -45,6 +45,10 @@
 class Fpga_Acquisition
 {
 public:
+
+	/*!
+	 * \brief Constructor
+	 */
     Fpga_Acquisition(
         std::string device_name,
         uint32_t nsamples,
@@ -56,14 +60,29 @@ public:
         uint32_t *all_fft_codes,
         uint32_t excludelimit);
 
+    /*!
+     * \brief Destructor
+     */
     ~Fpga_Acquisition() = default;
 
+    /*!
+     * \brief Select the code with the chosen PRN
+     */
     bool set_local_code(uint32_t PRN);
 
+    /*!
+     * \brief Configure the doppler sweep parameters in the FPGA
+     */
     void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min);
 
+    /*!
+     * \brief Run the acquisition process in the FPGA
+     */
     void run_acquisition(void);
 
+    /*!
+     * \brief Read the results of the acquisition process
+     */
     void read_acquisition_results(
         uint32_t *max_index,
         float *firstpeak,
@@ -72,10 +91,6 @@ public:
         float *power_sum,
         uint32_t *doppler_index,
         uint32_t *total_blk_exp);
-
-    void block_samples();
-
-    void unblock_samples();
 
     /*!
      * \brief Set maximum Doppler grid search
@@ -101,18 +116,33 @@ public:
     void reset_acquisition(void);
 
     /*!
-     * \brief read the scaling factor that has been used by the FFT-IFFT
+     * \brief Read the scaling factor that has been used by the FFT-IFFT
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
+    /*!
+     * \brief Set the block exponent of the FFT in the FPGA.
+     */
     void set_block_exp(uint32_t total_block_exp);
 
+    /*!
+     * \brief Write the PRN code in the FPGA
+     */
     void write_local_code(void);
 
+    /*!
+     * \brief Write the acquisition parameters into the FPGA
+     */
     void configure_acquisition(void);
 
+    /*!
+     * \brief Open the device driver
+     */
     void open_device();
 
+    /*!
+     * \brief Close the device driver
+     */
     void close_device();
 
 private:

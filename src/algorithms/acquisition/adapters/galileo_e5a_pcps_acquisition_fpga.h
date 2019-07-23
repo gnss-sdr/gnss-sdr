@@ -50,13 +50,23 @@ class ConfigurationInterface;
 class GalileoE5aPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
+
+    /*!
+     * \brief Constructor
+     */
     GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
+    /*!
+     * \brief Destructor
+     */
     ~GalileoE5aPcpsAcquisitionFpga() = default;
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
@@ -70,14 +80,32 @@ public:
         return "Galileo_E5a_Pcps_Acquisition_Fpga";
     }
 
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
@@ -158,7 +186,7 @@ public:
     void stop_acquisition() override;
 
     /*!
-     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     * \brief Set resampler latency
      */
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
@@ -174,7 +202,6 @@ private:
 
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    size_t item_size_;
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;

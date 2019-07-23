@@ -50,29 +50,108 @@
 class Fpga_Multicorrelator_8sc
 {
 public:
+
+	/*!
+	 * \brief Constructor
+	 */
     Fpga_Multicorrelator_8sc(int32_t n_correlators, std::string device_name,
         uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot, uint32_t code_samples_per_chip);
+
+    /*!
+     * \brief Destructor
+     */
     ~Fpga_Multicorrelator_8sc();
+
+    /*!
+     * \brief Configure pointers to the FPGA multicorrelator results
+     */
     void set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data);
+
+    /*!
+     * \brief Configure the local code in the FPGA multicorrelator
+     */
     void set_local_code_and_taps(
         float *shifts_chips, float *prompt_data_shift, int32_t PRN);
+
+    /*!
+     * \brief Configure code phase and code rate parameters in the FPGA
+     */
     void update_local_code();
+
+    /*!
+     * \brief Perform a multicorrelation
+     */
     void Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad, float phase_step_rad,
         float carrier_phase_rate_step_rad,
         float rem_code_phase_chips, float code_phase_step_chips,
         float code_phase_rate_step_chips,
         int32_t signal_length_samples);
+
+    /*!
+     * \brief Stop the correlation process in the FPGA and free code phase and code rate parameters
+     */
     bool free();
+
+    /*!
+     * \brief Set channel number and open the FPGA device driver
+     */
     void set_channel(uint32_t channel);
+
+    /*!
+     * \brief Set the initial sample number where the tracking process begins
+     */
     void set_initial_sample(uint64_t samples_offset);
+
+    /*!
+     * \brief Read the sample counter in the FPGA
+     */
     uint64_t read_sample_counter();
+
+    /*!
+     * \brief Start the tracking process in the FPGA
+     */
     void lock_channel(void);
+
+    /*!
+     * \brief finish the tracking process in the FPGA
+     */
     void unlock_channel(void);
+
+    /*!
+     * \brief Set the secondary code length in the FPGA. This is only used when extended coherent integration
+     * is enabled in the FPGA. If tracking the pilot is enabled then secondary_code_0_length is the length of the pilot
+     * secondary code and secondary_code_1_length is the length of the data secondary code. If tracking the pilot is disabled
+     * then secondary_code_0_length is the length of the data secondary code, and secondary_code_1_length must be set to zero.
+     */
     void set_secondary_code_lengths(uint32_t secondary_code_0_length, uint32_t secondary_code_1_length);
+
+    /*!
+     * \brief Initialize the secondary code in the FPGA. If tracking the pilot is enabled then the pilot secondary code is
+     * configured when secondary_code = 0 and the data secondary code is configured when secondary_code = 1. If tracking the
+     * pilot is disabled then the data secondary code is configured when secondary code = 0.
+     */
     void initialize_secondary_code(uint32_t secondary_code, std::string *secondary_code_string);
-    void update_secondary_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code);
+
+    /*!
+     * \brief Set the PRN length in the FPGA in number of samples. This function is only used then extended coherent integration is enabled in the
+     * FPGA. The FPGA allows for the configuration of two PRN lengths. When the length of the extended coherent integration is bigger than the
+     * length of the PRN code, the FPGA uses the first_length_secondary_code as the length of the PRN code immediately following the beginning
+     * of the extended coherent integration, and the next_length_secondary_code as the length of the remaining PRN codes.
+     * The purpose of this is to have the option to allow the FPGA to compensate for a possible deviation between the nominal value of the PRN
+     * code length and the measured PRN code length in the PRN immediately following the start of the coherent integration only.
+     * If this option is not used then write the same value to first_length_secondary_code  and next_length_secondary_code.
+     */
+    void update_prn_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code);
+
+    /*!
+     * \brief Enable the use of secondary codes in the FPGA
+     */
     void enable_secondary_codes();
+
+    /*!
+     * \brief Disable the use of secondary codes in the FPGA
+     */
     void disable_secondary_codes();
 
 

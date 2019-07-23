@@ -176,11 +176,6 @@ void Fpga_Acquisition::run_acquisition(void)
             std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
 
-    //    nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t)));
-    //    if (nbytes != sizeof(int32_t))
-    //        {
-    //            std::cerr << "Error disabling interruptions in the FPGA." << std::endl;
-    //        }
 }
 
 
@@ -213,7 +208,7 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 
 void Fpga_Acquisition::configure_acquisition()
 {
-    //Fpga_Acquisition::open_device();
+    //Fpga_Acquisition::();
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
@@ -255,18 +250,6 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
 
     readval = d_map_base[8];  // read FFT block exponent
     *total_blk_exp = readval;
-}
-
-
-void Fpga_Acquisition::block_samples()
-{
-    d_map_base[14] = 1;  // block the samples
-}
-
-
-void Fpga_Acquisition::unblock_samples()
-{
-    d_map_base[14] = 0;  // unblock the samples
 }
 
 

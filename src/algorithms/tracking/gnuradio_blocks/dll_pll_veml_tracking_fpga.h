@@ -62,16 +62,45 @@ dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Co
 class dll_pll_veml_tracking_fpga : public gr::block
 {
 public:
+	/*!
+	 * \brief Destructor
+	 */
     ~dll_pll_veml_tracking_fpga();
 
+	/*!
+	 * \brief Set the channel number and configure some multicorrelator parameters
+	 */
     void set_channel(uint32_t channel);
+
+    /*!
+     * \brief This function is used with two purposes:
+     * 1 -> To set the gnss_synchro
+     * 2 -> A set_gnss_synchro command with a valid PRN is received when the system is going to run
+     * acquisition with that PRN. We can use this command to pre-initialize tracking parameters and
+     * variables before the actual acquisition process takes place. In this way we minimize the
+     * latency between acquisition and tracking once the acquisition has been made.
+     */
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
+
+	/*!
+	 * \brief This function starts the tracking process
+	 */
     void start_tracking();
+
+	/*!
+	 * \brief This function sets a flag that makes general_work to stop in order to finish the tracking process.
+	 */
     void stop_tracking();
 
+	/*!
+	 * \brief General Work
+	 */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
+	/*!
+	 * \brief This function disables the HW multicorrelator in the FPGA in order to stop the tracking process
+	 */
     void reset(void);
 
 private:

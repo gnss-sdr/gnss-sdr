@@ -52,13 +52,23 @@ class ConfigurationInterface;
 class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
+
+    /*!
+     * \brief Constructor
+     */
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
+    /*!
+     * \brief Destructor
+     */
     ~GpsL1CaPcpsAcquisitionFpga() = default;
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
@@ -72,14 +82,32 @@ public:
         return "GPS_L1_CA_PCPS_Acquisition_Fpga";
     }
 
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
@@ -152,6 +180,9 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Set Resampler Latency
+     */
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
@@ -168,7 +199,6 @@ private:
 
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    size_t item_size_;
     uint32_t channel_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;

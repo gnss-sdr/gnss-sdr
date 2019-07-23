@@ -89,6 +89,9 @@ pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 class pcps_acquisition_fpga
 {
 public:
+    /*!
+     * \brief Destructor
+     */
     ~pcps_acquisition_fpga() = default;
 
     /*!
@@ -116,7 +119,6 @@ public:
 
     /*!
      * \brief Sets local code for PCPS acquisition algorithm.
-     * \param code - Pointer to the PRN code.
      */
     void set_local_code();
 

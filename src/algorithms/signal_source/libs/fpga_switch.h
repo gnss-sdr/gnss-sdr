@@ -39,11 +39,27 @@
 
 #include <string>
 
+/*!
+ * \brief Class that controls the switch in the FPGA, which connects the FPGA acquisition and multicorrelator modules to
+ * either the DMA or the Analog Front-End.
+ */
 class Fpga_Switch
 {
 public:
+
+	/*!
+	 * \brief Constructor
+	 */
     Fpga_Switch(const std::string& device_name);
+
+    /*!
+     * \brief Destructor
+     */
     ~Fpga_Switch();
+
+    /*!
+     * \brief This function configures the switch in th eFPGA
+     */
     void set_switch_position(int32_t switch_position);
 
 private:

@@ -47,7 +47,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 
@@ -222,23 +221,23 @@ private:
     unsigned int d_well_count;
     unsigned int d_fft_size;
     uint64_t d_sample_counter;
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
-    std::vector<gr_complex> d_fft_code_I_A;
-    std::vector<gr_complex> d_fft_code_I_B;
-    std::vector<gr_complex> d_fft_code_Q_A;
-    std::vector<gr_complex> d_fft_code_Q_B;
-    std::vector<gr_complex> d_inbuffer;
+    gr_complex* d_fft_code_I_A;
+    gr_complex* d_fft_code_I_B;
+    gr_complex* d_fft_code_Q_A;
+    gr_complex* d_fft_code_Q_B;
+    gr_complex* d_inbuffer;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
     float d_mag;
-    std::vector<float> d_magnitudeIA;
-    std::vector<float> d_magnitudeIB;
-    std::vector<float> d_magnitudeQA;
-    std::vector<float> d_magnitudeQB;
+    float* d_magnitudeIA;
+    float* d_magnitudeIB;
+    float* d_magnitudeQA;
+    float* d_magnitudeQB;
     float d_input_power;
     float d_test_statistics;
     bool d_bit_transition_flag;
@@ -248,9 +247,9 @@ private:
     bool d_dump;
     bool d_both_signal_components;
     int d_CAF_window_hz;
-    std::vector<float> d_CAF_vector;
-    std::vector<float> d_CAF_vector_I;
-    std::vector<float> d_CAF_vector_Q;
+    float* d_CAF_vector;
+    float* d_CAF_vector_I;
+    float* d_CAF_vector_Q;
     unsigned int d_channel;
     std::string d_dump_filename;
     unsigned int d_buffer_count;

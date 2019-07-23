@@ -79,7 +79,7 @@ private:
     void decode_subframe(float *symbols);
     void decode_word(int32_t word_counter, const float *enc_word_symbols,
         int32_t *dec_word_symbols);
-    void decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits);
+    void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
     // Preamble decoding
     std::array<int32_t, BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS> d_preamble_samples{};

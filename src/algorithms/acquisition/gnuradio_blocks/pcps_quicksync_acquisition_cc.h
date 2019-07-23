@@ -62,7 +62,6 @@
 #include <functional>
 #include <string>
 #include <utility>
-#include <vector>
 
 class pcps_quicksync_acquisition_cc;
 
@@ -214,13 +213,14 @@ private:
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);
 
-    std::vector<gr_complex> d_code;
+    gr_complex* d_code;
     uint32_t d_folding_factor;  // also referred in the paper as 'p'
-    std::vector<uint32_t> d_possible_delay;
-    std::vector<float> d_corr_output_f;
-    std::vector<float> d_magnitude_folded;
-    std::vector<gr_complex> d_signal_folded;
-    std::vector<gr_complex> d_code_folded;
+    float* d_corr_acumulator;
+    uint32_t* d_possible_delay;
+    float* d_corr_output_f;
+    float* d_magnitude_folded;
+    gr_complex* d_signal_folded;
+    gr_complex* d_code_folded;
     float d_noise_floor_power;
     int64_t d_fs_in;
     int32_t d_samples_per_ms;
@@ -235,16 +235,16 @@ private:
     uint32_t d_well_count;
     uint32_t d_fft_size;
     uint64_t d_sample_counter;
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    gr_complex** d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
-    std::vector<gr_complex> d_fft_codes;
+    gr_complex* d_fft_codes;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;
     float d_mag;
-    std::vector<float> d_magnitude;
+    float* d_magnitude;
     float d_input_power;
     float d_test_statistics;
     bool d_bit_transition_flag;

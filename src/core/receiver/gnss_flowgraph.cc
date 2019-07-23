@@ -1163,7 +1163,24 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
             break;
         }
 }
-
+//project Doppler from primary frequency to secondary frequency
+double GNSSFlowgraph::project_doppler(std::string searched_signal, double primary_freq_doppler_hz)
+{
+    switch (mapStringValues_[searched_signal])
+        {
+        case evGPS_L5:
+            return (primary_freq_doppler_hz / FREQ1) * FREQ5;
+            break;
+        case evGAL_5X:
+            return (primary_freq_doppler_hz / FREQ1) * FREQ5;
+            break;
+        case evGPS_2S:
+            return (primary_freq_doppler_hz / FREQ1) * FREQ2;
+            break;
+        default:
+            return primary_freq_doppler_hz;
+        }
+}
 
 void GNSSFlowgraph::acquisition_manager(unsigned int who)
 {
@@ -1186,10 +1203,11 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                     bool assistance_available = false;
                     bool start_acquisition = false;
                     Gnss_Signal gnss_signal;
+                    float estimated_doppler;
+                    double RX_time;
+
                     if (sat_ == 0)
                         {
-                            float estimated_doppler;
-                            double RX_time;
                             gnss_signal = search_next_signal(channels_[current_channel]->get_signal().get_signal_str(),
                                 true,
                                 is_primary_freq,
@@ -1198,12 +1216,6 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 RX_time);
                             channels_[current_channel]->set_signal(gnss_signal);
                             start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", false);
-                            // if (assistance_available)
-                            //     {
-                            //         std::cout << "Channel " << current_channel
-                            //                   << " assistance available for " << channels_[current_channel]->get_signal().get_satellite()
-                            //                   << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << std::endl;
-                            //     }
                         }
                     else
                         {
@@ -1217,6 +1229,15 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             DLOG(INFO) << "Channel " << current_channel
                                        << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
+                            if (assistance_available == true and configuration_->property("GNSS-SDR.assist_dual_frequency_acq", false))
+                                {
+                                    channels_[current_channel]->assist_acquisition_doppler(project_doppler(channels_[current_channel]->get_signal().get_signal_str(), estimated_doppler));
+                                }
+                            else
+                                {
+                                    //set Doppler center to 0 Hz
+                                    channels_[current_channel]->assist_acquisition_doppler(0);
+                                }
 #ifndef ENABLE_FPGA
                             channels_[current_channel]->start_acquisition();
 #else
@@ -1232,11 +1253,6 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                        << " secondary frequency acquisition assistance not available in "
                                        << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
-
-                            // std::cout << "Channel " << current_channel
-                            //           << " secondary frequency acquisition assistance not available in "
-                            //           << channels_[current_channel]->get_signal().get_satellite()
-                            //           << ", Signal " << channels_[current_channel]->get_signal().get_signal_str() << std::endl;
                         }
                 }
             DLOG(INFO) << "Channel " << current_channel << " in state " << channels_state_[current_channel];
@@ -1272,6 +1288,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 
     std::lock_guard<std::mutex> lock(signal_list_mutex);
     DLOG(INFO) << "Received " << what << " from " << who;
+    Gnss_Signal gs = channels_[who]->get_signal();
     unsigned int sat = 0;
     if (who < 200)
         {
@@ -1287,12 +1304,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     switch (what)
         {
         case 0:
-            DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
-            if (sat == 0)
-                {
-                    Gnss_Signal gs = channels_[who]->get_signal();
-                    push_back_signal(gs);
-                }
+            DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
             channels_state_[who] = 0;
             if (acq_channels_count_ > 0)
                 {
@@ -1300,11 +1312,16 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
+            //push back the old signal AFTER assigning a new one to avoid selecting the same signal
+            if (sat == 0)
+                {
+                    push_back_signal(gs);
+                }
             break;
         case 1:
-            DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_[who]->get_signal().get_satellite();
+            DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << gs.get_satellite();
             // If the satellite is in the list of available ones, remove it.
-            remove_signal(channels_[who]->get_signal());
+            remove_signal(gs);
 
             channels_state_[who] = 2;
             if (acq_channels_count_ > 0)
@@ -1316,13 +1333,13 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
 
         case 2:
-            DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_[who]->get_signal().get_satellite();
+            DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << gs.get_satellite();
             if (acq_channels_count_ < max_acq_channels_)
                 {
                     // try to acquire the same satellite
                     channels_state_[who] = 1;
                     acq_channels_count_++;
-                    DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
+                    DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
 #ifndef ENABLE_FPGA
                     channels_[who]->start_acquisition();
 #else
@@ -1917,7 +1934,6 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                         {
                                             estimated_doppler = current_status.second->Carrier_Doppler_hz;
                                             RX_time = current_status.second->RX_time;
-                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the GPS L2 satellite and remove it from list
                                             result = *it2;
                                             if (pop)

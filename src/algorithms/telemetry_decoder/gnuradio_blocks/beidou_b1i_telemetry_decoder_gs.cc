@@ -128,7 +128,7 @@ beidou_b1i_telemetry_decoder_gs::~beidou_b1i_telemetry_decoder_gs()
 }
 
 
-void beidou_b1i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits)
+void beidou_b1i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, int32_t *decbits)
 {
     int32_t bit, err;
     std::array<int32_t, 4> reg{1, 1, 1, 1};
@@ -184,8 +184,8 @@ void beidou_b1i_telemetry_decoder_gs::decode_word(
                         }
                 }
 
-            decode_bch15_11_01(&bitsbch[0], first_branch);
-            decode_bch15_11_01(&bitsbch[15], second_branch);
+            decode_bch15_11_01(&bitsbch[0], first_branch.data());
+            decode_bch15_11_01(&bitsbch[15], second_branch.data());
 
             for (uint32_t j = 0; j < 11; j++)
                 {

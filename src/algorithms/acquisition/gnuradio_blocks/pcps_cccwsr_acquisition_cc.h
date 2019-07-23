@@ -46,7 +46,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 
 class pcps_cccwsr_acquisition_cc;
@@ -202,21 +201,21 @@ private:
     uint32_t d_well_count;
     uint32_t d_fft_size;
     uint64_t d_sample_counter;
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    gr_complex** d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
-    std::vector<gr_complex> d_fft_code_data;
-    std::vector<gr_complex> d_fft_code_pilot;
+    gr_complex* d_fft_code_data;
+    gr_complex* d_fft_code_pilot;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;
     float d_mag;
-    std::vector<float> d_magnitude;
-    std::vector<gr_complex> d_data_correlation;
-    std::vector<gr_complex> d_pilot_correlation;
-    std::vector<gr_complex> d_correlation_plus;
-    std::vector<gr_complex> d_correlation_minus;
+    float* d_magnitude;
+    gr_complex* d_data_correlation;
+    gr_complex* d_pilot_correlation;
+    gr_complex* d_correlation_plus;
+    gr_complex* d_correlation_minus;
     float d_input_power;
     float d_test_statistics;
     std::ofstream d_dump_file;
@@ -228,4 +227,4 @@ private:
     std::string d_dump_filename;
 };
 
-#endif /* GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_ */
+#endif /* GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_*/

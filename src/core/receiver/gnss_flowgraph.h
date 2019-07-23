@@ -181,6 +181,7 @@ private:
     void push_back_signal(const Gnss_Signal& gs);
     void remove_signal(const Gnss_Signal& gs);
 
+    double project_doppler(std::string searched_signal, double primary_freq_doppler_hz);
     bool connected_;
     bool running_;
     int sources_count_;

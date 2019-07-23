@@ -215,7 +215,8 @@ private:
     uint32_t d_sampled_ms;
     uint32_t d_fft_size;
     uint64_t d_sample_counter;
-    std::vector<gr_complex> d_fft_codes;
+    gr_complex* d_carrier;
+    gr_complex* d_fft_codes;
 
     std::vector<std::vector<float>> d_grid_data;
     std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
@@ -238,4 +239,4 @@ private:
     std::string d_dump_filename;
 };
 
-#endif /* GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H_ */
+#endif /* GNSS_SDR_PCPS_assisted_acquisition_cc_H_*/

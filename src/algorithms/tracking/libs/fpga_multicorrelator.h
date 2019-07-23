@@ -40,8 +40,9 @@
 #include <gnuradio/block.h>
 #include <cstdint>
 
-
-
+// floating point math constants related to the parameters that are written in the FPGA
+#define PHASE_CARR_MAX_DIV_PI 683565275.5764316  // 2^(31)/pi
+#define TWO_PI 6.283185307179586
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -76,7 +77,6 @@ public:
 
 
 private:
-
     // FPGA register addresses
 
     // write addresses
@@ -107,14 +107,18 @@ private:
     static const uint32_t result_reg_imag_base_addr = 7;
     static const uint32_t sample_counter_reg_addr_lsw = 13;
     static const uint32_t sample_counter_reg_addr_msw = 14;
-
     // FPGA-related constants
     static const uint32_t secondary_code_word_size = 20;        // the secondary codes are written in to the FPGA in words of secondary_code_word_size bits
-	static const uint32_t secondary_code_wr_strobe = 0x800000;  // write strobe position in the secondary code write register
-	static const uint32_t secondary_code_addr_bits = 0x100000;  // memory address position in the secondary code write register
-	static const uint32_t drop_samples = 1;                     // bit 0 of drop_samples_reg_addr
-	static const uint32_t enable_secondary_code = 2;            // bit 1 of drop_samples_reg_addr
-	static const uint32_t init_secondary_code_addresses = 4;    // bit 2 of drop_samples_reg_addr
+    static const uint32_t secondary_code_wr_strobe = 0x800000;  // write strobe position in the secondary code write register
+    static const uint32_t secondary_code_addr_bits = 0x100000;  // memory address position in the secondary code write register
+    static const uint32_t drop_samples = 1;                     // bit 0 of drop_samples_reg_addr
+    static const uint32_t enable_secondary_code = 2;            // bit 1 of drop_samples_reg_addr
+    static const uint32_t init_secondary_code_addresses = 4;    // bit 2 of drop_samples_reg_addr
+    static const uint32_t page_size = 0x10000;
+    static const uint32_t max_length_deviceio_name = 50;
+    static const uint32_t max_code_resampler_counter = 1 << 20;  // 2^(number of bits of precision of the code resampler)
+    static const uint32_t local_code_fpga_clear_address_counter = 0x10000000;
+    static const uint32_t test_register_track_writeval = 0x55AA;
 
     gr_complex *d_corr_out;
     gr_complex *d_Prompt_Data;

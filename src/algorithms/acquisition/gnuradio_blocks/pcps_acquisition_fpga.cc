@@ -40,8 +40,6 @@
 #include <utility>   // for move
 
 
-#define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
-
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
     return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(std::move(conf_)));
@@ -131,54 +129,6 @@ void pcps_acquisition_fpga::set_state(int32_t state)
 
 void pcps_acquisition_fpga::send_positive_acquisition()
 {
-    // debug L5
-    //	d_gnss_synchro->Acq_delay_samples = 2694;
-    //	d_gnss_synchro->Acq_doppler_hz = 2650;
-    //	d_gnss_synchro->Acq_samplestamp_samples = 56500224;
-    //	d_gnss_synchro->Flag_valid_word = 0;
-    //	d_gnss_synchro->Flag_valid_pseudorange = 0;
-    //	d_gnss_synchro->Flag_valid_symbol_output = 0;
-    //	d_gnss_synchro->Flag_valid_acquisition = 0;
-
-    //	d_gnss_synchro->Acq_delay_samples = 10846;
-    //	d_gnss_synchro->Acq_doppler_hz = 2575;
-    //	d_gnss_synchro->Acq_samplestamp_samples = 399605760;
-    //	d_gnss_synchro->Flag_valid_word = 0;
-    //	d_gnss_synchro->Flag_valid_pseudorange = 0;
-    //	d_gnss_synchro->Flag_valid_symbol_output = 0;
-    //	d_gnss_synchro->Flag_valid_acquisition = 0;
-
-    //	if (d_channel == 0)
-    //	{
-    //		d_gnss_synchro->Acq_delay_samples = 401;
-    //		d_gnss_synchro->Acq_doppler_hz = 2650;
-    //		d_gnss_synchro->Acq_samplestamp_samples = 96591872;
-    //		d_gnss_synchro->Flag_valid_word = 0;
-    //		d_gnss_synchro->Flag_valid_pseudorange = 0;
-    //		d_gnss_synchro->Flag_valid_symbol_output = 0;
-    //		d_gnss_synchro->Flag_valid_acquisition = 0;
-
-    //		d_gnss_synchro->Acq_delay_samples = 1505;
-    //		d_gnss_synchro->Acq_doppler_hz = 2575;
-    //		d_gnss_synchro->Acq_samplestamp_samples = 194265553;
-    //		d_gnss_synchro->Flag_valid_word = 0;
-    //		d_gnss_synchro->Flag_valid_pseudorange = 0;
-    //		d_gnss_synchro->Flag_valid_symbol_output = 0;
-    //		d_gnss_synchro->Flag_valid_acquisition = 0;
-
-    //	}
-
-
-    // debug E5a
-    //	d_gnss_synchro->Acq_delay_samples = 2012;
-    //	d_gnss_synchro->Acq_doppler_hz = -1125;
-    //	d_gnss_synchro->Acq_samplestamp_samples = 363462656;
-    //	d_gnss_synchro->Flag_valid_word = 0;
-    //	d_gnss_synchro->Flag_valid_pseudorange = 0;
-    //	d_gnss_synchro->Flag_valid_symbol_output = 0;
-    //	d_gnss_synchro->Flag_valid_acquisition = 0;
-
-
     // Declare positive acquisition using a message port
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
@@ -275,13 +225,6 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
                     d_test_statistics = 0.0;
                 }
         }
-
-    // debug
-    //    if (d_test_statistics > d_threshold)
-    //        {
-    //            printf("firstpeak = %f, secondpeak = %f, test_statistics = %f reported block exp = %d PRN = %d inext = %d, initial_sample = %ld doppler = %d\n", firstpeak, secondpeak, d_test_statistics, (int)total_block_exp, (int)d_gnss_synchro->PRN, (int)indext, (long int)initial_sample, (int)doppler);
-    //            printf("doppler_min = %d doppler_step = %d num_doppler_bins = %d\n", (int)doppler_min, (int)doppler_step, (int)num_doppler_bins);
-    //        }
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;

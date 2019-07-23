@@ -39,8 +39,6 @@
 
 #include <string>
 
-#define MAX_LENGTH_DEVICEIO_NAME 50
-
 class Fpga_Switch
 {
 public:
@@ -49,6 +47,10 @@ public:
     void set_switch_position(int32_t switch_position);
 
 private:
+    static const size_t PAGE_SIZE = 0x10000;
+    static const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
+    static const uint32_t MAX_LENGTH_DEVICEIO_NAME = 50;
+
     int d_device_descriptor;        // driver descriptor
     volatile unsigned* d_map_base;  // driver memory map
 

@@ -47,8 +47,6 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
 
-#define NUM_PRNs 32  // number of PRNS
-
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

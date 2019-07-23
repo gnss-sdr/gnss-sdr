@@ -47,8 +47,6 @@
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
-#define NUM_PRNs 32
-
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     ConfigurationInterface* configuration,
     const std::string& role,

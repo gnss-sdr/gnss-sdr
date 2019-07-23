@@ -96,6 +96,7 @@ public:
     void stop_tracking() override;
 
 private:
+    static const uint32_t NUM_PRNs = 32;  // total number of PRNs
 
     // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.

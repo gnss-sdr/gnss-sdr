@@ -156,6 +156,13 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
+    static const uint32_t NUM_PRNs = 32;
+    static const uint32_t QUANT_BITS_LOCAL_CODE = 16;
+    static const uint32_t SELECT_LSBits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t SELECT_MSBbits = 0xFFFF0000;        // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t SELECT_ALL_CODE_BITS = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
+
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     std::string item_type_;

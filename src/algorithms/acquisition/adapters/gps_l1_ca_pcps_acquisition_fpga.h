@@ -155,14 +155,15 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
+    static const uint32_t NUM_PRNs = 32;
 
     // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
     static const uint32_t quant_bits_local_code = 16;
     static const uint32_t select_lsbits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
-    static const uint32_t select_msbits = 0xFFFF0000;        // Select the 10 MSbits out of a 20-bit word
-	static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
-	static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
+    static const uint32_t select_msbits = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
 
 
     ConfigurationInterface* configuration_;

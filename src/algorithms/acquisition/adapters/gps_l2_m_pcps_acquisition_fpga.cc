@@ -46,13 +46,6 @@
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
-#define NUM_PRNs 32
-#define QUANT_BITS_LOCAL_CODE 16
-#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
-#define SHL_CODE_BITS 65536              // shift left by 10 bits
-
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     ConfigurationInterface* configuration,
     const std::string& role,

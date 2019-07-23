@@ -55,6 +55,9 @@ public:
         gr_vector_void_star &output_items);
 
 private:
+    static const uint32_t page_size = 0x10000;             // default page size for the multicorrelator memory map
+    static const uint32_t test_reg_sanity_check = 0x55AA;  // value to check the presence of the test register (to detect the hw)
+
     friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
     gnss_sdr_fpga_sample_counter(double _fs, int32_t _interval_ms);
     uint32_t test_register(uint32_t writeval);

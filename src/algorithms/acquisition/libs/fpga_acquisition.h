@@ -116,6 +116,21 @@ public:
     void close_device();
 
 private:
+    // FPGA register parameters
+    static const uint32_t PAGE_SIZE = 0x10000;                    // default page size for the multicorrelator memory map
+    static const uint32_t RESET_ACQUISITION = 2;                  // command to reset the multicorrelator
+    static const uint32_t LAUNCH_ACQUISITION = 1;                 // command to launch the multicorrelator
+    static const uint32_t TEST_REG_SANITY_CHECK = 0x55AA;         // value to check the presence of the test register (to detect the hw)
+    static const uint32_t LOCAL_CODE_CLEAR_MEM = 0x10000000;      // command to clear the internal memory of the multicorrelator
+    static const uint32_t MEM_LOCAL_CODE_WR_ENABLE = 0x0C000000;  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
+    static const uint32_t POW_2_2 = 4;                            // 2^2 (used for the conversion of floating point numbers to integers)
+    static const uint32_t POW_2_31 = 2147483648;                  // 2^31 (used for the conversion of floating point numbers to integers)
+
+    static const uint32_t SELECT_LSBits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t SELECT_MSBbits = 0xFFFF0000;        // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t SELECT_ALL_CODE_BITS = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
+
     int64_t d_fs_in;
     // data related to the hardware module and the driver
     int32_t d_fd;                   // driver descriptor

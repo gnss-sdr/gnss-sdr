@@ -43,20 +43,6 @@
 #include <sys/mman.h>  // for PROT_READ, PROT_WRITE, MAP_SHARED
 #include <utility>
 
-// FPGA register access constants
-#define PAGE_SIZE 0x10000
-#define MAX_LENGTH_DEVICEIO_NAME 50
-#define CODE_RESAMPLER_NUM_BITS_PRECISION 20
-#define CODE_PHASE_STEP_CHIPS_NUM_NBITS CODE_RESAMPLER_NUM_BITS_PRECISION
-#define pwrtwo(x) (1 << (x))
-#define MAX_CODE_RESAMPLER_COUNTER pwrtwo(CODE_PHASE_STEP_CHIPS_NUM_NBITS)  // 2^CODE_PHASE_STEP_CHIPS_NUM_NBITS
-#define PHASE_CARR_MAX 2147483648                                           // 2^(31) The phase is represented as a 32-bit vector in 1.31 format
-#define PHASE_CARR_MAX_div_PI 683565275.5764316                             // 2^(31)/pi
-#define TWO_PI 6.283185307179586
-#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000
-#define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 0x10000000
-#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
-#define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
     ({                                       \
@@ -246,7 +232,7 @@ bool Fpga_Multicorrelator_8sc::free()
 
 void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
 {
-    char device_io_name[MAX_LENGTH_DEVICEIO_NAME];  // driver io name
+    char device_io_name[max_length_deviceio_name];  // driver io name
     d_channel = channel;
 
     // open the device corresponding to the assigned channel
@@ -256,9 +242,9 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     devicebasetemp << numdevice;
     mergedname = d_device_name + devicebasetemp.str();
 
-    if (mergedname.size() > MAX_LENGTH_DEVICEIO_NAME)
+    if (mergedname.size() > max_length_deviceio_name)
         {
-            mergedname = mergedname.substr(0, MAX_LENGTH_DEVICEIO_NAME);
+            mergedname = mergedname.substr(0, max_length_deviceio_name);
         }
 
     mergedname.copy(device_io_name, mergedname.size() + 1);
@@ -270,7 +256,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
             LOG(WARNING) << "Cannot open deviceio" << device_io_name;
             std::cout << "Cannot open deviceio" << device_io_name << std::endl;
         }
-    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, page_size,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -281,7 +267,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
         }
 
     // sanity check: check test register
-    uint32_t writeval = TEST_REGISTER_TRACK_WRITEVAL;
+    uint32_t writeval = test_register_track_writeval;
     uint32_t readval;
     readval = Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(writeval);
     if (writeval != readval)
@@ -313,14 +299,14 @@ void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
 {
     uint32_t k;
 
-    d_map_base[prog_mems_addr] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
+    d_map_base[prog_mems_addr] = local_code_fpga_clear_address_counter;
     for (k = 0; k < d_code_length_samples; k++)
         {
             d_map_base[prog_mems_addr] = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
         }
     if (d_track_pilot)
         {
-            d_map_base[prog_mems_addr] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
+            d_map_base[prog_mems_addr] = local_code_fpga_clear_address_counter;
             for (k = 0; k < d_code_length_samples; k++)
                 {
                     d_map_base[prog_mems_addr] = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
@@ -353,7 +339,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
                     frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
                 }
 
-            d_initial_interp_counter[i] = static_cast<uint32_t>(floor(MAX_CODE_RESAMPLER_COUNTER * frac_part));
+            d_initial_interp_counter[i] = static_cast<uint32_t>(floor(max_code_resampler_counter * frac_part));
         }
     if (d_track_pilot)
         {
@@ -370,7 +356,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
                 {
                     frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
                 }
-            d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(floor(MAX_CODE_RESAMPLER_COUNTER * frac_part));
+            d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(floor(max_code_resampler_counter * frac_part));
         }
 }
 
@@ -394,8 +380,8 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
 {
     float d_rem_carrier_phase_in_rad_temp;
 
-    d_code_phase_step_chips_num = static_cast<uint32_t>(roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_step_chips));
-    d_code_phase_rate_step_chips_num = static_cast<uint32_t>(roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_rate_step_chips));
+    d_code_phase_step_chips_num = static_cast<uint32_t>(roundf(max_code_resampler_counter * d_code_phase_step_chips));
+    d_code_phase_rate_step_chips_num = static_cast<uint32_t>(roundf(max_code_resampler_counter * d_code_phase_rate_step_chips));
 
     if (d_rem_carrier_phase_in_rad > M_PI)
         {
@@ -410,9 +396,9 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
             d_rem_carrier_phase_in_rad_temp = d_rem_carrier_phase_in_rad;
         }
 
-    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((d_rem_carrier_phase_in_rad_temp)*PHASE_CARR_MAX_div_PI));
-    d_phase_step_rad_int = static_cast<int32_t>(roundf((d_phase_step_rad)*PHASE_CARR_MAX_div_PI));  // the FPGA accepts a range for the phase step between -pi and +pi
-    d_carrier_phase_rate_step_rad_int = static_cast<int32_t>(roundf((d_carrier_phase_rate_step_rad)*PHASE_CARR_MAX_div_PI));
+    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((d_rem_carrier_phase_in_rad_temp)*PHASE_CARR_MAX_DIV_PI));
+    d_phase_step_rad_int = static_cast<int32_t>(roundf((d_phase_step_rad)*PHASE_CARR_MAX_DIV_PI));  // the FPGA accepts a range for the phase step between -pi and +pi
+    d_carrier_phase_rate_step_rad_int = static_cast<int32_t>(roundf((d_carrier_phase_rate_step_rad)*PHASE_CARR_MAX_DIV_PI));
 }
 
 
@@ -479,7 +465,7 @@ void Fpga_Multicorrelator_8sc::unlock_channel(void)
 void Fpga_Multicorrelator_8sc::close_device()
 {
     auto *aux = const_cast<uint32_t *>(d_map_base);
-    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
+    if (munmap(static_cast<void *>(aux), page_size) == -1)
         {
             std::cout << "Failed to unmap memory uio" << std::endl;
         }
@@ -571,7 +557,6 @@ void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_leng
 
     write_val = write_val | (mem_addr * secondary_code_addr_bits) | (secondary_code_wr_strobe);
     d_map_base[reg_addr] = write_val;
-
 }
 
 void Fpga_Multicorrelator_8sc::enable_secondary_codes()

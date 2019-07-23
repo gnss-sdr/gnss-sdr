@@ -111,7 +111,6 @@ private:
     std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_preambles_symbols;
     int32_t d_preamble_length_symbols;
 
     // dll filter buffer

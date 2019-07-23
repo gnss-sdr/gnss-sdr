@@ -87,6 +87,8 @@ public:
     void stop_channel() override;                               //!< Stop the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_) override;  //!< Sets the channel GNSS signal
 
+    void assist_acquisition_doppler(double Carrier_Doppler_hz) override;
+
     inline std::shared_ptr<AcquisitionInterface> acquisition() { return acq_; }
     inline std::shared_ptr<TrackingInterface> tracking() { return trk_; }
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() { return nav_; }

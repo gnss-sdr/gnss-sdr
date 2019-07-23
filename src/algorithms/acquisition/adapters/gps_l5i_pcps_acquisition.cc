@@ -147,6 +147,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
@@ -205,6 +206,12 @@ void GpsL5iPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+void GpsL5iPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
 
 void GpsL5iPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

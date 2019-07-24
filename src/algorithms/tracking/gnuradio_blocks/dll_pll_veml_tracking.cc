@@ -113,7 +113,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_secondary_code_string = nullptr;
     d_data_secondary_code_length = 0U;
     d_data_secondary_code_string = nullptr;
-    d_preambles_symbols = nullptr;
     d_preamble_length_symbols = 0;
     signal_type = std::string(trk_parameters.signal);
 
@@ -754,11 +753,6 @@ void dll_pll_veml_tracking::start_tracking()
 
 dll_pll_veml_tracking::~dll_pll_veml_tracking()
 {
-    if (signal_type == "1C")
-        {
-            volk_gnsssdr_free(d_preambles_symbols);
-        }
-
     if (d_dump_file.is_open())
         {
             try

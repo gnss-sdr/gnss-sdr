@@ -114,9 +114,6 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
 }
 
 
-GalileoE1TcpConnectorTracking::~GalileoE1TcpConnectorTracking() = default;
-
-
 void GalileoE1TcpConnectorTracking::stop_tracking()
 {
 }
@@ -142,6 +139,7 @@ void GalileoE1TcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
+
 void GalileoE1TcpConnectorTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -149,6 +147,7 @@ void GalileoE1TcpConnectorTracking::connect(gr::top_block_sptr top_block)
         };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
+
 
 void GalileoE1TcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
 {
@@ -158,10 +157,12 @@ void GalileoE1TcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
+
 gr::basic_block_sptr GalileoE1TcpConnectorTracking::get_left_block()
 {
     return tracking_;
 }
+
 
 gr::basic_block_sptr GalileoE1TcpConnectorTracking::get_right_block()
 {

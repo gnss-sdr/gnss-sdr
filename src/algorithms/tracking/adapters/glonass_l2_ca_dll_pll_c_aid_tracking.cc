@@ -133,9 +133,6 @@ GlonassL2CaDllPllCAidTracking::GlonassL2CaDllPllCAidTracking(
 }
 
 
-GlonassL2CaDllPllCAidTracking::~GlonassL2CaDllPllCAidTracking() = default;
-
-
 void GlonassL2CaDllPllCAidTracking::stop_tracking()
 {
 }

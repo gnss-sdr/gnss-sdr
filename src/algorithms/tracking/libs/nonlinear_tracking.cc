@@ -75,9 +75,6 @@ CubatureFilter::CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_p
 }
 
 
-CubatureFilter::~CubatureFilter() = default;
-
-
 void CubatureFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
 {
     x_pred_out = x_pred_0;
@@ -236,9 +233,6 @@ UnscentedFilter::UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x
 }
 
 
-UnscentedFilter::~UnscentedFilter() = default;
-
-
 void UnscentedFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
 {
     x_pred_out = x_pred_0;
@@ -273,7 +267,6 @@ void UnscentedFilter::predict_sequential(const arma::vec& x_post, const arma::ma
     arma::mat Xi_fact = arma::zeros(nx, nx);
     arma::mat Xi_post = arma::zeros(nx, np);
     arma::mat Xi_pred = arma::zeros(nx, np);
-
 
     Xi_post.col(0) = x_post;
     Xi_pred.col(0) = (*transition_fcn)(Xi_post.col(0));

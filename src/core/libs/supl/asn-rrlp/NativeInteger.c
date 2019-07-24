@@ -92,7 +92,7 @@ NativeInteger_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 	/*
 	 * ASN.1 encoded INTEGER: buf_ptr, length
 	 * Fill the native, at the same time checking for overflow.
-	 * If overflow occured, return with RC_FAIL.
+	 * If overflow occurred, return with RC_FAIL.
 	 */
 	{
 		INTEGER_t tmp;
@@ -153,7 +153,7 @@ NativeInteger_encode_der(asn_TYPE_descriptor_t *sd, void *ptr,
 	tmp.buf = buf;
 	tmp.size = sizeof(buf);
 #endif	/* WORDS_BIGENDIAN */
-	
+
 	/* Encode fake INTEGER */
 	erval = INTEGER_encode_der(sd, &tmp, tag_mode, tag, cb, app_key);
 	if(erval.encoded == -1) {
@@ -182,7 +182,7 @@ NativeInteger_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
 	}
 
 	memset(&st, 0, sizeof(st));
-	rval = INTEGER_decode_xer(opt_codec_ctx, td, &st_ptr, 
+	rval = INTEGER_decode_xer(opt_codec_ctx, td, &st_ptr,
 		opt_mname, buf_ptr, size);
 	if(rval.code == RC_OK) {
 		long l;
@@ -329,4 +329,3 @@ NativeInteger_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only) {
 		FREEMEM(ptr);
 	}
 }
-

@@ -57,7 +57,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE1TcpConnectorTracking();
+    ~GalileoE1TcpConnectorTracking() = default;
 
     inline std::string role() override
     {

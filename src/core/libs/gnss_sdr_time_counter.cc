@@ -52,9 +52,6 @@ gnss_sdr_time_counter::gnss_sdr_time_counter() : gr::block("time_counter",
 }
 
 
-gnss_sdr_time_counter::~gnss_sdr_time_counter() = default;
-
-
 gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter()
 {
     gnss_sdr_time_counter_sptr counter_(new gnss_sdr_time_counter());

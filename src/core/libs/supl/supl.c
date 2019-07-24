@@ -469,7 +469,7 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu)
     ulp->message.choice.msSUPLPOSINIT.sETCapabilities.posProtocol.rrlp = 1;
 
     //GNSS-SDR mod
-    // Use ctx->p.request to swith between a pre-defined set of assistence data request
+    // Use ctx->p.request to switch between a pre-defined set of assistance data request
     // reason: Some SUPL servers do not respond to Acquisition assistance depending on the status of other assistance flags
 
     switch (ctx->p.request)

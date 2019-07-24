@@ -43,7 +43,7 @@
 
 MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -247,9 +247,6 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-MultichannelFileSignalSource::~MultichannelFileSignalSource() = default;
 
 
 void MultichannelFileSignalSource::connect(gr::top_block_sptr top_block)

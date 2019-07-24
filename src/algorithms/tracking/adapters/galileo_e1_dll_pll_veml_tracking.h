@@ -56,7 +56,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE1DllPllVemlTracking();
+    ~GalileoE1DllPllVemlTracking() = default;
 
     inline std::string role() override
     {

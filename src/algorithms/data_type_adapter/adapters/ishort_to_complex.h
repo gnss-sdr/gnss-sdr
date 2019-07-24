@@ -50,7 +50,7 @@ public:
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~IshortToComplex();
+    ~IshortToComplex() = default;
 
     inline std::string role() override
     {

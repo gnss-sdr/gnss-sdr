@@ -140,9 +140,6 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
 }
 
 
-FirFilter::~FirFilter() = default;
-
-
 void FirFilter::connect(gr::top_block_sptr top_block)
 {
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))

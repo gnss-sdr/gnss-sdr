@@ -31,8 +31,9 @@
 #ifndef GNSS_SDR_LABSAT23_SOURCE_H
 #define GNSS_SDR_LABSAT23_SOURCE_H
 
+#include "concurrent_queue.h"
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>  // for msg_queue, msg_queue::sptr
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -45,7 +46,7 @@ using labsat23_source_sptr = boost::shared_ptr<labsat23_source>;
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,
     int channel_selector,
-    gr::msg_queue::sptr queue);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
 /*!
  * \brief This class implements conversion between Labsat2 and 3 format byte packet samples to gr_complex
@@ -64,11 +65,11 @@ private:
     friend labsat23_source_sptr labsat23_make_source_sptr(
         const char *signal_file_basename,
         int channel_selector,
-        gr::msg_queue::sptr queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     labsat23_source(const char *signal_file_basename,
         int channel_selector,
-        gr::msg_queue::sptr queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     std::string generate_filename();
     void decode_samples_one_channel(int16_t input_short, gr_complex *out, int type);
@@ -82,7 +83,7 @@ private:
     std::ifstream *binary_input_file;
     uint8_t d_ref_clock;
     uint8_t d_bits_per_sample;
-    gr::msg_queue::sptr d_queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> d_queue;
 };
 
 #endif

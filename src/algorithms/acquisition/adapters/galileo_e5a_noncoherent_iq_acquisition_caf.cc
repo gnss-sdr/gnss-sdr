@@ -132,9 +132,6 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 }
 
 
-GalileoE5aNoncoherentIQAcquisitionCaf::~GalileoE5aNoncoherentIQAcquisitionCaf() = default;
-
-
 void GalileoE5aNoncoherentIQAcquisitionCaf::stop_acquisition()
 {
 }

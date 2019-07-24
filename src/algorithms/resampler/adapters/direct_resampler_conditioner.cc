@@ -113,9 +113,6 @@ DirectResamplerConditioner::DirectResamplerConditioner(
 }
 
 
-DirectResamplerConditioner::~DirectResamplerConditioner() = default;
-
-
 void DirectResamplerConditioner::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

@@ -220,9 +220,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget http://sourceforge.net/projects/arma/files/armadillo-9.400.4.tar.xz
-$ tar xvfz armadillo-9.400.4.tar.xz
-$ cd armadillo-9.400.4
+$ wget http://sourceforge.net/projects/arma/files/armadillo-9.600.4.tar.xz
+$ tar xvfz armadillo-9.600.4.tar.xz
+$ cd armadillo-9.600.4
 $ cmake .
 $ make
 $ sudo make install
@@ -341,7 +341,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
  |-----utils    <- some utilities (e.g. Matlab scripts).
 ~~~~~~
 
-By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to try the latest developments, you can use the 'next' branch by going to the newly created gnss-sdr folder doing:
+By default, you will be in the 'master' branch of the Git repository, which corresponds to the latest stable release. If you want to try the latest developments, you can use the 'next' branch by going to the newly created gnss-sdr folder doing:
 
 ~~~~~~
 $ git checkout next

@@ -54,7 +54,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL5DllPllTracking();
+    ~GpsL5DllPllTracking() = default;
 
     inline std::string role() override
     {

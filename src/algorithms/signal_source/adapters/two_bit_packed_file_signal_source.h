@@ -35,6 +35,7 @@
 #ifndef GNSS_SDR_TWO_BIT_PACKED_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_TWO_BIT_PACKED_FILE_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "unpack_2bit_samples.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -42,7 +43,7 @@
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <string>
 
@@ -58,9 +59,9 @@ class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 public:
     TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~TwoBitPackedFileSignalSource();
+    ~TwoBitPackedFileSignalSource() = default;
     inline std::string role() override
     {
         return role_;
@@ -146,7 +147,7 @@ private:
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     size_t item_size_;
     bool big_endian_items_;
     bool big_endian_bytes_;

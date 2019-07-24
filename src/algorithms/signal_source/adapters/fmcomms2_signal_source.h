@@ -41,7 +41,8 @@
 #else
 #include <iio/fmcomms2_source.h>
 #endif
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
+#include <pmt/pmt.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -51,7 +52,7 @@ class Fmcomms2SignalSource : public GNSSBlockInterface
 public:
     Fmcomms2SignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     virtual ~Fmcomms2SignalSource();
 
@@ -122,7 +123,7 @@ private:
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_*/

@@ -95,7 +95,7 @@ target_include_directories(pvt_libs
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
-if(Boost_VERSION VERSION_GREATER "106599")
+if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
     target_compile_definitions(pvt_libs
         PUBLIC
             -DBOOST_GREATER_1_65
@@ -104,7 +104,7 @@ endif()
 
 # Fix for Boost Asio < 1.70
 if(OS_IS_MACOSX)
-    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (${Boost_VERSION} VERSION_LESS 107000))
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (Boost_VERSION_STRING VERSION_LESS 1.70.0))
         if(${has_string_view})
             target_compile_definitions(pvt_libs
                 PUBLIC

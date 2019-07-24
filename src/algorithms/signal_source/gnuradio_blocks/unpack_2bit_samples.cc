@@ -133,9 +133,6 @@ unpack_2bit_samples::unpack_2bit_samples(bool big_endian_bytes,
 }
 
 
-unpack_2bit_samples::~unpack_2bit_samples() = default;
-
-
 int unpack_2bit_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)

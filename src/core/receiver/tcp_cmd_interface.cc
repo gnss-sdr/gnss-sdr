@@ -30,10 +30,9 @@
  */
 
 #include "tcp_cmd_interface.h"
-#include "control_message_factory.h"
+#include "command_event.h"
 #include "pvt_interface.h"
 #include <boost/asio.hpp>
-#include <array>
 #include <cmath>      // for isnan
 #include <exception>  // for exception
 #include <iomanip>    // for setprecision
@@ -51,14 +50,11 @@ TcpCmdInterface::TcpCmdInterface()
     register_functions();
     keep_running_ = true;
     control_queue_ = nullptr;
-    rx_latitude_ = 0;
-    rx_longitude_ = 0;
-    rx_altitude_ = 0;
+    rx_latitude_ = 0.0;
+    rx_longitude_ = 0.0;
+    rx_altitude_ = 0.0;
     receiver_utc_time_ = 0;
 }
-
-
-TcpCmdInterface::~TcpCmdInterface() = default;
 
 
 void TcpCmdInterface::register_functions()
@@ -85,26 +81,25 @@ time_t TcpCmdInterface::get_utc_time()
 }
 
 
-arma::vec TcpCmdInterface::get_LLH()
+std::array<float, 3> TcpCmdInterface::get_LLH() const
 {
-    return arma::vec{rx_latitude_, rx_longitude_, rx_altitude_};
+    return std::array<float, 3>{rx_latitude_, rx_longitude_, rx_altitude_};
 }
 
 
 std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (control_queue_ != nullptr)
         {
-            control_queue_->handle(cmf->GetQueueMessage(200, 1));  //send the restart message (who=200,what=1)
+            command_event_sptr new_evnt = command_event_make(200, 1);  //send the restart message (who=200,what=1)
+            control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
     else
         {
             response = "ERROR\n";
         }
-
     return response;
 }
 
@@ -112,10 +107,10 @@ std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine _
 std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (control_queue_ != nullptr)
         {
-            control_queue_->handle(cmf->GetQueueMessage(300, 10));  //send the standby message (who=300,what=10)
+            command_event_sptr new_evnt = command_event_make(300, 10);  //send the standby message (who=300,what=10)
+            control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
     else
@@ -193,9 +188,9 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
-            rx_latitude_ = std::stod(commandLine.at(3).c_str());
-            rx_longitude_ = std::stod(commandLine.at(4).c_str());
-            rx_altitude_ = std::stod(commandLine.at(5).c_str());
+            rx_latitude_ = std::stof(commandLine.at(3).c_str());
+            rx_longitude_ = std::stof(commandLine.at(4).c_str());
+            rx_altitude_ = std::stof(commandLine.at(5).c_str());
 
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {
@@ -203,10 +198,10 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
                 }
             else
                 {
-                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                     if (control_queue_ != nullptr)
                         {
-                            control_queue_->handle(cmf->GetQueueMessage(300, 12));  //send the standby message (who=300,what=12)
+                            command_event_sptr new_evnt = command_event_make(300, 12);  //send the standby message (who=300,what=12)
+                            control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }
                     else
@@ -250,10 +245,10 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
                 }
             else
                 {
-                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                     if (control_queue_ != nullptr)
                         {
-                            control_queue_->handle(cmf->GetQueueMessage(300, 13));  // send the warmstart message (who=300,what=13)
+                            command_event_sptr new_evnt = command_event_make(300, 13);  // send the warmstart message (who=300,what=13)
+                            control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }
                     else
@@ -273,16 +268,17 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
 std::string TcpCmdInterface::coldstart(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (control_queue_ != nullptr)
         {
-            control_queue_->handle(cmf->GetQueueMessage(300, 11));  // send the coldstart message (who=300,what=11)
+            command_event_sptr new_evnt = command_event_make(300, 11);  // send the coldstart message (who=300,what=11)
+            control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
     else
         {
             response = "ERROR\n";
         }
+
     return response;
 }
 
@@ -296,7 +292,7 @@ std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &co
 }
 
 
-void TcpCmdInterface::set_msg_queue(gr::msg_queue::sptr control_queue)
+void TcpCmdInterface::set_msg_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue)
 {
     control_queue_ = std::move(control_queue);
 }

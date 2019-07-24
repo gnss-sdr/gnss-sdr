@@ -197,9 +197,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 }
 
 
-GalileoE5aPcpsAcquisitionFpga::~GalileoE5aPcpsAcquisitionFpga() = default;
-
-
 void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
 {
     // this command causes the SW to reset the HW.

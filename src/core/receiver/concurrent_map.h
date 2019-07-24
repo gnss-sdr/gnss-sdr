@@ -31,8 +31,8 @@
 #ifndef GNSS_SDR_CONCURRENT_MAP_H
 #define GNSS_SDR_CONCURRENT_MAP_H
 
-#include <boost/thread/mutex.hpp>
 #include <map>
+#include <mutex>
 #include <utility>
 
 
@@ -49,7 +49,7 @@ class Concurrent_Map
 public:
     void write(int key, Data const& data)
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         Data_iterator data_iter;
         data_iter = the_map.find(key);
         if (data_iter != the_map.end())
@@ -65,7 +65,7 @@ public:
 
     std::map<int, Data> get_map_copy()
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         std::map<int, Data> map_aux = the_map;
         lock.unlock();
         return map_aux;
@@ -73,7 +73,7 @@ public:
 
     size_t size()
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         size_t size_ = the_map.size();
         lock.unlock();
         return size_;
@@ -81,7 +81,7 @@ public:
 
     bool read(int key, Data& p_data)
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         Data_iterator data_iter;
         data_iter = the_map.find(key);
         if (data_iter != the_map.end())
@@ -96,7 +96,7 @@ public:
 
 private:
     std::map<int, Data> the_map;
-    boost::mutex the_mutex;
+    mutable std::mutex the_mutex;
 };
 
 #endif

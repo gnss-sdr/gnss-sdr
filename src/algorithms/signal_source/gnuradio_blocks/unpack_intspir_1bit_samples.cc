@@ -47,9 +47,6 @@ unpack_intspir_1bit_samples::unpack_intspir_1bit_samples() : sync_interpolator("
 }
 
 
-unpack_intspir_1bit_samples::~unpack_intspir_1bit_samples() = default;
-
-
 int unpack_intspir_1bit_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)

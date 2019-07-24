@@ -105,9 +105,6 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
 }
 
 
-PulseBlankingFilter::~PulseBlankingFilter() = default;
-
-
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 {
     if (input_item_type_ == "gr_complex")

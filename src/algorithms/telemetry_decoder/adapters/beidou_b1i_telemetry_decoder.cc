@@ -61,9 +61,6 @@ BeidouB1iTelemetryDecoder::BeidouB1iTelemetryDecoder(ConfigurationInterface* con
 }
 
 
-BeidouB1iTelemetryDecoder::~BeidouB1iTelemetryDecoder() = default;
-
-
 void BeidouB1iTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());

@@ -256,10 +256,10 @@ uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1U;  // shift left
                     if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1U;  // insert the bit
                         }
                 }
         }
@@ -544,7 +544,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_sqrt_A = d_sqrt_A * D1_SQRT_A_LSB;
 
             d_Toe_sf2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOE_SF2));
-            d_Toe_sf2 = static_cast<double>((static_cast<int>(d_Toe_sf2) << 15));
+            d_Toe_sf2 = static_cast<double>((static_cast<uint32_t>(d_Toe_sf2) << 15U));
 
             // Set system flags for message reception
             flag_d1_sf2 = true;
@@ -800,7 +800,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A0)) * D1_A0_LSB;
                     d_A_f1_msb_bits = (read_navigation_unsigned(subframe_bits, D2_A1_MSB));
                     // Adjust for lsb in next page
-                    d_A_f1_msb_bits = d_A_f1_msb_bits << 18;
+                    d_A_f1_msb_bits = d_A_f1_msb_bits << 18ULL;
 
                     // Set system flags for message reception
                     flag_sf1_p3 = true;
@@ -815,7 +815,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, D2_DELTA_N)) * D1_DELTA_N_LSB;
                     d_Cuc_msb_bits = (read_navigation_unsigned(subframe_bits, D2_CUC_MSB));
                     // Adjust for lsb in next page
-                    d_Cuc_msb_bits = d_Cuc_msb_bits << 4;
+                    d_Cuc_msb_bits = d_Cuc_msb_bits << 4U;
 
                     // Set system flags for message reception
                     flag_sf1_p4 = true;
@@ -830,8 +830,8 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_eccentricity_msb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     d_eccentricity_msb_bits = (read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_eccentricity_msb = static_cast<uint64_t>((static_cast<uint64_t>(d_eccentricity_msb) << 22));
-                    d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22;
+                    d_eccentricity_msb = static_cast<uint64_t>((static_cast<uint64_t>(d_eccentricity_msb) << 22U));
+                    d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22U;
 
                     // Set system flags for message reception
                     flag_sf1_p5 = true;
@@ -845,7 +845,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SQRT_A)) * D1_SQRT_A_LSB;
                     d_Cic_msb_bits = (read_navigation_unsigned(subframe_bits, D2_CIC_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_Cic_msb_bits = d_Cic_msb_bits << 8;
+                    d_Cic_msb_bits = d_Cic_msb_bits << 8U;
 
                     // Set system flags for message reception
                     flag_sf1_p6 = true;
@@ -859,7 +859,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_TOE)) * D1_TOE_LSB;
                     d_i_0_msb_bits = (read_navigation_unsigned(subframe_bits, D2_I0_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_i_0_msb_bits = d_i_0_msb_bits << 11;
+                    d_i_0_msb_bits = d_i_0_msb_bits << 11U;
 
                     // Set system flags for message reception
                     flag_sf1_p7 = true;
@@ -873,7 +873,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, D2_CRS)) * D1_CRS_LSB;
                     d_OMEGA_DOT_msb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_DOT_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_OMEGA_DOT_msb_bits = d_OMEGA_DOT_msb_bits << 5;
+                    d_OMEGA_DOT_msb_bits = d_OMEGA_DOT_msb_bits << 5ULL;
 
                     // Set system flags for message reception
                     flag_sf1_p8 = true;
@@ -886,7 +886,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA0)) * D1_OMEGA0_LSB;
                     d_OMEGA_msb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_OMEGA_msb_bits = d_OMEGA_msb_bits << 5;
+                    d_OMEGA_msb_bits = d_OMEGA_msb_bits << 5U;
 
                     // Set system flags for message reception
                     flag_sf1_p9 = true;

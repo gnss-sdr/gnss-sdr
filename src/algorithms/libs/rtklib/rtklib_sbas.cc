@@ -922,7 +922,7 @@ void searchigp(gtime_t time __attribute__((unused)), const double *pos, const sb
  *          double   *var    O   variance of ionospheric delay (m^2)
  * return : status (1:ok, 0:no correction)
  * notes  : before calling the function, sbas ionosphere correction parameters
- *          in navigation data (nav->sbsion) must be set by callig
+ *          in navigation data (nav->sbsion) must be set by calling
  *          sbsupdatecorr()
  *-----------------------------------------------------------------------------*/
 int sbsioncorr(gtime_t time, const nav_t *nav, const double *pos,
@@ -1206,7 +1206,7 @@ int sbsfastcorr(gtime_t time, int sat, const sbssat_t *sbssat,
  *          double *var      O   sat position and clock variance (m^2)
  * return : status (1:ok,0:no correction)
  * notes  : before calling the function, sbas satellite correction parameters
- *          in navigation data (nav->sbssat) must be set by callig
+ *          in navigation data (nav->sbssat) must be set by calling
  *          sbsupdatecorr().
  *          satellite clock correction include long-term correction and fast
  *          correction.

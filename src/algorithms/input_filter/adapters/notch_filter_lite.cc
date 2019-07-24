@@ -98,9 +98,6 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, const st
 }
 
 
-NotchFilterLite::~NotchFilterLite() = default;
-
-
 void NotchFilterLite::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

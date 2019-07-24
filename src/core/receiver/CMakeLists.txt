@@ -19,7 +19,6 @@
 
 set(GNSS_RECEIVER_SOURCES
     control_thread.cc
-    control_message_factory.cc
     file_configuration.cc
     gnss_block_factory.cc
     gnss_flowgraph.cc
@@ -29,7 +28,6 @@ set(GNSS_RECEIVER_SOURCES
 
 set(GNSS_RECEIVER_HEADERS
     control_thread.h
-    control_message_factory.h
     file_configuration.h
     gnss_block_factory.h
     gnss_flowgraph.h
@@ -37,7 +35,6 @@ set(GNSS_RECEIVER_HEADERS
     tcp_cmd_interface.h
     concurrent_map.h
     concurrent_queue.h
-    control_message.h
 )
 
 list(SORT GNSS_RECEIVER_HEADERS)
@@ -127,7 +124,7 @@ if(ENABLE_CUDA)
     target_compile_definitions(core_receiver PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
-if(Boost_VERSION VERSION_GREATER "106599")
+if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
     target_compile_definitions(core_receiver
         PRIVATE
             -DBOOST_GREATER_1_65
@@ -136,17 +133,11 @@ endif()
 
 target_link_libraries(core_receiver
     PUBLIC
-        Armadillo::armadillo
-        Boost::boost
-        Boost::thread
-        Gnuradio::runtime
-        channel_libs
         core_libs
         core_monitor
+        Boost::thread
+        Gnuradio::runtime
     PRIVATE
-        Boost::chrono
-        Gflags::gflags
-        Glog::glog
         signal_source_adapters
         data_type_adapters
         input_filter_adapters
@@ -158,11 +149,16 @@ target_link_libraries(core_receiver
         telemetry_decoder_adapters
         obs_adapters
         pvt_adapters
+        Boost::boost
+        Boost::chrono
+        Gflags::gflags
+        Glog::glog
+        Armadillo::armadillo
 )
 
 # Fix for Boost Asio < 1.70
 if(OS_IS_MACOSX)
-    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (${Boost_VERSION} VERSION_LESS 107000))
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (Boost_VERSION_STRING VERSION_LESS 1.70.0))
         if(${has_string_view})
             target_compile_definitions(core_receiver
                 PUBLIC

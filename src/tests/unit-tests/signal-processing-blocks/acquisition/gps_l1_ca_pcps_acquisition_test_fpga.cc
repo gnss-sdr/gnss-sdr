@@ -41,7 +41,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/throttle.h>
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>

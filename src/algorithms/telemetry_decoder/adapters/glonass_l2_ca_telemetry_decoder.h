@@ -53,7 +53,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GlonassL2CaTelemetryDecoder();
+    ~GlonassL2CaTelemetryDecoder() = default;
     std::string role() override
     {
         return role_;

@@ -46,8 +46,7 @@
 class Fpga_Switch
 {
 public:
-
-	/*!
+    /*!
 	 * \brief Constructor
 	 */
     Fpga_Switch(const std::string& device_name);

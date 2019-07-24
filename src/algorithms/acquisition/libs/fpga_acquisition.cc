@@ -175,7 +175,6 @@ void Fpga_Acquisition::run_acquisition(void)
             std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
             std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
-
 }
 
 

@@ -50,7 +50,6 @@ class ConfigurationInterface;
 class GpsL5iPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
-
     /*!
      * \brief Constructor
      */

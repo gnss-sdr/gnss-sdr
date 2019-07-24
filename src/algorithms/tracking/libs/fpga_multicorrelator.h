@@ -50,8 +50,7 @@
 class Fpga_Multicorrelator_8sc
 {
 public:
-
-	/*!
+    /*!
 	 * \brief Constructor
 	 */
     Fpga_Multicorrelator_8sc(int32_t n_correlators, std::string device_name,

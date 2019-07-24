@@ -128,12 +128,11 @@ public:
     void stop_tracking() override;
 
 private:
-
-	static const uint32_t NUM_PRNs = 32;  // total number of PRNs
-	static const int32_t GPS_CA_BIT_DURATION_MS = 20;
-	// the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
-	// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
-	static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;  // flag that enables WE (Write Enable) of the local code FPGA
+    static const uint32_t NUM_PRNs = 32;  // total number of PRNs
+    static const int32_t GPS_CA_BIT_DURATION_MS = 20;
+    // the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;  // flag that enables WE (Write Enable) of the local code FPGA
 
 
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;

@@ -45,8 +45,7 @@
 class Fpga_Acquisition
 {
 public:
-
-	/*!
+    /*!
 	 * \brief Constructor
 	 */
     Fpga_Acquisition(

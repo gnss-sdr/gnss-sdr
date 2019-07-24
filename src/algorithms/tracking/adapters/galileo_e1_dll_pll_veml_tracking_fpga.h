@@ -51,7 +51,6 @@ class ConfigurationInterface;
 class GalileoE1DllPllVemlTrackingFpga : public TrackingInterface
 {
 public:
-
     /*!
      * \brief Constructor
      */
@@ -132,7 +131,6 @@ public:
     void stop_tracking() override;
 
 private:
-
     // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
     static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;      // flag that enables WE (Write Enable) of the local code FPGA

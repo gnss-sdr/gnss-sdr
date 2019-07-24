@@ -1286,6 +1286,8 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
 
 void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
 {
+    gr::thread::scoped_lock l(d_setlock);
+
     d_channel = channel;
     multicorrelator_fpga->set_channel(d_channel);
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -1458,19 +1460,20 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_cn0_smoother.reset();
             d_carrier_lock_test_smoother.reset();
-
         }
 }
 
 
 void dll_pll_veml_tracking_fpga::stop_tracking()
 {
+    // interrupt the tracking loops
     d_stop_tracking = true;
 }
 
 
 void dll_pll_veml_tracking_fpga::reset(void)
 {
+    gr::thread::scoped_lock l(d_setlock);
     multicorrelator_fpga->unlock_channel();
 }
 
@@ -1480,6 +1483,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
     gr_vector_const_void_star &input_items __attribute__((unused)),
     gr_vector_void_star &output_items)
 {
+    gr::thread::scoped_lock l(d_setlock);
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;

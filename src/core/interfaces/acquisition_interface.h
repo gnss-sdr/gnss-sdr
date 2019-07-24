@@ -62,6 +62,10 @@ public:
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
+    virtual void set_doppler_center(int doppler_center __attribute__((unused)))
+    {
+        return;
+    }
     virtual void init() = 0;
     virtual void set_local_code() = 0;
     virtual void set_state(int state) = 0;

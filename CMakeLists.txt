@@ -23,7 +23,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
-cmake_minimum_required(VERSION 2.8.12...3.14.5)
+cmake_minimum_required(VERSION 2.8.12...3.15)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -682,15 +682,15 @@ set_package_properties(Boost PROPERTIES
     TYPE REQUIRED
 )
 
-if(CMAKE_VERSION VERSION_GREATER 3.14)
-    set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
-    )
-else()
-    set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
-    )
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
+if(POLICY CMP0093)
+    cmake_policy(SET CMP0093 NEW)  # FindBoost reports Boost_VERSION in x.y.z format.
+endif()
+set_package_properties(Boost PROPERTIES
+    DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
+)
 
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::boost)
@@ -761,7 +761,7 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
 endif()
 
 # Fix for Boost Asio < 1.70 when using Clang in macOS
-if(${Boost_VERSION} VERSION_LESS 107000)
+if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
     # Check if we have std::string_view
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("

@@ -55,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaPcpsAcquisitionFineDoppler();
+    ~GpsL1CaPcpsAcquisitionFineDoppler() = default;
 
     inline std::string role() override
     {

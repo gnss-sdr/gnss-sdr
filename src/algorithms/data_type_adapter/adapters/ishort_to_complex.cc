@@ -74,9 +74,6 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, const st
 }
 
 
-IshortToComplex::~IshortToComplex() = default;
-
-
 void IshortToComplex::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

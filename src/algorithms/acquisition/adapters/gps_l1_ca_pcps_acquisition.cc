@@ -148,6 +148,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
@@ -159,9 +160,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition() = default;
 
 
 void GpsL1CaPcpsAcquisition::stop_acquisition()
@@ -203,6 +201,12 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+void GpsL1CaPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

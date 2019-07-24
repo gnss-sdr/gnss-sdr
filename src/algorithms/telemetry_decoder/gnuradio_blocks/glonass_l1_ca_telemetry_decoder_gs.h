@@ -41,6 +41,7 @@
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <array>
 #include <cstdint>
 #include <fstream>  // for ofstream
 #include <string>
@@ -50,7 +51,9 @@ class glonass_l1_ca_telemetry_decoder_gs;
 
 using glonass_l1_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l1_ca_telemetry_decoder_gs>;
 
-glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
  * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
@@ -75,43 +78,45 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend glonass_l1_ca_telemetry_decoder_gs_sptr
-    glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
+
     glonass_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_string(const double *symbols, int32_t frame_length);
 
-    //!< Help with coherent tracking
+    // Help with coherent tracking
     double d_preamble_time_samples;
 
-    //!< Preamble decoding
-    uint16_t d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS]{};
-    int32_t *d_preambles_symbols;
-    uint32_t d_samples_per_symbol;
-    int32_t d_symbols_per_preamble;
+    // Preamble decoding
+    const std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE};
+    std::array<int32_t, GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS> d_preambles_symbols{};
+    uint32_t d_samples_per_symbol = (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
+    const int32_t d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
-    //!< Storage for incoming data
+    // Storage for incoming data
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
 
-    //!< Variables for internal functionality
-    uint64_t d_sample_counter;    //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
-    uint64_t d_preamble_index;    //!< Index of sample number where preamble was found
-    uint32_t d_stat;              //!< Status of decoder
-    bool d_flag_frame_sync;       //!< Indicate when a frame sync is achieved
-    bool d_flag_parity;           //!< Flag indicating when parity check was achieved (crc check)
-    bool d_flag_preamble;         //!< Flag indicating when preamble was found
-    int32_t d_CRC_error_counter;  //!< Number of failed CRC operations
-    bool flag_TOW_set;            //!< Indicates when time of week is set
-    double delta_t;               //!< GPS-GLONASS time offset
+    // Variables for internal functionality
+    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_preamble_index;    // Index of sample number where preamble was found
+    uint32_t d_stat;              // Status of decoder
+    bool d_flag_frame_sync;       // Indicate when a frame sync is achieved
+    bool d_flag_parity;           // Flag indicating when parity check was achieved (crc check)
+    bool d_flag_preamble;         // Flag indicating when preamble was found
+    int32_t d_CRC_error_counter;  // Number of failed CRC operations
+    bool flag_TOW_set;            // Indicates when time of week is set
+    double delta_t;               // GPS-GLONASS time offset
 
-    //!< Navigation Message variable
+    // Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;
 
-    //!< Values to populate gnss synchronization structure
+    // Values to populate gnss synchronization structure
     double d_TOW_at_current_symbol;
     bool Flag_valid_word;
 
-    //!< Satellite Information and logging capacity
+    // Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
     int32_t d_channel;
     bool d_dump;

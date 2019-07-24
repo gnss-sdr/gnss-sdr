@@ -65,9 +65,6 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(
 }
 
 
-gnss_sdr_sample_counter::~gnss_sdr_sample_counter() = default;
-
-
 gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size)
 {
     gnss_sdr_sample_counter_sptr sample_counter_(new gnss_sdr_sample_counter(_fs, _interval_ms, _size));

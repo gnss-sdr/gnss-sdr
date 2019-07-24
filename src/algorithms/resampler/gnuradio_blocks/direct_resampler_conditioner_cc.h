@@ -58,7 +58,7 @@ direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
 class direct_resampler_conditioner_cc : public gr::block
 {
 public:
-    ~direct_resampler_conditioner_cc();
+    ~direct_resampler_conditioner_cc() = default;
     inline unsigned int sample_freq_in() const
     {
         return d_sample_freq_in;

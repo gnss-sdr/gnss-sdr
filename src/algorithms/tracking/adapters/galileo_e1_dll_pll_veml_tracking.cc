@@ -192,9 +192,6 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 }
 
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking() = default;
-
-
 void GalileoE1DllPllVemlTracking::stop_tracking()
 {
 }

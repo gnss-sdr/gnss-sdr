@@ -166,7 +166,7 @@ private:
     // Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
-    double d_acq_carrier_doppler_step_hz;
+    double d_acq_carrier_doppler_step_hz{};
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator
@@ -184,7 +184,7 @@ private:
     double d_carrier_dopplerrate_hz2;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
-    double d_carr_phase_error_rad;
+    double d_carr_phase_error_rad{};
     double d_carr_phase_sigma2;
     double d_code_phase_samples;
     double code_error_chips;

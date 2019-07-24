@@ -40,9 +40,9 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <exception>
 #include <sstream>
-#include <utility>
 
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
@@ -106,42 +106,26 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_both_signal_components = both_signal_components_;
     d_CAF_window_hz = CAF_window_hz_;
 
-    d_inbuffer = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_fft_code_I_A = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_magnitudeIA = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_inbuffer.reserve(d_fft_size);
+    d_fft_code_I_A.reserve(d_fft_size);
+    d_magnitudeIA.reserve(d_fft_size);
 
     if (d_both_signal_components == true)
         {
-            d_fft_code_Q_A = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            d_magnitudeQA = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+            d_fft_code_Q_A.reserve(d_fft_size);
+            d_magnitudeQA.reserve(d_fft_size);
         }
-    else
-        {
-            d_fft_code_Q_A = nullptr;
-            d_magnitudeQA = nullptr;
-        }
+
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
         {
-            d_fft_code_I_B = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            d_magnitudeIB = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+            d_fft_code_I_B.reserve(d_fft_size);
+            d_magnitudeIB.reserve(d_fft_size);
             if (d_both_signal_components == true)
                 {
-                    d_fft_code_Q_B = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-                    d_magnitudeQB = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+                    d_fft_code_Q_B.reserve(d_fft_size);
+                    d_magnitudeQB.reserve(d_fft_size);
                 }
-            else
-                {
-                    d_fft_code_Q_B = nullptr;
-                    d_magnitudeQB = nullptr;
-                }
-        }
-    else
-        {
-            d_fft_code_I_B = nullptr;
-            d_magnitudeIB = nullptr;
-            d_fft_code_Q_B = nullptr;
-            d_magnitudeQB = nullptr;
         }
 
     // Direct FFT
@@ -157,14 +141,10 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_doppler_resolution = 0;
     d_threshold = 0;
     d_doppler_step = 250;
-    d_grid_doppler_wipeoffs = nullptr;
     d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_CAF_vector = nullptr;
-    d_CAF_vector_I = nullptr;
-    d_CAF_vector_Q = nullptr;
     d_channel = 0;
     d_gr_stream_buffer = 0;
 }
@@ -172,44 +152,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisition_caf_cc()
 {
-    if (d_num_doppler_bins > 0)
-        {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
-                {
-                    volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
-                }
-            delete[] d_grid_doppler_wipeoffs;
-        }
-
-    volk_gnsssdr_free(d_inbuffer);
-    volk_gnsssdr_free(d_fft_code_I_A);
-    volk_gnsssdr_free(d_magnitudeIA);
-    if (d_both_signal_components == true)
-        {
-            volk_gnsssdr_free(d_fft_code_Q_A);
-            volk_gnsssdr_free(d_magnitudeQA);
-        }
-    // IF INTEGRATION TIME > 1
-    if (d_sampled_ms > 1)
-        {
-            volk_gnsssdr_free(d_fft_code_I_B);
-            volk_gnsssdr_free(d_magnitudeIB);
-            if (d_both_signal_components == true)
-                {
-                    volk_gnsssdr_free(d_fft_code_Q_B);
-                    volk_gnsssdr_free(d_magnitudeQB);
-                }
-        }
-    if (d_CAF_window_hz > 0)
-        {
-            volk_gnsssdr_free(d_CAF_vector);
-            volk_gnsssdr_free(d_CAF_vector_I);
-            if (d_both_signal_components == true)
-                {
-                    volk_gnsssdr_free(d_CAF_vector_Q);
-                }
-        }
-
     try
         {
             if (d_dump)
@@ -236,8 +178,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
 
     d_fft_if->execute();  // We need the FFT of local code
 
-    //Conjugate the local code
-    volk_32fc_conjugate_32fc(d_fft_code_I_A, d_fft_if->get_outbuf(), d_fft_size);
+    // Conjugate the local code
+    volk_32fc_conjugate_32fc(d_fft_code_I_A.data(), d_fft_if->get_outbuf(), d_fft_size);
 
     // SAME FOR PILOT SIGNAL
     if (d_both_signal_components == true)
@@ -247,8 +189,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
 
             d_fft_if->execute();  // We need the FFT of local code
 
-            //Conjugate the local code
-            volk_32fc_conjugate_32fc(d_fft_code_Q_A, d_fft_if->get_outbuf(), d_fft_size);
+            // Conjugate the local code
+            volk_32fc_conjugate_32fc(d_fft_code_Q_A.data(), d_fft_if->get_outbuf(), d_fft_size);
         }
     // IF INTEGRATION TIME > 1 code, we need to evaluate the other possible combination
     // Note: max integration time allowed = 3ms (dealt in adapter)
@@ -261,8 +203,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
 
             d_fft_if->execute();  // We need the FFT of local code
 
-            //Conjugate the local code
-            volk_32fc_conjugate_32fc(d_fft_code_I_B, d_fft_if->get_outbuf(), d_fft_size);
+            // Conjugate the local code
+            volk_32fc_conjugate_32fc(d_fft_code_I_B.data(), d_fft_if->get_outbuf(), d_fft_size);
 
             if (d_both_signal_components == true)
                 {
@@ -272,8 +214,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
                         d_samples_per_code);
                     d_fft_if->execute();  // We need the FFT of local code
 
-                    //Conjugate the local code
-                    volk_32fc_conjugate_32fc(d_fft_code_Q_B, d_fft_if->get_outbuf(), d_fft_size);
+                    // Conjugate the local code
+                    volk_32fc_conjugate_32fc(d_fft_code_Q_B.data(), d_fft_if->get_outbuf(), d_fft_size);
                 }
         }
 }
@@ -304,27 +246,24 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
         }
 
     // Create the carrier Doppler wipeoff signals
-    d_grid_doppler_wipeoffs = new gr_complex *[d_num_doppler_bins];
+    d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_fft_size));
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GALILEO_TWO_PI * doppler / static_cast<float>(d_fs_in);
-            float _phase[1];
-            _phase[0] = 0;
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);
+            std::array<float, 1> _phase{};
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
         }
 
     /* CAF Filtering to resolve doppler ambiguity. Phase and quadrature must be processed
      * separately before non-coherent integration */
-    //    if (d_CAF_filter)
     if (d_CAF_window_hz > 0)
         {
-            d_CAF_vector = static_cast<float *>(volk_gnsssdr_malloc(d_num_doppler_bins * sizeof(float), volk_gnsssdr_get_alignment()));
-            d_CAF_vector_I = static_cast<float *>(volk_gnsssdr_malloc(d_num_doppler_bins * sizeof(float), volk_gnsssdr_get_alignment()));
+            d_CAF_vector.reserve(d_num_doppler_bins);
+            d_CAF_vector_I.reserve(d_num_doppler_bins);
             if (d_both_signal_components == true)
                 {
-                    d_CAF_vector_Q = static_cast<float *>(volk_gnsssdr_malloc(d_num_doppler_bins * sizeof(float), volk_gnsssdr_get_alignment()));
+                    d_CAF_vector_Q.reserve(d_num_doppler_bins);
                 }
         }
 }
@@ -370,8 +309,8 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
      * 7. Declare positive or negative acquisition using a message port
      */
 
-    int acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-    /* States:     0 Stop Channel
+    int acquisition_message = -1;  // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    /* States: 0 Stop Channel
      *         1 Load the buffer until it reaches fft_size
      *         2 Acquisition algorithm
      *         3 Positive acquisition
@@ -383,7 +322,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             {
                 if (d_active)
                     {
-                        //restart acquisition variables
+                        // restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
                         d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
@@ -401,7 +340,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             }
         case 1:
             {
-                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
                 unsigned int buff_increment;
                 if ((ninput_items[0] + d_buffer_count) <= d_fft_size)
                     {
@@ -425,7 +364,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         case 2:
             {
                 // Fill last part of the buffer and reset counter
-                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
                 if (d_buffer_count < d_fft_size)
                     {
                         memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * (d_fft_size - d_buffer_count));
@@ -456,19 +395,18 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                            << ", doppler_step: " << d_doppler_step;
 
                 // 1- Compute the input signal power estimation
-                volk_32fc_magnitude_squared_32f(d_magnitudeIA, d_inbuffer, d_fft_size);
-                volk_32f_accumulator_s32f(&d_input_power, d_magnitudeIA, d_fft_size);
+                volk_32fc_magnitude_squared_32f(d_magnitudeIA.data(), d_inbuffer.data(), d_fft_size);
+                volk_32f_accumulator_s32f(&d_input_power, d_magnitudeIA.data(), d_fft_size);
                 d_input_power /= static_cast<float>(d_fft_size);
 
                 // 2- Doppler frequency search loop
                 for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // doppler search steps
-
                         doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-                        volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), d_inbuffer,
-                            d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+                        volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), d_inbuffer.data(),
+                            d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size);
 
                         // 3- Perform the FFT-based convolution  (parallel time search)
                         // Compute the FFT of the carrier wiped--off incoming signal
@@ -478,14 +416,14 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         // Multiply carrier wiped--off, Fourier transformed incoming signal
                         // with the local FFT'd code reference using SIMD operations with VOLK library
                         volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
-                            d_fft_if->get_outbuf(), d_fft_code_I_A, d_fft_size);
+                            d_fft_if->get_outbuf(), d_fft_code_I_A.data(), d_fft_size);
 
                         // compute the inverse FFT
                         d_ifft->execute();
 
                         // Search maximum
-                        volk_32fc_magnitude_squared_32f(d_magnitudeIA, d_ifft->get_outbuf(), d_fft_size);
-                        volk_gnsssdr_32f_index_max_32u(&indext_IA, d_magnitudeIA, d_fft_size);
+                        volk_32fc_magnitude_squared_32f(d_magnitudeIA.data(), d_ifft->get_outbuf(), d_fft_size);
+                        volk_gnsssdr_32f_index_max_32u(&indext_IA, d_magnitudeIA.data(), d_fft_size);
                         // Normalize the maximum value to correct the scale factor introduced by FFTW
                         magt_IA = d_magnitudeIA[indext_IA] / (fft_normalization_factor * fft_normalization_factor);
 
@@ -493,30 +431,30 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                             {
                                 // REPEAT FOR ALL CODES. CODE_QA
                                 volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
-                                    d_fft_if->get_outbuf(), d_fft_code_Q_A, d_fft_size);
+                                    d_fft_if->get_outbuf(), d_fft_code_Q_A.data(), d_fft_size);
                                 d_ifft->execute();
-                                volk_32fc_magnitude_squared_32f(d_magnitudeQA, d_ifft->get_outbuf(), d_fft_size);
-                                volk_gnsssdr_32f_index_max_32u(&indext_QA, d_magnitudeQA, d_fft_size);
+                                volk_32fc_magnitude_squared_32f(d_magnitudeQA.data(), d_ifft->get_outbuf(), d_fft_size);
+                                volk_gnsssdr_32f_index_max_32u(&indext_QA, d_magnitudeQA.data(), d_fft_size);
                                 magt_QA = d_magnitudeQA[indext_QA] / (fft_normalization_factor * fft_normalization_factor);
                             }
                         if (d_sampled_ms > 1)  // If Integration time > 1 code
                             {
                                 // REPEAT FOR ALL CODES. CODE_IB
                                 volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
-                                    d_fft_if->get_outbuf(), d_fft_code_I_B, d_fft_size);
+                                    d_fft_if->get_outbuf(), d_fft_code_I_B.data(), d_fft_size);
                                 d_ifft->execute();
-                                volk_32fc_magnitude_squared_32f(d_magnitudeIB, d_ifft->get_outbuf(), d_fft_size);
-                                volk_gnsssdr_32f_index_max_32u(&indext_IB, d_magnitudeIB, d_fft_size);
+                                volk_32fc_magnitude_squared_32f(d_magnitudeIB.data(), d_ifft->get_outbuf(), d_fft_size);
+                                volk_gnsssdr_32f_index_max_32u(&indext_IB, d_magnitudeIB.data(), d_fft_size);
                                 magt_IB = d_magnitudeIB[indext_IB] / (fft_normalization_factor * fft_normalization_factor);
 
                                 if (d_both_signal_components == true)
                                     {
                                         // REPEAT FOR ALL CODES. CODE_QB
                                         volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
-                                            d_fft_if->get_outbuf(), d_fft_code_Q_B, d_fft_size);
+                                            d_fft_if->get_outbuf(), d_fft_code_Q_B.data(), d_fft_size);
                                         d_ifft->execute();
-                                        volk_32fc_magnitude_squared_32f(d_magnitudeQB, d_ifft->get_outbuf(), d_fft_size);
-                                        volk_gnsssdr_32f_index_max_32u(&indext_QB, d_magnitudeQB, d_fft_size);
+                                        volk_32fc_magnitude_squared_32f(d_magnitudeQB.data(), d_ifft->get_outbuf(), d_fft_size);
+                                        volk_gnsssdr_32f_index_max_32u(&indext_QB, d_magnitudeQB.data(), d_fft_size);
                                         magt_QB = d_magnitudeIB[indext_QB] / (fft_normalization_factor * fft_normalization_factor);
                                     }
                             }
@@ -529,7 +467,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                             {
                                 if (magt_IA >= magt_IB)
                                     {
-                                        // if (d_CAF_filter) {d_CAF_vector_I[doppler_index] = magt_IA;}
                                         if (d_CAF_window_hz > 0)
                                             {
                                                 d_CAF_vector_I[doppler_index] = d_magnitudeIA[indext_IA];
@@ -539,7 +476,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                 // Integrate non-coherently I+Q
                                                 if (magt_QA >= magt_QB)
                                                     {
-                                                        // if (d_CAF_filter) {d_CAF_vector_Q[doppler_index] = magt_QA;}
                                                         if (d_CAF_window_hz > 0)
                                                             {
                                                                 d_CAF_vector_Q[doppler_index] = d_magnitudeQA[indext_QA];
@@ -551,7 +487,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                     }
                                                 else
                                                     {
-                                                        // if (d_CAF_filter) {d_CAF_vector_Q[doppler_index] = magt_QB;}
                                                         if (d_CAF_window_hz > 0)
                                                             {
                                                                 d_CAF_vector_Q[doppler_index] = d_magnitudeQB[indext_QB];
@@ -562,12 +497,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                             }
                                                     }
                                             }
-                                        volk_gnsssdr_32f_index_max_32u(&indext, d_magnitudeIA, d_fft_size);
+                                        volk_gnsssdr_32f_index_max_32u(&indext, d_magnitudeIA.data(), d_fft_size);
                                         magt = d_magnitudeIA[indext] / (fft_normalization_factor * fft_normalization_factor);
                                     }
                                 else
                                     {
-                                        // if (d_CAF_filter) {d_CAF_vector_I[doppler_index] = magt_IB;}
                                         if (d_CAF_window_hz > 0)
                                             {
                                                 d_CAF_vector_I[doppler_index] = d_magnitudeIB[indext_IB];
@@ -577,7 +511,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                 // Integrate non-coherently I+Q
                                                 if (magt_QA >= magt_QB)
                                                     {
-                                                        //if (d_CAF_filter) {d_CAF_vector_Q[doppler_index] = magt_QA;}
                                                         if (d_CAF_window_hz > 0)
                                                             {
                                                                 d_CAF_vector_Q[doppler_index] = d_magnitudeQA[indext_QA];
@@ -589,7 +522,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                     }
                                                 else
                                                     {
-                                                        // if (d_CAF_filter) {d_CAF_vector_Q[doppler_index] = magt_QB;}
                                                         if (d_CAF_window_hz > 0)
                                                             {
                                                                 d_CAF_vector_Q[doppler_index] = d_magnitudeQB[indext_QB];
@@ -600,20 +532,18 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                             }
                                                     }
                                             }
-                                        volk_gnsssdr_32f_index_max_32u(&indext, d_magnitudeIB, d_fft_size);
+                                        volk_gnsssdr_32f_index_max_32u(&indext, d_magnitudeIB.data(), d_fft_size);
                                         magt = d_magnitudeIB[indext] / (fft_normalization_factor * fft_normalization_factor);
                                     }
                             }
                         else
                             {
-                                // if (d_CAF_filter) {d_CAF_vector_I[doppler_index] = magt_IA;}
                                 if (d_CAF_window_hz > 0)
                                     {
                                         d_CAF_vector_I[doppler_index] = d_magnitudeIA[indext_IA];
                                     }
                                 if (d_both_signal_components)
                                     {
-                                        // if (d_CAF_filter) {d_CAF_vector_Q[doppler_index] = magt_QA;}
                                         if (d_CAF_window_hz > 0)
                                             {
                                                 d_CAF_vector_Q[doppler_index] = d_magnitudeQA[indext_QA];
@@ -624,7 +554,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                 d_magnitudeIA[i] += d_magnitudeQA[i];
                                             }
                                     }
-                                volk_gnsssdr_32f_index_max_32u(&indext, d_magnitudeIA, d_fft_size);
+                                volk_gnsssdr_32f_index_max_32u(&indext, d_magnitudeIA.data(), d_fft_size);
                                 magt = d_magnitudeIA[indext] / (fft_normalization_factor * fft_normalization_factor);
                             }
 
@@ -663,16 +593,16 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                     {
                                         if (magt_IA >= magt_IB)
                                             {
-                                                d_dump_file.write(reinterpret_cast<char *>(d_magnitudeIA), n);
+                                                d_dump_file.write(reinterpret_cast<char *>(d_magnitudeIA.data()), n);
                                             }
                                         else
                                             {
-                                                d_dump_file.write(reinterpret_cast<char *>(d_magnitudeIB), n);
+                                                d_dump_file.write(reinterpret_cast<char *>(d_magnitudeIB.data()), n);
                                             }
                                     }
                                 else
                                     {
-                                        d_dump_file.write(reinterpret_cast<char *>(d_magnitudeIA), n);
+                                        d_dump_file.write(reinterpret_cast<char *>(d_magnitudeIA.data()), n);
                                     }
                                 d_dump_file.close();
                             }
@@ -682,7 +612,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 if (d_CAF_window_hz > 0)
                     {
                         int CAF_bins_half;
-                        auto *accum = static_cast<float *>(volk_gnsssdr_malloc(sizeof(float), volk_gnsssdr_get_alignment()));
+                        std::array<float, 1> accum{};
                         CAF_bins_half = d_CAF_window_hz / (2 * d_doppler_step);
                         float weighting_factor;
                         weighting_factor = 0.5 / static_cast<float>(CAF_bins_half);
@@ -692,22 +622,18 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         for (int doppler_index = 0; doppler_index < CAF_bins_half; doppler_index++)
                             {
                                 d_CAF_vector[doppler_index] = 0;
-                                // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], d_CAF_vector_I, CAF_bins_half+doppler_index+1);
                                 for (int i = 0; i < CAF_bins_half + doppler_index + 1; i++)
                                     {
                                         d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * static_cast<unsigned int>((doppler_index - i)));
                                     }
-                                // d_CAF_vector[doppler_index] /= CAF_bins_half+doppler_index+1;
                                 d_CAF_vector[doppler_index] /= 1 + CAF_bins_half + doppler_index - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * doppler_index * (doppler_index + 1) / 2;  // triangles = [n*(n+1)/2]
                                 if (d_both_signal_components)
                                     {
                                         accum[0] = 0;
-                                        // volk_32f_accumulator_s32f_a(&accum[0], d_CAF_vector_Q, CAF_bins_half+doppler_index+1);
                                         for (int i = 0; i < CAF_bins_half + doppler_index + 1; i++)
                                             {
                                                 accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * static_cast<unsigned int>(abs(doppler_index - i)));
                                             }
-                                        // accum[0] /= CAF_bins_half+doppler_index+1;
                                         accum[0] /= 1 + CAF_bins_half + doppler_index - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * doppler_index * (doppler_index + 1) / 2;  // triangles = [n*(n+1)/2]
                                         d_CAF_vector[doppler_index] += accum[0];
                                     }
@@ -716,22 +642,18 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         for (unsigned int doppler_index = CAF_bins_half; doppler_index < d_num_doppler_bins - CAF_bins_half; doppler_index++)
                             {
                                 d_CAF_vector[doppler_index] = 0;
-                                // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], 2*CAF_bins_half+1);
                                 for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(doppler_index + CAF_bins_half + 1); i++)
                                     {
                                         d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * static_cast<unsigned int>((doppler_index - i)));
                                     }
-                                // d_CAF_vector[doppler_index] /= 2*CAF_bins_half+1;
                                 d_CAF_vector[doppler_index] /= 1 + 2 * CAF_bins_half - 2 * weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2;
                                 if (d_both_signal_components)
                                     {
                                         accum[0] = 0;
-                                        // volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], 2*CAF_bins_half);
                                         for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(doppler_index + CAF_bins_half + 1); i++)
                                             {
                                                 accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * static_cast<unsigned int>((doppler_index - i)));
                                             }
-                                        // accum[0] /= 2*CAF_bins_half+1;
                                         accum[0] /= 1 + 2 * CAF_bins_half - 2 * weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2;
                                         d_CAF_vector[doppler_index] += accum[0];
                                     }
@@ -740,29 +662,25 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         for (int doppler_index = d_num_doppler_bins - CAF_bins_half; doppler_index < static_cast<int>(d_num_doppler_bins); doppler_index++)
                             {
                                 d_CAF_vector[doppler_index] = 0;
-                                // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
                                 for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(d_num_doppler_bins); i++)
                                     {
                                         d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * (abs(doppler_index - i)));
                                     }
-                                // d_CAF_vector[doppler_index] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
                                 d_CAF_vector[doppler_index] /= 1 + CAF_bins_half + (d_num_doppler_bins - doppler_index - 1) - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * (d_num_doppler_bins - doppler_index - 1) * (d_num_doppler_bins - doppler_index) / 2;
                                 if (d_both_signal_components)
                                     {
                                         accum[0] = 0;
-                                        // volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
                                         for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(d_num_doppler_bins); i++)
                                             {
                                                 accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * (abs(doppler_index - i)));
                                             }
-                                        // accum[0] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
                                         accum[0] /= 1 + CAF_bins_half + (d_num_doppler_bins - doppler_index - 1) - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * (d_num_doppler_bins - doppler_index - 1) * (d_num_doppler_bins - doppler_index) / 2;
                                         d_CAF_vector[doppler_index] += accum[0];
                                     }
                             }
 
                         // Recompute the maximum doppler peak
-                        volk_gnsssdr_32f_index_max_32u(&indext, d_CAF_vector, d_num_doppler_bins);
+                        volk_gnsssdr_32f_index_max_32u(&indext, d_CAF_vector.data(), d_num_doppler_bins);
                         doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * indext;
                         d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                         // Dump if required, appended at the end of the file
@@ -773,10 +691,9 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 filename.str("");
                                 filename << "../data/test_statistics_E5a_sat_" << d_gnss_synchro->PRN << "_CAF.dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                                d_dump_file.write(reinterpret_cast<char *>(d_CAF_vector), n);
+                                d_dump_file.write(reinterpret_cast<char *>(d_CAF_vector.data()), n);
                                 d_dump_file.close();
                             }
-                        volk_gnsssdr_free(accum);
                     }
 
                 if (d_well_count == d_max_dwells)

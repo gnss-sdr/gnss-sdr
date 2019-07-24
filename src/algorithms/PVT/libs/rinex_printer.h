@@ -157,7 +157,7 @@ public:
     /*!
      *  \brief Generates the Mixed GPS L1,L5 + BDS B1I, B3I Navigation Data header
      */
-    void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_lnav_iono, const Gps_Utc_Model& gps_lnav_utc_model, const Gps_Ephemeris& eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
 
     /*!
      *  \brief Generates the Mixed GPS L2C + BDS B1I, B3I Navigation Data header

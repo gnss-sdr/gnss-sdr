@@ -266,7 +266,7 @@ uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILE
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  // shift left
+                    value <<= 1U;  // shift left
                     if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1;  // insert the bit
@@ -285,7 +285,7 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  // shift left
+                    value <<= 1U;  // shift left
                     if (static_cast<int>(bits[GALILEO_PAGE_TYPE_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1ULL;  // insert the bit
@@ -964,6 +964,9 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             TOW_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_0_BIT));
             DLOG(INFO) << "TOW_0= " << TOW_0;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            break;
+
+        default:
             break;
         }
     return page_number;

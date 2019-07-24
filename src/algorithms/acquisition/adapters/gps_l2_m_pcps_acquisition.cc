@@ -151,6 +151,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 
     num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
@@ -163,9 +164,6 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition() = default;
 
 
 void GpsL2MPcpsAcquisition::stop_acquisition()
@@ -213,6 +211,12 @@ void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+void GpsL2MPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
 
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

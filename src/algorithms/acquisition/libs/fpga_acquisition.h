@@ -56,7 +56,7 @@ public:
         uint32_t *all_fft_codes,
         uint32_t excludelimit);
 
-    ~Fpga_Acquisition();
+    ~Fpga_Acquisition() = default;
 
     bool set_local_code(uint32_t PRN);
 

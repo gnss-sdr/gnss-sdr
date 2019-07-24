@@ -29,15 +29,16 @@
  */
 
 #include "raw_array_signal_source.h"
+#include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <dbfcttc/raw_array.h>
 
 
 RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/raw_array_source.dat";
@@ -91,9 +92,6 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
 }
-
-
-RawArraySignalSource::~RawArraySignalSource() = default;
 
 
 void RawArraySignalSource::connect(gr::top_block_sptr top_block)

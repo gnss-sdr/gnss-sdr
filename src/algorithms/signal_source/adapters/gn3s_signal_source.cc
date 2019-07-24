@@ -32,12 +32,11 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gn3s/gn3s_source_cc.h>
 
 
 Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/gn3s_source.dat";
@@ -73,11 +72,6 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
         {
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-}
-
-
-Gn3sSignalSource::~Gn3sSignalSource()
-{
 }
 
 

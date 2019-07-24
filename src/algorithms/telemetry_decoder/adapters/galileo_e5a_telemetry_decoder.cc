@@ -65,9 +65,6 @@ GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* c
 }
 
 
-GalileoE5aTelemetryDecoder::~GalileoE5aTelemetryDecoder() = default;
-
-
 void GalileoE5aTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());

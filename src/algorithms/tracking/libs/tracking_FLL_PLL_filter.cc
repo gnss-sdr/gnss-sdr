@@ -50,9 +50,6 @@ Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter()
 }
 
 
-Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter() = default;
-
-
 void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int order)
 {
     /*

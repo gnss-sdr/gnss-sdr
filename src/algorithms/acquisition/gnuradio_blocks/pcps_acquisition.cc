@@ -48,7 +48,6 @@
 #else
 #include <boost/filesystem/path.hpp>
 #endif
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <pmt/pmt.h>        // for from_long
@@ -90,7 +89,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_active = false;
     d_positive_acq = 0;
     d_state = 0;
-    d_old_freq = 0LL;
+    d_doppler_bias = 0;
     d_num_noncoherent_integrations_counter = 0U;
     d_consumed_samples = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
     if (acq_parameters.sampled_ms == acq_parameters.ms_per_code)
@@ -107,6 +106,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_num_doppler_bins = 0U;
     d_threshold = 0.0;
     d_doppler_step = 0U;
+    d_doppler_center = 0U;
     d_doppler_center_step_two = 0.0;
     d_test_statistics = 0.0;
     d_channel = 0U;
@@ -206,9 +206,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
 }
 
 
-pcps_acquisition::~pcps_acquisition() = default;
-
-
 void pcps_acquisition::set_resampler_latency(uint32_t latency_samples)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
@@ -218,8 +215,6 @@ void pcps_acquisition::set_resampler_latency(uint32_t latency_samples)
 
 void pcps_acquisition::set_local_code(std::complex<float>* code)
 {
-    // reset the intermediate frequency
-    d_old_freq = 0LL;
     // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
     if (is_fdma())
         {
@@ -256,17 +251,19 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
 
 bool pcps_acquisition::is_fdma()
 {
+    // reset the intermediate frequency
+    d_doppler_bias = 0;
     // Dealing with FDMA system
     if (strcmp(d_gnss_synchro->Signal, "1G") == 0)
         {
-            d_old_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
-            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            d_doppler_bias = static_cast<int32_t>(DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN));
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_doppler_bias << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
     if (strcmp(d_gnss_synchro->Signal, "2G") == 0)
         {
-            d_old_freq += DFRQ2_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
-            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            d_doppler_bias += static_cast<int32_t>(DFRQ2_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN));
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_doppler_bias << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
     return false;
@@ -284,9 +281,8 @@ void pcps_acquisition::update_local_carrier(gsl::span<gr_complex> carrier_vector
         {
             phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.fs_in);
         }
-    float _phase[1];
-    _phase[0] = 0.0;
-    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase, carrier_vector.length());
+    std::array<float, 1> _phase{};
+    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.length());
 }
 
 
@@ -322,14 +318,10 @@ void pcps_acquisition::init()
 
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            for (uint32_t k = 0; k < d_fft_size; k++)
-                {
-                    d_magnitude_grid[doppler_index][k] = 0.0;
-                }
-            int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(gsl::span<gr_complex>(d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size), d_old_freq + doppler);
+            std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
         }
 
+    update_grid_doppler_wipeoffs();
     d_worker_active = false;
 
     if (d_dump)
@@ -345,8 +337,8 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(gsl::span<gr_complex>(d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size), d_old_freq + doppler);
+            int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_doppler_bias + doppler);
         }
 }
 
@@ -356,7 +348,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
         {
             float doppler = (static_cast<float>(doppler_index) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2;
-            update_local_carrier(gsl::span<gr_complex>(d_grid_doppler_wipeoffs_step_two[doppler_index].data(), d_fft_size), d_doppler_center_step_two + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_doppler_center_step_two + doppler);
         }
 }
 
@@ -398,7 +390,8 @@ void pcps_acquisition::send_positive_acquisition()
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
                << ", doppler " << d_gnss_synchro->Acq_doppler_hz
                << ", magnitude " << d_mag
-               << ", input signal power " << d_input_power;
+               << ", input signal power " << d_input_power
+               << ", Assist doppler_center " << d_doppler_center;
     d_positive_acq = 1;
 
     if (!d_channel_fsm.expired())
@@ -556,7 +549,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
     indext = index_time;
     if (!d_step_two)
         {
-            doppler = -static_cast<int32_t>(doppler_max) + doppler_step * static_cast<int32_t>(index_doppler);
+            doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
         {
@@ -594,7 +587,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
 
     if (!d_step_two)
         {
-            doppler = -static_cast<int32_t>(doppler_max) + doppler_step * static_cast<int32_t>(index_doppler);
+            doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
         {

@@ -76,9 +76,6 @@ IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, const std:
 }
 
 
-IshortToCshort::~IshortToCshort() = default;
-
-
 void IshortToCshort::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

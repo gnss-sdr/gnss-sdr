@@ -34,11 +34,12 @@
 #ifndef GNSS_SDR_GNSS_SDR_VALVE_H_
 #define GNSS_SDR_GNSS_SDR_VALVE_H_
 
+#include "concurrent_queue.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>   // for msg_queue, msg_queue::sptr
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
-#include <cstddef>                // for size_t
+#include <pmt/pmt.h>
+#include <cstddef>  // for size_t
 #include <cstdint>
 
 class Gnss_Sdr_Valve;
@@ -46,12 +47,12 @@ class Gnss_Sdr_Valve;
 boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     size_t sizeof_stream_item,
     uint64_t nitems,
-    gr::msg_queue::sptr queue);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
 boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     size_t sizeof_stream_item,
     uint64_t nitems,
-    gr::msg_queue::sptr queue,
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue,
     bool stop_flowgraph);
 
 /*!
@@ -71,21 +72,21 @@ private:
     friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
         size_t sizeof_stream_item,
         uint64_t nitems,
-        gr::msg_queue::sptr queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
         size_t sizeof_stream_item,
         uint64_t nitems,
-        gr::msg_queue::sptr queue,
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue,
         bool stop_flowgraph);
 
     Gnss_Sdr_Valve(size_t sizeof_stream_item,
         uint64_t nitems,
-        gr::msg_queue::sptr queue, bool stop_flowgraph);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue, bool stop_flowgraph);
 
     uint64_t d_nitems;
     uint64_t d_ncopied_items;
-    gr::msg_queue::sptr d_queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> d_queue;
     bool d_stop_flowgraph;
     bool d_open_valve;
 };

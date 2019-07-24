@@ -111,7 +111,6 @@ private:
     std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_preambles_symbols;
     int32_t d_preamble_length_symbols;
 
     // dll filter buffer
@@ -163,7 +162,7 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
-    
+
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;

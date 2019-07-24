@@ -49,7 +49,7 @@ public:
         std::string role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~ByteToShort();
+    ~ByteToShort() = default;
 
     inline std::string role() override
     {

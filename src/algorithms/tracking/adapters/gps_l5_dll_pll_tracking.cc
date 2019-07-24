@@ -190,9 +190,6 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
 }
 
 
-GpsL5DllPllTracking::~GpsL5DllPllTracking() = default;
-
-
 void GpsL5DllPllTracking::stop_tracking()
 {
 }

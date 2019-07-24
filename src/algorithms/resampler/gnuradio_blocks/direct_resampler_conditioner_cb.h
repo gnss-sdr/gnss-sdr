@@ -50,7 +50,7 @@ direct_resampler_conditioner_cb_sptr direct_resampler_make_conditioner_cb(
 class direct_resampler_conditioner_cb : public gr::block
 {
 public:
-    ~direct_resampler_conditioner_cb();
+    ~direct_resampler_conditioner_cb() = default;
 
     inline unsigned int sample_freq_in() const
     {

@@ -54,7 +54,7 @@ public:
     float get_code_nco(float DLL_discriminator);  //!< Numerically controlled oscillator
     Tracking_2nd_DLL_filter(float pdi_code);
     Tracking_2nd_DLL_filter();
-    ~Tracking_2nd_DLL_filter();
+    ~Tracking_2nd_DLL_filter() = default;
 
 private:
     // PLL filter parameters

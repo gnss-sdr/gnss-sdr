@@ -62,7 +62,7 @@ public:
     CubatureFilter();
     CubatureFilter(int nx);
     CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~CubatureFilter();
+    ~CubatureFilter() = default;
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);
@@ -91,7 +91,7 @@ public:
     UnscentedFilter();
     UnscentedFilter(int nx);
     UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~UnscentedFilter();
+    ~UnscentedFilter() = default;
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);

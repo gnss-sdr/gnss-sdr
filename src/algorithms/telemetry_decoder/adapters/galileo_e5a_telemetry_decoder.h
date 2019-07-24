@@ -57,7 +57,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE5aTelemetryDecoder();
+    ~GalileoE5aTelemetryDecoder() = default;
 
     inline std::string role() override
     {

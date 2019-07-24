@@ -118,9 +118,6 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
 }
 
 
-GpsL1CaKfTracking::~GpsL1CaKfTracking() = default;
-
-
 void GpsL1CaKfTracking::stop_tracking()
 {
 }

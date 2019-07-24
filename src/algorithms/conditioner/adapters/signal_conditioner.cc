@@ -54,10 +54,6 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
 }
 
 
-// Destructor
-SignalConditioner::~SignalConditioner() = default;
-
-
 void SignalConditioner::connect(gr::top_block_sptr top_block)
 {
     if (connected_)

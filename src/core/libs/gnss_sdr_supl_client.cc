@@ -57,9 +57,6 @@ Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
 }
 
 
-Gnss_Sdr_Supl_Client::~Gnss_Sdr_Supl_Client() = default;
-
-
 void Gnss_Sdr_Supl_Client::print_assistance()
 {
     if (assist.set & SUPL_RRLP_ASSIST_REFTIME)

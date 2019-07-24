@@ -21,7 +21,7 @@ extern "C"
         PXML_TEXT,    /* Plain text between XML tags. */
         PXML_TAG,     /* A tag, starting with '<'. */
         PXML_COMMENT, /* An XML comment, including "<!--" and "-->". */
-        /* 
+        /*
 	 * The following chunk types are reported if the chunk
 	 * terminates the specified XML element.
 	 */
@@ -31,10 +31,10 @@ extern "C"
 
     /*
  * Callback function that is called by the parser when parsed data is
- * available. The _opaque is the pointer to a field containing opaque user 
- * data specified in pxml_create() call. The chunk type is _type and the text 
+ * available. The _opaque is the pointer to a field containing opaque user
+ * data specified in pxml_create() call. The chunk type is _type and the text
  * data is the piece of buffer identified by _bufid (as supplied to
- * pxml_feed() call) starting at offset _offset and of _size bytes size. 
+ * pxml_feed() call) starting at offset _offset and of _size bytes size.
  * The chunk is NOT '\0'-terminated.
  */
     typedef int(pxml_callback_f)(pxml_chunk_type_e _type,
@@ -42,8 +42,8 @@ extern "C"
 
     /*
  * Parse the given buffer as it were a chunk of XML data.
- * Invoke the specified callback each time the meaninful data is found.
- * This function returns number of bytes consumed from the bufer.
+ * Invoke the specified callback each time the meaningful data is found.
+ * This function returns number of bytes consumed from the buffer.
  * It will always be lesser than or equal to the specified _size.
  * The next invocation of this function must account the difference.
  */

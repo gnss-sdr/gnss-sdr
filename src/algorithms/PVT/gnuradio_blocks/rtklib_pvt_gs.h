@@ -169,6 +169,7 @@ private:
 
     int32_t d_output_rate_ms;
     int32_t d_display_rate_ms;
+    int32_t d_report_rate_ms;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;

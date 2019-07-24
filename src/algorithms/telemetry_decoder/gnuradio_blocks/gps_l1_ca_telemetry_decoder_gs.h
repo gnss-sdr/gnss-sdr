@@ -39,6 +39,7 @@
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <array>                 // for array
 #include <cstdint>               // for int32_t
 #include <fstream>               // for ofstream
 #include <string>                // for string
@@ -48,12 +49,12 @@ class gps_l1_ca_telemetry_decoder_gs;
 
 using gps_l1_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
 
-gps_l1_ca_telemetry_decoder_gs_sptr
-gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
- *
  */
 class gps_l1_ca_telemetry_decoder_gs : public gr::block
 {
@@ -70,8 +71,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend gps_l1_ca_telemetry_decoder_gs_sptr
-    gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
 
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
     bool gps_word_parityCheck(uint32_t gpsword);
@@ -80,7 +82,7 @@ private:
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
-    int32_t *d_preamble_samples;
+    std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;
     bool flag_PLL_180_deg_phase_locked;

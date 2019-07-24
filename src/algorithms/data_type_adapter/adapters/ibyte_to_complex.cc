@@ -74,9 +74,6 @@ IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, const std:
 }
 
 
-IbyteToComplex::~IbyteToComplex() = default;
-
-
 void IbyteToComplex::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

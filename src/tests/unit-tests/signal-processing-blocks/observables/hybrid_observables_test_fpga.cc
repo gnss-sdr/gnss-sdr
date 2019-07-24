@@ -1455,7 +1455,7 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
     std::cout << "ReadRinexObs info:" << std::endl;
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
         {
-            std::cout << "SAT PRN " << gnss_synchro_vec.at(n).PRN << " RINEX epoch readed: " << obs_vec->at(n).n_rows << std::endl;
+            std::cout << "SAT PRN " << gnss_synchro_vec.at(n).PRN << " RINEX epoch read: " << obs_vec->at(n).n_rows << std::endl;
         }
     return true;
 }

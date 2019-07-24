@@ -113,7 +113,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_secondary_code_string = nullptr;
     d_data_secondary_code_length = 0U;
     d_data_secondary_code_string = nullptr;
-    d_preambles_symbols = nullptr;
     d_preamble_length_symbols = 0;
     signal_type = std::string(trk_parameters.signal);
 
@@ -542,19 +541,11 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                     int tlm_event;
                     tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
 
-                    switch (tlm_event)
+                    if (tlm_event == 1)
                         {
-                        case 1:  // tlm fault in current channel
-                            {
-                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_carrier_lock_fail_counter = 200000;  //force loss-of-lock condition
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
+                            DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
+                            gr::thread::scoped_lock lock(d_setlock);
+                            d_carrier_lock_fail_counter = 200000;  //force loss-of-lock condition
                         }
                 }
         }
@@ -762,11 +753,6 @@ void dll_pll_veml_tracking::start_tracking()
 
 dll_pll_veml_tracking::~dll_pll_veml_tracking()
 {
-    if (signal_type == "1C")
-        {
-            volk_gnsssdr_free(d_preambles_symbols);
-        }
-
     if (d_dump_file.is_open())
         {
             try

@@ -59,7 +59,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL5iPcpsAcquisition();
+    ~GpsL5iPcpsAcquisition() = default;
 
     inline std::string role() override
     {
@@ -125,6 +125,11 @@ public:
     void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_doppler_center(int doppler_center) override;
+
+    /*!
      * \brief Initializes acquisition algorithm.
      */
     void init() override;
@@ -176,6 +181,7 @@ private:
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
+    int doppler_center_;
     unsigned int max_dwells_;
     int64_t fs_in_;
     bool dump_;

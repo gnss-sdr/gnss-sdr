@@ -55,9 +55,6 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
 }
 
 
-channel_msg_receiver_cc::~channel_msg_receiver_cc() = default;
-
-
 void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
 {
     bool result = false;

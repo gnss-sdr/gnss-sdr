@@ -181,7 +181,7 @@ private:
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int doppler_center_;
+    int doppler_center_;
     unsigned int max_dwells_;
     int64_t fs_in_;
     bool dump_;

@@ -150,6 +150,11 @@ public:
     void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_doppler_center(int doppler_center) override;
+
+    /*!
      * \brief Initializes acquisition algorithm.
      */
     void init() override;
@@ -202,6 +207,7 @@ private:
     std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
+    int32_t doppler_center_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

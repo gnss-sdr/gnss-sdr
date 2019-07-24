@@ -58,6 +58,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
     d_num_doppler_bins = 0U;
     d_threshold = 0.0;
     d_doppler_step = 0U;
+    d_doppler_center = 0U;
     d_doppler_index = 0U;
     d_test_statistics = 0.0;
     d_channel = 0U;
@@ -139,24 +140,9 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
                << ", doppler " << d_gnss_synchro->Acq_doppler_hz
                << ", magnitude " << d_mag
-               << ", input signal power " << d_input_power;
+               << ", input signal power " << d_input_power
+               << ", Assist doppler_center " << d_doppler_center;
 
-
-    //    std::cout << "positive acquisition"
-    //               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-    //               << ", sample_stamp " << d_sample_counter
-    //               << ", test statistics value " << d_test_statistics
-    //               << ", test statistics threshold " << d_threshold
-    //               << ", code phase " << d_gnss_synchro->Acq_delay_samples
-    //               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
-    //               << ", magnitude " << d_mag
-    //               << ", input signal power " << d_input_power
-    //			   << ", d_gnss_synchro->Acq_samplestamp_samples " << d_gnss_synchro->Acq_samplestamp_samples
-    //			   << ", d_gnss_synchro->Flag_valid_word " << d_gnss_synchro->Flag_valid_word
-    //			   << ", Flag_valid_pseudorange " << d_gnss_synchro->Flag_valid_pseudorange
-    //			   << ", d_gnss_synchro->Flag_valid_symbol_output " <<  d_gnss_synchro->Flag_valid_symbol_output
-    //			   << ", d_gnss_synchro->Flag_valid_acquisition " << d_gnss_synchro->Flag_valid_acquisition
-    //			   << std::endl;
 
     //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
     d_channel_fsm.lock()->Event_valid_acquisition();
@@ -271,7 +257,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     acquisition_fpga->write_local_code();
     acquisition_fpga->set_block_exp(d_total_block_exp);
 
-    acquisition_core(d_num_doppler_bins, d_doppler_step, -d_doppler_max);
+    acquisition_core(d_num_doppler_bins, d_doppler_step, -d_doppler_max + d_doppler_center);
     if (!d_make_2_steps)
         {
             acquisition_fpga->close_device();
@@ -298,7 +284,7 @@ void pcps_acquisition_fpga::set_active(bool active)
 
                     while (num_second_acq < d_max_num_acqs)
                         {
-                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
+                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2 + d_doppler_center);
                             if (d_test_statistics > d_threshold)
                                 {
                                     d_active = false;

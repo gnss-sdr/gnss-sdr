@@ -44,10 +44,10 @@
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
 #include <boost/shared_ptr.hpp>
-#include <volk/volk_complex.h>  // for lv_16sc_t
 #include <cstdint>              // for uint32_t
 #include <memory>               // for shared_ptr
 #include <string>               // for string
+#include <glog/logging.h>
 
 class Gnss_Synchro;
 
@@ -184,6 +184,19 @@ public:
     }
 
     /*!
+     * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
+     * \param doppler_center - Frequency center of the search grid [Hz].
+     */
+    inline void set_doppler_center(int32_t doppler_center)
+    {
+        if (doppler_center != d_doppler_center)
+            {
+                DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
+                d_doppler_center = doppler_center;
+            }
+    }
+
+    /*!
      * \brief This function triggers a HW reset of the FPGA PL.
      */
     void reset_acquisition(void);
@@ -196,6 +209,7 @@ private:
     uint32_t d_doppler_index;
     uint32_t d_channel;
     uint32_t d_doppler_step;
+    int32_t d_doppler_center;
     uint32_t d_doppler_max;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;

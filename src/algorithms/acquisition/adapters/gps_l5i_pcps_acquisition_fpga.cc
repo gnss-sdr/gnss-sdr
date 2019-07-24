@@ -196,6 +196,12 @@ void GpsL5iPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
     acquisition_fpga_->set_doppler_step(doppler_step_);
 }
 
+void GpsL5iPcpsAcquisitionFpga::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_fpga_->set_doppler_center(doppler_center_);
+}
 
 void GpsL5iPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

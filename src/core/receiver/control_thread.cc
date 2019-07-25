@@ -194,6 +194,8 @@ void ControlThread::init()
                     agnss_ref_time_.valid = false;
                 }
         }
+
+    receiver_on_standby_ = false;
 }
 
 
@@ -234,11 +236,14 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
             processed_control_messages_++;
             if (pmt::any_ref(msg).type() == typeid(channel_event_sptr))
                 {
-                    channel_event_sptr new_event;
-                    new_event = boost::any_cast<channel_event_sptr>(pmt::any_ref(msg));
-                    DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
-                               << " what: " << new_event->event_type;
-                    flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
+                    if (receiver_on_standby_ == false)
+                        {
+                            channel_event_sptr new_event;
+                            new_event = boost::any_cast<channel_event_sptr>(pmt::any_ref(msg));
+                            DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
+                                       << " what: " << new_event->event_type;
+                            flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
+                        }
                 }
             else if (pmt::any_ref(msg).type() == typeid(command_event_sptr))
                 {
@@ -267,8 +272,11 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
         }
     else
         {
-            //perform non-priority tasks
-            flowgraph_->acquisition_manager(0);  //start acquisition of untracked satellites
+            if (receiver_on_standby_ == false)
+                {
+                    //perform non-priority tasks
+                    flowgraph_->acquisition_manager(0);  //start acquisition of untracked satellites
+                }
         }
 }
 
@@ -852,6 +860,10 @@ void ControlThread::apply_action(unsigned int what)
             stop_ = true;
             restart_ = true;
             break;
+        case 10:  // request standby mode
+            LOG(INFO) << "TC request standby mode";
+            receiver_on_standby_ = true;
+            break;
         case 11:
             LOG(INFO) << "Receiver action COLDSTART";
             // delete all ephemeris and almanac information from maps (also the PVT map queue)
@@ -859,13 +871,16 @@ void ControlThread::apply_action(unsigned int what)
             pvt_ptr->clear_ephemeris();
             // todo: reorder the satellite queues to the receiver default startup order.
             // This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
+            // start again the satellite acquisitions
+            receiver_on_standby_ = false;
             break;
         case 12:
             LOG(INFO) << "Receiver action HOTSTART";
             visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             // reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            // start again the satellite acquisitions (done in chained apply_action to flowgraph)
+            // start again the satellite acquisitions
+            receiver_on_standby_ = false;
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
@@ -879,7 +894,8 @@ void ControlThread::apply_action(unsigned int what)
             get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             // reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            // start again the satellite acquisitions (done in chained apply_action to flowgraph)
+            // start again the satellite acquisitions
+            receiver_on_standby_ = false;
             break;
         default:
             LOG(INFO) << "Unrecognized action.";

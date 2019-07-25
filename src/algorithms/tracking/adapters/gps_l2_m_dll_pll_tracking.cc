@@ -172,6 +172,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
 
 void GpsL2MDllPllTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
 
 

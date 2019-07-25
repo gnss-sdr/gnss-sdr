@@ -232,7 +232,7 @@ int togeod(double *dphi, double *dlambda, double *h, double a, double finv, doub
 }
 
 
-arma::mat Gravity_ECEF(const arma::vec &r_eb_e)
+arma::vec Gravity_ECEF(const arma::vec &r_eb_e)
 {
     // Parameters
     const double R_0 = 6378137.0;         // WGS84 Equatorial radius in meters

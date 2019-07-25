@@ -34,6 +34,7 @@
 #ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
 
+#include <array>
 #include <complex>
 #include <cstdint>
 #if HAS_SPAN

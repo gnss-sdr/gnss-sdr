@@ -666,7 +666,6 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                     d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + d_carrier_phase_step_rad * static_cast<double>(d_correlation_length_samples), GLONASS_TWO_PI);
 
                                     // UPDATE ACCUMULATED CARRIER PHASE
-                                    CORRECTED_INTEGRATION_TIME_S = (static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in));
                                     d_acc_carrier_phase_cycles -= d_carrier_phase_step_rad * d_correlation_length_samples / GLONASS_TWO_PI;
 
                                     // disable tracking loop and inform telemetry decoder

@@ -190,6 +190,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
 
 void GalileoE5aDllPllTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
 
 

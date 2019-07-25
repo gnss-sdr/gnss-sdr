@@ -79,7 +79,7 @@ int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::
  */
 int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 
-arma::mat Gravity_ECEF(const arma::vec &r_eb_e);  //!< Calculates acceleration due to gravity resolved about ECEF-frame
+arma::vec Gravity_ECEF(const arma::vec &r_eb_e);  //!< Calculates acceleration due to gravity resolved about ECEF-frame
 
 /*!
  * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical

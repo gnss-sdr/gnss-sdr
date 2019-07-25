@@ -76,7 +76,7 @@ void Exponential_Smoother::set_samples_for_initialization(int num_samples)
         {
             ns = 1;
         }
-    samples_for_initialization_ = num_samples;
+    samples_for_initialization_ = ns;
     init_buffer_.reserve(samples_for_initialization_);
 }
 

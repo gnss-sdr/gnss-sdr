@@ -129,6 +129,7 @@ private:
     /*
      * New receiver event dispatcher
      */
+    bool receiver_on_standby_;
     void event_dispatcher(bool &valid_event, pmt::pmt_t &msg);
 
     std::thread cmd_interface_thread_;

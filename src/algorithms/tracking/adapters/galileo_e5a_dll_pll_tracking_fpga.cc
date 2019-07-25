@@ -290,6 +290,7 @@ void GalileoE5aDllPllTrackingFpga::start_tracking()
 
 void GalileoE5aDllPllTrackingFpga::stop_tracking()
 {
+    tracking_fpga_sc->stop_tracking();
 }
 
 

@@ -231,7 +231,6 @@ void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             aux = (_ts * (i + 1)) / _tc;
             _codeValueIndex = auxCeil(aux) - 1;
 
@@ -245,7 +244,7 @@ void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex];  //repeat the chip -> upsample
+                    _dest[i] = _code[_codeValueIndex];  // repeat the chip -> upsample
                 }
         }
 }

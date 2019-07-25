@@ -33,7 +33,6 @@
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "gnss_signal_processing.h"
-#include <array>
 #include <memory>
 #include <string>
 #include <vector>

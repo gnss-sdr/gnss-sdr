@@ -34,10 +34,7 @@
 #define GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_
 
 #include <complex>
-#include <iostream>
 #include <cstdint>
-#include <array>
-#include <algorithm>
 
 #if HAS_SPAN
 #include <span>

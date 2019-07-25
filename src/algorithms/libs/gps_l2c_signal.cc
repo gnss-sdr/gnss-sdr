@@ -106,7 +106,7 @@ void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_HZ);  // C/A chip period in sec
+    _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_HZ);  // L2C chip period in sec
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
@@ -123,7 +123,7 @@ void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  // repeat the chip -> upsample
                 }
         }
 }

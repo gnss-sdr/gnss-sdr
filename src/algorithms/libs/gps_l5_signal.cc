@@ -33,6 +33,7 @@
 #include "gps_l5_signal.h"
 #include "GPS_L5.h"
 #include <array>
+#include <cmath>
 #include <deque>
 
 std::deque<bool> l5i_xa_shift(std::deque<bool> xa)  // GPS-IS-705E Figure 3-4 pp. 15
@@ -298,7 +299,6 @@ void gps_l5q_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
     _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
     _tc = 1.0 / static_cast<float>(GPS_L5Q_CODE_RATE_HZ);  // L5Q chip period in sec
 
-    //float aux;
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================

@@ -163,6 +163,7 @@ void GpsL2MDllPllTrackingFpga::start_tracking()
 
 void GpsL2MDllPllTrackingFpga::stop_tracking()
 {
+    tracking_fpga_sc->stop_tracking();
 }
 
 

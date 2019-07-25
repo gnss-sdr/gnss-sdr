@@ -1288,8 +1288,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 
     std::lock_guard<std::mutex> lock(signal_list_mutex);
     DLOG(INFO) << "Received " << what << " from " << who;
-    Gnss_Signal gs = channels_[who]->get_signal();
     unsigned int sat = 0;
+    Gnss_Signal gs;
     if (who < 200)
         {
             try
@@ -1304,6 +1304,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     switch (what)
         {
         case 0:
+            gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
             channels_state_[who] = 0;
             if (acq_channels_count_ > 0)
@@ -1319,6 +1320,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             break;
         case 1:
+            gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << gs.get_satellite();
             // If the satellite is in the list of available ones, remove it.
             remove_signal(gs);
@@ -1333,6 +1335,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
 
         case 2:
+            gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << gs.get_satellite();
             if (acq_channels_count_ < max_acq_channels_)
                 {
@@ -1359,7 +1362,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             break;
         case 10:  // request standby mode
-            LOG(INFO) << "TC request standby mode";
             for (size_t n = 0; n < channels_.size(); n++)
                 {
                     if (channels_state_[n] == 1 or channels_state_[n] == 2)  // channel in acquisition or in tracking
@@ -1372,22 +1374,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_state_[n] = 0;
                         }
                 }
-            acq_channels_count_ = 0;  // all channels are in standby now
-            break;
-        case 11:  // request coldstart mode
-            LOG(INFO) << "TC request flowgraph coldstart";
-            // call the acquisition manager to assign new satellite and start next acquisition (if required)
-            acquisition_manager(who);
-            break;
-        case 12:  // request hotstart mode
-            LOG(INFO) << "TC request flowgraph hotstart";
-            // call the acquisition manager to assign new satellite and start next acquisition (if required)
-            acquisition_manager(who);
-            break;
-        case 13:  // request warmstart mode
-            LOG(INFO) << "TC request flowgraph warmstart";
-            // call the acquisition manager to assign new satellite and start next acquisition (if required)
-            acquisition_manager(who);
+            acq_channels_count_ = 0;  // all channels are in standby now and no new acquisition should be started
             break;
         default:
             break;

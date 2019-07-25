@@ -192,6 +192,7 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
 
 void GpsL5DllPllTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
 
 

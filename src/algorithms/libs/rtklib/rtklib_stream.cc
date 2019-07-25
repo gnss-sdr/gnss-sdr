@@ -975,9 +975,8 @@ void discontcp(tcp_t *tcp, int tcon)
 /* open tcp server -----------------------------------------------------------*/
 tcpsvr_t *opentcpsvr(const char *path, char *msg)
 {
-    tcpsvr_t *tcpsvr, tcpsvr0;  // = {{0}};
+    tcpsvr_t *tcpsvr, tcpsvr0{};
     char port[256] = "";
-    tcpsvr0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}}};
     tracet(3, "opentcpsvr: path=%s\n", path);
 
     if (!(tcpsvr = static_cast<tcpsvr_t *>(malloc(sizeof(tcpsvr_t)))))
@@ -1265,9 +1264,8 @@ int consock(tcpcli_t *tcpcli, char *msg)
 /* open tcp client -----------------------------------------------------------*/
 tcpcli_t *opentcpcli(const char *path, char *msg)
 {
-    tcpcli_t *tcpcli, tcpcli0;  // = {{0}};
+    tcpcli_t *tcpcli, tcpcli0{};
     char port[256] = "";
-    tcpcli0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, 0, 0};
 
     tracet(3, "opentcpcli: path=%s\n", path);
 

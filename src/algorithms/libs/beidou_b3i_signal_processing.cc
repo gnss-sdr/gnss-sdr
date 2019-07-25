@@ -35,11 +35,11 @@
 #include <bitset>
 #include <string>
 
-auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
+auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b3i_code_gen_int(gsl::span<int> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const unsigned int _code_length = 10230;
+    const uint32_t _code_length = 10230;
     std::bitset<_code_length> G1{};
     std::bitset<_code_length> G2{};
     auto G1_register = std::bitset<13>{}.set();  // All true
@@ -175,54 +175,54 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, signed int _prn, unsigned int
 }
 
 
-void beidou_b3i_code_gen_float(gsl::span<float> _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b3i_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const unsigned int _code_length = 10230;
+    const uint32_t _code_length = 10230;
     std::array<int, _code_length> b3i_code_int{};
 
     beidou_b3i_code_gen_int(b3i_code_int, _prn, _chip_shift);
 
-    for (unsigned int ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
             _dest[ii] = static_cast<float>(b3i_code_int[ii]);
         }
 }
 
 
-void beidou_b3i_code_gen_complex(gsl::span<std::complex<float>> _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b3i_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const unsigned int _code_length = 10230;
+    const uint32_t _code_length = 10230;
     std::array<int, _code_length> b3i_code_int{};
 
     beidou_b3i_code_gen_int(b3i_code_int, _prn, _chip_shift);
 
-    for (unsigned int ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
             _dest[ii] = std::complex<float>(static_cast<float>(b3i_code_int[ii]), 0.0F);
         }
 }
 
 
-void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, unsigned int _prn, int _fs, unsigned int _chip_shift)
+void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::array<std::complex<float>, 10230> _code{};
-    signed int _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode, _codeValueIndex;
     float _ts;
     float _tc;
     float aux;
-    const signed int _codeFreqBasis = 10230000;  // Hz
-    const signed int _codeLength = 10230;
+    const int32_t _codeFreqBasis = 10230000;  // Hz
+    const int32_t _codeLength = 10230;
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
     beidou_b3i_code_gen_complex(_code, _prn, _chip_shift);  // generate C/A code 1 sample per chip
 
-    for (signed int i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 

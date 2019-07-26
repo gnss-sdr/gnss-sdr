@@ -3,7 +3,7 @@
  * \brief  Sine table
  * \author Carles Fernandez-Prades, 2015 cfernandez(at)cttc.es
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *

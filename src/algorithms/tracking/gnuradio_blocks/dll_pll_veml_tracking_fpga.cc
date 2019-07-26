@@ -600,8 +600,8 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
             d_Prompt_buffer[d_cn0_estimation_counter++] = d_P_accu;
             return true;
         }
-	d_cn0_estimation_counter = 0;
-	d_Prompt_buffer[d_cn0_estimation_counter++] = d_P_accu;
+    d_cn0_estimation_counter = 0;
+    d_Prompt_buffer[d_cn0_estimation_counter++] = d_P_accu;
     // Code lock indicator
     float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
@@ -794,7 +794,7 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     //K_blk_samples = T_prn_samples + d_rem_code_phase_samples; // initially d_rem_code_phase_samples is zero. It is updated at the end of this function
     K_blk_samples = T_prn_samples * d_current_fpga_integration_period + d_rem_code_phase_samples;  // initially d_rem_code_phase_samples is zero. It is updated at the end of this function
 
-    int32_t actual_blk_length = static_cast<int32_t>(std::floor(K_blk_samples));
+    auto actual_blk_length = static_cast<int32_t>(std::floor(K_blk_samples));
     //d_next_integration_length_samples = 2 * actual_blk_length - d_current_integration_length_samples;
     d_next_integration_length_samples = actual_blk_length;
     //################### PLL COMMANDS #################################################
@@ -1593,7 +1593,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_P_accu = *d_Prompt;
                         d_L_accu = *d_Late;
 
-                        //fail-safe: check if the secondary code or bit synchronization has not succedded in a limited time period
+                        //fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                         if (trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
                             {
                                 d_carrier_lock_fail_counter = 300000;  //force loss-of-lock condition

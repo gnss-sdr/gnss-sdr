@@ -44,10 +44,10 @@
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
 #include <boost/shared_ptr.hpp>
-#include <cstdint>              // for uint32_t
-#include <memory>               // for shared_ptr
-#include <string>               // for string
 #include <glog/logging.h>
+#include <cstdint>  // for uint32_t
+#include <memory>   // for shared_ptr
+#include <string>   // for string
 
 class Gnss_Synchro;
 
@@ -232,7 +232,7 @@ private:
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     void send_negative_acquisition();
     void send_positive_acquisition();
-    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_max);
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min);
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 

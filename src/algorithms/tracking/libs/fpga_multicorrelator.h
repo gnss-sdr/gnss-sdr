@@ -141,7 +141,7 @@ public:
      * code length and the measured PRN code length in the PRN immediately following the start of the coherent integration only.
      * If this option is not used then write the same value to first_length_secondary_code  and next_length_secondary_code.
      */
-    void update_prn_code_length(uint32_t first_length_secondary_code, uint32_t next_length_secondary_code);
+    void update_prn_code_length(uint32_t first_prn_length, uint32_t next_prn_length);
 
     /*!
      * \brief Enable the use of secondary codes in the FPGA

@@ -202,14 +202,14 @@ void GlonassL1CaPcpsAcquisition::init()
 
 void GlonassL1CaPcpsAcquisition::set_local_code()
 {
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+    std::vector<std::complex<float>> code(code_length_);
 
-    glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), /* gnss_synchro_->PRN,*/ fs_in_, 0);
+    glonass_l1_ca_code_gen_complex_sampled(code, fs_in_, 0);
 
     gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());

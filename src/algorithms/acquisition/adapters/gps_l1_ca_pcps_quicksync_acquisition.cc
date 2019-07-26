@@ -232,14 +232,14 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+            std::vector<std::complex<float>> code(code_length_);
 
-            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
+            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
             gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < (sampled_ms_ / folding_factor_); i++)
                 {
-                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
             acquisition_cc_->set_local_code(code_.data());

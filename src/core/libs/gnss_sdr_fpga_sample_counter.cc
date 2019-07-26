@@ -43,8 +43,6 @@
 #include <unistd.h>         // for write, close, read, ssize_t
 
 
-#define PAGE_SIZE 0x10000             // default page size for the multicorrelator memory map
-#define TEST_REG_SANITY_CHECK 0x55AA  // value to check the presence of the test register (to detect the hw)
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
     ({                                       \
@@ -151,7 +149,7 @@ void gnss_sdr_fpga_sample_counter::open_device()
             LOG(WARNING) << "Cannot open deviceio" << device_name;
             std::cout << "Counter-Intr: cannot open deviceio" << device_name << std::endl;
         }
-    map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
+    map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, page_size,
         PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
 
     if (map_base == reinterpret_cast<void *>(-1))
@@ -161,7 +159,7 @@ void gnss_sdr_fpga_sample_counter::open_device()
         }
 
     // sanity check : check test register
-    uint32_t writeval = TEST_REG_SANITY_CHECK;
+    uint32_t writeval = test_reg_sanity_check;
     uint32_t readval;
     readval = gnss_sdr_fpga_sample_counter::test_register(writeval);
     if (writeval != readval)
@@ -181,7 +179,7 @@ void gnss_sdr_fpga_sample_counter::close_device()
     map_base[2] = 0;  // disable the generation of the interrupt in the device
 
     auto *aux = const_cast<uint32_t *>(map_base);
-    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
+    if (munmap(static_cast<void *>(aux), page_size) == -1)
         {
             std::cout << "Failed to unmap memory uio" << std::endl;
         }

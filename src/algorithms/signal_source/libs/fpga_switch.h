@@ -39,16 +39,33 @@
 
 #include <string>
 
-#define MAX_LENGTH_DEVICEIO_NAME 50
-
+/*!
+ * \brief Class that controls the switch in the FPGA, which connects the FPGA acquisition and multicorrelator modules to
+ * either the DMA or the Analog Front-End.
+ */
 class Fpga_Switch
 {
 public:
+    /*!
+	 * \brief Constructor
+	 */
     Fpga_Switch(const std::string& device_name);
+
+    /*!
+     * \brief Destructor
+     */
     ~Fpga_Switch();
+
+    /*!
+     * \brief This function configures the switch in th eFPGA
+     */
     void set_switch_position(int32_t switch_position);
 
 private:
+    static const size_t PAGE_SIZE = 0x10000;
+    static const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
+    static const uint32_t MAX_LENGTH_DEVICEIO_NAME = 50;
+
     int d_device_descriptor;        // driver descriptor
     volatile unsigned* d_map_base;  // driver memory map
 

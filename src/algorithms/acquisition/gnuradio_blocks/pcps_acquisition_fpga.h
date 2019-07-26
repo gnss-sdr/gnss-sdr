@@ -44,10 +44,10 @@
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
 #include <boost/shared_ptr.hpp>
-#include <volk/volk_complex.h>  // for lv_16sc_t
-#include <cstdint>              // for uint32_t
-#include <memory>               // for shared_ptr
-#include <string>               // for string
+#include <glog/logging.h>
+#include <cstdint>  // for uint32_t
+#include <memory>   // for shared_ptr
+#include <string>   // for string
 
 class Gnss_Synchro;
 
@@ -89,6 +89,9 @@ pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 class pcps_acquisition_fpga
 {
 public:
+    /*!
+     * \brief Destructor
+     */
     ~pcps_acquisition_fpga() = default;
 
     /*!
@@ -116,7 +119,6 @@ public:
 
     /*!
      * \brief Sets local code for PCPS acquisition algorithm.
-     * \param code - Pointer to the PRN code.
      */
     void set_local_code();
 
@@ -182,6 +184,19 @@ public:
     }
 
     /*!
+     * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
+     * \param doppler_center - Frequency center of the search grid [Hz].
+     */
+    inline void set_doppler_center(int32_t doppler_center)
+    {
+        if (doppler_center != d_doppler_center)
+            {
+                DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
+                d_doppler_center = doppler_center;
+            }
+    }
+
+    /*!
      * \brief This function triggers a HW reset of the FPGA PL.
      */
     void reset_acquisition(void);
@@ -194,6 +209,7 @@ private:
     uint32_t d_doppler_index;
     uint32_t d_channel;
     uint32_t d_doppler_step;
+    int32_t d_doppler_center;
     uint32_t d_doppler_max;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
@@ -216,7 +232,7 @@ private:
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     void send_negative_acquisition();
     void send_positive_acquisition();
-    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_max);
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min);
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 

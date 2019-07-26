@@ -40,11 +40,6 @@
 #include <iostream>    // for cout, endl
 #include <sys/mman.h>  // for mmap
 
-
-// constants
-const size_t PAGE_SIZE = 0x10000;
-const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
-
 Fpga_Switch::Fpga_Switch(const std::string &device_name)
 {
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)

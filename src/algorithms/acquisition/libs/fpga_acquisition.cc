@@ -44,22 +44,6 @@
 #include <utility>         // for move
 
 
-// FPGA register parameters
-#define PAGE_SIZE 0x10000                    // default page size for the multicorrelator memory map
-#define RESET_ACQUISITION 2                  // command to reset the multicorrelator
-#define LAUNCH_ACQUISITION 1                 // command to launch the multicorrelator
-#define TEST_REG_SANITY_CHECK 0x55AA         // value to check the presence of the test register (to detect the hw)
-#define LOCAL_CODE_CLEAR_MEM 0x10000000      // command to clear the internal memory of the multicorrelator
-#define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
-#define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
-#define POW_2_31 2147483648                  // 2^31 (used for the conversion of floating point numbers to integers)
-
-#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
-#define SHL_CODE_BITS 65536              // shift left by 10 bits
-
-
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
     ({                                       \
@@ -135,7 +119,7 @@ void Fpga_Acquisition::open_device()
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
             std::cout << "Acq: cannot open deviceio" << d_device_name << std::endl;
         }
-    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE_DEFAULT,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -191,12 +175,6 @@ void Fpga_Acquisition::run_acquisition(void)
             std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
             std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
-
-    //    nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t)));
-    //    if (nbytes != sizeof(int32_t))
-    //        {
-    //            std::cerr << "Error disabling interruptions in the FPGA." << std::endl;
-    //        }
 }
 
 
@@ -229,7 +207,7 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 
 void Fpga_Acquisition::configure_acquisition()
 {
-    //Fpga_Acquisition::open_device();
+    //Fpga_Acquisition::();
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
@@ -274,22 +252,10 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
 }
 
 
-void Fpga_Acquisition::block_samples()
-{
-    d_map_base[14] = 1;  // block the samples
-}
-
-
-void Fpga_Acquisition::unblock_samples()
-{
-    d_map_base[14] = 0;  // unblock the samples
-}
-
-
 void Fpga_Acquisition::close_device()
 {
     auto *aux = const_cast<uint32_t *>(d_map_base);
-    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
+    if (munmap(static_cast<void *>(aux), PAGE_SIZE_DEFAULT) == -1)
         {
             std::cout << "Failed to unmap memory uio" << std::endl;
         }
@@ -299,6 +265,7 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition(void)
 {
+    //printf("============ resetting the hw now from the acquisition ===============");
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the acquisition. This causes a reset of all
                                         // the FPGA HW modules including the multicorrelators
 }

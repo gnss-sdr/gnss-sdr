@@ -146,7 +146,7 @@ public:
 
 private:
     // FPGA register parameters
-    static const uint32_t PAGE_SIZE = 0x10000;                    // default page size for the multicorrelator memory map
+    static const uint32_t PAGE_SIZE_DEFAULT = 0x10000;            // default page size for the multicorrelator memory map
     static const uint32_t RESET_ACQUISITION = 2;                  // command to reset the multicorrelator
     static const uint32_t LAUNCH_ACQUISITION = 1;                 // command to launch the multicorrelator
     static const uint32_t TEST_REG_SANITY_CHECK = 0x55AA;         // value to check the presence of the test register (to detect the hw)

@@ -314,7 +314,7 @@ private:
     int64_t read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
     bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
     void print_beidou_word_bytes(uint32_t BEIDOU_word);
-    
+
     /*
      * Accounts for the beginning or end of week crossover
      *

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,7 +50,7 @@ class conjugate_cc : public gr::sync_block
 private:
     friend conjugate_cc_sptr make_conjugate_cc();
     conjugate_cc();
-    
+
 public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,

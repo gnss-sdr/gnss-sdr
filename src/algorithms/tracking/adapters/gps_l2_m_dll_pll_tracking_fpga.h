@@ -99,6 +99,7 @@ public:
     void stop_tracking() override;
 
 private:
+    static const uint32_t NUM_PRNs = 32;
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     unsigned int channel_;
     std::string role_;

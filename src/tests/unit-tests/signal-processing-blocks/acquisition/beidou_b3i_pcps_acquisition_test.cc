@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,9 +31,9 @@
  */
 
 
-#include "beidou_b3i_pcps_acquisition.h"
 #include "Beidou_B3I.h"
 #include "acquisition_dump_reader.h"
+#include "beidou_b3i_pcps_acquisition.h"
 #include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"

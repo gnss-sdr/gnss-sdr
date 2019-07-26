@@ -40,8 +40,6 @@
 #include <utility>   // for move
 
 
-#define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
-
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
     return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(std::move(conf_)));
@@ -60,6 +58,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
     d_num_doppler_bins = 0U;
     d_threshold = 0.0;
     d_doppler_step = 0U;
+    d_doppler_center = 0U;
     d_doppler_index = 0U;
     d_test_statistics = 0.0;
     d_channel = 0U;
@@ -141,7 +140,9 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
                << ", doppler " << d_gnss_synchro->Acq_doppler_hz
                << ", magnitude " << d_mag
-               << ", input signal power " << d_input_power;
+               << ", input signal power " << d_input_power
+               << ", Assist doppler_center " << d_doppler_center;
+
 
     //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
     d_channel_fsm.lock()->Event_valid_acquisition();
@@ -211,13 +212,6 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
                 }
         }
 
-    // debug
-    //    if (d_test_statistics > d_threshold)
-    //        {
-    //            printf("firstpeak = %f, secondpeak = %f, test_statistics = %f reported block exp = %d PRN = %d inext = %d, initial_sample = %ld doppler = %d\n", firstpeak, secondpeak, d_test_statistics, (int)total_block_exp, (int)d_gnss_synchro->PRN, (int)indext, (long int)initial_sample, (int)doppler);
-    //            printf("doppler_min = %d doppler_step = %d num_doppler_bins = %d\n", (int)doppler_min, (int)doppler_step, (int)num_doppler_bins);
-    //        }
-
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
 
@@ -263,7 +257,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     acquisition_fpga->write_local_code();
     acquisition_fpga->set_block_exp(d_total_block_exp);
 
-    acquisition_core(d_num_doppler_bins, d_doppler_step, -d_doppler_max);
+    acquisition_core(d_num_doppler_bins, d_doppler_step, -d_doppler_max + d_doppler_center);
     if (!d_make_2_steps)
         {
             acquisition_fpga->close_device();
@@ -290,7 +284,7 @@ void pcps_acquisition_fpga::set_active(bool active)
 
                     while (num_second_acq < d_max_num_acqs)
                         {
-                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
+                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2 + d_doppler_center);
                             if (d_test_statistics > d_threshold)
                                 {
                                     d_active = false;

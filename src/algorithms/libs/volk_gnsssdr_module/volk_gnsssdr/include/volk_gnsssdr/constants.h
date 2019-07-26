@@ -3,7 +3,7 @@
  * \brief Definition of VOLK_GNSSSDR-related constants
  * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *

@@ -22,8 +22,8 @@
  *
  * -------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
- * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2019, Javier Arribas
+ * Copyright (C) 2017-2019, Carles Fernandez
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,6 +116,44 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
                 }
         }
 }
+
+
+Rtklib_Solver::~Rtklib_Solver()
+{
+    if (d_dump_file.is_open() == true)
+        {
+            auto pos = d_dump_file.tellp();
+            try
+                {
+                    d_dump_file.close();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_flag_dump_mat_enabled = false;
+                }
+        }
+    if (d_flag_dump_mat_enabled)
+        {
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
+                }
+        }
+}
+
 
 bool Rtklib_Solver::save_matfile()
 {
@@ -353,43 +391,6 @@ bool Rtklib_Solver::save_matfile()
 
     Mat_Close(matfp);
     return true;
-}
-
-
-Rtklib_Solver::~Rtklib_Solver()
-{
-    if (d_dump_file.is_open() == true)
-        {
-            auto pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    errorlib::error_code ec;
-                    if (!fs::remove(fs::path(d_dump_filename), ec))
-                        {
-                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
-                        }
-                    d_flag_dump_mat_enabled = false;
-                }
-        }
-    if (d_flag_dump_mat_enabled)
-        {
-            try
-                {
-                    save_matfile();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
-                }
-        }
 }
 
 

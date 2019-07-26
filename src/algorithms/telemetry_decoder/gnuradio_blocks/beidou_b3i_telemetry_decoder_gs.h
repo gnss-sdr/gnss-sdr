@@ -37,10 +37,10 @@
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <array>
 #include <cstdint>
 #include <fstream>
 #include <string>
-#include <array>
 
 class beidou_b3i_telemetry_decoder_gs;
 

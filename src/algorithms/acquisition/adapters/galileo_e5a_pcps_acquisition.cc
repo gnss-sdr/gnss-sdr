@@ -209,12 +209,14 @@ void GalileoE5aPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+
 void GalileoE5aPcpsAcquisition::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_->set_doppler_center(doppler_center_);
 }
+
 
 void GalileoE5aPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
@@ -237,7 +239,7 @@ void GalileoE5aPcpsAcquisition::init()
 
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+    std::vector<std::complex<float>> code(code_length_);
     std::array<char, 3> signal_{};
     signal_[0] = '5';
     signal_[2] = '\0';
@@ -257,16 +259,16 @@ void GalileoE5aPcpsAcquisition::set_local_code()
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code.get(), code_length_), signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
         }
     else
         {
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code.get(), code_length_), signal_, gnss_synchro_->PRN, fs_in_, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
         }
     gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());

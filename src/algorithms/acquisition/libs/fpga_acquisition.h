@@ -45,6 +45,9 @@
 class Fpga_Acquisition
 {
 public:
+    /*!
+	 * \brief Constructor
+	 */
     Fpga_Acquisition(
         std::string device_name,
         uint32_t nsamples,
@@ -56,14 +59,29 @@ public:
         uint32_t *all_fft_codes,
         uint32_t excludelimit);
 
+    /*!
+     * \brief Destructor
+     */
     ~Fpga_Acquisition() = default;
 
+    /*!
+     * \brief Select the code with the chosen PRN
+     */
     bool set_local_code(uint32_t PRN);
 
+    /*!
+     * \brief Configure the doppler sweep parameters in the FPGA
+     */
     void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min);
 
+    /*!
+     * \brief Run the acquisition process in the FPGA
+     */
     void run_acquisition(void);
 
+    /*!
+     * \brief Read the results of the acquisition process
+     */
     void read_acquisition_results(
         uint32_t *max_index,
         float *firstpeak,
@@ -72,10 +90,6 @@ public:
         float *power_sum,
         uint32_t *doppler_index,
         uint32_t *total_blk_exp);
-
-    void block_samples();
-
-    void unblock_samples();
 
     /*!
      * \brief Set maximum Doppler grid search
@@ -101,21 +115,51 @@ public:
     void reset_acquisition(void);
 
     /*!
-     * \brief read the scaling factor that has been used by the FFT-IFFT
+     * \brief Read the scaling factor that has been used by the FFT-IFFT
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
+    /*!
+     * \brief Set the block exponent of the FFT in the FPGA.
+     */
     void set_block_exp(uint32_t total_block_exp);
 
+    /*!
+     * \brief Write the PRN code in the FPGA
+     */
     void write_local_code(void);
 
+    /*!
+     * \brief Write the acquisition parameters into the FPGA
+     */
     void configure_acquisition(void);
 
+    /*!
+     * \brief Open the device driver
+     */
     void open_device();
 
+    /*!
+     * \brief Close the device driver
+     */
     void close_device();
 
 private:
+    // FPGA register parameters
+    static const uint32_t PAGE_SIZE = 0x10000;                    // default page size for the multicorrelator memory map
+    static const uint32_t RESET_ACQUISITION = 2;                  // command to reset the multicorrelator
+    static const uint32_t LAUNCH_ACQUISITION = 1;                 // command to launch the multicorrelator
+    static const uint32_t TEST_REG_SANITY_CHECK = 0x55AA;         // value to check the presence of the test register (to detect the hw)
+    static const uint32_t LOCAL_CODE_CLEAR_MEM = 0x10000000;      // command to clear the internal memory of the multicorrelator
+    static const uint32_t MEM_LOCAL_CODE_WR_ENABLE = 0x0C000000;  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
+    static const uint32_t POW_2_2 = 4;                            // 2^2 (used for the conversion of floating point numbers to integers)
+    static const uint32_t POW_2_31 = 2147483648;                  // 2^31 (used for the conversion of floating point numbers to integers)
+
+    static const uint32_t SELECT_LSBits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t SELECT_MSBbits = 0xFFFF0000;        // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t SELECT_ALL_CODE_BITS = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
+
     int64_t d_fs_in;
     // data related to the hardware module and the driver
     int32_t d_fd;                   // driver descriptor

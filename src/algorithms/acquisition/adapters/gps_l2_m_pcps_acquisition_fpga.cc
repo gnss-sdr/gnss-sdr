@@ -46,13 +46,6 @@
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
-#define NUM_PRNs 32
-#define QUANT_BITS_LOCAL_CODE 16
-#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
-#define SHL_CODE_BITS 65536              // shift left by 10 bits
-
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     ConfigurationInterface* configuration,
     const std::string& role,
@@ -87,7 +80,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length));
     unsigned int nsamples_total = pow(2, nbits);
-    unsigned int vector_length = nsamples_total;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";

@@ -597,14 +597,11 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
     if (d_cn0_estimation_counter < trk_parameters.cn0_samples)
         {
             // fill buffer with prompt correlator output values
-            d_Prompt_buffer[d_cn0_estimation_counter] = d_P_accu;
-            d_cn0_estimation_counter++;
+            d_Prompt_buffer[d_cn0_estimation_counter++] = d_P_accu;
             return true;
         }
-
-    d_cn0_estimation_counter = 0;
-    d_Prompt_buffer[d_cn0_estimation_counter++] = d_P_accu;
-    d_cn0_estimation_counter++;
+	d_cn0_estimation_counter = 0;
+	d_Prompt_buffer[d_cn0_estimation_counter++] = d_P_accu;
     // Code lock indicator
     float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);

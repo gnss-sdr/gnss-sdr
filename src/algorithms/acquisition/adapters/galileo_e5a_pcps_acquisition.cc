@@ -85,7 +85,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters_.blocking = blocking_;
 
-
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
     if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
         {
@@ -350,6 +349,7 @@ gr::basic_block_sptr GalileoE5aPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void GalileoE5aPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

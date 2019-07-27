@@ -206,12 +206,14 @@ void GpsL5iPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+
 void GpsL5iPcpsAcquisition::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_->set_doppler_center(doppler_center_);
 }
+
 
 void GpsL5iPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
@@ -270,7 +272,7 @@ void GpsL5iPcpsAcquisition::set_state(int state)
 
 float GpsL5iPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

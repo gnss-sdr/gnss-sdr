@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -212,6 +212,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_st
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisition::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
@@ -395,6 +396,7 @@ gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

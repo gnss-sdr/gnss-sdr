@@ -68,7 +68,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    /*Calculate the folding factor value based on the calculations*/
+    /* Calculate the folding factor value based on the calculations */
     auto temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", temp);
 
@@ -106,7 +106,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
 
     int samples_per_ms = round(code_length_);
     code_ = std::vector<std::complex<float>>(code_length_);
-    /*Object relevant information for debugging*/
+    /* Object relevant information for debugging */
     LOG(INFO) << "Implementation: " << this->implementation()
               << ", Vector Length: " << vector_length_
               << ", Samples per ms: " << samples_per_ms
@@ -224,7 +224,6 @@ signed int GpsL1CaPcpsQuickSyncAcquisition::mag()
 void GpsL1CaPcpsQuickSyncAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -267,7 +266,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_state(int state)
 
 float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

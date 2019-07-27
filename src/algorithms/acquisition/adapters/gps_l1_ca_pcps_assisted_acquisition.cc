@@ -143,14 +143,15 @@ signed int GpsL1CaPcpsAssistedAcquisition::mag()
 void GpsL1CaPcpsAssistedAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
+
 
 void GpsL1CaPcpsAssistedAcquisition::set_local_code()
 {
-    gps_l1_ca_code_gen_complex_sampled(gsl::span<gr_complex>(code_.get(), vector_length_), gnss_synchro_->PRN, fs_in_, 0);
+    gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
     acquisition_cc_->set_local_code(code_.get());
 }
+
 
 void GpsL1CaPcpsAssistedAcquisition::reset()
 {

@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -211,12 +211,14 @@ void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+
 void GpsL2MPcpsAcquisition::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_->set_doppler_center(doppler_center_);
 }
+
 
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
@@ -235,7 +237,6 @@ signed int GpsL2MPcpsAcquisition::mag()
 void GpsL2MPcpsAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
@@ -276,7 +277,7 @@ void GpsL2MPcpsAcquisition::set_state(int state)
 
 float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

@@ -34,7 +34,6 @@
 #include "configuration_interface.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex
 #include <gnuradio/gr_complex.h>  // for gr_complex
@@ -128,7 +127,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     signal_[1] = 'I';
                 }
 
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), signal_, PRN, fs_in, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, signal_, PRN, fs_in, 0);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -216,12 +215,14 @@ void GalileoE5aPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
     acquisition_fpga_->set_doppler_step(doppler_step_);
 }
 
+
 void GalileoE5aPcpsAcquisitionFpga::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_fpga_->set_doppler_center(doppler_center_);
 }
+
 
 void GalileoE5aPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

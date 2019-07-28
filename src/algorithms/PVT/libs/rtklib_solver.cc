@@ -94,7 +94,6 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
     d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
-    count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
 
@@ -443,9 +442,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    std::array<obsd_t, MAXOBS> obs_data{};
-    std::vector<eph_t> eph_data(MAXOBS);
-    std::vector<geph_t> geph_data(MAXOBS);
+    obs_data.fill({});
+    eph_data.fill({});
+    geph_data.fill({});
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -914,7 +913,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 }
 
             /* update carrier wave length using native function call in RTKlib */
-            uniqnav(&nav_data);
+            for (int i = 0; i < MAXSAT; i++)
+                {
+                    for (int j = 0; j < NFREQ; j++)
+                        {
+                            nav_data.lam[i][j] = satwavelen(i + 1, j, &nav_data);
+                        }
+                }
 
             result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 

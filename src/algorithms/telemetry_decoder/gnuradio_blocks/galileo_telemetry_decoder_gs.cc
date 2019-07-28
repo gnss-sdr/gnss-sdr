@@ -95,7 +95,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
-                d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  //rise alarm 60 seconds without valid tlm
+                d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
 
                 break;
             }
@@ -112,7 +112,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
-                d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  //rise alarm 100 seconds without valid tlm
+                d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
                 break;
             }
         default:
@@ -309,7 +309,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, i
         {
             std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            //debug
+            // debug
             std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
@@ -469,7 +469,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  //bad telemetry
+                    int message = 1;  // bad telemetry
                     DLOG(INFO) << "sent msg sat " << this->d_satellite;
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
@@ -772,7 +772,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.
-            // current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
+            // current_symbol.TOW_at_current_symbol_ms -= delta_t;  // Galileo to GPS TOW
 
             if (d_dump == true)
                 {

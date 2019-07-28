@@ -45,6 +45,7 @@
 #include <iostream>   // for cerr, cout
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
+#include <vector>     // for vector
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>
@@ -141,7 +142,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
         }
     T_rx_TOW_ms = 0U;
     T_rx_remnant_to_20ms = 0;
-    T_rx_step_ms = 20;  //read from config at the adapter GNSS-SDR.observable_interval_ms!!
+    T_rx_step_ms = 20;  // read from config at the adapter GNSS-SDR.observable_interval_ms!!
     T_rx_TOW_set = false;
     T_status_report_timer_ms = 0;
     // rework
@@ -199,7 +200,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     T_rx_offset_ms = new_rx_clock_offset_s * 1000.0;
                     T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(T_rx_offset_ms));
                     T_rx_remnant_to_20ms = (T_rx_TOW_ms % 20);
-                    //d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
+                    // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             d_gnss_synchro_history->clear(n);
@@ -475,7 +476,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
     std::vector<Gnss_Synchro>::const_iterator it;
     if (!T_rx_TOW_set)
         {
-            //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
+            // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
@@ -622,14 +623,14 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     out[n][0] = epoch_data.at(n);
                 }
 
-            //report channel status every second
+            // report channel status every second
             T_status_report_timer_ms += T_rx_step_ms;
             if (T_status_report_timer_ms >= 1000)
                 {
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data.at(n));
-                            //publish valid gnss_synchro to the gnss_flowgraph channel status monitor
+                            // publish valid gnss_synchro to the gnss_flowgraph channel status monitor
                             this->message_port_pub(pmt::mp("status"), pmt::make_any(gnss_synchro_sptr));
                         }
                     T_status_report_timer_ms = 0;

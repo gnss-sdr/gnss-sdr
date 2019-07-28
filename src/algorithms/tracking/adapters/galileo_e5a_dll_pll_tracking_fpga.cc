@@ -46,7 +46,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 {
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12000000);
     int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -171,7 +171,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     uint32_t device_base = configuration->property(role + ".device_base", 27);
     trk_param_fpga.device_base = device_base;
 
-    //################# PRE-COMPUTE ALL THE CODES #################
+    // ################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 1;
     auto code_length_chips = static_cast<uint32_t>(GALILEO_E5A_CODE_LENGTH_CHIPS);
 
@@ -260,7 +260,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                 }
         }
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
 
@@ -311,7 +311,7 @@ void GalileoE5aDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -320,7 +320,7 @@ void GalileoE5aDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

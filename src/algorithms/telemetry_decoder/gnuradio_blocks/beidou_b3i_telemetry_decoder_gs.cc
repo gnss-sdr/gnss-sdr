@@ -387,6 +387,7 @@ void beidou_b3i_telemetry_decoder_gs::set_channel(int32_t channel)
         }
 }
 
+
 void beidou_b3i_telemetry_decoder_gs::reset()
 {
     d_last_valid_preamble = d_sample_counter;
@@ -396,6 +397,7 @@ void beidou_b3i_telemetry_decoder_gs::reset()
     DLOG(INFO) << "Beidou B3I Telemetry decoder reset for satellite " << d_satellite;
     return;
 }
+
 
 int beidou_b3i_telemetry_decoder_gs::general_work(
     int noutput_items __attribute__((unused)),
@@ -420,7 +422,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
 
     if (d_symbol_history.size() >= d_required_symbols)
         {
-            //******* preamble correlation ********
+            // ******* preamble correlation ********
             for (int32_t i = 0; i < d_samples_per_preamble; i++)
                 {
                     if (d_symbol_history[i] < 0)  // symbols clipping
@@ -433,7 +435,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                         }
                 }
         }
-    //******* frame sync ******************
+    // ******* frame sync ******************
     if (d_stat == 0)  // no preamble information
         {
             if (abs(corr_value) >= d_samples_per_preamble)
@@ -460,7 +462,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                             d_stat = 2;
 
                             // ******* SAMPLES TO SYMBOLS *******
-                            if (corr_value > 0)  //normal PLL lock
+                            if (corr_value > 0)  // normal PLL lock
                                 {
                                     for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                         {
@@ -520,7 +522,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
             if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_samples))
                 {
                     // ******* SAMPLES TO SYMBOLS *******
-                    if (corr_value > 0)  //normal PLL lock
+                    if (corr_value > 0)  // normal PLL lock
                         {
                             for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
@@ -572,9 +574,9 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
         {
             // Reporting sow as gps time of week
             d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
-            //check TOW update consistency
+            // check TOW update consistency
             uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            //compute new TOW
+            // compute new TOW
             d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
             flag_SOW_set = true;
             d_nav.flag_new_SOW_available = false;

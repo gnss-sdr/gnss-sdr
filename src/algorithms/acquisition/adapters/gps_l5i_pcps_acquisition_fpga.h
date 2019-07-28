@@ -36,6 +36,7 @@
 #define GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H_
 
 #include "channel_fsm.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
 #include <memory>
 #include <string>

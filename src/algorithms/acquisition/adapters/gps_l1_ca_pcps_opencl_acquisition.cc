@@ -198,7 +198,6 @@ signed int GpsL1CaPcpsOpenClAcquisition::mag()
 void GpsL1CaPcpsOpenClAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -232,8 +231,7 @@ void GpsL1CaPcpsOpenClAcquisition::reset()
 
 float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
-
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

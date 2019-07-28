@@ -112,7 +112,7 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
+    cmd_interface_.set_msg_queue(control_queue_);  // set also the queue pointer for the telecommand thread
     try
         {
             flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
@@ -274,8 +274,8 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
         {
             if (receiver_on_standby_ == false)
                 {
-                    //perform non-priority tasks
-                    flowgraph_->acquisition_manager(0);  //start acquisition of untracked satellites
+                    // perform non-priority tasks
+                    flowgraph_->acquisition_manager(0);  // start acquisition of untracked satellites
                 }
         }
 }
@@ -342,9 +342,9 @@ int ControlThread::run()
     pmt::pmt_t msg;
     while (flowgraph_->running() && !stop_)
         {
-            //read event messages, triggered by event signaling with a 100 ms timeout to perform low priority receiver management tasks
+            // read event messages, triggered by event signaling with a 100 ms timeout to perform low priority receiver management tasks
             bool valid_event = control_queue_->timed_wait_and_pop(msg, 100);
-            //call the new sat dispatcher and receiver controller
+            // call the new sat dispatcher and receiver controller
             event_dispatcher(valid_event, msg);
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
@@ -618,7 +618,7 @@ bool ControlThread::read_assistance_from_XML()
 
 void ControlThread::assist_GNSS()
 {
-    //######### GNSS Assistance #################################
+    // ######### GNSS Assistance #################################
     // GNSS Assistance configuration
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
     bool enable_agnss_xml = configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false);

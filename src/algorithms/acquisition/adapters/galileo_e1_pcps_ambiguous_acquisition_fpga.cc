@@ -34,7 +34,6 @@
 #include "configuration_interface.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex
 #include <gnuradio/gr_complex.h>  // for gr_complex
@@ -114,15 +113,15 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
             if (acquire_pilot_ == true)
                 {
-                    //set local signal generator to Galileo E1 pilot component (1C)
+                    // set local signal generator to Galileo E1 pilot component (1C)
                     std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
                         cboc, PRN, fs_in, 0, false);
                 }
             else
                 {
                     std::array<char, 3> data_signal = {{'1', 'B', '\0'}};
-                    galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), data_signal,
+                    galileo_e1_code_gen_complex_sampled(code, data_signal,
                         cboc, PRN, fs_in, 0, false);
                 }
 
@@ -213,12 +212,14 @@ void GalileoE1PcpsAmbiguousAcquisitionFpga::set_doppler_step(unsigned int dopple
     acquisition_fpga_->set_doppler_step(doppler_step_);
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionFpga::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_fpga_->set_doppler_center(doppler_center_);
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

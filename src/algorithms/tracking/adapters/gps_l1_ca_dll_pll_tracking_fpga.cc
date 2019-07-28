@@ -51,7 +51,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
 {
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -177,7 +177,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     uint32_t device_base = configuration->property(role + ".device_base", 3);
     trk_param_fpga.device_base = device_base;
 
-    //################# PRE-COMPUTE ALL THE CODES #################
+    // ################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
@@ -214,8 +214,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
                 }
         }
 
-
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
@@ -261,7 +260,7 @@ void GpsL1CaDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect
+    // nothing to connect
 }
 
 
@@ -270,7 +269,7 @@ void GpsL1CaDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect
+    // nothing to disconnect
 }
 
 

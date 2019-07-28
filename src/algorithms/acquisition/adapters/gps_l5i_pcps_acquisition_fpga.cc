@@ -36,7 +36,6 @@
 #include "GPS_L5.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex
@@ -107,7 +106,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l5i_code_gen_complex_sampled(gsl::span<gr_complex>(code.data(), nsamples_total), PRN, fs_in);
+            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -196,12 +195,14 @@ void GpsL5iPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
     acquisition_fpga_->set_doppler_step(doppler_step_);
 }
 
+
 void GpsL5iPcpsAcquisitionFpga::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_fpga_->set_doppler_center(doppler_center_);
 }
+
 
 void GpsL5iPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
@@ -220,6 +221,7 @@ void GpsL5iPcpsAcquisitionFpga::init()
 {
     acquisition_fpga_->init();
 }
+
 
 void GpsL5iPcpsAcquisitionFpga::set_local_code()
 {

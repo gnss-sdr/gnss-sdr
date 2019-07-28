@@ -46,8 +46,9 @@
 #define LMORE 5      //
 
 
-sbas_l1_telemetry_decoder_gs_sptr
-sbas_l1_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump)
 {
     return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(satellite, dump));
 }
@@ -112,9 +113,6 @@ sbas_l1_telemetry_decoder_gs::Sample_Aligner::Sample_Aligner()
     d_iir_par = 0.05;
     reset();
 }
-
-
-sbas_l1_telemetry_decoder_gs::Sample_Aligner::~Sample_Aligner() = default;
 
 
 void sbas_l1_telemetry_decoder_gs::Sample_Aligner::reset()
@@ -194,16 +192,9 @@ sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::Symbol_Aligner_And_Dec
     const int32_t nn = 2;
     std::array<int32_t, nn> g_encoder{121, 91};
 
-    d_vd1 = new Viterbi_Decoder(g_encoder.data(), d_KK, nn);
-    d_vd2 = new Viterbi_Decoder(g_encoder.data(), d_KK, nn);
+    d_vd1 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
+    d_vd1 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
     d_past_symbol = 0;
-}
-
-
-sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::~Symbol_Aligner_And_Decoder()
-{
-    delete d_vd1;
-    delete d_vd2;
 }
 
 
@@ -229,11 +220,11 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(const st
             symbols_vd2.push_back(*symbol_it);
         }
     // arrays for decoded bits
-    auto *bits_vd1 = new int32_t[nbits_requested];
-    auto *bits_vd2 = new int32_t[nbits_requested];
+    std::vector<int32_t> bits_vd1(nbits_requested);
+    std::vector<int32_t> bits_vd2(nbits_requested);
     // decode
-    float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1, nbits_requested, nbits_decoded);
-    float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2, nbits_requested, nbits_decoded);
+    float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1.data(), nbits_requested, nbits_decoded);
+    float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2.data(), nbits_requested, nbits_decoded);
     // choose the bits with the better metric
     for (int32_t i = 0; i < nbits_decoded; i++)
         {
@@ -247,8 +238,6 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(const st
                 }
         }
     d_past_symbol = symbols.back();
-    delete[] bits_vd1;
-    delete[] bits_vd2;
     return metric_vd1 > metric_vd2;
 }
 

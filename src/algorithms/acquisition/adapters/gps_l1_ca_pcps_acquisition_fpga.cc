@@ -36,7 +36,6 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>
@@ -103,7 +102,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // temporary maxima search
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), PRN, fs_in, 0);  // generate PRN code
+            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -192,12 +191,14 @@ void GpsL1CaPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
     acquisition_fpga_->set_doppler_step(doppler_step_);
 }
 
+
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_fpga_->set_doppler_center(doppler_center_);
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

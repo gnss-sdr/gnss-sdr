@@ -105,7 +105,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(code, PRN, fs_in_);
             // fill in zero padding
             for (unsigned int s = code_length; s < nsamples_total; s++)
                 {
@@ -204,7 +204,6 @@ signed int GpsL2MPcpsAcquisitionFpga::mag()
 void GpsL2MPcpsAcquisitionFpga::init()
 {
     acquisition_fpga_->init();
-    //set_local_code();
 }
 
 

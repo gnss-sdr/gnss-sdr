@@ -49,7 +49,7 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
     bool dump;
@@ -61,7 +61,6 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     float dll_bw_narrow_hz;
     float early_late_space_chips;
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    //vector_length = configuration->property(role + ".vector_length", 2048);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump = configuration->property(role + ".dump", false);
@@ -85,7 +84,7 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -201,7 +200,7 @@ void GlonassL1CaDllPllCAidTracking::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -210,7 +209,7 @@ void GlonassL1CaDllPllCAidTracking::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

@@ -287,7 +287,7 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
     // Update satellite information for DNAV decoder
     sat_prn = d_satellite.get_PRN();
     d_nav.i_satellite_PRN = sat_prn;
-    d_nav.i_signal_type = 1;  //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
+    d_nav.i_signal_type = 1;  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
 
     // Update tel dec parameters for D2 NAV Messages
     if (sat_prn > 0 and sat_prn < 6)
@@ -315,7 +315,7 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
         }
     else
         {
-            //back to normal satellites
+            // back to normal satellites
             d_symbol_duration_ms = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT * BEIDOU_B1I_CODE_PERIOD_MS;
             d_symbols_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
             d_samples_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
@@ -395,7 +395,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
 
     if (d_symbol_history.size() >= d_required_symbols)
         {
-            //******* preamble correlation ********
+            // ******* preamble correlation ********
             for (int32_t i = 0; i < d_samples_per_preamble; i++)
                 {
                     if (d_symbol_history[i] < 0)  // symbols clipping
@@ -408,7 +408,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         }
                 }
         }
-    //******* frame sync ******************
+    // ******* frame sync ******************
     if (d_stat == 0)  // no preamble information
         {
             if (abs(corr_value) >= d_samples_per_preamble)
@@ -430,13 +430,13 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         {
                             // try to decode frame
                             DLOG(INFO) << "Starting BeiDou DNAV frame decoding for BeiDou B1I SAT " << this->d_satellite;
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
 
 
                             d_stat = 2;
 
                             // ******* SAMPLES TO SYMBOLS *******
-                            if (corr_value > 0)  //normal PLL lock
+                            if (corr_value > 0)  // normal PLL lock
                                 {
                                     for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                         {
@@ -493,7 +493,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
             if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_samples))
                 {
                     // ******* SAMPLES TO SYMBOLS *******
-                    if (corr_value > 0)  //normal PLL lock
+                    if (corr_value > 0)  // normal PLL lock
                         {
                             for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
@@ -543,9 +543,9 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
         {
             // Reporting sow as gps time of week
             d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
-            //check TOW update consistency
+            // check TOW update consistency
             uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            //compute new TOW
+            // compute new TOW
             d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
             flag_SOW_set = true;
             d_nav.flag_new_SOW_available = false;

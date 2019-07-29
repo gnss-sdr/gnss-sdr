@@ -130,6 +130,12 @@ if(OPENCL_FOUND)
     )
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(algorithms_libs
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
 target_include_directories(algorithms_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces

@@ -45,6 +45,10 @@
 #ifndef GNSS_SDR_BAYESIAN_ESTIMATION_H_
 #define GNSS_SDR_BAYESIAN_ESTIMATION_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
 

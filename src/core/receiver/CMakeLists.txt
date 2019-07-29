@@ -156,6 +156,12 @@ target_link_libraries(core_receiver
         Armadillo::armadillo
 )
 
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(core_receiver
+        PRIVATE -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
 # Fix for Boost Asio < 1.70
 if(OS_IS_MACOSX)
     if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (Boost_VERSION_STRING VERSION_LESS 1.70.0))

@@ -63,6 +63,7 @@
 #include "rtklib_solution.h"
 #include <glog/logging.h>
 #include <matio.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <exception>
 #include <utility>
 #include <vector>
@@ -443,8 +444,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
     obs_data.fill({});
-    eph_data.fill({});
-    geph_data.fill({});
+    auto eph_data = static_cast<eph_t *>(volk_gnsssdr_malloc(MAXOBS * sizeof(eph_t), volk_gnsssdr_get_alignment()));
+    auto geph_data = static_cast<geph_t *>(volk_gnsssdr_malloc(MAXOBS * sizeof(geph_t), volk_gnsssdr_get_alignment()));
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -828,8 +829,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
         {
             int result = 0;
             nav_t nav_data{};
-            nav_data.eph = eph_data.data();
-            nav_data.geph = geph_data.data();
+            nav_data.eph = eph_data;
+            nav_data.geph = geph_data;
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
             if (gps_iono.valid)
@@ -1154,5 +1155,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
         }
+    volk_gnsssdr_free(eph_data);
+    volk_gnsssdr_free(geph_data);
     return is_valid_position();
 }

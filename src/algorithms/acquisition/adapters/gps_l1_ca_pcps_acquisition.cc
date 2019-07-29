@@ -41,8 +41,8 @@
 #include "gps_sdr_signal_processing.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <algorithm>
 #include <gsl/gsl>
+#include <algorithm>
 
 
 GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(

@@ -65,6 +65,7 @@
 #include <gnuradio/gr_complex.h>     // for gr_complex
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <gnuradio/types.h>          // for gr_vector_const_void_star
+#include <gsl/gsl>                   // for Guidelines Support Library
 #include <volk/volk_complex.h>       // for lv_16sc_t
 #include <complex>
 #include <cstdint>
@@ -72,12 +73,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 class Gnss_Synchro;
 class pcps_acquisition;

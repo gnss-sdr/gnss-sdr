@@ -92,22 +92,10 @@ else()
     target_link_libraries(algorithms_libs PRIVATE Boost::filesystem Boost::system)
 endif()
 
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("
-    #include <span>
-    int main()
-    { std::span<float> sv; }"
-    has_span
+target_include_directories(algorithms_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
 )
-
-if(${has_span})
-    target_compile_definitions(algorithms_libs PUBLIC -DHAS_SPAN=1)
-else()
-    target_include_directories(algorithms_libs
-        PUBLIC
-            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
-    )
-endif()
 
 target_link_libraries(algorithms_libs
     PUBLIC

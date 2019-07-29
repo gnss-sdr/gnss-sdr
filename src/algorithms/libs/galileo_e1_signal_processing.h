@@ -32,15 +32,10 @@
 #ifndef GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H_
 
+#include <gsl/gsl>
 #include <array>
 #include <complex>
 #include <cstdint>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 
 /*!

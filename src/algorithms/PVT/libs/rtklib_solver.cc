@@ -63,7 +63,6 @@
 #include "rtklib_solution.h"
 #include <glog/logging.h>
 #include <matio.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <exception>
 #include <utility>
 #include <vector>

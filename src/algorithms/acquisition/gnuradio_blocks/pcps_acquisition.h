@@ -52,6 +52,10 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H_
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "acq_conf.h"
 #include "channel_fsm.h"
 #include <armadillo>
@@ -61,6 +65,7 @@
 #include <gnuradio/gr_complex.h>     // for gr_complex
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <gnuradio/types.h>          // for gr_vector_const_void_star
+#include <gsl/gsl>                   // for Guidelines Support Library
 #include <volk/volk_complex.h>       // for lv_16sc_t
 #include <complex>
 #include <cstdint>
@@ -68,12 +73,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 class Gnss_Synchro;
 class pcps_acquisition;

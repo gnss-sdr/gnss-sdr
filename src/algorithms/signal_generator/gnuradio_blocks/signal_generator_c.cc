@@ -251,7 +251,7 @@ void signal_generator_c::generate_codes()
 
                             std::array<char, 3> signal_1C = {{'1', 'C', '\0'}};
 
-                            galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(sampled_code_pilot_[sat].data(), vector_length_), signal_1C, cboc, PRN_[sat], fs_in_,
+                            galileo_e1_code_gen_complex_sampled(sampled_code_pilot_[sat], signal_1C, cboc, PRN_[sat], fs_in_,
                                 static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS) - delay_chips_[sat], true);
 
                             // Obtain the desired CN0 assuming that Pn = 1.

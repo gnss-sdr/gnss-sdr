@@ -40,6 +40,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "bayesian_estimation.h"
 #include "cpu_multicorrelator_real_codes.h"
 #include "gnss_synchro.h"

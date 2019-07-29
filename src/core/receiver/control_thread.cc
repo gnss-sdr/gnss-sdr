@@ -32,6 +32,10 @@
  * -------------------------------------------------------------------------
  */
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "control_thread.h"
 #include "channel_event.h"
 #include "command_event.h"

@@ -32,14 +32,9 @@
 #include "GPS_L1_CA.h"
 #include "gnss_signal_processing.h"
 #include <armadillo>
-#include <chrono>
-#include <complex>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
 #include <gsl/gsl>
-#endif
+#include <chrono>
+#include <complex>e
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 

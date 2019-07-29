@@ -126,6 +126,8 @@ public:
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
+    int count_valid_position;
+
 private:
     rtk_t rtk_{};
     std::string d_dump_filename;
@@ -135,9 +137,6 @@ private:
     bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
     std::array<double, 4> dop_{};
-    std::array<obsd_t, MAXOBS> obs_data{};
-    std::array<eph_t, MAXOBS> eph_data{};
-    std::array<geph_t, MAXOBS> geph_data{};
     Monitor_Pvt monitor_pvt{};
 };
 

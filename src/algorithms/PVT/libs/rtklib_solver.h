@@ -135,7 +135,6 @@ private:
     bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
     std::array<double, 4> dop_{};
-    std::array<obsd_t, MAXOBS> obs_data{};
     Monitor_Pvt monitor_pvt{};
 };
 

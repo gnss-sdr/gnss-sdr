@@ -83,7 +83,6 @@ target_link_libraries(pvt_libs
         Gflags::gflags
         Glog::glog
         Matio::matio
-        Volkgnsssdr::volkgnsssdr
 )
 
 get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)

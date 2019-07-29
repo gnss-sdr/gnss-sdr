@@ -34,7 +34,7 @@
 #include <armadillo>
 #include <gsl/gsl>
 #include <chrono>
-#include <complex>e
+#include <complex>
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 

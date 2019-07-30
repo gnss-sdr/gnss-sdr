@@ -126,8 +126,6 @@ public:
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
-    int count_valid_position;
-
 private:
     rtk_t rtk_{};
     std::string d_dump_filename;

@@ -71,9 +71,7 @@ const uint32_t GPS_L1_CA_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequency that 
  */
 const double MAX_TOA_DELAY_MS = 20;
 
-//#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
-//const double GPS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
-const double GPS_STARTOFFSET_MS = 60.0;
+const double GPS_STARTOFFSET_MS = 68.802;  // [ms] Initial signal travel time (only for old ls_pvt implementation)
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int32_t GPS_L1_CA_HISTORY_DEEP = 100;

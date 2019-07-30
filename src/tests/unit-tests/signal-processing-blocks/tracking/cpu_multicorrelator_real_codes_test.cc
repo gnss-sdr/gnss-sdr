@@ -139,7 +139,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                     //create the concurrent correlator threads
                     for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
                         {
-                            thread_pool.push_back(std::thread(run_correlator_cpu_real_codes,
+                            thread_pool.emplace_back(std::thread(run_correlator_cpu_real_codes,
                                 correlator_pool[current_thread],
                                 d_rem_carrier_phase_rad,
                                 d_carrier_phase_step_rad,

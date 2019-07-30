@@ -121,7 +121,6 @@ private:
 
 public:
     int rx_message;
-    ~FrontEndCal_msg_rx() override;  //!< Default destructor
 };
 
 
@@ -153,9 +152,6 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
     this->set_msg_handler(pmt::mp("events"), boost::bind(&FrontEndCal_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
-
-
-FrontEndCal_msg_rx::~FrontEndCal_msg_rx() = default;
 
 
 void wait_message()

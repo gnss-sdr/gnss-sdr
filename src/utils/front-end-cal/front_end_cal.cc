@@ -45,6 +45,7 @@
 #include <cmath>
 #include <iostream>  // for operator<<
 #include <map>
+#include <stdexcept>
 #include <utility>
 
 extern Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
@@ -303,7 +304,7 @@ arma::vec FrontEndCal::geodetic2ecef(double phi, double lambda, double h, const 
 }
 
 
-double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height)
+double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height) noexcept(false)
 {
     int num_secs = 10;
     double step_secs = 0.5;
@@ -359,7 +360,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;
         }
-    throw(1);
+    throw std::runtime_error("1");
 }
 
 

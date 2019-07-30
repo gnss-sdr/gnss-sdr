@@ -574,7 +574,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << "Exception caught while reading ephemeris" << std::endl;
                 }
-            catch (int ex)
+            catch (const std::exception& ex)
                 {
                     std::cout << "  " << it.first << "   " << it.second << "  (Eph not found)" << std::endl;
                 }

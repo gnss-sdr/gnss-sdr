@@ -32,6 +32,7 @@
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 
@@ -87,7 +88,7 @@ void Tcp_Communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
             //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
             if (d_control_id_ != readbuf.data()[0])
                 {
-                    throw "Packet error!";
+                    throw std::runtime_error("Packet error!");
                 }
 
             // Recover the variables received
@@ -122,7 +123,7 @@ void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
             //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
             if (d_control_id_ != readbuf.data()[0])
                 {
-                    throw "Packet error!";
+                    throw std::runtime_error("Packet error!");
                 }
 
             // Recover the variables received

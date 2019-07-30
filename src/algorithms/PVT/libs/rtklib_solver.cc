@@ -94,7 +94,6 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
     d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
-    count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
 

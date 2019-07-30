@@ -1468,19 +1468,19 @@ void GNSSFlowgraph::start_acquisition_helper()
 
 void GNSSFlowgraph::perform_hw_reset()
 {
-	// a stop acquisition command causes the SW to reset the HW
-	std::shared_ptr<Channel> channel_ptr;
+    // a stop acquisition command causes the SW to reset the HW
+    std::shared_ptr<Channel> channel_ptr;
 
-	for (uint32_t i=0; i< channels_count_;i++)
-	{
-		channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
-		channel_ptr->tracking()->stop_tracking();
-	}
+    for (uint32_t i = 0; i < channels_count_; i++)
+        {
+            channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
+            channel_ptr->tracking()->stop_tracking();
+        }
 
-	std::this_thread::sleep_for (std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-	channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(0));
-	channel_ptr->acquisition()->stop_acquisition();
+    channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(0));
+    channel_ptr->acquisition()->stop_acquisition();
 }
 #endif
 

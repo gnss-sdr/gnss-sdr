@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -384,7 +384,9 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
     int32_t fd = 0;
+    // clang-format off
     struct termios options{};
+    // clang-format on
     int64_t BAUD;
     int64_t DATABITS;
     int64_t STOPBITS;
@@ -404,7 +406,7 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
     tcgetattr(fd, &options);  // read serial port options
 
     BAUD = B9600;
-    //BAUD  =  B38400;
+    // BAUD  =  B38400;
     DATABITS = CS8;
     STOPBITS = 0;
     PARITYON = 0;
@@ -412,7 +414,7 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
 
     options.c_cflag = BAUD | DATABITS | STOPBITS | PARITYON | PARITY | CLOCAL | CREAD;
     // enable receiver, set 8 bit data, ignore control lines
-    //options.c_cflag |= (CLOCAL | CREAD | CS8);
+    // options.c_cflag |= (CLOCAL | CREAD | CS8);
     options.c_iflag = IGNPAR;
 
     // set the new port options
@@ -432,7 +434,7 @@ void Rtcm_Printer::close_serial()
 
 bool Rtcm_Printer::Print_Message(const std::string& message)
 {
-    //write to file
+    // write to file
     if (d_rtcm_file_dump)
         {
             try
@@ -446,7 +448,7 @@ bool Rtcm_Printer::Print_Message(const std::string& message)
                 }
         }
 
-    //write to serial device
+    // write to serial device
     if (rtcm_dev_descriptor != -1)
         {
             if (write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1)

@@ -303,7 +303,7 @@ void GNSSFlowgraph::connect()
                     int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
                     ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
                     top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
-                    top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+                    top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
                 }
             catch (const std::exception& e)
                 {
@@ -327,7 +327,7 @@ void GNSSFlowgraph::connect()
                         }
                     int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
                     ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
-                    top_block_->connect(ch_out_fpga_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+                    top_block_->connect(ch_out_fpga_sample_counter, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
                 }
             catch (const std::exception& e)
                 {
@@ -353,7 +353,7 @@ void GNSSFlowgraph::connect()
             int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
             ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
             top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
-            top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+            top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
         }
     catch (const std::exception& e)
         {
@@ -525,7 +525,7 @@ void GNSSFlowgraph::connect()
                             top_block_->disconnect_all();
                             return;
                         }
-                    signal_conditioner_connected.at(selected_signal_conditioner_ID) = true;  //notify that this signal conditioner is connected
+                    signal_conditioner_connected.at(selected_signal_conditioner_ID) = true;  // notify that this signal conditioner is connected
                     DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
                 }
 #endif
@@ -815,7 +815,7 @@ void GNSSFlowgraph::disconnect()
                     // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
                     if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
                         {
-                            //Multichannel Array
+                            // Multichannel Array
                             for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
                                 {
                                     top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
@@ -1163,7 +1163,9 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
             break;
         }
 }
-//project Doppler from primary frequency to secondary frequency
+
+
+// project Doppler from primary frequency to secondary frequency
 double GNSSFlowgraph::project_doppler(std::string searched_signal, double primary_freq_doppler_hz)
 {
     switch (mapStringValues_[searched_signal])
@@ -1181,6 +1183,7 @@ double GNSSFlowgraph::project_doppler(std::string searched_signal, double primar
             return primary_freq_doppler_hz;
         }
 }
+
 
 void GNSSFlowgraph::acquisition_manager(unsigned int who)
 {
@@ -1235,7 +1238,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 }
                             else
                                 {
-                                    //set Doppler center to 0 Hz
+                                    // set Doppler center to 0 Hz
                                     channels_[current_channel]->assist_acquisition_doppler(0);
                                 }
 #ifndef ENABLE_FPGA
@@ -1285,11 +1288,10 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     //todo: the acquisition events are initiated from the acquisition success or failure queued msg. If the acquisition is disabled for non-assisted secondary freq channels, the engine stops..
-
     std::lock_guard<std::mutex> lock(signal_list_mutex);
     DLOG(INFO) << "Received " << what << " from " << who;
-    Gnss_Signal gs = channels_[who]->get_signal();
     unsigned int sat = 0;
+    Gnss_Signal gs;
     if (who < 200)
         {
             try
@@ -1304,6 +1306,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     switch (what)
         {
         case 0:
+            gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
             channels_state_[who] = 0;
             if (acq_channels_count_ > 0)
@@ -1312,13 +1315,14 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             // call the acquisition manager to assign new satellite and start next acquisition (if required)
             acquisition_manager(who);
-            //push back the old signal AFTER assigning a new one to avoid selecting the same signal
+            // push back the old signal AFTER assigning a new one to avoid selecting the same signal
             if (sat == 0)
                 {
                     push_back_signal(gs);
                 }
             break;
         case 1:
+            gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << gs.get_satellite();
             // If the satellite is in the list of available ones, remove it.
             remove_signal(gs);
@@ -1333,6 +1337,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
 
         case 2:
+            gs = channels_[who]->get_signal();
             DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << gs.get_satellite();
             if (acq_channels_count_ < max_acq_channels_)
                 {
@@ -1359,7 +1364,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             break;
         case 10:  // request standby mode
-            LOG(INFO) << "TC request standby mode";
             for (size_t n = 0; n < channels_.size(); n++)
                 {
                     if (channels_state_[n] == 1 or channels_state_[n] == 2)  // channel in acquisition or in tracking
@@ -1372,22 +1376,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_state_[n] = 0;
                         }
                 }
-            acq_channels_count_ = 0;  // all channels are in standby now
-            break;
-        case 11:  // request coldstart mode
-            LOG(INFO) << "TC request flowgraph coldstart";
-            // call the acquisition manager to assign new satellite and start next acquisition (if required)
-            acquisition_manager(who);
-            break;
-        case 12:  // request hotstart mode
-            LOG(INFO) << "TC request flowgraph hotstart";
-            // call the acquisition manager to assign new satellite and start next acquisition (if required)
-            acquisition_manager(who);
-            break;
-        case 13:  // request warmstart mode
-            LOG(INFO) << "TC request flowgraph warmstart";
-            // call the acquisition manager to assign new satellite and start next acquisition (if required)
-            acquisition_manager(who);
+            acq_channels_count_ = 0;  // all channels are in standby now and no new acquisition should be started
             break;
         default:
             break;
@@ -1481,6 +1470,15 @@ void GNSSFlowgraph::perform_hw_reset()
 {
     // a stop acquisition command causes the SW to reset the HW
     std::shared_ptr<Channel> channel_ptr;
+
+    for (uint32_t i = 0; i < channels_count_; i++)
+        {
+            channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
+            channel_ptr->tracking()->stop_tracking();
+        }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
     channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(0));
     channel_ptr->acquisition()->stop_acquisition();
 }

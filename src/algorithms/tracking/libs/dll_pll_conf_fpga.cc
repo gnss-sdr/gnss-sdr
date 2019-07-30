@@ -32,6 +32,8 @@
 
 
 #include "dll_pll_conf_fpga.h"
+#include "gnss_sdr_flags.h"
+#include <cstring>
 
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 {
@@ -45,7 +47,8 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     dump_filename = std::string("./dll_pll_dump.dat");
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
-    pull_in_time_s = 2;
+    pull_in_time_s = 10;
+    bit_synchronization_time_limit_s = pull_in_time_s + 60;
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;
@@ -61,10 +64,13 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     early_late_space_narrow_chips = 0.1;
     very_early_late_space_narrow_chips = 0.1;
     extend_correlation_symbols = 5;
-    cn0_samples = 20;
-    cn0_min = 25;
-    max_lock_fail = 50;
-    carrier_lock_th = 0.85;
+    cn0_samples = FLAGS_cn0_samples;
+    cn0_min = FLAGS_cn0_min;
+    max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
+    max_code_lock_fail = FLAGS_max_lock_fail;
+    carrier_lock_th = FLAGS_carrier_lock_th;
+    //max_lock_fail = 50;
+    enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';
     signal[0] = '1';
@@ -72,9 +78,11 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     signal[2] = '\0';
     device_name = "/dev/uio";
     device_base = 1U;
-    multicorr_type = 0U;
     code_length_chips = 0U;
     code_samples_per_chip = 0U;
     ca_codes = nullptr;
     data_codes = nullptr;
+    extended_correlation_in_fpga = false;
+    extend_fpga_integration_periods = 1;
+    fpga_integration_period = 0;
 }

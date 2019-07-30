@@ -22,8 +22,8 @@
  *
  * -------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
- * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2019, Javier Arribas
+ * Copyright (C) 2017-2019, Carles Fernandez
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,8 +125,6 @@ public:
     Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
-
-    int count_valid_position;
 
 private:
     rtk_t rtk_{};

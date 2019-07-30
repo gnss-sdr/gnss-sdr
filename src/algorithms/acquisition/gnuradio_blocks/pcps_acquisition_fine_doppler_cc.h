@@ -23,7 +23,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,6 +48,10 @@
 
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
+
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
 
 #include "acq_conf.h"
 #include "channel_fsm.h"

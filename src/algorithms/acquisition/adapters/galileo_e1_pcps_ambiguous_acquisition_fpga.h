@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,16 +32,15 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 
+#include "acq_conf.h"
 #include "channel_fsm.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <volk/volk_complex.h>       // for lv_16sc_t
-#include <cstddef>                   // for size_t
 #include <memory>
 #include <string>
 #include <vector>
 
-class Gnss_Synchro;
+
 class ConfigurationInterface;
 
 /*!
@@ -51,13 +50,22 @@ class ConfigurationInterface;
 class GalileoE1PcpsAmbiguousAcquisitionFpga : public AcquisitionInterface
 {
 public:
+    /*!
+     * \brief Constructor
+     */
     GalileoE1PcpsAmbiguousAcquisitionFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
+    /*!
+     * \brief Destructor
+     */
     ~GalileoE1PcpsAmbiguousAcquisitionFpga() = default;
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
@@ -71,21 +79,38 @@ public:
         return "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga";
     }
 
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
     size_t item_size() override
     {
-        size_t item_size = sizeof(lv_16sc_t);
-        return item_size;
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     * tracking blocks
+     *  tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -123,6 +148,11 @@ public:
     void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_doppler_center(int doppler_center) override;
+
+    /*!
      * \brief Initializes acquisition algorithm.
      */
     void init() override;
@@ -152,9 +182,20 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Set resampler latency
+     */
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
+    // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const uint32_t quant_bits_local_code = 16;
+    static const uint32_t select_lsbits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t select_msbits = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
+
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     bool acquire_pilot_;
@@ -162,6 +203,7 @@ private:
     std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
+    int32_t doppler_center_;
     std::string dump_filename_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;

@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -36,21 +36,9 @@
 #include "dll_pll_conf_fpga.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include <glog/logging.h>
-#include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
-#include <cmath>  // for round
-#include <complex>
-#include <cstring>  // for memcpy
-#include <iostream>
-
-// the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
-// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
-#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000      // flag that enables WE (Write Enable) of the local code FPGA
-#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
-
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
@@ -58,7 +46,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 {
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12000000);
     int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -168,30 +156,11 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.system = 'E';
     std::array<char, 3> sig_{'5', 'X', '\0'};
     std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
-    int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20)
-        {
-            cn0_samples = FLAGS_cn0_samples;
-        }
-    trk_param_fpga.cn0_samples = cn0_samples;
-    int32_t cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25)
-        {
-            cn0_min = FLAGS_cn0_min;
-        }
-    trk_param_fpga.cn0_min = cn0_min;
-    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50)
-        {
-            max_lock_fail = FLAGS_max_lock_fail;
-        }
-    trk_param_fpga.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
-    if (FLAGS_carrier_lock_th != 0.85)
-        {
-            carrier_lock_th = FLAGS_carrier_lock_th;
-        }
-    trk_param_fpga.carrier_lock_th = carrier_lock_th;
+    trk_param_fpga.cn0_samples = configuration->property(role + ".cn0_samples", trk_param_fpga.cn0_samples);
+    trk_param_fpga.cn0_min = configuration->property(role + ".cn0_min", trk_param_fpga.cn0_min);
+    trk_param_fpga.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param_fpga.max_code_lock_fail);
+    trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
+    trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
 
     d_data_codes = nullptr;
 
@@ -201,9 +170,8 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.device_name = device_name;
     uint32_t device_base = configuration->property(role + ".device_base", 27);
     trk_param_fpga.device_base = device_base;
-    trk_param_fpga.multicorr_type = 1;  // 0 -> 3 correlators, 1 -> up to 5+1 correlators
 
-    //################# PRE-COMPUTE ALL THE CODES #################
+    // ################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 1;
     auto code_length_chips = static_cast<uint32_t>(GALILEO_E5A_CODE_LENGTH_CHIPS);
 
@@ -264,7 +232,35 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
-    //################# MAKE TRACKING GNURadio object ###################
+
+    trk_param_fpga.extended_correlation_in_fpga = false;  // by default
+    trk_param_fpga.extend_fpga_integration_periods = 1;   // (number of FPGA integrations that are combined in the SW)
+    trk_param_fpga.fpga_integration_period = 1;           // (number of symbols that are effectively integrated in the FPGA)
+    if (d_track_pilot)
+        {
+            if (extend_correlation_symbols > 1)
+                {
+                    if (extend_correlation_symbols <= GALILEO_E5A_I_SECONDARY_CODE_LENGTH)
+                        {
+                            if ((GALILEO_E5A_I_SECONDARY_CODE_LENGTH % extend_correlation_symbols) == 0)
+                                {
+                                    trk_param_fpga.extended_correlation_in_fpga = true;
+                                    trk_param_fpga.fpga_integration_period = extend_correlation_symbols;
+                                }
+                        }
+                    else
+                        {
+                            if (extend_correlation_symbols % GALILEO_E5A_I_SECONDARY_CODE_LENGTH == 0)
+                                {
+                                    trk_param_fpga.extended_correlation_in_fpga = true;
+                                    trk_param_fpga.extend_fpga_integration_periods = extend_correlation_symbols / GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
+                                    trk_param_fpga.fpga_integration_period = GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
+                                }
+                        }
+                }
+        }
+
+    // ################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
 
@@ -290,6 +286,7 @@ void GalileoE5aDllPllTrackingFpga::start_tracking()
 
 void GalileoE5aDllPllTrackingFpga::stop_tracking()
 {
+    tracking_fpga_sc->stop_tracking();
 }
 
 
@@ -314,7 +311,7 @@ void GalileoE5aDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -323,7 +320,7 @@ void GalileoE5aDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

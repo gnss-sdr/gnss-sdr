@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,11 +39,6 @@
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <iostream>    // for cout, endl
 #include <sys/mman.h>  // for mmap
-
-
-// constants
-const size_t PAGE_SIZE = 0x10000;
-const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 
 Fpga_Switch::Fpga_Switch(const std::string &device_name)
 {

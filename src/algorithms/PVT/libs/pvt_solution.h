@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,6 +32,9 @@
 #ifndef GNSS_SDR_PVT_SOLUTION_H_
 #define GNSS_SDR_PVT_SOLUTION_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
 
 #include <armadillo>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -151,7 +154,6 @@ private:
     arma::vec d_rx_pos;
     boost::posix_time::ptime d_position_UTC_time;
     int d_valid_observations;
-
 };
 
 #endif

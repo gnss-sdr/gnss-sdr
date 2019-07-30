@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -68,7 +68,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    /*Calculate the folding factor value based on the calculations*/
+    /* Calculate the folding factor value based on the calculations */
     auto temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", temp);
 
@@ -106,7 +106,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
 
     int samples_per_ms = round(code_length_);
     code_ = std::vector<std::complex<float>>(code_length_);
-    /*Object relevant information for debugging*/
+    /* Object relevant information for debugging */
     LOG(INFO) << "Implementation: " << this->implementation()
               << ", Vector Length: " << vector_length_
               << ", Samples per ms: " << samples_per_ms
@@ -224,7 +224,6 @@ signed int GpsL1CaPcpsQuickSyncAcquisition::mag()
 void GpsL1CaPcpsQuickSyncAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -232,14 +231,14 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+            std::vector<std::complex<float>> code(code_length_);
 
-            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), gnss_synchro_->PRN, fs_in_, 0);
+            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
             gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < (sampled_ms_ / folding_factor_); i++)
                 {
-                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
             acquisition_cc_->set_local_code(code_.data());
@@ -267,7 +266,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_state(int state)
 
 float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

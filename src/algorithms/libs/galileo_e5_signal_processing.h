@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,16 +34,10 @@
 #ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
 
+#include <gsl/gsl>
+#include <array>
 #include <complex>
 #include <cstdint>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
-
-
 
 /*!
  * \brief Generates Galileo E5a code at 1 sample/chip

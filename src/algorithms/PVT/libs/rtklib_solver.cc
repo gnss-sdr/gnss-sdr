@@ -22,8 +22,8 @@
  *
  * -------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
- * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2019, Javier Arribas
+ * Copyright (C) 2017-2019, Carles Fernandez
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,6 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
     d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
-    count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
 
@@ -116,6 +115,44 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
                 }
         }
 }
+
+
+Rtklib_Solver::~Rtklib_Solver()
+{
+    if (d_dump_file.is_open() == true)
+        {
+            auto pos = d_dump_file.tellp();
+            try
+                {
+                    d_dump_file.close();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_flag_dump_mat_enabled = false;
+                }
+        }
+    if (d_flag_dump_mat_enabled)
+        {
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
+                }
+        }
+}
+
 
 bool Rtklib_Solver::save_matfile()
 {
@@ -353,43 +390,6 @@ bool Rtklib_Solver::save_matfile()
 
     Mat_Close(matfp);
     return true;
-}
-
-
-Rtklib_Solver::~Rtklib_Solver()
-{
-    if (d_dump_file.is_open() == true)
-        {
-            auto pos = d_dump_file.tellp();
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
-                }
-            if (pos == 0)
-                {
-                    errorlib::error_code ec;
-                    if (!fs::remove(fs::path(d_dump_filename), ec))
-                        {
-                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
-                        }
-                    d_flag_dump_mat_enabled = false;
-                }
-        }
-    if (d_flag_dump_mat_enabled)
-        {
-            try
-                {
-                    save_matfile();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
-                }
-        }
 }
 
 
@@ -718,7 +718,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         obs_data[i + valid_obs] = insert_obs_to_rtklib(obs_data[i + valid_obs],
                                                             gnss_observables_iter->second,
                                                             glonass_gnav_ephemeris_iter->second.d_WN,
-                                                            1);  //Band 1 (L2)
+                                                            1);  // Band 1 (L2)
                                                         found_L1_obs = true;
                                                         break;
                                                     }
@@ -913,7 +913,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 }
 
             /* update carrier wave length using native function call in RTKlib */
-            uniqnav(&nav_data);
+            for (int i = 0; i < MAXSAT; i++)
+                {
+                    for (int j = 0; j < NFREQ; j++)
+                        {
+                            nav_data.lam[i][j] = satwavelen(i + 1, j, &nav_data);
+                        }
+                }
 
             result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 
@@ -1000,9 +1006,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
                     boost::posix_time::ptime p_time;
-                    // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); //Corrected RX Time (Non integer multiply of 1 ms of granularity)
+                    // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); // Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
-                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time(3));  //uncorrected rx time
+                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time(3));  // uncorrected rx time
                     gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)

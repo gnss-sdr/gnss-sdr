@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -236,6 +236,8 @@ void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz)
 {
     acq_->set_doppler_center(static_cast<int>(Carrier_Doppler_hz));
 }
+
+
 void Channel::start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);

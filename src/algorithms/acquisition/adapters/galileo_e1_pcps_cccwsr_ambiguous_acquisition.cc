@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -186,7 +186,6 @@ signed int GalileoE1PcpsCccwsrAmbiguousAcquisition::mag()
 void GalileoE1PcpsCccwsrAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -199,12 +198,12 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_local_code()
 
             std::array<char, 3> signal = {{'1', 'B', '\0'}};
 
-            galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(code_data_.data(), vector_length_), signal,
+            galileo_e1_code_gen_complex_sampled(code_data_, signal,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
             std::array<char, 3> signal_C = {{'1', 'C', '\0'}};
 
-            galileo_e1_code_gen_complex_sampled(gsl::span<gr_complex>(code_pilot_.data(), vector_length_), signal_C,
+            galileo_e1_code_gen_complex_sampled(code_pilot_, signal_C,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
             acquisition_cc_->set_local_code(code_data_.data(), code_pilot_.data());

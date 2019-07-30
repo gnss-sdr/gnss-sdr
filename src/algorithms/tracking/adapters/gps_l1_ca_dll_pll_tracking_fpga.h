@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -39,12 +39,8 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
-#include <gnuradio/runtime_types.h>
-#include <cstddef>
 #include <string>
 
-
-class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -53,32 +49,61 @@ class ConfigurationInterface;
 class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
+    /*!
+     * \brief Constructor
+     */
     GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
+    /*!
+     * \brief Destructor
+     */
     virtual ~GpsL1CaDllPllTrackingFpga();
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_DLL_PLL_Tracking_Fpga"
+    /*!
+     * \brief Returns "GPS_L1_CA_DLL_PLL_Tracking_Fpga"
+     */
     inline std::string implementation() override
     {
         return "GPS_L1_CA_DLL_PLL_Tracking_Fpga";
     }
 
-    inline size_t item_size() override
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
+    size_t item_size() override
     {
-        return sizeof(int);
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
@@ -92,14 +117,24 @@ public:
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
+    /*!
+     * \brief Start the tracking process in the FPGA
+     */
     void start_tracking() override;
 
     /*!
-     * \brief Stop running tracking
+     * \brief Stop the tracking process in the FPGA
      */
     void stop_tracking() override;
 
 private:
+    static const uint32_t NUM_PRNs = 32;  // total number of PRNs
+    static const int32_t GPS_CA_BIT_DURATION_MS = 20;
+    // the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;  // flag that enables WE (Write Enable) of the local code FPGA
+
+
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     uint32_t channel_;
     std::string role_;

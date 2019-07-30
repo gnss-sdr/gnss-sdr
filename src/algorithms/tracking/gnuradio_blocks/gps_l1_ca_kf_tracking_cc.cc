@@ -14,7 +14,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,12 +45,12 @@
 #include "tracking_discriminators.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <gsl/gsl>
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
 #include <cmath>
 #include <exception>
-#include <gsl/gsl>
 #include <iostream>
 #include <memory>
 #include <sstream>

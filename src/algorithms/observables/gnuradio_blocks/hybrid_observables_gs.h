@@ -41,7 +41,6 @@
 #include <cstdint>                    // for int32_t
 #include <fstream>                    // for string, ofstream
 #include <memory>                     // for shared_ptr
-#include <vector>                     // for vector
 
 class Gnss_Synchro;
 class hybrid_observables_gs;

@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -209,7 +209,6 @@ signed int GalileoE5aNoncoherentIQAcquisitionCaf::mag()
 void GalileoE5aNoncoherentIQAcquisitionCaf::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -223,17 +222,17 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
                     std::array<char, 3> a = {{'5', 'I', '\0'}};
-                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeI.data(), code_length_), a,
+                    galileo_e5_a_code_gen_complex_sampled(codeI, a,
                         gnss_synchro_->PRN, fs_in_, 0);
 
                     std::array<char, 3> b = {{'5', 'Q', '\0'}};
-                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeQ.data(), code_length_), b,
+                    galileo_e5_a_code_gen_complex_sampled(codeQ, b,
                         gnss_synchro_->PRN, fs_in_, 0);
                 }
             else
                 {
                     std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
-                    galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>>(codeI.data(), code_length_), signal_type_,
+                    galileo_e5_a_code_gen_complex_sampled(codeI, signal_type_,
                         gnss_synchro_->PRN, fs_in_, 0);
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
@@ -277,7 +276,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::reset()
 
 float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

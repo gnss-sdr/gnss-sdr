@@ -29,6 +29,7 @@
  */
 
 #include "rtklib_pvt_gs.h"
+#include "MATH_CONSTANTS.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -43,6 +44,7 @@
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
 #include "gps_almanac.h"
 #include "gps_cnav_ephemeris.h"
@@ -128,6 +130,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
     // Send PVT status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
+
+
+    mapStringValues_["1C"] = evGPS_1C;
+    mapStringValues_["2S"] = evGPS_2S;
+    mapStringValues_["L5"] = evGPS_L5;
+    mapStringValues_["1B"] = evGAL_1B;
+    mapStringValues_["5X"] = evGAL_5X;
+    mapStringValues_["1G"] = evGLO_1G;
+    mapStringValues_["2G"] = evGLO_2G;
+    mapStringValues_["B1"] = evBDS_B1;
+    mapStringValues_["B2"] = evBDS_B2;
+    mapStringValues_["B3"] = evBDS_B3;
 
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
@@ -1512,12 +1526,6 @@ void rtklib_pvt_gs::clear_ephemeris()
 }
 
 
-bool rtklib_pvt_gs::observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b)
-{
-    return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
-}
-
-
 bool rtklib_pvt_gs::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 {
     // Fill Sys V message structures
@@ -1618,6 +1626,92 @@ bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
 }
 
 
+void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
+    double rx_clock_offset_s)
+{
+    //apply corrections according to Rinex 3.04, Table 1: Observation Corrections for Receiver Clock Offset
+    std::map<int, Gnss_Synchro>::iterator observables_iter;
+
+    for (observables_iter = observables_map.begin(); observables_iter != observables_map.end(); observables_iter++)
+        {
+            //all observables in the map are valid
+            observables_iter->second.RX_time -= rx_clock_offset_s;
+            observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT;
+
+            switch (mapStringValues_[observables_iter->second.Signal])
+                {
+                case evGPS_1C:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1;
+                    break;
+                case evGPS_L5:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5;
+                    break;
+                case evSBAS_1C:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1;
+                    break;
+                case evGAL_1B:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1;
+                    break;
+                case evGAL_5X:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5;
+                    break;
+                case evGPS_2S:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2;
+                    break;
+                case evBDS_B3:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS;
+                    break;
+                case evGLO_1G:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO;
+                    break;
+                case evGLO_2G:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO;
+                    break;
+                case evBDS_B1:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS;
+                    break;
+                case evBDS_B2:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS;
+                    break;
+                default:
+                    break;
+                }
+        }
+}
+
+std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(std::map<int, Gnss_Synchro>& observables_map_t0,
+    std::map<int, Gnss_Synchro>& observables_map_t1,
+    double rx_time_s)
+{
+    std::map<int, Gnss_Synchro> interp_observables_map;
+    //Linear interpolation: y(t) = y(t0) + (y(t1) - y(t0)) * (t - t0) / (t1 - t0)
+    double time_factor = (rx_time_s - observables_map_t0.cbegin()->second.RX_time) /
+                         (observables_map_t1.cbegin()->second.RX_time -
+                             observables_map_t0.cbegin()->second.RX_time);
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    for (observables_iter = observables_map_t0.cbegin(); observables_iter != observables_map_t0.cend(); observables_iter++)
+        {
+            //1. Check if the observable exist in t0 and t1
+            //the map key is the channel ID (see work())
+            try
+                {
+                    if (observables_map_t1.at(observables_iter->first).PRN == observables_iter->second.PRN)
+                        {
+                            interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                            interp_observables_map.at(observables_iter->first).RX_time = rx_time_s;  //interpolation point
+                            interp_observables_map.at(observables_iter->first).Pseudorange_m += (observables_map_t1.at(observables_iter->first).Pseudorange_m - observables_iter->second.Pseudorange_m) * time_factor;
+                            interp_observables_map.at(observables_iter->first).Carrier_phase_rads += (observables_map_t1.at(observables_iter->first).Carrier_phase_rads - observables_iter->second.Carrier_phase_rads) * time_factor;
+                            interp_observables_map.at(observables_iter->first).Carrier_Doppler_hz += (observables_map_t1.at(observables_iter->first).Carrier_Doppler_hz - observables_iter->second.Carrier_Doppler_hz) * time_factor;
+                        }
+                }
+            catch (const std::out_of_range& oor)
+                {
+                    //observable does not exist in t1
+                }
+        }
+    return interp_observables_map;
+}
+
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
@@ -1708,7 +1802,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             if (gnss_observables_map.empty() == false)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
-                    auto current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
+                    uint32_t current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
                     if (current_RX_time_ms % d_output_rate_ms == 0)
                         {
                             flag_compute_pvt_output = true;
@@ -1720,6 +1814,32 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
                         {
+                            // #### store the corrected observable set
+                            if (d_pvt_solver->get_PVT(gnss_observables_map, false))
+                                {
+                                    double Rx_clock_offset_s = d_pvt_solver->get_time_offset_s();
+                                    if (fabs(Rx_clock_offset_s) > 0.001)
+                                        {
+                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(Rx_clock_offset_s));
+                                            LOG(INFO) << "Sent clock offset correction to observables: " << Rx_clock_offset_s << "[s]";
+                                        }
+                                    else
+                                        {
+                                            gnss_observables_map_t0 = gnss_observables_map_t1;
+                                            apply_rx_clock_offset(gnss_observables_map, Rx_clock_offset_s);
+                                            gnss_observables_map_t1 = gnss_observables_map;
+                                            if (!gnss_observables_map_t0.empty())
+                                                {
+                                                    if ((d_rx_time - gnss_observables_map_t0.cbegin()->second.RX_time) < 0)
+                                                        {
+                                                            d_rx_time = floor(gnss_observables_map_t1.cbegin()->second.RX_time);
+                                                        }
+                                                    gnss_observables_map = interpolate_observables(gnss_observables_map_t0,
+                                                        gnss_observables_map_t1,
+                                                        d_rx_time);
+                                                }
+                                        }
+                                }
                             // receiver clock correction is disabled to be coherent with the RINEX and RTCM standard
                             // std::cout << TEXT_RED << "(internal) accumulated RX clock offset: " << d_pvt_solver->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
                             // for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.cend(); ++it)
@@ -1732,13 +1852,17 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (d_pvt_solver->get_PVT(gnss_observables_map, false))
                                 {
                                     double Rx_clock_offset_s = d_pvt_solver->get_time_offset_s();
-                                    if (fabs(Rx_clock_offset_s) > 0.001)
+                                    if (fabs(Rx_clock_offset_s) > 0.000001)  //1us !!
                                         {
-                                            this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(Rx_clock_offset_s));
-                                            LOG(INFO) << "Sent clock offset correction to observables: " << Rx_clock_offset_s << "[s]";
+                                            LOG(INFO) << "Problem: Rx clock offset after interpolation: " << Rx_clock_offset_s * 1000.0 << "[ms]"
+                                                      << " at RX time: " << d_rx_time * 1000.0 << " [ms]";
                                         }
                                     else
                                         {
+                                            //                                    double Rx_clock_offset_s = d_pvt_solver->get_time_offset_s();
+
+                                            LOG(INFO) << "Rx clock offset after interpolation: " << Rx_clock_offset_s * 1000.0 << "[s]"
+                                                      << " at RX time: " << d_rx_time * 1000.0 << " [ms]";
                                             //Optional debug code: export observables snapshot for rtklib unit testing
                                             //std::cout << "step 1: save gnss_synchro map" << std::endl;
                                             //save_gnss_synchro_map_xml("./gnss_synchro_map.xml");

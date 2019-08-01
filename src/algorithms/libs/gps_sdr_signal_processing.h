@@ -33,15 +33,9 @@
 #ifndef GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
 
+#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
-
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 //! Generates int GPS L1 C/A code for the desired SV ID and code shift
 void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift);

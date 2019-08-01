@@ -95,6 +95,12 @@ target_include_directories(pvt_libs
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(pvt_libs
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
 if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
     target_compile_definitions(pvt_libs
         PUBLIC

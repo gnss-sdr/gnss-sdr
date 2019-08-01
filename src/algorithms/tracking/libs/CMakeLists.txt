@@ -134,6 +134,12 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(tracking_libs
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(tracking_libs

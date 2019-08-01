@@ -69,12 +69,13 @@ endif()
 target_link_libraries(acquisition_gr_blocks
     PUBLIC
         algorithms_libs
+        acquisition_libs
+        channel_libs
+        core_system_parameters
+        Armadillo::armadillo
         Gnuradio::runtime
         Gnuradio::fft
         Volk::volk
-        channel_libs
-        acquisition_libs
-        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -89,6 +90,12 @@ target_include_directories(acquisition_gr_blocks
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
+
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
 
 if(OPENCL_FOUND)
     target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)

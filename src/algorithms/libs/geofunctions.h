@@ -32,6 +32,10 @@
 #ifndef GNSS_SDR_GEOFUNCTIONS_H
 #define GNSS_SDR_GEOFUNCTIONS_H
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include <armadillo>
 
 arma::mat Skew_symmetric(const arma::vec &a);  //!< Calculates skew-symmetric matrix

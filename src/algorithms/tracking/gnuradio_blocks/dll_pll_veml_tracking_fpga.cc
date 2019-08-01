@@ -49,14 +49,14 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
-#include <matio.h>                   // for Mat_VarCreate
-#include <pmt/pmt_sugar.h>           // for mp
+#include <gsl/gsl>
+#include <matio.h>          // for Mat_VarCreate
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
-#include <gsl/gsl>
-#include <iostream>  // for cout, cerr
+#include <iostream>   // for cout, cerr
 #include <map>
 #include <numeric>
 #include <vector>
@@ -1679,9 +1679,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                                     {
                                                         d_current_fpga_integration_period = d_fpga_integration_period;
                                                         d_current_extended_correlation_in_fpga = true;
-
-                                                        d_P_accu_old.real(d_P_accu_old.real() * d_fpga_integration_period);
-                                                        d_P_accu_old.imag(d_P_accu_old.imag() * d_fpga_integration_period);
 
                                                         if (d_sc_demodulate_enabled)
                                                             {

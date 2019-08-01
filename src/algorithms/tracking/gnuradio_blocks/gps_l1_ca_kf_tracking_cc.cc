@@ -45,12 +45,12 @@
 #include "tracking_discriminators.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <gsl/gsl>
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
 #include <cmath>
 #include <exception>
-#include <gsl/gsl>
 #include <iostream>
 #include <memory>
 #include <sstream>

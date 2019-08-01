@@ -49,6 +49,10 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "acq_conf.h"
 #include "channel_fsm.h"
 #include "gnss_synchro.h"

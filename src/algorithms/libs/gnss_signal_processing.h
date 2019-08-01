@@ -35,16 +35,9 @@
 #ifndef GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_
 
+#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
-
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
-
 
 /*!
  * \brief This function generates a complex exponential in _dest.

@@ -1644,19 +1644,55 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::map<int, Glonass_Gnav_Ephemeris>::const_iterator tmp_eph_iter_glo_gnav = d_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
                             std::map<int, Beidou_Dnav_Ephemeris>::const_iterator tmp_eph_iter_bds_dnav = d_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
 
-                            if (((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1C")) or
-                                ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2S")) or
-                                ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1B")) or
-                                ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "5X")) or
-                                ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1G")) or
-                                ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2G")) or
-                                ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "L5")) or
-                                ((tmp_eph_iter_bds_dnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "B1")) or
-                                ((tmp_eph_iter_bds_dnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "B3")))
+                            bool store_valid_observable = false;
+
+                            if (tmp_eph_iter_gps != d_pvt_solver->gps_ephemeris_map.cend())
+                                {
+                                    uint32_t prn_aux = tmp_eph_iter_gps->second.i_satellite_PRN;
+                                    if ((prn_aux == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1C"))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (tmp_eph_iter_gal != d_pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    uint32_t prn_aux = tmp_eph_iter_gal->second.i_satellite_PRN;
+                                    if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1B") or (std::string(in[i][epoch].Signal) == "5X")))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (tmp_eph_iter_cnav != d_pvt_solver->gps_cnav_ephemeris_map.cend())
+                                {
+                                    uint32_t prn_aux = tmp_eph_iter_cnav->second.i_satellite_PRN;
+                                    if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "2S") or (std::string(in[i][epoch].Signal) == "L5")))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (tmp_eph_iter_glo_gnav != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
+                                {
+                                    uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.i_satellite_PRN;
+                                    if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1G") or (std::string(in[i][epoch].Signal) == "2G")))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+                            if (tmp_eph_iter_bds_dnav != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                {
+                                    uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.i_satellite_PRN;
+                                    if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "B1") or (std::string(in[i][epoch].Signal) == "B3")))
+                                        {
+                                            store_valid_observable = true;
+                                        }
+                                }
+
+                            if (store_valid_observable)
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
                                 }
+
                             if (b_rtcm_enabled)
                                 {
                                     try

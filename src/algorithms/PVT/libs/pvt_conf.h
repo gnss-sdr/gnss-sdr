@@ -73,6 +73,8 @@ public:
     bool xml_output_enabled;
     bool rtcm_output_file_enabled;
 
+    int32_t max_obs_block_rx_clock_offset_ms;
+
     std::string output_path;
     std::string rinex_output_path;
     std::string gpx_output_path;

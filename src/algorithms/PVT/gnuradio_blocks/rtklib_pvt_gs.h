@@ -208,8 +208,11 @@ private:
     bool d_kml_output_enabled;
     bool d_nmea_output_file_enabled;
 
-    std::shared_ptr<Rtklib_Solver> d_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
 
+    int32_t max_obs_block_rx_clock_offset_ms;
+    bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     std::map<int, Gnss_Synchro> gnss_observables_map;
     std::map<int, Gnss_Synchro> gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> gnss_observables_map_t1;

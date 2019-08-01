@@ -93,8 +93,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     d_dump_filename = std::move(dump_filename);
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
-    T_rx_offset_ms = 0;
-    d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(500, d_nchannels_out);
+    d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -141,7 +140,6 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
                 }
         }
     T_rx_TOW_ms = 0U;
-    T_rx_remnant_to_20ms = 0;
     T_rx_step_ms = 20;  // read from config at the adapter GNSS-SDR.observable_interval_ms!!
     T_rx_TOW_set = false;
     T_status_report_timer_ms = 0;
@@ -197,16 +195,14 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                 {
                     double new_rx_clock_offset_s;
                     new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
-                    T_rx_offset_ms = new_rx_clock_offset_s * 1000.0;
-                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(T_rx_offset_ms));
-                    T_rx_remnant_to_20ms = (T_rx_TOW_ms % 20);
+                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
                     // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             d_gnss_synchro_history->clear(n);
                         }
 
-                    LOG(INFO) << "Corrected new RX Time offset: " << T_rx_offset_ms << "[ms]";
+                    LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
         }
     catch (boost::bad_any_cast &e)
@@ -489,8 +485,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                                 }
                         }
                 }
-            T_rx_TOW_ms = TOW_ref - (TOW_ref % 20);
-            T_rx_remnant_to_20ms = 0;
+            T_rx_TOW_ms = TOW_ref;
         }
     else
         {
@@ -509,7 +504,7 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
     // std::cout.precision(17);
     // std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
-    double current_T_rx_TOW_ms = (static_cast<double>(T_rx_TOW_ms - T_rx_remnant_to_20ms));
+    double current_T_rx_TOW_ms = static_cast<double>(T_rx_TOW_ms);
     double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
     for (it = data.begin(); it != data.end(); it++)
         {
@@ -582,9 +577,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
-
-                    uint32_t T_rx_remnant_to_20ms_samples = T_rx_remnant_to_20ms * in[d_nchannels_in - 1][0].fs / 1000;
-                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() - T_rx_remnant_to_20ms_samples))
+                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front()))
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();
@@ -666,7 +659,17 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             d_dump = false;
                         }
                 }
-            return 1;
+
+            if (n_valid > 0)
+                {
+                    //                    LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
+                    //                    old_time_debug = out[0][0].RX_time * 1000.0;
+                    return 1;
+                }
+            else
+                {
+                    return 0;
+                }
         }
     return 0;
 }

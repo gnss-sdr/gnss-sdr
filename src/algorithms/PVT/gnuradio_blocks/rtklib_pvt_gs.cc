@@ -131,7 +131,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // Send PVT status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
 
-
     mapStringValues_["1C"] = evGPS_1C;
     mapStringValues_["2S"] = evGPS_2S;
     mapStringValues_["L5"] = evGPS_L5;
@@ -146,7 +145,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     max_obs_block_rx_clock_offset_ms = conf_.max_obs_block_rx_clock_offset_ms;
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
-    d_report_rate_ms = 1000;  //report every second PVT to gnss_synchro
+    d_report_rate_ms = 1000;  // report every second PVT to gnss_synchro
     d_dump = conf_.dump;
     d_dump_mat = conf_.dump_mat and d_dump;
     d_dump_filename = conf_.dump_filename;
@@ -458,13 +457,13 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_local_time_str = std::string(" ") + time_zone_abrv + " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
         }
 
-    //user PVT solver
+    // user PVT solver
     d_user_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
     d_user_pvt_solver->set_averaging_depth(1);
 
-    //internal PVT solver, mainly used to estimate the receiver clock
+    // internal PVT solver, mainly used to estimate the receiver clock
     rtk_t internal_rtk = rtk;
-    internal_rtk.opt.mode = PMODE_SINGLE;  //use single positioning mode in internal PVT solver
+    internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
     d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, false, false, internal_rtk);
     d_internal_pvt_solver->set_averaging_depth(1);
 
@@ -1616,7 +1615,7 @@ bool rtklib_pvt_gs::load_gnss_synchro_map_xml(const std::string& file_name)
             boost::archive::xml_iarchive xml(ifs);
             gnss_observables_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
-            //std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
+            // std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
         }
     catch (const std::exception& e)
         {
@@ -1668,12 +1667,12 @@ bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
 void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
     double rx_clock_offset_s)
 {
-    //apply corrections according to Rinex 3.04, Table 1: Observation Corrections for Receiver Clock Offset
+    // apply corrections according to Rinex 3.04, Table 1: Observation Corrections for Receiver Clock Offset
     std::map<int, Gnss_Synchro>::iterator observables_iter;
 
     for (observables_iter = observables_map.begin(); observables_iter != observables_map.end(); observables_iter++)
         {
-            //all observables in the map are valid
+            // all observables in the map are valid
             observables_iter->second.RX_time -= rx_clock_offset_s;
             observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT;
 
@@ -1718,12 +1717,13 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
         }
 }
 
+
 std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(std::map<int, Gnss_Synchro>& observables_map_t0,
     std::map<int, Gnss_Synchro>& observables_map_t1,
     double rx_time_s)
 {
     std::map<int, Gnss_Synchro> interp_observables_map;
-    //Linear interpolation: y(t) = y(t0) + (y(t1) - y(t0)) * (t - t0) / (t1 - t0)
+    // Linear interpolation: y(t) = y(t0) + (y(t1) - y(t0)) * (t - t0) / (t1 - t0)
 
     // check TOW rollover
     double time_factor;
@@ -1742,18 +1742,17 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(std::map<int,
                               observables_map_t0.cbegin()->second.RX_time);
         }
 
-
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
     for (observables_iter = observables_map_t0.cbegin(); observables_iter != observables_map_t0.cend(); observables_iter++)
         {
-            //1. Check if the observable exist in t0 and t1
-            //the map key is the channel ID (see work())
+            // 1. Check if the observable exist in t0 and t1
+            // the map key is the channel ID (see work())
             try
                 {
                     if (observables_map_t1.at(observables_iter->first).PRN == observables_iter->second.PRN)
                         {
                             interp_observables_map.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
-                            interp_observables_map.at(observables_iter->first).RX_time = rx_time_s;  //interpolation point
+                            interp_observables_map.at(observables_iter->first).RX_time = rx_time_s;  // interpolation point
                             interp_observables_map.at(observables_iter->first).Pseudorange_m += (observables_map_t1.at(observables_iter->first).Pseudorange_m - observables_iter->second.Pseudorange_m) * time_factor;
                             interp_observables_map.at(observables_iter->first).Carrier_phase_rads += (observables_map_t1.at(observables_iter->first).Carrier_phase_rads - observables_iter->second.Carrier_phase_rads) * time_factor;
                             interp_observables_map.at(observables_iter->first).Carrier_Doppler_hz += (observables_map_t1.at(observables_iter->first).Carrier_Doppler_hz - observables_iter->second.Carrier_Doppler_hz) * time_factor;
@@ -1761,11 +1760,12 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(std::map<int,
                 }
             catch (const std::out_of_range& oor)
                 {
-                    //observable does not exist in t1
+                    // observable does not exist in t1
                 }
         }
     return interp_observables_map;
 }
+
 
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
@@ -1795,7 +1795,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             bool store_valid_observable = false;
 
-                            if (tmp_eph_iter_gps != d_pvt_solver->gps_ephemeris_map.cend())
+                            if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
                                     uint32_t prn_aux = tmp_eph_iter_gps->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1C"))
@@ -1803,7 +1803,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_gal != d_pvt_solver->galileo_ephemeris_map.cend())
+                            if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
                                 {
                                     uint32_t prn_aux = tmp_eph_iter_gal->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1B") or (std::string(in[i][epoch].Signal) == "5X")))
@@ -1811,7 +1811,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_cnav != d_pvt_solver->gps_cnav_ephemeris_map.cend())
+                            if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     uint32_t prn_aux = tmp_eph_iter_cnav->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "2S") or (std::string(in[i][epoch].Signal) == "L5")))
@@ -1819,7 +1819,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_glo_gnav != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
+                            if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
                                     uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1G") or (std::string(in[i][epoch].Signal) == "2G")))
@@ -1827,7 +1827,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_bds_dnav != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                            if (tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                 {
                                     uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "B1") or (std::string(in[i][epoch].Signal) == "B3")))
@@ -1892,8 +1892,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             // ############ 2 COMPUTE THE PVT ################################
             if (gnss_observables_map.empty() == false)
                 {
-                    //LOG(INFO) << "diff raw obs time: " << gnss_observables_map.cbegin()->second.RX_time * 1000.0 - old_time_debug;
-                    //old_time_debug = gnss_observables_map.cbegin()->second.RX_time * 1000.0;
+                    // LOG(INFO) << "diff raw obs time: " << gnss_observables_map.cbegin()->second.RX_time * 1000.0 - old_time_debug;
+                    // old_time_debug = gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
                     // #### solve PVT and store the corrected observable set
                     if (d_internal_pvt_solver->get_PVT(gnss_observables_map, false))
@@ -1915,7 +1915,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     apply_rx_clock_offset(gnss_observables_map, Rx_clock_offset_s);
                                     gnss_observables_map_t1 = gnss_observables_map;
 
-                                    //### select the rx_time and interpolate observables at that time
+                                    // ### select the rx_time and interpolate observables at that time
                                     if (!gnss_observables_map_t0.empty())
                                         {
                                             uint32_t t0_int_ms = static_cast<uint32_t>(gnss_observables_map_t0.cbegin()->second.RX_time * 1000.0);
@@ -1925,25 +1925,25 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (current_RX_time_ms % d_output_rate_ms == 0)
                                                 {
                                                     d_rx_time = static_cast<double>(current_RX_time_ms) / 1000.0;
-                                                    //                                            std::cout << " obs time t0: " << gnss_observables_map_t0.cbegin()->second.RX_time
-                                                    //                                                      << " t1: " << gnss_observables_map_t1.cbegin()->second.RX_time
-                                                    //                                                      << " interp time: " << d_rx_time << std::endl;
+                                                    // std::cout << " obs time t0: " << gnss_observables_map_t0.cbegin()->second.RX_time
+                                                    //           << " t1: " << gnss_observables_map_t1.cbegin()->second.RX_time
+                                                    //           << " interp time: " << d_rx_time << std::endl;
                                                     gnss_observables_map = interpolate_observables(gnss_observables_map_t0,
                                                         gnss_observables_map_t1,
                                                         d_rx_time);
                                                     flag_compute_pvt_output = true;
-                                                    //d_rx_time = current_RX_time;
+                                                    // d_rx_time = current_RX_time;
                                                     // std::cout.precision(17);
                                                     // std::cout << "current_RX_time: " << current_RX_time << " map time: " << gnss_observables_map.begin()->second.RX_time << std::endl;
                                                 }
                                         }
                                 }
                         }
-                    //debug code
-                    //                    else
-                    //                        {
-                    //                            LOG(INFO) << "Internal PVT solver error";
-                    //                        }
+                    // debug code
+                    // else
+                    //     {
+                    //         LOG(INFO) << "Internal PVT solver error";
+                    //     }
 
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
@@ -1951,7 +1951,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (d_user_pvt_solver->get_PVT(gnss_observables_map, false))
                                 {
                                     double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
-                                    if (fabs(Rx_clock_offset_s) > 0.000001)  //1us !!
+                                    if (fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
                                         {
                                             LOG(INFO) << "Warning: Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[ms]"
                                                       << " at RX time: " << static_cast<uint32_t>(d_rx_time * 1000.0) << " [ms]";
@@ -1960,11 +1960,11 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             DLOG(INFO) << "Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[s]"
                                                        << " at RX time: " << static_cast<uint32_t>(d_rx_time * 1000.0) << " [ms]";
-                                            //Optional debug code: export observables snapshot for rtklib unit testing
-                                            //std::cout << "step 1: save gnss_synchro map" << std::endl;
-                                            //save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
-                                            //getchar(); //stop the execution
-                                            //end debug
+                                            // Optional debug code: export observables snapshot for rtklib unit testing
+                                            // std::cout << "step 1: save gnss_synchro map" << std::endl;
+                                            // save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
+                                            // getchar(); // stop the execution
+                                            // end debug
                                             if (d_display_rate_ms != 0)
                                                 {
                                                     if (current_RX_time_ms % d_display_rate_ms == 0)
@@ -2416,8 +2416,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if ((gps_ephemeris_iter != d_user_pvt_solver->gps_ephemeris_map.cend()) and (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend()))
                                                                         {
                                                                             std::string bds_signal("B1");
-                                                                            //rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, bds_signal);
-                                                                            //rp->rinex_nav_header(rp->navMixFile, d_user_pvt_solver->gps_iono, d_user_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, bds_signal);
+                                                                            // rp->rinex_nav_header(rp->navMixFile, d_user_pvt_solver->gps_iono, d_user_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2427,8 +2427,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                             std::string bds_signal("B1");
                                                                             std::string gal_signal("1B");
-                                                                            //rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, gal_signal, bds_signal);
-                                                                            //rp->rinex_nav_header(rp->navMixFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, d_rx_time, gal_signal, bds_signal);
+                                                                            // rp->rinex_nav_header(rp->navMixFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2436,9 +2436,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 503:  // BeiDou B1I + GLONASS L1 C/A
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                            //rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            // rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2446,9 +2446,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 504:  // BeiDou B1I + GPS L1 C/A + Galileo E1B
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                            //rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            // rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2456,9 +2456,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 505:  // BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                            //rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            // rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2466,9 +2466,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 506:  // BeiDou B1I + Beidou B3I
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            //rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                            //rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                            // rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2486,7 +2486,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2495,7 +2495,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -2504,7 +2504,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                            //rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            // rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
 
@@ -3957,7 +3957,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_user_pvt_solver->get_monitor_pvt());
 
-                            //publish new position to the gnss_flowgraph channel status monitor
+                            // publish new position to the gnss_flowgraph channel status monitor
                             if (current_RX_time_ms % d_report_rate_ms == 0)
                                 {
                                     this->message_port_pub(pmt::mp("status"), pmt::make_any(monitor_pvt));

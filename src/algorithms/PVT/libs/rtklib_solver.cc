@@ -3,8 +3,8 @@
  * \brief PVT solver based on rtklib library functions adapted to the GNSS-SDR
  *  data flow and structures
  * \authors <ul>
- *          <li> 2017, Javier Arribas
- *          <li> 2017, Carles Fernandez
+ *          <li> 2017-2019, Javier Arribas
+ *          <li> 2017-2019, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
  *          </ul>
  *

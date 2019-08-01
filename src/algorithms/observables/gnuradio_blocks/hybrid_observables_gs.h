@@ -91,7 +91,6 @@ private:
     uint32_t T_status_report_timer_ms;
     uint32_t d_nchannels_in;
     uint32_t d_nchannels_out;
-    //double T_rx_offset_ms;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     boost::circular_buffer<uint64_t> d_Rx_clock_buffer;                         // time history

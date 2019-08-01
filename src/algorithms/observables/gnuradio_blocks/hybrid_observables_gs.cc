@@ -436,8 +436,6 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             //           << d_gnss_synchro_history->at(ch, t2_idx).RX_time - d_gnss_synchro_history->at(ch, t1_idx).RX_time
                             //           << " trx - t1: "
                             //           << T_rx_s - d_gnss_synchro_history->at(ch, t1_idx).RX_time;
-
-                            //
                             // std::cout << "Rx samplestamp: " << T_rx_s << " Channel " << ch << " interp buff idx " << nearest_element
                             //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->at(ch, nearest_element).fs) << " s)\n";
                             return true;
@@ -504,7 +502,7 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
     // std::cout.precision(17);
     // std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
-    double current_T_rx_TOW_ms = static_cast<double>(T_rx_TOW_ms);
+    auto current_T_rx_TOW_ms = static_cast<double>(T_rx_TOW_ms);
     double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
     for (it = data.begin(); it != data.end(); it++)
         {
@@ -662,8 +660,8 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
 
             if (n_valid > 0)
                 {
-                    //                    LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
-                    //                    old_time_debug = out[0][0].RX_time * 1000.0;
+                    // LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
+                    // old_time_debug = out[0][0].RX_time * 1000.0;
                     return 1;
                 }
             else

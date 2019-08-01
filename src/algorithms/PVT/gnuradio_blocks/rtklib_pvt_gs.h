@@ -139,7 +139,6 @@ private:
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
-
     enum StringValue
     {
         evGPS_1C,
@@ -154,6 +153,7 @@ private:
         evBDS_B2,
         evBDS_B3
     };
+
     std::map<std::string, StringValue> mapStringValues_;
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,

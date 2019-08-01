@@ -69,6 +69,7 @@ public:
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
 
 private:
+    int count_valid_position;
     bool d_flag_dump_enabled;
     std::string d_dump_filename;
     std::ofstream d_dump_file;

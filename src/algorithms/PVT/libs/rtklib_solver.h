@@ -128,14 +128,15 @@ public:
 
 private:
     rtk_t rtk_{};
+    Monitor_Pvt monitor_pvt{};
+    std::array<obsd_t, MAXOBS> obs_data{};
+    std::array<double, 4> dop_{};
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    bool save_matfile();
+    int d_nchannels;  // Number of available channels for positioning
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
-    int d_nchannels;  // Number of available channels for positioning
-    std::array<double, 4> dop_{};
-    Monitor_Pvt monitor_pvt{};
+    bool save_matfile();
 };
 
 #endif

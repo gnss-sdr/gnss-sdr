@@ -442,7 +442,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    std::array<obsd_t, MAXOBS> obs_data{};
+    obs_data.fill({});
     std::vector<eph_t> eph_data(MAXOBS);
     std::vector<geph_t> geph_data(MAXOBS);
 

@@ -69,10 +69,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.dump_mat = configuration->property(role + ".dump_mat", true);
 
     // output rate
-    pvt_output_parameters.output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
+    pvt_output_parameters.output_rate_ms = bc::lcm(20, configuration->property(role + ".output_rate_ms", 500));
 
     // display rate
-    pvt_output_parameters.display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
+    pvt_output_parameters.display_rate_ms = bc::lcm(pvt_output_parameters.output_rate_ms, configuration->property(role + ".display_rate_ms", 500));
 
     // NMEA Printer settings
     pvt_output_parameters.flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);

@@ -3,8 +3,8 @@
  * \brief PVT solver based on rtklib library functions adapted to the GNSS-SDR
  *  data flow and structures
  * \authors <ul>
- *          <li> 2017, Javier Arribas
- *          <li> 2017, Carles Fernandez
+ *          <li> 2017-2019, Javier Arribas
+ *          <li> 2017-2019, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
  *          </ul>
  *
@@ -94,7 +94,6 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag
     d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
-    count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
 
@@ -443,7 +442,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    std::array<obsd_t, MAXOBS> obs_data{};
+    obs_data.fill({});
     std::vector<eph_t> eph_data(MAXOBS);
     std::vector<geph_t> geph_data(MAXOBS);
 

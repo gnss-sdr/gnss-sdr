@@ -1680,9 +1680,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                                         d_current_fpga_integration_period = d_fpga_integration_period;
                                                         d_current_extended_correlation_in_fpga = true;
 
-                                                        d_P_accu_old.real(d_P_accu_old.real() * d_fpga_integration_period);
-                                                        d_P_accu_old.imag(d_P_accu_old.imag() * d_fpga_integration_period);
-
                                                         if (d_sc_demodulate_enabled)
                                                             {
                                                                 multicorrelator_fpga->enable_secondary_codes();

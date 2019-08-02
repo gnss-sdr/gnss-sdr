@@ -2,7 +2,7 @@
 
 ### Improvements in Accuracy
 
-- Local clock correction based on PVT solution (error kept below 1 ms).
+- Local clock correction based on PVT solution, allowing the delivery of continuous observables.
 - Fix a bug in broadcast ionospheric parameters usage.
 
 

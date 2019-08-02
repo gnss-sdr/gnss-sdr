@@ -109,7 +109,7 @@ if(ENABLE_FLEXIBAND)
     target_compile_definitions(core_receiver PRIVATE -DFLEXIBAND_DRIVER=1)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     message(STATUS "Adding processing blocks implemented using OpenCL")
     target_link_libraries(core_receiver PUBLIC algorithms_libs OpenCL::OpenCL)
     target_compile_definitions(core_receiver PRIVATE -DOPENCL_BLOCKS=1)

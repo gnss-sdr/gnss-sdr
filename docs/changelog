@@ -1,4 +1,6 @@
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [0.0.11](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.11)
+
+This release has several improvements in different dimensions, addition of new features and bug fixes:
 
 ### Improvements in Accuracy
 
@@ -21,7 +23,7 @@
 - Tracking loops now perform bit synchronization, simplifying the decoding process in Telemetry blocks and FPGA-offloading.
 - Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average per channel).
 - Shortened Acquisition to Tracking transition time.
-- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-value-param, readability-string-compare.
+- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-for-range-copy, performance-implicit-conversion-in-loop, performance-inefficient-algorithm, performance-inefficient-string-concatenation, performance-inefficient-vector-operation, performance-move-const-arg, performance-move-constructor-init, performance-noexcept-move-constructor, performance-type-promotion-in-math-fn, performance-unnecessary-copy-initialization, performance-unnecessary-value-param, readability-string-compare.
 
 
 ### Improvements in Flexibility:
@@ -70,7 +72,7 @@
 ### Improvements in Reliability
 
 - Included the Guidelines Support Library. General improvement of memory management, replacement of raw pointers by containers or smart pointers.
-- Applied clang-tidy checks and fixes related to High Integrity C++: performance-move-const-arg, modernize-use-auto, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr, cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp, cert-err60-cpp.
+- Applied clang-tidy checks and fixes related to High Integrity C++: performance-move-const-arg, modernize-use-auto, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr, cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp, cert-err60-cpp, hicpp-exception-baseclass, hicpp-explicit-conversions.
 - Fixed a number of defects detected by Coverity Scan (version June 2019).
 
 

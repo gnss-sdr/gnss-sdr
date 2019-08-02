@@ -111,7 +111,7 @@ target_link_libraries(algorithms_libs
         Glog::glog
 )
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     target_link_libraries(algorithms_libs PUBLIC OpenCL::OpenCL)
     target_include_directories(algorithms_libs PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/opencl

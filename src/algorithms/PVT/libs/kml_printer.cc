@@ -41,7 +41,7 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
-#include <sys/types.h>  //for mode_t
+#include <sys/types.h>  // for mode_t
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>

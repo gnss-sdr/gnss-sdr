@@ -193,7 +193,7 @@ sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::Symbol_Aligner_And_Dec
     std::array<int32_t, nn> g_encoder{121, 91};
 
     d_vd1 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
-    d_vd1 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
+    d_vd2 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
     d_past_symbol = 0;
 }
 

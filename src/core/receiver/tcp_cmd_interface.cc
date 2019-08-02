@@ -92,7 +92,7 @@ std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine _
     std::string response;
     if (control_queue_ != nullptr)
         {
-            command_event_sptr new_evnt = command_event_make(200, 1);  //send the restart message (who=200,what=1)
+            command_event_sptr new_evnt = command_event_make(200, 1);  // send the restart message (who=200,what=1)
             control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
@@ -109,7 +109,7 @@ std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine
     std::string response;
     if (control_queue_ != nullptr)
         {
-            command_event_sptr new_evnt = command_event_make(300, 10);  //send the standby message (who=300,what=10)
+            command_event_sptr new_evnt = command_event_make(300, 10);  // send the standby message (who=300,what=10)
             control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
@@ -200,7 +200,7 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
                 {
                     if (control_queue_ != nullptr)
                         {
-                            command_event_sptr new_evnt = command_event_make(300, 12);  //send the standby message (who=300,what=12)
+                            command_event_sptr new_evnt = command_event_make(300, 12);  // send the standby message (who=300,what=12)
                             control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }

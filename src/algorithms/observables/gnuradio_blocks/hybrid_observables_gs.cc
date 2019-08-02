@@ -45,6 +45,7 @@
 #include <iostream>   // for cerr, cout
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
+#include <vector>     // for vector
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>
@@ -92,8 +93,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     d_dump_filename = std::move(dump_filename);
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
-    T_rx_offset_ms = 0;
-    d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(500, d_nchannels_out);
+    d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -140,8 +140,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
                 }
         }
     T_rx_TOW_ms = 0U;
-    T_rx_remnant_to_20ms = 0;
-    T_rx_step_ms = 20;  //read from config at the adapter GNSS-SDR.observable_interval_ms!!
+    T_rx_step_ms = 20;  // read from config at the adapter GNSS-SDR.observable_interval_ms!!
     T_rx_TOW_set = false;
     T_status_report_timer_ms = 0;
     // rework
@@ -196,16 +195,14 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                 {
                     double new_rx_clock_offset_s;
                     new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
-                    T_rx_offset_ms = new_rx_clock_offset_s * 1000.0;
-                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(T_rx_offset_ms));
-                    T_rx_remnant_to_20ms = (T_rx_TOW_ms % 20);
-                    //d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
+                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
+                    // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             d_gnss_synchro_history->clear(n);
                         }
 
-                    LOG(INFO) << "Corrected new RX Time offset: " << T_rx_offset_ms << "[ms]";
+                    LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
         }
     catch (boost::bad_any_cast &e)
@@ -439,8 +436,6 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             //           << d_gnss_synchro_history->at(ch, t2_idx).RX_time - d_gnss_synchro_history->at(ch, t1_idx).RX_time
                             //           << " trx - t1: "
                             //           << T_rx_s - d_gnss_synchro_history->at(ch, t1_idx).RX_time;
-
-                            //
                             // std::cout << "Rx samplestamp: " << T_rx_s << " Channel " << ch << " interp buff idx " << nearest_element
                             //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->at(ch, nearest_element).fs) << " s)\n";
                             return true;
@@ -475,7 +470,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
     std::vector<Gnss_Synchro>::const_iterator it;
     if (!T_rx_TOW_set)
         {
-            //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
+            // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
@@ -488,8 +483,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                                 }
                         }
                 }
-            T_rx_TOW_ms = TOW_ref - (TOW_ref % 20);
-            T_rx_remnant_to_20ms = 0;
+            T_rx_TOW_ms = TOW_ref;
         }
     else
         {
@@ -508,7 +502,7 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
     // std::cout.precision(17);
     // std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
-    double current_T_rx_TOW_ms = (static_cast<double>(T_rx_TOW_ms - T_rx_remnant_to_20ms));
+    auto current_T_rx_TOW_ms = static_cast<double>(T_rx_TOW_ms);
     double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
     for (it = data.begin(); it != data.end(); it++)
         {
@@ -581,9 +575,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
-
-                    uint32_t T_rx_remnant_to_20ms_samples = T_rx_remnant_to_20ms * in[d_nchannels_in - 1][0].fs / 1000;
-                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() - T_rx_remnant_to_20ms_samples))
+                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front()))
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();
@@ -622,14 +614,14 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     out[n][0] = epoch_data.at(n);
                 }
 
-            //report channel status every second
+            // report channel status every second
             T_status_report_timer_ms += T_rx_step_ms;
             if (T_status_report_timer_ms >= 1000)
                 {
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
                             std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data.at(n));
-                            //publish valid gnss_synchro to the gnss_flowgraph channel status monitor
+                            // publish valid gnss_synchro to the gnss_flowgraph channel status monitor
                             this->message_port_pub(pmt::mp("status"), pmt::make_any(gnss_synchro_sptr));
                         }
                     T_status_report_timer_ms = 0;
@@ -665,7 +657,17 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             d_dump = false;
                         }
                 }
-            return 1;
+
+            if (n_valid > 0)
+                {
+                    // LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
+                    // old_time_debug = out[0][0].RX_time * 1000.0;
+                    return 1;
+                }
+            else
+                {
+                    return 0;
+                }
         }
     return 0;
 }

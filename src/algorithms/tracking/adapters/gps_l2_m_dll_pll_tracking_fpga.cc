@@ -56,7 +56,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 {
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -119,7 +119,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 
     auto* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    //################# PRE-COMPUTE ALL THE CODES #################
+    // ################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
@@ -136,7 +136,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.code_length_chips = GPS_L2_M_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
-    //################# MAKE TRACKING GNU Radio object ###################
+    // ################# MAKE TRACKING GNU Radio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
 
     channel_ = 0;

@@ -40,6 +40,7 @@ Pvt_Conf::Pvt_Conf()
     geojson_rate_ms = 1000;
     nmea_rate_ms = 1000;
 
+    max_obs_block_rx_clock_offset_ms = 40;
     rinex_version = 0;
     rinexobs_rate_ms = 0;
 

@@ -57,15 +57,15 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
-#include <matio.h>                   // for Mat_VarCreate
-#include <pmt/pmt_sugar.h>           // for mp
+#include <gsl/gsl>
+#include <matio.h>          // for Mat_VarCreate
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
 #include <array>
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
-#include <gsl/gsl>
-#include <iostream>  // for cout, cerr
+#include <iostream>   // for cout, cerr
 #include <map>
 #include <numeric>
 
@@ -92,7 +92,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     trk_parameters = conf_;
     // Telemetry bit synchronization message port input
@@ -326,7 +326,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_symbols_per_bit = 0;
                 }
         }
-
     else
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
@@ -545,7 +544,7 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
-                            d_carrier_lock_fail_counter = 200000;  //force loss-of-lock condition
+                            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
                         }
                 }
         }
@@ -1049,7 +1048,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
     d_current_prn_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));  // round to a discrete number of samples
 
-    //################### PLL COMMANDS #################################################
+    // ################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
@@ -1083,7 +1082,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // std::cout << fmod(b, PI_2) / fmod(a, PI_2) << std::endl;
     d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
 
-    //################### DLL COMMANDS #################################################
+    // ################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
     if (trk_parameters.high_dyn)
@@ -1537,8 +1536,6 @@ void dll_pll_veml_tracking::set_channel(uint32_t channel)
                 {
                     try
                         {
-                            //trk_parameters.dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            //trk_parameters.dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(dump_filename_.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << dump_filename_.c_str();
@@ -1637,10 +1634,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_P_accu = *d_Prompt;
                 d_L_accu = *d_Late;
 
-                //fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
+                // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                 if (trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
                     {
-                        d_carrier_lock_fail_counter = 300000;  //force loss-of-lock condition
+                        d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
                         LOG(INFO) << systemName << " " << signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                     }
@@ -1678,9 +1675,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                     }
                                             }
                                     }
-                                else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
+                                else if (d_symbols_per_bit > 1)  // Signal does not have secondary code. Search a bit transition by sign change
                                     {
-                                        //******* preamble correlation ********
+                                        // ******* preamble correlation ********
                                         d_Prompt_circular_buffer.push_back(*d_Prompt);
                                         if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                             {
@@ -1701,7 +1698,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             }
                         else
                             {
-                                next_state = false;  //keep in state 2 during pull-in transitory
+                                next_state = false;  // keep in state 2 during pull-in transitory
                             }
                         if (next_state)
                             {  // reset extended correlator

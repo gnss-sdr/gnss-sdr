@@ -121,7 +121,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     int rtcm_MT1077_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
     int rtcm_MT1087_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
     int rtcm_MT1097_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
-    //std::map<int, int> rtcm_msg_rate_ms;
+
     pvt_output_parameters.rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     pvt_output_parameters.rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;
     pvt_output_parameters.rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
@@ -409,7 +409,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
 
     if (positioning_mode == -1)
         {
-            //warn user and set the default
+            // warn user and set the default
             std::cout << "WARNING: Bad specification of positioning mode." << std::endl;
             std::cout << "positioning_mode possible values: Single / Static / Kinematic / PPP_Static / PPP_Kinematic" << std::endl;
             std::cout << "positioning_mode specified value: " << positioning_mode_str << std::endl;
@@ -439,14 +439,14 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if ((number_of_frequencies < 1) || (number_of_frequencies > 3))
         {
-            //warn user and set the default
+            // warn user and set the default
             number_of_frequencies = num_bands;
         }
 
     double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
     if ((elevation_mask < 0.0) || (elevation_mask > 90.0))
         {
-            //warn user and set the default
+            // warn user and set the default
             LOG(WARNING) << "Erroneous Elevation Mask. Setting to default value of 15.0 degrees";
             elevation_mask = 15.0;
         }
@@ -454,7 +454,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     int dynamics_model = configuration->property(role + ".dynamics_model", 0); /*  dynamics model (0:none, 1:velocity, 2:accel) */
     if ((dynamics_model < 0) || (dynamics_model > 2))
         {
-            //warn user and set the default
+            // warn user and set the default
             LOG(WARNING) << "Erroneous Dynamics Model configuration. Setting to default value of (0:none)";
             dynamics_model = 0;
         }
@@ -488,7 +488,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
         }
     if (iono_model == -1)
         {
-            //warn user and set the default
+            // warn user and set the default
             std::cout << "WARNING: Bad specification of ionospheric model." << std::endl;
             std::cout << "iono_model possible values: OFF / Broadcast / SBAS / Iono-Free-LC / Estimate_STEC / IONEX" << std::endl;
             std::cout << "iono_model specified value: " << iono_model_str << std::endl;
@@ -521,7 +521,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
         }
     if (trop_model == -1)
         {
-            //warn user and set the default
+            // warn user and set the default
             std::cout << "WARNING: Bad specification of tropospheric model." << std::endl;
             std::cout << "trop_model possible values: OFF / Saastamoinen / SBAS / Estimate_ZTD / Estimate_ZTD_Grad" << std::endl;
             std::cout << "trop_model specified value: " << trop_model_str << std::endl;
@@ -568,7 +568,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     int navigation_system = configuration->property(role + ".navigation_system", nsys); /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if ((navigation_system < 1) || (navigation_system > 255))                           /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */
         {
-            //warn user and set the default
+            // warn user and set the default
             LOG(WARNING) << "Erroneous Navigation System. Setting to default value of (0:none)";
             navigation_system = nsys;
         }
@@ -599,7 +599,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
         }
     if (integer_ambiguity_resolution_gps == -1)
         {
-            //warn user and set the default
+            // warn user and set the default
             std::cout << "WARNING: Bad specification of GPS ambiguity resolution method." << std::endl;
             std::cout << "AR_GPS possible values: OFF / Continuous / Instantaneous / Fix-and-Hold / PPP-AR" << std::endl;
             std::cout << "AR_GPS specified value: " << integer_ambiguity_resolution_gps_str << std::endl;
@@ -610,7 +610,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     int integer_ambiguity_resolution_glo = configuration->property(role + ".AR_GLO", 1); /* Integer Ambiguity Resolution mode for GLONASS (0:off,1:on,2:auto cal,3:ext cal) */
     if ((integer_ambiguity_resolution_glo < 0) || (integer_ambiguity_resolution_glo > 3))
         {
-            //warn user and set the default
+            // warn user and set the default
             LOG(WARNING) << "Erroneous Integer Ambiguity Resolution for GLONASS . Setting to default value of (1:on)";
             integer_ambiguity_resolution_glo = 1;
         }
@@ -618,7 +618,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     int integer_ambiguity_resolution_bds = configuration->property(role + ".AR_DBS", 1); /* Integer Ambiguity Resolution mode for BEIDOU (0:off,1:on) */
     if ((integer_ambiguity_resolution_bds < 0) || (integer_ambiguity_resolution_bds > 1))
         {
-            //warn user and set the default
+            // warn user and set the default
             LOG(WARNING) << "Erroneous Integer Ambiguity Resolution for BEIDOU . Setting to default value of (1:on)";
             integer_ambiguity_resolution_bds = 1;
         }
@@ -644,7 +644,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
                                                                                          If the baseline length is very short like 1 m, the iteration may be effective to handle
                                                                                          the nonlinearity of measurement equation. */
 
-    /// Statistics
+    // Statistics
     double bias_0 = configuration->property(role + ".bias_0", 30.0);
 
     double iono_0 = configuration->property(role + ".iono_0", 0.03);

@@ -33,16 +33,9 @@
 #ifndef GNSS_SDR_GPS_L2C_SIGNAL_H_
 #define GNSS_SDR_GPS_L2C_SIGNAL_H_
 
+#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
-
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
-
 
 //! Generates complex GPS L2C M code for the desired SV ID
 void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn);

@@ -236,6 +236,8 @@ void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz)
 {
     acq_->set_doppler_center(static_cast<int>(Carrier_Doppler_hz));
 }
+
+
 void Channel::start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);

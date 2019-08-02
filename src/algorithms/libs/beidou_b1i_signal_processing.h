@@ -33,16 +33,9 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
 
+#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
-
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
-
 
 //! Generates int32_t GPS L1 C/A code for the desired SV ID and code shift
 void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift);

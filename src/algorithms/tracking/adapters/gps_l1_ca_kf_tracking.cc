@@ -50,7 +50,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int order;
     int fs_in;
     int vector_length;
@@ -89,7 +89,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     bce_nu = configuration->property(role + ".bce_nu", 0);
     bce_kappa = configuration->property(role + ".bce_kappa", 0);
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -115,6 +115,16 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
         }
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
+    if (in_streams_ == 0)
+        {
+            in_streams_ = 1;
+            // Avoid compiler warning
+        }
+    if (out_streams_ == 0)
+        {
+            out_streams_ = 1;
+            // Avoid compiler warning
+        }
 }
 
 
@@ -150,7 +160,7 @@ void GpsL1CaKfTracking::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -159,7 +169,7 @@ void GpsL1CaKfTracking::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

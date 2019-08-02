@@ -214,19 +214,19 @@ void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
     const int32_t _codeFreqBasis = 10230000;  // Hz
     const int32_t _codeLength = 10230;
 
-    //--- Find number of samples per spreading code ----------------------------
+    // --- Find number of samples per spreading code ---------------------------
     _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
-    //--- Find time constants --------------------------------------------------
+    // --- Find time constants -------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
     beidou_b3i_code_gen_complex(_code, _prn, _chip_shift);  // generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
-            //=== Digitizing =======================================================
+            // === Digitizing ==================================================
 
-            //--- Make index array to read C/A code values -------------------------
+            // --- Make index array to read C/A code values --------------------
             // The length of the index array depends on the sampling frequency -
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
@@ -234,12 +234,12 @@ void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
             aux = (_ts * (i + 1)) / _tc;
             _codeValueIndex = auxCeil(aux) - 1;
 
-            //--- Make the digitized version of the C/A code -----------------------
+            // --- Make the digitized version of the C/A code ------------------
             // The "upsampled" code is made by selecting values form the CA code
             // chip array (caCode) for the time instances of each sample.
             if (i == _samplesPerCode - 1)
                 {
-                    //--- Correct the last index (due to number rounding issues) -----------
+                    // --- Correct the last index (due to number rounding issues) -----------
                     _dest[i] = _code[_codeLength - 1];
                 }
             else

@@ -67,7 +67,7 @@ set(GNSS_SPLIBS_HEADERS
     geofunctions.h
 )
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
         opencl/fft_execute.cc # Needs OpenCL
         opencl/fft_setup.cc # Needs OpenCL

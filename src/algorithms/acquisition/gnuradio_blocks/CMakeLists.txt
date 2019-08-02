@@ -44,7 +44,7 @@ if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
 endif()
@@ -97,7 +97,7 @@ if(CMAKE_BUILD_TYPE MATCHES Rel)
     )
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
     target_include_directories(acquisition_gr_blocks
         PUBLIC

@@ -32,7 +32,6 @@
 
 #include "gen_signal_source.h"
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>

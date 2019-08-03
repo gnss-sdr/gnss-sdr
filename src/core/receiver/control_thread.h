@@ -40,7 +40,6 @@
 #include "concurrent_queue.h"      // for Concurrent_Queue
 #include "gnss_sdr_supl_client.h"  // for Gnss_Sdr_Supl_Client
 #include "tcp_cmd_interface.h"     // for TcpCmdInterface
-#include <boost/thread.hpp>        // for boost::thread
 #include <pmt/pmt.h>
 #include <array>    // for array
 #include <ctime>    // for time_t (gmtime, strftime in implementation)
@@ -49,6 +48,11 @@
 #include <thread>   // for std::thread
 #include <utility>  // for pair
 #include <vector>   // for vector
+
+#ifdef ENABLE_FPGA
+#include <boost/thread.hpp>  // for boost::thread
+#endif
+
 
 class ConfigurationInterface;
 class GNSSFlowgraph;
@@ -173,8 +177,6 @@ private:
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
 
-    boost::thread fpga_helper_thread_;
-
     std::thread keyboard_thread_;
     std::thread sysv_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;
@@ -201,6 +203,10 @@ private:
 
     Agnss_Ref_Location agnss_ref_location_;
     Agnss_Ref_Time agnss_ref_time_;
+
+#ifdef ENABLE_FPGA
+    boost::thread fpga_helper_thread_;
+#endif
 };
 
-#endif /*GNSS_SDR_CONTROL_THREAD_H_*/
+#endif /* GNSS_SDR_CONTROL_THREAD_H_ */

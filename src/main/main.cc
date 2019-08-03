@@ -43,7 +43,7 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "gps_acq_assist.h"
-#include <boost/exception/diagnostic_information.hpp>  // for diagnostic_informatio
+#include <boost/exception/diagnostic_information.hpp>  // for diagnostic_information
 #include <boost/exception/exception.hpp>               // for exception
 #include <boost/thread/exceptions.hpp>                 // for thread_resource_error
 #include <gflags/gflags.h>                             // for ShutDownCommandLineFlags

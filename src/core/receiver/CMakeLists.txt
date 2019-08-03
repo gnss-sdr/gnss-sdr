@@ -135,7 +135,6 @@ target_link_libraries(core_receiver
     PUBLIC
         core_libs
         core_monitor
-        Boost::thread
         Gnuradio::runtime
     PRIVATE
         signal_source_adapters
@@ -150,7 +149,6 @@ target_link_libraries(core_receiver
         obs_adapters
         pvt_adapters
         Boost::boost
-        Boost::chrono
         Gflags::gflags
         Glog::glog
         Armadillo::armadillo
@@ -177,6 +175,15 @@ if(OS_IS_MACOSX)
             )
         endif()
     endif()
+endif()
+
+if(ENABLE_FPGA)
+    target_link_libraries(core_receiver
+        PUBLIC
+            Boost::thread
+        PRIVATE
+            Boost::chrono
+    )
 endif()
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)

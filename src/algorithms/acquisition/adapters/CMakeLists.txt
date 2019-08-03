@@ -76,7 +76,7 @@ if(ENABLE_FPGA)
     )
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     set(ACQ_ADAPTER_SOURCES
         ${ACQ_ADAPTER_SOURCES}
         gps_l1_ca_pcps_opencl_acquisition.cc

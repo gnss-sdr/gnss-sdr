@@ -27,10 +27,6 @@ target_link_libraries(front_end_cal_lib
     PUBLIC
         Armadillo::armadillo
         Threads::Threads
-        Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        signal_source_adapters
-        signal_source_gr_blocks
-        signal_source_libs
         acquisition_adapters
         gnss_sdr_flags
         channel_libs

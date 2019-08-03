@@ -924,7 +924,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         )
     else()
@@ -936,7 +936,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install

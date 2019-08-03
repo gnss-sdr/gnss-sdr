@@ -875,13 +875,9 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
     endif()
 
-    set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
-        endif()
-        if(NOT DEFINED ENV{PROTECT_PASSWORDS})
-            set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
         endif()
     endif()
 
@@ -920,7 +916,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -932,7 +928,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""

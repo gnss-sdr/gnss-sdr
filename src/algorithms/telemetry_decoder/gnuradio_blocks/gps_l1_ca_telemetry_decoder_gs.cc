@@ -300,15 +300,8 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                         }
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

@@ -339,11 +339,9 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return gr_char_to_short_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+
+    LOG(WARNING) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }
 
 
@@ -373,9 +371,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
         {
             return complex_to_complex_byte_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+
+    LOG(WARNING) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }

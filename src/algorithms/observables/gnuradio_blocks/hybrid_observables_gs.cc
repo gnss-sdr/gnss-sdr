@@ -664,10 +664,6 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     // old_time_debug = out[0][0].RX_time * 1000.0;
                     return 1;
                 }
-            else
-                {
-                    return 0;
-                }
         }
     return 0;
 }

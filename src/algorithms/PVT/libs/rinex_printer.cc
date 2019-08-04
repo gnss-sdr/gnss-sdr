@@ -11779,11 +11779,8 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
             boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
             return p_time;
         }
-    else
-        {
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            return p_time;
-        }
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    return p_time;
 }
 
 

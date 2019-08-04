@@ -333,10 +333,7 @@ static int server_connect(char *server)
                         }
                     return -1;
                 }
-            else
-                {
-                    break;
-                }
+            break;
         }
     freeaddrinfo(aip);
     return fd;

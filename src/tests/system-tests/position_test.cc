@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,20 +48,28 @@
 #include "test_flags.h"
 #include "tracking_tests_flags.h"  //acquisition resampler
 #include <armadillo>
-#include <boost/filesystem.hpp>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <fstream>
 #include <numeric>
 #include <thread>
 
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
+
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 class PositionSystemTest : public ::testing::Test
 {
@@ -104,7 +112,10 @@ int PositionSystemTest::configure_generator()
     if (FLAGS_dynamic_position.empty())
         {
             p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
-            if (FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+            if (FLAGS_duration > 300)
+                {
+                    std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+                }
         }
     else
         {
@@ -126,7 +137,9 @@ int PositionSystemTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork error");
+        {
+            perror("fork error");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -135,7 +148,10 @@ int PositionSystemTest::generate_signal()
         }
 
     wait_result = waitpid(pid, &child_status, 0);
-    if (wait_result == -1) perror("waitpid error");
+    if (wait_result == -1)
+        {
+            perror("waitpid error");
+        }
     return 0;
 }
 
@@ -305,12 +321,12 @@ int PositionSystemTest::configure_receiver()
             config->set_property("PVT.AR_GPS", "PPP-AR");
             config->set_property("PVT.elevation_mask", std::to_string(15));
 
-            config_f = 0;
+            config_f = nullptr;
         }
     else
         {
             config_f = std::make_shared<FileConfiguration>(FLAGS_config_file_ptest);
-            config = 0;
+            config = nullptr;
         }
     return 0;
 }
@@ -346,16 +362,16 @@ int PositionSystemTest::run_receiver()
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     FILE* fp;
     std::string argum2 = std::string("/bin/ls *kml | tail -1");
-    char buffer[1035];
+    std::array<char, 1035> buffer{};
     fp = popen(&argum2[0], "r");
     if (fp == nullptr)
         {
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    while (fgets(buffer, sizeof(buffer), fp) != nullptr)
+    while (fgets(buffer.data(), sizeof(buffer), fp) != nullptr)
         {
-            std::string aux = std::string(buffer);
+            std::string aux = std::string(buffer.data());
             EXPECT_EQ(aux.empty(), false);
             PositionSystemTest::generated_kml_file = aux.erase(aux.length() - 1, 1);
         }
@@ -374,15 +390,15 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
             matvar_t* matvar;
             filename.append(".mat");
             std::cout << "save_mat_xy write " << filename << std::endl;
-            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
-            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+            matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
-                    size_t dims[2] = {1, x->size()};
-                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    std::array<size_t, 2> dims{1, x->size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
 
-                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &y[0], 0);
+                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &y[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
                 }
@@ -400,6 +416,7 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
         }
 }
 
+
 bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename)
 {
     try
@@ -409,11 +426,11 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             matvar_t* matvar;
             filename.append(".mat");
             std::cout << "save_mat_x write " << filename << std::endl;
-            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
-            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+            matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
-                    size_t dims[2] = {1, x->size()};
-                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    std::array<size_t, 2> dims{1, x->size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
                 }
@@ -430,6 +447,7 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             return false;
         }
 }
+
 
 void PositionSystemTest::check_results()
 {
@@ -462,7 +480,7 @@ void PositionSystemTest::check_results()
     arma::vec ref_r_enu = {0, 0, 0};
     cart2utm(true_r_eb_e, utm_zone, ref_r_enu);
 
-    rtklib_solver_dump_reader pvt_reader;
+    Rtklib_Solver_Dump_Reader pvt_reader;
     pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
     int64_t n_epochs = pvt_reader.num_epochs();
     R_eb_e = arma::zeros(3, n_epochs);
@@ -588,7 +606,7 @@ void PositionSystemTest::check_results()
     else
         {
             //dynamic position
-            spirent_motion_csv_dump_reader ref_reader;
+            Spirent_Motion_Csv_Dump_Reader ref_reader;
             ref_reader.open_obs_file(FLAGS_ref_motion_filename);
             int64_t n_epochs = ref_reader.num_epochs();
             ref_R_eb_e = arma::zeros(3, n_epochs);
@@ -835,8 +853,8 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
 
             try
                 {
-                    boost::filesystem::path p(gnuplot_executable);
-                    boost::filesystem::path dir = p.parent_path();
+                    fs::path p(gnuplot_executable);
+                    fs::path dir = p.parent_path();
                     const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
@@ -915,6 +933,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                 }
         }
 }
+
 
 TEST_F(PositionSystemTest /*unused*/, Position_system_test /*unused*/)
 {

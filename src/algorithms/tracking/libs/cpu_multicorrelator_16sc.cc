@@ -1,15 +1,15 @@
 /*!
  * \file cpu_multicorrelator_16sc.cc
- * \brief High optimized CPU vector multiTAP correlator class
+ * \brief Highly optimized CPU vector multiTAP correlator class
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that implements a high optimized vector multiTAP correlator class for CPUs
+ * Class that implements a highly optimized vector multiTAP correlator class for CPUs
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,7 +36,7 @@
 #include <cmath>
 
 
-bool cpu_multicorrelator_16sc::init(
+bool Cpu_Multicorrelator_16sc::init(
     int max_signal_length_samples,
     int n_correlators)
 {
@@ -54,7 +54,7 @@ bool cpu_multicorrelator_16sc::init(
 }
 
 
-bool cpu_multicorrelator_16sc::set_local_code_and_taps(
+bool Cpu_Multicorrelator_16sc::set_local_code_and_taps(
     int code_length_chips,
     const lv_16sc_t* local_code_in,
     float* shifts_chips)
@@ -66,7 +66,7 @@ bool cpu_multicorrelator_16sc::set_local_code_and_taps(
 }
 
 
-bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, const lv_16sc_t* sig_in)
+bool Cpu_Multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, const lv_16sc_t* sig_in)
 {
     // Save CPU pointers
     d_sig_in = sig_in;
@@ -75,7 +75,7 @@ bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, con
 }
 
 
-void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
+void Cpu_Multicorrelator_16sc::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
     volk_gnsssdr_16ic_xn_resampler_16ic_xn(d_local_codes_resampled,
         d_local_code_in,
@@ -88,7 +88,7 @@ void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples, 
 }
 
 
-bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
+bool Cpu_Multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float rem_code_phase_chips,
@@ -105,7 +105,7 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 
-cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
+Cpu_Multicorrelator_16sc::Cpu_Multicorrelator_16sc()
 {
     d_sig_in = nullptr;
     d_local_code_in = nullptr;
@@ -117,16 +117,16 @@ cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
 }
 
 
-cpu_multicorrelator_16sc::~cpu_multicorrelator_16sc()
+Cpu_Multicorrelator_16sc::~Cpu_Multicorrelator_16sc()
 {
     if (d_local_codes_resampled != nullptr)
         {
-            cpu_multicorrelator_16sc::free();
+            Cpu_Multicorrelator_16sc::free();
         }
 }
 
 
-bool cpu_multicorrelator_16sc::free()
+bool Cpu_Multicorrelator_16sc::free()
 {
     // Free memory
     if (d_local_codes_resampled != nullptr)

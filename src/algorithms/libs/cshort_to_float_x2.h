@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,10 +34,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class cshort_to_float_x2;
 
-typedef boost::shared_ptr<cshort_to_float_x2> cshort_to_float_x2_sptr;
+using cshort_to_float_x2_sptr = boost::shared_ptr<cshort_to_float_x2>;
 
 cshort_to_float_x2_sptr make_cshort_to_float_x2();
 
@@ -49,10 +50,9 @@ class cshort_to_float_x2 : public gr::sync_block
 {
 private:
     friend cshort_to_float_x2_sptr make_cshort_to_float_x2();
-
-public:
     cshort_to_float_x2();
 
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

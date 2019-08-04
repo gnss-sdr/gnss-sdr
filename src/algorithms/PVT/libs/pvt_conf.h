@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,6 @@
 #ifndef GNSS_SDR_PVT_CONF_H_
 #define GNSS_SDR_PVT_CONF_H_
 
-#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -42,10 +41,13 @@ public:
     uint32_t type_of_receiver;
     int32_t output_rate_ms;
     int32_t display_rate_ms;
+    int32_t kml_rate_ms;
+    int32_t gpx_rate_ms;
+    int32_t geojson_rate_ms;
+    int32_t nmea_rate_ms;
 
     int32_t rinex_version;
     int32_t rinexobs_rate_ms;
-    int32_t rinexnav_rate_ms;
     std::map<int, int> rtcm_msg_rate_ms;
 
     bool dump;
@@ -71,6 +73,8 @@ public:
     bool xml_output_enabled;
     bool rtcm_output_file_enabled;
 
+    int32_t max_obs_block_rx_clock_offset_ms;
+
     std::string output_path;
     std::string rinex_output_path;
     std::string gpx_output_path;
@@ -79,6 +83,13 @@ public:
     std::string kml_output_path;
     std::string xml_output_path;
     std::string rtcm_output_file_path;
+
+    bool monitor_enabled;
+    bool protobuf_enabled;
+    std::string udp_addresses;
+    int udp_port;
+
+    bool show_local_time_zone;
 
     Pvt_Conf();
 };

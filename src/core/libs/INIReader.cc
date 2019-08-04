@@ -64,7 +64,7 @@ int INIReader::ParseError()
 }
 
 
-std::string INIReader::Get(const std::string& section, const std::string& name, std::string default_value)
+std::string INIReader::Get(const std::string& section, const std::string& name, const std::string& default_value)
 {
     std::string key = MakeKey(section, name);
     return _values.count(key) ? _values[key] : default_value;
@@ -87,7 +87,9 @@ std::string INIReader::MakeKey(const std::string& section, const std::string& na
     std::string key = section + "." + name;
     // Convert to lower case to make lookups case-insensitive
     for (char& i : key)
-        i = tolower(i);
+        {
+            i = tolower(i);
+        }
     return key;
 }
 

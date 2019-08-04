@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,9 +38,13 @@
 #include "channel_fsm.h"
 #include "channel_interface.h"
 #include "channel_msg_receiver_cc.h"
+#include "concurrent_queue.h"
+#include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -49,6 +53,7 @@ class ConfigurationInterface;
 class AcquisitionInterface;
 class TrackingInterface;
 class TelemetryDecoderInterface;
+
 
 /*!
  * \brief This class represents a GNSS channel. It wraps an AcquisitionInterface,
@@ -62,9 +67,9 @@ public:
     //! Constructor
     Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-        std::string role, std::string implementation, gr::msg_queue::sptr queue);
-    //! Virtual destructor
-    virtual ~Channel();
+        std::string role, std::string implementation, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+
+    ~Channel() = default;  //!< Destructor
 
     void connect(gr::top_block_sptr top_block) override;  //!< connects the tracking block to the top_block and to the telemetry
     void disconnect(gr::top_block_sptr top_block) override;
@@ -82,6 +87,8 @@ public:
     void stop_channel() override;                               //!< Stop the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_) override;  //!< Sets the channel GNSS signal
 
+    void assist_acquisition_doppler(double Carrier_Doppler_hz) override;
+
     inline std::shared_ptr<AcquisitionInterface> acquisition() { return acq_; }
     inline std::shared_ptr<TrackingInterface> tracking() { return trk_; }
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() { return nav_; }
@@ -96,13 +103,13 @@ private:
     std::string implementation_;
     bool flag_enable_fpga;
     uint32_t channel_;
-    Gnss_Synchro gnss_synchro_;
+    Gnss_Synchro gnss_synchro_{};
     Gnss_Signal gnss_signal_;
     bool connected_;
     bool repeat_;
     std::shared_ptr<ChannelFsm> channel_fsm_;
-    gr::msg_queue::sptr queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     std::mutex mx;
 };
 
-#endif /*GNSS_SDR_CHANNEL_H_*/
+#endif  // GNSS_SDR_CHANNEL_H_

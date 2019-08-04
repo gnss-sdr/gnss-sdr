@@ -2,7 +2,7 @@
  * \file fpga_switch.h
  * \brief Switch that connects the HW accelerator queues to the analog front end or the DMA.
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,16 +39,33 @@
 
 #include <string>
 
-#define MAX_LENGTH_DEVICEIO_NAME 50
-
-class fpga_switch
+/*!
+ * \brief Class that controls the switch in the FPGA, which connects the FPGA acquisition and multicorrelator modules to
+ * either the DMA or the Analog Front-End.
+ */
+class Fpga_Switch
 {
 public:
-    fpga_switch(const std::string& device_name);
-    ~fpga_switch();
-    void set_switch_position(int switch_position);
+    /*!
+	 * \brief Constructor
+	 */
+    Fpga_Switch(const std::string& device_name);
+
+    /*!
+     * \brief Destructor
+     */
+    ~Fpga_Switch();
+
+    /*!
+     * \brief This function configures the switch in th eFPGA
+     */
+    void set_switch_position(int32_t switch_position);
 
 private:
+    static const size_t PAGE_SIZE = 0x10000;
+    static const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
+    static const uint32_t MAX_LENGTH_DEVICEIO_NAME = 50;
+
     int d_device_descriptor;        // driver descriptor
     volatile unsigned* d_map_base;  // driver memory map
 

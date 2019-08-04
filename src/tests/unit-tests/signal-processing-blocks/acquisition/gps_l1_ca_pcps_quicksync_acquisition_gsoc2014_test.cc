@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,17 +31,7 @@
  */
 
 
-#include <glog/logging.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <stdexcept>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -50,30 +40,41 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <stdexcept>
+#include <thread>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 DEFINE_double(value_threshold, 1, "Value of the threshold for the acquisition");
 DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
 
-using google::LogMessage;
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx> GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr;
+using GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr = boost::shared_ptr<GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx>;
 
-GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_make(concurrent_queue<int>& queue);
+GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_make(concurrent_queue<int>& queue);
+    friend GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -81,7 +82,7 @@ public:
 };
 
 
-GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_make(concurrent_queue<int>& queue)
+GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx_sptr(new GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx(queue));
 }
@@ -91,7 +92,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::msg_handler_events(pmt:
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -103,7 +104,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::msg_handler_events(pmt:
 }
 
 
-GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx(concurrent_queue<int>& queue) : gr::block("GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::msg_handler_events, this, _1));
@@ -111,9 +112,7 @@ GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::GpsL1CaPcpsQuickSyncAcquisit
 }
 
 
-GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx()
-{
-}
+GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -130,9 +129,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test()
-    {
-    }
+    ~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test() = default;
 
     void init();
     void config_1();
@@ -143,8 +140,8 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
-    gr::msg_queue::sptr queue;
+    Concurrent_Queue<int> channel_internal_queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<GpsL1CaPcpsQuickSyncAcquisition> acquisition;
@@ -153,7 +150,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -457,7 +454,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message, this);
+    ch_thread = std::thread(&GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message, this);
 }
 
 
@@ -548,7 +545,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0.0);
     top_block = gr::make_top_block("Acquisition test");
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     config_1();
@@ -578,7 +575,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
 {
     config_1();
     top_block = gr::make_top_block("Acquisition test");
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -672,7 +669,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
     //config_3();
     config_1();
     top_block = gr::make_top_block("Acquisition test");
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -763,7 +760,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
 {
     config_2();
     top_block = gr::make_top_block("Acquisition test");
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 

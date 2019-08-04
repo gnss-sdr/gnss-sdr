@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,11 +30,9 @@
  */
 #include "tcp_packet_data.h"
 
-tcp_packet_data::tcp_packet_data()
+Tcp_Packet_Data::Tcp_Packet_Data()
 {
     proc_pack_code_error = 0;
     proc_pack_carr_error = 0;
     proc_pack_carrier_doppler_hz = 0;
 }
-
-tcp_packet_data::~tcp_packet_data() = default;

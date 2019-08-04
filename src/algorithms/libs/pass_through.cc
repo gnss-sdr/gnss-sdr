@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,10 +33,11 @@
 #include "pass_through.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <volk/volk.h>
-#include <complex>
+#include <gnuradio/gr_complex.h>
+#include <volk/volk_complex.h>
+#include <cstdint>  // for int8_t
+#include <ostream>  // for operator<<
 
-using google::LogMessage;
 
 Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams,
@@ -108,19 +109,24 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::str
         }
 
     kludge_copy_ = gr::blocks::copy::make(item_size_);
+    uint64_t max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0);
+    if (max_source_buffer_samples > 0)
+        {
+            kludge_copy_->set_max_output_buffer(max_source_buffer_samples);
+            LOG(INFO) << "Set signal conditioner max output buffer to " << max_source_buffer_samples;
+        }
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
+            LOG(ERROR) << in_streams_;
         }
     if (out_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream";
+            LOG(ERROR) << out_streams_;
         }
 }
-
-
-Pass_Through::~Pass_Through() = default;
 
 
 void Pass_Through::connect(gr::top_block_sptr top_block)

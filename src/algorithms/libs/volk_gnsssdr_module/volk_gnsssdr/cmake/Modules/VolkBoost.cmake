@@ -73,23 +73,21 @@ if(ENABLE_BAD_BOOST)
     message(STATUS "Enabling use of known bad versions of Boost.")
 endif()
 
-# For any unsuitable Boost version, add the version number below in
-# the following format: XXYYZZ
-# Where:
-#     XX is the major version ('10' for version 1)
-#     YY is the minor version number ('46' for 1.46)
-#     ZZ is the patcher version number (typically just '00')
 set(Boost_NOGO_VERSIONS
-    104600 104601 104700 105200
+    "1.46.0" "1.46.1" "1.47.0" "1.52.0"
 )
 
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+endif()
+
 foreach(ver ${Boost_NOGO_VERSIONS})
-    if("${Boost_VERSION}" STREQUAL "${ver}")
+    if("${Boost_VERSION_STRING}" STREQUAL "${ver}")
         if(NOT ENABLE_BAD_BOOST)
-            message(STATUS "WARNING: Found a known bad version of Boost (v${Boost_VERSION}). Disabling.")
+            message(STATUS "WARNING: Found a known bad version of Boost (v${Boost_VERSION_STRING}). Disabling.")
             set(Boost_FOUND FALSE)
         else()
-            message(STATUS "WARNING: Found a known bad version of Boost (v${Boost_VERSION}). Continuing anyway.")
+            message(STATUS "WARNING: Found a known bad version of Boost (v${Boost_VERSION_STRING}). Continuing anyway.")
             set(Boost_FOUND TRUE)
         endif()
   endif()

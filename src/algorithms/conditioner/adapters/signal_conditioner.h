@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,12 +33,12 @@
 #define GNSS_SDR_SIGNAL_CONDITIONER_H_
 
 #include "gnss_block_interface.h"
+#include <gnuradio/block.h>
+#include <cstddef>
+#include <memory>
 #include <string>
 
 class ConfigurationInterface;
-class AcquisitionInterface;
-class TrackingInterface;
-class TelemetryDecoderInterface;
 
 /*!
  * \brief This class wraps blocks to change data_type_adapter, input_filter and resampler
@@ -52,8 +52,8 @@ public:
         std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
         std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
 
-    //! Virtual destructor
-    virtual ~SignalConditioner();
+    //! Destructor
+    ~SignalConditioner() = default;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;

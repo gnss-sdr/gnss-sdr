@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -44,67 +44,78 @@ if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${MATIO_INCLUDE_DIRS}
+list(SORT ACQ_GR_BLOCKS_HEADERS)
+list(SORT ACQ_GR_BLOCKS_SOURCES)
+
+source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
+
+add_library(acquisition_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(acquisition_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        target_compile_definitions(acquisition_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(acquisition_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(acquisition_gr_blocks PRIVATE Boost::filesystem)
+endif()
+
+target_link_libraries(acquisition_gr_blocks
+    PUBLIC
+        algorithms_libs
+        acquisition_libs
+        channel_libs
+        core_system_parameters
+        Armadillo::armadillo
+        Gnuradio::runtime
+        Gnuradio::fft
+        Volk::volk
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        Matio::matio
+        Volkgnsssdr::volkgnsssdr
+
 )
 
-if(OPENCL_FOUND)
-    include_directories(${OPENCL_INCLUDE_DIRS})
-    if(OS_IS_MACOSX)
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else()
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+target_include_directories(acquisition_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+)
+
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
+if(ENABLE_OPENCL)
+    target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
+    target_include_directories(acquisition_gr_blocks
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/opencl
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(acquisition_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
     endif()
 endif()
 
-list(SORT ACQ_GR_BLOCKS_HEADERS)
-list(SORT ACQ_GR_BLOCKS_SOURCES)
-add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
-
-if(ENABLE_FPGA)
-    target_link_libraries(acq_gr_blocks
-        acquisition_lib
-        gnss_sp_libs
-        gnss_system_parameters
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_FFT_LIBRARIES}
-        ${VOLK_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES}
-        ${OPT_LIBRARIES}
-        ${OPT_ACQUISITION_LIBRARIES}
-    )
-else()
-    target_link_libraries(acq_gr_blocks
-        gnss_sp_libs
-        gnss_system_parameters
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_FFT_LIBRARIES}
-        ${VOLK_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES}
-        ${OPT_LIBRARIES}
-        ${MATIO_LIBRARIES}
-        ${OPT_ACQUISITION_LIBRARIES}
-    )
-endif()
-
-if(NOT VOLKGNSSSDR_FOUND)
-    add_dependencies(acq_gr_blocks volk_gnsssdr_module)
-endif()
+set_property(TARGET acquisition_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs/opencl>
+)

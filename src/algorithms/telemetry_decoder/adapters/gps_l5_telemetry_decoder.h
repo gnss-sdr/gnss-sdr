@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,8 +35,10 @@
 
 
 #include "gnss_satellite.h"
-#include "gps_l5_telemetry_decoder_cc.h"
+#include "gps_l5_telemetry_decoder_gs.h"
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
 
 
@@ -53,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL5TelemetryDecoder();
+    ~GpsL5TelemetryDecoder() = default;
 
     inline std::string role() override
     {
@@ -73,9 +75,9 @@ public:
 
     void set_satellite(const Gnss_Satellite& satellite) override;
     inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-
     inline void reset() override
     {
+        telemetry_decoder_->reset();
         return;
     }
     inline size_t item_size() override
@@ -84,7 +86,7 @@ public:
     }
 
 private:
-    gps_l5_telemetry_decoder_cc_sptr telemetry_decoder_;
+    gps_l5_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

@@ -7,7 +7,7 @@
  *  http://git.osmocom.org/rtl-sdr/
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,7 +32,8 @@
 #ifndef GNSS_SDR_RTL_TCP_COMMANDS_H
 #define GNSS_SDR_RTL_TCP_COMMANDS_H
 
-#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/tcp.hpp>        // for tcp, tcp::socket
+#include <boost/system/error_code.hpp>  // for error_code
 
 /// Command IDs for configuration rtl_tcp
 enum RTL_TCP_COMMAND

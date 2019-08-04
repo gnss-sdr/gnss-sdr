@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,7 +36,9 @@
 #include "galileo_pcps_8ms_acquisition_cc.h"
 #include "gnss_synchro.h"
 #include <gnuradio/blocks/stream_to_vector.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -52,7 +54,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE1Pcps8msAmbiguousAcquisition();
+    ~GalileoE1Pcps8msAmbiguousAcquisition() = default;
 
     inline std::string role() override
     {
@@ -87,7 +89,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -143,6 +158,7 @@ private:
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
@@ -151,7 +167,7 @@ private:
     int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

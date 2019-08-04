@@ -7,7 +7,7 @@
  * <http://git.osmocom.org/gr-osmosdr>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,7 +36,6 @@
 #include <glog/logging.h>
 #include <map>
 
-using google::LogMessage;
 
 namespace ip = boost::asio::ip;
 using boost::asio::ip::tcp;
@@ -66,7 +65,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     : gr::sync_block("rtl_tcp_signal_source_c",
           gr::io_signature::make(0, 0, 0),
           gr::io_signature::make(1, 1, sizeof(gr_complex))),
-      socket_(io_service_),
+      socket_(io_context_),
       data_(RTL_TCP_PAYLOAD_SIZE),
       flip_iq_(flip_iq),
       buffer_(RTL_TCP_BUFFER_SIZE),
@@ -77,7 +76,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     // 1. Setup lookup table
     for (unsigned i = 0; i < 0xff; i++)
         {
-            lookup_[i] = (static_cast<float>(i & 0xff) - 127.4f) * (1.0f / 128.0f);
+            lookup_[i] = (static_cast<float>(i & 0xff) - 127.4F) * (1.0F / 128.0F);
         }
 
     // 2. Set socket options
@@ -148,14 +147,14 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
         boost::bind(&rtl_tcp_signal_source_c::handle_read,
             this, _1, _2));
-    boost::thread(boost::bind(&boost::asio::io_service::run, &io_service_));
+    boost::thread(boost::bind(&b_io_context::run, &io_context_));
 }
 
 
 rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()  // NOLINT(modernize-use-equals-default)
 {
     mutex_.unlock();
-    io_service_.stop();
+    io_context_.stop();
     not_empty_.notify_one();
     not_full_.notify_one();
 }
@@ -222,7 +221,7 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
     {
         double start, stop, step;
     };
-    if (info_.get_tuner_type() != rtl_tcp_dongle_info::TUNER_E4000)
+    if (info_.get_tuner_type() != Rtl_Tcp_Dongle_Info::TUNER_E4000)
         {
             return;
         }
@@ -290,7 +289,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
             std::cout << "Error during read: " << ec << std::endl;
             LOG(WARNING) << "Error during read: " << ec;
             boost::mutex::scoped_lock lock(mutex_);
-            io_service_.stop();
+            io_context_.stop();
             not_empty_.notify_one();
         }
     else
@@ -333,9 +332,9 @@ int rtl_tcp_signal_source_c::work(int noutput_items,
     gr_vector_const_void_star & /*input_items*/,
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     int i = 0;
-    if (io_service_.stopped())
+    if (io_context_.stopped())
         {
             return -1;
         }

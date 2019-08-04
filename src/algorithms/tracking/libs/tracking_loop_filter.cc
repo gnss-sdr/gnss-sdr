@@ -4,11 +4,11 @@
  * \author Cillian O'Driscoll, 2015. cillian.odriscoll(at)gmail.com
  *
  * Class implementing a generic 1st, 2nd or 3rd order loop filter. Based
- * on the bilinear transform of the standard Weiner filter.
+ * on the bilinear transform of the standard Wiener filter.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,6 +36,8 @@
 #include <glog/logging.h>
 #include <cmath>
 
+const int MAX_LOOP_ORDER = 3;
+const int MAX_LOOP_HISTORY_LENGTH = 4;
 
 Tracking_loop_filter::Tracking_loop_filter(float update_interval,
     float noise_bandwidth,
@@ -66,15 +68,12 @@ Tracking_loop_filter::Tracking_loop_filter()
 }
 
 
-Tracking_loop_filter::~Tracking_loop_filter() = default;
-
-
 float Tracking_loop_filter::apply(float current_input)
 {
     // Now apply the filter coefficients:
     float result = 0.0;
 
-    // Hanlde the old outputs first:
+    // Handle the old outputs first:
     for (unsigned int ii = 0; ii < d_output_coefficients.size(); ++ii)
         {
             result += d_output_coefficients[ii] * d_outputs[(d_current_index + ii) % MAX_LOOP_HISTORY_LENGTH];
@@ -95,15 +94,12 @@ float Tracking_loop_filter::apply(float current_input)
 
     d_inputs[d_current_index] = current_input;
 
-
     for (unsigned int ii = 0; ii < d_input_coefficients.size(); ++ii)
         {
             result += d_input_coefficients[ii] * d_inputs[(d_current_index + ii) % MAX_LOOP_HISTORY_LENGTH];
         }
 
-
     d_outputs[d_current_index] = result;
-
 
     return result;
 }
@@ -179,7 +175,6 @@ void Tracking_loop_filter::update_coefficients(void)
                     d_output_coefficients[0] = 1.0;
                 }
             break;
-
         case 3:
             wn = d_noise_bandwidth / 0.7845;  // From Kaplan
             float a3 = 1.1;
@@ -207,7 +202,6 @@ void Tracking_loop_filter::update_coefficients(void)
                     d_input_coefficients[0] = g3 + T / 2.0 * (g2 + T / 2.0 * g1);
                     d_input_coefficients[1] = g1 * T * T / 2.0 - 2.0 * g3;
                     d_input_coefficients[2] = g3 + T / 2.0 * (-g2 + T / 2.0 * g1);
-
 
                     d_output_coefficients.resize(2);
                     d_output_coefficients[0] = 2.0;
@@ -237,6 +231,7 @@ void Tracking_loop_filter::set_update_interval(float update_interval)
     update_coefficients();
 }
 
+
 float Tracking_loop_filter::get_update_interval(void) const
 {
     return d_update_interval;
@@ -260,10 +255,9 @@ void Tracking_loop_filter::set_order(int loop_order)
 {
     if (loop_order < 1 or loop_order > MAX_LOOP_ORDER)
         {
-            LOG(ERROR) << "Ignoring attempt to set loop order to " << loop_order
-                       << ". Maximum allowed order is: " << MAX_LOOP_ORDER
-                       << ". Not changing current value of " << d_loop_order;
-
+            LOG(WARNING) << "Ignoring attempt to set loop order to " << loop_order
+                         << ". Maximum allowed order is: " << MAX_LOOP_ORDER
+                         << ". Not changing current value of " << d_loop_order;
             return;
         }
 

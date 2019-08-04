@@ -1,12 +1,12 @@
 /*!
  * \file fmcomms2_signal_source.cc
  * \brief Signal source for SDR hardware from Analog Devices based on
- * fmcomms2 evaluation board. 
+ * fmcomms2 evaluation board.
  * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,11 +41,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";

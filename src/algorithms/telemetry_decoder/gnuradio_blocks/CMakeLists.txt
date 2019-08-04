@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,56 +17,61 @@
 #
 
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
-    gps_l1_ca_telemetry_decoder_cc.cc
-    gps_l2c_telemetry_decoder_cc.cc
-    gps_l5_telemetry_decoder_cc.cc
-    sbas_l1_telemetry_decoder_cc.cc
-    glonass_l1_ca_telemetry_decoder_cc.cc
-    glonass_l2_ca_telemetry_decoder_cc.cc
-    galileo_telemetry_decoder_cc.cc
+    gps_l1_ca_telemetry_decoder_gs.cc
+    gps_l2c_telemetry_decoder_gs.cc
+    gps_l5_telemetry_decoder_gs.cc
+    sbas_l1_telemetry_decoder_gs.cc
+    glonass_l1_ca_telemetry_decoder_gs.cc
+    glonass_l2_ca_telemetry_decoder_gs.cc
+    galileo_telemetry_decoder_gs.cc
+    beidou_b1i_telemetry_decoder_gs.cc
+    beidou_b3i_telemetry_decoder_gs.cc
 )
 
 set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
-    gps_l1_ca_telemetry_decoder_cc.h
-    gps_l2c_telemetry_decoder_cc.h
-    gps_l5_telemetry_decoder_cc.h
-    sbas_l1_telemetry_decoder_cc.h
-    glonass_l1_ca_telemetry_decoder_cc.h
-    glonass_l2_ca_telemetry_decoder_cc.h
-    galileo_telemetry_decoder_cc.h
-)
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    gps_l1_ca_telemetry_decoder_gs.h
+    gps_l2c_telemetry_decoder_gs.h
+    gps_l5_telemetry_decoder_gs.h
+    sbas_l1_telemetry_decoder_gs.h
+    glonass_l1_ca_telemetry_decoder_gs.h
+    glonass_l2_ca_telemetry_decoder_gs.h
+    galileo_telemetry_decoder_gs.h
+    beidou_b1i_telemetry_decoder_gs.h
+    beidou_b3i_telemetry_decoder_gs.h
 )
 
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_SOURCES)
+
+source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
 
 add_library(telemetry_decoder_gr_blocks
     ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
     ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
 )
 
-source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-
 target_link_libraries(telemetry_decoder_gr_blocks
-    telemetry_decoder_libswiftcnav
-    telemetry_decoder_lib
-    gnss_system_parameters
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
+    PUBLIC
+        telemetry_decoder_libswiftcnav
+        telemetry_decoder_libs
+        core_system_parameters
+        Gnuradio::runtime
+        Boost::boost
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
 )
 
-if(NOT VOLKGNSSSDR_FOUND)
-    add_dependencies(telemetry_decoder_gr_blocks volk_gnsssdr_module)
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(telemetry_decoder_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
+
+set_property(TARGET telemetry_decoder_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

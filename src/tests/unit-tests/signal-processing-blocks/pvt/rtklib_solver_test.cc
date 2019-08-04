@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -58,11 +58,26 @@ rtk_t configure_rtklib_options()
     int positioning_mode = -1;
     std::string default_pos_mode("Single");
     std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode); /* (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if (positioning_mode_str.compare("Single") == 0) positioning_mode = PMODE_SINGLE;
-    if (positioning_mode_str.compare("Static") == 0) positioning_mode = PMODE_STATIC;
-    if (positioning_mode_str.compare("Kinematic") == 0) positioning_mode = PMODE_KINEMA;
-    if (positioning_mode_str.compare("PPP_Static") == 0) positioning_mode = PMODE_PPP_STATIC;
-    if (positioning_mode_str.compare("PPP_Kinematic") == 0) positioning_mode = PMODE_PPP_KINEMA;
+    if (positioning_mode_str == "Single")
+        {
+            positioning_mode = PMODE_SINGLE;
+        }
+    if (positioning_mode_str == "Static")
+        {
+            positioning_mode = PMODE_STATIC;
+        }
+    if (positioning_mode_str == "Kinematic")
+        {
+            positioning_mode = PMODE_KINEMA;
+        }
+    if (positioning_mode_str == "PPP_Static")
+        {
+            positioning_mode = PMODE_PPP_STATIC;
+        }
+    if (positioning_mode_str == "PPP_Kinematic")
+        {
+            positioning_mode = PMODE_PPP_KINEMA;
+        }
 
     if (positioning_mode == -1)
         {
@@ -107,12 +122,30 @@ rtk_t configure_rtklib_options()
     std::string default_iono_model("OFF");
     std::string iono_model_str = configuration->property(role + ".iono_model", default_iono_model); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     int iono_model = -1;
-    if (iono_model_str.compare("OFF") == 0) iono_model = IONOOPT_OFF;
-    if (iono_model_str.compare("Broadcast") == 0) iono_model = IONOOPT_BRDC;
-    if (iono_model_str.compare("SBAS") == 0) iono_model = IONOOPT_SBAS;
-    if (iono_model_str.compare("Iono-Free-LC") == 0) iono_model = IONOOPT_IFLC;
-    if (iono_model_str.compare("Estimate_STEC") == 0) iono_model = IONOOPT_EST;
-    if (iono_model_str.compare("IONEX") == 0) iono_model = IONOOPT_TEC;
+    if (iono_model_str == "OFF")
+        {
+            iono_model = IONOOPT_OFF;
+        }
+    if (iono_model_str == "Broadcast")
+        {
+            iono_model = IONOOPT_BRDC;
+        }
+    if (iono_model_str == "SBAS")
+        {
+            iono_model = IONOOPT_SBAS;
+        }
+    if (iono_model_str == "Iono-Free-LC")
+        {
+            iono_model = IONOOPT_IFLC;
+        }
+    if (iono_model_str == "Estimate_STEC")
+        {
+            iono_model = IONOOPT_EST;
+        }
+    if (iono_model_str == "IONEX")
+        {
+            iono_model = IONOOPT_TEC;
+        }
     if (iono_model == -1)
         {
             //warn user and set the default
@@ -126,11 +159,26 @@ rtk_t configure_rtklib_options()
     std::string default_trop_model("OFF");
     int trop_model = -1;
     std::string trop_model_str = configuration->property(role + ".trop_model", default_trop_model); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if (trop_model_str.compare("OFF") == 0) trop_model = TROPOPT_OFF;
-    if (trop_model_str.compare("Saastamoinen") == 0) trop_model = TROPOPT_SAAS;
-    if (trop_model_str.compare("SBAS") == 0) trop_model = TROPOPT_SBAS;
-    if (trop_model_str.compare("Estimate_ZTD") == 0) trop_model = TROPOPT_EST;
-    if (trop_model_str.compare("Estimate_ZTD_Grad") == 0) trop_model = TROPOPT_ESTG;
+    if (trop_model_str == "OFF")
+        {
+            trop_model = TROPOPT_OFF;
+        }
+    if (trop_model_str == "Saastamoinen")
+        {
+            trop_model = TROPOPT_SAAS;
+        }
+    if (trop_model_str == "SBAS")
+        {
+            trop_model = TROPOPT_SBAS;
+        }
+    if (trop_model_str == "Estimate_ZTD")
+        {
+            trop_model = TROPOPT_EST;
+        }
+    if (trop_model_str == "Estimate_ZTD_Grad")
+        {
+            trop_model = TROPOPT_ESTG;
+        }
     if (trop_model == -1)
         {
             //warn user and set the default
@@ -175,11 +223,26 @@ rtk_t configure_rtklib_options()
     std::string default_gps_ar("Continuous");
     std::string integer_ambiguity_resolution_gps_str = configuration->property(role + ".AR_GPS", default_gps_ar); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
     int integer_ambiguity_resolution_gps = -1;
-    if (integer_ambiguity_resolution_gps_str.compare("OFF") == 0) integer_ambiguity_resolution_gps = ARMODE_OFF;
-    if (integer_ambiguity_resolution_gps_str.compare("Continuous") == 0) integer_ambiguity_resolution_gps = ARMODE_CONT;
-    if (integer_ambiguity_resolution_gps_str.compare("Instantaneous") == 0) integer_ambiguity_resolution_gps = ARMODE_INST;
-    if (integer_ambiguity_resolution_gps_str.compare("Fix-and-Hold") == 0) integer_ambiguity_resolution_gps = ARMODE_FIXHOLD;
-    if (integer_ambiguity_resolution_gps_str.compare("PPP-AR") == 0) integer_ambiguity_resolution_gps = ARMODE_PPPAR;
+    if (integer_ambiguity_resolution_gps_str == "OFF")
+        {
+            integer_ambiguity_resolution_gps = ARMODE_OFF;
+        }
+    if (integer_ambiguity_resolution_gps_str == "Continuous")
+        {
+            integer_ambiguity_resolution_gps = ARMODE_CONT;
+        }
+    if (integer_ambiguity_resolution_gps_str == "Instantaneous")
+        {
+            integer_ambiguity_resolution_gps = ARMODE_INST;
+        }
+    if (integer_ambiguity_resolution_gps_str == "Fix-and-Hold")
+        {
+            integer_ambiguity_resolution_gps = ARMODE_FIXHOLD;
+        }
+    if (integer_ambiguity_resolution_gps_str == "PPP-AR")
+        {
+            integer_ambiguity_resolution_gps = ARMODE_PPPAR;
+        }
     if (integer_ambiguity_resolution_gps == -1)
         {
             //warn user and set the default
@@ -333,12 +396,12 @@ TEST(RTKLibSolverTest, test1)
     bool save_to_mat = false;
     rtk_t rtk = configure_rtklib_options();
 
-    std::unique_ptr<rtklib_solver> d_ls_pvt(new rtklib_solver(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk));
+    std::unique_ptr<Rtklib_Solver> d_ls_pvt(new Rtklib_Solver(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk));
     d_ls_pvt->set_averaging_depth(1);
 
     // load ephemeris
     std::string eph_xml_filename = path + "data/rtklib_test/eph_GPS_L1CA_test1.xml";
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
 
     std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,17 +43,14 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
-                                              in_streams_(in_streams),
-                                              out_streams_(out_streams),
-                                              queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
+                                                           in_streams_(in_streams),
+                                                           out_streams_(out_streams),
+                                                           queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -66,8 +63,14 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
-    if (FLAGS_s != "-") filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-")
+        {
+            filename_ = FLAGS_signal_source;
+        }
+    if (FLAGS_s != "-")
+        {
+            filename_ = FLAGS_s;
+        }
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     big_endian_items_ = configuration->property(role + ".big_endian_items", true);
@@ -245,9 +248,6 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-TwoBitPackedFileSignalSource::~TwoBitPackedFileSignalSource() = default;
 
 
 void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)

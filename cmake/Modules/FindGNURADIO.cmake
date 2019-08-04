@@ -19,12 +19,17 @@
 # Find GNU Radio
 ########################################################################
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
-  set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
+  set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 endif()
 
 # Allows us to use all .cmake files in this directory
@@ -53,7 +58,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     message(STATUS "Checking for GNU Radio Module: ${EXTVAR}")
 
     # check for .pc hints
-    pkg_check_modules(PC_GNURADIO_${EXTVAR} ${PCNAME})
+    pkg_check_modules(PC_GNURADIO_${EXTVAR} QUIET ${PCNAME})
 
     if(NOT PC_GNURADIO_${EXTVAR}_FOUND)
         set(PC_GNURADIO_${EXTVAR}_LIBRARIES ${LIBFILE})
@@ -140,63 +145,132 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     # generate an error if the module is missing
     if(NOT GNURADIO_${EXTVAR}_FOUND)
         message(STATUS "Required GNU Radio Component: ${EXTVAR} missing!")
+        set(GNURADIO_FOUND FALSE) # Trick for feature_summary
+    endif()
+
+    # Create imported target
+    string(TOLOWER ${EXTVAR} gnuradio_component)
+    if(NOT TARGET Gnuradio::${gnuradio_component})
+        add_library(Gnuradio::${gnuradio_component} SHARED IMPORTED)
+        set(GNURADIO_LIBRARY ${GNURADIO_${EXTVAR}_LIBRARIES})
+        list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
+        get_filename_component(GNURADIO_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::${gnuradio_component} PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_${EXTVAR}_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
+        )
     endif()
 
     mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
 endfunction()
 
 gr_module(RUNTIME gnuradio-runtime gnuradio/top_block.h gnuradio-runtime)
-gr_module(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
-gr_module(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
+gr_module(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
 gr_module(BLOCKS gnuradio-blocks gnuradio/blocks/api.h gnuradio-blocks)
-gr_module(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
-gr_module(DIGITAL gnuradio-digital gnuradio/digital/api.h gnuradio-digital)
-gr_module(FCD gnuradio-fcd gnuradio/fcd_api.h gnuradio-fcd)
 gr_module(FEC gnuradio-fec gnuradio/fec/api.h gnuradio-fec)
 gr_module(FFT gnuradio-fft gnuradio/fft/api.h gnuradio-fft)
 gr_module(FILTER gnuradio-filter gnuradio/filter/api.h gnuradio-filter)
-gr_module(NOAA gnuradio-noaa gnuradio/noaa/api.h gnuradio-noaa)
-gr_module(PAGER gnuradio-pager gnuradio/pager/api.h gnuradio-pager)
+gr_module(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
+gr_module(DIGITAL gnuradio-digital gnuradio/digital/api.h gnuradio-digital)
+gr_module(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
+gr_module(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
 gr_module(QTGUI gnuradio-qtgui gnuradio/qtgui/api.h gnuradio-qtgui)
 gr_module(TRELLIS gnuradio-trellis gnuradio/trellis/api.h gnuradio-trellis)
 gr_module(UHD gnuradio-uhd gnuradio/uhd/api.h gnuradio-uhd)
 gr_module(VOCODER gnuradio-vocoder gnuradio/vocoder/api.h gnuradio-vocoder)
 gr_module(WAVELET gnuradio-wavelet gnuradio/wavelet/api.h gnuradio-wavelet)
-gr_module(WXGUI gnuradio-wxgui gnuradio/wxgui/api.h gnuradio-wxgui)
-gr_module(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
+
 
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
 
+if(NOT PC_GNURADIO_RUNTIME_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET GNURADIO_BLOCKS_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(GNURADIO_BLOCKS_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${GNURADIO_BLOCKS_DIR}/cmake/gnuradio/GnuradioConfigVersion.cmake)
+        set(PACKAGE_FIND_VERSION_MAJOR 3)
+        set(PACKAGE_FIND_VERSION_MINOR 7)
+        set(PACKAGE_FIND_VERSION_PATCH 4)
+        include(${GNURADIO_BLOCKS_DIR}/cmake/gnuradio/GnuradioConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(PC_GNURADIO_RUNTIME_VERSION ${PACKAGE_VERSION})
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
 # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
 if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
-              NAMES gnuradio/blocks/tsb_vector_sink_f.h
-              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-                    ${CMAKE_INSTALL_PREFIX}/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-              PATHS /usr/local/include
-                    /usr/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-                    ${GNURADIO_ROOT}/include
-                    $ENV{GNURADIO_ROOT}/include
-              )
+        NAMES gnuradio/blocks/tsb_vector_sink_f.h
+        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+        PATHS /usr/local/include
+              /usr/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+              ${GNURADIO_ROOT}/include
+              $ENV{GNURADIO_ROOT}/include
+    )
     if(GNURADIO_VERSION_GREATER_THAN_373)
         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
     endif()
 
     find_file(GNURADIO_VERSION_GREATER_THAN_38
-              NAMES gnuradio/filter/mmse_resampler_cc.h
-              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-                    ${CMAKE_INSTALL_PREFIX}/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-              PATHS /usr/local/include
-                    /usr/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-                    ${GNURADIO_ROOT}/include
-                    $ENV{GNURADIO_ROOT}/include
-              )
+        NAMES gnuradio/filter/mmse_resampler_cc.h
+        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+        PATHS /usr/local/include
+              /usr/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+              ${GNURADIO_ROOT}/include
+              $ENV{GNURADIO_ROOT}/include
+    )
     if(GNURADIO_VERSION_GREATER_THAN_38)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
     endif()
 endif()
+
+# Trick for feature_summary
+if(NOT DEFINED GNURADIO_FOUND)
+    set(GNURADIO_FOUND TRUE)
+endif()
+set(GNURADIO_VERSION ${PC_GNURADIO_RUNTIME_VERSION})
+
+if(NOT GNSSSDR_GNURADIO_MIN_VERSION)
+    set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
+endif()
+
+if(GNURADIO_VERSION)
+    if(GNURADIO_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
+        unset(GNURADIO_RUNTIME_FOUND)
+        message(STATUS "The GNU Radio version installed in your system (v${GNURADIO_VERSION}) is too old.")
+        if(OS_IS_LINUX)
+            message("Go to https://github.com/gnuradio/pybombs")
+            message("and follow the instructions to install GNU Radio in your system.")
+        endif()
+        if(OS_IS_MACOSX)
+            message("You can install it easily via Macports:")
+            message("  sudo port install gnuradio ")
+            message("Alternatively, you can use homebrew:")
+            message("  brew install gnuradio")
+        endif()
+        message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
+    endif()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
+    )
+else()
+    set_package_properties(GNURADIO PROPERTIES
+        DESCRIPTION "The free and open software radio ecosystem"
+    )
+endif()
+
+set_package_properties(GNURADIO PROPERTIES
+    URL "https://www.gnuradio.org/"
+)

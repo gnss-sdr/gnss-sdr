@@ -14,7 +14,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,6 +40,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "bayesian_estimation.h"
 #include "cpu_multicorrelator_real_codes.h"
 #include "gnss_synchro.h"
@@ -50,11 +54,11 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <vector>
 
 class Gps_L1_Ca_Kf_Tracking_cc;
 
-typedef boost::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>
-    gps_l1_ca_kf_tracking_cc_sptr;
+using gps_l1_ca_kf_tracking_cc_sptr = boost::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>;
 
 gps_l1_ca_kf_tracking_cc_sptr
 gps_l1_ca_kf_make_tracking_cc(uint32_t order,
@@ -62,7 +66,7 @@ gps_l1_ca_kf_make_tracking_cc(uint32_t order,
     int64_t fs_in, uint32_t vector_length,
     bool dump,
     std::string dump_filename,
-    float pll_bw_hz,
+    float dll_bw_hz,
     float early_late_space_chips,
     bool bce_run,
     uint32_t bce_ptrans,
@@ -166,7 +170,7 @@ private:
     // Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
-    double d_acq_carrier_doppler_step_hz;
+    double d_acq_carrier_doppler_step_hz{};
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator
@@ -174,7 +178,7 @@ private:
     float* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator_real_codes multicorrelator_cpu;
+    Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
 
     // tracking vars
     double d_code_freq_chips;
@@ -184,7 +188,7 @@ private:
     double d_carrier_dopplerrate_hz2;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
-    double d_carr_phase_error_rad;
+    double d_carr_phase_error_rad{};
     double d_carr_phase_sigma2;
     double d_code_phase_samples;
     double code_error_chips;
@@ -199,7 +203,7 @@ private:
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;

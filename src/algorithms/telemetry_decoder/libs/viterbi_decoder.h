@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,7 @@
 
 #include <cstddef>  // for size_t
 #include <deque>
+#include <vector>
 
 /*!
  * \brief Class that implements a Viterbi decoder
@@ -42,7 +43,7 @@ class Viterbi_Decoder
 {
 public:
     Viterbi_Decoder(const int g_encoder[], const int KK, const int nn);
-    ~Viterbi_Decoder();
+    ~Viterbi_Decoder() = default;
     void reset();
 
     /*!
@@ -55,7 +56,7 @@ public:
      */
     float decode_block(const double input_c[], int* output_u_int, const int LL);
 
-    float decode_continuous(const double sym[], const int traceback_depth, int output_u_int[],
+    float decode_continuous(const double sym[], const int traceback_depth, int bits[],
         const int nbits_requested, int& nbits_decoded);
 
 private:
@@ -94,16 +95,16 @@ private:
     int d_number_symbols;
 
     // trellis definition
-    int* d_out0;
-    int* d_state0;
-    int* d_out1;
-    int* d_state1;
+    std::vector<int> d_out0;
+    std::vector<int> d_state0;
+    std::vector<int> d_out1;
+    std::vector<int> d_state1;
 
     // trellis state
-    float* d_pm_t;
+    std::vector<float> d_pm_t;
     std::deque<Prev> d_trellis_paths;
-    float* d_metric_c;  /* Set of all possible branch metrics */
-    float* d_rec_array; /* Received values for one trellis section */
+    std::vector<float> d_metric_c;  /* Set of all possible branch metrics */
+    std::vector<float> d_rec_array; /* Received values for one trellis section */
     bool d_trellis_state_is_initialised;
 
     // measures
@@ -113,7 +114,7 @@ private:
     void init_trellis_state();
     int do_acs(const double sym[], int nbits);
     int do_traceback(std::size_t traceback_length);
-    int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int bits[], float& indicator_metric);
+    int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int output_u_int[], float& indicator_metric);
 
     // branch metric function
     float gamma(const float rec_array[], int symbol, int nn);

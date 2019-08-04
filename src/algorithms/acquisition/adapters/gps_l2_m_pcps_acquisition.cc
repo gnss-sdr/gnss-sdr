@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,9 +39,7 @@
 #include "gps_l2c_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <algorithm>
 
 
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
@@ -68,7 +66,10 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters_.blocking = blocking_;
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters_.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
@@ -126,7 +127,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L2_M_PERIOD * 1000.0);
     vector_length_ = acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms * (acq_parameters_.bit_transition_flag ? 2 : 1);
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -150,7 +151,9 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
+
     num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
     if (in_streams_ > 1)
         {
@@ -163,21 +166,8 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 }
 
 
-GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition()
-{
-    delete[] code_;
-}
-
-
 void GpsL2MPcpsAcquisition::stop_acquisition()
 {
-}
-
-
-void GpsL2MPcpsAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
 }
 
 
@@ -222,6 +212,14 @@ void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
+void GpsL2MPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
+
+
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -239,14 +237,12 @@ signed int GpsL2MPcpsAcquisition::mag()
 void GpsL2MPcpsAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    auto* code = new std::complex<float>[code_length_];
-
+    std::vector<std::complex<float>> code(code_length_);
 
     if (acq_parameters_.use_automatic_resampler)
         {
@@ -257,15 +253,13 @@ void GpsL2MPcpsAcquisition::set_local_code()
             gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
         }
 
-
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
-            memcpy(&(code_[i * code_length_]), code,
-                sizeof(gr_complex) * code_length_);
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 
@@ -273,6 +267,7 @@ void GpsL2MPcpsAcquisition::reset()
 {
     acquisition_->set_active(true);
 }
+
 
 void GpsL2MPcpsAcquisition::set_state(int state)
 {
@@ -282,7 +277,7 @@ void GpsL2MPcpsAcquisition::set_state(int state)
 
 float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
@@ -372,6 +367,8 @@ gr::basic_block_sptr GpsL2MPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
+
 void GpsL2MPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
 {
     acquisition_->set_resampler_latency(latency_samples);

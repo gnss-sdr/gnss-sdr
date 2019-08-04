@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,19 +32,40 @@
  */
 
 #include "rtcm_printer.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "galileo_ephemeris.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
+#include "gnss_synchro.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_ephemeris.h"
+#include "rtcm.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <glog/logging.h>
+#include <ctime>      // for tm
+#include <exception>  // for exception
+#include <fcntl.h>    // for O_RDWR
+#include <iostream>   // for cout, cerr
+#include <termios.h>  // for tcgetattr
+#include <unistd.h>   // for close, write
+
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <glog/logging.h>
-#include <cstdint>
-#include <fcntl.h>  // for O_RDWR
-#include <iomanip>
-#include <termios.h>  // for tcgetattr
-#include <utility>
-
-
-using google::LogMessage;
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 
 Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
@@ -55,24 +76,24 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
     rtcm_base_path = base_path;
     if (d_rtcm_file_dump)
         {
-            boost::filesystem::path full_path(boost::filesystem::current_path());
-            const boost::filesystem::path p(rtcm_base_path);
-            if (!boost::filesystem::exists(p))
+            fs::path full_path(fs::current_path());
+            const fs::path p(rtcm_base_path);
+            if (!fs::exists(p))
                 {
                     std::string new_folder;
-                    for (auto& folder : boost::filesystem::path(rtcm_base_path))
+                    for (auto& folder : fs::path(rtcm_base_path))
                         {
                             new_folder += folder.string();
-                            boost::system::error_code ec;
-                            if (!boost::filesystem::exists(new_folder))
+                            errorlib::error_code ec;
+                            if (!fs::exists(new_folder))
                                 {
-                                    if (!boost::filesystem::create_directory(new_folder, ec))
+                                    if (!fs::create_directory(new_folder, ec))
                                         {
                                             std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                             rtcm_base_path = full_path.string();
                                         }
                                 }
-                            new_folder += boost::filesystem::path::preferred_separator;
+                            new_folder += fs::path::preferred_separator;
                         }
                 }
             else
@@ -84,7 +105,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                     std::cout << "RTCM binary file will be stored at " << rtcm_base_path << std::endl;
                 }
 
-            rtcm_base_path = rtcm_base_path + boost::filesystem::path::preferred_separator;
+            rtcm_base_path = rtcm_base_path + fs::path::preferred_separator;
         }
 
     if (time_tag_name)
@@ -143,7 +164,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                 }
         }
 
-    rtcm_devname = std::move(rtcm_dump_devname);
+    rtcm_devname = rtcm_dump_devname;
     if (flag_rtcm_tty_port == true)
         {
             rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());
@@ -190,13 +211,31 @@ Rtcm_Printer::~Rtcm_Printer()
         {
             int64_t pos;
             pos = rtcm_file_descriptor.tellp();
-            rtcm_file_descriptor.close();
+            try
+                {
+                    rtcm_file_descriptor.close();
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                }
             if (pos == 0)
                 {
-                    if (remove(rtcm_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary RTCM file";
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(rtcm_filename), ec))
+                        {
+                            LOG(INFO) << "Error deleting temporary RTCM file";
+                        }
                 }
         }
-    close_serial();
+    try
+        {
+            close_serial();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
 }
 
 
@@ -345,7 +384,9 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
     int32_t fd = 0;
-    struct termios options;
+    // clang-format off
+    struct termios options{};
+    // clang-format on
     int64_t BAUD;
     int64_t DATABITS;
     int64_t STOPBITS;
@@ -353,13 +394,19 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
     int64_t PARITY;
 
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC);
-    if (fd == -1) return fd;  // failed to open TTY port
+    if (fd == -1)
+        {
+            return fd;  // failed to open TTY port
+        }
 
-    if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
-    tcgetattr(fd, &options);                                                    // read serial port options
+    if (fcntl(fd, F_SETFL, 0) == -1)
+        {
+            LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
+        }
+    tcgetattr(fd, &options);  // read serial port options
 
     BAUD = B9600;
-    //BAUD  =  B38400;
+    // BAUD  =  B38400;
     DATABITS = CS8;
     STOPBITS = 0;
     PARITYON = 0;
@@ -367,7 +414,7 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
 
     options.c_cflag = BAUD | DATABITS | STOPBITS | PARITYON | PARITY | CLOCAL | CREAD;
     // enable receiver, set 8 bit data, ignore control lines
-    //options.c_cflag |= (CLOCAL | CREAD | CS8);
+    // options.c_cflag |= (CLOCAL | CREAD | CS8);
     options.c_iflag = IGNPAR;
 
     // set the new port options
@@ -387,7 +434,7 @@ void Rtcm_Printer::close_serial()
 
 bool Rtcm_Printer::Print_Message(const std::string& message)
 {
-    //write to file
+    // write to file
     if (d_rtcm_file_dump)
         {
             try
@@ -401,7 +448,7 @@ bool Rtcm_Printer::Print_Message(const std::string& message)
                 }
         }
 
-    //write to serial device
+    // write to serial device
     if (rtcm_dev_descriptor != -1)
         {
             if (write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1)

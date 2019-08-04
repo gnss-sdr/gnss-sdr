@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,9 +37,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <algorithm>
 
 
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
@@ -62,7 +60,10 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters_.fs_in = fs_in_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters_.doppler_max = doppler_max_;
     acq_parameters_.ms_per_code = 4;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters_.ms_per_code);
@@ -95,10 +96,10 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
         }
     if (acq_parameters_.use_automatic_resampler)
         {
-            if (acq_parameters_.fs_in > Galileo_E1_OPT_ACQ_FS_HZ)
+            if (acq_parameters_.fs_in > GALILEO_E1_OPT_ACQ_FS_HZ)
                 {
-                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / Galileo_E1_OPT_ACQ_FS_HZ);
-                    uint32_t decimation = acq_parameters_.fs_in / Galileo_E1_OPT_ACQ_FS_HZ;
+                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / GALILEO_E1_OPT_ACQ_FS_HZ);
+                    uint32_t decimation = acq_parameters_.fs_in / GALILEO_E1_OPT_ACQ_FS_HZ;
                     while (acq_parameters_.fs_in % decimation > 0)
                         {
                             decimation--;
@@ -107,26 +108,26 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
                     acq_parameters_.resampled_fs = acq_parameters_.fs_in / static_cast<int>(acq_parameters_.resampler_ratio);
                 }
             //--- Find number of samples per spreading code (4 ms)  -----------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E1_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
         }
     else
         {
             //--- Find number of samples per spreading code (4 ms)  -----------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E1_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
         }
 
-    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(Galileo_E1_CODE_PERIOD_MS);
+    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GALILEO_E1_CODE_PERIOD_MS);
     vector_length_ = sampled_ms_ * acq_parameters_.samples_per_ms;
     if (bit_transition_flag_)
         {
             vector_length_ *= 2;
         }
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -153,7 +154,9 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -165,21 +168,8 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 }
 
 
-GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition()
-{
-    delete[] code_;
-}
-
-
 void GalileoE1PcpsAmbiguousAcquisition::stop_acquisition()
 {
-}
-
-
-void GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
 }
 
 
@@ -187,7 +177,10 @@ void GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
-    if (pfa == 0.0) pfa = configuration_->property(role_ + ".pfa", 0.0);
+    if (pfa == 0.0)
+        {
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
+        }
 
     if (pfa == 0.0)
         {
@@ -220,6 +213,14 @@ void GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_st
 }
 
 
+void GalileoE1PcpsAmbiguousAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
+
+
 void GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -237,7 +238,6 @@ signed int GalileoE1PcpsAmbiguousAcquisition::mag()
 void GalileoE1PcpsAmbiguousAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
@@ -246,12 +246,12 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     bool cboc = configuration_->property(
         "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-    auto* code = new std::complex<float>[code_length_];
+    std::vector<std::complex<float>> code(code_length_);
 
     if (acquire_pilot_ == true)
         {
-            //set local signal generator to Galileo E1 pilot component (1C)
-            char pilot_signal[3] = "1C";
+            // set local signal generator to Galileo E1 pilot component (1C)
+            std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
             if (acq_parameters_.use_automatic_resampler)
                 {
                     galileo_e1_code_gen_complex_sampled(code, pilot_signal,
@@ -265,26 +265,29 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
         }
     else
         {
+            std::array<char, 3> Signal_{};
+            Signal_[0] = gnss_synchro_->Signal[0];
+            Signal_[1] = gnss_synchro_->Signal[1];
+            Signal_[2] = '\0';
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                    galileo_e1_code_gen_complex_sampled(code, Signal_,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                    galileo_e1_code_gen_complex_sampled(code, Signal_,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }
 
-
+    gsl::span<gr_complex> code__span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
         {
-            memcpy(&(code_[i * code_length_]), code, sizeof(gr_complex) * code_length_);
+            std::copy_n(code.data(), code_length_, code__span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 
@@ -393,6 +396,7 @@ gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

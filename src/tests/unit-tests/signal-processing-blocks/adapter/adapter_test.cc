@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,6 +40,7 @@
 #include <gtest/gtest.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <fstream>
 #include <iterator>
@@ -51,7 +52,7 @@ class DataTypeAdapter : public ::testing::Test
 {
 public:
     DataTypeAdapter();
-    ~DataTypeAdapter();
+    ~DataTypeAdapter() override;
     int run_byte_to_short_block();
     int run_ibyte_to_cbyte_block();
     int run_ibyte_to_complex_block();
@@ -69,13 +70,13 @@ DataTypeAdapter::DataTypeAdapter()
 {
     file_name_input = "adapter_test_input.dat";
     file_name_output = "adapter_test_output.dat";
-    int8_t input_bytes[] = {2, 23, -1, 127, -127, 0};
-    int16_t input_shorts[] = {2, 23, -1, 127, -127, 0, 255, 255};
+    std::array<int8_t, 6> input_bytes{2, 23, -1, 127, -127, 0};
+    std::array<int16_t, 8> input_shorts{2, 23, -1, 127, -127, 0, 255, 255};
 
-    const std::vector<int8_t> input_data_bytes_(input_bytes, input_bytes + sizeof(input_bytes) / sizeof(int8_t));
+    const std::vector<int8_t> input_data_bytes_(input_bytes.data(), input_bytes.data() + sizeof(input_bytes) / sizeof(int8_t));
     input_data_bytes = input_data_bytes_;
 
-    const std::vector<int16_t> input_data_shorts_(input_shorts, input_shorts + sizeof(input_shorts) / sizeof(int16_t));
+    const std::vector<int16_t> input_data_shorts_(input_shorts.data(), input_shorts.data() + sizeof(input_shorts) / sizeof(int16_t));
     input_data_shorts = input_data_shorts_;
 }
 

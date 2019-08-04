@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,9 +33,8 @@
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
+#include <ostream>  // for operator<<
 
-
-using google::LogMessage;
 
 HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -46,12 +45,9 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     dump_mat_ = configuration->property(role + ".dump_mat", true);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    observables_ = hybrid_make_observables_cc(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
+    observables_ = hybrid_observables_gs_make(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
     DLOG(INFO) << "Observables block ID (" << observables_->unique_id() << ")";
 }
-
-
-HybridObservables::~HybridObservables() = default;
 
 
 void HybridObservables::connect(gr::top_block_sptr top_block)

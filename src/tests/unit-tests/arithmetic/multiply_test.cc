@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,8 +43,8 @@ DEFINE_int32(size_multiply_test, 100000, "Size of the arrays used for multiply t
 
 TEST(MultiplyTest, StandardCDoubleImplementation)
 {
-    double* input = new double[FLAGS_size_multiply_test];
-    double* output = new double[FLAGS_size_multiply_test];
+    auto* input = new double[FLAGS_size_multiply_test];
+    auto* output = new double[FLAGS_size_multiply_test];
     std::fill_n(input, FLAGS_size_multiply_test, 0.0);
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
@@ -95,8 +95,8 @@ TEST(MultiplyTest, ArmadilloImplementation)
 
 TEST(MultiplyTest, StandardCComplexImplementation)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_multiply_test];
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_multiply_test];
+    auto* input = new std::complex<float>[FLAGS_size_multiply_test];
+    auto* output = new std::complex<float>[FLAGS_size_multiply_test];
     std::fill_n(input, FLAGS_size_multiply_test, std::complex<float>(0.0, 0.0));
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
@@ -174,8 +174,8 @@ TEST(MultiplyTest, ArmadilloComplexImplementation)
 
 TEST(MultiplyTest, VolkComplexImplementation)
 {
-    std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    auto* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    auto* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::fill_n(input, FLAGS_size_multiply_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -190,10 +190,10 @@ TEST(MultiplyTest, VolkComplexImplementation)
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
-    float* mag = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto* mag = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(float), volk_gnsssdr_get_alignment()));
     volk_32fc_magnitude_32f(mag, output, FLAGS_size_multiply_test);
 
-    float* result = new float(0);
+    auto* result = new float(0);
     volk_32f_accumulator_s32f(result, mag, FLAGS_size_multiply_test);
     // Comparing floating-point numbers is tricky.
     // Due to round-off errors, it is very unlikely that two floating-points will match exactly.

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,17 +41,14 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(std::move(role)),
-                                              in_stream_(in_stream),
-                                              out_stream_(out_stream),
-                                              queue_(queue)
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
+                                                           in_stream_(in_stream),
+                                                           out_stream_(out_stream),
+                                                           queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -122,7 +119,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             item_size_ = sizeof(int16_t);
         }
 
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
             valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
@@ -146,9 +143,6 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 }
 
 
-RtlTcpSignalSource::~RtlTcpSignalSource() = default;
-
-
 void RtlTcpSignalSource::MakeBlock()
 {
     try
@@ -167,7 +161,7 @@ void RtlTcpSignalSource::MakeBlock()
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if (samples_)
+    if (samples_ != 0ULL)
         {
             top_block->connect(signal_source_, 0, valve_, 0);
             DLOG(INFO) << "connected rtl tcp source to valve";
@@ -187,7 +181,7 @@ void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 
 void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if (samples_)
+    if (samples_ != 0ULL)
         {
             top_block->disconnect(signal_source_, 0, valve_, 0);
             if (dump_)
@@ -211,12 +205,9 @@ gr::basic_block_sptr RtlTcpSignalSource::get_left_block()
 
 gr::basic_block_sptr RtlTcpSignalSource::get_right_block()
 {
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             return valve_;
         }
-    else
-        {
-            return signal_source_;
-        }
+    return signal_source_;
 }

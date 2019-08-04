@@ -131,27 +131,27 @@ memb_pseuRangeRMSErr_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_cNo_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_C_NO_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_doppler_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_DOPPLER_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_wholeChips_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_WHOLE_CHIPS_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  1022 }	/* (0..1022) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_fracChips_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_FRAC_CHIPS_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 11,  11,  0,  1024 }	/* (0..1024) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_pseuRangeRMSErr_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_PSEU_RANGE_RMS_ERR_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -171,7 +171,7 @@ static asn_TYPE_member_t asn_MBR_GPS_MsrElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_cNo_constraint_1,
-		&asn_PER_memb_cNo_constr_3,
+		&ASN_PER_MEMB_C_NO_CONSTR_3,
 		0,
 		"cNo"
 		},
@@ -180,7 +180,7 @@ static asn_TYPE_member_t asn_MBR_GPS_MsrElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_doppler_constraint_1,
-		&asn_PER_memb_doppler_constr_4,
+		&ASN_PER_MEMB_DOPPLER_CONSTR_4,
 		0,
 		"doppler"
 		},
@@ -189,7 +189,7 @@ static asn_TYPE_member_t asn_MBR_GPS_MsrElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_wholeChips_constraint_1,
-		&asn_PER_memb_wholeChips_constr_5,
+		&ASN_PER_MEMB_WHOLE_CHIPS_CONSTR_5,
 		0,
 		"wholeChips"
 		},
@@ -198,7 +198,7 @@ static asn_TYPE_member_t asn_MBR_GPS_MsrElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_fracChips_constraint_1,
-		&asn_PER_memb_fracChips_constr_6,
+		&ASN_PER_MEMB_FRAC_CHIPS_CONSTR_6,
 		0,
 		"fracChips"
 		},
@@ -216,7 +216,7 @@ static asn_TYPE_member_t asn_MBR_GPS_MsrElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_pseuRangeRMSErr_constraint_1,
-		&asn_PER_memb_pseuRangeRMSErr_constr_8,
+		&ASN_PER_MEMB_PSEU_RANGE_RMS_ERR_CONSTR_8,
 		0,
 		"pseuRangeRMSErr"
 		},

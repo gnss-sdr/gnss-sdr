@@ -94,7 +94,7 @@ EncodingType_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_EncodingType_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_ENCODING_TYPE_CONSTR_1 = {
 	{ APC_CONSTRAINED | APC_EXTENSIBLE,  2,  2,  0,  2 }	/* (0..2,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -142,7 +142,7 @@ asn_TYPE_descriptor_t asn_DEF_EncodingType = {
 	asn_DEF_EncodingType_tags_1,	/* Same as above */
 	sizeof(asn_DEF_EncodingType_tags_1)
 		/sizeof(asn_DEF_EncodingType_tags_1[0]), /* 1 */
-	&asn_PER_type_EncodingType_constr_1,
+	&ASN_PER_TYPE_ENCODING_TYPE_CONSTR_1,
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_EncodingType_specs_1	/* Additional specs */
 };

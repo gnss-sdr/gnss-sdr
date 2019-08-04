@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,6 +39,7 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+#include "concurrent_queue.h"
 #include "file_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -46,7 +47,6 @@
 #include "in_memory_configuration.h"
 #include "notch_filter.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
 
 
@@ -57,16 +57,16 @@ class NotchFilterTest : public ::testing::Test
 protected:
     NotchFilterTest()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_notch_filter_test_nsamples;
     }
-    ~NotchFilterTest() = default;
+    ~NotchFilterTest() override = default;
 
     void init();
     void configure_gr_complex_gr_complex();
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;
@@ -95,7 +95,10 @@ TEST_F(NotchFilterTest, InstantiateGrComplexGrComplex)
     configure_gr_complex_gr_complex();
     std::unique_ptr<NotchFilter> filter(new NotchFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 

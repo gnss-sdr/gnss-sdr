@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,20 +35,28 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
-#include "agnss_ref_location.h"
-#include "agnss_ref_time.h"
-#include "configuration_interface.h"
-#include "control_message_factory.h"
-#include "gnss_flowgraph.h"
-#include "gnss_satellite.h"
-#include "gnss_sdr_supl_client.h"
-#include "tcp_cmd_interface.h"
-#include <armadillo>
-#include <boost/thread.hpp>
-#include <gnuradio/msg_queue.h>
-#include <memory>
-#include <vector>
+#include "agnss_ref_location.h"    // for Agnss_Ref_Location
+#include "agnss_ref_time.h"        // for Agnss_Ref_Time
+#include "concurrent_queue.h"      // for Concurrent_Queue
+#include "gnss_sdr_supl_client.h"  // for Gnss_Sdr_Supl_Client
+#include "tcp_cmd_interface.h"     // for TcpCmdInterface
+#include <pmt/pmt.h>
+#include <array>    // for array
+#include <ctime>    // for time_t (gmtime, strftime in implementation)
+#include <memory>   // for shared_ptr
+#include <string>   // for string
+#include <thread>   // for std::thread
+#include <utility>  // for pair
+#include <vector>   // for vector
 
+#ifdef ENABLE_FPGA
+#include <boost/thread.hpp>  // for boost::thread
+#endif
+
+
+class ConfigurationInterface;
+class GNSSFlowgraph;
+class Gnss_Satellite;
 
 /*!
  * \brief This class represents the main thread of the application, so the name is ControlThread.
@@ -71,7 +79,9 @@ public:
      */
     ControlThread(std::shared_ptr<ConfigurationInterface> configuration);
 
-    //! \brief Destructor
+    /*!
+     * \brief Destructor
+     */
     ~ControlThread();
 
     /*! \brief Runs the control thread
@@ -91,17 +101,16 @@ public:
     /*!
      * \brief Sets the control_queue
      *
-     * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
+     * \param[in] std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue
      */
-    void set_control_queue(const gr::msg_queue::sptr& control_queue);
+    void set_control_queue(const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);  // NOLINT(performance-unnecessary-value-param)
 
-
-    unsigned int processed_control_messages()
+    unsigned int processed_control_messages() const
     {
         return processed_control_messages_;
     }
 
-    unsigned int applied_actions()
+    unsigned int applied_actions() const
     {
         return applied_actions_;
     }
@@ -117,13 +126,21 @@ public:
     }
 
 private:
-    //Telecommand TCP interface
+    // Telecommand TCP interface
     TcpCmdInterface cmd_interface_;
     void telecommand_listener();
-    boost::thread cmd_interface_thread_;
-    //SUPL assistance classes
-    gnss_sdr_supl_client supl_client_acquisition_;
-    gnss_sdr_supl_client supl_client_ephemeris_;
+
+    /*
+     * New receiver event dispatcher
+     */
+    bool receiver_on_standby_;
+    void event_dispatcher(bool &valid_event, pmt::pmt_t &msg);
+
+    std::thread cmd_interface_thread_;
+
+    // SUPL assistance classes
+    Gnss_Sdr_Supl_Client supl_client_acquisition_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
     int supl_mns;  // Current network MNC (Mobile Network code), 2 or 3 digits.
     int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
@@ -134,13 +151,6 @@ private:
     // Read {ephemeris, iono, utc, ref loc, ref time} assistance from a local XML file previously recorded
     bool read_assistance_from_XML();
 
-    // Save {ephemeris, iono, utc, ref loc, ref time} assistance to a local XML file
-    //bool save_assistance_to_XML();
-
-    void read_control_messages();
-
-    void process_control_messages();
-
     /*
      * Blocking function that reads the GPS assistance queue
      */
@@ -150,7 +160,7 @@ private:
      * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues
      * returns a vector filled with the available satellites ordered from high elevation to low elevation angle.
      */
-    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const arma::vec& LLH);
+    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const std::array<float, 3> &LLH);
 
     /*
      * Read initial GNSS assistance from SUPL server or local XML files
@@ -160,17 +170,16 @@ private:
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
-    gr::msg_queue::sptr control_queue_;
-    std::shared_ptr<ControlMessageFactory> control_message_factory_;
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
     bool stop_;
     bool restart_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-    boost::thread keyboard_thread_;
-    boost::thread sysv_queue_thread_;
-    boost::thread gps_acq_assist_data_collector_thread_;
+
+    std::thread keyboard_thread_;
+    std::thread sysv_queue_thread_;
+    std::thread gps_acq_assist_data_collector_thread_;
 
     void keyboard_listener();
     void sysv_queue_listener();
@@ -194,6 +203,10 @@ private:
 
     Agnss_Ref_Location agnss_ref_location_;
     Agnss_Ref_Time agnss_ref_time_;
+
+#ifdef ENABLE_FPGA
+    boost::thread fpga_helper_thread_;
+#endif
 };
 
-#endif /*GNSS_SDR_CONTROL_THREAD_H_*/
+#endif /* GNSS_SDR_CONTROL_THREAD_H_ */

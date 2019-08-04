@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,9 +43,11 @@
         ONE_PI_TWO_PX = (1/Pi)*2^X
 */
 
-const double PI = 3.1415926535897932;  //!<  pi
-const double PI_2 = 2.0 * PI;          //!<  2 * pi
+const double HALF_PI = 1.570796326794897;  //!< pi/2
+const double PI = 3.1415926535897932;      //!<  pi
+const double PI_2 = 2.0 * PI;              //!<  2 * pi
 
+const double TWO_P3 = (8);                        //!< 2^3
 const double TWO_P4 = (16);                       //!< 2^4
 const double TWO_P11 = (2048);                    //!< 2^11
 const double TWO_P12 = (4096);                    //!< 2^12
@@ -91,13 +93,14 @@ const double TWO_N44 = (5.684341886080802e-14);   //!< 2^-44
 const double TWO_N46 = (1.4210854715202e-014);    //!< 2^-46
 const double TWO_N48 = (3.552713678800501e-15);   //!< 2^-46
 
-const double TWO_N50 = (8.881784197001252e-016);  //!< 2^-50
-const double TWO_N51 = (4.44089209850063e-016);   //!< 2^-51
-const double TWO_N55 = (2.775557561562891e-017);  //!< 2^-55
-const double TWO_N57 = (6.938893903907228e-18);   //!< 2^-57
-const double TWO_N59 = (1.73472347597681e-018);   //!< 2^-59
-const double TWO_N60 = (8.673617379884036e-19);   //!< 2^-60
-const double TWO_N68 = (3.388131789017201e-21);   //!< 2^-68
+const double TWO_N50 = (8.881784197001252e-016);                                //!< 2^-50
+const double TWO_N51 = (4.44089209850063e-016);                                 //!< 2^-51
+const double TWO_N55 = (2.775557561562891e-017);                                //!< 2^-55
+const double TWO_N57 = (6.938893903907228e-18);                                 //!< 2^-57
+const double TWO_N59 = (1.73472347597681e-018);                                 //!< 2^-59
+const double TWO_N60 = (8.673617379884036e-19);                                 //!< 2^-60
+const double TWO_N66 = (1.3552527156068805425093160010874271392822265625e-20);  //!< 2^-66
+const double TWO_N68 = (3.388131789017201e-21);                                 //!< 2^-68
 
 
 const double PI_TWO_N19 = (5.992112452678286e-006);  //!< Pi*2^-19
@@ -113,6 +116,7 @@ const double AS2R = (D2R / 3600.0);     //!<  arc sec to radian
 
 const double DEFAULT_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!<  Default Earth rotation rate, [rad/s]
 const double SPEED_OF_LIGHT = 299792458.0;               //!<  [m/s]
+const double SPEED_OF_LIGHT_MS = 299792.4580;            //!<  [m/ms]
 const double AU = 149597870691.0;                        //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
 
 #endif /* GNSS_SDR_MATH_CONSTANTS_H_ */

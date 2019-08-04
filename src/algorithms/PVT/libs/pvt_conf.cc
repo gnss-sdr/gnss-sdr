@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,10 +35,14 @@ Pvt_Conf::Pvt_Conf()
     type_of_receiver = 0U;
     output_rate_ms = 0;
     display_rate_ms = 0;
+    kml_rate_ms = 1000;
+    gpx_rate_ms = 1000;
+    geojson_rate_ms = 1000;
+    nmea_rate_ms = 1000;
 
+    max_obs_block_rx_clock_offset_ms = 40;
     rinex_version = 0;
     rinexobs_rate_ms = 0;
-    rinexnav_rate_ms = 0;
 
     dump = false;
     dump_mat = true;
@@ -67,4 +71,10 @@ Pvt_Conf::Pvt_Conf()
     kml_output_path = std::string(".");
     xml_output_path = std::string(".");
     rtcm_output_file_path = std::string(".");
+
+    monitor_enabled = false;
+    protobuf_enabled = true;
+    udp_port = 0;
+
+    show_local_time_zone = false;
 }

@@ -21,45 +21,6 @@ endif()
 set(__INCLUDED_VOLK_PYTHON_CMAKE TRUE)
 
 ########################################################################
-# Setup the python interpreter:
-# This allows the user to specify a specific interpreter,
-# or finds the interpreter via the built-in cmake module.
-########################################################################
-set(VOLK_PYTHON_MIN_VERSION "2.7")
-set(VOLK_PYTHON3_MIN_VERSION "3.4")
-
-if(CMAKE_VERSION VERSION_LESS 3.12)
-    if(PYTHON_EXECUTABLE)
-        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
-    else()
-        message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
-        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
-        if(NOT PYTHONINTERP_FOUND)
-            message(STATUS "python2 not found - using python3")
-            find_package(PythonInterp ${VOLK_PYTHON3_MIN_VERSION} REQUIRED)
-        endif()
-    endif()
-    find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
-else()
-    if(PYTHON_EXECUTABLE)
-        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
-    else()
-        find_package(Python COMPONENTS Interpreter)
-        set(PYTHON_VERSION_MAJOR ${Python_VERSION_MAJOR})
-        set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
-    endif()
-endif()
-
-if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
-    set(PYTHON3 TRUE)
-endif()
-
-
-
-########################################################################
 # Check for the existence of a python module:
 # - desc a string description of the check
 # - mod the name of the module to import
@@ -93,6 +54,61 @@ except: pass
 #########################################"
     "${have}")
 endmacro()
+
+
+########################################################################
+# Setup the python interpreter:
+# This allows the user to specify a specific interpreter,
+# or finds the interpreter via the built-in cmake module.
+########################################################################
+set(VOLK_PYTHON_MIN_VERSION "2.7")
+set(VOLK_PYTHON3_MIN_VERSION "3.4")
+
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else()
+        message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
+        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+        if(NOT PYTHONINTERP_FOUND)
+            message(STATUS "python2 not found - using python3")
+            find_package(PythonInterp ${VOLK_PYTHON3_MIN_VERSION} REQUIRED)
+        endif()
+    endif()
+else()
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else()
+        find_package(Python3 COMPONENTS Interpreter)
+        if(Python3_FOUND)
+            set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+            set(PYTHON_VERSION_MAJOR ${Python3_VERSION_MAJOR})
+            volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+            volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+        endif()
+        if(NOT Python3_FOUND OR NOT MAKO_FOUND OR NOT SIX_FOUND)
+            find_package(Python2 COMPONENTS Interpreter)
+            if(Python2_FOUND)
+                set(PYTHON_EXECUTABLE ${Python2_EXECUTABLE})
+                set(PYTHON_VERSION_MAJOR ${Python2_VERSION_MAJOR})
+                volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+                volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+            endif()
+            if(NOT MAKO_FOUND OR NOT SIX_FOUND)
+                unset(PYTHON_EXECUTABLE)
+                find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+            endif()
+        endif()
+    endif()
+endif()
+
+if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+    set(PYTHON3 TRUE)
+endif()
+
 
 ########################################################################
 # Sets the python installation directory VOLK_PYTHON_DIR

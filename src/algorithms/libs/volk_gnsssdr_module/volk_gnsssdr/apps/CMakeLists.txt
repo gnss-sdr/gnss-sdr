@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -35,14 +35,6 @@ include_directories(
 )
 
 
-set(Clang_required_link "")
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(Clang_required_link "c++")
-    endif()
-endif()
-
-
 if(ORC_FOUND)
     set(orc_lib ${ORC_LIBRARIES})
 else()
@@ -66,10 +58,18 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc
 )
 
+if(${FILESYSTEM_FOUND})
+    add_definitions(-DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        add_definitions(-DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(volk_gnsssdr_profile PRIVATE std::filesystem)
+endif()
+
 if(ENABLE_STATIC_LIBS)
-    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr_profile PUBLIC volk_gnsssdr_static ${Boost_LIBRARIES} ${orc_lib})
 else()
-    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr_profile PUBLIC volk_gnsssdr ${Boost_LIBRARIES} ${orc_lib})
     add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
 endif()
 
@@ -91,10 +91,12 @@ install(
 
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc)
+
+
 if(ENABLE_STATIC_LIBS)
-    target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${orc_lib})
 else()
-    target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Clang_required_link} ${orc_lib})
+    target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${orc_lib})
     add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 endif()
 

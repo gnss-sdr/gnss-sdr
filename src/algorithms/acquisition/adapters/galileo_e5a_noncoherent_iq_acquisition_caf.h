@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,10 +38,12 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
 #include "gnss_synchro.h"
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -53,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
+    ~GalileoE5aNoncoherentIQAcquisitionCaf() = default;
 
     inline std::string role() override
     {
@@ -88,7 +90,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
+
+    /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -148,6 +163,7 @@ private:
     unsigned int code_length_;
     bool bit_transition_flag_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
@@ -158,8 +174,8 @@ private:
     std::string dump_filename_;
     int Zero_padding;
     int CAF_window_hz_;
-    std::complex<float>* codeI_;
-    std::complex<float>* codeQ_;
+    std::vector<std::complex<float>> codeI_;
+    std::vector<std::complex<float>> codeQ_;
     bool both_signal_components;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;

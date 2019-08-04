@@ -1,15 +1,15 @@
 /*!
  * \file cuda_multicorrelator.h
- * \brief High optimized CUDA GPU vector multiTAP correlator class
+ * \brief Highly optimized CUDA GPU vector multiTAP correlator class
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that implements a high optimized vector multiTAP correlator class for NVIDIA CUDA GPUs
+ * Class that implements a highly optimized vector multiTAP correlator class for NVIDIA CUDA GPUs
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -92,6 +92,7 @@ struct GPU_Complex
     }
 };
 
+
 struct GPU_Complex_Short
 {
     float r;
@@ -149,7 +150,6 @@ private:
     GPU_Complex* d_local_codes_in;
     GPU_Complex* d_corr_out;
 
-    //
     std::complex<float>* d_sig_in_cpu;
     std::complex<float>* d_corr_out_cpu;
 

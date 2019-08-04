@@ -81,17 +81,17 @@ memb_ioda_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_weekNumber_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_WEEK_NUMBER_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_toa_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_TOA_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ioda_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_IODA_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  3 }	/* (0..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -102,7 +102,7 @@ static asn_TYPE_member_t asn_MBR_GANSSAlmanacModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_weekNumber_constraint_1,
-		&asn_PER_memb_weekNumber_constr_2,
+		&ASN_PER_MEMB_WEEK_NUMBER_CONSTR_2,
 		0,
 		"weekNumber"
 		},
@@ -120,7 +120,7 @@ static asn_TYPE_member_t asn_MBR_GANSSAlmanacModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_toa_constraint_1,
-		&asn_PER_memb_toa_constr_4,
+		&ASN_PER_MEMB_TOA_CONSTR_4,
 		0,
 		"toa"
 		},
@@ -129,7 +129,7 @@ static asn_TYPE_member_t asn_MBR_GANSSAlmanacModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ioda_constraint_1,
-		&asn_PER_memb_ioda_constr_5,
+		&ASN_PER_MEMB_IODA_CONSTR_5,
 		0,
 		"ioda"
 		},

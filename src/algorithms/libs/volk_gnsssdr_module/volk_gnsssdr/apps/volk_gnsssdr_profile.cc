@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -22,19 +22,34 @@
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
 #include "volk_gnsssdr/volk_gnsssdr_prefs.h"    // for volk_gnsssdr_get_config_path
 #include "volk_gnsssdr_option_helpers.h"        // for option_list, option_t
-#include <boost/filesystem/operations.hpp>      // for create_directories, exists
-#include <boost/filesystem/path.hpp>            // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>     // for filesystem
-#include <cstddef>                              // for size_t
-#include <fstream>                              // IWYU pragma: keep
-#include <iostream>                             // for operator<<, basic_ostream
-#include <map>                                  // for map, map<>::iterator
-#include <sys/stat.h>                           // for stat
-#include <utility>                              // for pair
-#include <vector>                               // for vector, vector<>::const_..
+#if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+#else
+#include <filesystem>
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#endif
+#include <cstddef>     // for size_t
+#include <fstream>     // IWYU pragma: keep
+#include <iostream>    // for operator<<, basic_ostream
+#include <map>         // for map, map<>::iterator
+#include <sys/stat.h>  // for stat
+#include <utility>     // for pair
+#include <vector>      // for vector, vector<>::const_..
 
-
+#if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+namespace fs = std::experimental::filesystem;
+#else
+namespace fs = std::filesystem;
+#endif
+#else
 namespace fs = boost::filesystem;
+#endif
 
 volk_gnsssdr_test_params_t test_params(1e-6f, 327.f, 8111, 1987, false, "");
 
@@ -250,10 +265,28 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
     const fs::path config_path(path);
     // Until we can update the config on a kernel by kernel basis
     // do not overwrite volk_gnsssdr_config when using a regex.
-    if (!fs::exists(config_path.branch_path()))
+    if (!fs::exists(config_path.parent_path()))
         {
-            std::cout << "Creating " << config_path.branch_path() << " ..." << std::endl;
-            fs::create_directories(config_path.branch_path());
+            try
+                {
+                    std::cout << "Creating " << config_path.parent_path() << " ..." << std::endl;
+                    try
+                        {
+                            fs::create_directories(config_path.parent_path());
+                        }
+                    catch (const fs::filesystem_error &e)
+                        {
+                            std::cerr << "ERROR: Could not create folder " << config_path.parent_path() << std::endl;
+                            std::cerr << "Reason: " << e.what() << std::endl;
+                            return;
+                        }
+                }
+            catch (...)
+                {
+                    // Catch exception when using std::experimental
+                    std::cerr << "ERROR: Could not create folder" << std::endl;
+                    return;
+                }
         }
 
     std::ofstream config;

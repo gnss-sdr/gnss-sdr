@@ -65,9 +65,15 @@ void tide_pl(const double *eu, const double *rp, double GMp,
 
     trace(4, "tide_pl : pos=%.3f %.3f\n", pos[0] * R2D, pos[1] * R2D);
 
-    if ((r = norm_rtk(rp, 3)) <= 0.0) return;
+    if ((r = norm_rtk(rp, 3)) <= 0.0)
+        {
+            return;
+        }
 
-    for (i = 0; i < 3; i++) ep[i] = rp[i] / r;
+    for (i = 0; i < 3; i++)
+        {
+            ep[i] = rp[i] / r;
+        }
 
     K2 = GMp / GME * std::pow(RE_WGS84, 2.04) * std::pow(RE_WGS84, 2.0) / (r * r * r);
     K3 = K2 * RE_WGS84 / r;
@@ -181,8 +187,14 @@ void tide_oload(gtime_t tut, const double *odisp, double *denu)
     for (i = 0; i < 11; i++)
         {
             ang = 0.0;
-            for (j = 0; j < 5; j++) ang += a[j] * args[i][j];
-            for (j = 0; j < 3; j++) dp[j] += odisp[j + i * 6] * cos(ang - odisp[j + 3 + i * 6] * D2R);
+            for (j = 0; j < 5; j++)
+                {
+                    ang += a[j] * args[i][j];
+                }
+            for (j = 0; j < 3; j++)
+                {
+                    dp[j] += odisp[j + i * 6] * cos(ang - odisp[j + 3 + i * 6] * D2R);
+                }
         }
     denu[0] = -dp[1];
     denu[1] = -dp[2];
@@ -245,7 +257,7 @@ void tide_pole(gtime_t tut, const double *pos, const double *erpv,
  * displacements by earth tides
  * args   : gtime_t tutc     I   time in utc
  *          double *rr       I   site position (ecef) (m)
- *          int    opt       I   options (or of the followings)
+ *          int    opt       I   options (one of the following)
  *                                 1: solid earth tide
  *                                 2: ocean tide loading
  *                                 4: pole tide
@@ -279,13 +291,19 @@ void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
 
     trace(3, "tidedisp: tutc=%s\n", time_str(tutc, 0));
 
-    if (erp) geterp(erp, tutc, erpv);
+    if (erp)
+        {
+            geterp(erp, tutc, erpv);
+        }
 
     tut = timeadd(tutc, erpv[2]);
 
     dr[0] = dr[1] = dr[2] = 0.0;
 
-    if (norm_rtk(rr, 3) <= 0.0) return;
+    if (norm_rtk(rr, 3) <= 0.0)
+        {
+            return;
+        }
 
     pos[0] = asin(rr[2] / norm_rtk(rr, 3));
     pos[1] = atan2(rr[1], rr[0]);
@@ -309,19 +327,28 @@ void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
 #else
             tide_solid(rs, rm, pos, E, gmst, opt, drt);
 #endif
-            for (i = 0; i < 3; i++) dr[i] += drt[i];
+            for (i = 0; i < 3; i++)
+                {
+                    dr[i] += drt[i];
+                }
         }
     if ((opt & 2) && odisp)
         { /* ocean tide loading */
             tide_oload(tut, odisp, denu);
             matmul("TN", 3, 1, 3, 1.0, E, denu, 0.0, drt);
-            for (i = 0; i < 3; i++) dr[i] += drt[i];
+            for (i = 0; i < 3; i++)
+                {
+                    dr[i] += drt[i];
+                }
         }
     if ((opt & 4) && erp)
         { /* pole tide */
             tide_pole(tut, pos, erpv, denu);
             matmul("TN", 3, 1, 3, 1.0, E, denu, 0.0, drt);
-            for (i = 0; i < 3; i++) dr[i] += drt[i];
+            for (i = 0; i < 3; i++)
+                {
+                    dr[i] += drt[i];
+                }
         }
     trace(5, "tidedisp: dr=%.3f %.3f %.3f\n", dr[0], dr[1], dr[2]);
 }

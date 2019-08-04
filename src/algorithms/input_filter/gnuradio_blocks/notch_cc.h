@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,18 +39,32 @@
 
 class Notch;
 
-typedef boost::shared_ptr<Notch> notch_sptr;
+using notch_sptr = boost::shared_ptr<Notch>;
 
-notch_sptr make_notch_filter(float pfa, float p_c_factor,
-    int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
+notch_sptr make_notch_filter(
+    float pfa,
+    float p_c_factor,
+    int32_t length_,
+    int32_t n_segments_est,
+    int32_t n_segments_reset);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter
  */
-
 class Notch : public gr::block
 {
+public:
+    ~Notch();
+
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
+
 private:
+    friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
+    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
     float pfa;
     float noise_pow_est;
     float thres_;
@@ -67,17 +81,6 @@ private:
     float *angle_;
     float *power_spect;
     std::unique_ptr<gr::fft::fft_complex> d_fft;
-
-public:
-    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-
-    ~Notch();
-
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items);
 };
 
-#endif  //GNSS_SDR_NOTCH_H_
+#endif  // GNSS_SDR_NOTCH_H_

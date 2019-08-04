@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,17 +39,33 @@
 
 class NotchLite;
 
-typedef boost::shared_ptr<NotchLite> notch_lite_sptr;
+using notch_lite_sptr = boost::shared_ptr<NotchLite>;
 
-notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
+notch_lite_sptr make_notch_filter_lite(
+    float p_c_factor,
+    float pfa,
+    int32_t length_,
+    int32_t n_segments_est,
+    int32_t n_segments_reset,
+    int32_t n_segments_coeff);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter light version
  */
-
 class NotchLite : public gr::block
 {
+public:
+    ~NotchLite();
+
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
+
 private:
+    friend notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
+    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
     int32_t length_;
     int32_t n_segments;
     int32_t n_segments_est;
@@ -70,17 +86,6 @@ private:
     float angle2;
     float *power_spect;
     std::unique_ptr<gr::fft::fft_complex> d_fft;
-
-public:
-    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
-
-    ~NotchLite();
-
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items);
 };
 
-#endif  //GNSS_SDR_NOTCH_LITE_H_
+#endif  // GNSS_SDR_NOTCH_LITE_H_

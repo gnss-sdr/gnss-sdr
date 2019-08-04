@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,10 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-
-
-using google::LogMessage;
-
+#include <array>
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     ConfigurationInterface* configuration, const std::string& role,
@@ -52,7 +49,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 {
     Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
     std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -76,23 +73,71 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
             trk_param.smoother_length = configuration->property(role + ".smoother_length", 10);
         }
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
-    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+        }
     trk_param.pll_bw_hz = pll_bw_hz;
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
-    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+        }
     trk_param.dll_bw_hz = dll_bw_hz;
     float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
     trk_param.pll_bw_narrow_hz = pll_bw_narrow_hz;
     float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
     trk_param.dll_bw_narrow_hz = dll_bw_narrow_hz;
+
+    int dll_filter_order = configuration->property(role + ".dll_filter_order", 2);
+    if (dll_filter_order < 1)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 1.";
+            dll_filter_order = 1;
+        }
+    if (dll_filter_order > 3)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
+            dll_filter_order = 3;
+        }
+    trk_param.dll_filter_order = dll_filter_order;
+
+    int pll_filter_order = configuration->property(role + ".pll_filter_order", 3);
+    if (pll_filter_order < 2)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 2.";
+            pll_filter_order = 2;
+        }
+    if (pll_filter_order > 3)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 3.";
+            pll_filter_order = 3;
+        }
+    trk_param.pll_filter_order = pll_filter_order;
+
+    if (pll_filter_order == 2)
+        {
+            trk_param.fll_filter_order = 1;
+        }
+    if (pll_filter_order == 3)
+        {
+            trk_param.fll_filter_order = 2;
+        }
+
+    bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
+    trk_param.enable_fll_pull_in = enable_fll_pull_in;
+    float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
+    trk_param.fll_bw_hz = fll_bw_hz;
+    trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
+
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     trk_param.early_late_space_chips = early_late_space_chips;
-    float very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
+    float very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.5);
     trk_param.very_early_late_space_chips = very_early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
     trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    float very_early_late_space_narrow_chips = configuration->property(role + ".very_early_late_space_narrow_chips", 0.6);
+    float very_early_late_space_narrow_chips = configuration->property(role + ".very_early_late_space_narrow_chips", 0.5);
     trk_param.very_early_late_space_narrow_chips = very_early_late_space_narrow_chips;
     bool track_pilot = configuration->property(role + ".track_pilot", false);
     if (extend_correlation_symbols < 1)
@@ -111,25 +156,18 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
     trk_param.track_pilot = track_pilot;
     trk_param.extend_correlation_symbols = extend_correlation_symbols;
-    int vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
+    int vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     trk_param.system = 'E';
-    char sig_[3] = "1B";
-    std::memcpy(trk_param.signal, sig_, 3);
-    int cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
-    trk_param.cn0_samples = cn0_samples;
-    int cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
-    trk_param.cn0_min = cn0_min;
-    int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
-    trk_param.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
-    if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
-    trk_param.carrier_lock_th = carrier_lock_th;
+    std::array<char, 3> sig_{'1', 'B', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
+    trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
+    trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
+    trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);
+    trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
+    trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -154,11 +192,9 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 }
 
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking() = default;
-
-
 void GalileoE1DllPllVemlTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
 
 
@@ -189,7 +225,7 @@ void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -198,7 +234,7 @@ void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

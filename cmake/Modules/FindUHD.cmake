@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,10 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+#
+# Provides the following imported target:
+# Iio::iio
+#
+
 ########################################################################
 # Find the library for the USRP Hardware Driver
 ########################################################################
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_UHD uhd)
 
@@ -72,4 +81,46 @@ find_library(UHD_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
+
+if(PC_UHD_VERSION)
+    set(UHD_VERSION ${PC_UHD_VERSION})
+endif()
+if(NOT PC_UHD_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET UHD_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(UHD_LIBRARIES_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${UHD_LIBRARIES_DIR}/cmake/uhd/UHDConfigVersion.cmake)
+        include(${UHD_LIBRARIES_DIR}/cmake/uhd/UHDConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(UHD_VERSION ${PACKAGE_VERSION})
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
+set_package_properties(UHD PROPERTIES
+    URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
+)
+
+if(UHD_FOUND AND UHD_VERSION)
+    set_package_properties(UHD PROPERTIES
+        DESCRIPTION "USRP Hardware Driver (found: v${UHD_VERSION})"
+    )
+else()
+    set_package_properties(UHD PROPERTIES
+        DESCRIPTION "USRP Hardware Driver"
+    )
+endif()
+
+if(UHD_FOUND AND NOT TARGET Uhd::uhd)
+    add_library(Uhd::uhd SHARED IMPORTED)
+    set_target_properties(Uhd::uhd PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${UHD_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${UHD_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${UHD_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(UHD_LIBRARIES UHD_INCLUDE_DIRS)

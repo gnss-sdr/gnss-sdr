@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,12 +32,14 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "configuration_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_tong_acquisition_cc.h"
 #include <gnuradio/blocks/stream_to_vector.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -53,7 +55,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaPcpsTongAcquisition();
+    ~GpsL1CaPcpsTongAcquisition() = default;
 
     inline std::string role() override
     {
@@ -88,7 +90,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
+
+    /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of TONG algorithm
@@ -146,6 +161,7 @@ private:
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
@@ -156,12 +172,11 @@ private:
     int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
     float calculate_threshold(float pfa);
 };
 

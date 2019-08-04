@@ -22,7 +22,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,20 +48,22 @@
 #ifndef GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H_
 
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
 #include <fstream>
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 class pcps_assisted_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_assisted_acquisition_cc>
-    pcps_assisted_acquisition_cc_sptr;
+using pcps_assisted_acquisition_cc_sptr = boost::shared_ptr<pcps_assisted_acquisition_cc>;
 
-pcps_assisted_acquisition_cc_sptr
-pcps_make_assisted_acquisition_cc(
+pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t max_dwells,
     uint32_t sampled_ms,
     int32_t doppler_max,
@@ -78,69 +80,6 @@ pcps_make_assisted_acquisition_cc(
  */
 class pcps_assisted_acquisition_cc : public gr::block
 {
-private:
-    friend pcps_assisted_acquisition_cc_sptr
-    pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
-        int32_t samples_per_ms, bool dump,
-        std::string dump_filename);
-
-    pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
-        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
-        int32_t samples_per_ms, bool dump,
-        std::string dump_filename);
-
-    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
-        int32_t doppler_offset);
-
-    int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
-    float estimate_input_power(gr_vector_const_void_star& input_items);
-    double search_maximum();
-    void get_assistance();
-    void reset_grid();
-    void redefine_grid();
-    void free_grid_memory();
-
-    int64_t d_fs_in;
-    int32_t d_samples_per_ms;
-    int32_t d_max_dwells;
-    uint32_t d_doppler_resolution;
-    int32_t d_gnuradio_forecast_samples;
-    float d_threshold;
-    std::string d_satellite_str;
-    int32_t d_doppler_max;
-    int32_t d_doppler_min;
-    int32_t d_config_doppler_max;
-    int32_t d_config_doppler_min;
-
-    int32_t d_num_doppler_points;
-    int32_t d_doppler_step;
-    uint32_t d_sampled_ms;
-    uint32_t d_fft_size;
-    uint64_t d_sample_counter;
-    gr_complex* d_carrier;
-    gr_complex* d_fft_codes;
-
-    float** d_grid_data;
-    gr_complex** d_grid_doppler_wipeoffs;
-
-    gr::fft::fft_complex* d_fft_if;
-    gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro* d_gnss_synchro;
-    uint32_t d_code_phase;
-    float d_doppler_freq;
-    float d_input_power;
-    float d_test_statistics;
-    std::ofstream d_dump_file;
-    int32_t d_state;
-    bool d_active;
-    bool d_disable_assist;
-    int32_t d_well_count;
-    bool d_dump;
-    uint32_t d_channel;
-
-    std::string d_dump_filename;
-
 public:
     /*!
      * \brief Default destructor.
@@ -196,6 +135,14 @@ public:
     }
 
     /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = std::move(channel_fsm);
+    }
+
+    /*!
      * \brief Set statistics threshold of PCPS algorithm.
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
@@ -228,6 +175,67 @@ public:
         gr_vector_void_star& output_items);
 
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
+
+private:
+    friend pcps_assisted_acquisition_cc_sptr
+    pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
+        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
+        int32_t samples_per_ms, bool dump,
+        std::string dump_filename);
+
+    pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
+        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
+        int32_t samples_per_ms, bool dump,
+        std::string dump_filename);
+
+    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
+        int32_t doppler_offset);
+
+    int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
+    float estimate_input_power(gr_vector_const_void_star& input_items);
+    double search_maximum();
+    void get_assistance();
+    void reset_grid();
+    void redefine_grid();
+
+    int64_t d_fs_in;
+    int32_t d_samples_per_ms;
+    int32_t d_max_dwells;
+    uint32_t d_doppler_resolution;
+    int32_t d_gnuradio_forecast_samples;
+    float d_threshold;
+    std::string d_satellite_str;
+    int32_t d_doppler_max;
+    int32_t d_doppler_min;
+    int32_t d_config_doppler_max;
+    int32_t d_config_doppler_min;
+
+    int32_t d_num_doppler_points;
+    int32_t d_doppler_step;
+    uint32_t d_sampled_ms;
+    uint32_t d_fft_size;
+    uint64_t d_sample_counter;
+    std::vector<gr_complex> d_fft_codes;
+
+    std::vector<std::vector<float>> d_grid_data;
+    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+
+    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
+    std::shared_ptr<gr::fft::fft_complex> d_ifft;
+    Gnss_Synchro* d_gnss_synchro;
+    uint32_t d_code_phase;
+    float d_doppler_freq;
+    float d_input_power;
+    float d_test_statistics;
+    std::ofstream d_dump_file;
+    int32_t d_state;
+    bool d_active;
+    bool d_disable_assist;
+    int32_t d_well_count;
+    bool d_dump;
+    uint32_t d_channel;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::string d_dump_filename;
 };
 
-#endif /* GNSS_SDR_PCPS_assisted_acquisition_cc_H_*/
+#endif /* GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H_ */

@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,169 +38,169 @@
 
 auto auxCeil2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, uint32_t _samps)
+void complex_exp_gen(gsl::span<std::complex<float>> _dest, double _f, double _fs)
 {
     gr::fxpt_nco d_nco;
     d_nco.set_freq((GPS_TWO_PI * _f) / _fs);
-    d_nco.sincos(_dest, _samps, 1);
+    d_nco.sincos(_dest.data(), _dest.size(), 1);
 }
 
 
-void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs, uint32_t _samps)
+void complex_exp_gen_conj(gsl::span<std::complex<float>> _dest, double _f, double _fs)
 {
     gr::fxpt_nco d_nco;
     d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
-    d_nco.sincos(_dest, _samps, 1);
+    d_nco.sincos(_dest.data(), _dest.size(), 1);
 }
 
 
-void hex_to_binary_converter(int32_t* _dest, char _from)
+void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from)
 {
     switch (_from)
         {
         case '0':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case '1':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case '2':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case '3':
-            *(_dest) = 1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         case '4':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case '5':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case '6':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case '7':
-            *(_dest) = 1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = 1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         case '8':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case '9':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case 'A':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case 'B':
-            *(_dest) = -1;
-            *(_dest + 1) = 1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = 1;
+            _dest[2] = -1;
+            _dest[3] = -1;
             break;
         case 'C':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = 1;
             break;
         case 'D':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = 1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = 1;
+            _dest[3] = -1;
             break;
         case 'E':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = 1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = 1;
             break;
         case 'F':
-            *(_dest) = -1;
-            *(_dest + 1) = -1;
-            *(_dest + 2) = -1;
-            *(_dest + 3) = -1;
+            _dest[0] = -1;
+            _dest[1] = -1;
+            _dest[2] = -1;
+            _dest[3] = -1;
+            break;
+        default:
             break;
         }
 }
 
 
-void resampler(const float* _from, float* _dest, float _fs_in,
-    float _fs_out, uint32_t _length_in, uint32_t _length_out)
+void resampler(const gsl::span<float> _from, gsl::span<float> _dest, float _fs_in,
+    float _fs_out)
 {
     uint32_t _codeValueIndex;
     float aux;
-    //--- Find time constants --------------------------------------------------
+    // --- Find time constants -------------------------------------------------
     const float _t_in = 1 / _fs_in;    // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
-    for (uint32_t i = 0; i < _length_out - 1; i++)
+    for (uint32_t i = 0; i < _dest.size() - 1; i++)
         {
-            //=== Digitizing =======================================================
-            //--- compute index array to read sampled values -------------------------
-            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            // === Digitizing ==================================================
+            // --- compute index array to read sampled values ------------------
             aux = (_t_out * (i + 1)) / _t_in;
             _codeValueIndex = auxCeil2(aux) - 1;
 
-            //if repeat the chip -> upsample by nearest neighborhood interpolation
+            // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }
-    //--- Correct the last index (due to number rounding issues) -----------
-    _dest[_length_out - 1] = _from[_length_in - 1];
+    // --- Correct the last index (due to number rounding issues) -----------
+    _dest[_dest.size() - 1] = _from[_from.size() - 1];
 }
 
 
-void resampler(const std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
-    float _fs_out, uint32_t _length_in, uint32_t _length_out)
+void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::complex<float>> _dest, float _fs_in,
+    float _fs_out)
 {
     uint32_t _codeValueIndex;
     float aux;
-    //--- Find time constants --------------------------------------------------
+    // --- Find time constants -------------------------------------------------
     const float _t_in = 1 / _fs_in;    // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
-    for (uint32_t i = 0; i < _length_out - 1; i++)
+    for (uint32_t i = 0; i < _dest.size() - 1; i++)
         {
-            //=== Digitizing =======================================================
-            //--- compute index array to read sampled values -------------------------
-            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            // === Digitizing ==================================================
+            // --- compute index array to read sampled values ------------------
             aux = (_t_out * (i + 1)) / _t_in;
             _codeValueIndex = auxCeil2(aux) - 1;
 
-            //if repeat the chip -> upsample by nearest neighborhood interpolation
+            // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }
-    //--- Correct the last index (due to number rounding issues) -----------
-    _dest[_length_out - 1] = _from[_length_in - 1];
+    // --- Correct the last index (due to number rounding issues) -----------
+    _dest[_dest.size() - 1] = _from[_from.size() - 1];
 }

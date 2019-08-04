@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,6 @@
 #include <volk/volk.h>
 #include <utility>
 
-using google::LogMessage;
 
 FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
@@ -122,7 +121,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
         }
 
     size_t item_size;
-
+    LOG(INFO) << "Created freq_xlating_fir_filter with " << taps_.size() << " taps";
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);    //output
@@ -194,9 +193,6 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-FreqXlatingFirFilter::~FreqXlatingFirFilter() = default;
 
 
 void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
@@ -339,15 +335,13 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return gr_char_to_short_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             return gr_char_to_short_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+
+    LOG(WARNING) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }
 
 
@@ -373,13 +367,11 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             return complex_to_complex_byte_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+
+    LOG(WARNING) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }

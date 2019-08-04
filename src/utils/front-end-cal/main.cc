@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,63 +32,73 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
+#include "GPS_L1_CA.h"  // for GPS_L1_CA_COD...
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
+#include "configuration_interface.h"  // for Configuration...
 #include "file_configuration.h"
 #include "front_end_cal.h"
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
 #include "gnss_block_factory.h"
+#include "gnss_block_interface.h"  // for GNSSBlockInte...
 #include "gnss_sdr_flags.h"
-#include "gnss_sdr_supl_client.h"
-#include "gnss_signal.h"
 #include "gnss_synchro.h"
+#include "gps_acq_assist.h"  // for Gps_Acq_Assist
 #include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gps_navigation_message.h"
 #include "gps_utc_model.h"
-#include "sbas_ephemeris.h"
-#include <boost/exception/detail/exception_ptr.hpp>
-#include <boost/filesystem.hpp>
+#include <boost/any.hpp>  // for bad_any_cast
+#include <boost/bind.hpp>
+#include <boost/exception/exception.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
+#include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <gnuradio/block.h>  // for block
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/io_signature.h>   // for io_signature
+#include <gnuradio/runtime_types.h>  // for block_sptr
 #include <gnuradio/top_block.h>
+#include <pmt/pmt.h>        // for pmt_t, to_long
+#include <pmt/pmt_sugar.h>  // for mp
 #include <chrono>
+#include <cmath>  // for round
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
+#include <iostream>
+#include <map>
 #include <memory>
-#include <queue>
+#include <stdexcept>  // for logic_error
+#include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
-
-using google::LogMessage;
+#if HAS_STD_FILESYSTEM
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 DECLARE_string(log_dir);
 
-concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-concurrent_map<Gps_Iono> global_gps_iono_map;
-concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-concurrent_map<Gps_Almanac> global_gps_almanac_map;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
+Concurrent_Map<Gps_Iono> global_gps_iono_map;
+Concurrent_Map<Gps_Utc_Model> global_gps_utc_model_map;
+Concurrent_Map<Gps_Almanac> global_gps_almanac_map;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 bool stop;
-concurrent_queue<int> channel_internal_queue;
+Concurrent_Queue<int> channel_internal_queue;
 GpsL1CaPcpsAcquisitionFineDoppler* acquisition;
 Gnss_Synchro* gnss_synchro;
 std::vector<Gnss_Synchro> gnss_sync_vector;
@@ -111,7 +121,6 @@ private:
 
 public:
     int rx_message;
-    ~FrontEndCal_msg_rx();  //!< Default destructor
 };
 
 
@@ -145,9 +154,6 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 }
 
 
-FrontEndCal_msg_rx::~FrontEndCal_msg_rx() = default;
-
-
 void wait_message()
 {
     while (!stop)
@@ -178,9 +184,9 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     std::shared_ptr<GNSSBlockInterface> source;
@@ -259,7 +265,7 @@ int main(int argc, char** argv)
 {
     const std::string intro_help(
         std::string("\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n") +
-        "Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)\n" +
+        "Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)\n" +
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License\n \n");
 
@@ -280,14 +286,14 @@ int main(int argc, char** argv)
         }
     else
         {
-            const boost::filesystem::path p(FLAGS_log_dir);
-            if (!boost::filesystem::exists(p))
+            const fs::path p(FLAGS_log_dir);
+            if (!fs::exists(p))
                 {
                     std::cout << "The path "
                               << FLAGS_log_dir
                               << " does not exist, attempting to create it"
                               << std::endl;
-                    boost::filesystem::create_directory(p);
+                    fs::create_directory(p);
                 }
             std::cout << "Logging with be done at "
                       << FLAGS_log_dir << std::endl;
@@ -357,7 +363,6 @@ int main(int argc, char** argv)
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     configuration->set_property("Acquisition.max_dwells", "10");
 
-    GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);
@@ -398,7 +403,7 @@ int main(int argc, char** argv)
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> cn0_measurements_map;
 
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -417,9 +422,9 @@ int main(int argc, char** argv)
             stop = false;
             try
                 {
-                    ch_thread = boost::thread(wait_message);
+                    ch_thread = std::thread(wait_message);
                 }
-            catch (const boost::thread_resource_error& e)
+            catch (const std::exception& e)
                 {
                     LOG(INFO) << "Exception caught (thread resource error)";
                 }
@@ -457,7 +462,7 @@ int main(int argc, char** argv)
                 {
                     ch_thread.join();
                 }
-            catch (const boost::thread_resource_error& e)
+            catch (const std::exception& e)
                 {
                     LOG(INFO) << "Exception caught while joining threads.";
                 }
@@ -565,7 +570,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << "Exception caught while reading ephemeris" << std::endl;
                 }
-            catch (int ex)
+            catch (const std::exception& ex)
                 {
                     std::cout << "  " << it.first << "   " << it.second << "  (Eph not found)" << std::endl;
                 }
@@ -614,7 +619,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << "Exception caught while reading ephemeris" << std::endl;
                 }
-            catch (int ex)
+            catch (const std::exception& ex)
                 {
                     std::cout << "  " << it.first << "   " << it.second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
                 }

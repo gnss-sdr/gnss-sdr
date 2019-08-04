@@ -15,8 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
-pkg_check_modules(PC_TELEORBIT teleorbit)
+pkg_check_modules(PC_TELEORBIT teleorbit QUIET)
 
 find_path(TELEORBIT_INCLUDE_DIRS
     NAMES teleorbit/api.h
@@ -25,6 +30,7 @@ find_path(TELEORBIT_INCLUDE_DIRS
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/local/include
           /usr/include
+          /opt/local/include
           ${TELEORBIT_ROOT}/include
           $ENV{TELEORBIT_ROOT}/include
 )
@@ -39,6 +45,7 @@ find_library(TELEORBIT_LIBRARIES
           /usr/local/lib64
           /usr/lib
           /usr/lib64
+          /opt/local/lib
           ${TELEORBIT_ROOT}/lib
           $ENV{TELEORBIT_ROOT}/lib
           ${TELEORBIT_ROOT}/lib64
@@ -47,4 +54,43 @@ find_library(TELEORBIT_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TELEORBIT DEFAULT_MSG TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)
+
+if(PC_TELEORBIT_VERSION)
+    set(TELEORBIT_VERSION ${PC_TELEORBIT_VERSION})
+endif()
+
+if(NOT TELEORBIT_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET TELEORBIT_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(TELEORBIT_LIBRARIES_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${TELEORBIT_LIBRARIES_DIR}/cmake/teleorbit/TeleorbitConfigVersion.cmake)
+        include(${TELEORBIT_LIBRARIES_DIR}/cmake/teleorbit/TeleorbitConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(TELEORBIT_VERSION ${PACKAGE_VERSION})
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
+if(TELEORBIT_FOUND AND TELEORBIT_VERSION)
+    set_package_properties(TELEORBIT PROPERTIES
+        DESCRIPTION "The Teleorbit's Flexiband GNU Radio block (found: v${TELEORBIT_VERSION})"
+    )
+else()
+    set_package_properties(TELEORBIT PROPERTIES
+        DESCRIPTION "The Teleorbit's Flexiband GNU Radio block."
+    )
+endif()
+
+if(TELEORBIT_FOUND AND NOT TARGET Gnuradio::teleorbit)
+    add_library(Gnuradio::teleorbit SHARED IMPORTED)
+    set_target_properties(Gnuradio::teleorbit PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${TELEORBIT_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${TELEORBIT_INCLUDE_DIRS};${TELEORBIT_INCLUDE_DIRS}/teleorbit"
+        INTERFACE_LINK_LIBRARIES "${TELEORBIT_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,12 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+#
+# Provides the following imported target:
+# Volkgnsssdr::volkgnsssdr
+#
+
+
 ########################################################################
 # Find VOLK (Vector-Optimized Library of Kernels) GNSS-SDR library
 ########################################################################
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
-pkg_check_modules(PC_VOLK_GNSSSDR volk_gnsssdr)
+pkg_check_modules(PC_VOLK_GNSSSDR QUIET volk_gnsssdr)
 
 find_path(VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
@@ -51,3 +61,27 @@ find_library(VOLK_GNSSSDR_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VOLKGNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
 mark_as_advanced(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+
+if(PC_VOLK_GNSSSDR_VERSION)
+    set(VOLKGNSSSDR_VERSION ${PC_VOLK_GNSSSDR_VERSION})
+endif()
+
+if(VOLKGNSSSDR_FOUND AND VOLKGNSSSDR_VERSION)
+    set_package_properties(VOLKGNSSSDR PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR (found: v${VOLKGNSSSDR_VERSION})."
+    )
+else()
+    set_package_properties(VOLKGNSSSDR PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels for GNSS-SDR."
+    )
+endif()
+
+if(VOLKGNSSSDR_FOUND AND NOT TARGET Volkgnsssdr::volkgnsssdr)
+    add_library(Volkgnsssdr::volkgnsssdr SHARED IMPORTED)
+    set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${VOLK_GNSSSDR_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
+    )
+endif()

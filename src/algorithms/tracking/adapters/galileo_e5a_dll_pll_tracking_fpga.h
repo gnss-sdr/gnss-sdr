@@ -1,19 +1,12 @@
 /*!
- * \file galileo_e5a_dll_pll_tracking.h
+ * \file galileo_e5a_dll_pll_tracking_fpga.h
  * \brief Adapts a code DLL + carrier PLL
- *  tracking block to a TrackingInterface for Galileo E5a signals
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
- * \based on work from:
- *          <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          </ul>
+ *  tracking block to a TrackingInterface for Galileo E5a signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -51,32 +44,61 @@ class ConfigurationInterface;
 class GalileoE5aDllPllTrackingFpga : public TrackingInterface
 {
 public:
+    /*!
+     * \brief Constructor
+     */
     GalileoE5aDllPllTrackingFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
+    /*!
+     * \brief Destructor
+     */
     virtual ~GalileoE5aDllPllTrackingFpga();
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "Galileo_E5a_DLL_PLL_Tracking"
+    /*!
+     * \brief Returns "Galileo_E5a_DLL_PLL_Tracking_Fpga"
+     */
     inline std::string implementation() override
     {
-        return "Galileo_E5a_DLL_PLL_Tracking";
+        return "Galileo_E5a_DLL_PLL_Tracking_Fpga";
     }
 
-    inline size_t item_size() override
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
+    size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
@@ -90,23 +112,30 @@ public:
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-    void start_tracking() override;
     /*!
-     * \brief Stop running tracking
+     * \brief Start the tracking process in the FPGA
+     */
+    void start_tracking() override;
+
+    /*!
+     * \brief Stop the tracking process in the FPGA
      */
     void stop_tracking() override;
 
 private:
+    // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;      // flag that enables WE (Write Enable) of the local code FPGA
+    static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
+
+
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
-    unsigned int channel_;
+    uint32_t channel_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-
-
-    int* d_ca_codes;
-    int* d_data_codes;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    int32_t* d_ca_codes;
+    int32_t* d_data_codes;
     bool d_track_pilot;
 };
 

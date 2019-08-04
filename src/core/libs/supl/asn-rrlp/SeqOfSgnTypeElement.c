@@ -6,7 +6,7 @@
 
 #include "SeqOfSgnTypeElement.h"
 
-static asn_per_constraints_t asn_PER_type_SeqOfSgnTypeElement_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_SGN_TYPE_ELEMENT_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 2,  2,  1,  3 }	/* (SIZE(1..3)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement = {
 	asn_DEF_SeqOfSgnTypeElement_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SeqOfSgnTypeElement_tags_1)
 		/sizeof(asn_DEF_SeqOfSgnTypeElement_tags_1[0]), /* 1 */
-	&asn_PER_type_SeqOfSgnTypeElement_constr_1,
+	&ASN_PER_TYPE_SEQ_OF_SGN_TYPE_ELEMENT_CONSTR_1,
 	asn_MBR_SeqOfSgnTypeElement_1,
 	1,	/* Single element */
 	&asn_SPC_SeqOfSgnTypeElement_specs_1	/* Additional specs */

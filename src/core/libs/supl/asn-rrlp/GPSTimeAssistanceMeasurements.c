@@ -81,17 +81,17 @@ memb_deltaTow_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_referenceFrameMSB_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_REFERENCE_FRAME_MSB_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_gpsTowSubms_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_GPS_TOW_SUBMS_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 14,  14,  0,  9999 }	/* (0..9999) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_deltaTow_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELTA_TOW_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -102,7 +102,7 @@ static asn_TYPE_member_t asn_MBR_GPSTimeAssistanceMeasurements_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_referenceFrameMSB_constraint_1,
-		&asn_PER_memb_referenceFrameMSB_constr_2,
+		&ASN_PER_MEMB_REFERENCE_FRAME_MSB_CONSTR_2,
 		0,
 		"referenceFrameMSB"
 		},
@@ -111,7 +111,7 @@ static asn_TYPE_member_t asn_MBR_GPSTimeAssistanceMeasurements_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_gpsTowSubms_constraint_1,
-		&asn_PER_memb_gpsTowSubms_constr_3,
+		&ASN_PER_MEMB_GPS_TOW_SUBMS_CONSTR_3,
 		0,
 		"gpsTowSubms"
 		},
@@ -120,7 +120,7 @@ static asn_TYPE_member_t asn_MBR_GPSTimeAssistanceMeasurements_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_deltaTow_constraint_1,
-		&asn_PER_memb_deltaTow_constr_4,
+		&ASN_PER_MEMB_DELTA_TOW_CONSTR_4,
 		0,
 		"deltaTow"
 		},

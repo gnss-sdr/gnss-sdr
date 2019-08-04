@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,12 +40,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -156,9 +153,6 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-OsmosdrSignalSource::~OsmosdrSignalSource() = default;
 
 
 void OsmosdrSignalSource::driver_instance()

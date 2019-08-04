@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,7 +35,7 @@
 #include <cmath>
 #include <iostream>
 
-bool acquisition_dump_reader::read_binary_acq()
+bool Acquisition_Dump_Reader::read_binary_acq()
 {
     mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
     if (matfile == nullptr)
@@ -60,8 +60,14 @@ bool acquisition_dump_reader::read_binary_acq()
     if ((var_->dims[0] != d_samples_per_code) or (var_->dims[1] != d_num_doppler_bins))
         {
             std::cout << "Invalid Acquisition dump file: dimension matrix error" << std::endl;
-            if (var_->dims[0] != d_samples_per_code) std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << std::endl;
-            if (var_->dims[1] != d_num_doppler_bins) std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << std::endl;
+            if (var_->dims[0] != d_samples_per_code)
+                {
+                    std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << std::endl;
+                }
+            if (var_->dims[1] != d_num_doppler_bins)
+                {
+                    std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << std::endl;
+                }
             Mat_VarFree(var_);
             Mat_Close(matfile);
             return false;
@@ -137,7 +143,7 @@ bool acquisition_dump_reader::read_binary_acq()
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     int channel,
     int execution)
 {
@@ -186,7 +192,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     d_num_doppler_bins = 0;
     num_dwells = 0;
 
-    acquisition_dump_reader(basename,
+    Acquisition_Dump_Reader(basename,
         sat_,
         doppler_max_,
         doppler_step_,
@@ -196,7 +202,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     unsigned int sat,
     unsigned int doppler_max,
     unsigned int doppler_step,
@@ -218,7 +224,10 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     sample_counter = 0;
     num_dwells = 0;
     PRN = 0;
-    if (d_doppler_step == 0) d_doppler_step = 1;
+    if (d_doppler_step == 0)
+        {
+            d_doppler_step = 1;
+        }
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));
     std::vector<std::vector<float> > mag_aux(d_num_doppler_bins, std::vector<float>(d_samples_per_code));
     mag = mag_aux;
@@ -234,4 +243,4 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
 }
 
 
-acquisition_dump_reader::~acquisition_dump_reader() = default;
+Acquisition_Dump_Reader::~Acquisition_Dump_Reader() = default;

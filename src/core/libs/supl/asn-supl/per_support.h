@@ -56,24 +56,24 @@ extern "C"
  * This function returns -1 if the specified number of bits could not be
  * extracted due to EOD or other conditions.
  */
-    int32_t per_get_few_bits(asn_per_data_t *per_data, int get_nbits);
+    int32_t per_get_few_bits(asn_per_data_t *pd, int get_nbits);
 
-    /* Undo the immediately preceeding "get_few_bits" operation */
-    void per_get_undo(asn_per_data_t *per_data, int get_nbits);
+    /* Undo the immediately preceding "get_few_bits" operation */
+    void per_get_undo(asn_per_data_t *pd, int get_nbits);
 
     /*
  * Extract a large number of bits from the specified PER data pointer.
  * This function returns -1 if the specified number of bits could not be
  * extracted due to EOD or other conditions.
  */
-    int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int right_align,
+    int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int alright,
         int get_nbits);
 
     /*
  * Get the length "n" from the Unaligned PER stream.
  */
     ssize_t uper_get_length(asn_per_data_t *pd,
-        int effective_bound_bits,
+        int ebits,
         int *repeat);
 
     /*
@@ -87,7 +87,7 @@ extern "C"
     ssize_t uper_get_nsnnwn(asn_per_data_t *pd);
 
     /* X.691-2008/11, #11.5.6 */
-    int uper_get_constrained_whole_number(asn_per_data_t *pd, unsigned long *v, int nbits);
+    int uper_get_constrained_whole_number(asn_per_data_t *pd, unsigned long *out_value, int nbits);
 
     /* Non-thread-safe debugging function, don't use it */
     char *per_data_string(asn_per_data_t *pd);
@@ -107,7 +107,7 @@ extern "C"
     } asn_per_outp_t;
 
     /* Output a small number of bits (<= 31) */
-    int per_put_few_bits(asn_per_outp_t *per_data, uint32_t bits, int obits);
+    int per_put_few_bits(asn_per_outp_t *po, uint32_t bits, int obits);
 
     /* Output a large number of bits */
     int per_put_many_bits(asn_per_outp_t *po, const uint8_t *src, int put_nbits);

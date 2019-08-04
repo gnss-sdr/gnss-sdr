@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,18 +42,16 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <fstream>
 #include <map>
 #include <string>
+#include <vector>
 
 class glonass_l2_ca_dll_pll_c_aid_tracking_sc;
 
-typedef boost::shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_sc>
-    glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr;
+using glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr = boost::shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_sc>;
 
 glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
 glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
@@ -128,7 +126,7 @@ private:
     //gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
     //cpu_multicorrelator multicorrelator_cpu;
-    cpu_multicorrelator_16sc multicorrelator_cpu_16sc;
+    Cpu_Multicorrelator_16sc multicorrelator_cpu_16sc;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
@@ -182,7 +180,7 @@ private:
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;

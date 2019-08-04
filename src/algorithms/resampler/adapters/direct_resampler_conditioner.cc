@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,7 +41,6 @@
 #include <cstdint>
 #include <limits>
 
-using google::LogMessage;
 
 DirectResamplerConditioner::DirectResamplerConditioner(
     ConfigurationInterface* configuration, const std::string& role,
@@ -112,9 +111,6 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-DirectResamplerConditioner::~DirectResamplerConditioner() = default;
 
 
 void DirectResamplerConditioner::connect(gr::top_block_sptr top_block)

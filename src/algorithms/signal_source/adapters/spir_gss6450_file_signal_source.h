@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "unpack_spir_gss6450_samples.h"
@@ -42,7 +43,7 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -58,9 +59,9 @@ class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
     SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
-        uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue);
+        uint32_t in_streams, uint32_t out_streams, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~SpirGSS6450FileSignalSource();
+    ~SpirGSS6450FileSignalSource() = default;
     inline std::string role() override
     {
         return role_;
@@ -97,19 +98,19 @@ public:
         return repeat_;
     }
 
-    inline long sampling_frequency() const
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    inline long samples() const
+    inline uint64_t samples() const
     {
         return samples_;
     }
 
 private:
     uint64_t samples_;
-    double sampling_frequency_;
+    int64_t sampling_frequency_;
     std::string filename_;
     bool repeat_;
     bool dump_;  //Enables dumping the gr_complex sample output
@@ -131,7 +132,7 @@ private:
     std::vector<boost::shared_ptr<gr::block>> valve_vec_;
     std::vector<gr::blocks::file_sink::sptr> sink_vec_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
-    gr::msg_queue::sptr queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     size_t item_size_;
 };
 

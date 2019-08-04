@@ -31,7 +31,7 @@ memb_deltaGNASSTOD_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_deltaGNASSTOD_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELTA_GNASSTOD_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -60,7 +60,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_MsrSetElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_deltaGNASSTOD_constraint_1,
-		&asn_PER_memb_deltaGNASSTOD_constr_4,
+		&ASN_PER_MEMB_DELTA_GNASSTOD_CONSTR_4,
 		0,
 		"deltaGNASSTOD"
 		},

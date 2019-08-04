@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,20 +34,24 @@
 
 #include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
-#include "gnss_synchro.h"
-#include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "exponential_smoother.h"
+#include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
+#include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>
-#include <fstream>
-#include <map>
-#include <queue>
-#include <string>
-#include <utility>
+#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
+#include <gnuradio/block.h>       // for block
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
+#include <pmt/pmt.h>              // for pmt_t
+#include <cstdint>                // for int32_t
+#include <fstream>                // for string, ofstream
+#include <utility>                // for pair
+#include <vector>
 
+class Gnss_Synchro;
 class dll_pll_veml_tracking;
 
-typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
+using dll_pll_veml_tracking_sptr = boost::shared_ptr<dll_pll_veml_tracking>;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
@@ -71,9 +75,8 @@ public:
 
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
-
+    void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
-    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -82,7 +85,7 @@ private:
     void update_tracking_vars();
     void clear_tracking_vars();
     void save_correlation_results();
-    void log_data(bool integrating);
+    void log_data();
     int32_t save_matfile();
 
     // tracking configuration vars
@@ -92,27 +95,30 @@ private:
     uint32_t d_channel;
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
-    //Signal parameters
+    // Signal parameters
     bool d_secondary;
-    bool interchange_iq;
     double d_signal_carrier_freq;
     double d_code_period;
     double d_code_chip_rate;
     uint32_t d_secondary_code_length;
+    uint32_t d_data_secondary_code_length;
     uint32_t d_code_length_chips;
     uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
     int32_t d_symbols_per_bit;
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
+    std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_gps_l1ca_preambles_symbols;
-    boost::circular_buffer<float> d_symbol_history;
+    int32_t d_preamble_length_symbols;
 
-    //tracking state machine
+    // dll filter buffer
+    boost::circular_buffer<float> d_dll_filt_history;
+    // tracking state machine
     int32_t d_state;
-    //Integration period in samples
+
+    // Integration period in samples
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
@@ -120,8 +126,9 @@ private:
     float *d_data_code;
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
-    cpu_multicorrelator_real_codes multicorrelator_cpu;
-    cpu_multicorrelator_real_codes correlator_data_cpu;  //for data channel
+    Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
+    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
+
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
         Implement this functionality inside multicorrelator class
@@ -137,14 +144,16 @@ private:
     bool d_enable_extended_integration;
     int32_t d_extend_correlation_symbols_count;
     int32_t d_current_symbol;
+    int32_t d_current_data_symbol;
 
     gr_complex d_VE_accu;
     gr_complex d_E_accu;
     gr_complex d_P_accu;
+    gr_complex d_P_accu_old;
     gr_complex d_L_accu;
     gr_complex d_VL_accu;
-    gr_complex d_last_prompt;
 
+    gr_complex d_P_data_accu;
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;
@@ -153,20 +162,24 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
+
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
-    // PLL and DLL filter library
-    Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_loop_filter d_code_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
 
     // tracking vars
-    double d_carr_error_hz;
+    bool d_pull_in_transitory;
+    bool d_corrected_doppler;
+    double d_current_correlation_time_s;
+    double d_carr_phase_error_hz;
+    double d_carr_freq_error_hz;
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;
@@ -187,13 +200,14 @@ private:
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
-    std::deque<float> d_carrier_lock_detector_queue;
+    int32_t d_code_lock_fail_counter;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    std::deque<gr_complex> d_Prompt_buffer_deque;
-    gr_complex *d_Prompt_buffer;
-
+    boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
+    Exponential_Smoother d_cn0_smoother;
+    Exponential_Smoother d_carrier_lock_test_smoother;
     // file dump
     std::ofstream d_dump_file;
     std::string d_dump_filename;

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,10 +33,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class conjugate_sc;
 
-typedef boost::shared_ptr<conjugate_sc> conjugate_sc_sptr;
+using conjugate_sc_sptr = boost::shared_ptr<conjugate_sc>;
 
 conjugate_sc_sptr make_conjugate_sc();
 
@@ -48,10 +49,9 @@ class conjugate_sc : public gr::sync_block
 {
 private:
     friend conjugate_sc_sptr make_conjugate_sc();
-
-public:
     conjugate_sc();
 
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

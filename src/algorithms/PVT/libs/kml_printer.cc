@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,14 +31,36 @@
  */
 
 #include "kml_printer.h"
+#include "rtklib_solver.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <glog/logging.h>
+#include <cstdlib>    // for mkstemp
+#include <ctime>      // for tm
+#include <exception>  // for exception
+#include <iostream>   // for cout, cerr
+#include <sstream>
+#include <string>
+#include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
+#include <sys/types.h>  // for mode_t
+
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <glog/logging.h>
-#include <sstream>
-
-using google::LogMessage;
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 
 Kml_Printer::Kml_Printer(const std::string& base_path)
@@ -46,24 +68,24 @@ Kml_Printer::Kml_Printer(const std::string& base_path)
     positions_printed = false;
     indent = "  ";
     kml_base_path = base_path;
-    boost::filesystem::path full_path(boost::filesystem::current_path());
-    const boost::filesystem::path p(kml_base_path);
-    if (!boost::filesystem::exists(p))
+    fs::path full_path(fs::current_path());
+    const fs::path p(kml_base_path);
+    if (!fs::exists(p))
         {
             std::string new_folder;
-            for (auto& folder : boost::filesystem::path(kml_base_path))
+            for (auto& folder : fs::path(kml_base_path))
                 {
                     new_folder += folder.string();
-                    boost::system::error_code ec;
-                    if (!boost::filesystem::exists(new_folder))
+                    errorlib::error_code ec;
+                    if (!fs::exists(new_folder))
                         {
-                            if (!boost::filesystem::create_directory(new_folder, ec))
+                            if (!fs::create_directory(new_folder, ec))
                                 {
                                     std::cout << "Could not create the " << new_folder << " folder." << std::endl;
                                     kml_base_path = full_path.string();
                                 }
                         }
-                    new_folder += boost::filesystem::path::preferred_separator;
+                    new_folder += fs::path::preferred_separator;
                 }
         }
     else
@@ -75,13 +97,23 @@ Kml_Printer::Kml_Printer(const std::string& base_path)
             std::cout << "KML files will be stored at " << kml_base_path << std::endl;
         }
 
-    kml_base_path = kml_base_path + boost::filesystem::path::preferred_separator;
+    kml_base_path = kml_base_path + fs::path::preferred_separator;
 
-    boost::filesystem::path tmp_base_path = boost::filesystem::temp_directory_path();
-    boost::filesystem::path tmp_filename = boost::filesystem::unique_path();
-    boost::filesystem::path tmp_file = tmp_base_path / tmp_filename;
+    char tmp_filename_[] = "/tmp/file.XXXXXX";
+    mode_t mask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
+    int fd = mkstemp(tmp_filename_);
+    if (fd == -1)
+        {
+            std::cerr << "Error in KML printer: failed to create temporary file" << std::endl;
+        }
+    else
+        {
+            close(fd);
+        }
+    umask(mask);
+    fs::path tmp_filename = fs::path(tmp_filename_);
 
-    tmp_file_str = tmp_file.string();
+    tmp_file_str = tmp_filename.string();
 
     point_id = 0;
 }
@@ -211,7 +243,7 @@ bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
 }
 
 
-bool Kml_Printer::print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values)
+bool Kml_Printer::print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values)
 {
     double latitude;
     double longitude;
@@ -219,7 +251,7 @@ bool Kml_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
 
     positions_printed = true;
 
-    const std::shared_ptr<rtklib_solver>& position_ = position;
+    const std::shared_ptr<Rtklib_Solver>& position_ = position;
 
     double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
     double course_over_ground = position_->get_course_over_ground();  // expressed in deg
@@ -228,7 +260,10 @@ bool Kml_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
     double vdop = position_->get_vdop();
     double pdop = position_->get_pdop();
     std::string utc_time = to_iso_extended_string(position_->get_position_UTC_time());
-    if (utc_time.length() < 23) utc_time += ".";
+    if (utc_time.length() < 23)
+        {
+            utc_time += ".";
+        }
     utc_time.resize(23, '0');  // time up to ms
     utc_time.append("Z");      // UTC time zone
 
@@ -319,9 +354,20 @@ bool Kml_Printer::close_file()
 
 Kml_Printer::~Kml_Printer()
 {
-    close_file();
+    try
+        {
+            close_file();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     if (!positions_printed)
         {
-            if (remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(kml_filename), ec))
+                {
+                    LOG(INFO) << "Error deleting temporary KML file";
+                }
         }
 }

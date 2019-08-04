@@ -1,11 +1,11 @@
 /*
- * \file gps_cnav_utc_model.h
+ * \file gps_cnav_utc_model.cc
  * \brief  Interface of a GPS CNAV UTC MODEL storage
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

@@ -5,7 +5,7 @@
  * \author Fran Fabra fabra (at) ice.csic.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,7 +35,7 @@
 
 class unpack_intspir_1bit_samples;
 
-typedef boost::shared_ptr<unpack_intspir_1bit_samples> unpack_intspir_1bit_samples_sptr;
+using unpack_intspir_1bit_samples_sptr = boost::shared_ptr<unpack_intspir_1bit_samples>;
 
 unpack_intspir_1bit_samples_sptr make_unpack_intspir_1bit_samples();
 
@@ -45,16 +45,15 @@ unpack_intspir_1bit_samples_sptr make_unpack_intspir_1bit_samples();
  */
 class unpack_intspir_1bit_samples : public gr::sync_interpolator
 {
-private:
-    friend unpack_intspir_1bit_samples_sptr
-    make_unpack_intspir_1bit_samples_sptr();
-
 public:
     unpack_intspir_1bit_samples();
-    ~unpack_intspir_1bit_samples();
+    ~unpack_intspir_1bit_samples() = default;
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend unpack_intspir_1bit_samples_sptr make_unpack_intspir_1bit_samples_sptr();
 };
 
 #endif

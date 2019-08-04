@@ -6,7 +6,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,6 +32,7 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
+#include <array>
 #include <cstdint>
 #include <utility>
 
@@ -75,8 +76,8 @@ typedef struct gr_udp_header
 } gr_udp_header;
 
 
-gr_complex_ip_packet_source::sptr
-gr_complex_ip_packet_source::make(std::string src_device,
+Gr_Complex_Ip_Packet_Source::sptr
+Gr_Complex_Ip_Packet_Source::make(std::string src_device,
     const std::string &origin_address,
     int udp_port,
     int udp_packet_size,
@@ -85,7 +86,7 @@ gr_complex_ip_packet_source::make(std::string src_device,
     size_t item_size,
     bool IQ_swap_)
 {
-    return gnuradio::get_initial_sptr(new gr_complex_ip_packet_source(std::move(src_device),
+    return gnuradio::get_initial_sptr(new Gr_Complex_Ip_Packet_Source(std::move(src_device),
         origin_address,
         udp_port,
         udp_packet_size,
@@ -99,7 +100,7 @@ gr_complex_ip_packet_source::make(std::string src_device,
 /*
  * The private constructor
  */
-gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
+Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
     __attribute__((unused)) const std::string &origin_address,
     int udp_port,
     int udp_packet_size,
@@ -151,25 +152,22 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
 
 
 // Called by gnuradio to enable drivers, etc for i/o devices.
-bool gr_complex_ip_packet_source::start()
+bool Gr_Complex_Ip_Packet_Source::start()
 {
     std::cout << "gr_complex_ip_packet_source START\n";
     // open the ethernet device
     if (open() == true)
         {
             // start pcap capture thread
-            d_pcap_thread = new boost::thread(boost::bind(&gr_complex_ip_packet_source::my_pcap_loop_thread, this, descr));
+            d_pcap_thread = new boost::thread(boost::bind(&Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread, this, descr));
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
 // Called by gnuradio to disable drivers, etc for i/o devices.
-bool gr_complex_ip_packet_source::stop()
+bool Gr_Complex_Ip_Packet_Source::stop()
 {
     std::cout << "gr_complex_ip_packet_source STOP\n";
     if (descr != nullptr)
@@ -182,16 +180,16 @@ bool gr_complex_ip_packet_source::stop()
 }
 
 
-bool gr_complex_ip_packet_source::open()
+bool Gr_Complex_Ip_Packet_Source::open()
 {
-    char errbuf[PCAP_ERRBUF_SIZE];
+    std::array<char, PCAP_ERRBUF_SIZE> errbuf{};
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     // open device for reading
-    descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf);
+    descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf.data());
     if (descr == nullptr)
         {
             std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
-            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf) << std::endl;
+            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf.data()) << std::endl;
             return false;
         }
     // bind UDP port to avoid automatic reply with ICMP port unreachable packets from kernel
@@ -219,7 +217,7 @@ bool gr_complex_ip_packet_source::open()
 }
 
 
-gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
+Gr_Complex_Ip_Packet_Source::~Gr_Complex_Ip_Packet_Source()
 {
     if (d_pcap_thread != nullptr)
         {
@@ -230,15 +228,15 @@ gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
 }
 
 
-void gr_complex_ip_packet_source::static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr,
+void Gr_Complex_Ip_Packet_Source::static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
-    auto *bridge = reinterpret_cast<gr_complex_ip_packet_source *>(args);
+    auto *bridge = reinterpret_cast<Gr_Complex_Ip_Packet_Source *>(args);
     bridge->pcap_callback(args, pkthdr, packet);
 }
 
 
-void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *args, __attribute__((unused)) const struct pcap_pkthdr *pkthdr,
+void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *args, __attribute__((unused)) const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
@@ -290,7 +288,10 @@ void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *
                                     // write all in a single memcpy
                                     memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], payload_length_bytes);  // size in bytes
                                     fifo_write_ptr += payload_length_bytes;
-                                    if (fifo_write_ptr == FIFO_SIZE) fifo_write_ptr = 0;
+                                    if (fifo_write_ptr == FIFO_SIZE)
+                                        {
+                                            fifo_write_ptr = 0;
+                                        }
                                     fifo_items += payload_length_bytes;
                                 }
                             else
@@ -312,13 +313,13 @@ void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *
 }
 
 
-void gr_complex_ip_packet_source::my_pcap_loop_thread(pcap_t *pcap_handle)
+void Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread(pcap_t *pcap_handle)
 {
-    pcap_loop(pcap_handle, -1, gr_complex_ip_packet_source::static_pcap_callback, reinterpret_cast<u_char *>(this));
+    pcap_loop(pcap_handle, -1, Gr_Complex_Ip_Packet_Source::static_pcap_callback, reinterpret_cast<u_char *>(this));
 }
 
 
-void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
+void Gr_Complex_Ip_Packet_Source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
 {
     int8_t real;
     int8_t imag;
@@ -378,18 +379,24 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
                     std::cout << "Unknown wire sample type\n";
                     exit(0);
                 }
-            if (fifo_read_ptr == FIFO_SIZE) fifo_read_ptr = 0;
+            if (fifo_read_ptr == FIFO_SIZE)
+                {
+                    fifo_read_ptr = 0;
+                }
         }
 }
 
 
-int gr_complex_ip_packet_source::work(int noutput_items,
+int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
     __attribute__((unused)) gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
     // send samples to next GNU Radio block
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
-    if (fifo_items == 0) return 0;
+    if (fifo_items == 0)
+        {
+            return 0;
+        }
 
     if (output_items.size() > static_cast<uint64_t>(d_n_baseband_channels))
         {

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,11 +40,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -215,10 +213,10 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
-                    valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
+                    valve_.emplace_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 
@@ -240,14 +238,11 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 }
 
 
-UhdSignalSource::~UhdSignalSource() = default;
-
-
 void UhdSignalSource::connect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     top_block->connect(uhd_source_, i, valve_.at(i), 0);
                     DLOG(INFO) << "connected usrp source to valve RF Channel " << i;
@@ -273,7 +268,7 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     top_block->disconnect(uhd_source_, i, valve_.at(i), 0);
                     LOG(INFO) << "UHD source disconnected";
@@ -310,7 +305,7 @@ gr::basic_block_sptr UhdSignalSource::get_right_block()
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
     //TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
-    if (samples_.at(RF_channel) != 0)
+    if (samples_.at(RF_channel) != 0ULL)
         {
             return valve_.at(RF_channel);
         }

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,12 +41,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "int";
@@ -57,8 +54,14 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
-    if (FLAGS_s != "-") filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-")
+        {
+            filename_ = FLAGS_signal_source;
+        }
+    if (FLAGS_s != "-")
+        {
+            filename_ = FLAGS_s;
+        }
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -175,9 +178,6 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-SpirFileSignalSource::~SpirFileSignalSource() = default;
 
 
 void SpirFileSignalSource::connect(gr::top_block_sptr top_block)

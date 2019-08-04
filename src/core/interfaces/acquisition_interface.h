@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,7 +42,9 @@
 #include "gnss_synchro.h"
 
 template <typename Data>
-class concurrent_queue;
+class Concurrent_Queue;
+
+class ChannelFsm;
 
 /*! \brief This abstract class represents an interface to an acquisition GNSS block.
  *
@@ -55,10 +57,15 @@ class AcquisitionInterface : public GNSSBlockInterface
 {
 public:
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
-    virtual void set_channel(unsigned int channel) = 0;
+    virtual void set_channel(unsigned int channel_id) = 0;
+    virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
+    virtual void set_doppler_center(int doppler_center __attribute__((unused)))
+    {
+        return;
+    }
     virtual void init() = 0;
     virtual void set_local_code() = 0;
     virtual void set_state(int state) = 0;

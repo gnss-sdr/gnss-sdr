@@ -7,7 +7,7 @@
  *  http://git.osmocom.org/rtl-sdr/
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,13 +39,8 @@
  * \brief This class represents the dongle information
  * which is sent by rtl_tcp.
  */
-class rtl_tcp_dongle_info
+class Rtl_Tcp_Dongle_Info
 {
-private:
-    char magic_[4]{};
-    uint32_t tuner_type_;
-    uint32_t tuner_gain_count_;
-
 public:
     enum
     {
@@ -58,7 +53,7 @@ public:
         TUNER_R828D
     };
 
-    rtl_tcp_dongle_info();
+    Rtl_Tcp_Dongle_Info();
 
     boost::system::error_code read(boost::asio::ip::tcp::socket &socket);
 
@@ -77,6 +72,11 @@ public:
     {
         return tuner_gain_count_;
     }
+
+private:
+    char magic_[4]{};
+    uint32_t tuner_type_;
+    uint32_t tuner_gain_count_;
 };
 
 

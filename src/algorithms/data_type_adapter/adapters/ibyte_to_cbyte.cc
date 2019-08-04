@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,7 +34,6 @@
 #include <glog/logging.h>
 #include <volk/volk.h>
 
-using google::LogMessage;
 
 IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -75,9 +74,6 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, const std::str
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-IbyteToCbyte::~IbyteToCbyte() = default;
 
 
 void IbyteToCbyte::connect(gr::top_block_sptr top_block)

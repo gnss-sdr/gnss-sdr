@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,8 +35,6 @@
 #include <gnuradio/blocks/file_sink.h>
 
 
-using google::LogMessage;
-
 BeamformerFilter::BeamformerFilter(
     ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
@@ -51,7 +49,7 @@ BeamformerFilter::BeamformerFilter(
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            beamformer_ = make_beamformer();
+            beamformer_ = make_beamformer_sptr();
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << beamformer_->unique_id() << ")";
         }
@@ -67,7 +65,7 @@ BeamformerFilter::BeamformerFilter(
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-    samples_ = 0;
+    samples_ = 0ULL;
     if (in_stream_ > 8)
         {
             LOG(ERROR) << "This implementation only supports eight input streams";
@@ -77,9 +75,6 @@ BeamformerFilter::BeamformerFilter(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-BeamformerFilter::~BeamformerFilter() = default;
 
 
 void BeamformerFilter::connect(gr::top_block_sptr top_block)

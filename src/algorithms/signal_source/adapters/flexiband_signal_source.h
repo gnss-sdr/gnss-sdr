@@ -1,12 +1,13 @@
 /*!
- * \file raw_array_signal_source.h
- * \brief Signal Source adapter for the Teleorbit Flexiband front-end device.
- * This adapter requires a Flexiband GNURadio driver installed (not included with GNSS-SDR)
+ * \file flexiband_signal_source.h
+ * \brief ignal Source adapter for the Teleorbit Flexiband front-end device.
+ * This adapter requires a Flexiband GNU Radio driver
+ * installed (not included with GNSS-SDR)
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,15 +31,17 @@
  */
 
 
-#ifndef FLEXIBAND_SIGNAL_SOURCE_H_
-#define FLEXIBAND_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H_
+#define GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_float.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <string>
 #include <vector>
 
@@ -53,10 +56,10 @@ class FlexibandSignalSource : public GNSSBlockInterface
 {
 public:
     FlexibandSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
-        unsigned int out_stream, gr::msg_queue::sptr queue);
+        const std::string& role, unsigned int in_stream,
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~FlexibandSignalSource();
+    ~FlexibandSignalSource() = default;
 
     inline std::string role() override
     {
@@ -98,14 +101,16 @@ private:
     std::string signal_file;
     bool flag_read_file;
 
-    int RF_channels_;
+    int n_channels_;
+    int sel_ch_;
 
     gr::block_sptr flexiband_source_;
 
     std::vector<boost::shared_ptr<gr::block>> char_to_float;
     std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
+    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
 
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif /*FLEXIBAND_SIGNAL_SOURCE_H_*/
+#endif  // GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H_

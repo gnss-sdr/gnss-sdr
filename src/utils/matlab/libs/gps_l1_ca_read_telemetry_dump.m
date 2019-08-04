@@ -1,6 +1,6 @@
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
 %
 % GNSS-SDR is a software defined Global Navigation
 %           Satellite Systems receiver
@@ -32,7 +32,7 @@ function [telemetry] = gps_l1_ca_read_telemetry_dump (filename, count)
 %%
 
 m = nargchk (1,2,nargin);
-num_double_vars=3;
+num_double_vars=4;
 double_size_bytes=8;
 skip_bytes_each_read=double_size_bytes*num_double_vars;
 bytes_shift=0;
@@ -47,13 +47,16 @@ end
 f = fopen (filename, 'rb');
 if (f < 0)
 else
-    telemetry.preamble_delay_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    telemetry.tow_current_symbol_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.prn_delay_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    telemetry.tracking_sample_counter = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.Preamble_symbol_counter = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    telemetry.tow = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    bytes_shift=bytes_shift+double_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next interleaved
+    telemetry.required_symbols = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
     

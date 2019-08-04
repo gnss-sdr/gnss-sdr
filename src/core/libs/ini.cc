@@ -54,6 +54,7 @@
  */
 
 #include "ini.h"
+#include <array>
 #include <cctype>
 #include <fstream>
 #include <string>
@@ -68,7 +69,9 @@ static char* rstrip(char* s)
 {
     char* p = s + std::char_traits<char>::length(s);
     while (p > s && isspace(*--p))
-        *p = '\0';
+        {
+            *p = '\0';
+        }
     return s;
 }
 
@@ -76,7 +79,9 @@ static char* rstrip(char* s)
 static char* lskip(char* s)
 {
     while (*s && isspace(*s))
-        s++;
+        {
+            s++;
+        }
     return static_cast<char*>(s);
 }
 
@@ -85,7 +90,9 @@ static char* lskip(char* s)
 static char* find_char_or_comment(char* s, char c)
 {
     while (*s && *s != c && *s != ';')
-        s++;
+        {
+            s++;
+        }
     return static_cast<char*>(s);
 }
 
@@ -106,9 +113,9 @@ int ini_parse(const char* filename,
     void* user)
 {
     /* Uses a fair bit of stack (use heap instead if you need to) */
-    char line[MAX_LINE];
-    char section[MAX_SECTION] = "";
-    char prev_name[MAX_NAME] = "";
+    std::array<char, MAX_LINE> line{};
+    std::array<char, MAX_SECTION> section{};
+    std::array<char, MAX_NAME> prev_name{};
 
     std::ifstream file;
     char* start;
@@ -121,7 +128,9 @@ int ini_parse(const char* filename,
 
     file.open(filename, std::fstream::in);
     if (!file.is_open())
-        return -1;
+        {
+            return -1;
+        }
 
     /* Scan through file line by line */
     while (std::getline(file, line_str))
@@ -129,22 +138,27 @@ int ini_parse(const char* filename,
             lineno++;
             int len_str = line_str.length();
             const char* read_line = line_str.data();
-            if (len_str > (MAX_LINE - 1)) len_str = MAX_LINE - 1;
+            if (len_str > (MAX_LINE - 1))
+                {
+                    len_str = MAX_LINE - 1;
+                }
             int i;
             for (i = 0; i < len_str; i++)
                 {
                     line[i] = read_line[i];
                 }
             line[len_str] = '\0';
-            start = lskip(rstrip(line));
+            start = lskip(rstrip(line.data()));
 
 #if INI_ALLOW_MULTILINE
-            if (*prev_name && *start && start > line)
+            if (prev_name.data() && *start && start > line.data())
                 {
                     /* Non-black line with leading whitespace, treat as continuation
-                of previous name's value (as per Python ConfigParser). */
-                    if (!handler(user, section, prev_name, start) && !error)
-                        error = lineno;
+                       of previous name's value (as per Python ConfigParser). */
+                    if (!handler(user, section.data(), prev_name.data(), start) && !error)
+                        {
+                            error = lineno;
+                        }
                 }
             else
 #endif
@@ -155,8 +169,8 @@ int ini_parse(const char* filename,
                     if (*end == ']')
                         {
                             *end = '\0';
-                            strncpy0(section, start + 1, sizeof(section));
-                            *prev_name = '\0';
+                            strncpy0(section.data(), start + 1, sizeof(section));
+                            prev_name[MAX_NAME - 1] = '\0';
                         }
                     else if (!error)
                         {
@@ -175,13 +189,17 @@ int ini_parse(const char* filename,
                             value = lskip(end + 1);
                             end = find_char_or_comment(value, ';');
                             if (*end == ';')
-                                *end = '\0';
+                                {
+                                    *end = '\0';
+                                }
                             rstrip(value);
 
                             /* Valid name=value pair found, call handler */
-                            strncpy0(prev_name, name, sizeof(prev_name));
-                            if (!handler(user, section, name, value) && !error)
-                                error = lineno;
+                            strncpy0(prev_name.data(), name, sizeof(prev_name));
+                            if (!handler(user, section.data(), name, value) && !error)
+                                {
+                                    error = lineno;
+                                }
                         }
                     else if (!error)
                         {

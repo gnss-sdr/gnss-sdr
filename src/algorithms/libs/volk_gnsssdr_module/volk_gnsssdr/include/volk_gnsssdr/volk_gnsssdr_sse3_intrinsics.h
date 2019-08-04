@@ -4,7 +4,7 @@
  * \brief Holds SSE3 intrinsics of intrinsics.
  * They should be used in VOLK kernels to avoid copy-paste.
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *

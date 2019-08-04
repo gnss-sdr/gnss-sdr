@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,12 +33,11 @@
 #ifndef GNSS_SDR_KML_PRINTER_H_
 #define GNSS_SDR_KML_PRINTER_H_
 
-#include "pvt_solution.h"
-#include "rtklib_solver.h"
-#include <fstream>
-#include <memory>
-#include <string>
+#include <fstream>  // for ofstream
+#include <memory>   // for shared_ptr
 
+
+class Rtklib_Solver;
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
@@ -47,6 +46,13 @@
  */
 class Kml_Printer
 {
+public:
+    Kml_Printer(const std::string& base_path = std::string("."));
+    ~Kml_Printer();
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
+    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
+    bool close_file();
+
 private:
     std::ofstream kml_file;
     std::ofstream tmp_file;
@@ -56,13 +62,6 @@ private:
     std::string tmp_file_str;
     unsigned int point_id;
     std::string indent;
-
-public:
-    Kml_Printer(const std::string& base_path = std::string("."));
-    ~Kml_Printer();
-    bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values);
-    bool close_file();
 };
 
 #endif

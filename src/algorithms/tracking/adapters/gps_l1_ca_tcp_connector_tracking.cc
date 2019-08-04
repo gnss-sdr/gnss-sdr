@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,12 +42,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -101,9 +98,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
 }
 
 
-GpsL1CaTcpConnectorTracking::~GpsL1CaTcpConnectorTracking() = default;
-
-
 void GpsL1CaTcpConnectorTracking::stop_tracking()
 {
 }
@@ -129,6 +123,7 @@ void GpsL1CaTcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
+
 void GpsL1CaTcpConnectorTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -136,6 +131,7 @@ void GpsL1CaTcpConnectorTracking::connect(gr::top_block_sptr top_block)
         };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
+
 
 void GpsL1CaTcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
 {
@@ -145,10 +141,12 @@ void GpsL1CaTcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
+
 gr::basic_block_sptr GpsL1CaTcpConnectorTracking::get_left_block()
 {
     return tracking_;
 }
+
 
 gr::basic_block_sptr GpsL1CaTcpConnectorTracking::get_right_block()
 {

@@ -6,7 +6,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -47,9 +47,6 @@ unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) 
     adc_bits = adc_nbit;
     samples_per_int = 16 / adc_bits;
 }
-
-
-unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples() = default;
 
 
 void unpack_spir_gss6450_samples::decode_4bits_word(uint32_t input_uint32, gr_complex* out, int adc_bits)

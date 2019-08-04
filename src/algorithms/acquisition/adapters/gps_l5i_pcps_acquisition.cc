@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,9 +39,7 @@
 #include "gps_l5_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <algorithm>
 
 
 GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
@@ -69,7 +67,10 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters_.blocking = blocking_;
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters_.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
@@ -118,22 +119,22 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
                 }
 
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5i_CODE_RATE_HZ / GPS_L5i_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
         }
     else
         {
             acq_parameters_.resampled_fs = fs_in_;
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / GPS_L5i_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
         }
 
-    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
+    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L5I_PERIOD * 1000.0);
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
@@ -146,7 +147,9 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -158,21 +161,8 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
 }
 
 
-GpsL5iPcpsAcquisition::~GpsL5iPcpsAcquisition()
-{
-    delete[] code_;
-}
-
-
 void GpsL5iPcpsAcquisition::stop_acquisition()
 {
-}
-
-
-void GpsL5iPcpsAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
 }
 
 
@@ -217,6 +207,14 @@ void GpsL5iPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
+void GpsL5iPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
+
+
 void GpsL5iPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -236,10 +234,10 @@ void GpsL5iPcpsAcquisition::init()
     acquisition_->init();
 }
 
+
 void GpsL5iPcpsAcquisition::set_local_code()
 {
-    auto* code = new std::complex<float>[code_length_];
-
+    std::vector<std::complex<float>> code(code_length_);
 
     if (acq_parameters_.use_automatic_resampler)
         {
@@ -250,14 +248,13 @@ void GpsL5iPcpsAcquisition::set_local_code()
             gps_l5i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
         }
 
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
-            memcpy(&(code_[i * code_length_]), code,
-                sizeof(gr_complex) * code_length_);
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 
@@ -265,6 +262,7 @@ void GpsL5iPcpsAcquisition::reset()
 {
     acquisition_->set_active(true);
 }
+
 
 void GpsL5iPcpsAcquisition::set_state(int state)
 {
@@ -274,7 +272,7 @@ void GpsL5iPcpsAcquisition::set_state(int state)
 
 float GpsL5iPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
@@ -364,6 +362,7 @@ gr::basic_block_sptr GpsL5iPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void GpsL5iPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

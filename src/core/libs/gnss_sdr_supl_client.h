@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,6 @@ extern "C"
 {
 #include "supl.h"
 }
-#include "GPS_L1_CA.h"
 #include "agnss_ref_location.h"
 #include "agnss_ref_time.h"
 #include "galileo_almanac.h"
@@ -54,10 +53,6 @@ extern "C"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <glog/logging.h>
 #include <fstream>
 #include <map>
 #include <string>
@@ -65,21 +60,12 @@ extern "C"
 /*!
  * \brief class that implements a C++ interface to external Secure User Location Protocol (SUPL) client library..
  */
-class gnss_sdr_supl_client
+class Gnss_Sdr_Supl_Client
 {
-private:
-    // GSM CELL INFO
-    int mcc;
-    int mns;
-    int lac;
-    int ci;
-    // assistance protocol structure
-    supl_ctx_t ctx{};
-    // assistance data
-    supl_assist_t assist{};
-    bool read_gal_almanac_from_gsa(const std::string& file_name);
-
 public:
+    Gnss_Sdr_Supl_Client();
+    ~Gnss_Sdr_Supl_Client() = default;
+
     // SUPL SERVER INFO
     std::string server_name;
     int server_port;
@@ -118,6 +104,7 @@ public:
      * \return Error code -> 0 no errors.
      */
     int get_assistance(int i_mcc, int i_mns, int i_lac, int i_ci);
+
     /*
      * \brief Read the received SUPL data and stores it into the corresponding class members (gps_ephemeris_map, gps_almanac_map, gps_iono, gps_time, gps_utc, gps_acq_map, and gps_ref_loc)
      *
@@ -275,8 +262,17 @@ public:
      */
     void print_assistance();
 
-    gnss_sdr_supl_client();
-    ~gnss_sdr_supl_client();
+private:
+    // GSM CELL INFO
+    int mcc;
+    int mns;
+    int lac;
+    int ci;
+    // assistance protocol structure
+    supl_ctx_t ctx{};
+    // assistance data
+    supl_assist_t assist{};
+    bool read_gal_almanac_from_gsa(const std::string& file_name);
 };
 
 #endif

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -183,7 +183,7 @@ if(CPU_IS_x86)
     # eliminate AVX if cvtpi32_ps intrinsic fails like some versions of clang
     #########################################################################
 
-    # check to see if the compiler/linker works with cvtpi32_ps instrinsic when using AVX
+    # check to see if the compiler/linker works with cvtpi32_ps intrinsic when using AVX
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c "#include <immintrin.h>\nint main (void) {__m128 __a; __m64 __b; __m128 foo = _mm_cvtpi32_ps(__a, __b); return (0); }")
         execute_process(COMMAND ${CMAKE_C_COMPILER} -mavx -o
@@ -192,7 +192,7 @@ if(CPU_IS_x86)
           OUTPUT_QUIET ERROR_QUIET
           RESULT_VARIABLE avx_compile_result)
         if(NOT ${avx_compile_result} EQUAL 0)
-          overrule_arch(avx "Compiler missing cvtpi32_ps instrinsic")
+          overrule_arch(avx "Compiler missing cvtpi32_ps intrinsic")
         elseif(NOT CROSSCOMPILE_MULTILIB)
           execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
             OUTPUT_QUIET ERROR_QUIET
@@ -216,7 +216,7 @@ if(CPU_IS_x86)
     if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
       # Figure out the version of Clang
       if(CMAKE_VERSION VERSION_LESS "2.8.10")
-        # Exctract the Clang version from the --version string.
+        # Extract the Clang version from the --version string.
         # In cmake 2.8.10, we can just use CMAKE_C_COMPILER_VERSION
         # without having to go through these string manipulations
         execute_process(COMMAND ${CMAKE_C_COMPILER} --version
@@ -254,6 +254,8 @@ if(NOT CPU_IS_x86)
     overrule_arch(sse4_1 "Architecture is not x86 or x86_64")
     overrule_arch(sse4_2 "Architecture is not x86 or x86_64")
     overrule_arch(avx "Architecture is not x86 or x86_64")
+    overrule_arch(avx512f "Architecture is not x86 or x86_64")
+    overrule_arch(avx512cd "Architecture is not x86 or x86_64")
 endif()
 
 ########################################################################
@@ -311,6 +313,9 @@ if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
     #MSVC 64 bit does not have MMX, overrule it
     if(${SIZEOF_CPU} EQUAL 64 AND MSVC)
         overrule_arch(mmx "No MMX for Win64")
+        if(MSVC_VERSION GREATER 1700)
+            OVERRULE_ARCH(sse "No SSE for Win64 Visual Studio 2013")
+        endif()
     endif()
 
 endif()
@@ -477,7 +482,7 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
       endforeach()
     endif()
     enable_language(ASM)
-    set(CMAKE_ASM_FLAGS ${ARCH_ASM_FLAGS})
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${ARCH_ASM_FLAGS}")
     message(STATUS "c flags: ${FULL_C_FLAGS}")
     message(STATUS "asm flags: ${CMAKE_ASM_FLAGS}")
   endforeach()
@@ -567,71 +572,73 @@ if(MSVC)
     set_source_files_properties(${volk_gnsssdr_sources} PROPERTIES LANGUAGE CXX)
 endif()
 
-#Use object library for faster overall build in newer versions of cmake
-if(CMAKE_VERSION VERSION_GREATER "2.8.7")
-    #Create a volk_gnsssdr object library (requires cmake >= 2.8.8)
-    add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
+#Create a volk_gnsssdr object library
+add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
+target_include_directories(volk_gnsssdr_obj
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PRIVATE ${PROJECT_SOURCE_DIR}/kernels
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
-    #Add dynamic library
-    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
-    target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries} ${Boost_LIBRARIES})
+#Add dynamic library
+add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
+target_include_directories(volk_gnsssdr
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PRIVATE ${PROJECT_SOURCE_DIR}/kernels
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
-    #Configure target properties
+#Configure target properties
+if(NOT MSVC)
     set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
-    set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
-    set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
+    target_link_libraries(volk_gnsssdr m)
+endif()
+set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
+set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
 
-    #Install locations
-    install(TARGETS volk_gnsssdr
-        LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
-        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
-        RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
+#Install locations
+install(TARGETS volk_gnsssdr
+    EXPORT VOLK_GNSSSDR-export
+    LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
+    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+    RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
+)
+
+#Configure static library
+if(ENABLE_STATIC_LIBS)
+    add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+    target_link_libraries(volk_gnsssdr_static ${volk_gnsssdr_libraries} pthread)
+    if(NOT MSVC)
+        target_link_libraries(volk_gnsssdr_static m)
+    endif()
+    target_include_directories(volk_gnsssdr_static
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        PUBLIC $<INSTALL_INTERFACE:include>
+        PRIVATE ${PROJECT_SOURCE_DIR}/kernels
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-    #Configure static library
-    if(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
-
-        set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
-
-        install(TARGETS volk_gnsssdr_static
-            ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"
-        )
-    endif()
-
-#Older cmake versions (slower to build when building dynamic/static libs)
-else()
-    #create the volk_gnsssdr runtime library
-    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
-    target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
-    set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
-    set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
-
-    install(TARGETS volk_gnsssdr
-        LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
-        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
-        RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
+    install(TARGETS volk_gnsssdr_static
+        EXPORT VOLK_GNSSSDR-export
+        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"
     )
 
-    if(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr_static STATIC ${volk_gnsssdr_sources})
-
-        if(NOT WIN32)
-            set_target_properties(volk_gnsssdr_static
-                PROPERTIES OUTPUT_NAME volk_gnsssdr)
-        endif()
-
-        install(TARGETS volk_gnsssdr_static
-            ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
-        )
-    endif()
+    set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 endif()
 
 ########################################################################
 # Build the QA test application
 ########################################################################
 if(ENABLE_TESTING)
-
     #include Boost headers
     include_directories(${Boost_INCLUDE_DIRS})
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/.unittest)
@@ -645,11 +652,11 @@ if(ENABLE_TESTING)
         SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
         TARGET_DEPS volk_gnsssdr
-      )
+    )
+
     foreach(kernel ${h_files})
       get_filename_component(kernel ${kernel} NAME)
       string(REPLACE ".h" "" kernel ${kernel})
       volk_add_test(${kernel} "volk_gnsssdr_test_all")
     endforeach()
-
 endif()

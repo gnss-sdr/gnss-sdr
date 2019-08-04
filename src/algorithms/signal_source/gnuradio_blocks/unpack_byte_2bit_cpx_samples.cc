@@ -9,7 +9,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -55,9 +55,6 @@ unpack_byte_2bit_cpx_samples::unpack_byte_2bit_cpx_samples() : sync_interpolator
                                                                    4)
 {
 }
-
-
-unpack_byte_2bit_cpx_samples::~unpack_byte_2bit_cpx_samples() = default;
 
 
 int unpack_byte_2bit_cpx_samples::work(int noutput_items,

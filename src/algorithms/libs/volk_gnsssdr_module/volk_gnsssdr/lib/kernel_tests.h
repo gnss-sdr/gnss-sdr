@@ -4,7 +4,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -97,9 +97,9 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
     QA(VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_dot_prod_16ic_xn, test_params))
     QA(VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn, test_params_int16))
     QA(VOLK_INIT_PUPP(volk_gnsssdr_16ic_16i_rotator_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn, test_params_int16))
-    QA(VOLK_INIT_PUPP(volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn, test_params_int1))
-    QA(VOLK_INIT_PUPP(volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn, test_params_int1));
-    QA(VOLK_INIT_PUPP(volk_gnsssdr_32fc_32f_high_dynamic_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn, test_params_int1));
+    QA(VOLK_INIT_PUPP(volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn, test_params_inacc))
+    QA(VOLK_INIT_PUPP(volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn, test_params_inacc));
+    QA(VOLK_INIT_PUPP(volk_gnsssdr_32fc_32f_high_dynamic_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn, test_params_inacc));
 
     return test_cases;
 }

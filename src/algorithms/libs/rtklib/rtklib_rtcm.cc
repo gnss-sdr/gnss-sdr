@@ -94,19 +94,30 @@ int init_rtcm(rtcm_t *rtcm)
             rtcm->ssr[i] = ssr0;
         }
     rtcm->msg[0] = rtcm->msgtype[0] = rtcm->opt[0] = '\0';
-    for (i = 0; i < 6; i++) rtcm->msmtype[i][0] = '\0';
+    for (i = 0; i < 6; i++)
+        {
+            rtcm->msmtype[i][0] = '\0';
+        }
     rtcm->obsflag = rtcm->ephsat = 0;
     for (i = 0; i < MAXSAT; i++)
-        for (j = 0; j < NFREQ + NEXOBS; j++)
-            {
-                rtcm->cp[i][j] = 0.0;
-                rtcm->lock[i][j] = rtcm->loss[i][j] = 0;
-                rtcm->lltime[i][j] = time0;
-            }
+        {
+            for (j = 0; j < NFREQ + NEXOBS; j++)
+                {
+                    rtcm->cp[i][j] = 0.0;
+                    rtcm->lock[i][j] = rtcm->loss[i][j] = 0;
+                    rtcm->lltime[i][j] = time0;
+                }
+        }
     rtcm->nbyte = rtcm->nbit = rtcm->len = 0;
     rtcm->word = 0;
-    for (i = 0; i < 100; i++) rtcm->nmsg2[i] = 0;
-    for (i = 0; i < 300; i++) rtcm->nmsg3[i] = 0;
+    for (i = 0; i < 100; i++)
+        {
+            rtcm->nmsg2[i] = 0;
+        }
+    for (i = 0; i < 300; i++)
+        {
+            rtcm->nmsg3[i] = 0;
+        }
 
     rtcm->obs.data = nullptr;
     rtcm->nav.eph = nullptr;
@@ -123,9 +134,18 @@ int init_rtcm(rtcm_t *rtcm)
     rtcm->obs.n = 0;
     rtcm->nav.n = MAXSAT;
     rtcm->nav.ng = MAXPRNGLO;
-    for (i = 0; i < MAXOBS; i++) rtcm->obs.data[i] = data0;
-    for (i = 0; i < MAXSAT; i++) rtcm->nav.eph[i] = eph0;
-    for (i = 0; i < MAXPRNGLO; i++) rtcm->nav.geph[i] = geph0;
+    for (i = 0; i < MAXOBS; i++)
+        {
+            rtcm->obs.data[i] = data0;
+        }
+    for (i = 0; i < MAXSAT; i++)
+        {
+            rtcm->nav.eph[i] = eph0;
+        }
+    for (i = 0; i < MAXPRNGLO; i++)
+        {
+            rtcm->nav.geph[i] = geph0;
+        }
     return 1;
 }
 
@@ -173,7 +193,10 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
 
     trace(5, "input_rtcm2: data=%02x\n", data);
 
-    if ((data & 0xC0) != 0x40) return 0; /* ignore if upper 2bit != 01 */
+    if ((data & 0xC0) != 0x40)
+        {
+            return 0; /* ignore if upper 2bit != 01 */
+        }
 
     for (i = 0; i < 6; i++, data >>= 1)
         { /* decode 6-of-8 form */
@@ -183,17 +206,28 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
             if (rtcm->nbyte == 0)
                 {
                     preamb = static_cast<unsigned char>(rtcm->word >> 22);
-                    if (rtcm->word & 0x40000000) preamb ^= 0xFF; /* decode preamble */
-                    if (preamb != RTCM2PREAMB) continue;
+                    if (rtcm->word & 0x40000000)
+                        {
+                            preamb ^= 0xFF; /* decode preamble */
+                        }
+                    if (preamb != RTCM2PREAMB)
+                        {
+                            continue;
+                        }
 
                     /* check parity */
-                    if (!decode_word(rtcm->word, rtcm->buff)) continue;
+                    if (!decode_word(rtcm->word, rtcm->buff))
+                        {
+                            continue;
+                        }
                     rtcm->nbyte = 3;
                     rtcm->nbit = 0;
                     continue;
                 }
             if (++rtcm->nbit < 30)
-                continue;
+                {
+                    continue;
+                }
 
             rtcm->nbit = 0;
 
@@ -206,8 +240,14 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
                     continue;
                 }
             rtcm->nbyte += 3;
-            if (rtcm->nbyte == 6) rtcm->len = (rtcm->buff[5] >> 3) * 3 + 6;
-            if (rtcm->nbyte < rtcm->len) continue;
+            if (rtcm->nbyte == 6)
+                {
+                    rtcm->len = (rtcm->buff[5] >> 3) * 3 + 6;
+                }
+            if (rtcm->nbyte < rtcm->len)
+                {
+                    continue;
+                }
             rtcm->nbyte = 0;
             rtcm->word &= 0x3;
 
@@ -290,7 +330,10 @@ int input_rtcm3(rtcm_t *rtcm, unsigned char data)
     /* synchronize frame */
     if (rtcm->nbyte == 0)
         {
-            if (data != RTCM3PREAMB) return 0;
+            if (data != RTCM3PREAMB)
+                {
+                    return 0;
+                }
             rtcm->buff[rtcm->nbyte++] = data;
             return 0;
         }
@@ -300,7 +343,10 @@ int input_rtcm3(rtcm_t *rtcm, unsigned char data)
         {
             rtcm->len = getbitu(rtcm->buff, 14, 10) + 3; /* length without parity */
         }
-    if (rtcm->nbyte < 3 || rtcm->nbyte < rtcm->len + 3) return 0;
+    if (rtcm->nbyte < 3 || rtcm->nbyte < rtcm->len + 3)
+        {
+            return 0;
+        }
     rtcm->nbyte = 0;
 
     /* check parity */
@@ -329,8 +375,14 @@ int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
 
     for (i = 0; i < 4096; i++)
         {
-            if ((data = fgetc(fp)) == EOF) return -2;
-            if ((ret = input_rtcm2(rtcm, static_cast<unsigned char>(data)))) return ret;
+            if ((data = fgetc(fp)) == EOF)
+                {
+                    return -2;
+                }
+            if ((ret = input_rtcm2(rtcm, static_cast<unsigned char>(data))))
+                {
+                    return ret;
+                }
         }
     return 0; /* return at every 4k bytes */
 }
@@ -351,8 +403,14 @@ int input_rtcm3f(rtcm_t *rtcm, FILE *fp)
 
     for (i = 0; i < 4096; i++)
         {
-            if ((data = fgetc(fp)) == EOF) return -2;
-            if ((ret = input_rtcm3(rtcm, static_cast<unsigned char>(data)))) return ret;
+            if ((data = fgetc(fp)) == EOF)
+                {
+                    return -2;
+                }
+            if ((ret = input_rtcm3(rtcm, static_cast<unsigned char>(data))))
+                {
+                    return ret;
+                }
         }
     return 0; /* return at every 4k bytes */
 }

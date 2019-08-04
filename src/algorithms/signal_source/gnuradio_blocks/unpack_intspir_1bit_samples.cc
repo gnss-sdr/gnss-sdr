@@ -5,7 +5,7 @@
  * \author Fran Fabra fabra (at) ice.csic.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,9 +45,6 @@ unpack_intspir_1bit_samples::unpack_intspir_1bit_samples() : sync_interpolator("
                                                                  2)
 {
 }
-
-
-unpack_intspir_1bit_samples::~unpack_intspir_1bit_samples() = default;
 
 
 int unpack_intspir_1bit_samples::work(int noutput_items,

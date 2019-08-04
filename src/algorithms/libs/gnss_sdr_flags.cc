@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,10 +30,23 @@
 
 
 #include "gnss_sdr_flags.h"
-#include <boost/filesystem/operations.hpp>  // for exists
 #include <cstdint>
 #include <iostream>
 #include <string>
+
+#if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>  // for exists
+namespace fs = boost::filesystem;
+#endif
+
 
 DEFINE_string(c, "-", "Path to the configuration file (if set, overrides --config_file).");
 
@@ -54,9 +67,12 @@ DEFINE_int32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimat
 
 DEFINE_int32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz).");
 
-DEFINE_int32(max_lock_fail, 50, "Maximum number of lock failures before dropping a satellite.");
+DEFINE_int32(max_carrier_lock_fail, 5000, "Maximum number of carrier lock failures before dropping a satellite.");
 
-DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad).");
+DEFINE_int32(max_lock_fail, 50, "Maximum number of code lock failures before dropping a satellite.");
+
+//cos(2xError_angle)=0.7 -> Error_angle=22 deg
+DEFINE_double(carrier_lock_th, 0.7, "Carrier lock threshold (in rad).");
 
 DEFINE_string(RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");
 
@@ -69,8 +85,10 @@ DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter,
 
 static bool ValidateC(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value == "-")  // value is ok
-        return true;
+    if (fs::exists(value) or value == "-")
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -78,8 +96,10 @@ static bool ValidateC(const char* flagname, const std::string& value)
 
 static bool ValidateConfigFile(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value == std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"))  // value is ok
-        return true;
+    if (fs::exists(value) or value == std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"))
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -87,8 +107,10 @@ static bool ValidateConfigFile(const char* flagname, const std::string& value)
 
 static bool ValidateS(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value == "-")  // value is ok
-        return true;
+    if (fs::exists(value) or value == "-")
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -96,8 +118,10 @@ static bool ValidateS(const char* flagname, const std::string& value)
 
 static bool ValidateSignalSource(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value == "-")  // value is ok
-        return true;
+    if (fs::exists(value) or value == "-")
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -106,8 +130,10 @@ static bool ValidateSignalSource(const char* flagname, const std::string& value)
 static bool ValidateDopplerMax(const char* flagname, int32_t value)
 {
     const int32_t max_value = 1000000;
-    if (value >= 0 && value < max_value)  // value is ok
-        return true;
+    if (value >= 0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " Hz." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -116,8 +142,10 @@ static bool ValidateDopplerMax(const char* flagname, int32_t value)
 static bool ValidateDopplerStep(const char* flagname, int32_t value)
 {
     const int32_t max_value = 10000;
-    if (value >= 0 && value < max_value)  // value is ok
-        return true;
+    if (value >= 0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " Hz." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -126,8 +154,10 @@ static bool ValidateDopplerStep(const char* flagname, int32_t value)
 static bool ValidateCn0Samples(const char* flagname, int32_t value)
 {
     const int32_t max_value = 10000;
-    if (value > 0 && value < max_value)  // value is ok
-        return true;
+    if (value > 0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " samples." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -136,8 +166,10 @@ static bool ValidateCn0Samples(const char* flagname, int32_t value)
 static bool ValidateCn0Min(const char* flagname, int32_t value)
 {
     const int32_t max_value = 100;
-    if (value > 0 && value < max_value)  // value is ok
-        return true;
+    if (value > 0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " dB-Hz." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -146,8 +178,10 @@ static bool ValidateCn0Min(const char* flagname, int32_t value)
 static bool ValidateMaxLockFail(const char* flagname, int32_t value)
 {
     const int32_t max_value = 10000;
-    if (value > 0 && value < max_value)  // value is ok
-        return true;
+    if (value > 0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " fails." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -156,8 +190,10 @@ static bool ValidateMaxLockFail(const char* flagname, int32_t value)
 static bool ValidateCarrierLockTh(const char* flagname, double value)
 {
     const double max_value = 1.508;
-    if (value > 0.0 && value < max_value)  // value is ok
-        return true;
+    if (value > 0.0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " rad." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -166,8 +202,10 @@ static bool ValidateCarrierLockTh(const char* flagname, double value)
 static bool ValidateDllBw(const char* flagname, double value)
 {
     const double max_value = 10000.0;
-    if (value >= 0.0 && value < max_value)  // value is ok
-        return true;
+    if (value >= 0.0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " Hz." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;
@@ -176,8 +214,10 @@ static bool ValidateDllBw(const char* flagname, double value)
 static bool ValidatePllBw(const char* flagname, double value)
 {
     const double max_value = 10000.0;
-    if (value >= 0.0 && value < max_value)  // value is ok
-        return true;
+    if (value >= 0.0 && value < max_value)
+        {  // value is ok
+            return true;
+        }
     std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 0 < " << flagname << " < " << max_value << " Hz." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
     return false;

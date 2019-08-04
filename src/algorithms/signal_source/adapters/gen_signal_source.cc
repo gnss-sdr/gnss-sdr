@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,21 +32,19 @@
 
 #include "gen_signal_source.h"
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
 #include <sstream>
 #include <utility>
 
-using google::LogMessage;
 
 // Constructor
 GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-    std::string role, boost::shared_ptr<gr::msg_queue> queue) : signal_generator_(signal_generator),
-                                                                filter_(filter),
-                                                                role_(std::move(role)),
-                                                                queue_(std::move(queue))
+    std::string role, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : signal_generator_(signal_generator),
+                                                                             filter_(filter),
+                                                                             role_(std::move(role)),
+                                                                             queue_(std::move(queue))
 {
     connected_ = false;
 }

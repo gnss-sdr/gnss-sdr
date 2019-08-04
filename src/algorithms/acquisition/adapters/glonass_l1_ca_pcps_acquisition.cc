@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,9 +39,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <algorithm>
 
 
 GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
@@ -71,7 +69,10 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters.blocking = blocking_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms_;
@@ -93,7 +94,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
             vector_length_ *= 2;
         }
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "cshort")
         {
@@ -125,6 +126,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -136,21 +138,8 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
 }
 
 
-GlonassL1CaPcpsAcquisition::~GlonassL1CaPcpsAcquisition()
-{
-    delete[] code_;
-}
-
-
 void GlonassL1CaPcpsAcquisition::stop_acquisition()
 {
-}
-
-
-void GlonassL1CaPcpsAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
 }
 
 
@@ -213,18 +202,17 @@ void GlonassL1CaPcpsAcquisition::init()
 
 void GlonassL1CaPcpsAcquisition::set_local_code()
 {
-    auto* code = new std::complex<float>[code_length_];
+    std::vector<std::complex<float>> code(code_length_);
 
-    glonass_l1_ca_code_gen_complex_sampled(code, /* gnss_synchro_->PRN,*/ fs_in_, 0);
+    glonass_l1_ca_code_gen_complex_sampled(code, fs_in_, 0);
 
+    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            memcpy(&(code_[i * code_length_]), code,
-                sizeof(gr_complex) * code_length_);
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
-    acquisition_->set_local_code(code_);
-    delete[] code;
+    acquisition_->set_local_code(code_.data());
 }
 
 

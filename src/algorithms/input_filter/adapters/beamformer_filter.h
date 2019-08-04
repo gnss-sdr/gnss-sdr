@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,7 @@
 
 #include "gnss_block_interface.h"
 #include <gnuradio/hier_block2.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -49,7 +50,7 @@ public:
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 
-    virtual ~BeamformerFilter();
+    ~BeamformerFilter() = default;
 
     inline std::string role() override
     {
@@ -78,11 +79,11 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    unsigned long long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
     gr::block_sptr beamformer_;
     gr::block_sptr file_sink_;
 };
 
-#endif /*GNSS_SDR_BEAMFORMER_FILTER_H_*/
+#endif /* GNSS_SDR_BEAMFORMER_FILTER_H_ */

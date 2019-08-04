@@ -1,11 +1,11 @@
 /*!
- * \file gps_utc_model.h
+ * \file gps_cnav_utc_model.h
  * \brief  Interface of a GPS UTC MODEL storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,7 +32,6 @@
 #ifndef GNSS_SDR_GPS_CNAV_UTC_MODEL_H_
 #define GNSS_SDR_GPS_CNAV_UTC_MODEL_H_
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 

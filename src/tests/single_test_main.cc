@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,32 +29,19 @@
  * -------------------------------------------------------------------------
  */
 
-#include "agnss_ref_location.h"
-#include "agnss_ref_time.h"
+
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
-#include "galileo_navigation_message.h"
 #include "gps_acq_assist.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "gps_ephemeris.h"
-#include "gps_navigation_message.h"
-#include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
-#include <cmath>
 #include <iostream>
-#include <queue>
 
 
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
-
-using google::LogMessage;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 DECLARE_string(log_dir);
 

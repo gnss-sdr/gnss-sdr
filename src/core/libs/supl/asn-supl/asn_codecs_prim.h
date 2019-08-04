@@ -41,8 +41,8 @@ extern "C"
  * Also see xer_decode_general() in xer_decoder.h
  */
     asn_dec_rval_t xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
-        asn_TYPE_descriptor_t *type_descriptor,
-        void **struct_ptr, size_t struct_size,
+        asn_TYPE_descriptor_t *td,
+        void **sptr, size_t struct_size,
         const char *opt_mname,
         const void *buf_ptr, size_t size,
         xer_primitive_body_decoder_f *prim_body_decoder);

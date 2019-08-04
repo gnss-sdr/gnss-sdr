@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,7 +50,7 @@ void Tracking_2nd_DLL_filter::calculate_lopp_coef(float* tau1, float* tau2, floa
 
 void Tracking_2nd_DLL_filter::set_DLL_BW(float dll_bw_hz)
 {
-    //Calculate filter coefficient values
+    // Calculate filter coefficient values
     d_dllnoisebandwidth = dll_bw_hz;
     calculate_lopp_coef(&d_tau1_code, &d_tau2_code, d_dllnoisebandwidth, d_dlldampingratio, 1.0);  // Calculate filter coefficient values
 }
@@ -85,9 +85,6 @@ Tracking_2nd_DLL_filter::Tracking_2nd_DLL_filter()
     d_pdi_code = 0.001;  // Summation interval for code
     d_dlldampingratio = 0.7;
 }
-
-
-Tracking_2nd_DLL_filter::~Tracking_2nd_DLL_filter() = default;
 
 
 void Tracking_2nd_DLL_filter::set_pdi(float pdi_code)

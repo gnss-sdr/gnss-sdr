@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,8 +31,11 @@
 #ifndef GNSS_SDR_CONCURRENT_QUEUE_H
 #define GNSS_SDR_CONCURRENT_QUEUE_H
 
-#include <boost/thread.hpp>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <queue>
+#include <thread>
 
 template <typename Data>
 
@@ -43,17 +46,12 @@ template <typename Data>
  * boost_thread to perform MUTEX based on the code available at
  * http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
  */
-class concurrent_queue
+class Concurrent_Queue
 {
-private:
-    std::queue<Data> the_queue;
-    mutable boost::mutex the_mutex;
-    boost::condition_variable the_condition_variable;
-
 public:
     void push(Data const& data)
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         the_queue.push(data);
         lock.unlock();
         the_condition_variable.notify_one();
@@ -61,13 +59,13 @@ public:
 
     bool empty() const
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         return the_queue.empty();
     }
 
     bool try_pop(Data& popped_value)
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         if (the_queue.empty())
             {
                 return false;
@@ -79,7 +77,7 @@ public:
 
     void wait_and_pop(Data& popped_value)
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+        std::unique_lock<std::mutex> lock(the_mutex);
         while (the_queue.empty())
             {
                 the_condition_variable.wait(lock);
@@ -87,5 +85,26 @@ public:
         popped_value = the_queue.front();
         the_queue.pop();
     }
+
+    bool timed_wait_and_pop(Data& popped_value, int wait_ms)
+    {
+        std::unique_lock<std::mutex> lock(the_mutex);
+        if (the_queue.empty())
+            {
+                the_condition_variable.wait_for(lock, std::chrono::milliseconds(wait_ms));
+                if (the_queue.empty())
+                    {
+                        return false;
+                    }
+            }
+        popped_value = the_queue.front();
+        the_queue.pop();
+        return true;
+    }
+
+private:
+    std::queue<Data> the_queue;
+    mutable std::mutex the_mutex;
+    std::condition_variable the_condition_variable;
 };
 #endif

@@ -6,7 +6,7 @@
  *  Javier Arribas, 2012. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,9 +48,6 @@ Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& si
     this->satellite = satellite_;
     this->signal = signal_;
 }
-
-
-Gnss_Signal::~Gnss_Signal() = default;
 
 
 std::string Gnss_Signal::get_signal_str() const

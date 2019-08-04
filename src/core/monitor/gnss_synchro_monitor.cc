@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,53 +33,50 @@
 
 #include "gnss_synchro_monitor.h"
 #include "gnss_synchro.h"
-#include <glog/logging.h>
 #include <algorithm>
 #include <iostream>
-
-
-using google::LogMessage;
+#include <utility>
 
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
-    int output_rate_ms,
+    int decimation_factor,
     int udp_port,
-    std::vector<std::string> udp_addresses)
+    const std::vector<std::string>& udp_addresses,
+    bool enable_protobuf)
 {
     return gnss_synchro_monitor_sptr(new gnss_synchro_monitor(n_channels,
-        output_rate_ms,
+        decimation_factor,
         udp_port,
-        udp_addresses));
+        udp_addresses,
+        enable_protobuf));
 }
 
 
 gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
-    int output_rate_ms,
+    int decimation_factor,
     int udp_port,
-    std::vector<std::string> udp_addresses) : gr::sync_block("gnss_synchro_monitor",
-                                                  gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
-                                                  gr::io_signature::make(0, 0, 0))
+    const std::vector<std::string>& udp_addresses,
+    bool enable_protobuf) : gr::sync_block("gnss_synchro_monitor",
+                                gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(0, 0, 0))
 {
-    d_output_rate_ms = output_rate_ms;
+    d_decimation_factor = decimation_factor;
     d_nchannels = n_channels;
 
-    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port));
+    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port, enable_protobuf));
 
     count = 0;
 }
 
 
-gnss_synchro_monitor::~gnss_synchro_monitor() = default;
-
-
 int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
+    const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
     for (int epoch = 0; epoch < noutput_items; epoch++)
         {
             count++;
-            if (count >= d_output_rate_ms)
+            if (count >= d_decimation_factor)
                 {
                     for (unsigned int i = 0; i < d_nchannels; i++)
                         {

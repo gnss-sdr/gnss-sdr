@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,6 +31,8 @@
 
 #include "viterbi_decoder.h"
 #include <glog/logging.h>
+#include <cstring>  // for memset
+#include <ostream>  // for operator<<, basic_ostream, char_traits, endl
 
 // logging
 #define EVENT 2   // logs important events which don't occur every block
@@ -49,36 +51,21 @@ Viterbi_Decoder::Viterbi_Decoder(const int g_encoder[], const int KK, const int 
 
     // derived code properties
     d_mm = d_KK - 1;
-    d_states = 1 << d_mm;         /* 2^mm */
-    d_number_symbols = 1 << d_nn; /* 2^nn */
+    d_states = 1U << d_mm;         /* 2^mm */
+    d_number_symbols = 1U << d_nn; /* 2^nn */
 
     /* create appropriate transition matrices (trellis) */
-    d_out0 = new int[d_states];
-    d_out1 = new int[d_states];
-    d_state0 = new int[d_states];
-    d_state1 = new int[d_states];
+    d_out0.reserve(d_states);
+    d_out1.reserve(d_states);
+    d_state0.reserve(d_states);
+    d_state1.reserve(d_states);
 
-    nsc_transit(d_out0, d_state0, 0, g_encoder, d_KK, d_nn);
-    nsc_transit(d_out1, d_state1, 1, g_encoder, d_KK, d_nn);
+    nsc_transit(d_out0.data(), d_state0.data(), 0, g_encoder, d_KK, d_nn);
+    nsc_transit(d_out1.data(), d_state1.data(), 1, g_encoder, d_KK, d_nn);
 
     // initialise trellis state
     d_trellis_state_is_initialised = false;
     Viterbi_Decoder::init_trellis_state();
-}
-
-
-Viterbi_Decoder::~Viterbi_Decoder()
-{
-    // trellis definition
-    delete[] d_out0;
-    delete[] d_out1;
-    delete[] d_state0;
-    delete[] d_state1;
-
-    // init trellis state
-    delete[] d_pm_t;
-    delete[] d_rec_array;
-    delete[] d_metric_c;
 }
 
 
@@ -151,16 +138,16 @@ void Viterbi_Decoder::init_trellis_state()
     if (d_trellis_state_is_initialised)
         {
             // init trellis state
-            delete[] d_pm_t;
-            delete[] d_rec_array;
-            delete[] d_metric_c;
+            d_pm_t.clear();
+            d_rec_array.clear();
+            d_metric_c.clear();
         }
 
     // reserve new trellis state memory
-    d_pm_t = new float[d_states];
+    d_pm_t.reserve(d_states);
     d_trellis_paths = std::deque<Prev>();
-    d_rec_array = new float[d_nn];
-    d_metric_c = new float[d_number_symbols];
+    d_rec_array.reserve(d_nn);
+    d_metric_c.reserve(d_number_symbols);
     d_trellis_state_is_initialised = true;
 
     /* initialize trellis */
@@ -180,7 +167,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
     int t, i, state_at_t;
     float metric;
     float max_val;
-    auto* pm_t_next = new float[d_states];
+    std::vector<float> pm_t_next(d_states);
 
     /* t:
      *    - state: state at t
@@ -199,12 +186,14 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
         {
             /* Temporarily store the received symbols current decoding step */
             for (i = 0; i < d_nn; i++)
-                d_rec_array[i] = static_cast<float>(sym[d_nn * t + i]);
+                {
+                    d_rec_array[i] = static_cast<float>(sym[d_nn * t + i]);
+                }
 
             /* precompute all possible branch metrics */
             for (i = 0; i < d_number_symbols; i++)
                 {
-                    d_metric_c[i] = gamma(d_rec_array, i, d_nn);
+                    d_metric_c[i] = gamma(d_rec_array.data(), i, d_nn);
                     VLOG(LMORE) << "metric for (tx_sym=" << i << "|ry_sym=(" << d_rec_array[0] << ", " << d_rec_array[1] << ") = " << d_metric_c[i];
                 }
 
@@ -262,8 +251,6 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
                     pm_t_next[state_at_t] = -MAXLOG;
                 }
         }
-
-    delete[] pm_t_next;
 
     return t;
 }
@@ -358,16 +345,15 @@ float Viterbi_Decoder::gamma(const float rec_array[], int symbol, int nn)
 {
     float rm = 0;
     int i;
-    int mask;
+    unsigned int mask = 1U;
     float txsym;
 
-    mask = 1;
     for (i = 0; i < nn; i++)
         {
             //if (symbol & mask) rm += rec_array[nn - i - 1];
             txsym = symbol & mask ? 1 : -1;
             rm += txsym * rec_array[nn - i - 1];
-            mask = mask << 1;
+            mask = mask << 1U;
         }
     //rm = rm > 50 ? rm : -1000;
 
@@ -380,7 +366,7 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
 {
     int nextstate[1];
     int state, states;
-    states = (1 << (KK - 1)); /* The number of states: 2^mm */
+    states = (1U << (KK - 1)); /* The number of states: 2^mm */
 
     /* Determine the output and next state for each possible starting state */
     for (state = 0; state < states; state++)
@@ -448,11 +434,11 @@ int Viterbi_Decoder::nsc_enc_bit(int state_out_p[], int input, int state_in,
 int Viterbi_Decoder::parity_counter(int symbol, int length)
 {
     int counter;
-    int temp_parity = 0;
+    unsigned int temp_parity = 0;
     for (counter = 0; counter < length; counter++)
         {
-            temp_parity = temp_parity ^ (symbol & 1);
-            symbol = symbol >> 1;
+            temp_parity = temp_parity ^ (symbol & 1U);
+            symbol = symbol >> 1U;
         }
     return (temp_parity);
 }

@@ -1,11 +1,11 @@
 /*!
- * \file signal_generator_flags.h
+ * \file position_test_flags.h
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

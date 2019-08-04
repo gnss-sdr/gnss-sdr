@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,29 +29,31 @@
  * -------------------------------------------------------------------------
  */
 
-#include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <cstdlib>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
+#include <boost/make_shared.hpp>
+#include <boost/thread.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/throttle.h>
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <cstdlib>
+#include <fcntl.h>  // for O_WRONLY
 #include <unistd.h>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 #define DMA_ACQ_TRANSFER_SIZE 2046               // DMA transfer size for the acquisition
 #define RX_SIGNAL_MAX_VALUE 127                  // 2^7 - 1 for 8-bit signed values
@@ -80,13 +82,16 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     buffer_float = (char *)malloc(FLOAT_SIZE);  // allocate space for the temporary buffer
     if (!buffer_float)
         {
-            fprintf(stderr, "Memory error!");
+            std::cerr << "Memory error!" << std::endl;
+            return;
         }
 
     rx_signal_file = fopen(file_name, "rb");  // file containing the received signal
     if (!rx_signal_file)
         {
-            printf("Unable to open file!");
+            std::cerr << "Unable to open file!" << std::endl;
+            free(buffer_float);
+            return;
         }
 
     // determine the length of the file that contains the received signal
@@ -95,13 +100,16 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     fseek(rx_signal_file, 0, SEEK_SET);
 
     // first step: check for the maximum value of the received signal
-
     float max = 0;
     float *pointer_float;
     pointer_float = (float *)&buffer_float[0];
     for (int k = 0; k < file_length; k = k + FLOAT_SIZE)
         {
-            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+            size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+            if (result != FLOAT_SIZE)
+                {
+                    std::cerr << "Error reading buffer" << std::endl;
+                }
 
             if (fabs(pointer_float[0]) > max)
                 {
@@ -113,23 +121,27 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     fseek(rx_signal_file, 0, SEEK_SET);
 
     // allocate memory for the samples to be transferred to the DMA
-
     buffer_DMA = (signed char *)malloc(DMA_ACQ_TRANSFER_SIZE);
     if (!buffer_DMA)
         {
-            fprintf(stderr, "Memory error!");
+            std::cerr << "Memory error!" << std::endl;
+            free(buffer_float);
+            fclose(rx_signal_file);
+            return;
         }
 
     // open the DMA descriptor
     dma_descr = open("/dev/loop_tx", O_WRONLY);
     if (dma_descr < 0)
         {
-            printf("can't open loop device\n");
-            exit(1);
+            std::cerr << "Can't open loop device\n";
+            free(buffer_float);
+            free(buffer_DMA);
+            fclose(rx_signal_file);
+            return;
         }
 
     // cycle through the file containing the received samples
-
     for (int k = 0; k < NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE; k++)
         {
             fseek(rx_signal_file, 0, SEEK_SET);
@@ -151,7 +163,11 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 
                     for (int t = 0; t < transfer_size; t++)
                         {
-                            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+                            size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+                            if (result != FLOAT_SIZE)
+                                {
+                                    std::cerr << "Error reading buffer" << std::endl;
+                                }
 
                             // specify (float) (int) for a quantization maximizing the dynamic range
                             buffer_DMA[t] = static_cast<signed char>((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1) / max));
@@ -167,7 +183,6 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     close(dma_descr);
 
     // when all the samples are sent stop the top block
-
     top_block->stop();
 }
 
@@ -175,7 +190,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTestFpga_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr;
+using GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx>;
 
 GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 
@@ -203,7 +218,7 @@ void GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -225,9 +240,7 @@ GpsL1CaPcpsAcquisitionTestFpga_msg_rx::GpsL1CaPcpsAcquisitionTestFpga_msg_rx() :
 }
 
 
-GpsL1CaPcpsAcquisitionTestFpga_msg_rx::~GpsL1CaPcpsAcquisitionTestFpga_msg_rx()
-{
-}
+GpsL1CaPcpsAcquisitionTestFpga_msg_rx::~GpsL1CaPcpsAcquisitionTestFpga_msg_rx() = default;
 
 
 class GpsL1CaPcpsAcquisitionTestFpga : public ::testing::Test
@@ -241,9 +254,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CaPcpsAcquisitionTestFpga()
-    {
-    }
+    ~GpsL1CaPcpsAcquisitionTestFpga() = default;
 
     void init();
 
@@ -385,7 +396,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
+    auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";

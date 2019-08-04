@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,13 +32,14 @@
 #ifndef GNSS_SDR_PVT_SOLUTION_H_
 #define GNSS_SDR_PVT_SOLUTION_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
 
 #include <armadillo>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <deque>
 
-const unsigned int PVT_MAX_CHANNELS = 90;
-const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
 
 /*!
  * \brief Base class for a PVT solution
@@ -46,32 +47,6 @@ const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
  */
 class Pvt_Solution
 {
-private:
-    double d_rx_dt_s;  // RX time offset [s]
-
-    double d_latitude_d;             // RX position Latitude WGS84 [deg]
-    double d_longitude_d;            // RX position Longitude WGS84 [deg]
-    double d_height_m;               // RX position height WGS84 [m]
-    double d_speed_over_ground_m_s;  // RX speed over ground [m/s]
-    double d_course_over_ground_d;   // RX course over ground [deg]
-
-    double d_avg_latitude_d;   // Averaged latitude in degrees
-    double d_avg_longitude_d;  // Averaged longitude in degrees
-    double d_avg_height_m;     // Averaged height [m]
-
-    bool b_valid_position;
-
-    std::deque<double> d_hist_latitude_d;
-    std::deque<double> d_hist_longitude_d;
-    std::deque<double> d_hist_height_m;
-
-    bool d_flag_averaging;
-    int d_averaging_depth;  // Length of averaging window
-
-    arma::vec d_rx_pos;
-    boost::posix_time::ptime d_position_UTC_time;
-    int d_valid_observations;
-
 public:
     Pvt_Solution();
 
@@ -113,46 +88,72 @@ public:
     arma::vec rotateSatellite(double traveltime, const arma::vec &X_sat);
 
     /*!
-      * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
-      * coordinates (d_latitude_d, d_longitude_d, d_height_m) on a selected reference ellipsoid.
-      *
-      * \param[in] X [m] Cartesian coordinate
-      * \param[in] Y [m] Cartesian coordinate
-      * \param[in] Z [m] Cartesian coordinate
-      * \param[in] elipsoid_selection. Choices of Reference Ellipsoid for Geographical Coordinates:
-      * 0 - International Ellipsoid 1924.
-      * 1 - International Ellipsoid 1967.
-      * 2 - World Geodetic System 1972.
-      * 3 - Geodetic Reference System 1980.
-      * 4 - World Geodetic System 1984.
-      *
-      */
+     * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
+     * coordinates (d_latitude_d, d_longitude_d, d_height_m) on a selected reference ellipsoid.
+     *
+     * \param[in] X [m] Cartesian coordinate
+     * \param[in] Y [m] Cartesian coordinate
+     * \param[in] Z [m] Cartesian coordinate
+     * \param[in] elipsoid_selection. Choices of Reference Ellipsoid for Geographical Coordinates:
+     * 0 - International Ellipsoid 1924.
+     * 1 - International Ellipsoid 1967.
+     * 2 - World Geodetic System 1972.
+     * 3 - Geodetic Reference System 1980.
+     * 4 - World Geodetic System 1984.
+     *
+     */
     int cart2geo(double X, double Y, double Z, int elipsoid_selection);
 
     /*!
-      * \brief Tropospheric correction
-      *
-      *  \param[in] sinel     - sin of elevation angle of satellite
-      *  \param[in] hsta_km   - height of station in km
-      *  \param[in] p_mb      - atmospheric pressure in mb at height hp_km
-      *  \param[in] t_kel     - surface temperature in degrees Kelvin at height htkel_km
-      *  \param[in] hum       - humidity in % at height hhum_km
-      *  \param[in] hp_km     - height of pressure measurement in km
-      *  \param[in] htkel_km  - height of temperature measurement in km
-      *  \param[in] hhum_km   - height of humidity measurement in km
-      *
-      *  \param[out] ddr_m     - range correction (meters)
-      *
-      *
-      * Reference:
-      * Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
-      *   Refraction Correction Model. Paper presented at the
-      *   American Geophysical Union Annual Fall Meeting, San
-      *   Francisco, December 12-17
-      *
-      * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
-      */
+     * \brief Tropospheric correction
+     *
+     *  \param[in] sinel     - sin of elevation angle of satellite
+     *  \param[in] hsta_km   - height of station in km
+     *  \param[in] p_mb      - atmospheric pressure in mb at height hp_km
+     *  \param[in] t_kel     - surface temperature in degrees Kelvin at height htkel_km
+     *  \param[in] hum       - humidity in % at height hhum_km
+     *  \param[in] hp_km     - height of pressure measurement in km
+     *  \param[in] htkel_km  - height of temperature measurement in km
+     *  \param[in] hhum_km   - height of humidity measurement in km
+     *
+     *  \param[out] ddr_m     - range correction (meters)
+     *
+     *
+     * Reference:
+     * Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
+     *   Refraction Correction Model. Paper presented at the
+     *   American Geophysical Union Annual Fall Meeting, San
+     *   Francisco, December 12-17
+     *
+     * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
+     */
     int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
+
+private:
+    double d_rx_dt_s;  // RX time offset [s]
+
+    double d_latitude_d;             // RX position Latitude WGS84 [deg]
+    double d_longitude_d;            // RX position Longitude WGS84 [deg]
+    double d_height_m;               // RX position height WGS84 [m]
+    double d_speed_over_ground_m_s;  // RX speed over ground [m/s]
+    double d_course_over_ground_d;   // RX course over ground [deg]
+
+    double d_avg_latitude_d;   // Averaged latitude in degrees
+    double d_avg_longitude_d;  // Averaged longitude in degrees
+    double d_avg_height_m;     // Averaged height [m]
+
+    bool b_valid_position;
+
+    std::deque<double> d_hist_latitude_d;
+    std::deque<double> d_hist_longitude_d;
+    std::deque<double> d_hist_height_m;
+
+    bool d_flag_averaging;
+    int d_averaging_depth;  // Length of averaging window
+
+    arma::vec d_rx_pos;
+    boost::posix_time::ptime d_position_UTC_time;
+    int d_valid_observations;
 };
 
 #endif

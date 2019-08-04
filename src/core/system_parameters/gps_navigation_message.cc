@@ -7,7 +7,7 @@ m * \file gps_navigation_message.cc
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,8 +32,9 @@ m * \file gps_navigation_message.cc
 
 #include "gps_navigation_message.h"
 #include "gnss_satellite.h"
-#include <cmath>
-#include <iostream>
+#include <cmath>     // for fmod, abs, floor
+#include <cstring>   // for memcpy
+#include <iostream>  // for operator<<, cout, endl
 
 
 void Gps_Navigation_Message::reset()
@@ -115,6 +116,7 @@ void Gps_Navigation_Message::reset()
     d_beta1 = 0.0;
     d_beta2 = 0.0;
     d_beta3 = 0.0;
+    d_A2 = 0.0;
     d_A1 = 0.0;
     d_A0 = 0.0;
     d_t_OT = 0;

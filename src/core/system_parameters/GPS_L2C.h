@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,8 +42,8 @@
 
 
 // Physical constants
-const double GPS_L2_C_m_s = 299792458.0;                //!< The speed of light, [m/s]
-const double GPS_L2_C_m_ms = 299792.4580;               //!< The speed of light, [m/ms]
+const double GPS_L2_C_M_S = 299792458.0;                //!< The speed of light, [m/s]
+const double GPS_L2_C_M_MS = 299792.4580;               //!< The speed of light, [m/ms]
 const double GPS_L2_PI = 3.1415926535898;               //!< Pi as defined in IS-GPS-200E
 const double GPS_L2_TWO_PI = 6.283185307179586;         //!< 2Pi as defined in IS-GPS-200E
 const double GPS_L2_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
@@ -64,7 +64,7 @@ const double GPS_L2_L_PERIOD = 1.5;                 //!< GPS L2 L code period [s
 const int32_t GPS_L2C_HISTORY_DEEP = 5;
 
 //optimum parameters
-const uint32_t GPS_L2C_OPT_ACQ_FS_HZ = 1000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+const uint32_t GPS_L2C_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 
 const int32_t GPS_L2C_M_INIT_REG[115] =

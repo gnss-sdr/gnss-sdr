@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,10 +36,10 @@
 #include <string>
 #include <vector>
 
-class tlm_dump_reader
+class Tlm_Dump_Reader
 {
 public:
-    ~tlm_dump_reader();
+    ~Tlm_Dump_Reader();
     bool read_binary_obs();
     bool restart();
     int64_t num_epochs();

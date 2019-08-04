@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,6 +31,7 @@
 
 
 #include "signal_generator.h"
+#include "Beidou_B1I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -41,11 +42,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream,
-    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";
@@ -89,11 +88,11 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             if (signal1[0].at(0) == '5')
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)) * Galileo_E1_C_SECONDARY_CODE_LENGTH;
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)) * GALILEO_E1_C_SECONDARY_CODE_LENGTH;
                 }
         }
     else if (std::find(system.begin(), system.end(), "G") != system.end())
@@ -111,6 +110,12 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
                     vector_length = round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
                 }
         }
+
+    else if (std::find(system.begin(), system.end(), "B") != system.end())
+        {
+            vector_length = round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+        }
+
 
     if (item_type_ == "gr_complex")
         {
@@ -149,9 +154,6 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-SignalGenerator::~SignalGenerator() = default;
 
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)

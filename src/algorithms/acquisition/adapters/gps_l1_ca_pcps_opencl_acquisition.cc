@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,9 +36,7 @@
 #include "gps_sdr_signal_processing.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <algorithm>
 
 
 GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
@@ -62,7 +60,10 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property("Acquisition.bit_transition_flag", false);
@@ -84,7 +85,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -108,6 +109,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -119,24 +121,8 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 }
 
 
-GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition()
-{
-    delete[] code_;
-}
-
-
 void GpsL1CaPcpsOpenClAcquisition::stop_acquisition()
 {
-}
-
-
-void GpsL1CaPcpsOpenClAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_channel(channel_);
-        }
 }
 
 
@@ -212,7 +198,6 @@ signed int GpsL1CaPcpsOpenClAcquisition::mag()
 void GpsL1CaPcpsOpenClAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -220,19 +205,17 @@ void GpsL1CaPcpsOpenClAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            auto* code = new std::complex<float>[code_length_];
+            std::vector<std::complex<float>> code(code_length_);
 
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
+            gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < sampled_ms_; i++)
                 {
-                    memcpy(&(code_[i * code_length_]), code,
-                        sizeof(gr_complex) * code_length_);
+                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
+            acquisition_cc_->set_local_code(code_.data());
         }
 }
 
@@ -248,8 +231,7 @@ void GpsL1CaPcpsOpenClAcquisition::reset()
 
 float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
-
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,9 +33,26 @@
  */
 
 #include "tracking_discriminators.h"
+#include "MATH_CONSTANTS.h"
 #include <cmath>
 
 //  All the outputs are in RADIANS
+
+double phase_unwrap(double phase_rad)
+{
+    if (phase_rad >= HALF_PI)
+        {
+            return phase_rad - PI;
+        }
+    if (phase_rad <= -HALF_PI)
+        {
+            return phase_rad + PI;
+        }
+    else
+        {
+            return phase_rad;
+        }
+}
 /*
  * FLL four quadrant arctan discriminator:
  * \f{equation}
@@ -45,7 +62,6 @@
  * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
  * \f$I_{PS2},Q_{PS2}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_2\f$. The output is in [radians/second].
  */
-
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
     double cross, dot;
@@ -54,6 +70,22 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
     return atan2(cross, dot) / (t2 - t1);
 }
 
+/*
+ * FLL differential arctan discriminator:
+ * \f{equation}
+ *     e_{atan}(k)=\frac{1}{t_1-t_2}\text{phase_unwrap}(\tan^-1(\frac{Q(k)}{I(k)})-\tan^-1(\frac{Q(k-1)}{I(k-1)}))
+ * \f}
+ * The output is in [radians/second].
+ */
+double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
+{
+    double diff_atan = atan(prompt_s2.imag() / prompt_s2.real()) - atan(prompt_s1.imag() / prompt_s1.real());
+    if (std::isnan(diff_atan))
+        {
+            diff_atan = 0;
+        }
+    return phase_unwrap(diff_atan) / (t2 - t1);
+}
 
 /*
  * PLL four quadrant arctan discriminator:
@@ -64,7 +96,7 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
  */
 double pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-    return atan2(prompt_s1.imag(), prompt_s1.real());
+    return static_cast<double>(std::atan2(prompt_s1.imag(), prompt_s1.real()));
 }
 
 
@@ -79,7 +111,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 {
     if (prompt_s1.real() != 0.0)
         {
-            return atan(prompt_s1.imag() / prompt_s1.real());
+            return static_cast<double>(std::atan(prompt_s1.imag() / prompt_s1.real()));
         }
     return 0.0;
 }
@@ -95,15 +127,16 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
  */
 double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
 {
-    double P_early, P_late;
-    P_early = std::abs(early_s1);
-    P_late = std::abs(late_s1);
-    if (P_early + P_late == 0.0)
+    double P_early = std::abs(early_s1);
+    double P_late = std::abs(late_s1);
+    double E_plus_L = P_early + P_late;
+    if (E_plus_L == 0.0)
         {
             return 0.0;
         }
-    return 0.5 * (P_early - P_late) / (P_early + P_late);
+    return 0.5 * (P_early - P_late) / E_plus_L;
 }
+
 
 /*
  * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator, using the outputs
@@ -116,12 +149,13 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
  */
 double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr_complex late_s1, gr_complex very_late_s1)
 {
-    double P_early, P_late;
-    P_early = std::sqrt(std::norm(very_early_s1) + std::norm(early_s1));
-    P_late = std::sqrt(std::norm(very_late_s1) + std::norm(late_s1));
-    if (P_early + P_late == 0.0)
+    double Early = std::sqrt(very_early_s1.real() * very_early_s1.real() + very_early_s1.imag() * very_early_s1.imag() + early_s1.real() * early_s1.real() + early_s1.imag() * early_s1.imag());
+    double Late = std::sqrt(late_s1.real() * late_s1.real() + late_s1.imag() * late_s1.imag() + very_late_s1.real() * very_late_s1.real() + very_late_s1.imag() * very_late_s1.imag());
+
+    double E_plus_L = Early + Late;
+    if (E_plus_L == 0.0)
         {
             return 0.0;
         }
-    return (P_early - P_late) / (P_early + P_late);
+    return (Early - Late) / E_plus_L;
 }

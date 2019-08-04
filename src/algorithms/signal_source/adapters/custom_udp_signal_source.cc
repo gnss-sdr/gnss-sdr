@@ -1,12 +1,11 @@
 /*!
- * \file udp_signal_source.cc
- *
+ * \file custom_udp_signal_source.cc
  * \brief Receives ip frames containing samples in UDP frame encapsulation
  * using a high performance packet capture library (libpcap)
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,12 +38,9 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -72,7 +68,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     // output item size is always gr_complex
     item_size_ = sizeof(gr_complex);
 
-    udp_gnss_rx_source_ = gr_complex_ip_packet_source::make(capture_device,
+    udp_gnss_rx_source_ = Gr_Complex_Ip_Packet_Source::make(capture_device,
         address,
         port,
         payload_bytes,
@@ -85,7 +81,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
         {
             for (int n = 0; n < channels_in_udp_; n++)
                 {
-                    null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
+                    null_sinks_.emplace_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
                 }
         }
     else
@@ -99,7 +95,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
             for (int n = 0; n < channels_in_udp_; n++)
                 {
                     DLOG(INFO) << "Dumping output into file " << (dump_filename_ + "c_h" + std::to_string(n) + ".bin");
-                    file_sink_.push_back(gr::blocks::file_sink::make(item_size_, (dump_filename_ + "_ch" + std::to_string(n) + ".bin").c_str()));
+                    file_sink_.emplace_back(gr::blocks::file_sink::make(item_size_, (dump_filename_ + "_ch" + std::to_string(n) + ".bin").c_str()));
                 }
         }
     if (in_stream_ > 0)
@@ -111,9 +107,6 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-CustomUDPSignalSource::~CustomUDPSignalSource() = default;
 
 
 void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)

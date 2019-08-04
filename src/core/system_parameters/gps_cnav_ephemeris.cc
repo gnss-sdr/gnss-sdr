@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,9 @@
  */
 
 #include "gps_cnav_ephemeris.h"
+#include "MATH_CONSTANTS.h"  // for PI, SPEED_OF_LIGHT
 #include <cmath>
+
 
 Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {

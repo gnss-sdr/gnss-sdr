@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,18 +39,15 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
-    const std::string& role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
+    const std::string& role, uint32_t in_streams, uint32_t out_streams, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
     item_type_ = "int";
 
     samples_ = configuration->property(role + ".samples", 0);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0.0);
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
     repeat_ = configuration->property(role + ".repeat", false);
     dump_ = configuration->property(role + ".dump", false);
@@ -151,7 +148,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 
     for (uint32_t i = 0; i < (n_channels_); i++)
         {
-            valve_vec_.push_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_));
+            valve_vec_.emplace_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_));
             if (dump_)
                 {
                     std::string tmp_str = dump_filename_ + "_ch" + std::to_string(i);
@@ -180,9 +177,6 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-SpirGSS6450FileSignalSource::~SpirGSS6450FileSignalSource() = default;
 
 
 void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)

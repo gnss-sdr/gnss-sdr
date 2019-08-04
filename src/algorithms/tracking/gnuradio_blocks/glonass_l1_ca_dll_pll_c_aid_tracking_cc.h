@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,11 +50,11 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <vector>
 
 class glonass_l1_ca_dll_pll_c_aid_tracking_cc;
 
-typedef boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>
-    glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
+using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
@@ -126,7 +126,7 @@ private:
     gr_complex* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
@@ -181,7 +181,7 @@ private:
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    std::vector<gr_complex> d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;

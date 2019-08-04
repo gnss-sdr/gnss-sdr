@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -25,6 +25,9 @@
 #  MATIO_LIBRARIES - MATIO libraries.
 #  MATIO_INCLUDE_DIRS - where to find matio.h, etc..
 #  MATIO_VERSION_STRING - version number as a string (e.g.: "1.3.4")
+#
+# Provides the following imported target:
+# Matio::matio
 #
 #=============================================================================
 # Copyright 2015 Avtech Scientific <http://avtechscientific.com>
@@ -58,6 +61,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 #
+
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
 # Look for the header file.
 find_path(MATIO_INCLUDE_DIR
@@ -97,7 +104,6 @@ if(MATIO_INCLUDE_DIR)
     endif()
 
     if(MATIO_CONFIG_FILE)
-
         # Read and parse MATIO config header file for version number
         file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
 
@@ -126,4 +132,28 @@ if(MATIO_FOUND)
 else()
   set(MATIO_LIBRARIES)
   set(MATIO_INCLUDE_DIRS)
+endif()
+
+if(MATIO_FOUND AND MATIO_VERSION_STRING)
+    set_package_properties(MATIO PROPERTIES
+        DESCRIPTION "MATLAB MAT File I/O Library (found: v${MATIO_VERSION_STRING})"
+    )
+else()
+    set_package_properties(MATIO PROPERTIES
+        DESCRIPTION "MATLAB MAT File I/O Library"
+    )
+endif()
+
+set_package_properties(MATIO PROPERTIES
+    URL "https://github.com/tbeu/matio"
+)
+
+if(MATIO_FOUND AND NOT TARGET Matio::matio)
+    add_library(Matio::matio SHARED IMPORTED)
+    set_target_properties(Matio::matio PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${MATIO_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${MATIO_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${MATIO_LIBRARY}"
+    )
 endif()

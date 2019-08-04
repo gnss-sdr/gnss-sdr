@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,25 +32,69 @@
 #ifndef GNSS_SDR_FRONT_END_CAL_H_
 #define GNSS_SDR_FRONT_END_CAL_H_
 
-#include "concurrent_map.h"
-#include "file_configuration.h"
 #include <armadillo>
+#include <memory>
+#include <string>
 
+class ConfigurationInterface;
 
 class FrontEndCal
 {
+public:
+    FrontEndCal() = default;
+    ~FrontEndCal() = default;
+
+    /*!
+     * \brief Sets the configuration data required by get_ephemeris function
+     *
+     */
+    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
+
+    /*!
+     * \brief This function connects to a Secure User Location Protocol (SUPL) server to obtain
+     * the current GPS ephemeris and GPS assistance data. It requires the configuration parameters set by
+     * set_configuration function.
+     *
+     */
+    bool get_ephemeris();
+
+    /*!
+     * \brief This function estimates the GPS L1 satellite Doppler frequency [Hz] using the following data:
+     * 1- Orbital model from the ephemeris
+     * 2- Approximate GPS Time of Week (TOW)
+     * 3- Approximate receiver Latitude and Longitude (WGS-84)
+     *
+     */
+    double estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height) noexcept(false);
+
+    /*!
+     * \brief This function models the Elonics E4000 + RTL2832 front-end
+     * Inputs:
+     *  f_bb_true_Hz    - Ideal output frequency in baseband [Hz]
+     *  f_in_bb_meas_Hz - measured output frequency in baseband [Hz]
+     * Outputs:
+     *  estimated_fs_Hz  - Sampling frequency estimation based on the
+     *  measurements and the front-end model
+     *  estimated_f_if_bb_Hz - Equivalent bb if frequency estimation based on the
+     *  measurements and the front-end model
+     *  Front-end TUNER Elonics E4000 + RTL2832 sampler For GPS L1 1575.42 MHz
+     *
+     */
+    void GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_meas_Hz, double fs_nominal_hz, double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm);
+
 private:
     std::shared_ptr<ConfigurationInterface> configuration_;
 
-    /*!
-     * \brief LLA2ECEF Convert geodetic coordinates to Earth-centered Earth-fixed
+    /*
+     * LLA2ECEF Convert geodetic coordinates to Earth-centered Earth-fixed
      * (ECEF)  coordinates. P = LLA2ECEF( LLA ) converts an M-by-3 array of geodetic coordinates
      * (latitude, longitude and altitude), LLA, to an M-by-3 array of ECEF
      * coordinates, P.  LLA is in [degrees degrees meters].  P is in meters.
      * The default ellipsoid planet is WGS84. Original copyright (c) by Kai Borre.
      */
     arma::vec lla2ecef(const arma::vec &lla);
-    /*!
+
+    /*
      * GEODETIC2ECEF Convert geodetic to geocentric (ECEF) coordinates
      * [X, Y, Z] = GEODETIC2ECEF(PHI, LAMBDA, H, ELLIPSOID) converts geodetic
      * point locations specified by the coordinate arrays PHI (geodetic
@@ -81,61 +125,19 @@ private:
      * Applications in GIS," 3rd Ed., McGraw-Hill, 2000 (Appendix F-3).
      */
     arma::vec geodetic2ecef(double phi, double lambda, double h, const arma::vec &ellipsoid);
-    /*!
-     * \brief Reads the ephemeris data from an external XML file
-     *
+
+    /*
+     * Reads the ephemeris data from an external XML file
      */
     bool read_assistance_from_XML();
-    /*!
-     * \brief Connects to Secure User Location Protocol (SUPL) server to obtain
+
+    /*
+     * Connects to Secure User Location Protocol (SUPL) server to obtain
      * the current GPS ephemeris and GPS assistance data.
-     *
      */
     int Get_SUPL_Assist();
 
     const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
-
-public:
-    /*!
-     * \brief Sets the configuration data required by get_ephemeris function
-     *
-     */
-    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
-
-    /*!
-     * \brief This function connects to a Secure User Location Protocol (SUPL) server to obtain
-     * the current GPS ephemeris and GPS assistance data. It requires the configuration parameters set by
-     * set_configuration function.
-     *
-     */
-    bool get_ephemeris();
-
-    /*!
-     * \brief This function estimates the GPS L1 satellite Doppler frequency [Hz] using the following data:
-     * 1- Orbital model from the ephemeris
-     * 2- Approximate GPS Time of Week (TOW)
-     * 3- Approximate receiver Latitude and Longitude (WGS-84)
-     *
-     */
-    double estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height);
-
-    /*!
-     * \brief This function models the Elonics E4000 + RTL2832 front-end
-     * Inputs:
-     *  f_bb_true_Hz    - Ideal output frequency in baseband [Hz]
-     *  f_in_bb_meas_Hz - measured output frequency in baseband [Hz]
-     * Outputs:
-     *  estimated_fs_Hz  - Sampling frequency estimation based on the
-     *  measurements and the front-end model
-     *  estimated_f_if_bb_Hz - Equivalent bb if frequency estimation based on the
-     *  measurements and the front-end model
-     *  Front-end TUNER Elonics E4000 + RTL2832 sampler For GPS L1 1575.42 MHz
-     *
-     */
-    void GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_meas_Hz, double fs_nominal_hz, double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm);
-
-    FrontEndCal();
-    ~FrontEndCal();
 };
 
 #endif

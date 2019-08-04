@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,10 +33,8 @@
 
 
 #include "direct_resampler_conditioner_cs.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 
-using google::LogMessage;
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
     double sample_freq_in, double sample_freq_out)
@@ -49,7 +47,9 @@ direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
 
 direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
     double sample_freq_in,
-    double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
+    double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs",
+                                  gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
+                                  gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
                               d_sample_freq_in(sample_freq_in),
                               d_sample_freq_out(sample_freq_out),
                               d_phase(0),
@@ -69,9 +69,6 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
     set_output_multiple(1);
 }
-
-
-direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs() = default;
 
 
 void direct_resampler_conditioner_cs::forecast(int noutput_items,

@@ -56,12 +56,12 @@ memb_nbrOfReferenceBTSs_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_nbrOfSets_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_NBR_OF_SETS_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 1,  1,  2,  3 }	/* (2..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_nbrOfReferenceBTSs_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_NBR_OF_REFERENCE_BT_SS_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 2,  2,  1,  3 }	/* (1..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -72,7 +72,7 @@ static asn_TYPE_member_t asn_MBR_MultipleSets_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_nbrOfSets_constraint_1,
-		&asn_PER_memb_nbrOfSets_constr_2,
+		&ASN_PER_MEMB_NBR_OF_SETS_CONSTR_2,
 		0,
 		"nbrOfSets"
 		},
@@ -81,7 +81,7 @@ static asn_TYPE_member_t asn_MBR_MultipleSets_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_nbrOfReferenceBTSs_constraint_1,
-		&asn_PER_memb_nbrOfReferenceBTSs_constr_3,
+		&ASN_PER_MEMB_NBR_OF_REFERENCE_BT_SS_CONSTR_3,
 		0,
 		"nbrOfReferenceBTSs"
 		},

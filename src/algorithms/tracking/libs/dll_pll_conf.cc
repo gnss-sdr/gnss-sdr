@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,7 @@
 
 
 #include "dll_pll_conf.h"
-#include <cstring>
+#include "gnss_sdr_flags.h"
 
 Dll_Pll_Conf::Dll_Pll_Conf()
 {
@@ -43,6 +43,14 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     dump = false;
     dump_mat = true;
     dump_filename = std::string("./dll_pll_dump.dat");
+    enable_fll_pull_in = false;
+    enable_fll_steady_state = false;
+    pull_in_time_s = 10;
+    bit_synchronization_time_limit_s = pull_in_time_s + 60;
+    fll_filter_order = 1;
+    pll_filter_order = 3;
+    dll_filter_order = 2;
+    fll_bw_hz = 35.0;
     pll_pull_in_bw_hz = 50.0;
     dll_pull_in_bw_hz = 3.0;
     pll_bw_hz = 35.0;
@@ -54,13 +62,16 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     early_late_space_narrow_chips = 0.1;
     very_early_late_space_narrow_chips = 0.1;
     extend_correlation_symbols = 5;
-    cn0_samples = 20;
-    carrier_lock_det_mav_samples = 20;
-    cn0_min = 25;
-    max_lock_fail = 50;
-    carrier_lock_th = 0.85;
+    cn0_samples = FLAGS_cn0_samples;
+    carrier_lock_det_mav_samples = FLAGS_cn0_samples;
+    cn0_min = FLAGS_cn0_min;
+    max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
+    max_code_lock_fail = FLAGS_max_lock_fail;
+    carrier_lock_th = FLAGS_carrier_lock_th;
+    enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';
-    char sig_[3] = "1C";
-    std::memcpy(signal, sig_, 3);
+    signal[0] = '1';
+    signal[1] = 'C';
+    signal[2] = '\0';
 }

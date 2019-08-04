@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,10 +33,7 @@
 #include "GPS_L1_CA.h"
 #include "geofunctions.h"
 #include <glog/logging.h>
-#include <exception>
-
-
-using google::LogMessage;
+#include <array>
 
 
 Pvt_Solution::Pvt_Solution()
@@ -56,6 +53,7 @@ Pvt_Solution::Pvt_Solution()
     d_rx_pos = arma::zeros(3, 1);
     d_rx_dt_s = 0.0;
 }
+
 
 arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec &X_sat)
 {
@@ -100,8 +98,8 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
                  4. World Geodetic System 1984
      */
 
-    const double a[5] = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
-    const double f[5] = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
+    const std::array<double, 5> a = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
+    const std::array<double, 5> f = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
 
     double lambda = atan2(Y, X);
     double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));

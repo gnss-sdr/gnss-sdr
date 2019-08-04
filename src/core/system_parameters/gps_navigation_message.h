@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,7 +34,6 @@
 
 
 #include "GPS_L1_CA.h"
-#include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
@@ -42,7 +41,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include <utility>
+#include <utility>  // for pair
 #include <vector>
 
 
@@ -53,13 +52,12 @@
  */
 class Gps_Navigation_Message
 {
-private:
-    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    void print_gps_word_bytes(uint32_t GPS_word);
-
 public:
+    /*!
+     * Default constructor
+     */
+    Gps_Navigation_Message();
+
     bool b_valid_ephemeris_set_flag;  // flag indicating that this ephemeris set have passed the validation check
     // broadcast orbit 1
     int32_t d_TOW;      //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
@@ -209,10 +207,11 @@ public:
 
     bool satellite_validation();
 
-    /*!
-     * Default constructor
-     */
-    Gps_Navigation_Message();
+private:
+    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    void print_gps_word_bytes(uint32_t GPS_word);
 };
 
 #endif

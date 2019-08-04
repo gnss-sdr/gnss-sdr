@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,17 +29,16 @@
  * -------------------------------------------------------------------------
  */
 
+#include "concurrent_queue.h"
 #include "file_signal_source.h"
 #include "in_memory_configuration.h"
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <stdexcept>
 
 TEST(FileSignalSource, Instantiate)
 {
-    boost::shared_ptr<gr::msg_queue> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Test.samples", "0");
@@ -58,7 +57,7 @@ TEST(FileSignalSource, Instantiate)
 
 TEST(FileSignalSource, InstantiateFileNotExists)
 {
-    boost::shared_ptr<gr::msg_queue> queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Test.samples", "0");

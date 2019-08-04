@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,7 +45,7 @@
 DEFINE_int32(cpu_multicorrelator_iterations_test, 100, "Number of averaged iterations in CPU multicorrelator test timing test");
 DEFINE_int32(cpu_multicorrelator_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
 
-void run_correlator_cpu(cpu_multicorrelator* correlator,
+void run_correlator_cpu(Cpu_Multicorrelator* correlator,
     float d_rem_carrier_phase_rad,
     float d_carrier_phase_step_rad,
     float d_code_phase_step_chips,
@@ -69,7 +69,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
     std::chrono::duration<double> elapsed_seconds(0);
     int max_threads = FLAGS_cpu_multicorrelator_max_threads_test;
     std::vector<std::thread> thread_pool;
-    cpu_multicorrelator* correlator_pool[max_threads];
+    Cpu_Multicorrelator* correlator_pool[max_threads];
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
     double execution_times[3];
 
@@ -104,7 +104,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 
     //local code resampler on GPU
     // generate local reference (1 sample per chip)
-    gps_l1_ca_code_gen_complex(d_ca_code, 1, 0);
+    gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), 1, 0);
     // generate inut signal
     std::random_device r;
     std::default_random_engine e1(r());
@@ -116,7 +116,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 
     for (int n = 0; n < max_threads; n++)
         {
-            correlator_pool[n] = new cpu_multicorrelator();
+            correlator_pool[n] = new Cpu_Multicorrelator();
             correlator_pool[n]->init(d_vector_length, d_n_correlator_taps);
             correlator_pool[n]->set_input_output_vectors(d_correlator_outs, in_cpu);
             correlator_pool[n]->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);

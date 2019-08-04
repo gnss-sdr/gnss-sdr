@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,10 +33,7 @@
 #include "gps_l5_telemetry_decoder.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
-
-using google::LogMessage;
 
 GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
@@ -50,7 +47,7 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configurati
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = gps_l5_make_telemetry_decoder_cc(satellite_, dump_);
+    telemetry_decoder_ = gps_l5_make_telemetry_decoder_gs(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)
@@ -62,9 +59,6 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configurati
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-GpsL5TelemetryDecoder::~GpsL5TelemetryDecoder() = default;
 
 
 void GpsL5TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

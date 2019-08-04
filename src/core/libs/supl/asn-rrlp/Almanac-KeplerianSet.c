@@ -256,52 +256,52 @@ memb_kepAlmanacAF1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_kepAlmanacE_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_E_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 11,  11,  0,  2047 }	/* (0..2047) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacDeltaI_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_DELTA_I_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 11,  11, -1024,  1023 }	/* (-1024..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacOmegaDot_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_OMEGA_DOT_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 11,  11, -1024,  1023 }	/* (-1024..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepSVHealth_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_SV_HEALTH_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 4,  4,  0,  15 }	/* (0..15) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacAPowerHalf_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_A_POWER_HALF_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 17, -1, -65536,  65535 }	/* (-65536..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacOmega0_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_OMEGA0_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacW_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_W_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacM0_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_M0_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacAF0_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_A_F0_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 14,  14, -8192,  8191 }	/* (-8192..8191) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_kepAlmanacAF1_constr_11 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_A_F1_CONSTR_11 = {
 	{ APC_CONSTRAINED,	 11,  11, -1024,  1023 }	/* (-1024..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -312,7 +312,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacE_constraint_1,
-		&asn_PER_memb_kepAlmanacE_constr_2,
+		&ASN_PER_MEMB_KEP_ALMANAC_E_CONSTR_2,
 		0,
 		"kepAlmanacE"
 		},
@@ -321,7 +321,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacDeltaI_constraint_1,
-		&asn_PER_memb_kepAlmanacDeltaI_constr_3,
+		&ASN_PER_MEMB_KEP_ALMANAC_DELTA_I_CONSTR_3,
 		0,
 		"kepAlmanacDeltaI"
 		},
@@ -330,7 +330,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacOmegaDot_constraint_1,
-		&asn_PER_memb_kepAlmanacOmegaDot_constr_4,
+		&ASN_PER_MEMB_KEP_ALMANAC_OMEGA_DOT_CONSTR_4,
 		0,
 		"kepAlmanacOmegaDot"
 		},
@@ -339,7 +339,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepSVHealth_constraint_1,
-		&asn_PER_memb_kepSVHealth_constr_5,
+		&ASN_PER_MEMB_KEP_SV_HEALTH_CONSTR_5,
 		0,
 		"kepSVHealth"
 		},
@@ -348,7 +348,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacAPowerHalf_constraint_1,
-		&asn_PER_memb_kepAlmanacAPowerHalf_constr_6,
+		&ASN_PER_MEMB_KEP_ALMANAC_A_POWER_HALF_CONSTR_6,
 		0,
 		"kepAlmanacAPowerHalf"
 		},
@@ -357,7 +357,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacOmega0_constraint_1,
-		&asn_PER_memb_kepAlmanacOmega0_constr_7,
+		&ASN_PER_MEMB_KEP_ALMANAC_OMEGA0_CONSTR_7,
 		0,
 		"kepAlmanacOmega0"
 		},
@@ -366,7 +366,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacW_constraint_1,
-		&asn_PER_memb_kepAlmanacW_constr_8,
+		&ASN_PER_MEMB_KEP_ALMANAC_W_CONSTR_8,
 		0,
 		"kepAlmanacW"
 		},
@@ -375,7 +375,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacM0_constraint_1,
-		&asn_PER_memb_kepAlmanacM0_constr_9,
+		&ASN_PER_MEMB_KEP_ALMANAC_M0_CONSTR_9,
 		0,
 		"kepAlmanacM0"
 		},
@@ -384,7 +384,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacAF0_constraint_1,
-		&asn_PER_memb_kepAlmanacAF0_constr_10,
+		&ASN_PER_MEMB_KEP_ALMANAC_A_F0_CONSTR_10,
 		0,
 		"kepAlmanacAF0"
 		},
@@ -393,7 +393,7 @@ static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_kepAlmanacAF1_constraint_1,
-		&asn_PER_memb_kepAlmanacAF1_constr_11,
+		&ASN_PER_MEMB_KEP_ALMANAC_A_F1_CONSTR_11,
 		0,
 		"kepAlmanacAF1"
 		},

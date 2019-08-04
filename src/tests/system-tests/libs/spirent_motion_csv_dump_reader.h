@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,11 +36,11 @@
 #include <string>
 #include <vector>
 
-class spirent_motion_csv_dump_reader
+class Spirent_Motion_Csv_Dump_Reader
 {
 public:
-    spirent_motion_csv_dump_reader();
-    ~spirent_motion_csv_dump_reader();
+    Spirent_Motion_Csv_Dump_Reader();
+    ~Spirent_Motion_Csv_Dump_Reader();
     bool read_csv_obs();
     bool restart();
     int64_t num_epochs();

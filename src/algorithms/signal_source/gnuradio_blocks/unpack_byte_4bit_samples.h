@@ -7,7 +7,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,14 +30,14 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_unpack_byte_4bit_samples_H
-#define GNSS_SDR_unpack_byte_4bit_samples_H
+#ifndef GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
+#define GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
 
 class unpack_byte_4bit_samples;
 
-typedef boost::shared_ptr<unpack_byte_4bit_samples> unpack_byte_4bit_samples_sptr;
+using unpack_byte_4bit_samples_sptr = boost::shared_ptr<unpack_byte_4bit_samples>;
 
 unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples();
 
@@ -47,15 +47,15 @@ unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples();
  */
 class unpack_byte_4bit_samples : public gr::sync_interpolator
 {
-private:
-    friend unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples_sptr();
-
 public:
     unpack_byte_4bit_samples();
-    ~unpack_byte_4bit_samples();
+    ~unpack_byte_4bit_samples() = default;
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples_sptr();
 };
 
 #endif

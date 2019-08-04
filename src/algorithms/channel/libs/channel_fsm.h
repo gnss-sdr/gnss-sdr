@@ -1,12 +1,13 @@
 /*!
  * \file channel_fsm.h
  * \brief Interface of the State Machine for channel
- * \authors Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ * \authors Javier Arribas, 2019. javiarribas@gmail.com
+ *          Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *          Luis Esteve,   2011. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,9 +34,10 @@
 #define GNSS_SDR_CHANNEL_FSM_H
 
 #include "acquisition_interface.h"
+#include "concurrent_queue.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -52,11 +54,13 @@ public:
 
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
-    void set_queue(gr::msg_queue::sptr queue);
+    void set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry);
+    void set_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
     void set_channel(uint32_t channel);
-
-    //FSM EVENTS
+    void start_acquisition();
+    // FSM EVENTS
     bool Event_start_acquisition();
+    bool Event_start_acquisition_fpga();
     bool Event_valid_acquisition();
     bool Event_stop_channel();
     bool Event_failed_acquisition_repeat();
@@ -64,7 +68,6 @@ public:
     bool Event_failed_tracking_standby();
 
 private:
-    void start_acquisition();
     void start_tracking();
     void stop_acquisition();
     void stop_tracking();
@@ -73,10 +76,11 @@ private:
 
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
-    gr::msg_queue::sptr queue_;
+    std::shared_ptr<TelemetryDecoderInterface> nav_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     uint32_t channel_;
     uint32_t d_state;
     std::mutex mx;
 };
 
-#endif /*GNSS_SDR_CHANNEL_FSM_H*/
+#endif  // GNSS_SDR_CHANNEL_FSM_H

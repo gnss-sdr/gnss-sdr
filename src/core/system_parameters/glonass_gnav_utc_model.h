@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,6 +45,11 @@
 class Glonass_Gnav_Utc_Model
 {
 public:
+    /*!
+     * Default constructor
+     */
+    Glonass_Gnav_Utc_Model();
+
     bool valid;
     // Clock Parameters
     double d_tau_c;    //!< GLONASS time scale correction to UTC(SU) time. [s]
@@ -53,6 +58,12 @@ public:
     double d_N_A;      //!< Calendar day number within the four-year period beginning since the leap year for Almanac data [days]
     double d_B1;       //!< Coefficient  to  determine DeltaUT1 [s]
     double d_B2;       //!< Coefficient  to  determine DeltaUT1 [s/msd]
+
+    /*!
+     * \brief Computes the Coordinated Universal Time (UTC) and
+     * returns it in [s] (GLONASS ICD (Edition 5.1) Section 3.3.3 GLONASS Time)
+     */
+    double utc_time(double glonass_time_corrected);
 
     template <class Archive>
     /*!
@@ -72,17 +83,6 @@ public:
         archive& make_nvp("d_B1", d_B1);
         archive& make_nvp("d_B2", d_B2);
     }
-
-    /*!
-     * Default constructor
-     */
-    Glonass_Gnav_Utc_Model();
-
-    /*!
-     * \brief Computes the Coordinated Universal Time (UTC) and
-     * returns it in [s] (GLONASS ICD (Edition 5.1) Section 3.3.3 GLONASS Time)
-     */
-    double utc_time(double glonass_time_corrected);
 };
 
 #endif

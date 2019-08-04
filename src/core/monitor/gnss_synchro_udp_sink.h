@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,25 +29,42 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SYNCHRO_UDP_SINK_H_
-#define GNSS_SYNCHRO_UDP_SINK_H_
+#ifndef GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
+#define GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
 
 #include "gnss_synchro.h"
+#include "serdes_gnss_synchro.h"
 #include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
+#include <cstdint>
+#include <string>
+#include <vector>
 
+#if BOOST_GREATER_1_65
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
+
+/*!
+ * \brief This class sends serialized Gnss_Synchro objects
+ * over UDP to one or multiple endpoints.
+ */
 class Gnss_Synchro_Udp_Sink
 {
 public:
-    Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
-    bool write_gnss_synchro(std::vector<Gnss_Synchro> stocks);
+    Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool enable_protobuf);
+    bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
 
 private:
-    boost::asio::io_service io_service;
+    b_io_context io_context;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
     std::vector<Gnss_Synchro> stocks;
+    Serdes_Gnss_Synchro serdes;
+    bool use_protobuf;
 };
 
 
-#endif /* GNSS_SYNCHRO_UDP_SINK_H_ */
+#endif /* GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_ */

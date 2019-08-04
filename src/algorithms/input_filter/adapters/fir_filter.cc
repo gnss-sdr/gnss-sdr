@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,8 +36,6 @@
 #include <volk/volk.h>
 #include <utility>
 
-
-using google::LogMessage;
 
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
@@ -140,9 +138,6 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-FirFilter::~FirFilter() = default;
 
 
 void FirFilter::connect(gr::top_block_sptr top_block)
@@ -299,11 +294,8 @@ gr::basic_block_sptr FirFilter::get_left_block()
         {
             return cshort_to_float_x2_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown item type conversion";
-        }
+    LOG(WARNING) << "Unknown item type conversion";
+    return nullptr;
 }
 
 
@@ -329,11 +321,8 @@ gr::basic_block_sptr FirFilter::get_right_block()
         {
             return float_to_complex_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " unknown input filter item type";
-        }
+    LOG(WARNING) << "Unknown input filter taps item type";
+    return nullptr;
 }
 
 

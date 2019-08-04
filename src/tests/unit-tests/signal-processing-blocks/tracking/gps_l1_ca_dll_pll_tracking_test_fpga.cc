@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -70,7 +70,7 @@
 #define FIVE_SECONDS 5000000          // five seconds in microseconds
 
 void send_tracking_gps_input_samples(FILE *rx_signal_file,
-    int num_remaining_samples, const gr::top_block_sptr& top_block)
+    int num_remaining_samples, const gr::top_block_sptr &top_block)
 {
     int num_samples_transferred = 0;   // number of samples that have been transferred to the DMA so far
     static int flowgraph_stopped = 0;  // flag to indicate if the flowgraph is stopped already
@@ -79,14 +79,16 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
     dma_descr = open("/dev/loop_tx", O_WRONLY);
     if (dma_descr < 0)
         {
-            printf("can't open loop device\n");
-            exit(1);
+            std::cerr << "Can't open loop device\n";
+            return;
         }
 
     buffer_DMA = (char *)malloc(DMA_TRACK_TRANSFER_SIZE);
     if (!buffer_DMA)
         {
-            fprintf(stderr, "Memory error!");
+            std::cerr << "Memory error!" << std::endl;
+            close(dma_descr);
+            return;
         }
 
     while (num_remaining_samples > 0)
@@ -102,7 +104,11 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
                 }
             if (num_remaining_samples > DMA_TRACK_TRANSFER_SIZE)
                 {
-                    fread(buffer_DMA, DMA_TRACK_TRANSFER_SIZE, 1, rx_signal_file);
+                    size_t result = fread(buffer_DMA, DMA_TRACK_TRANSFER_SIZE, 1, rx_signal_file);
+                    if (result != DMA_TRACK_TRANSFER_SIZE)
+                        {
+                            std::cerr << "Error reading from DMA" << std::endl;
+                        }
 
                     assert(DMA_TRACK_TRANSFER_SIZE == write(dma_descr, &buffer_DMA[0], DMA_TRACK_TRANSFER_SIZE));
                     num_remaining_samples = num_remaining_samples - DMA_TRACK_TRANSFER_SIZE;
@@ -110,8 +116,11 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
                 }
             else
                 {
-                    fread(buffer_DMA, num_remaining_samples, 1, rx_signal_file);
-
+                    size_t result = fread(buffer_DMA, num_remaining_samples, 1, rx_signal_file);
+                    if (static_cast<int>(result) != num_remaining_samples)
+                        {
+                            std::cerr << "Error reading from DMA" << std::endl;
+                        }
                     assert(num_remaining_samples == write(dma_descr, &buffer_DMA[0], num_remaining_samples));
                     num_samples_transferred = num_samples_transferred + num_remaining_samples;
                     num_remaining_samples = 0;
@@ -133,7 +142,8 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
     rx_signal_file = fopen(file_name, "rb");
     if (!rx_signal_file)
         {
-            printf("Unable to open file!");
+            std::cerr << "Unable to open file!" << std::endl;
+            return;
         }
 
     fseek(rx_signal_file, 0, SEEK_END);
@@ -143,7 +153,7 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
     usleep(FIVE_SECONDS);  // wait for some time to give time to the other thread to program the device
 
     //send_tracking_gps_input_samples(dma_descr, rx_signal_file, file_length);
-    send_tracking_gps_input_samples(rx_signal_file, file_length, std::move(top_block));
+    send_tracking_gps_input_samples(rx_signal_file, file_length, top_block);
 
     fclose(rx_signal_file);
 }
@@ -310,8 +320,6 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("GNSS-SDR.internal_fs_sps",
         std::to_string(baseband_sampling_freq));
     // Set Tracking
-    //config->set_property("Tracking_1C.implementation",
-    //        "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga");
     config->set_property("Tracking_1C.implementation",
         "GPS_L1_CA_DLL_PLL_Tracking_Fpga");
     config->set_property("Tracking_1C.item_type", "cshort");
@@ -328,7 +336,7 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
 void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec &true_time_s,
     arma::vec &true_value, arma::vec &meas_time_s, arma::vec &meas_value)
 {
-    //1. True value interpolation to match the measurement times
+    // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
     arma::uvec true_time_s_valid = find(true_time_s > 0);
     true_time_s = true_time_s(true_time_s_valid);
@@ -338,22 +346,21 @@ void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec &true_time_s
     meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
+    // 2. RMSE
     arma::vec err;
-
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
-    // 5. Peaks
+    // 4. Peaks
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
@@ -377,14 +384,14 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
+    // 2. RMSE
     arma::vec err;
 
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
@@ -392,7 +399,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK acc carrier phase RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
@@ -406,7 +413,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     arma::vec &true_time_s, arma::vec &true_value, arma::vec &meas_time_s,
     arma::vec &meas_value)
 {
-    //1. True value interpolation to match the measurement times
+    // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
     arma::uvec true_time_s_valid = find(true_time_s > 0);
     true_time_s = true_time_s(true_time_s_valid);
@@ -416,13 +423,13 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
+    // 2. RMSE
     arma::vec err;
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
@@ -430,7 +437,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK code phase RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
@@ -452,8 +459,8 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     configure_receiver();
 
-    //open true observables log file written by the simulator
-    tracking_true_obs_reader true_obs_data;
+    // open true observables log file written by the simulator
+    Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
@@ -484,7 +491,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         })
         << "Failure reading true observables file";
 
-    //restart the epoch counter
+    // restart the epoch counter
     true_obs_data.restart();
 
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz
@@ -543,8 +550,8 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     // wait until child thread terminates
     t.join();
 
-    //check results
-    //load the true values
+    // check results
+    // load the true values
     int64_t nepoch = true_obs_data.num_epochs();
     std::cout << "True observation epochs=" << nepoch << std::endl;
 
@@ -565,8 +572,8 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
             epoch_counter++;
         }
 
-    //load the measured values
-    tracking_dump_reader trk_dump;
+    // load the measured values
+    Tracking_Dump_Reader trk_dump;
     ASSERT_NO_THROW(
         {
             if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)
@@ -597,7 +604,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
             epoch_counter++;
         }
 
-    //Align initial measurements and cut the tracking pull-in transitory
+    // Align initial measurements and cut the tracking pull-in transitory
     double pull_in_offset_s = 1.0;
     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
 

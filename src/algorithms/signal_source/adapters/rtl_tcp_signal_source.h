@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,13 +32,14 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "rtl_tcp_signal_source_c.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <stdexcept>
 #include <string>
 
@@ -57,9 +58,9 @@ public:
         const std::string& role,
         unsigned int in_stream,
         unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~RtlTcpSignalSource();
+    ~RtlTcpSignalSource() = default;
 
     inline std::string role() override
     {
@@ -90,7 +91,7 @@ private:
 
     // rtl_tcp settings
     std::string address_;
-    short port_;
+    int16_t port_;
     bool AGC_enabled_;
     double sample_rate_;
     bool flip_iq_;
@@ -105,7 +106,7 @@ private:
 
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
 
@@ -113,7 +114,7 @@ private:
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H */

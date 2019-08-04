@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,8 @@
 #include "conjugate_sc.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/copy.h>
-#include <gnuradio/hier_block2.h>
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
 #include <string>
 
 
@@ -55,7 +56,7 @@ public:
         unsigned int in_stream,
         unsigned int out_stream);
 
-    virtual ~Pass_Through();
+    ~Pass_Through() = default;
 
     inline std::string role() override
     {

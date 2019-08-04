@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,6 +38,7 @@
 #include <exception>
 #include <string>
 #include <unistd.h>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -47,7 +48,6 @@
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "in_memory_configuration.h"
@@ -66,7 +66,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx> GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr;
+using GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx>;
 
 GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
 
@@ -91,7 +91,7 @@ void GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_events(pmt::pmt_t msg
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -108,9 +108,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::GpsL1CADllPllTelemetryDecoderTest_msg_
     rx_message = 0;
 }
 
-GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg_rx()
-{
-}
+GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -119,7 +117,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr;
+using GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx>;
 
 GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
 
@@ -144,7 +142,7 @@ void GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -161,9 +159,7 @@ GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::GpsL1CADllPllTelemetryDecoderTest_
     rx_message = 0;
 }
 
-GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx()
-{
-}
+GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx() = default;
 
 
 // ###########################################################
@@ -199,9 +195,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CATelemetryDecoderTest()
-    {
-    }
+    ~GpsL1CATelemetryDecoderTest() = default;
 
     void configure_receiver();
 
@@ -238,11 +232,13 @@ int GpsL1CATelemetryDecoderTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -346,7 +342,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     configure_receiver();
 
     //open true observables log file written by the simulator
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
@@ -443,7 +439,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         }
 
     //load the measured values
-    tlm_dump_reader tlm_dump;
+    Tlm_Dump_Reader tlm_dump;
     ASSERT_NO_THROW({
         if (tlm_dump.open_obs_file(std::string("./telemetry0.dat")) == false)
             {

@@ -2,11 +2,11 @@
  * \file notch_filter.cc
  * \brief Adapts a gnuradio gr_notch_filter
  * \author Antonio Ramos, 2017. antonio.ramosdet(at)gmail.com
- *         
+ *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,8 +35,6 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 
-
-using google::LogMessage;
 
 NotchFilter::NotchFilter(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -90,9 +88,6 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, const std::strin
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-NotchFilter::~NotchFilter() = default;
 
 
 void NotchFilter::connect(gr::top_block_sptr top_block)

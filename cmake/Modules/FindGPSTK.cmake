@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -22,6 +22,10 @@
 #  GPSTK_FOUND, If false, do not try to use GPSTK.
 #  GPSTK_LIBRARY, where to find the GPSTK library.
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
 find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
     HINTS /usr/include
           /usr/local/include
@@ -32,18 +36,57 @@ find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
 
 set(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
 
+include(GNUInstallDirs)
+
 find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
     HINTS /usr/lib
           /usr/local/lib
+          /usr/${CMAKE_INSTALL_LIBDIR}
+          /usr/local/${CMAKE_INSTALL_LIBDIR}
           /opt/local/lib
-          ${GPSTK_ROOT}/lib
-          $ENV{GPSTK_ROOT}/lib
-          ${GPSTK_ROOT}/lib64
-          $ENV{GPSTK_ROOT}/lib64
+          ${GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
+          $ENV{GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
 )
 
-# handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if
+# handle the QUIET and REQUIRED arguments and set GPSTK_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GPSTK DEFAULT_MSG GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
-mark_as_advanced(GPSTK_INCLUDE_DIR GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
+
+if(GPSTK_FOUND)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+        include(${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(GPSTK_VERSION ${PACKAGE_VERSION})
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
+if(GPSTK_FOUND AND GPSTK_VERSION)
+    set_package_properties(GPSTK PROPERTIES
+        DESCRIPTION "Library and suite of applications for satellite navigation (found: v${GPSTK_VERSION})"
+    )
+else()
+    set_package_properties(GPSTK PROPERTIES
+        DESCRIPTION "Library and suite of applications for satellite navigation"
+    )
+endif()
+
+set_package_properties(GPSTK PROPERTIES
+    URL "http://www.gpstk.org"
+)
+
+mark_as_advanced(GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
+
+if(GPSTK_FOUND AND NOT TARGET Gpstk::gpstk)
+    add_library(Gpstk::gpstk SHARED IMPORTED)
+    set_target_properties(Gpstk::gpstk PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GPSTK_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GPSTK_INCLUDE_DIR};${GPSTK_INCLUDE_DIR}/gpstk"
+        INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
+    )
+endif()

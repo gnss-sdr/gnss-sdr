@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,6 +40,15 @@ class Dll_Pll_Conf
 {
 public:
     /* DLL/PLL tracking configuration */
+
+    int fll_filter_order;
+    bool enable_fll_pull_in;
+    bool enable_fll_steady_state;
+    unsigned int pull_in_time_s;
+    unsigned int bit_synchronization_time_limit_s;
+    int pll_filter_order;
+    int dll_filter_order;
+
     double fs_in;
     uint32_t vector_length;
     bool dump;
@@ -47,6 +56,7 @@ public:
     std::string dump_filename;
     float pll_pull_in_bw_hz;
     float dll_pull_in_bw_hz;
+    float fll_bw_hz;
     float pll_bw_hz;
     float dll_bw_hz;
     float pll_bw_narrow_hz;
@@ -60,10 +70,12 @@ public:
     int32_t cn0_samples;
     int32_t carrier_lock_det_mav_samples;
     int32_t cn0_min;
-    int32_t max_lock_fail;
+    int32_t max_code_lock_fail;
+    int32_t max_carrier_lock_fail;
     uint32_t smoother_length;
     double carrier_lock_th;
     bool track_pilot;
+    bool enable_doppler_correction;
     char system;
     char signal[3]{};
 

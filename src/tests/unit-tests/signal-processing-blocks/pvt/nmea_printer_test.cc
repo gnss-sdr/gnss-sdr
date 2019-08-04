@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,10 +30,29 @@
 
 
 #include "nmea_printer.h"
-#include <cstdio>
+#include "rtklib_rtkpos.h"
+#include "rtklib_solver.h"
 #include <fstream>
 #include <string>
 
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 class NmeaPrinterTest : public ::testing::Test
 {
@@ -42,9 +61,7 @@ protected:
     {
         this->conf();
     }
-    ~NmeaPrinterTest()
-    {
-    }
+    ~NmeaPrinterTest() = default;
     void conf();
     rtk_t rtk;
 };
@@ -157,7 +174,7 @@ void NmeaPrinterTest::conf()
 TEST_F(NmeaPrinterTest, PrintLine)
 {
     std::string filename("nmea_test.nmea");
-    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, false, rtk);
+    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(12, "filename", false, false, rtk);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));
@@ -196,5 +213,6 @@ TEST_F(NmeaPrinterTest, PrintLine)
                 }
             test_file.close();
         }
-    EXPECT_EQ(0, remove(filename.c_str())) << "Failure deleting a temporary file.";
+    errorlib::error_code ec;
+    EXPECT_EQ(true, fs::remove(fs::path(filename), ec)) << "Failure deleting a temporary file.";
 }

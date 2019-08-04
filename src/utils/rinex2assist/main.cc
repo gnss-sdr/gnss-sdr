@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,7 +30,7 @@
  */
 
 
-#include "galileo_ephemeris.h"
+#include "galileo_ephemeris.h"  // IWYU pragma: keep
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include "gps_ephemeris.h"
@@ -45,6 +45,7 @@
 #include <gpstk/Rinex3NavData.hpp>
 #include <gpstk/Rinex3NavHeader.hpp>
 #include <gpstk/Rinex3NavStream.hpp>
+#include <cstddef>  // for size_t
 #include <cstdlib>
 #include <iostream>
 

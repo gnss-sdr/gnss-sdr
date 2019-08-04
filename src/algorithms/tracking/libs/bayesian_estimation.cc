@@ -6,7 +6,12 @@
  * the properties of a stochastic process based on a sequence of
  * discrete samples of the sequence.
  *
- * [1] TODO: Refs
+ * [1]: LaMountain, Gerald, Vilà-Valls, Jordi, Closas, Pau, "Bayesian
+ * Covariance Estimation for Kalman Filter based Digital Carrier
+ * Synchronization," Proceedings of the 31st International Technical Meeting
+ * of the Satellite Division of The Institute of Navigation
+ * (ION GNSS+ 2018), Miami, Florida, September 2018, pp. 3575-3586.
+ * https://doi.org/10.33012/2018.15911
  *
  * \authors <ul>
  *          <li> Gerald LaMountain, 2018. gerald(at)ece.neu.edu
@@ -14,7 +19,7 @@
  *          </ul>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -52,6 +57,7 @@ Bayesian_estimator::Bayesian_estimator()
     Psi_est = Psi_prior;
 }
 
+
 Bayesian_estimator::Bayesian_estimator(int ny)
 {
     mu_prior = arma::zeros(ny, 1);
@@ -62,6 +68,7 @@ Bayesian_estimator::Bayesian_estimator(int ny)
     mu_est = mu_prior;
     Psi_est = Psi_prior;
 }
+
 
 Bayesian_estimator::Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0)
 {
@@ -74,7 +81,6 @@ Bayesian_estimator::Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_pr
     Psi_est = Psi_prior;
 }
 
-Bayesian_estimator::~Bayesian_estimator() = default;
 
 void Bayesian_estimator::init(const arma::mat& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0)
 {
@@ -86,6 +92,7 @@ void Bayesian_estimator::init(const arma::mat& mu_prior_0, int kappa_prior_0, in
     mu_est = mu_prior;
     Psi_est = Psi_prior;
 }
+
 
 /*
  * Perform Bayesian noise estimation using the normal-inverse-Wishart priors stored in
@@ -174,10 +181,12 @@ void Bayesian_estimator::update_sequential(const arma::vec& data, const arma::ve
     Psi_prior = Psi_posterior;
 }
 
+
 arma::mat Bayesian_estimator::get_mu_est() const
 {
     return mu_est;
 }
+
 
 arma::mat Bayesian_estimator::get_Psi_est() const
 {

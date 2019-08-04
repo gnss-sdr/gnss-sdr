@@ -1,15 +1,15 @@
 /*!
  * \file cpu_multicorrelator.cc
- * \brief High optimized CPU vector multiTAP correlator class
+ * \brief Highly optimized CPU vector multiTAP correlator class
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that implements a high optimized vector multiTAP correlator class for CPUs
+ * Class that implements a highly optimized vector multiTAP correlator class for CPUs
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,7 +37,7 @@
 #include <cmath>
 
 
-cpu_multicorrelator::cpu_multicorrelator()
+Cpu_Multicorrelator::Cpu_Multicorrelator()
 {
     d_sig_in = nullptr;
     d_local_code_in = nullptr;
@@ -49,16 +49,16 @@ cpu_multicorrelator::cpu_multicorrelator()
 }
 
 
-cpu_multicorrelator::~cpu_multicorrelator()
+Cpu_Multicorrelator::~Cpu_Multicorrelator()
 {
     if (d_local_codes_resampled != nullptr)
         {
-            cpu_multicorrelator::free();
+            Cpu_Multicorrelator::free();
         }
 }
 
 
-bool cpu_multicorrelator::init(
+bool Cpu_Multicorrelator::init(
     int max_signal_length_samples,
     int n_correlators)
 {
@@ -75,7 +75,7 @@ bool cpu_multicorrelator::init(
 }
 
 
-bool cpu_multicorrelator::set_local_code_and_taps(
+bool Cpu_Multicorrelator::set_local_code_and_taps(
     int code_length_chips,
     const std::complex<float>* local_code_in,
     float* shifts_chips)
@@ -87,7 +87,7 @@ bool cpu_multicorrelator::set_local_code_and_taps(
 }
 
 
-bool cpu_multicorrelator::set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in)
+bool Cpu_Multicorrelator::set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in)
 {
     // Save CPU pointers
     d_sig_in = sig_in;
@@ -96,7 +96,7 @@ bool cpu_multicorrelator::set_input_output_vectors(std::complex<float>* corr_out
 }
 
 
-void cpu_multicorrelator::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
+void Cpu_Multicorrelator::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
     volk_gnsssdr_32fc_xn_resampler_32fc_xn(d_local_codes_resampled,
         d_local_code_in,
@@ -109,7 +109,7 @@ void cpu_multicorrelator::update_local_code(int correlator_length_samples, float
 }
 
 
-bool cpu_multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
+bool Cpu_Multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float rem_code_phase_chips,
@@ -126,7 +126,7 @@ bool cpu_multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 
-bool cpu_multicorrelator::free()
+bool Cpu_Multicorrelator::free()
 {
     // Free memory
     if (d_local_codes_resampled != nullptr)

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,6 +32,7 @@
 #include "cshort_to_float_x2.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <algorithm>  // for max
 
 
 cshort_to_float_x2_sptr make_cshort_to_float_x2()

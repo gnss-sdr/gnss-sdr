@@ -81,17 +81,17 @@ memb_stationaryIndication_constraint_1(asn_TYPE_descriptor_t *td, const void *sp
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_ganssTODFrac_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_TOD_FRAC_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 15,  15,  0,  16384 }	/* (0..16384) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssTimeID_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  3 }	/* (0..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_stationaryIndication_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_STATIONARY_INDICATION_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -120,7 +120,7 @@ static asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssTODFrac_constraint_1,
-		&asn_PER_memb_ganssTODFrac_constr_4,
+		&ASN_PER_MEMB_GANSS_TOD_FRAC_CONSTR_4,
 		0,
 		"ganssTODFrac"
 		},
@@ -138,7 +138,7 @@ static asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssTimeID_constraint_1,
-		&asn_PER_memb_ganssTimeID_constr_6,
+		&ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_6,
 		0,
 		"ganssTimeID"
 		},
@@ -165,7 +165,7 @@ static asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stationaryIndication_constraint_1,
-		&asn_PER_memb_stationaryIndication_constr_9,
+		&ASN_PER_MEMB_STATIONARY_INDICATION_CONSTR_9,
 		0,
 		"stationaryIndication"
 		},

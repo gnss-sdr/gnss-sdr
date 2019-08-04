@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,26 +29,23 @@
  */
 
 #include "raw_array_signal_source.h"
+#include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <dbfcttc/raw_array.h>
 
 
-using google::LogMessage;
-
 RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/raw_array_source.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
-
     //dump_ = configuration->property(role + ".dump", false);
     //dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
     dump_ = false;
 
     std::string default_ethernet_dev = "eth0";
@@ -66,7 +63,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     int sampling_freq_;
     sampling_freq_ = configuration->property(role + ".sampling_freq", 5000000);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             raw_array_source_ = gr::dbfcttc::raw_array::make(eth_device_.c_str(), channels_, snapshots_per_frame_, inter_frame_delay_, sampling_freq_);
@@ -94,11 +91,6 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
         {
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-}
-
-
-RawArraySignalSource::~RawArraySignalSource()
-{
 }
 
 

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,37 +30,34 @@
  */
 
 #include "front_end_cal.h"
+#include "GPS_L1_CA.h"  // for GPS_L1_FREQ_HZ
+#include "concurrent_map.h"
+#include "configuration_interface.h"
 #include "gnss_sdr_supl_client.h"
+#include "gps_acq_assist.h"  // for Gps_Acq_Assist
 #include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
-#include "gps_navigation_message.h"
 #include "gps_utc_model.h"
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <glog/logging.h>
+#include <algorithm>  // for min
 #include <cmath>
-#include <exception>
-#include <memory>
+#include <iostream>  // for operator<<
+#include <map>
+#include <stdexcept>
 #include <utility>
 
-extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-extern concurrent_map<Gps_Iono> global_gps_iono_map;
-extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
+extern Concurrent_Map<Gps_Iono> global_gps_iono_map;
+extern Concurrent_Map<Gps_Utc_Model> global_gps_utc_model_map;
+extern Concurrent_Map<Gps_Almanac> global_gps_almanac_map;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-FrontEndCal::FrontEndCal() = default;
-
-FrontEndCal::~FrontEndCal() = default;
 
 bool FrontEndCal::read_assistance_from_XML()
 {
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     std::string eph_xml_filename = "gps_ephemeris.xml";
     std::cout << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
     LOG(INFO) << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename;
@@ -87,8 +84,8 @@ bool FrontEndCal::read_assistance_from_XML()
 int FrontEndCal::Get_SUPL_Assist()
 {
     //######### GNSS Assistance #################################
-    gnss_sdr_supl_client supl_client_acquisition_;
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_acquisition_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
     int supl_mns;  //Current network MNC (Mobile Network code), 2 or 3 digits.
     int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
@@ -307,7 +304,7 @@ arma::vec FrontEndCal::geodetic2ecef(double phi, double lambda, double h, const 
 }
 
 
-double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height)
+double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height) noexcept(false)
 {
     int num_secs = 10;
     double step_secs = 0.5;
@@ -358,12 +355,12 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
 
             //Doppler estimation
             arma::vec Doppler_Hz;
-            Doppler_Hz = (obs_to_sat_velocity / GPS_C_m_s) * GPS_L1_FREQ_HZ;
+            Doppler_Hz = (obs_to_sat_velocity / GPS_C_M_S) * GPS_L1_FREQ_HZ;
             double mean_Doppler_Hz;
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;
         }
-    throw(1);
+    throw std::runtime_error("1");
 }
 
 
@@ -386,7 +383,6 @@ void FrontEndCal::GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_
     double f_rf_err = (f_bb_meas_Hz - f_bb_true_Hz) - f_bb_err_pll;
     double f_osc_err_hz = (f_rf_err * R) / (N + X / Y);
 
-    // OJO,segun los datos gnss, la IF positiva hace disminuir la fs!!
     f_osc_err_hz = -f_osc_err_hz;
     *f_osc_err_ppm = f_osc_err_hz / (f_osc_n / 1e6);
 

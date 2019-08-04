@@ -4,7 +4,7 @@
 % Antonio Ramos,  2018. antonio.ramos(at)cttc.es
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
 %
 % GNSS-SDR is a software defined Global Navigation
 %           Satellite Systems receiver
@@ -34,15 +34,15 @@ if ~exist('dll_pll_veml_read_tracking_dump.m', 'file')
     addpath('./libs')
 end
 
-samplingFreq = 5000000;     %[Hz]
-coherent_integration_time_ms = 20; %[ms]
-channels = 5;   % Number of channels
+samplingFreq = 25000000;     %[Hz]
+coherent_integration_time_ms = 1; %[ms]
+channels = 1;   % Number of channels
 first_channel = 0;  % Number of the first channel
 
-path = '/dump_dir/';  %% CHANGE THIS PATH
+path = '/home/dmiralles/Documents/gnss-sdr/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
-    tracking_log_path = [path 'track_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch_ BY YOUR dump_filename
+    tracking_log_path = [path 'epl_tracking_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch_ BY YOUR dump_filename
     GNSS_tracking(N) = dll_pll_veml_read_tracking_dump(tracking_log_path);
 end
 

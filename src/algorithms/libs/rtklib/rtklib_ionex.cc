@@ -1,5 +1,5 @@
 /*!
- * \file rtklib_ionex.h
+ * \file rtklib_ionex.cc
  * \brief ionex functions
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu
@@ -52,20 +52,30 @@
  *     [1] S.Schear, W.Gurtner and J.Feltens, IONEX: The IONosphere Map EXchange
  *         Format Version 1, February 25, 1998
  *     [2] S.Schaer, R.Markus, B.Gerhard and A.S.Timon, Daily Global Ionosphere
- *         Maps based on GPS Carrier Phase Data Routinely producted by CODE
+ *         Maps based on GPS Carrier Phase Data Routinely produced by CODE
  *         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
  *
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_ionex.h"
 #include "rtklib_rtkcmn.h"
+#include <cstring>
 
 /* get index -----------------------------------------------------------------*/
 int getindex(double value, const double *range)
 {
-    if (range[2] == 0.0) return 0;
-    if (range[1] > 0.0 && (value < range[0] || range[1] < value)) return -1;
-    if (range[1] < 0.0 && (value < range[1] || range[0] < value)) return -1;
+    if (range[2] == 0.0)
+        {
+            return 0;
+        }
+    if (range[1] > 0.0 && (value < range[0] || range[1] < value))
+        {
+            return -1;
+        }
+    if (range[1] < 0.0 && (value < range[1] || range[0] < value))
+        {
+            return -1;
+        }
     return static_cast<int>(floor((value - range[0]) / range[2] + 0.5));
 }
 
@@ -80,7 +90,10 @@ int nitem(const double *range)
 /* data index (i:lat,j:lon,k:hgt) --------------------------------------------*/
 int dataindex(int i, int j, int k, const int *ndata)
 {
-    if (i < 0 || ndata[0] <= i || j < 0 || ndata[1] <= j || k < 0 || ndata[2] <= k) return -1;
+    if (i < 0 || ndata[0] <= i || j < 0 || ndata[1] <= j || k < 0 || ndata[2] <= k)
+        {
+            return -1;
+        }
     return i + ndata[0] * (j + ndata[1] * k);
 }
 
@@ -98,7 +111,10 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     ndata[0] = nitem(lats);
     ndata[1] = nitem(lons);
     ndata[2] = nitem(hgts);
-    if (ndata[0] <= 1 || ndata[1] <= 1 || ndata[2] <= 0) return nullptr;
+    if (ndata[0] <= 1 || ndata[1] <= 1 || ndata[2] <= 0)
+        {
+            return nullptr;
+        }
 
     if (nav->nt >= nav->ntmax)
         {
@@ -133,7 +149,7 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     for (i = 0; i < n; i++)
         {
             p->data[i] = 0.0;
-            p->rms[i] = 0.0f;
+            p->rms[i] = 0.0F;
         }
     nav->nt++;
     return p;
@@ -148,11 +164,17 @@ void readionexdcb(FILE *fp, double *dcb, double *rms)
 
     trace(3, "readionexdcb:\n");
 
-    for (i = 0; i < MAXSAT; i++) dcb[i] = rms[i] = 0.0;
+    for (i = 0; i < MAXSAT; i++)
+        {
+            dcb[i] = rms[i] = 0.0;
+        }
 
     while (fgets(buff, sizeof(buff), fp))
         {
-            if (strlen(buff) < 60) continue;
+            if (strlen(buff) < 60)
+                {
+                    continue;
+                }
             label = buff + 60;
 
             if (strstr(label, "PRN / BIAS / RMS") == label)
@@ -169,7 +191,9 @@ void readionexdcb(FILE *fp, double *dcb, double *rms)
                     rms[sat - 1] = str2num(buff, 16, 10);
                 }
             else if (strstr(label, "END OF AUX DATA") == label)
-                break;
+                {
+                    break;
+                }
         }
 }
 
@@ -185,12 +209,18 @@ double readionexh(FILE *fp, double *lats, double *lons, double *hgts,
 
     while (fgets(buff, sizeof(buff), fp))
         {
-            if (strlen(buff) < 60) continue;
+            if (strlen(buff) < 60)
+                {
+                    continue;
+                }
             label = buff + 60;
 
             if (strstr(label, "IONEX VERSION / TYPE") == label)
                 {
-                    if (buff[20] == 'I') ver = str2num(buff, 0, 8);
+                    if (buff[20] == 'I')
+                        {
+                            ver = str2num(buff, 0, 8);
+                        }
                 }
             else if (strstr(label, "BASE RADIUS") == label)
                 {
@@ -246,11 +276,17 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
 
     while (fgets(buff, sizeof(buff), fp))
         {
-            if (strlen(buff) < 60) continue;
+            if (strlen(buff) < 60)
+                {
+                    continue;
+                }
 
             if (strstr(label, "START OF TEC MAP") == label)
                 {
-                    if ((p = addtec(lats, lons, hgts, rb, nav))) type = 1;
+                    if ((p = addtec(lats, lons, hgts, rb, nav)))
+                        {
+                            type = 1;
+                        }
                 }
             else if (strstr(label, "END OF TEC MAP") == label)
                 {
@@ -278,13 +314,18 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
                         {
                             for (i = nav->nt - 1; i >= 0; i--)
                                 {
-                                    if (fabs(timediff(time, nav->tec[i].time)) >= 1.0) continue;
+                                    if (fabs(timediff(time, nav->tec[i].time)) >= 1.0)
+                                        {
+                                            continue;
+                                        }
                                     p = nav->tec + i;
                                     break;
                                 }
                         }
                     else if (p)
-                        p->time = time;
+                        {
+                            p->time = time;
+                        }
                 }
             else if (strstr(label, "LAT/LON1/LON2/DLON/H") == label && p)
                 {
@@ -300,17 +341,30 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
 
                     for (m = 0; m < n; m++)
                         {
-                            if (m % 16 == 0 && !fgets(buff, sizeof(buff), fp)) break;
+                            if (m % 16 == 0 && !fgets(buff, sizeof(buff), fp))
+                                {
+                                    break;
+                                }
 
                             j = getindex(lon[0] + lon[2] * m, p->lons);
-                            if ((index = dataindex(i, j, k, p->ndata)) < 0) continue;
+                            if ((index = dataindex(i, j, k, p->ndata)) < 0)
+                                {
+                                    continue;
+                                }
 
-                            if ((x = str2num(buff, m % 16 * 5, 5)) == 9999.0) continue;
+                            if ((x = str2num(buff, m % 16 * 5, 5)) == 9999.0)
+                                {
+                                    continue;
+                                }
 
                             if (type == 1)
-                                p->data[index] = x * std::pow(10.0, nexp);
+                                {
+                                    p->data[index] = x * std::pow(10.0, nexp);
+                                }
                             else
-                                p->rms[index] = static_cast<float>(x * std::pow(10.0, nexp));
+                                {
+                                    p->rms[index] = static_cast<float>(x * std::pow(10.0, nexp));
+                                }
                         }
                 }
         }
@@ -386,7 +440,10 @@ void readtec(const char *file, nav_t *nav, int opt)
         {
             if (!(efiles[i] = static_cast<char *>(malloc(1024))))
                 {
-                    for (i--; i >= 0; i--) free(efiles[i]);
+                    for (i--; i >= 0; i--)
+                        {
+                            free(efiles[i]);
+                        }
                     return;
                 }
         }
@@ -413,10 +470,16 @@ void readtec(const char *file, nav_t *nav, int opt)
             readionexb(fp, lats, lons, hgts, rb, nexp, nav);
             fclose(fp);
         }
-    for (i = 0; i < MAXEXFILE; i++) free(efiles[i]);
+    for (i = 0; i < MAXEXFILE; i++)
+        {
+            free(efiles[i]);
+        }
 
     /* combine tec grid data */
-    if (nav->nt > 0) combtec(nav);
+    if (nav->nt > 0)
+        {
+            combtec(nav);
+        }
 
     /* P1-P2 dcb */
     for (i = 0; i < MAXSAT; i++)
@@ -436,14 +499,21 @@ int interptec(const tec_t *tec, int k, const double *posp, double *value,
     trace(3, "interptec: k=%d posp=%.2f %.2f\n", k, posp[0] * R2D, posp[1] * R2D);
     *value = *rms = 0.0;
 
-    if (tec->lats[2] == 0.0 || tec->lons[2] == 0.0) return 0;
+    if (tec->lats[2] == 0.0 || tec->lons[2] == 0.0)
+        {
+            return 0;
+        }
 
     dlat = posp[0] * R2D - tec->lats[0];
     dlon = posp[1] * R2D - tec->lons[0];
     if (tec->lons[2] > 0.0)
-        dlon -= floor(dlon / 360) * 360.0; /*  0 <= dlon<360 */
+        {
+            dlon -= floor(dlon / 360) * 360.0; /*  0 <= dlon<360 */
+        }
     else
-        dlon += floor(-dlon / 360) * 360.0; /* -360<dlon <= 0 */
+        {
+            dlon += floor(-dlon / 360) * 360.0; /* -360<dlon <= 0 */
+        }
 
     a = dlat / tec->lats[2];
     b = dlon / tec->lons[2];
@@ -455,7 +525,10 @@ int interptec(const tec_t *tec, int k, const double *posp, double *value,
     /* get gridded tec data */
     for (n = 0; n < 4; n++)
         {
-            if ((index = dataindex(i + (n % 2), j + (n < 2 ? 0 : 1), k, tec->ndata)) < 0) continue;
+            if ((index = dataindex(i + (n % 2), j + (n < 2 ? 0 : 1), k, tec->ndata)) < 0)
+                {
+                    continue;
+                }
             d[n] = tec->data[index];
             r[n] = tec->rms[index];
         }
@@ -490,13 +563,18 @@ int interptec(const tec_t *tec, int k, const double *posp, double *value,
         {
             i = 0;
             for (n = 0; n < 4; n++)
-                if (d[n] > 0.0)
-                    {
-                        i++;
-                        *value += d[n];
-                        *rms += r[n];
-                    }
-            if (i == 0) return 0;
+                {
+                    if (d[n] > 0.0)
+                        {
+                            i++;
+                            *value += d[n];
+                            *rms += r[n];
+                        }
+                }
+            if (i == 0)
+                {
+                    return 0;
+                }
             *value /= i;
             *rms /= i;
         }
@@ -536,7 +614,10 @@ int iondelay(gtime_t time, const tec_t *tec, const double *pos,
                     posp[1] += 2.0 * PI * timediff(time, tec->time) / 86400.0;
                 }
             /* interpolate tec grid data */
-            if (!interptec(tec, i, posp, &vtec, &rms)) return 0;
+            if (!interptec(tec, i, posp, &vtec, &rms))
+                {
+                    return 0;
+                }
 
             *delay += fact * fs * vtec;
             *var += fact * fact * fs * fs * rms * rms;
@@ -579,7 +660,10 @@ int iontec(gtime_t time, const nav_t *nav, const double *pos,
         }
     for (i = 0; i < nav->nt; i++)
         {
-            if (timediff(nav->tec[i].time, time) > 0.0) break;
+            if (timediff(nav->tec[i].time, time) > 0.0)
+                {
+                    break;
+                }
         }
     if (i == 0 || i >= nav->nt)
         {

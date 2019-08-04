@@ -5,7 +5,7 @@
  *         Antonio Ramos  2017
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,7 +37,6 @@
 #include <utility>
 #include <vector>
 
-using google::LogMessage;
 
 PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
@@ -104,9 +103,6 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-PulseBlankingFilter::~PulseBlankingFilter() = default;
 
 
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)

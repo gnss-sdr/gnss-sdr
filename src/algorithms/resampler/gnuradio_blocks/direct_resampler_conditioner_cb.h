@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,12 +36,12 @@
 #include <volk/volk.h>
 
 class direct_resampler_conditioner_cb;
-typedef boost::shared_ptr<direct_resampler_conditioner_cb>
-    direct_resampler_conditioner_cb_sptr;
+using direct_resampler_conditioner_cb_sptr = boost::shared_ptr<direct_resampler_conditioner_cb>;
 
-direct_resampler_conditioner_cb_sptr
-direct_resampler_make_conditioner_cb(double sample_freq_in,
+direct_resampler_conditioner_cb_sptr direct_resampler_make_conditioner_cb(
+    double sample_freq_in,
     double sample_freq_out);
+
 /*!
  * \brief This class implements a direct resampler conditioner for std::complex<signed char>
  *
@@ -49,22 +49,8 @@ direct_resampler_make_conditioner_cb(double sample_freq_in,
  */
 class direct_resampler_conditioner_cb : public gr::block
 {
-private:
-    friend direct_resampler_conditioner_cb_sptr
-    direct_resampler_make_conditioner_cb(double sample_freq_in,
-        double sample_freq_out);
-
-    double d_sample_freq_in;
-    double d_sample_freq_out;
-    uint32_t d_phase;
-    uint32_t d_lphase;
-    uint32_t d_phase_step;
-
-    direct_resampler_conditioner_cb(double sample_freq_in,
-        double sample_freq_out);
-
 public:
-    ~direct_resampler_conditioner_cb();
+    ~direct_resampler_conditioner_cb() = default;
 
     inline unsigned int sample_freq_in() const
     {
@@ -81,6 +67,21 @@ public:
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend direct_resampler_conditioner_cb_sptr direct_resampler_make_conditioner_cb(
+        double sample_freq_in,
+        double sample_freq_out);
+
+    direct_resampler_conditioner_cb(
+        double sample_freq_in,
+        double sample_freq_out);
+
+    double d_sample_freq_in;
+    double d_sample_freq_out;
+    uint32_t d_phase;
+    uint32_t d_lphase;
+    uint32_t d_phase_step;
 };
 
 #endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H */

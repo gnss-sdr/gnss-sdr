@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,13 +35,14 @@
 #ifndef GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "unpack_byte_2bit_samples.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -55,9 +56,9 @@ class NsrFileSignalSource : public GNSSBlockInterface
 public:
     NsrFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~NsrFileSignalSource();
+    ~NsrFileSignalSource() = default;
     inline std::string role() override
     {
         return role_;
@@ -96,33 +97,33 @@ public:
         return repeat_;
     }
 
-    inline long sampling_frequency() const
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    inline long samples() const
+    inline uint64_t samples() const
     {
         return samples_;
     }
 
 private:
-    unsigned long long samples_;
-    long sampling_frequency_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     std::string filename_;
     std::string item_type_;
     bool repeat_;
     bool dump_;
     std::string dump_filename_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
     gr::blocks::file_source::sptr file_source_;
     unpack_byte_2bit_samples_sptr unpack_byte_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     size_t item_size_;
     // Throttle control
     bool enable_throttle_control_;

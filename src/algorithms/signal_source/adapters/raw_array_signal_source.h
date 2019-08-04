@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,13 +29,14 @@
  */
 
 
-#ifndef RAW_ARRAY_SIGNAL_SOURCE_H_
-#define RAW_ARRAY_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H_
+#define GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -48,9 +49,9 @@ class RawArraySignalSource : public GNSSBlockInterface
 public:
     RawArraySignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
-        unsigned int out_stream, gr::msg_queue::sptr queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~RawArraySignalSource();
+    ~RawArraySignalSource() = default;
 
     inline std::string role() override
     {
@@ -87,7 +88,7 @@ private:
     std::string eth_device_;
     gr::block_sptr raw_array_source_;
     gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif /*RAW_ARRAY_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H_*/

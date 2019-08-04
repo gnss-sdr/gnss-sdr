@@ -22,7 +22,7 @@
  *          </ul>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -64,7 +64,7 @@
  *
  * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- *     CN0_{dB}=10*log(\hat{\rho})-10*log(2 * T_{int}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
  * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  * Ref: Marco Pini, Emanuela Falletti and Maurizio Fantino, "Performance
@@ -72,7 +72,7 @@
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
  * Applications, pp.28-30, August 2008.
  */
-float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s);
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s);
 
 
 /*! \brief A carrier lock detector

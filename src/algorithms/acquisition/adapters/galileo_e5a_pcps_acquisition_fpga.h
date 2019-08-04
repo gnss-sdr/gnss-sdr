@@ -1,11 +1,12 @@
 /*!
- * \file galileo_e5a_pcps_acquisition.h
+ * \file galileo_e5a_pcps_acquisition_fpga.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals
- * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
+ *  Galileo E5a data and pilot Signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.es
+ *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,52 +24,87 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
-#define GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
+#ifndef GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
+#define GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
 
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include <gnuradio/blocks/stream_to_vector.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
+
+/*!
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for Galileo E5a signals
+ */
 class GalileoE5aPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
+    /*!
+     * \brief Constructor
+     */
     GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GalileoE5aPcpsAcquisitionFpga();
+    /*!
+     * \brief Destructor
+     */
+    ~GalileoE5aPcpsAcquisitionFpga() = default;
 
+    /*!
+     * \brief Role
+     */
     inline std::string role() override
     {
         return role_;
     }
 
+    /*!
+     * \brief Returns "Galileo_E5a_Pcps_Acquisition_Fpga"
+     */
     inline std::string implementation() override
     {
         return "Galileo_E5a_Pcps_Acquisition_Fpga";
     }
 
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int16_t);
     }
 
+    /*!
+     * \brief Connect
+     */
     void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
     void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
     gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
     gr::basic_block_sptr get_right_block() override;
 
     /*!
@@ -81,7 +117,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_fpga_->set_channel(channel_);
+    }
+
+    /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_fpga_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -97,6 +146,11 @@ public:
      * \brief Set Doppler steps for the grid search
      */
     void set_doppler_step(unsigned int doppler_step) override;
+
+    /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_doppler_center(int doppler_center) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
@@ -126,58 +180,45 @@ public:
     void set_state(int state) override;
 
     /*!
+     * \brief This function is only used in the unit tests
+     */
+    void set_single_doppler_flag(unsigned int single_doppler_flag);
+
+    /*!
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Set resampler latency
+     */
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    //float calculate_threshold(float pfa);
+    // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const uint32_t quant_bits_local_code = 16;
+    static const uint32_t select_lsbits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t select_msbits = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
 
     ConfigurationInterface* configuration_;
-
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
-
-    size_t item_size_;
-
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
-
-    bool bit_transition_flag_;
-    bool dump_;
     bool acq_pilot_;
-    bool use_CFAR_;
-    bool blocking_;
     bool acq_iq_;
-
-    unsigned int vector_length_;
-    unsigned int code_length_;
-    unsigned int channel_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    unsigned int sampled_ms_;
-    unsigned int max_dwells_;
+    uint32_t channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
+    int32_t doppler_center_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
-    int64_t fs_in_;
-
-
-    float threshold_;
-
-    /*
-    std::complex<float>* codeI_;
-    std::complex<float>* codeQ_;
-    */
-
-    gr_complex* code_;
-
     Gnss_Synchro* gnss_synchro_;
-
-    // extra for the FPGA
-    lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
+    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
 };
-#endif /* GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_ */
+
+#endif /* GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_ */

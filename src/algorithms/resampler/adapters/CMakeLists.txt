@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -27,28 +27,45 @@ set(RESAMPLER_ADAPTER_HEADERS
     mmse_resampler_conditioner.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-)
-
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
-    add_definitions(-DGR_GREATER_38=1)
-endif()
-
 list(SORT RESAMPLER_ADAPTER_HEADERS)
 list(SORT RESAMPLER_ADAPTER_SOURCES)
+
+source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
 
 add_library(resampler_adapters
     ${RESAMPLER_ADAPTER_SOURCES}
     ${RESAMPLER_ADAPTER_HEADERS}
 )
 
-source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
+target_link_libraries(resampler_adapters
+    PUBLIC
+        Gnuradio::runtime
+        resampler_gr_blocks
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        Volk::volk
+)
 
-target_link_libraries(resampler_adapters resampler_gr_blocks)
+target_include_directories(resampler_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
+    target_compile_definitions(resampler_adapters PUBLIC -DGR_GREATER_38=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(resampler_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET resampler_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

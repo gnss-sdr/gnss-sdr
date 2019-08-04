@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -56,7 +56,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaTcpConnectorTracking();
+    ~GpsL1CaTcpConnectorTracking() = default;
 
     inline std::string role() override
     {
@@ -91,6 +91,7 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+
     /*!
      * \brief Stop running tracking
      */
@@ -99,9 +100,7 @@ public:
 private:
     gps_l1_ca_tcp_connector_tracking_cc_sptr tracking_;
     size_t item_size_;
-
     unsigned int channel_;
-
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

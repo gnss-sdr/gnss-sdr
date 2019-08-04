@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,9 @@
  */
 
 
-#include "control_message_factory.h"
+#include "channel_event.h"
+#include "command_event.h"
+#include "concurrent_queue.h"
 #include "control_thread.h"
 #include "in_memory_configuration.h"
 #include <boost/exception/diagnostic_information.hpp>
@@ -39,9 +41,8 @@
 #include <boost/lexical_cast.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <gnuradio/message.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <exception>
 #include <memory>
@@ -121,13 +122,10 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages /*unused*/)
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
-    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
-
-    std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
-
-    control_queue->handle(control_msg_factory->GetQueueMessage(0, 0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(1, 0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(200, 0));
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    control_queue->push(pmt::make_any(channel_event_make(0, 0)));
+    control_queue->push(pmt::make_any(channel_event_make(1, 0)));
+    control_queue->push(pmt::make_any(command_event_make(200, 0)));
 
     control_thread->set_control_queue(control_queue);
     try
@@ -170,7 +168,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
     config->set_property("Acquisition_1C.threshold", "1");
     config->set_property("Acquisition_1C.doppler_max", "5000");
     config->set_property("Acquisition_1C.doppler_min", "-5000");
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
@@ -181,16 +179,14 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue2 = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
-    gr::msg_queue::sptr control_queue2 = gr::msg_queue::make(0);
+    control_queue2->push(pmt::make_any(channel_event_make(0, 0)));
+    control_queue2->push(pmt::make_any(channel_event_make(2, 0)));
+    control_queue2->push(pmt::make_any(channel_event_make(1, 0)));
+    control_queue2->push(pmt::make_any(channel_event_make(3, 0)));
+    control_queue2->push(pmt::make_any(command_event_make(200, 0)));
 
-    std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
-
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0, 0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(2, 0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(1, 0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(3, 0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(200, 0));
 
     control_thread2->set_control_queue(control_queue2);
 
@@ -234,7 +230,7 @@ TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
     config->set_property("Acquisition_1C.threshold", "1");
     config->set_property("Acquisition_1C.doppler_max", "5000");
     config->set_property("Acquisition_1C.doppler_min", "-5000");
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
@@ -245,7 +241,7 @@ TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
-    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     control_thread->set_control_queue(control_queue);
 
     std::thread stop_receiver_thread(stop_receiver);

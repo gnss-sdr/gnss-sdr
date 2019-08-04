@@ -2,7 +2,7 @@
  * \file fpga_switch.cc
  * \brief Switch that connects the HW accelerator queues to the analog front end or the DMA.
  * \authors <ul>
- *    <li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *    <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *    <li> Javier Arribas, 2015. jarribas(at)cttc.es
  * </ul>
  *
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,12 +40,7 @@
 #include <iostream>    // for cout, endl
 #include <sys/mman.h>  // for mmap
 
-
-// constants
-const size_t PAGE_SIZE = 0x10000;
-const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
-
-fpga_switch::fpga_switch(const std::string &device_name)
+Fpga_Switch::Fpga_Switch(const std::string &device_name)
 {
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
@@ -67,7 +62,7 @@ fpga_switch::fpga_switch(const std::string &device_name)
     // sanity check : check test register
     unsigned writeval = TEST_REGISTER_TRACK_WRITEVAL;
     unsigned readval;
-    readval = fpga_switch::fpga_switch_test_register(writeval);
+    readval = Fpga_Switch::fpga_switch_test_register(writeval);
     if (writeval != readval)
         {
             LOG(WARNING) << "Test register sanity check failed";
@@ -81,19 +76,19 @@ fpga_switch::fpga_switch(const std::string &device_name)
 }
 
 
-fpga_switch::~fpga_switch()
+Fpga_Switch::~Fpga_Switch()
 {
     close_device();
 }
 
 
-void fpga_switch::set_switch_position(int switch_position)
+void Fpga_Switch::set_switch_position(int32_t switch_position)
 {
     d_map_base[0] = switch_position;
 }
 
 
-unsigned fpga_switch::fpga_switch_test_register(
+unsigned Fpga_Switch::fpga_switch_test_register(
     unsigned writeval)
 {
     unsigned readval;
@@ -106,7 +101,7 @@ unsigned fpga_switch::fpga_switch_test_register(
 }
 
 
-void fpga_switch::close_device()
+void Fpga_Switch::close_device()
 {
     auto *aux = const_cast<unsigned *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)

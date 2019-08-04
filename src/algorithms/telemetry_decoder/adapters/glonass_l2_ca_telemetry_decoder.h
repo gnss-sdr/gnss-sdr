@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,8 +33,11 @@
 #ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H_
 
-#include "glonass_l2_ca_telemetry_decoder_cc.h"
+#include "glonass_l2_ca_telemetry_decoder_gs.h"
+#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
 
 class ConfigurationInterface;
@@ -50,7 +53,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GlonassL2CaTelemetryDecoder();
+    ~GlonassL2CaTelemetryDecoder() = default;
     std::string role() override
     {
         return role_;
@@ -67,8 +70,9 @@ public:
     gr::basic_block_sptr get_right_block() override;
     void set_satellite(const Gnss_Satellite& satellite) override;
     void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-    void reset() override
+    inline void reset() override
     {
+        telemetry_decoder_->reset();
         return;
     }
     size_t item_size() override
@@ -77,7 +81,7 @@ public:
     }
 
 private:
-    glonass_l2_ca_telemetry_decoder_cc_sptr telemetry_decoder_;
+    glonass_l2_ca_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

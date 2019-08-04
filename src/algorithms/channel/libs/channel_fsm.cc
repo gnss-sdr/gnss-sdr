@@ -1,12 +1,13 @@
 /*!
  * \file channel_fsm.cc
  * \brief Implementation of a State Machine for channel
- * \authors Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ * \authors Javier Arribas, 2019. javiarribas@gmail.com
+ *          Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *          Luis Esteve,   2011. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,10 +31,9 @@
  */
 
 #include "channel_fsm.h"
-#include "control_message_factory.h"
+#include "channel_event.h"
 #include <glog/logging.h>
-
-using google::LogMessage;
+#include <utility>
 
 ChannelFsm::ChannelFsm()
 {
@@ -58,13 +58,13 @@ bool ChannelFsm::Event_stop_channel()
     DLOG(INFO) << "CH = " << channel_ << ". Ev stop channel";
     switch (d_state)
         {
-        case 0:  //already in stanby
+        case 0:  // already in stanby
             break;
-        case 1:  //acquisition
+        case 1:  // acquisition
             d_state = 0;
             stop_acquisition();
             break;
-        case 2:  //tracking
+        case 2:  // tracking
             d_state = 0;
             stop_tracking();
             break;
@@ -73,6 +73,20 @@ bool ChannelFsm::Event_stop_channel()
         }
     return true;
 }
+
+
+bool ChannelFsm::Event_start_acquisition_fpga()
+{
+    std::lock_guard<std::mutex> lk(mx);
+    if ((d_state == 1) || (d_state == 2))
+        {
+            return false;
+        }
+    d_state = 1;
+    DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition FPGA";
+    return true;
+}
+
 
 bool ChannelFsm::Event_start_acquisition()
 {
@@ -158,7 +172,14 @@ void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
 }
 
 
-void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
+void ChannelFsm::set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry)
+{
+    std::lock_guard<std::mutex> lk(mx);
+    nav_ = std::move(telemetry);
+}
+
+
+void ChannelFsm::set_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
 {
     std::lock_guard<std::mutex> lk(mx);
     queue_ = std::move(queue);
@@ -177,6 +198,7 @@ void ChannelFsm::stop_acquisition()
     acq_->stop_acquisition();
 }
 
+
 void ChannelFsm::stop_tracking()
 {
     trk_->stop_tracking();
@@ -186,35 +208,24 @@ void ChannelFsm::stop_tracking()
 void ChannelFsm::start_acquisition()
 {
     acq_->reset();
+    nav_->reset();
 }
 
 
 void ChannelFsm::start_tracking()
 {
     trk_->start_tracking();
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 1));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 1)));
 }
 
 
 void ChannelFsm::request_satellite()
 {
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 0));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 0)));
 }
 
 
 void ChannelFsm::notify_stop_tracking()
 {
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 2));
-        }
+    queue_->push(pmt::make_any(channel_event_make(channel_, 2)));
 }

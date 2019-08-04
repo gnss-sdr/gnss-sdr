@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -26,6 +26,15 @@
 # GFlags_INCLUDE_DIRS
 # GFlags_LIBS
 # GFlags_LIBRARY_DIRS
+#
+# Provides the following imported target:
+# Gflags::gflags
+#
+
+
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
 if(APPLE)
     find_path(GFlags_ROOT_DIR
@@ -95,9 +104,6 @@ if(GFlags_ROOT_DIR)
     else()
       set(GFLAGS_GREATER_20 FALSE)
     endif()
-    # set up include and link directory
-    include_directories(${GFlags_INCLUDE_DIRS})
-    link_directories(${GFlags_LIBRARY_DIRS})
     message(STATUS "gflags library found at ${GFlags_lib}")
     set(GFlags_LIBS ${GFlags_lib})
     set(GFlags_FOUND true)
@@ -109,3 +115,42 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GFLAGS DEFAULT_MSG GFlags_LIBS GFlags_INCLUDE_DIRS)
+
+if(GFLAGS_FOUND)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET GFlags_LIBS 0 FIRST_DIR)
+    get_filename_component(GFlags_LIBS_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
+        include(${GFlags_LIBS_DIR}/cmake/gflags/gflags-config-version.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(GFLAGS_VERSION ${PACKAGE_VERSION})
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing (found: v${GFLAGS_VERSION})"
+        )
+    else()
+        set_package_properties(GFLAGS PROPERTIES
+            DESCRIPTION "C++ library that implements commandline flags processing"
+        )
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+else()
+    set_package_properties(GFLAGS PROPERTIES
+        DESCRIPTION "C++ library that implements commandline flags processing"
+    )
+endif()
+
+set_package_properties(GFLAGS PROPERTIES
+    URL "https://github.com/gflags/gflags"
+)
+
+if(GFLAGS_FOUND AND NOT TARGET Gflags::gflags)
+    add_library(Gflags::gflags SHARED IMPORTED)
+    set_target_properties(Gflags::gflags PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GFlags_LIBS}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GFlags_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GFlags_LIBS}"
+    )
+endif()

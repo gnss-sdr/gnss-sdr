@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2014-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -50,7 +50,7 @@ list(APPEND AVAIL_BUILDTYPES
 # known build types in AVAIL_BUILDTYPES. If the build type is found,
 # the function exits immediately. If nothing is found by the end of
 # checking all available build types, we exit with an error and list
-# the avialable build types.
+# the available build types.
 ########################################################################
 function(VOLK_CHECK_BUILD_TYPE settype)
   string(TOUPPER ${settype} _settype)

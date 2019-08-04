@@ -3,8 +3,8 @@
  * \brief PVT solver based on rtklib library functions adapted to the GNSS-SDR
  *  data flow and structures
  * \authors <ul>
- *          <li> 2017, Javier Arribas
- *          <li> 2017, Carles Fernandez
+ *          <li> 2017-2019, Javier Arribas
+ *          <li> 2017-2019, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
  *          </ul>
  *
@@ -22,8 +22,8 @@
  *
  * -------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
- * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2019, Javier Arribas
+ * Copyright (C) 2017-2019, Carles Fernandez
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,35 +52,51 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
+#include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "rtklib_conversions.h"
+#include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
 #include <glog/logging.h>
 #include <matio.h>
+#include <exception>
 #include <utility>
+#include <vector>
+
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 
-using google::LogMessage;
-
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
+Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
     d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
-    count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (double &i : dop_) i = 0.0;
-    pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
-    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
-    for (auto &i : pvt_ssat)
-        {
-            i = ssat0;
-        }
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -88,11 +104,11 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
                 {
                     try
                         {
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }
@@ -100,7 +116,45 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
         }
 }
 
-bool rtklib_solver::save_matfile()
+
+Rtklib_Solver::~Rtklib_Solver()
+{
+    if (d_dump_file.is_open() == true)
+        {
+            auto pos = d_dump_file.tellp();
+            try
+                {
+                    d_dump_file.close();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_flag_dump_mat_enabled = false;
+                }
+        }
+    if (d_flag_dump_mat_enabled)
+        {
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
+                }
+        }
+}
+
+
+bool Rtklib_Solver::save_matfile()
 {
     // READ DUMP FILE
     std::string dump_filename = d_dump_filename;
@@ -114,7 +168,6 @@ bool rtklib_solver::save_matfile()
                                sizeof(uint8_t) * number_of_uint8_vars +
                                sizeof(float) * number_of_float_vars;
     std::ifstream dump_file;
-    std::cout << "Generating .mat file for " << dump_filename << std::endl;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
         {
@@ -129,6 +182,7 @@ bool rtklib_solver::save_matfile()
     int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
+            std::cout << "Generating .mat file for " << dump_filename << std::endl;
             size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
@@ -138,34 +192,34 @@ bool rtklib_solver::save_matfile()
             return false;
         }
 
-    auto *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
-    auto *week = new uint32_t[num_epoch];
-    auto *RX_time = new double[num_epoch];
-    auto *user_clk_offset = new double[num_epoch];
-    auto *pos_x = new double[num_epoch];
-    auto *pos_y = new double[num_epoch];
-    auto *pos_z = new double[num_epoch];
-    auto *vel_x = new double[num_epoch];
-    auto *vel_y = new double[num_epoch];
-    auto *vel_z = new double[num_epoch];
-    auto *cov_xx = new double[num_epoch];
-    auto *cov_yy = new double[num_epoch];
-    auto *cov_zz = new double[num_epoch];
-    auto *cov_xy = new double[num_epoch];
-    auto *cov_yz = new double[num_epoch];
-    auto *cov_zx = new double[num_epoch];
-    auto *latitude = new double[num_epoch];
-    auto *longitude = new double[num_epoch];
-    auto *height = new double[num_epoch];
-    auto *valid_sats = new uint8_t[num_epoch];
-    auto *solution_status = new uint8_t[num_epoch];
-    auto *solution_type = new uint8_t[num_epoch];
-    auto *AR_ratio_factor = new float[num_epoch];
-    auto *AR_ratio_threshold = new float[num_epoch];
-    auto *gdop = new double[num_epoch];
-    auto *pdop = new double[num_epoch];
-    auto *hdop = new double[num_epoch];
-    auto *vdop = new double[num_epoch];
+    auto TOW_at_current_symbol_ms = std::vector<uint32_t>(num_epoch);
+    auto week = std::vector<uint32_t>(num_epoch);
+    auto RX_time = std::vector<double>(num_epoch);
+    auto user_clk_offset = std::vector<double>(num_epoch);
+    auto pos_x = std::vector<double>(num_epoch);
+    auto pos_y = std::vector<double>(num_epoch);
+    auto pos_z = std::vector<double>(num_epoch);
+    auto vel_x = std::vector<double>(num_epoch);
+    auto vel_y = std::vector<double>(num_epoch);
+    auto vel_z = std::vector<double>(num_epoch);
+    auto cov_xx = std::vector<double>(num_epoch);
+    auto cov_yy = std::vector<double>(num_epoch);
+    auto cov_zz = std::vector<double>(num_epoch);
+    auto cov_xy = std::vector<double>(num_epoch);
+    auto cov_yz = std::vector<double>(num_epoch);
+    auto cov_zx = std::vector<double>(num_epoch);
+    auto latitude = std::vector<double>(num_epoch);
+    auto longitude = std::vector<double>(num_epoch);
+    auto height = std::vector<double>(num_epoch);
+    auto valid_sats = std::vector<uint8_t>(num_epoch);
+    auto solution_status = std::vector<uint8_t>(num_epoch);
+    auto solution_type = std::vector<uint8_t>(num_epoch);
+    auto AR_ratio_factor = std::vector<float>(num_epoch);
+    auto AR_ratio_threshold = std::vector<float>(num_epoch);
+    auto gdop = std::vector<double>(num_epoch);
+    auto pdop = std::vector<double>(num_epoch);
+    auto hdop = std::vector<double>(num_epoch);
+    auto vdop = std::vector<double>(num_epoch);
 
     try
         {
@@ -208,35 +262,6 @@ bool rtklib_solver::save_matfile()
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Problem reading dump file:" << e.what() << std::endl;
-            delete[] TOW_at_current_symbol_ms;
-            delete[] week;
-            delete[] RX_time;
-            delete[] user_clk_offset;
-            delete[] pos_x;
-            delete[] pos_y;
-            delete[] pos_z;
-            delete[] vel_x;
-            delete[] vel_y;
-            delete[] vel_z;
-            delete[] cov_xx;
-            delete[] cov_yy;
-            delete[] cov_zz;
-            delete[] cov_xy;
-            delete[] cov_yz;
-            delete[] cov_zx;
-            delete[] latitude;
-            delete[] longitude;
-            delete[] height;
-            delete[] valid_sats;
-            delete[] solution_status;
-            delete[] solution_type;
-            delete[] AR_ratio_factor;
-            delete[] AR_ratio_threshold;
-            delete[] gdop;
-            delete[] pdop;
-            delete[] hdop;
-            delete[] vdop;
-
             return false;
         }
 
@@ -249,204 +274,164 @@ bool rtklib_solver::save_matfile()
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
-            size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms, 0);
+            std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims, week, 0);
+            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), week.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time, 0);
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), RX_time.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, user_clk_offset, 0);
+            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_x, 0);
+            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_x.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_y, 0);
+            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_y.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_z, 0);
+            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_z.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_x, 0);
+            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_x.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_y, 0);
+            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_y.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_z, 0);
+            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_z.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xx, 0);
+            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_xx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yy, 0);
+            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_yy.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zz, 0);
+            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xy, 0);
+            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_xy.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yz, 0);
+            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_yz.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zx, 0);
+            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, latitude, 0);
+            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), latitude.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, longitude, 0);
+            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), longitude.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, height, 0);
+            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), height.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims, valid_sats, 0);
+            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), valid_sats.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_status, 0);
+            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), solution_status.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_type, 0);
+            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), solution_type.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_factor, 0);
+            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), AR_ratio_factor.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_threshold, 0);
+            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), AR_ratio_threshold.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, gdop, 0);
+            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), gdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pdop, 0);
+            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, hdop, 0);
+            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), hdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vdop, 0);
+            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }
 
     Mat_Close(matfp);
-    delete[] TOW_at_current_symbol_ms;
-    delete[] week;
-    delete[] RX_time;
-    delete[] user_clk_offset;
-    delete[] pos_x;
-    delete[] pos_y;
-    delete[] pos_z;
-    delete[] vel_x;
-    delete[] vel_y;
-    delete[] vel_z;
-    delete[] cov_xx;
-    delete[] cov_yy;
-    delete[] cov_zz;
-    delete[] cov_xy;
-    delete[] cov_yz;
-    delete[] cov_zx;
-    delete[] latitude;
-    delete[] longitude;
-    delete[] height;
-    delete[] valid_sats;
-    delete[] solution_status;
-    delete[] solution_type;
-    delete[] AR_ratio_factor;
-    delete[] AR_ratio_threshold;
-    delete[] gdop;
-    delete[] pdop;
-    delete[] hdop;
-    delete[] vdop;
-
     return true;
 }
 
-rtklib_solver::~rtklib_solver()
-{
-    if (d_dump_file.is_open() == true)
-        {
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception &ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
-                }
-        }
-    if (d_flag_dump_mat_enabled)
-        {
-            save_matfile();
-        }
-}
 
-
-double rtklib_solver::get_gdop() const
+double Rtklib_Solver::get_gdop() const
 {
     return dop_[0];
 }
 
 
-double rtklib_solver::get_pdop() const
+double Rtklib_Solver::get_pdop() const
 {
     return dop_[1];
 }
 
 
-double rtklib_solver::get_hdop() const
+double Rtklib_Solver::get_hdop() const
 {
     return dop_[2];
 }
 
 
-double rtklib_solver::get_vdop() const
+double Rtklib_Solver::get_vdop() const
 {
     return dop_[3];
 }
 
 
-bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
+Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
+{
+    return monitor_pvt;
+}
+
+
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
+    std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
+
     const Glonass_Gnav_Utc_Model gnav_utc = this->glonass_gnav_utc_model;
 
     this->set_averaging_flag(flag_averaging);
@@ -457,9 +442,9 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     int valid_obs = 0;      // valid observations counter
     int glo_valid_obs = 0;  // GLONASS L1/L2 valid observations counter
 
-    obsd_t obs_data[MAXOBS];
-    eph_t eph_data[MAXOBS];
-    geph_t geph_data[MAXOBS];
+    obs_data.fill({});
+    std::vector<eph_t> eph_data(MAXOBS);
+    std::vector<geph_t> geph_data(MAXOBS);
 
     // Workaround for NAV/CNAV clash problem
     bool gps_dual_band = false;
@@ -489,7 +474,10 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 }
         }
-    if (band1 == true and band2 == true) gps_dual_band = true;
+    if (band1 == true and band2 == true)
+        {
+            gps_dual_band = true;
+        }
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
          gnss_observables_iter != gnss_observables_map.cend();
@@ -730,7 +718,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         obs_data[i + valid_obs] = insert_obs_to_rtklib(obs_data[i + valid_obs],
                                                             gnss_observables_iter->second,
                                                             glonass_gnav_ephemeris_iter->second.d_WN,
-                                                            1);  //Band 1 (L2)
+                                                            1);  // Band 1 (L2)
                                                         found_L1_obs = true;
                                                         break;
                                                     }
@@ -756,6 +744,75 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
                         break;
                     }
+                case 'C':
+                    {
+                        // BEIDOU B1I
+                        //  - find the ephemeris for the current BEIDOU SV observation. The SV PRN ID is the map key
+                        std::string sig_(gnss_observables_iter->second.Signal);
+                        if (sig_ == "B1")
+                            {
+                                beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
+                                    {
+                                        // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                        eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
+                                        // convert observation from GNSS-SDR class to RTKLIB structure
+                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            0);
+                                        valid_obs++;
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
+                                    }
+                            }
+                        // BeiDou B3
+                        if (sig_ == "B3")
+                            {
+                                beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
+                                    {
+                                        bool found_B1I_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
+                                            {
+                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS)))
+                                                    {
+                                                        obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                            2);  // Band 3 (L2/G2/B3)
+                                                        found_B1I_obs = true;
+                                                        break;
+                                                    }
+                                            }
+                                        if (!found_B1I_obs)
+                                            {
+                                                // insert BeiDou B3I obs as new obs and also insert its ephemeris
+                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                                eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
+                                                // convert observation from GNSS-SDR class to RTKLIB structure
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {},
+                                                    {default_code_, default_code_, default_code_},
+                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                    2);  // Band 2 (L2/G2)
+                                                valid_obs++;
+                                            }
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
+                        break;
+                    }
+
                 default:
                     DLOG(INFO) << "Hybrid observables: Unknown GNSS";
                     break;
@@ -770,20 +827,101 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
-            nav_t nav_data;
-            nav_data.eph = eph_data;
-            nav_data.geph = geph_data;
+            nav_t nav_data{};
+            nav_data.eph = eph_data.data();
+            nav_data.geph = geph_data.data();
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
-
-            for (auto &i : nav_data.lam)
+            if (gps_iono.valid)
                 {
-                    i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
-                    i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
-                    i[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
+                    nav_data.ion_gps[0] = gps_iono.d_alpha0;
+                    nav_data.ion_gps[1] = gps_iono.d_alpha1;
+                    nav_data.ion_gps[2] = gps_iono.d_alpha2;
+                    nav_data.ion_gps[3] = gps_iono.d_alpha3;
+                    nav_data.ion_gps[4] = gps_iono.d_beta0;
+                    nav_data.ion_gps[5] = gps_iono.d_beta1;
+                    nav_data.ion_gps[6] = gps_iono.d_beta2;
+                    nav_data.ion_gps[7] = gps_iono.d_beta3;
+                }
+            if (!(gps_iono.valid) and gps_cnav_iono.valid)
+                {
+                    nav_data.ion_gps[0] = gps_cnav_iono.d_alpha0;
+                    nav_data.ion_gps[1] = gps_cnav_iono.d_alpha1;
+                    nav_data.ion_gps[2] = gps_cnav_iono.d_alpha2;
+                    nav_data.ion_gps[3] = gps_cnav_iono.d_alpha3;
+                    nav_data.ion_gps[4] = gps_cnav_iono.d_beta0;
+                    nav_data.ion_gps[5] = gps_cnav_iono.d_beta1;
+                    nav_data.ion_gps[6] = gps_cnav_iono.d_beta2;
+                    nav_data.ion_gps[7] = gps_cnav_iono.d_beta3;
+                }
+            if (galileo_iono.ai0_5 != 0.0)
+                {
+                    nav_data.ion_gal[0] = galileo_iono.ai0_5;
+                    nav_data.ion_gal[1] = galileo_iono.ai1_5;
+                    nav_data.ion_gal[2] = galileo_iono.ai2_5;
+                    nav_data.ion_gal[3] = 0.0;
+                }
+            if (beidou_dnav_iono.valid)
+                {
+                    nav_data.ion_cmp[0] = beidou_dnav_iono.d_alpha0;
+                    nav_data.ion_cmp[1] = beidou_dnav_iono.d_alpha1;
+                    nav_data.ion_cmp[2] = beidou_dnav_iono.d_alpha2;
+                    nav_data.ion_cmp[3] = beidou_dnav_iono.d_alpha3;
+                    nav_data.ion_cmp[4] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[5] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[6] = beidou_dnav_iono.d_beta0;
+                    nav_data.ion_cmp[7] = beidou_dnav_iono.d_beta3;
+                }
+            if (gps_utc_model.valid)
+                {
+                    nav_data.utc_gps[0] = gps_utc_model.d_A0;
+                    nav_data.utc_gps[1] = gps_utc_model.d_A1;
+                    nav_data.utc_gps[2] = gps_utc_model.d_t_OT;
+                    nav_data.utc_gps[3] = gps_utc_model.i_WN_T;
+                    nav_data.leaps = gps_utc_model.d_DeltaT_LS;
+                }
+            if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
+                {
+                    nav_data.utc_gps[0] = gps_cnav_utc_model.d_A0;
+                    nav_data.utc_gps[1] = gps_cnav_utc_model.d_A1;
+                    nav_data.utc_gps[2] = gps_cnav_utc_model.d_t_OT;
+                    nav_data.utc_gps[3] = gps_cnav_utc_model.i_WN_T;
+                    nav_data.leaps = gps_cnav_utc_model.d_DeltaT_LS;
+                }
+            if (glonass_gnav_utc_model.valid)
+                {
+                    nav_data.utc_glo[0] = glonass_gnav_utc_model.d_tau_c;  // ??
+                    nav_data.utc_glo[1] = 0.0;                             // ??
+                    nav_data.utc_glo[2] = 0.0;                             // ??
+                    nav_data.utc_glo[3] = 0.0;                             // ??
+                }
+            if (galileo_utc_model.A0_6 != 0.0)
+                {
+                    nav_data.utc_gal[0] = galileo_utc_model.A0_6;
+                    nav_data.utc_gal[1] = galileo_utc_model.A1_6;
+                    nav_data.utc_gal[2] = galileo_utc_model.t0t_6;
+                    nav_data.utc_gal[3] = galileo_utc_model.WNot_6;
+                    nav_data.leaps = galileo_utc_model.Delta_tLS_6;
+                }
+            if (beidou_dnav_utc_model.valid)
+                {
+                    nav_data.utc_cmp[0] = beidou_dnav_utc_model.d_A0_UTC;
+                    nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
+                    nav_data.utc_cmp[2] = 0.0;  // ??
+                    nav_data.utc_cmp[3] = 0.0;  // ??
+                    nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
                 }
 
-            result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
+            /* update carrier wave length using native function call in RTKlib */
+            for (int i = 0; i < MAXSAT; i++)
+                {
+                    for (int j = 0; j < NFREQ; j++)
+                        {
+                            nav_data.lam[i][j] = satwavelen(i + 1, j, &nav_data);
+                        }
+                }
+
+            result = rtkpos(&rtk_, obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
 
             if (result == 0)
                 {
@@ -820,54 +958,61 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                         }
 
-                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_.data());
+                    if (index_aux > 0)
+                        {
+                            dops(index_aux, azel.data(), 0.0, dop_.data());
+                        }
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]
                     rx_position_and_time(1) = pvt_sol.rr[1];  // [m]
                     rx_position_and_time(2) = pvt_sol.rr[2];  // [m]
-
                     //todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
                     if (rtk_.opt.mode == PMODE_SINGLE)
                         {
-                            rx_position_and_time(3) = pvt_sol.dtr[0];  // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
+                            // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
+                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            rx_position_and_time(3) = pvt_sol.dtr[0] + pvt_sol.dtr[2];
                         }
                     else
                         {
-                            rx_position_and_time(3) = pvt_sol.dtr[0] / GPS_C_m_s;  // the receiver clock offset is expressed in [meters], so we convert it into [s]
+                            // the receiver clock offset is expressed in [meters], so we convert it into [s]
+                            // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
+                            rx_position_and_time(3) = pvt_sol.dtr[2] + pvt_sol.dtr[0] / GPS_C_M_S;
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
 
-                    //compute Ground speed and COG
+                    // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
-                    double pos[3];
-                    double enuv[3];
-                    ecef2pos(pvt_sol.rr, pos);
-                    ecef2enu(pos, &pvt_sol.rr[3], enuv);
-                    this->set_speed_over_ground(norm_rtk(enuv, 2));
+                    std::array<double, 3> pos{};
+                    std::array<double, 3> enuv{};
+                    ecef2pos(pvt_sol.rr, pos.data());
+                    ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
+                    this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
                     double new_cog;
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
-                            if (new_cog < 0.0) new_cog += 360.0;
+                            if (new_cog < 0.0)
+                                {
+                                    new_cog += 360.0;
+                                }
                             this->set_course_over_ground(new_cog);
                         }
 
-                    //observable fix:
-                    //double offset_s = this->get_time_offset_s();
-                    //this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]
                     this->set_time_offset_s(rx_position_and_time(3));
 
                     DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.begin()->second.RX_time
                                << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
                     boost::posix_time::ptime p_time;
-                    // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); //Corrected RX Time (Non integer multiply of 1 ms of granularity)
+                    // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); // Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
-                    gtime_t rtklib_time = gpst2time(adjgpsweek(nav_data.eph[0].week), gnss_observables_map.begin()->second.RX_time);
+                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time(3));  // uncorrected rx time
                     gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)
+
                     this->set_position_UTC_time(p_time);
                     cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
@@ -875,6 +1020,56 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
+
+                    // ######## PVT MONITOR #########
+                    // TOW
+                    monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
+                    // WEEK
+                    monitor_pvt.week = adjgpsweek(nav_data.eph[0].week);
+                    // PVT GPS time
+                    monitor_pvt.RX_time = gnss_observables_map.begin()->second.RX_time;
+                    // User clock offset [s]
+                    monitor_pvt.user_clk_offset = rx_position_and_time(3);
+
+                    // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
+                    monitor_pvt.pos_x = pvt_sol.rr[0];
+                    monitor_pvt.pos_y = pvt_sol.rr[1];
+                    monitor_pvt.pos_z = pvt_sol.rr[2];
+                    monitor_pvt.vel_x = pvt_sol.rr[3];
+                    monitor_pvt.vel_y = pvt_sol.rr[4];
+                    monitor_pvt.vel_z = pvt_sol.rr[5];
+
+                    // position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
+                    monitor_pvt.cov_xx = pvt_sol.qr[0];
+                    monitor_pvt.cov_yy = pvt_sol.qr[1];
+                    monitor_pvt.cov_zz = pvt_sol.qr[2];
+                    monitor_pvt.cov_xy = pvt_sol.qr[3];
+                    monitor_pvt.cov_yz = pvt_sol.qr[4];
+                    monitor_pvt.cov_zx = pvt_sol.qr[5];
+
+                    // GEO user position Latitude [deg]
+                    monitor_pvt.latitude = get_latitude();
+                    // GEO user position Longitude [deg]
+                    monitor_pvt.longitude = get_longitude();
+                    // GEO user position Height [m]
+                    monitor_pvt.height = get_height();
+
+                    // NUMBER OF VALID SATS
+                    monitor_pvt.valid_sats = pvt_sol.ns;
+                    // RTKLIB solution status
+                    monitor_pvt.solution_status = pvt_sol.stat;
+                    // RTKLIB solution type (0:xyz-ecef,1:enu-baseline)
+                    monitor_pvt.solution_type = pvt_sol.type;
+                    // AR ratio factor for validation
+                    monitor_pvt.AR_ratio_factor = pvt_sol.ratio;
+                    // AR ratio threshold for validation
+                    monitor_pvt.AR_ratio_threshold = pvt_sol.thres;
+
+                    // GDOP / PDOP/ HDOP/ VDOP
+                    monitor_pvt.gdop = dop_[0];
+                    monitor_pvt.pdop = dop_[1];
+                    monitor_pvt.hdop = dop_[2];
+                    monitor_pvt.vdop = dop_[3];
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

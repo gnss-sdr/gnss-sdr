@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,10 +34,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class byte_x2_to_complex_byte;
 
-typedef boost::shared_ptr<byte_x2_to_complex_byte> byte_x2_to_complex_byte_sptr;
+using byte_x2_to_complex_byte_sptr = boost::shared_ptr<byte_x2_to_complex_byte>;
 
 byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte();
 
@@ -49,10 +50,9 @@ class byte_x2_to_complex_byte : public gr::sync_block
 {
 private:
     friend byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte();
-
-public:
     byte_x2_to_complex_byte();
 
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

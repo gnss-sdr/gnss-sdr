@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,8 +50,13 @@
 
 class rtl_tcp_signal_source_c;
 
-typedef boost::shared_ptr<rtl_tcp_signal_source_c>
-    rtl_tcp_signal_source_c_sptr;
+using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
+
+#if BOOST_GREATER_1_65
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
@@ -78,7 +83,7 @@ public:
     void set_if_gain(int gain);
 
 private:
-    typedef boost::circular_buffer_space_optimized<float> buffer_type;
+    using buffer_type = boost::circular_buffer_space_optimized<float>;
 
     friend rtl_tcp_signal_source_c_sptr
     rtl_tcp_make_signal_source_c(const std::string &address,
@@ -89,10 +94,10 @@ private:
         int16_t port,
         bool flip_iq);
 
-    rtl_tcp_dongle_info info_;
+    Rtl_Tcp_Dongle_Info info_;
 
     // IO members
-    boost::asio::io_service io_service_;
+    b_io_context io_context_;
     boost::asio::ip::tcp::socket socket_;
     std::vector<unsigned char> data_;
     bool flip_iq_;
@@ -105,7 +110,7 @@ private:
     size_t unread_;
 
     // lookup for scaling data
-    boost::array<float, 0xff> lookup_;
+    boost::array<float, 0xff> lookup_{};
 
     // async read callback
     void handle_read(const boost::system::error_code &ec,
@@ -118,7 +123,7 @@ private:
 
     inline bool not_empty() const
     {
-        return unread_ > 0 || io_service_.stopped();
+        return unread_ > 0 || io_context_.stopped();
     }
 };
 

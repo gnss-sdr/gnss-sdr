@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,8 +41,8 @@ DEFINE_int32(size_conjugate_test, 100000, "Size of the arrays used for conjugate
 
 TEST(ConjugateTest, StandardCComplexImplementation)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_conjugate_test];
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_conjugate_test];
+    auto* input = new std::complex<float>[FLAGS_size_conjugate_test];
+    auto* output = new std::complex<float>[FLAGS_size_conjugate_test];
     std::fill_n(input, FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -114,8 +114,8 @@ TEST(ConjugateTest, ArmadilloComplexImplementation)
 
 TEST(ConjugateTest, VolkComplexImplementation)
 {
-    std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    auto* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    auto* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::fill_n(input, FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;

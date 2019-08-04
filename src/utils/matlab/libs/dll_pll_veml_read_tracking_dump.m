@@ -6,7 +6,7 @@
 % Luis Esteve, 2012. luis(at)epsilon-formacion.com
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
 %
 % GNSS-SDR is a software defined Global Navigation
 %           Satellite Systems receiver
@@ -88,7 +88,11 @@ else
     v7 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
     bytes_shift = bytes_shift + float_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
-    v8 = fread (f, count, 'long', skip_bytes_each_read - unsigned_long_int_size_bytes);
+    if unsigned_long_int_size_bytes==8
+        v8 = fread (f, count, 'uint64', skip_bytes_each_read - unsigned_long_int_size_bytes);
+    else
+        v8 = fread (f, count, 'uint32', skip_bytes_each_read - unsigned_long_int_size_bytes);
+    end
     bytes_shift = bytes_shift + unsigned_long_int_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next float
     v9 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);

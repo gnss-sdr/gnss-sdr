@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,7 +37,7 @@
 
 class interleaved_byte_to_complex_byte;
 
-typedef boost::shared_ptr<interleaved_byte_to_complex_byte> interleaved_byte_to_complex_byte_sptr;
+using interleaved_byte_to_complex_byte_sptr = boost::shared_ptr<interleaved_byte_to_complex_byte>;
 
 interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
 
@@ -47,15 +47,14 @@ interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
  */
 class interleaved_byte_to_complex_byte : public gr::sync_decimator
 {
-private:
-    friend interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
-
 public:
-    interleaved_byte_to_complex_byte();
-
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
+    interleaved_byte_to_complex_byte();
 };
 
 #endif

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -19,6 +19,7 @@
 # Find  GR-GN3S Module
 ########################################################################
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_GR_GN3S gr-gn3s)
 
@@ -53,4 +54,15 @@ find_library(
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GRGN3S DEFAULT_MSG GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
+
+if(GRGN3S_FOUND AND NOT TARGET Gnuradio::gn3s)
+    add_library(Gnuradio::gn3s SHARED IMPORTED)
+    set_target_properties(Gnuradio::gn3s PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GR_GN3S_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GR_GN3S_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GR_GN3S_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)

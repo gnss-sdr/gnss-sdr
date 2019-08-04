@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,11 +30,10 @@
  */
 
 #include "signal_conditioner.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <utility>
 
-
-using google::LogMessage;
 
 // Constructor
 SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
@@ -53,10 +52,6 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
         {
         };
 }
-
-
-// Destructor
-SignalConditioner::~SignalConditioner() = default;
 
 
 void SignalConditioner::connect(gr::top_block_sptr top_block)

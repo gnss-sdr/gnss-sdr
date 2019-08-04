@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,15 +30,7 @@
  */
 
 
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
+#include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
@@ -51,10 +43,19 @@
 #include "signal_generator.h"
 #include "signal_generator_c.h"
 #include "boost/shared_ptr.hpp"
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
-
+#include <pmt/pmt.h>
+#include <chrono>
+#include <thread>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL2CaPcpsAcquisitionTest_msg_rx;
@@ -140,9 +141,9 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
 
-    gr::msg_queue::sptr queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     GlonassL2CaPcpsAcquisition* acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -150,7 +151,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -351,7 +352,7 @@ void GlonassL2CaPcpsAcquisitionTest::config_2()
 void GlonassL2CaPcpsAcquisitionTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GlonassL2CaPcpsAcquisitionTest::wait_message, this);
+    ch_thread = std::thread(&GlonassL2CaPcpsAcquisitionTest::wait_message, this);
 }
 
 
@@ -440,7 +441,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     int nsamples = floor(fs_in * integration_time_ms * 1e-3);
     std::chrono::time_point<std::chrono::system_clock> begin, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
@@ -472,7 +473,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
 TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
 {
     config_1();
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
@@ -549,16 +550,10 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop.";
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
-#endif
         }
 
     delete acquisition;
@@ -568,7 +563,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
 TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
 {
     config_2();
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
@@ -645,16 +640,10 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop";
-#endif
         }
 
     delete acquisition;

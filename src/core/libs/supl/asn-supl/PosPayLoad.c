@@ -84,22 +84,22 @@ memb_rrlpPayload_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_tia801payload_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_TIA801PAYLOAD_CONSTR_2 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 13,  13,  1,  8192 }	/* (SIZE(1..8192)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_rrcPayload_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_RRC_PAYLOAD_CONSTR_3 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 13,  13,  1,  8192 }	/* (SIZE(1..8192)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_rrlpPayload_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_RRLP_PAYLOAD_CONSTR_4 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 13,  13,  1,  8192 }	/* (SIZE(1..8192)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_PosPayLoad_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_POS_PAY_LOAD_CONSTR_1 = {
 	{ APC_CONSTRAINED | APC_EXTENSIBLE,  2,  2,  0,  2 }	/* (0..2,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -110,7 +110,7 @@ static asn_TYPE_member_t asn_MBR_PosPayLoad_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		memb_tia801payload_constraint_1,
-		&asn_PER_memb_tia801payload_constr_2,
+		&ASN_PER_MEMB_TIA801PAYLOAD_CONSTR_2,
 		0,
 		"tia801payload"
 		},
@@ -119,7 +119,7 @@ static asn_TYPE_member_t asn_MBR_PosPayLoad_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		memb_rrcPayload_constraint_1,
-		&asn_PER_memb_rrcPayload_constr_3,
+		&ASN_PER_MEMB_RRC_PAYLOAD_CONSTR_3,
 		0,
 		"rrcPayload"
 		},
@@ -128,7 +128,7 @@ static asn_TYPE_member_t asn_MBR_PosPayLoad_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		memb_rrlpPayload_constraint_1,
-		&asn_PER_memb_rrlpPayload_constr_4,
+		&ASN_PER_MEMB_RRLP_PAYLOAD_CONSTR_4,
 		0,
 		"rrlpPayload"
 		},
@@ -165,7 +165,7 @@ asn_TYPE_descriptor_t asn_DEF_PosPayLoad = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	&asn_PER_type_PosPayLoad_constr_1,
+	&ASN_PER_TYPE_POS_PAY_LOAD_CONSTR_1,
 	asn_MBR_PosPayLoad_1,
 	3,	/* Elements count */
 	&asn_SPC_PosPayLoad_specs_1	/* Additional specs */

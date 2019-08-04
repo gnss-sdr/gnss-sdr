@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,22 +32,20 @@
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 
-tcp_communication::tcp_communication() : tcp_socket_(io_service_) {}  // NOLINT
+Tcp_Communication::Tcp_Communication() : tcp_socket_(io_context_) {}  // NOLINT
 
 
-tcp_communication::~tcp_communication() = default;
-
-
-int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
+int Tcp_Communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 {
     try
         {
             // Specify IP type and port
             boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
-            boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
+            boost::asio::ip::tcp::acceptor acceptor(io_context_, endpoint);
 
             if (d_port_ == d_port_ch0_)
                 {
@@ -73,10 +71,10 @@ int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 }
 
 
-void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data* tcp_data_)
+void Tcp_Communication::send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, Tcp_Packet_Data* tcp_data_)
 {
     int controlc = 0;
-    boost::array<float, NUM_RX_VARIABLES> readbuf;
+    boost::array<float, NUM_RX_VARIABLES> readbuf{};
     float d_control_id_ = buf.data()[0];
 
     try
@@ -90,7 +88,7 @@ void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
             //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
             if (d_control_id_ != readbuf.data()[0])
                 {
-                    throw "Packet error!";
+                    throw std::runtime_error("Packet error!");
                 }
 
             // Recover the variables received
@@ -108,10 +106,10 @@ void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
 }
 
 
-void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data* tcp_data_)
+void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, Tcp_Packet_Data* tcp_data_)
 {
     int controlc = 0;
-    boost::array<float, NUM_RX_VARIABLES> readbuf;
+    boost::array<float, NUM_RX_VARIABLES> readbuf{};
     float d_control_id_ = buf.data()[0];
 
     try
@@ -125,7 +123,7 @@ void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
             //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
             if (d_control_id_ != readbuf.data()[0])
                 {
-                    throw "Packet error!";
+                    throw std::runtime_error("Packet error!");
                 }
 
             // Recover the variables received
@@ -143,7 +141,7 @@ void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
 }
 
 
-void tcp_communication::close_tcp_connection(size_t d_port_)
+void Tcp_Communication::close_tcp_connection(size_t d_port_)
 {
     // Close the TCP connection
     tcp_socket_.close();

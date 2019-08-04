@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,6 +39,7 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+#include "concurrent_queue.h"
 #include "file_signal_source.h"
 #include "fir_filter.h"
 #include "gnss_block_factory.h"
@@ -48,7 +49,6 @@
 #include "interleaved_byte_to_complex_byte.h"
 #include "interleaved_short_to_complex_short.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
 
 
@@ -59,18 +59,18 @@ class FirFilterTest : public ::testing::Test
 protected:
     FirFilterTest()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~FirFilterTest() = default;
+    ~FirFilterTest() override = default;
 
     void init();
     void configure_cbyte_cbyte();
     void configure_cbyte_gr_complex();
     void configure_gr_complex_gr_complex();
     void configure_cshort_cshort();
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;
@@ -137,7 +137,10 @@ TEST_F(FirFilterTest, InstantiateGrComplexGrComplex)
     configure_gr_complex_gr_complex();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -147,7 +150,10 @@ TEST_F(FirFilterTest, InstantiateCshortCshort)
     configure_cshort_cshort();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -158,7 +164,10 @@ TEST_F(FirFilterTest, InstantiateCbyteCbyte)
     configure_cbyte_cbyte();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -169,7 +178,10 @@ TEST_F(FirFilterTest, InstantiateCbyteGrComplex)
     configure_cbyte_gr_complex();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 

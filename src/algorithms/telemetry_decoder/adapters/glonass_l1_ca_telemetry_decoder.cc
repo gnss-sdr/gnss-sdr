@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,14 +33,8 @@
 
 #include "glonass_l1_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
-
-using google::LogMessage;
 
 GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
@@ -54,7 +48,7 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_cc(satellite_, dump_);
+    telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_gs(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)
@@ -66,9 +60,6 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder() = default;
 
 
 void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

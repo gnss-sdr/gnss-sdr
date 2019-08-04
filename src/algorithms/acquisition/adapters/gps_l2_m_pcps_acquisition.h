@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,13 +34,15 @@
 #ifndef GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_
 #define GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 
 class ConfigurationInterface;
@@ -57,7 +59,7 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL2MPcpsAcquisition();
+    ~GpsL2MPcpsAcquisition() = default;
 
     inline std::string role() override
     {
@@ -92,7 +94,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_->set_channel(channel_);
+    }
+
+    /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -108,6 +123,11 @@ public:
      * \brief Set Doppler steps for the grid search
      */
     void set_doppler_step(unsigned int doppler_step) override;
+
+    /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_doppler_center(int doppler_center) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
@@ -142,9 +162,7 @@ public:
     /*!
      * \brief Sets the resampler latency to account it in the acquisition code delay estimation
      */
-
     void set_resampler_latency(uint32_t latency_samples) override;
-
 
 private:
     ConfigurationInterface* configuration_;
@@ -159,21 +177,22 @@ private:
     bool bit_transition_flag_;
     bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
+    int doppler_center_;
     unsigned int max_dwells_;
     int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
-    std::complex<float>* code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     unsigned int num_codes_;
-
     float calculate_threshold(float pfa);
 };
 

@@ -81,17 +81,17 @@ memb_servind_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_maj_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_MAJ_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_min_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_MIN_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_servind_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_SERVIND_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -102,7 +102,7 @@ static asn_TYPE_member_t asn_MBR_Version_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_maj_constraint_1,
-		&asn_PER_memb_maj_constr_2,
+		&ASN_PER_MEMB_MAJ_CONSTR_2,
 		0,
 		"maj"
 		},
@@ -111,7 +111,7 @@ static asn_TYPE_member_t asn_MBR_Version_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_min_constraint_1,
-		&asn_PER_memb_min_constr_3,
+		&ASN_PER_MEMB_MIN_CONSTR_3,
 		0,
 		"min"
 		},
@@ -120,7 +120,7 @@ static asn_TYPE_member_t asn_MBR_Version_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_servind_constraint_1,
-		&asn_PER_memb_servind_constr_4,
+		&ASN_PER_MEMB_SERVIND_CONSTR_4,
 		0,
 		"servind"
 		},

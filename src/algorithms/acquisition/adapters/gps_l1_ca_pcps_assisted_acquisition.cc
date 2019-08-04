@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,9 +40,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,
@@ -61,7 +58,10 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     doppler_min_ = configuration->property(role + ".doppler_min", -doppler_max_);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_ = configuration->property(role + ".max_dwells", 1);
@@ -70,7 +70,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    code_ = new gr_complex[vector_length_];
+    code_ = std::make_shared<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {
@@ -89,6 +89,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -100,21 +101,8 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 }
 
 
-GpsL1CaPcpsAssistedAcquisition::~GpsL1CaPcpsAssistedAcquisition()
-{
-    delete[] code_;
-}
-
-
 void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
 {
-}
-
-
-void GpsL1CaPcpsAssistedAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_cc_->set_channel(channel_);
 }
 
 
@@ -155,14 +143,15 @@ signed int GpsL1CaPcpsAssistedAcquisition::mag()
 void GpsL1CaPcpsAssistedAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
+
 
 void GpsL1CaPcpsAssistedAcquisition::set_local_code()
 {
     gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
-    acquisition_cc_->set_local_code(code_);
+    acquisition_cc_->set_local_code(code_.get());
 }
+
 
 void GpsL1CaPcpsAssistedAcquisition::reset()
 {

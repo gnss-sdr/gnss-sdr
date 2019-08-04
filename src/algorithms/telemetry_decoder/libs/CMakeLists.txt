@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -28,24 +28,32 @@ set(TELEMETRY_DECODER_LIB_HEADERS
     convolutional.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-)
-
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
 list(SORT TELEMETRY_DECODER_LIB_SOURCES)
 
-add_library(telemetry_decoder_lib
+source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
+
+add_library(telemetry_decoder_libs
     ${TELEMETRY_DECODER_LIB_SOURCES}
     ${TELEMETRY_DECODER_LIB_HEADERS}
 )
-source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
 
-target_link_libraries(telemetry_decoder_lib gnss_system_parameters)
+target_link_libraries(telemetry_decoder_libs
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(telemetry_decoder_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET telemetry_decoder_libs
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

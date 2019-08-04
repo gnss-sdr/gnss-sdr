@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,12 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+#
+# Provides the following imported target:
+# Volk::volk
+#
+
 ########################################################################
 # Find VOLK (Vector-Optimized Library of Kernels)
 ########################################################################
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
 
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
-pkg_check_modules(PC_VOLK volk)
+pkg_check_modules(PC_VOLK volk QUIET)
 
 find_path(VOLK_INCLUDE_DIRS
     NAMES volk/volk.h
@@ -73,4 +82,47 @@ find_library(VOLK_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VOLK DEFAULT_MSG VOLK_LIBRARIES VOLK_INCLUDE_DIRS)
+
+if(PC_VOLK_VERSION)
+    set(VOLK_VERSION ${PC_VOLK_VERSION})
+endif()
+
+if(NOT VOLK_VERSION)
+    set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
+    unset(PACKAGE_VERSION)
+    list(GET VOLK_LIBRARIES 0 FIRST_DIR)
+    get_filename_component(VOLK_LIB_DIR ${FIRST_DIR} DIRECTORY)
+    if(EXISTS ${VOLK_LIB_DIR}/cmake/volk/VolkConfigVersion.cmake)
+        include(${VOLK_LIB_DIR}/cmake/volk/VolkConfigVersion.cmake)
+    endif()
+    if(PACKAGE_VERSION)
+        set(VOLK_VERSION ${PACKAGE_VERSION})
+    endif()
+    set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
+endif()
+
+set_package_properties(VOLK PROPERTIES
+    URL "http://libvolk.org"
+)
+
+if(VOLK_FOUND AND VOLK_VERSION)
+    set_package_properties(VOLK PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels (found: v${VOLK_VERSION})"
+    )
+else()
+    set_package_properties(VOLK PROPERTIES
+        DESCRIPTION "Vector-Optimized Library of Kernels"
+    )
+endif()
+
 mark_as_advanced(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)
+
+if(VOLK_FOUND AND NOT TARGET Volk::volk)
+    add_library(Volk::volk SHARED IMPORTED)
+    set_target_properties(Volk::volk PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${VOLK_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${VOLK_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${VOLK_LIBRARIES}"
+    )
+endif()

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,8 +34,6 @@
 #include <cstdint>
 #include <utility>
 
-
-using google::LogMessage;
 
 ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
@@ -71,9 +69,6 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-ByteToShort::~ByteToShort() = default;
 
 
 void ByteToShort::connect(gr::top_block_sptr top_block)

@@ -114,10 +114,7 @@ std::string labsat23_source::generate_filename()
                 {
                     return d_signal_file_basename;
                 }
-            else
-                {
-                    return std::string("donotexist");  // just to stop processing
-                }
+            return std::string("donotexist");  // just to stop processing
         }
     std::ostringstream ss;
     ss << std::setw(4) << std::setfill('0') << d_current_file_number;
@@ -458,20 +455,18 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
                                     return 0;
                                 }
+
+                            if (d_labsat_version == 3)
+                                {
+                                    std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                }
                             else
                                 {
-                                    if (d_labsat_version == 3)
-                                        {
-                                            std::cout << "Last file reached, LabSat source stop" << std::endl;
-                                        }
-                                    else
-                                        {
-                                            std::cout << "End of file reached, LabSat source stop" << std::endl;
-                                        }
-
-                                    d_queue->push(pmt::make_any(command_event_make(200, 0)));
-                                    return -1;
+                                    std::cout << "End of file reached, LabSat source stop" << std::endl;
                                 }
+
+                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                            return -1;
                         }
                     else
                         {
@@ -518,19 +513,17 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
                                     return 0;
                                 }
+
+                            if (d_labsat_version == 3)
+                                {
+                                    std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                }
                             else
                                 {
-                                    if (d_labsat_version == 3)
-                                        {
-                                            std::cout << "Last file reached, LabSat source stop" << std::endl;
-                                        }
-                                    else
-                                        {
-                                            std::cout << "End of file reached, LabSat source stop" << std::endl;
-                                        }
-                                    d_queue->push(pmt::make_any(command_event_make(200, 0)));
-                                    return -1;
+                                    std::cout << "End of file reached, LabSat source stop" << std::endl;
                                 }
+                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                            return -1;
                         }
                     else
                         {

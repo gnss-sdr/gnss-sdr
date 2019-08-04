@@ -44,7 +44,7 @@ double phase_unwrap(double phase_rad)
         {
             return phase_rad - PI;
         }
-    else if (phase_rad <= -HALF_PI)
+    if (phase_rad <= -HALF_PI)
         {
             return phase_rad + PI;
         }

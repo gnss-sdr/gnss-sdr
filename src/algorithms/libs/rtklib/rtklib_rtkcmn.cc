@@ -4241,7 +4241,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
                 {
                     return SPEED_OF_LIGHT / FREQ8; /* E5a+b */
                 }
-            else if (frq == 6)
+            if (frq == 6)
                 {
                     return SPEED_OF_LIGHT / FREQ9; /* S */
                 }

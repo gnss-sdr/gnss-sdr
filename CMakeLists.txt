@@ -1957,9 +1957,7 @@ endif()
 if(${Protobuf_VERSION} VERSION_EQUAL "0.0.0")
     unset(Protobuf_VERSION)
 endif()
-if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS "3.7.99")
-    set(PC_GNURADIO_RUNTIME_VERSION "3.7.13")
-endif()
+
 
 
 ################################################################################

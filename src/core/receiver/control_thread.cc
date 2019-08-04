@@ -65,7 +65,6 @@
 #include "rtklib_ephemeris.h"      // for alm2pos, eph2pos
 #include "rtklib_rtkcmn.h"         // for utc2gpst
 #include <armadillo>               // for interaction with geofunctions
-#include <boost/chrono.hpp>        // for steady_clock
 #include <boost/lexical_cast.hpp>  // for bad_lexical_cast
 #include <glog/logging.h>          // for LOG
 #include <pmt/pmt.h>               // for make_any
@@ -82,6 +81,9 @@
 #include <sys/ipc.h>               // for IPC_CREAT
 #include <sys/msg.h>               // for msgctl, msgget
 
+#ifdef ENABLE_FPGA
+#include <boost/chrono.hpp>  // for steady_clock
+#endif
 
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

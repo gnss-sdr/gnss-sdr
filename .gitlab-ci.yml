@@ -448,7 +448,7 @@ coverity-scan:
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON  ..
     - cov-build --dir cov-int make -j2
     - tar cvzf gnss-sdr.tgz cov-int
-    - curl -k --form token=$COVERITY_SCAN_TOKEN --form email=$COVERITY_SCAN_EMAIL --form file=@$(pwd)/gnss-sdr.tgz --form version="0.0.10-next" --form description=" " https://scan.coverity.com/builds?project=$COVERITY_SCAN_USER%2Fgnss-sdr --progress-bar | tee -a "log_upload.txt" ; test ${PIPESTATUS[0]} -eq 0
+    - curl -k --form token=$COVERITY_SCAN_TOKEN --form email=$COVERITY_SCAN_EMAIL --form file=@$(pwd)/gnss-sdr.tgz --form version="0.0.11-next" --form description=" " https://scan.coverity.com/builds?project=$COVERITY_SCAN_USER%2Fgnss-sdr --progress-bar | tee -a "log_upload.txt" ; test ${PIPESTATUS[0]} -eq 0
   when: manual
   allow_failure: true
 

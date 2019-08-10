@@ -83,6 +83,25 @@ find_library(MATIO_LIBRARY
       $ENV{MATIO_ROOT}/lib
       ${MATIO_ROOT}/lib64
       $ENV{MATIO_ROOT}/lib64
+      /usr/lib/alpha-linux-gnu
+      /usr/lib/x86_64-linux-gnu
+      /usr/lib/aarch64-linux-gnu
+      /usr/lib/arm-linux-gnueabi
+      /usr/lib/arm-linux-gnueabihf
+      /usr/lib/hppa-linux-gnu
+      /usr/lib/i386-linux-gnu
+      /usr/lib/m68k-linux-gnu
+      /usr/lib/mips-linux-gnu
+      /usr/lib/mips64el-linux-gnuabi64
+      /usr/lib/mipsel-linux-gnu
+      /usr/lib/powerpc-linux-gnuspe
+      /usr/lib/powerpc64-linux-gnu
+      /usr/lib/powerpc64le-linux-gnu
+      /usr/lib/riscv64-linux-gnu
+      /usr/lib/s390x-linux-gnu
+      /usr/lib/sh4-linux-gnu
+      /usr/lib/sparc64-linux-gnu
+      /usr/lib/x86_64-linux-gnux32
     DOC "The MATIO library"
 )
 

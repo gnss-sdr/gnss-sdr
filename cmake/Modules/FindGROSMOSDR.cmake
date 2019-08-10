@@ -87,6 +87,7 @@ find_library(GROSMOSDR_LIBRARIES
     /usr/lib/sh4-linux-gnu
     /usr/lib/sparc64-linux-gnu
     /usr/lib/x86_64-linux-gnux32
+    /usr/lib/riscv64-linux-gnu
     /usr/lib/alpha-linux-gnu
     /usr/lib64
     ${GROSMOSDR_ROOT}/lib

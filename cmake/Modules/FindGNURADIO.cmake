@@ -117,6 +117,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/lib/sparc64-linux-gnu
                   /usr/lib/x86_64-linux-gnux32
                   /usr/lib/alpha-linux-gnu
+                  /usr/lib/riscv64-linux-gnu
                   /usr/lib64
                   /usr/lib
                   ${GNURADIO_INSTALL_PREFIX}/lib

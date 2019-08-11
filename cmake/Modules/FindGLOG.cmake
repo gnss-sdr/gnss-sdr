@@ -85,6 +85,7 @@ macro(_FIND_GLOG_LIBRARIES _var)
                 ${GLOG_ROOT}/lib64
                 $ENV{GLOG_ROOT}/lib64
                 ${PC_GLOG_LIBDIR}
+                /opt/local/lib
           PATH_SUFFIXES lib
       )
     mark_as_advanced(${_var})
@@ -126,7 +127,7 @@ else()
         _find_glog_libraries(GLOG_LIBRARIES libglog.so)
     endif()
     if(APPLE)
-        _find_glog_libraries(GLOG_LIBRARIES libglog.dylib)
+        _find_glog_libraries(GLOG_LIBRARIES glog)
     endif()
 endif()
 
@@ -167,8 +168,13 @@ set_package_properties(GLOG PROPERTIES
     URL "https://github.com/google/glog"
 )
 
+string(REGEX MATCH libglog.a GLOG_IS_STATIC ${GLOG_LIBRARIES})
 if(GLOG_FOUND AND NOT TARGET Glog::glog)
-    add_library(Glog::glog SHARED IMPORTED)
+    if(GLOG_IS_STATIC)
+        add_library(Glog::glog STATIC IMPORTED)
+    else()
+        add_library(Glog::glog SHARED IMPORTED)
+    endif()
     set_target_properties(Glog::glog PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
         IMPORTED_LOCATION "${GLOG_LIBRARIES}"

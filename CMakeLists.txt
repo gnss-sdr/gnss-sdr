@@ -185,7 +185,7 @@ if(NOT CMAKE_PREFIX_PATH)
 endif()
 
 # Detect Linux Distribution
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
     set(OperatingSystem "Linux")
     set(OS_IS_LINUX TRUE)
     if(ARCH_64BITS)

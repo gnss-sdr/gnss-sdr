@@ -543,7 +543,7 @@ endfunction()
 
 if(ENABLE_SYSTEM_TESTING)
     set(HOST_SYSTEM "Unknown")
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
         set(HOST_SYSTEM "GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
         string(REPLACE "\n" "" HOST_SYSTEM "${HOST_SYSTEM}")
         string(REPLACE "\"" "" HOST_SYSTEM "${HOST_SYSTEM}")

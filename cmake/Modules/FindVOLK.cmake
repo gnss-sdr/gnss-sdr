@@ -64,7 +64,6 @@ find_library(VOLK_LIBRARIES
           /usr/lib/hppa-linux-gnu
           /usr/lib/s390x-linux-gnu
           /usr/lib/i386-gnu
-          /usr/lib/hppa-linux-gnu
           /usr/lib/x86_64-kfreebsd-gnu
           /usr/lib/i386-kfreebsd-gnu
           /usr/lib/m68k-linux-gnu
@@ -72,6 +71,7 @@ find_library(VOLK_LIBRARIES
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/alpha-linux-gnu
+          /usr/lib/riscv64-linux-gnu
           /usr/lib64
           ${CMAKE_INSTALL_PREFIX}/lib
           ${VOLK_ROOT}/lib

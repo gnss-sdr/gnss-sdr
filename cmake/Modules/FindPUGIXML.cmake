@@ -65,6 +65,16 @@ find_library(PUGIXML_LIBRARY
           /usr/lib/mipsel-linux-gnu
           /usr/lib/powerpc64le-linux-gnu
           /usr/lib/s390x-linux-gnu
+          /usr/lib/alpha-linux-gnu
+          /usr/lib/hppa-linux-gnu
+          /usr/lib/m68k-linux-gnu
+          /usr/lib/powerpc-linux-gnuspe
+          /usr/lib/powerpc64-linux-gnu
+          /usr/lib/powerpc64le-linux-gnu
+          /usr/lib/sh4-linux-gnu
+          /usr/lib/sparc64-linux-gnu
+          /usr/lib/x86_64-linux-gnux32
+          /usr/lib/riscv64-linux-gnu
           /usr/local/lib
           /usr/local/lib/pugixml-1.9
           /usr/local/lib/pugixml-${PC_PUGIXML_VERSION}

@@ -1,14 +1,34 @@
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Maintainability:
+
+- New CMake option ENABLE_ARMA_NO_DEBUG defines the macro ARMA_NO_DEBUG, which disables all run-time checks, such as bounds checking, in the Armadillo library. This will result in faster code. This option is disabled by default during development, but automatically set to ON if the option ENABLE_PACKAGING is set to ON.
+- Apply more clang-tidy checks related to readability: readability-avoid-const-params-in-decls, readability-isolate-declaration, readability-redundant-control-flow, readability-uppercase-literal-suffix.
+- Add more check options to .clang-tidy file.
+
+
+### Improvements in Portability:
+
+- The CMake scripts now find dependencies in Debian's riscv64 architecture.
+
+
+
+See the definitions of concepts and metrics at https://gnss-sdr.org/design-forces/
+
+
+
+
 ## [0.0.11](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.11)
 
 This release has several improvements in different dimensions, addition of new features and bug fixes:
 
-### Improvements in Accuracy
+### Improvements in Accuracy:
 
 - Local clock correction based on PVT solution, allowing the delivery of continuous observables.
 - Fix a bug in broadcast ionospheric parameters usage.
 
 
-### Improvements in Availability
+### Improvements in Availability:
 
 - Improved mechanism for false lock detection in the Tracking loops.
 - Fixed bug in Galileo INAV/FNAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
@@ -17,7 +37,7 @@ This release has several improvements in different dimensions, addition of new f
 - Improved signal acquisition and tracking mechanisms in high dynamic scenarios.
 
 
-### Improvements in Efficiency
+### Improvements in Efficiency:
 
 - Added mechanism for assisted acquisition of signals on a secondary band when the primary has already been acquired. This allows a great reduction of the computational load in multi-frequency configurations.
 - Tracking loops now perform bit synchronization, simplifying the decoding process in Telemetry blocks and FPGA-offloading.
@@ -69,14 +89,14 @@ This release has several improvements in different dimensions, addition of new f
 - Drawback in portability: Protocol Buffers >= 3.0.0 is a new required dependency.
 
 
-### Improvements in Reliability
+### Improvements in Reliability:
 
 - Included the Guidelines Support Library. General improvement of memory management, replacement of raw pointers by containers or smart pointers.
 - Applied clang-tidy checks and fixes related to High Integrity C++: performance-move-const-arg, modernize-use-auto, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr, cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp, cert-err60-cpp, hicpp-exception-baseclass, hicpp-explicit-conversions.
 - Fixed a number of defects detected by Coverity Scan (version June 2019).
 
 
-### Improvements in Usability
+### Improvements in Usability:
 
 - The receiver now admits FPGA off-loading, allowing for real time operation in embedded systems at high sampling rates and high number of signals and channels per signal in multiple bands.
 - Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).

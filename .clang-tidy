@@ -7,15 +7,19 @@ Checks: '-*,
         cert-err52-cpp,
         cert-err60-cpp,
         cert-flp30-c,
-        clang-analyzer-cplusplus*,
+        cert-msc50-cpp,
+        cert-msc51-cpp,
+        clang-analyzer-cplusplus.*,
         cppcoreguidelines-pro-type-cstyle-cast,
         cppcoreguidelines-pro-type-static-cast-downcast,
         cppcoreguidelines-slicing,
         cppcoreguidelines-special-member-functions,
         google-build-namespaces,
+        google-global-names-in-headers,
         google-runtime-int,
         hicpp-exception-baseclass,
         hicpp-explicit-conversions,
+        hicpp-noexcept-move,
         misc-misplaced-const,
         misc-new-delete-overloads,
         misc-non-copyable-objects,
@@ -23,6 +27,8 @@ Checks: '-*,
         misc-throw-by-value-catch-by-reference,
         misc-uniqueptr-reset-release,
         misc-unused-using-decls,
+        modernize-avoid-bind,
+        modernize-deprecated-headers,
         modernize-loop-convert,
         modernize-pass-by-value,
         modernize-raw-string-literal,
@@ -33,6 +39,7 @@ Checks: '-*,
         modernize-use-equals-delete,
         modernize-use-noexcept,
         modernize-use-nullptr,
+        modernize-use-override,
         performance-faster-string-find,
         performance-for-range-copy,
         performance-implicit-conversion-in-loop,
@@ -45,12 +52,16 @@ Checks: '-*,
         performance-type-promotion-in-math-fn,
         performance-unnecessary-copy-initialization,
         performance-unnecessary-value-param,
+        readability-avoid-const-params-in-decls,
         readability-container-size-empty,
         readability-identifier-naming,
         readability-inconsistent-declaration-parameter-name,
+        readability-isolate-declaration,
         readability-named-parameter,
         readability-non-const-parameter,
-        readability-string-compare'
+        readability-redundant-control-flow,
+        readability-string-compare,
+        readability-uppercase-literal-suffix'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -58,6 +69,8 @@ FormatStyle: 'file'
 CheckOptions:
   - key:             cert-dcl16-c.NewSuffixes
     value:           'L;LL;LU;LLU'
+  - key:             cert-msc51-cpp.DisallowedSeedTypes
+    value:           'time_t,std::time_t'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
   - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
@@ -66,6 +79,8 @@ CheckOptions:
     value:           '0'
   - key:             google-build-namespaces.HeaderFileExtensions
     value:           ',h'
+  - key:             google-global-names-in-headers.HeaderFileExtensions
+    value:           ',h,hh,hpp,hxx'
   - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
   - key:             google-readability-function-size.StatementThreshold
@@ -170,4 +185,8 @@ CheckOptions:
     value:           '1'
   - key:             readability-inconsistent-declaration-parameter-name.Strict
     value:           '0'
+  - key:             readability-uppercase-literal-suffix.IgnoreMacros
+    value:           '1'
+  - key:             readability-uppercase-literal-suffix.NewSuffixes
+    value:           ''
 ...

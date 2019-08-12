@@ -89,7 +89,8 @@ void writesol(rtksvr_t *svr, int index)
 {
     solopt_t solopt = SOLOPT_DEFAULT;
     unsigned char buff[1024];
-    int i, n;
+    int i;
+    int n;
 
     tracet(4, "writesol: index=%d\n", index);
 
@@ -128,7 +129,8 @@ void writesol(rtksvr_t *svr, int index)
 /* update navigation data ----------------------------------------------------*/
 void updatenav(nav_t *nav)
 {
-    int i, j;
+    int i;
+    int j;
     for (i = 0; i < MAXSAT; i++)
         {
             for (j = 0; j < NFREQ; j++)
@@ -142,7 +144,10 @@ void updatenav(nav_t *nav)
 /* update glonass frequency channel number in raw data struct ----------------*/
 void updatefcn(rtksvr_t *svr)
 {
-    int i, j, sat, frq;
+    int i;
+    int j;
+    int sat;
+    int frq;
 
     for (i = 0; i < MAXPRNGLO; i++)
         {
@@ -178,11 +183,22 @@ void updatefcn(rtksvr_t *svr)
 void updatesvr(rtksvr_t *svr, int ret, obs_t *obs, nav_t *nav, int sat,
     sbsmsg_t *sbsmsg, int index, int iobs)
 {
-    eph_t *eph1, *eph2, *eph3;
-    geph_t *geph1, *geph2, *geph3;
+    eph_t *eph1;
+    eph_t *eph2;
+    eph_t *eph3;
+    geph_t *geph1;
+    geph_t *geph2;
+    geph_t *geph3;
     // gtime_t tof;
-    double pos[3], del[3] = {0}, dr[3];
-    int i, n = 0, prn, sbssat = svr->rtk.opt.sbassatsel, sys, iode;
+    double pos[3];
+    double del[3] = {0};
+    double dr[3];
+    int i;
+    int n = 0;
+    int prn;
+    int sbssat = svr->rtk.opt.sbassatsel;
+    int sys;
+    int iode;
 
     tracet(4, "updatesvr: ret=%d sat=%2d index=%d\n", ret, sat, index);
 
@@ -383,7 +399,10 @@ int decoderaw(rtksvr_t *svr, int index)
     obs_t *obs;
     nav_t *nav;
     sbsmsg_t *sbsmsg = nullptr;
-    int i, ret = 0, sat, fobs = 0;
+    int i;
+    int ret = 0;
+    int sat;
+    int fobs = 0;
 
     tracet(4, "decoderaw: index=%d\n", index);
 
@@ -556,9 +575,16 @@ void *rtksvrthread(void *arg)
     obs_t obs;
     obsd_t data[MAXOBS * 2];
     double tt;
-    unsigned int tick, ticknmea;
-    unsigned char *p, *q;
-    int i, j, n, fobs[3] = {0}, cycle, cputime;
+    unsigned int tick;
+    unsigned int ticknmea;
+    unsigned char *p;
+    unsigned char *q;
+    int i;
+    int j;
+    int n;
+    int fobs[3] = {0};
+    int cycle;
+    int cputime;
 
     tracet(3, "rtksvrthread:\n");
 
@@ -708,7 +734,8 @@ int rtksvrinit(rtksvr_t *svr)
     geph_t geph0 = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
     seph_t seph0 = {0, {0, 0.0}, {0, 0.0}, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, 0.0};
-    int i, j;
+    int i;
+    int j;
 
     tracet(3, "rtksvrinit:\n");
 
@@ -833,7 +860,8 @@ int rtksvrinit(rtksvr_t *svr)
  *-----------------------------------------------------------------------------*/
 void rtksvrfree(rtksvr_t *svr)
 {
-    int i, j;
+    int i;
+    int j;
 
     free(svr->nav.eph);
     free(svr->nav.geph);
@@ -904,8 +932,11 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
     const double *nmeapos, prcopt_t *prcopt,
     solopt_t *solopt, stream_t *moni)
 {
-    gtime_t time, time0 = {0, 0.0};
-    int i, j, rw;
+    gtime_t time;
+    gtime_t time0 = {0, 0.0};
+    int i;
+    int j;
+    int rw;
 
     tracet(3, "rtksvrstart: cycle=%d buffsize=%d navsel=%d nmeacycle=%d nmeareq=%d\n",
         cycle, buffsize, navsel, nmeacycle, nmeareq);
@@ -1181,7 +1212,9 @@ void rtksvrclosestr(rtksvr_t *svr, int index)
 int rtksvrostat(rtksvr_t *svr, int rcv, gtime_t *time, int *sat,
     double *az, double *el, int **snr, int *vsat)
 {
-    int i, j, ns;
+    int i;
+    int j;
+    int ns;
 
     tracet(4, "rtksvrostat: rcv=%d\n", rcv);
 
@@ -1228,7 +1261,8 @@ int rtksvrostat(rtksvr_t *svr, int rcv, gtime_t *time, int *sat,
 void rtksvrsstat(rtksvr_t *svr, int *sstat, char *msg)
 {
     int i;
-    char s[MAXSTRMSG], *p = msg;
+    char s[MAXSTRMSG];
+    char *p = msg;
 
     tracet(4, "rtksvrsstat:\n");
 

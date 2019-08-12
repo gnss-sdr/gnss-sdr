@@ -131,7 +131,8 @@ beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits,
     std::array<int32_t, 15> &decbits)
 {
-    int32_t bit, err;
+    int32_t bit;
+    int32_t err;
     std::array<int32_t, 4> reg{1, 1, 1, 1};
     const std::array<int32_t, 15> errind{14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
 
@@ -395,7 +396,6 @@ void beidou_b3i_telemetry_decoder_gs::reset()
     d_sent_tlm_failed_msg = false;
     d_flag_valid_word = false;
     DLOG(INFO) << "Beidou B3I Telemetry decoder reset for satellite " << d_satellite;
-    return;
 }
 
 

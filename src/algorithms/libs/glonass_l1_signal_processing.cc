@@ -44,7 +44,8 @@ void glonass_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32
     bool feedback1;
     bool aux;
     uint32_t delay;
-    uint32_t lcv, lcv2;
+    uint32_t lcv;
+    uint32_t lcv2;
 
     /* Generate G1 Register */
     for (lcv = 0; lcv < _code_length; lcv++)
@@ -105,7 +106,8 @@ void glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::array<std::complex<float>, 511> _code{};
-    int32_t _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode;
+    int32_t _codeValueIndex;
     float _ts;
     float _tc;
     float aux;

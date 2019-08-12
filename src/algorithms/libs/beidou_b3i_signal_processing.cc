@@ -48,8 +48,12 @@ void beidou_b3i_code_gen_int(gsl::span<int> _dest, int32_t _prn, uint32_t _chip_
     G1_register_reset.reset(0);
     G1_register_reset.reset(1);  // {false, false, true, true, true, true, true, true, true, true, true, true, true};
 
-    bool feedback1, feedback2, aux;
-    uint32_t lcv, lcv2, delay;
+    bool feedback1;
+    bool feedback2;
+    bool aux;
+    uint32_t lcv;
+    uint32_t lcv2;
+    uint32_t delay;
     int32_t prn_idx = _prn - 1;
 
     const std::array<std::bitset<13>, 63> G2_register_shifted =
@@ -207,7 +211,8 @@ void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::array<std::complex<float>, 10230> _code{};
-    int32_t _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode;
+    int32_t _codeValueIndex;
     float _ts;
     float _tc;
     float aux;

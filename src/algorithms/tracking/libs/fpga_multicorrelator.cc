@@ -127,7 +127,8 @@ Fpga_Multicorrelator_8sc::~Fpga_Multicorrelator_8sc()
 
 uint64_t Fpga_Multicorrelator_8sc::read_sample_counter()
 {
-    uint64_t sample_counter_tmp, sample_counter_msw_tmp;
+    uint64_t sample_counter_tmp;
+    uint64_t sample_counter_msw_tmp;
     sample_counter_tmp = d_map_base[sample_counter_reg_addr_lsw];
     sample_counter_msw_tmp = d_map_base[sample_counter_reg_addr_msw];
     sample_counter_msw_tmp = sample_counter_msw_tmp << 32;

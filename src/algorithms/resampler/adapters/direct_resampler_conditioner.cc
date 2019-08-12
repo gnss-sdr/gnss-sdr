@@ -48,7 +48,8 @@ DirectResamplerConditioner::DirectResamplerConditioner(
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/signal_conditioner.dat";
-    double fs_in_deprecated, fs_in;
+    double fs_in_deprecated;
+    double fs_in;
     fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);

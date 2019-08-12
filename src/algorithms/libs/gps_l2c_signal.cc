@@ -96,7 +96,8 @@ void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
             gps_l2c_m_code(_code, _prn);
         }
 
-    int32_t _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode;
+    int32_t _codeValueIndex;
     float _ts;
     float _tc;
     const int32_t _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;

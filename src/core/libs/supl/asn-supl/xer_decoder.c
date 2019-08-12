@@ -139,7 +139,8 @@ xer_check_tag(const void *buf_ptr, int size, const char *need_tag) {
 	 * Determine the tag name.
 	 */
 	for(end = buf + size; buf < end; buf++, need_tag++) {
-		int b = *buf, n = *need_tag;
+		int b = *buf;
+		int n = *need_tag;
 		if(b != n) {
 			if(n == 0) {
 				switch(b) {

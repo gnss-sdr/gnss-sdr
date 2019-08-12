@@ -260,7 +260,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4000;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
@@ -291,7 +292,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0.0);
     top_block = gr::make_top_block("Acquisition test");
 

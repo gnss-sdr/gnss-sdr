@@ -306,7 +306,8 @@ void EXPORT supl_close(supl_ctx_t *ctx)
 static int server_connect(char *server)
 {
     int fd = -1;
-    struct addrinfo *ailist, *aip;
+    struct addrinfo *ailist;
+    struct addrinfo *aip;
     struct addrinfo hint;
     int err;
 
@@ -677,7 +678,8 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
             loc = &hdr->refLocation->threeDLocation;
             if (loc->size == 14 && loc->buf[0] == 0x90)
                 {
-                    double lat, lon;
+                    double lat;
+                    double lon;
                     long l;
 
                     /* from 3GPP TS 23.032 V4.0.0 (2001-04) */

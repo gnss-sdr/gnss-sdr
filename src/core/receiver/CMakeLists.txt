@@ -154,7 +154,7 @@ target_link_libraries(core_receiver
         Armadillo::armadillo
 )
 
-if(CMAKE_BUILD_TYPE MATCHES Rel)
+if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(core_receiver
         PRIVATE -DARMA_NO_BOUND_CHECKING=1
     )

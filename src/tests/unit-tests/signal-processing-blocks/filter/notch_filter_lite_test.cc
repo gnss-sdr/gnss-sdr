@@ -105,7 +105,8 @@ TEST_F(NotchFilterLiteTest, InstantiateGrComplexGrComplex)
 TEST_F(NotchFilterLiteTest, ConnectAndRun)
 {
     int fs_in = 4000000;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Notch filter lite test");
     init();
@@ -135,7 +136,8 @@ TEST_F(NotchFilterLiteTest, ConnectAndRun)
 
 TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Notch filter lite test");
     init();

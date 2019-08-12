@@ -95,7 +95,10 @@ void v27_init(v27_t *v, v27_decision_t *decisions, unsigned int decisions_count,
 /* C-language butterfly */
 #define BFLY(i)                                                     \
     {                                                               \
-        unsigned int metric, m0, m1, decision;                      \
+        unsigned int metric;                                        \
+        unsigned int m0;                                            \
+        unsigned int m1;                                            \
+        unsigned int decision;                                      \
         metric = (v->poly->c0[i] ^ sym0) + (v->poly->c1[i] ^ sym1); \
         m0 = v->old_metrics[i] + metric;                            \
         m1 = v->old_metrics[(i) + 32] + (510 - metric);             \
@@ -118,7 +121,8 @@ void v27_init(v27_t *v, v27_decision_t *decisions, unsigned int decisions_count,
  */
 void v27_update(v27_t *v, const unsigned char *syms, int nbits)
 {
-    unsigned char sym0, sym1;
+    unsigned char sym0;
+    unsigned char sym1;
     unsigned int *tmp;
     int normalize = 0;
 

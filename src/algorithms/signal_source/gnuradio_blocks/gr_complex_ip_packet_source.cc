@@ -319,7 +319,7 @@ void Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread(pcap_t *pcap_handle)
 }
 
 
-void Gr_Complex_Ip_Packet_Source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
+void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star& output_items, int num_samples_readed)
 {
     int8_t real;
     int8_t imag;

@@ -319,7 +319,8 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				sizeof(specs->tag2el[0]), _t2e_cmp);
 			if(t2m) {
 				asn_TYPE_tag2member_t *best = 0;
-				asn_TYPE_tag2member_t *t2m_f, *t2m_l;
+				asn_TYPE_tag2member_t *t2m_f;
+				asn_TYPE_tag2member_t *t2m_l;
 				int edx_max = edx + elements[edx].optional;
 				/*
 				 * Rewind to the first element with that tag,
@@ -447,7 +448,8 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		 * Skip everything until the end of the SEQUENCE.
 		 */
 		while(ctx->left) {
-			ssize_t tl, ll;
+			ssize_t tl;
+			ssize_t ll;
 
 			tl = ber_fetch_tag(ptr, LEFT, &tlv_tag);
 			switch(tl) {

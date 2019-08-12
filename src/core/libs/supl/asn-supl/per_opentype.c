@@ -321,7 +321,8 @@ static int
 uper_ugot_refill(asn_per_data_t *pd)
 {
     uper_ugot_key *arg = pd->refill_key;
-    ssize_t next_chunk_bytes, next_chunk_bits;
+    ssize_t next_chunk_bytes;
+    ssize_t next_chunk_bits;
     ssize_t avail;
 
     asn_per_data_t *oldpd = &arg->oldpd;

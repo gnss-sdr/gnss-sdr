@@ -46,7 +46,8 @@ per_get_few_bits(asn_per_data_t *pd, int nbits) {
 
         nleft = pd->nbits - pd->nboff;
         if(nbits > nleft) {
-                int32_t tailv, vhead;
+                int32_t tailv;
+                int32_t vhead;
                 if(!pd->refill || nbits > 31) return -1;
                 /* Accumulate unused bytes before refill */
                 ASN_DEBUG("Obtain the rest %d bits (want %d)",

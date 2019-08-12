@@ -194,7 +194,8 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
 {
     wait_for_interrupt();
 
-    uint64_t sample_counter_tmp, sample_counter_msw_tmp;
+    uint64_t sample_counter_tmp;
+    uint64_t sample_counter_msw_tmp;
     sample_counter_tmp = map_base[0];
     sample_counter_msw_tmp = map_base[1];
     sample_counter_msw_tmp = sample_counter_msw_tmp << 32;

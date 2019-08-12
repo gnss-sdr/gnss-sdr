@@ -132,7 +132,8 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
 
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model)
 {
-    double week, sec;
+    double week;
+    double sec;
     int adj_week;
     geph_t rtklib_sat = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
 
@@ -206,7 +207,8 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, gal_eph.TOW_5);
 
     /* adjustment for week handover */
-    double tow, toc;
+    double tow;
+    double toc;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
     toc = time2gpst(rtklib_sat.toc, nullptr);
     if (rtklib_sat.toes < tow - 302400.0)
@@ -263,7 +265,8 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, gps_eph.d_TOW);
 
     /* adjustment for week handover */
-    double tow, toc;
+    double tow;
+    double toc;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
     toc = time2gpst(rtklib_sat.toc, nullptr);
     if (rtklib_sat.toes < tow - 302400.0)
@@ -328,7 +331,9 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.toc = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.d_Toc));
     rtklib_sat.ttr = bdt2gpst(bdt2time(rtklib_sat.week, bei_eph.d_TOW));
     /* adjustment for week handover */
-    double tow, toc, toe;
+    double tow;
+    double toc;
+    double toe;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
     toc = time2gpst(rtklib_sat.toc, nullptr);
     toe = time2gpst(rtklib_sat.toe, nullptr);
@@ -395,7 +400,8 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, gps_cnav_eph.d_TOW);
 
     /* adjustment for week handover */
-    double tow, toc;
+    double tow;
+    double toc;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
     toc = time2gpst(rtklib_sat.toc, nullptr);
     if (rtklib_sat.toes < tow - 302400.0)

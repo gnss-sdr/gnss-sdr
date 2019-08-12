@@ -62,7 +62,9 @@
 /* wave length of LC (m) -----------------------------------------------------*/
 double lam_LC(int i, int j, int k)
 {
-    const double f1 = FREQ1, f2 = FREQ2, f5 = FREQ5;
+    const double f1 = FREQ1;
+    const double f2 = FREQ2;
+    const double f5 = FREQ5;
 
     return SPEED_OF_LIGHT / (i * f1 + j * f2 + k * f5);
 }
@@ -71,8 +73,12 @@ double lam_LC(int i, int j, int k)
 /* carrier-phase LC (m) ------------------------------------------------------*/
 double L_LC(int i, int j, int k, const double *L)
 {
-    const double f1 = FREQ1, f2 = FREQ2, f5 = FREQ5;
-    double L1, L2, L5;
+    const double f1 = FREQ1;
+    const double f2 = FREQ2;
+    const double f5 = FREQ5;
+    double L1;
+    double L2;
+    double L5;
 
     if ((i && !L[0]) || (j && !L[1]) || (k && !L[2]))
         {
@@ -88,8 +94,12 @@ double L_LC(int i, int j, int k, const double *L)
 /* pseudorange LC (m) --------------------------------------------------------*/
 double P_LC(int i, int j, int k, const double *P)
 {
-    const double f1 = FREQ1, f2 = FREQ2, f5 = FREQ5;
-    double P1, P2, P5;
+    const double f1 = FREQ1;
+    const double f2 = FREQ2;
+    const double f5 = FREQ5;
+    double P1;
+    double P2;
+    double P5;
 
     if ((i && !P[0]) || (j && !P[1]) || (k && !P[2]))
         {
@@ -105,7 +115,9 @@ double P_LC(int i, int j, int k, const double *P)
 /* noise variance of LC (m) --------------------------------------------------*/
 double var_LC(int i, int j, int k, double sig)
 {
-    const double f1 = FREQ1, f2 = FREQ2, f5 = FREQ5;
+    const double f1 = FREQ1;
+    const double f2 = FREQ2;
+    const double f5 = FREQ5;
 
     return (std::pow(i * f1, 2.0) + std::pow(j * f2, 2.0) + std::pow(k * f5, 2.0)) / std::pow(i * f1 + j * f2 + k * f5, 2.0) * std::pow(sig, 2.0);
 }
@@ -114,7 +126,8 @@ double var_LC(int i, int j, int k, double sig)
 /* complementaty error function (ref [1] p.227-229) --------------------------*/
 double p_gamma(double a, double x, double log_gamma_a)
 {
-    double y, w;
+    double y;
+    double w;
     int i;
 
     if (x == 0.0)
@@ -143,7 +156,11 @@ double p_gamma(double a, double x, double log_gamma_a)
 
 double q_gamma(double a, double x, double log_gamma_a)
 {
-    double y, w, la = 1.0, lb = x + 1.0 - a, lc;
+    double y;
+    double w;
+    double la = 1.0;
+    double lb = x + 1.0 - a;
+    double lc;
     int i;
 
     if (x < a + 1.0)
@@ -177,7 +194,8 @@ double f_erfc(double x)
 /* confidence function of integer ambiguity ----------------------------------*/
 double conffunc(int N, double B, double sig)
 {
-    double x, p = 1.0;
+    double x;
+    double p = 1.0;
     int i;
 
     x = fabs(B - N);
@@ -194,8 +212,16 @@ void average_LC(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav __attribu
     const double *azel)
 {
     ambc_t *amb;
-    double LC1, LC2, LC3, var1, var2, var3, sig;
-    int i, j, sat;
+    double LC1;
+    double LC2;
+    double LC3;
+    double var1;
+    double var2;
+    double var3;
+    double sig;
+    int i;
+    int j;
+    int sat;
 
     for (i = 0; i < n; i++)
         {
@@ -265,8 +291,11 @@ void average_LC(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav __attribu
 /* fix wide-lane ambiguity ---------------------------------------------------*/
 int fix_amb_WL(rtk_t *rtk, const nav_t *nav, int sat1, int sat2, int *NW)
 {
-    ambc_t *amb1, *amb2;
-    double BW, vW, lam_WL = lam_LC(1, -1, 0);
+    ambc_t *amb1;
+    ambc_t *amb2;
+    double BW;
+    double vW;
+    double lam_WL = lam_LC(1, -1, 0);
 
     amb1 = rtk->ambc + sat1 - 1;
     amb2 = rtk->ambc + sat2 - 1;
@@ -340,7 +369,10 @@ int is_depend(int sat1, int sat2, int *flgs, int *max_flg)
 /* select fixed ambiguities --------------------------------------------------*/
 int sel_amb(int *sat1, int *sat2, double *N, double *var, int n)
 {
-    int i, j, flgs[MAXSAT] = {0}, max_flg = 0;
+    int i;
+    int j;
+    int flgs[MAXSAT] = {0};
+    int max_flg = 0;
 
     /* sort by variance */
     for (i = 0; i < n; i++)
@@ -377,8 +409,13 @@ int sel_amb(int *sat1, int *sat2, double *N, double *var, int n)
 int fix_sol(rtk_t *rtk, const int *sat1, const int *sat2,
     const double *NC, int n)
 {
-    double *v, *H, *R;
-    int i, j, k, info;
+    double *v;
+    double *H;
+    double *R;
+    int i;
+    int j;
+    int k;
+    int info;
 
     if (n <= 0)
         {
@@ -433,8 +470,24 @@ int fix_sol(rtk_t *rtk, const int *sat1, const int *sat2,
 /* fix narrow-lane ambiguity by rounding -------------------------------------*/
 int fix_amb_ROUND(rtk_t *rtk, int *sat1, int *sat2, const int *NW, int n)
 {
-    double C1, C2, B1, v1, BC, v, vc, *NC, *var, lam_NL = lam_LC(1, 1, 0), lam1, lam2;
-    int i, j, k, m = 0, N1, stat;
+    double C1;
+    double C2;
+    double B1;
+    double v1;
+    double BC;
+    double v;
+    double vc;
+    double *NC;
+    double *var;
+    double lam_NL = lam_LC(1, 1, 0);
+    double lam1;
+    double lam2;
+    int i;
+    int j;
+    int k;
+    int m = 0;
+    int N1;
+    int stat;
 
     lam1 = LAM_CARR[0];
     lam2 = LAM_CARR[1];
@@ -495,8 +548,26 @@ int fix_amb_ROUND(rtk_t *rtk, int *sat1, int *sat2, const int *NW, int n)
 /* fix narrow-lane ambiguity by ILS ------------------------------------------*/
 int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
 {
-    double C1, C2, *B1, *N1, *NC, *D, *E, *Q, s[2], lam_NL = lam_LC(1, 1, 0), lam1, lam2;
-    int i, j, k, m = 0, info, stat, flgs[MAXSAT] = {0}, max_flg = 0;
+    double C1;
+    double C2;
+    double *B1;
+    double *N1;
+    double *NC;
+    double *D;
+    double *E;
+    double *Q;
+    double s[2];
+    double lam_NL = lam_LC(1, 1, 0);
+    double lam1;
+    double lam2;
+    int i;
+    int j;
+    int k;
+    int m = 0;
+    int info;
+    int stat;
+    int flgs[MAXSAT] = {0};
+    int max_flg = 0;
 
     lam1 = LAM_CARR[0];
     lam2 = LAM_CARR[1];
@@ -619,7 +690,13 @@ int pppamb(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
     const double *azel)
 {
     double elmask;
-    int i, j, m = 0, stat = 0, *NW, *sat1, *sat2;
+    int i;
+    int j;
+    int m = 0;
+    int stat = 0;
+    int *NW;
+    int *sat1;
+    int *sat2;
 
     if (n <= 0 || rtk->opt.ionoopt != IONOOPT_IFLC || rtk->opt.nf < 2)
         {
@@ -681,8 +758,14 @@ int pppamb(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
 void pppoutsolstat(rtk_t *rtk, int level, FILE *fp)
 {
     ssat_t *ssat;
-    double tow, pos[3], vel[3], acc[3];
-    int i, j, week, nfreq = 1;
+    double tow;
+    double pos[3];
+    double vel[3];
+    double acc[3];
+    int i;
+    int j;
+    int week;
+    int nfreq = 1;
     char id[32];
 
     if (level <= 0 || !fp)
@@ -756,8 +839,14 @@ void pppoutsolstat(rtk_t *rtk, int level, FILE *fp)
 /* exclude meas of eclipsing satellite (block IIA) ---------------------------*/
 void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
 {
-    double rsun[3], esun[3], r, ang, erpv[5] = {0}, cosa;
-    int i, j;
+    double rsun[3];
+    double esun[3];
+    double r;
+    double ang;
+    double erpv[5] = {0};
+    double cosa;
+    int i;
+    int j;
     const char *type;
 
     trace(3, "testeclipse:\n");
@@ -809,7 +898,11 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
 /* measurement error variance ------------------------------------------------*/
 double varerr(int sat __attribute__((unused)), int sys, double el, int type, const prcopt_t *opt)
 {
-    double a, b, a2, b2, fact = 1.0;
+    double a;
+    double b;
+    double a2;
+    double b2;
+    double fact = 1.0;
     double sinel = sin(el);
     int i = sys == SYS_GLO ? 1 : (sys == SYS_GAL ? 2 : 0);
 
@@ -874,8 +967,18 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     double phw, double *meas, double *var)
 {
     const double *lam = nav->lam[obs->sat - 1];
-    double c1, c2, L1, L2, P1, P2, P1_C1, P2_C2, gamma;
-    int i = 0, j = 1, k;
+    double c1;
+    double c2;
+    double L1;
+    double L2;
+    double P1;
+    double P2;
+    double P1_C1;
+    double P2_C2;
+    double gamma;
+    int i = 0;
+    int j = 1;
+    int k;
 
     trace(4, "ifmeas  :\n");
 
@@ -1018,7 +1121,14 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
     double *meas, double *var, int *brk)
 {
     const double *lam = nav->lam[obs->sat - 1];
-    double ion = 0.0, L1, P1, PC, P1_P2, P1_C1, vari, gamma;
+    double ion = 0.0;
+    double L1;
+    double P1;
+    double PC;
+    double P1_P2;
+    double P1_C1;
+    double vari;
+    double gamma;
     int i;
 
     trace(4, "corrmeas:\n");
@@ -1168,8 +1278,12 @@ void udclk_ppp(rtk_t *rtk)
 /* temporal update of tropospheric parameters --------------------------------*/
 void udtrop_ppp(rtk_t *rtk)
 {
-    double pos[3], azel[] = {0.0, PI / 2.0}, ztd, var;
-    int i = IT_PPP(&rtk->opt), j;
+    double pos[3];
+    double azel[] = {0.0, PI / 2.0};
+    double ztd;
+    double var;
+    int i = IT_PPP(&rtk->opt);
+    int j;
 
     trace(3, "udtrop_ppp:\n");
 
@@ -1205,7 +1319,8 @@ void udtrop_ppp(rtk_t *rtk)
 /* detect cycle slip by LLI --------------------------------------------------*/
 void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
 {
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "detslp_ll: n=%d\n", n);
 
@@ -1229,8 +1344,10 @@ void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
 /* detect cycle slip by geometry free phase jump -----------------------------*/
 void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
-    double g0, g1;
-    int i, j;
+    double g0;
+    double g1;
+    int i;
+    int j;
 
     trace(3, "detslp_gf: n=%d\n", n);
 
@@ -1263,8 +1380,16 @@ void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 /* temporal update of phase biases -------------------------------------------*/
 void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
-    double meas[2], var[2], bias[MAXOBS] = {0}, offset = 0.0, pos[3] = {0};
-    int i, j, k, sat, brk = 0;
+    double meas[2];
+    double var[2];
+    double bias[MAXOBS] = {0};
+    double offset = 0.0;
+    double pos[3] = {0};
+    int i;
+    int j;
+    int k;
+    int sat;
+    int brk = 0;
 
     trace(3, "udbias  : n=%d\n", n);
 
@@ -1380,7 +1505,12 @@ void udstate_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 void satantpcv(const double *rs, const double *rr, const pcv_t *pcv,
     double *dant)
 {
-    double ru[3], rz[3], eu[3], ez[3], nadir, cosa;
+    double ru[3];
+    double rz[3];
+    double eu[3];
+    double ez[3];
+    double nadir;
+    double cosa;
     int i;
 
     for (i = 0; i < 3; i++)
@@ -1407,7 +1537,12 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
     double *var)
 {
     const double zazel[] = {0.0, PI / 2.0};
-    double zhd, m_h, m_w, cotz, grad_n, grad_e;
+    double zhd;
+    double m_h;
+    double m_w;
+    double cotz;
+    double grad_n;
+    double grad_e;
 
     /* zenith hydrostatic delay */
     zhd = tropmodel(time, pos, zazel, 0.0);
@@ -1438,9 +1573,28 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     double *H, double *R, double *azel)
 {
     prcopt_t *opt = &rtk->opt;
-    double r, rr[3], disp[3], pos[3], e[3], meas[2], dtdx[3], dantr[NFREQ] = {0};
-    double dants[NFREQ] = {0}, var[MAXOBS * 2], dtrp = 0.0, vart = 0.0, varm[2] = {0};
-    int i, j, k, sat, sys, nv = 0, nx = rtk->nx, brk, tideopt;
+    double r;
+    double rr[3];
+    double disp[3];
+    double pos[3];
+    double e[3];
+    double meas[2];
+    double dtdx[3];
+    double dantr[NFREQ] = {0};
+    double dants[NFREQ] = {0};
+    double var[MAXOBS * 2];
+    double dtrp = 0.0;
+    double vart = 0.0;
+    double varm[2] = {0};
+    int i;
+    int j;
+    int k;
+    int sat;
+    int sys;
+    int nv = 0;
+    int nx = rtk->nx;
+    int brk;
+    int tideopt;
 
     trace(3, "res_ppp : n=%d nx=%d\n", n, nx);
 
@@ -1636,8 +1790,20 @@ int pppnx(const prcopt_t *opt)
 void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
     const prcopt_t *opt = &rtk->opt;
-    double *rs, *dts, *var, *v, *H, *R, *azel, *xp, *Pp;
-    int i, nv, info, svh[MAXOBS], stat = SOLQ_SINGLE;
+    double *rs;
+    double *dts;
+    double *var;
+    double *v;
+    double *H;
+    double *R;
+    double *azel;
+    double *xp;
+    double *Pp;
+    int i;
+    int nv;
+    int info;
+    int svh[MAXOBS];
+    int stat = SOLQ_SINGLE;
 
     trace(3, "pppos   : nx=%d n=%d\n", rtk->nx, n);
 

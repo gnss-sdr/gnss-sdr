@@ -98,7 +98,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
     float max;
-    int32_t tmp, tmp2, local_code, fft_data;
+    int32_t tmp;
+    int32_t tmp2;
+    int32_t local_code;
+    int32_t fft_data;
     // temporary maxima search
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {

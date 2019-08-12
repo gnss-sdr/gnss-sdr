@@ -73,7 +73,8 @@ int init_rtcm(rtcm_t *rtcm)
     geph_t geph0 = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
     ssr_t ssr0 = {{{0, 0.0}}, {0.0}, {0}, 0, 0, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, {0.0}, {0.0}, {0.0}, 0.0, 0.0, '0'};
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "init_rtcm:\n");
 
@@ -369,7 +370,9 @@ int input_rtcm3(rtcm_t *rtcm, unsigned char data)
  *-----------------------------------------------------------------------------*/
 int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
 {
-    int i, data = 0, ret;
+    int i;
+    int data = 0;
+    int ret;
 
     trace(4, "input_rtcm2f: data=%02x\n", data);
 
@@ -397,7 +400,9 @@ int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
  *-----------------------------------------------------------------------------*/
 int input_rtcm3f(rtcm_t *rtcm, FILE *fp)
 {
-    int i, data = 0, ret;
+    int i;
+    int data = 0;
+    int ret;
 
     trace(4, "input_rtcm3f: data=%02x\n", data);
 

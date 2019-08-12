@@ -164,7 +164,9 @@ void Viterbi_Decoder::init_trellis_state()
 
 int Viterbi_Decoder::do_acs(const double sym[], int nbits)
 {
-    int t, i, state_at_t;
+    int t;
+    int i;
+    int state_at_t;
     float metric;
     float max_val;
     std::vector<float> pm_t_next(d_states);
@@ -365,7 +367,8 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
     int KK, int nn)
 {
     int nextstate[1];
-    int state, states;
+    int state;
+    int states;
     states = (1U << (KK - 1)); /* The number of states: 2^mm */
 
     /* Determine the output and next state for each possible starting state */
@@ -374,8 +377,8 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
             output_p[state] = nsc_enc_bit(nextstate, input, state, g, KK, nn);
             trans_p[state] = nextstate[0];
         }
-    return;
 }
+
 
 /* Function nsc_enc_bit()
 
@@ -395,12 +398,12 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
  (i.e. the state after encoding this bit)
 
  This function is used by rsc_encode(), nsc_transit(), rsc_transit(), and nsc_transit() */
-
 int Viterbi_Decoder::nsc_enc_bit(int state_out_p[], int input, int state_in,
     const int g[], int KK, int nn)
 {
     /* declare variables */
-    int state, i;
+    int state;
+    int i;
     int out = 0;
 
     /* create a word made up of state and new input */

@@ -245,7 +245,13 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
 Rinex_Printer::~Rinex_Printer()
 {
     // close RINEX files
-    int64_t posn, poso, poss, posng, posmn, posnr, posnc;
+    int64_t posn;
+    int64_t poso;
+    int64_t poss;
+    int64_t posng;
+    int64_t posmn;
+    int64_t posnr;
+    int64_t posnc;
     posn = navFile.tellp();
     poso = obsFile.tellp();
     poss = sbsFile.tellp();

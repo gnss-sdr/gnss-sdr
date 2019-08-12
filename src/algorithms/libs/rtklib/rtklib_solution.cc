@@ -93,8 +93,10 @@ const char *opt2sep(const solopt_t *opt)
 /* separate fields -----------------------------------------------------------*/
 int tonum(char *buff, const char *sep, double *v)
 {
-    int n, len = static_cast<int>(strlen(sep));
-    char *p, *q;
+    int n;
+    int len = static_cast<int>(strlen(sep));
+    char *p;
+    char *q;
 
     for (p = buff, n = 0; n < MAXFIELD; p = q + len)
         {
@@ -166,9 +168,20 @@ void covtosol(const double *P, sol_t *sol)
 /* decode nmea gprmc: recommended minimum data for gps -----------------------*/
 int decode_nmearmc(char **val, int n, sol_t *sol)
 {
-    double tod = 0.0, lat = 0.0, lon = 0.0, vel = 0.0, dir = 0.0, date = 0.0, ang = 0.0, ep[6];
+    double tod = 0.0;
+    double lat = 0.0;
+    double lon = 0.0;
+    double vel = 0.0;
+    double dir = 0.0;
+    double date = 0.0;
+    double ang = 0.0;
+    double ep[6];
     double pos[3] = {0};
-    char act = ' ', ns = 'N', ew = 'E', mew = 'E', mode = 'A';
+    char act = ' ';
+    char ns = 'N';
+    char ew = 'E';
+    char mew = 'E';
+    char mode = 'A';
     int i;
 
     trace(4, "decode_nmearmc: n=%d\n", n);
@@ -246,10 +259,22 @@ int decode_nmearmc(char **val, int n, sol_t *sol)
 int decode_nmeagga(char **val, int n, sol_t *sol)
 {
     gtime_t time;
-    double tod = 0.0, lat = 0.0, lon = 0.0, hdop = 0.0, alt = 0.0, msl = 0.0, ep[6], tt;
+    double tod = 0.0;
+    double lat = 0.0;
+    double lon = 0.0;
+    double hdop = 0.0;
+    double alt = 0.0;
+    double msl = 0.0;
+    double ep[6];
+    double tt;
     double pos[3] = {0};
-    char ns = 'N', ew = 'E', ua = ' ', um = ' ';
-    int i, solq = 0, nrcv = 0;
+    char ns = 'N';
+    char ew = 'E';
+    char ua = ' ';
+    char um = ' ';
+    int i;
+    int solq = 0;
+    int nrcv = 0;
 
     trace(4, "decode_nmeagga: n=%d\n", n);
 
@@ -342,7 +367,9 @@ int decode_nmeagga(char **val, int n, sol_t *sol)
 /* decode nmea ---------------------------------------------------------------*/
 int decode_nmea(char *buff, sol_t *sol)
 {
-    char *p, *q, *val[MAXFIELD] = {nullptr};
+    char *p;
+    char *q;
+    char *val[MAXFIELD] = {nullptr};
     int n = 0;
 
     trace(4, "decode_nmea: buff=%s\n", buff);
@@ -377,8 +404,11 @@ int decode_nmea(char *buff, sol_t *sol)
 char *decode_soltime(char *buff, const solopt_t *opt, gtime_t *time)
 {
     double v[MAXFIELD];
-    char *p, *q, s[64] = " ";
-    int n, len;
+    char *p;
+    char *q;
+    char s[64] = " ";
+    int n;
+    int len;
 
     trace(4, "decode_soltime:\n");
 
@@ -463,8 +493,11 @@ char *decode_soltime(char *buff, const solopt_t *opt, gtime_t *time)
 /* decode x/y/z-ecef ---------------------------------------------------------*/
 int decode_solxyz(char *buff, const solopt_t *opt, sol_t *sol)
 {
-    double val[MAXFIELD], P[9] = {0};
-    int i = 0, j, n;
+    double val[MAXFIELD];
+    double P[9] = {0};
+    int i = 0;
+    int j;
+    int n;
     const char *sep = opt2sep(opt);
 
     trace(4, "decode_solxyz:\n");
@@ -527,8 +560,12 @@ int decode_solxyz(char *buff, const solopt_t *opt, sol_t *sol)
 /* decode lat/lon/height -----------------------------------------------------*/
 int decode_solllh(char *buff, const solopt_t *opt, sol_t *sol)
 {
-    double val[MAXFIELD], pos[3], Q[9] = {0}, P[9];
-    int i = 0, n;
+    double val[MAXFIELD];
+    double pos[3];
+    double Q[9] = {0};
+    double P[9];
+    int i = 0;
+    int n;
     const char *sep = opt2sep(opt);
 
     trace(4, "decode_solllh:\n");
@@ -607,8 +644,11 @@ int decode_solllh(char *buff, const solopt_t *opt, sol_t *sol)
 /* decode e/n/u-baseline -----------------------------------------------------*/
 int decode_solenu(char *buff, const solopt_t *opt, sol_t *sol)
 {
-    double val[MAXFIELD], Q[9] = {0};
-    int i = 0, j, n;
+    double val[MAXFIELD];
+    double Q[9] = {0};
+    int i = 0;
+    int j;
+    int n;
     const char *sep = opt2sep(opt);
 
     trace(4, "decode_solenu:\n");
@@ -672,7 +712,8 @@ int decode_solenu(char *buff, const solopt_t *opt, sol_t *sol)
 int decode_solgsi(char *buff, const solopt_t *opt __attribute((unused)), sol_t *sol)
 {
     double val[MAXFIELD];
-    int i = 0, j;
+    int i = 0;
+    int j;
 
     trace(4, "decode_solgsi:\n");
 
@@ -724,8 +765,10 @@ int decode_solpos(char *buff, const solopt_t *opt, sol_t *sol)
 /* decode reference position -------------------------------------------------*/
 void decode_refpos(char *buff, const solopt_t *opt, double *rb)
 {
-    double val[MAXFIELD], pos[3];
-    int i, n;
+    double val[MAXFIELD];
+    double pos[3];
+    int i;
+    int n;
     const char *sep = opt2sep(opt);
 
     trace(3, "decode_refpos: buff=%s\n", buff);
@@ -955,7 +998,8 @@ int readsoldata(FILE *fp, gtime_t ts, gtime_t te, double tint, int qflag,
 /* compare solution data -----------------------------------------------------*/
 int cmpsol(const void *p1, const void *p2)
 {
-    auto *q1 = (sol_t *)p1, *q2 = (sol_t *)p2;
+    auto *q1 = (sol_t *)p1;
+    auto *q2 = (sol_t *)p2;
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }
@@ -1183,7 +1227,8 @@ void freesolstatbuf(solstatbuf_t *solstatbuf)
 /* compare solution status ---------------------------------------------------*/
 int cmpsolstat(const void *p1, const void *p2)
 {
-    auto *q1 = (solstat_t *)p1, *q2 = (solstat_t *)p2;
+    auto *q1 = (solstat_t *)p1;
+    auto *q2 = (solstat_t *)p2;
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }
@@ -1220,9 +1265,25 @@ int sort_solstat(solstatbuf_t *statbuf)
 int decode_solstat(char *buff, solstat_t *stat)
 {
     static const solstat_t stat0 = {{0, 0.0}, '0', '0', 0, 0, 0, 0, '0', '0', 0, 0, 0, 0};
-    double tow, az, el, resp, resc;
-    int n, week, sat, frq, vsat, snr, fix, slip, lock, outc, slipc, rejc;
-    char id[32] = "", *p;
+    double tow;
+    double az;
+    double el;
+    double resp;
+    double resc;
+    int n;
+    int week;
+    int sat;
+    int frq;
+    int vsat;
+    int snr;
+    int fix;
+    int slip;
+    int lock;
+    int outc;
+    int slipc;
+    int rejc;
+    char id[32] = "";
+    char *p;
 
     trace(4, "decode_solstat: buff=%s\n", buff);
 
@@ -1396,7 +1457,11 @@ int outecef(unsigned char *buff, const char *s, const sol_t *sol,
 int outpos(unsigned char *buff, const char *s, const sol_t *sol,
     const solopt_t *opt)
 {
-    double pos[3], dms1[3], dms2[3], P[9], Q[9];
+    double pos[3];
+    double dms1[3];
+    double dms2[3];
+    double P[9];
+    double Q[9];
     const char *sep = opt2sep(opt);
     char *p = reinterpret_cast<char *>(buff);
 
@@ -1433,7 +1498,11 @@ int outpos(unsigned char *buff, const char *s, const sol_t *sol,
 int outenu(unsigned char *buff, const char *s, const sol_t *sol,
     const double *rb, const solopt_t *opt)
 {
-    double pos[3], rr[3], enu[3], P[9], Q[9];
+    double pos[3];
+    double rr[3];
+    double enu[3];
+    double P[9];
+    double Q[9];
     int i;
     const char *sep = opt2sep(opt);
     char *p = reinterpret_cast<char *>(buff);
@@ -1461,8 +1530,18 @@ int outnmea_rmc(unsigned char *buff, const sol_t *sol)
 {
     static double dirp = 0.0;
     gtime_t time;
-    double ep[6], pos[3], enuv[3], dms1[3], dms2[3], vel, dir, amag = 0.0;
-    char *p = reinterpret_cast<char *>(buff), *q, sum, *emag = (char *)"E";
+    double ep[6];
+    double pos[3];
+    double enuv[3];
+    double dms1[3];
+    double dms2[3];
+    double vel;
+    double dir;
+    double amag = 0.0;
+    char *p = reinterpret_cast<char *>(buff);
+    char *q;
+    char sum;
+    char *emag = (char *)"E";
 
     trace(3, "outnmea_rmc:\n");
 
@@ -1519,9 +1598,16 @@ int outnmea_rmc(unsigned char *buff, const sol_t *sol)
 int outnmea_gga(unsigned char *buff, const sol_t *sol)
 {
     gtime_t time;
-    double h, ep[6], pos[3], dms1[3], dms2[3], dop = 1.0;
+    double h;
+    double ep[6];
+    double pos[3];
+    double dms1[3];
+    double dms2[3];
+    double dop = 1.0;
     int solq;
-    char *p = reinterpret_cast<char *>(buff), *q, sum;
+    char *p = reinterpret_cast<char *>(buff);
+    char *q;
+    char sum;
 
     trace(3, "outnmea_gga:\n");
 
@@ -1574,9 +1660,17 @@ int outnmea_gga(unsigned char *buff, const sol_t *sol)
 int outnmea_gsa(unsigned char *buff, const sol_t *sol,
     const ssat_t *ssat)
 {
-    double azel[MAXSAT * 2], dop[4];
-    int i, sat, sys, nsat, prn[MAXSAT];
-    char *p = reinterpret_cast<char *>(buff), *q, *s, sum;
+    double azel[MAXSAT * 2];
+    double dop[4];
+    int i;
+    int sat;
+    int sys;
+    int nsat;
+    int prn[MAXSAT];
+    char *p = reinterpret_cast<char *>(buff);
+    char *q;
+    char *s;
+    char sum;
 
     trace(3, "outnmea_gsa:\n");
 
@@ -1724,9 +1818,22 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
 int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     const ssat_t *ssat)
 {
-    double az, el, snr;
-    int i, j, k, n, sat, prn, sys, nmsg, sats[MAXSAT];
-    char *p = reinterpret_cast<char *>(buff), *q, *s, sum;
+    double az;
+    double el;
+    double snr;
+    int i;
+    int j;
+    int k;
+    int n;
+    int sat;
+    int prn;
+    int sys;
+    int nmsg;
+    int sats[MAXSAT];
+    char *p = reinterpret_cast<char *>(buff);
+    char *q;
+    char *s;
+    char sum;
 
     trace(3, "outnmea_gsv:\n");
 
@@ -1984,8 +2091,10 @@ int outprcopts(unsigned char *buff, const prcopt_t *opt)
  *-----------------------------------------------------------------------------*/
 int outsolheads(unsigned char *buff, const solopt_t *opt)
 {
-    const char *s1[] = {"WGS84", "Tokyo"}, *s2[] = {"ellipsoidal", "geodetic"};
-    const char *s3[] = {"GPST", "UTC ", "JST "}, *sep = opt2sep(opt);
+    const char *s1[] = {"WGS84", "Tokyo"};
+    const char *s2[] = {"ellipsoidal", "geodetic"};
+    const char *s3[] = {"GPST", "UTC ", "JST "};
+    const char *sep = opt2sep(opt);
     char *p = reinterpret_cast<char *>(buff);
     int timeu = opt->timeu < 0 ? 0 : (opt->timeu > 20 ? 20 : opt->timeu);
 
@@ -2061,9 +2170,11 @@ int outsolheads(unsigned char *buff, const solopt_t *opt)
 int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
     const solopt_t *opt)
 {
-    gtime_t time, ts = {0, 0.0};
+    gtime_t time;
+    gtime_t ts = {0, 0.0};
     double gpst;
-    int week, timeu;
+    int week;
+    int timeu;
     const char *sep = opt2sep(opt);
     char s[255];
     unsigned char *p = buff;

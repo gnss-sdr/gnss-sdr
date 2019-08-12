@@ -111,7 +111,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 {
     int fs_in = 8000000;
     int nsamples = 40000000;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     init();
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
@@ -154,7 +155,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 
 TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     // int num_samples = 40000000; // 4 Msps
     // unsigned int skiphead_sps = 24000000; // 4 Msps

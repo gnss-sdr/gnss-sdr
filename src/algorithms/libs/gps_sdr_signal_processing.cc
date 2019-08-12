@@ -43,9 +43,11 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
     std::bitset<_code_length> G2{};
     std::bitset<10> G1_register{};
     std::bitset<10> G2_register{};
-    bool feedback1, feedback2;
+    bool feedback1;
+    bool feedback2;
     bool aux;
-    uint32_t lcv, lcv2;
+    uint32_t lcv;
+    uint32_t lcv2;
     uint32_t delay;
     int32_t prn_idx;
 
@@ -155,7 +157,8 @@ void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::array<std::complex<float>, 1023> _code{};
-    int32_t _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode;
+    int32_t _codeValueIndex;
     float _ts;
     float _tc;
     float aux;

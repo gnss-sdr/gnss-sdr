@@ -69,7 +69,7 @@ option(ENABLE_OPENCL "Enable building of processing blocks implemented with Open
 
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
 
-option(ENABLE_FPGA "Enable building of processing blocks implemented with FPGA" OFF)
+option(ENABLE_FPGA "Enable building of processing blocks implementing FPGA offloading" OFF)
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -82,8 +82,11 @@ option(ENABLE_OWN_ARMADILLO "Download and build Armadillo locally" OFF)
 
 option(ENABLE_LOG "Enable logging" ON)
 
+option(ENABLE_ARMA_NO_DEBUG OFF)
+
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
+    set(ENABLE_ARMA_NO_DEBUG ON)
 endif()
 
 # Testing
@@ -138,7 +141,7 @@ if(NOT ${THIS_IS_A_RELEASE})
                 OUTPUT_VARIABLE GIT_BRANCH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-        endif(NOT GIT_BRANCH)
+        endif()
         # was this info set in the CMake commandline?
         if(NOT GIT_COMMIT_HASH)
             # Get the latest abbreviated commit hash of the working branch
@@ -148,7 +151,7 @@ if(NOT ${THIS_IS_A_RELEASE})
                 OUTPUT_VARIABLE GIT_COMMIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-        endif(NOT GIT_COMMIT_HASH)
+        endif()
     endif()
 endif()
 
@@ -756,7 +759,7 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
                 INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES}
                 IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES}
             )
-         endif()
+        endif()
     endif()
 endif()
 
@@ -1464,6 +1467,7 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
         /usr/lib/powerpc64-linux-gnu
         /usr/lib/powerpc64le-linux-gnu
         /usr/lib/s390x-linux-gnu
+        /usr/lib/riscv64-linux-gnu
         /usr/lib/sparc64-linux-gnu
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/sh4-linux-gnu
@@ -2148,11 +2152,11 @@ endif()
 # FPGA (OPTIONAL)
 ################################################################################
 if(ENABLE_FPGA)
-    message(STATUS "FPGA Acceleration will be enabled.")
+    message(STATUS "FPGA offloading will be enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_FPGA=OFF ..'")
 else()
-    message(STATUS "Fpga Acceleration will be not enabled.")
-    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for GPU-based acceleration using the FPGA.")
+    message(STATUS "FPGA offloading will be not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for FPGA offloading.")
 endif()
 
 
@@ -2459,7 +2463,8 @@ add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with
 add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
 add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
 add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
-add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
+add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA offloading.")
+add_feature_info(ENABLE_ARMA_NO_DEBUG ENABLE_ARMA_NO_DEBUG "Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.")
 add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")

@@ -211,7 +211,8 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     float N_prn_diff;
     N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    float corrected_acq_phase_samples, delay_correction_samples;
+    float corrected_acq_phase_samples;
+    float delay_correction_samples;
     corrected_acq_phase_samples = std::fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<float>(d_fs_in)), T_prn_true_samples);
     if (corrected_acq_phase_samples < 0)
         {
@@ -514,7 +515,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             // MULTIPLEXED FILE RECORDING - Record results to file
             float prompt_I;
             float prompt_Q;
-            float tmp_E, tmp_P, tmp_L;
+            float tmp_E;
+            float tmp_P;
+            float tmp_L;
             float tmp_VE = 0.0;
             float tmp_VL = 0.0;
             float tmp_float;

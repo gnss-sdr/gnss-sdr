@@ -991,7 +991,11 @@ void dll_pll_veml_tracking_fpga::log_data()
             // Dump results to file
             float prompt_I;
             float prompt_Q;
-            float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
+            float tmp_VE;
+            float tmp_E;
+            float tmp_P;
+            float tmp_L;
+            float tmp_VL;
             float tmp_float;
             double tmp_double;
             uint64_t tmp_long_int;

@@ -98,7 +98,7 @@ private:
     size_t d_item_size;
     bool d_IQ_swap;
     boost::thread *d_pcap_thread;
-    void demux_samples(gr_vector_void_star output_items, int num_samples_readed);
+    void demux_samples(const gr_vector_void_star& output_items, int num_samples_readed);
     void my_pcap_loop_thread(pcap_t *pcap_handle);
     void pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
     static void static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);

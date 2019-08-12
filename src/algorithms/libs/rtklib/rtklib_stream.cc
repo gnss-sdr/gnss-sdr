@@ -86,8 +86,15 @@ serial_t *openserial(const char *path, int mode, char *msg)
     const int br[] = {
         300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400};
     serial_t *serial;
-    int i, brate = 9600, bsize = 8, stopb = 1;
-    char *p, parity = 'N', dev[128], port[128], fctr[64] = "";
+    int i;
+    int brate = 9600;
+    int bsize = 8;
+    int stopb = 1;
+    char *p;
+    char parity = 'N';
+    char dev[128];
+    char port[128];
+    char fctr[64] = "";
 
     const speed_t bs[] = {
         B300, B600, B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400};
@@ -240,7 +247,8 @@ int stateserial(serial_t *serial)
 int openfile_(file_t *file, gtime_t time, char *msg)
 {
     FILE *fp;
-    char *rw, tagpath[MAXSTRPATH + 4] = "";
+    char *rw;
+    char tagpath[MAXSTRPATH + 4] = "";
     char tagh[TIMETAGH_LEN + 1] = "";
 
     tracet(3, "openfile_: path=%s time=%s\n", file->path, time_str(time, 0));
@@ -362,8 +370,11 @@ void closefile_(file_t *file)
 file_t *openfile(const char *path, int mode, char *msg)
 {
     file_t *file;
-    gtime_t time, time0 = {0, 0.0};
-    double speed = 0.0, start = 0.0, swapintv = 0.0;
+    gtime_t time;
+    gtime_t time0 = {0, 0.0};
+    double speed = 0.0;
+    double start = 0.0;
+    double swapintv = 0.0;
     char *p;
     int timetag = 0;
 
@@ -512,7 +523,8 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
 {
     struct timeval tv = {0, 0};
     fd_set rs;
-    unsigned int t, tick;
+    unsigned int t;
+    unsigned int tick;
     int nr = 0;
     size_t fpos;
 
@@ -612,10 +624,15 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
 int writefile(file_t *file, unsigned char *buff, int n, char *msg)
 {
     gtime_t wtime;
-    unsigned int ns, tick = tickget();
-    int week1, week2;
-    double tow1, tow2, intv;
-    size_t fpos, fpos_tmp;
+    unsigned int ns;
+    unsigned int tick = tickget();
+    int week1;
+    int week2;
+    double tow1;
+    double tow2;
+    double intv;
+    size_t fpos;
+    size_t fpos_tmp;
 
     if (!file)
         {
@@ -697,7 +714,9 @@ void syncfile(file_t *file1, file_t *file2)
 void decodetcppath(const char *path, char *addr, char *port, char *user,
     char *passwd, char *mntpnt, char *str)
 {
-    char buff[MAXSTRPATH], *p, *q;
+    char buff[MAXSTRPATH];
+    char *p;
+    char *q;
 
     tracet(4, "decodetcpepath: path=%s\n", path);
 
@@ -791,7 +810,8 @@ int errsock(void) { return errno; }
 /* set socket option ---------------------------------------------------------*/
 int setsock(socket_t sock, char *msg)
 {
-    int bs = buffsize, mode = 1;
+    int bs = buffsize;
+    int mode = 1;
     struct timeval tv = {0, 0};
 
     tracet(3, "setsock: sock=%d\n", sock);
@@ -838,8 +858,10 @@ socket_t accept_nb(socket_t sock, struct sockaddr *addr, socklen_t *len)
 int connect_nb(socket_t sock, struct sockaddr *addr, socklen_t len)
 {
     struct timeval tv = {0, 0};
-    fd_set rs, ws;
-    int err, flag;
+    fd_set rs;
+    fd_set ws;
+    int err;
+    int flag;
 
     flag = fcntl(sock, F_GETFL, 0);
     if (fcntl(sock, F_SETFL, flag | O_NONBLOCK) == -1)
@@ -975,7 +997,8 @@ void discontcp(tcp_t *tcp, int tcon)
 /* open tcp server -----------------------------------------------------------*/
 tcpsvr_t *opentcpsvr(const char *path, char *msg)
 {
-    tcpsvr_t *tcpsvr, tcpsvr0{};
+    tcpsvr_t *tcpsvr;
+    tcpsvr_t tcpsvr0{};
     char port[256] = "";
     tracet(3, "opentcpsvr: path=%s\n", path);
 
@@ -1023,7 +1046,9 @@ void closetcpsvr(tcpsvr_t *tcpsvr)
 void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
 {
     char saddr[256] = "";
-    int i, j, n = 0;
+    int i;
+    int j;
+    int n = 0;
 
     tracet(3, "updatetcpsvr: state=%d\n", tcpsvr->svr.state);
 
@@ -1084,7 +1109,8 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
     };
     socket_t sock;
     socklen_t len = sizeof(addr);
-    int i, err;
+    int i;
+    int err;
 
     tracet(3, "accsock: sock=%d\n", tcpsvr->svr.sock);
 
@@ -1152,7 +1178,8 @@ int waittcpsvr(tcpsvr_t *tcpsvr, char *msg)
 /* read tcp server -----------------------------------------------------------*/
 int readtcpsvr(tcpsvr_t *tcpsvr, unsigned char *buff, int n, char *msg)
 {
-    int nr, err;
+    int nr;
+    int err;
 
     tracet(4, "readtcpsvr: state=%d n=%d\n", tcpsvr->svr.state, n);
 
@@ -1182,7 +1209,9 @@ int readtcpsvr(tcpsvr_t *tcpsvr, unsigned char *buff, int n, char *msg)
 /* write tcp server ----------------------------------------------------------*/
 int writetcpsvr(tcpsvr_t *tcpsvr, unsigned char *buff, int n, char *msg)
 {
-    int i, ns = 0, err;
+    int i;
+    int ns = 0;
+    int err;
 
     tracet(3, "writetcpsvr: state=%d n=%d\n", tcpsvr->svr.state, n);
 
@@ -1227,7 +1256,8 @@ int statetcpsvr(tcpsvr_t *tcpsvr)
 /* connect server ------------------------------------------------------------*/
 int consock(tcpcli_t *tcpcli, char *msg)
 {
-    int stat, err;
+    int stat;
+    int err;
 
     tracet(3, "consock: sock=%d\n", tcpcli->svr.sock);
 
@@ -1264,7 +1294,8 @@ int consock(tcpcli_t *tcpcli, char *msg)
 /* open tcp client -----------------------------------------------------------*/
 tcpcli_t *opentcpcli(const char *path, char *msg)
 {
-    tcpcli_t *tcpcli, tcpcli0{};
+    tcpcli_t *tcpcli;
+    tcpcli_t tcpcli0{};
     char port[256] = "";
 
     tracet(3, "opentcpcli: path=%s\n", path);
@@ -1340,7 +1371,8 @@ int waittcpcli(tcpcli_t *tcpcli, char *msg)
 /* read tcp client -----------------------------------------------------------*/
 int readtcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
 {
-    int nr, err;
+    int nr;
+    int err;
 
     tracet(4, "readtcpcli: sock=%d state=%d n=%d\n", tcpcli->svr.sock, tcpcli->svr.state, n);
 
@@ -1369,7 +1401,8 @@ int readtcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
 /* write tcp client ----------------------------------------------------------*/
 int writetcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
 {
-    int ns, err;
+    int ns;
+    int err;
 
     tracet(3, "writetcpcli: sock=%d state=%d n=%d\n", tcpcli->svr.sock, tcpcli->svr.state, n);
 
@@ -1407,7 +1440,10 @@ int encbase64(char *str, const unsigned char *byte, int n)
 {
     const char table[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    int i, j, k, b;
+    int i;
+    int j;
+    int k;
+    int b;
 
     tracet(4, "encbase64: n=%d\n", n);
 
@@ -1436,7 +1472,8 @@ int encbase64(char *str, const unsigned char *byte, int n)
 /* send ntrip server request -------------------------------------------------*/
 int reqntrip_s(ntrip_t *ntrip, char *msg)
 {
-    char buff[256 + NTRIP_MAXSTR], *p = buff;
+    char buff[256 + NTRIP_MAXSTR];
+    char *p = buff;
 
     tracet(3, "reqntrip_s: state=%d\n", ntrip->state);
 
@@ -1460,7 +1497,9 @@ int reqntrip_s(ntrip_t *ntrip, char *msg)
 /* send ntrip client request -------------------------------------------------*/
 int reqntrip_c(ntrip_t *ntrip, char *msg)
 {
-    char buff[1024], user[512], *p = buff;
+    char buff[1024];
+    char user[512];
+    char *p = buff;
 
     tracet(3, "reqntrip_c: state=%d\n", ntrip->state);
 
@@ -1496,8 +1535,10 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
 /* test ntrip server response ------------------------------------------------*/
 int rspntrip_s(ntrip_t *ntrip, char *msg)
 {
-    int i, nb;
-    char *p, *q;
+    int i;
+    int nb;
+    char *p;
+    char *q;
 
     tracet(3, "rspntrip_s: state=%d nb=%d\n", ntrip->state, ntrip->nb);
     ntrip->buff[ntrip->nb] = '0';
@@ -1553,7 +1594,8 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
 int rspntrip_c(ntrip_t *ntrip, char *msg)
 {
     int i;
-    char *p, *q;
+    char *p;
+    char *q;
 
     tracet(3, "rspntrip_c: state=%d nb=%d\n", ntrip->state, ntrip->nb);
     ntrip->buff[ntrip->nb] = '0';
@@ -1669,7 +1711,9 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
 {
     ntrip_t *ntrip;
     int i;
-    char addr[256] = "", port[256] = "", tpath[MAXSTRPATH];
+    char addr[256] = "";
+    char port[256] = "";
+    char tpath[MAXSTRPATH];
 
     tracet(3, "openntrip: path=%s type=%d\n", path, type);
 
@@ -1780,7 +1824,9 @@ int statentrip(ntrip_t *ntrip)
 void decodeftppath(const char *path, char *addr, char *file, char *user,
     char *passwd, int *topts)
 {
-    char buff[MAXSTRPATH], *p, *q;
+    char buff[MAXSTRPATH];
+    char *p;
+    char *q;
 
     tracet(4, "decodeftpath: path=%s\n", path);
 
@@ -1852,7 +1898,8 @@ gtime_t nextdltime(const int *topts, int stat)
 {
     gtime_t time;
     double tow;
-    int week, tint;
+    int week;
+    int tint;
 
     tracet(3, "nextdltime: topts=%d %d %d %d stat=%d\n", topts[0], topts[1],
         topts[2], topts[3], stat);
@@ -1882,8 +1929,16 @@ void *ftpthread(void *arg)
     auto *ftp = static_cast<ftp_t *>(arg);
     FILE *fp;
     gtime_t time;
-    char remote[1024], local[1024], tmpfile[1024], errfile[1024], *p;
-    char cmd[2048], env[1024] = "", opt[1024], *proxyopt = (char *)"", *proto;
+    char remote[1024];
+    char local[1024];
+    char tmpfile[1024];
+    char errfile[1024];
+    char *p;
+    char cmd[2048];
+    char env[1024] = "";
+    char opt[1024];
+    char *proxyopt = (char *)"";
+    char *proto;
     int ret;
 
     tracet(3, "ftpthread:\n");
@@ -2097,7 +2152,8 @@ void closeftp(ftp_t *ftp)
 int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
 {
     gtime_t time;
-    unsigned char *p, *q;
+    unsigned char *p;
+    unsigned char *q;
 
     tracet(4, "readftp: n=%d\n", n);
 
@@ -2339,7 +2395,8 @@ void strclose(stream_t *stream)
  *-----------------------------------------------------------------------------*/
 void strsync(stream_t *stream1, stream_t *stream2)
 {
-    file_t *file1, *file2;
+    file_t *file1;
+    file_t *file2;
     if (stream1->type != STR_FILE || stream2->type != STR_FILE)
         {
             return;
@@ -2710,7 +2767,8 @@ void strsendnmea(stream_t *stream, const double *pos)
 {
     sol_t sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     unsigned char buff[1024];
-    int i, n;
+    int i;
+    int n;
 
     tracet(3, "strsendnmea: pos=%.3f %.3f %.3f\n", pos[0], pos[1], pos[2]);
 
@@ -2729,9 +2787,12 @@ void strsendnmea(stream_t *stream, const double *pos)
 int gen_hex(const char *msg, unsigned char *buff)
 {
     unsigned char *q = buff;
-    char mbuff[1024] = "", *args[256], *p;
+    char mbuff[1024] = "";
+    char *args[256];
+    char *p;
     unsigned int byte;
-    int i, narg = 0;
+    int i;
+    int narg = 0;
 
     trace(4, "gen_hex: msg=%s\n", msg);
 
@@ -2760,9 +2821,13 @@ int gen_hex(const char *msg, unsigned char *buff)
 void strsendcmd(stream_t *str, const char *cmd)
 {
     unsigned char buff[1024];
-    const char *p = cmd, *q;
-    char msg[1024], cmdend[] = "\r\n";
-    int n, m, ms;
+    const char *p = cmd;
+    const char *q;
+    char msg[1024];
+    char cmdend[] = "\r\n";
+    int n;
+    int m;
+    int ms;
 
     tracet(3, "strsendcmd: cmd=%s\n", cmd);
 

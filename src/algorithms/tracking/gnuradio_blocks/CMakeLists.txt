@@ -109,7 +109,7 @@ if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
     )
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Rel)
+if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(tracking_gr_blocks
         PUBLIC -DARMA_NO_BOUND_CHECKING=1
     )

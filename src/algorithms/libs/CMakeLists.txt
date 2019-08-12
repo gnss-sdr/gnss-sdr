@@ -118,7 +118,7 @@ if(ENABLE_OPENCL)
     )
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Rel)
+if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(algorithms_libs
         PUBLIC -DARMA_NO_BOUND_CHECKING=1
     )

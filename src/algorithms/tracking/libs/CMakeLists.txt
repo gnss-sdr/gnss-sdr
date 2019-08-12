@@ -134,7 +134,7 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Rel)
+if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(tracking_libs
         PUBLIC -DARMA_NO_BOUND_CHECKING=1
     )

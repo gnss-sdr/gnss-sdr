@@ -121,7 +121,7 @@ NativeInteger_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 	rval.consumed += length;
 
 	ASN_DEBUG("Took %ld/%ld bytes to encode %s (%ld)",
-		(long)rval.consumed, (long)length, td->name, *native);
+		(long)rval.consumed, (long)length, td->name, (long)*native);
 
 	return rval;
 }

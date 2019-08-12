@@ -250,7 +250,8 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
     double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    double corrected_acq_phase_samples, delay_correction_samples;
+    double corrected_acq_phase_samples;
+    double delay_correction_samples;
     corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<double>(d_fs_in)), T_prn_true_samples);
     if (corrected_acq_phase_samples < 0)
         {
@@ -832,7 +833,9 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
             // MULTIPLEXED FILE RECORDING - Record results to file
             float prompt_I;
             float prompt_Q;
-            float tmp_E, tmp_P, tmp_L;
+            float tmp_E;
+            float tmp_P;
+            float tmp_L;
             float tmp_VE = 0.0;
             float tmp_VL = 0.0;
             float tmp_float;

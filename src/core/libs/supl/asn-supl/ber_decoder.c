@@ -131,7 +131,7 @@ ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
 		case 0: RETURN(RC_WMORE);
 		}
 		ASN_DEBUG("Advancing %ld in ANY case",
-			(tag_len + len_len));
+			(long)(tag_len + len_len));
 		ADVANCE(tag_len + len_len);
 	} else {
 		assert(tagno < td->tags_count);	/* At least one loop */

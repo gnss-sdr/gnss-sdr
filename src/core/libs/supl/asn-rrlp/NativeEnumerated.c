@@ -141,7 +141,8 @@ NativeEnumerated_encode_uper(asn_TYPE_descriptor_t *td,
 	asn_per_constraints_t *constraints, void *sptr, asn_per_outp_t *po) {
 	asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
 	asn_enc_rval_t er;
-	long native, value;
+	long native;
+	long value;
 	asn_per_constraint_t *ct;
 	int inext = 0;
 	asn_INTEGER_enum_map_t key;

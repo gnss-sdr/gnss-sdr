@@ -130,7 +130,8 @@ beidou_b1i_telemetry_decoder_gs::~beidou_b1i_telemetry_decoder_gs()
 
 void beidou_b1i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits)
 {
-    int32_t bit, err;
+    int32_t bit;
+    int32_t err;
     std::array<int32_t, 4> reg{1, 1, 1, 1};
     const std::array<int32_t, 15> errind{14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
 

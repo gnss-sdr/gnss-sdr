@@ -137,7 +137,11 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
     //        }
     //    str_stream << "--------------------------------------------------------\n";
 
-    double longitude_deg, latitude_deg, height_m, ground_speed_kmh, course_over_ground_deg;
+    double longitude_deg;
+    double latitude_deg;
+    double height_m;
+    double ground_speed_kmh;
+    double course_over_ground_deg;
     time_t UTC_time;
     if (PVT_sptr_->get_latest_PVT(&longitude_deg,
             &latitude_deg,

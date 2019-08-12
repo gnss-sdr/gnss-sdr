@@ -327,7 +327,8 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
     if (eph_it != eph_map.end())
         {
             arma::vec SV_pos_ecef = "0.0 0.0 0.0 0.0";
-            double obs_time_start, obs_time_stop;
+            double obs_time_start;
+            double obs_time_stop;
             obs_time_start = TOW - num_secs / 2;
             obs_time_stop = TOW + num_secs / 2;
             int n_points = round((obs_time_stop - obs_time_start) / step_secs);

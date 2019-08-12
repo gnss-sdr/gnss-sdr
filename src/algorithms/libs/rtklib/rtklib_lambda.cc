@@ -57,8 +57,12 @@
 /* LD factorization (Q=L'*diag(D)*L) -----------------------------------------*/
 int LD(int n, const double *Q, double *L, double *D)
 {
-    int i, j, k, info = 0;
-    double a, *A = mat(n, n);
+    int i;
+    int j;
+    int k;
+    int info = 0;
+    double a;
+    double *A = mat(n, n);
 
     memcpy(A, Q, sizeof(double) * n * n);
     for (i = n - 1; i >= 0; i--)
@@ -97,7 +101,8 @@ int LD(int n, const double *Q, double *L, double *D)
 /* integer gauss transformation ----------------------------------------------*/
 void gauss(int n, double *L, double *Z, int i, int j)
 {
-    int k, mu;
+    int k;
+    int mu;
 
     if ((mu = static_cast<int> ROUND_LAMBDA(L[i + j * n])) != 0)
         {
@@ -117,7 +122,10 @@ void gauss(int n, double *L, double *Z, int i, int j)
 void perm(int n, double *L, double *D, int j, double del, double *Z)
 {
     int k;
-    double eta, lam, a0, a1;
+    double eta;
+    double lam;
+    double a0;
+    double a1;
 
     eta = D[j] / del;
     lam = D[j + 1] * L[j + 1 + j * n] / del;
@@ -145,7 +153,9 @@ void perm(int n, double *L, double *D, int j, double del, double *Z)
 /* lambda reduction (z=Z'*a, Qz=Z'*Q*Z=L'*diag(D)*L) (ref.[1]) ---------------*/
 void reduction(int n, double *L, double *D, double *Z)
 {
-    int i, j, k;
+    int i;
+    int j;
+    int k;
     double del;
 
     j = n - 2;
@@ -178,9 +188,20 @@ void reduction(int n, double *L, double *D, double *Z)
 int search(int n, int m, const double *L, const double *D,
     const double *zs, double *zn, double *s)
 {
-    int i, j, k, c, nn = 0, imax = 0;
-    double newdist, maxdist = 1E99, y;
-    double *S = zeros(n, n), *dist = mat(n, 1), *zb = mat(n, 1), *z = mat(n, 1), *step = mat(n, 1);
+    int i;
+    int j;
+    int k;
+    int c;
+    int nn = 0;
+    int imax = 0;
+    double newdist;
+    double maxdist = 1E99;
+    double y;
+    double *S = zeros(n, n);
+    double *dist = mat(n, 1);
+    double *zb = mat(n, 1);
+    double *z = mat(n, 1);
+    double *step = mat(n, 1);
 
     k = n - 1;
     dist[k] = 0.0;
@@ -302,7 +323,11 @@ int lambda(int n, int m, const double *a, const double *Q, double *F,
     double *s)
 {
     int info;
-    double *L, *D, *Z, *z, *E;
+    double *L;
+    double *D;
+    double *Z;
+    double *z;
+    double *E;
 
     if (n <= 0 || m <= 0)
         {
@@ -345,8 +370,11 @@ int lambda(int n, int m, const double *a, const double *Q, double *F,
  *-----------------------------------------------------------------------------*/
 int lambda_reduction(int n, const double *Q, double *Z)
 {
-    double *L, *D;
-    int i, j, info;
+    double *L;
+    double *D;
+    int i;
+    int j;
+    int info;
 
     if (n <= 0)
         {
@@ -392,7 +420,8 @@ int lambda_reduction(int n, const double *Q, double *Z)
 int lambda_search(int n, int m, const double *a, const double *Q,
     double *F, double *s)
 {
-    double *L, *D;
+    double *L;
+    double *D;
     int info;
 
     if (n <= 0 || m <= 0)

@@ -59,7 +59,7 @@ IA5String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 					"%s: value byte %ld out of range: "
 					"%d > 127 (%s:%d)",
 					td->name,
-					((buf - st->buf) + 1),
+					(long)((buf - st->buf) + 1),
 					*buf,
 					__FILE__, __LINE__);
 				return -1;

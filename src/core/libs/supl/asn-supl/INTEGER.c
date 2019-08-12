@@ -227,7 +227,9 @@ static int
 INTEGER__compar_enum2value(const void *kp, const void *am) {
 	const struct e2v_key *key = (const struct e2v_key *)kp;
 	const asn_INTEGER_enum_map_t *el = (const asn_INTEGER_enum_map_t *)am;
-	const char *ptr, *end, *name;
+	const char *ptr;
+	const char *end;
+	const char *name;
 
 	/* Remap the element (sort by different criterion) */
 	el = key->vemap + key->evmap[el - key->vemap];
@@ -763,7 +765,8 @@ INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
 
 int
 asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
-	uint8_t *b, *end;
+	uint8_t *b;
+	uint8_t *end;
 	size_t size;
 	long l;
 
@@ -823,7 +826,8 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 
 int
 asn_INTEGER2ulong(const INTEGER_t *iptr, unsigned long *lptr) {
-	uint8_t *b, *end;
+	uint8_t *b;
+	uint8_t *end;
 	unsigned long l;
 	size_t size;
 
@@ -880,7 +884,8 @@ asn_ulong2INTEGER(INTEGER_t *st, unsigned long value) {
 
 int
 asn_long2INTEGER(INTEGER_t *st, long value) {
-	uint8_t *buf, *bp;
+	uint8_t *buf;
+	uint8_t *bp;
 	uint8_t *p;
 	uint8_t *pstart;
 	uint8_t *pend1;

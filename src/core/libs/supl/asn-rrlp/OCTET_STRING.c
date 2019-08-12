@@ -242,16 +242,18 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 		ber_tlv_tag_t tlv_tag;
 		ber_tlv_len_t tlv_len;
 		ber_tlv_tag_t expected_tag;
-		ssize_t tl, ll, tlvl;
+		ssize_t tl;
+		ssize_t ll;
+		ssize_t tlvl;
 				/* This one works even if (sel->left == -1) */
 		ssize_t Left = ((!sel||(size_t)sel->left >= size)
 					?(ssize_t)size:sel->left);
 
 
 		ASN_DEBUG("%p, s->l=%ld, s->wn=%ld, s->g=%ld\n", sel,
-			(sel?sel->left:0),
+			(long)(sel?sel->left:0),
 			(long)(sel?sel->want_nulls:0),
-			(sel?sel->got:0)
+			(long)(sel?sel->got:0)
 		);
 		if(sel && sel->left <= 0 && sel->want_nulls == 0) {
 			if(sel->prev) {
@@ -275,7 +277,7 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 		tl = ber_fetch_tag(buf_ptr, Left, &tlv_tag);
 		ASN_DEBUG("fetch tag(size=%ld,L=%ld), %sstack, left=%ld, wn=%ld, tl=%ld",
 			(long)size, (long)Left, sel?"":"!",
-			(sel?sel->left:0),
+			(long)(sel?sel->left:0),
 			(long)(sel?sel->want_nulls:0),
 			(long)tl);
 		switch(tl) {
@@ -738,7 +740,8 @@ OCTET_STRING_encode_xer_utf8(asn_TYPE_descriptor_t *td, void *sptr,
 		asn_app_consume_bytes_f *cb, void *app_key) {
 	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
 	asn_enc_rval_t er;
-	uint8_t *buf, *end;
+	uint8_t *buf;
+	uint8_t *end;
 	uint8_t *ss;	/* Sequence start */
 	ssize_t encoded_len = 0;
 
@@ -1273,7 +1276,7 @@ OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
 			int code;
 			uint32_t value;
 			switch(bpc) {
-			case 1: value = *buf; break;
+			case 1: value = *(const uint8_t *)buf; break;
 			case 2: value = (buf[0] << 8) | buf[1]; break;
 			case 4: value = (buf[0] << 24) | (buf[1] << 16)
 					| (buf[2] << 8) | buf[3]; break;
@@ -1300,7 +1303,7 @@ OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
 		int ch;
 		uint32_t value;
 		switch(bpc) {
-		case 1: value = *buf; break;
+		case 1: value = *(const uint8_t *)buf; break;
 		case 2: value = (buf[0] << 8) | buf[1]; break;
 		case 4: value = (buf[0] << 24) | (buf[1] << 16)
 				| (buf[2] << 8) | buf[3]; break;

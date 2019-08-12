@@ -629,20 +629,20 @@ data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file, const char *na
 		switch(iform) {
 		case INP_BER:
 			rval = ber_decode(opt_codec_ctx, pduType,
-				&structure, i_bptr, i_size);
+				(void **)&structure, i_bptr, i_size);
 			break;
 		case INP_XER:
 			rval = xer_decode(opt_codec_ctx, pduType,
-				&structure, i_bptr, i_size);
+				(void **)&structure, i_bptr, i_size);
 			break;
 		case INP_PER:
 			if(opt_nopad)
 			rval = uper_decode(opt_codec_ctx, pduType,
-				&structure, i_bptr, i_size, 0,
+				(void **)&structure, i_bptr, i_size, 0,
 				DynamicBuffer.unbits);
 			else
 			rval = uper_decode_complete(opt_codec_ctx, pduType,
-				&structure, i_bptr, i_size);
+				(void **)&structure, i_bptr, i_size);
 			switch(rval.code) {
 			case RC_OK:
 				/* Fall through */

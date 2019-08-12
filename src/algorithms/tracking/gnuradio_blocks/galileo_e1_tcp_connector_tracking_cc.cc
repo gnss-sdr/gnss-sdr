@@ -479,7 +479,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             // MULTIPLEXED FILE RECORDING - Record results to file
             float prompt_I;
             float prompt_Q;
-            float tmp_E, tmp_P, tmp_L;
+            float tmp_E;
+            float tmp_P;
+            float tmp_L;
             float tmp_VE = 0.0;
             float tmp_VL = 0.0;
             float tmp_float;

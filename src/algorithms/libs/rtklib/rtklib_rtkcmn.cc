@@ -396,7 +396,8 @@ int satsys(int sat, int *prn)
  *-----------------------------------------------------------------------------*/
 int satid2no(const char *id)
 {
-    int sys, prn;
+    int sys;
+    int prn;
     char code;
 
     if (sscanf(id, "%d", &prn) == 1)
@@ -564,7 +565,8 @@ int satexclude(int sat, int svh, const prcopt_t *opt)
 int testsnr(int base, int freq, double el, double snr,
     const snrmask_t *mask)
 {
-    double minsnr, a;
+    double minsnr;
+    double a;
     int i;
 
     if (!mask->ena[base] || freq < 0 || freq >= NFREQ)
@@ -713,9 +715,12 @@ void setcodepri(int sys, int freq, const char *pri)
  *-----------------------------------------------------------------------------*/
 int getcodepri(int sys, unsigned char code, const char *opt)
 {
-    const char *p, *optstr;
-    char *obs, str[8] = "";
-    int i, j;
+    const char *p;
+    const char *optstr;
+    char *obs;
+    char str[8] = "";
+    int i;
+    int j;
 
     switch (sys)
         {
@@ -850,7 +855,8 @@ void setbits(unsigned char *buff, int pos, int len, int data)
 unsigned int rtk_crc32(const unsigned char *buff, int len)
 {
     unsigned int crc = 0;
-    int i, j;
+    int i;
+    int j;
 
     trace(4, "rtk_crc32: len=%d\n", len);
 
@@ -930,7 +936,8 @@ int decode_word(unsigned int word, unsigned char *data)
 {
     const unsigned int hamming[] = {
         0xBB1F3480, 0x5D8F9A40, 0xAEC7CD00, 0x5763E680, 0x6BB1F340, 0x8B7A89C0};
-    unsigned int parity = 0, w;
+    unsigned int parity = 0;
+    unsigned int w;
     int i;
 
     trace(5, "decodeword: word=%08x\n", word);
@@ -1142,7 +1149,8 @@ void matcpy(double *A, const double *B, int n, int m)
 void matmul(const char *tr, int n, int k, int m, double alpha,
     const double *A, const double *B, double beta, double *C)
 {
-    int lda = tr[0] == 'T' ? m : n, ldb = tr[1] == 'T' ? k : m;
+    int lda = tr[0] == 'T' ? m : n;
+    int ldb = tr[1] == 'T' ? k : m;
 
     dgemm_(const_cast<char *>(tr), const_cast<char *>(tr) + 1, &n, &k, &m, &alpha, const_cast<double *>(A), &lda, const_cast<double *>(B),
         &ldb, &beta, C, &n);
@@ -1158,7 +1166,9 @@ void matmul(const char *tr, int n, int k, int m, double alpha,
 int matinv(double *A, int n)
 {
     double *work;
-    int info, lwork = n * 16, *ipiv = imat(n, 1);
+    int info;
+    int lwork = n * 16;
+    int *ipiv = imat(n, 1);
 
     work = mat(lwork, 1);
     dgetrf_(&n, &n, A, &n, ipiv, &info);
@@ -1187,7 +1197,8 @@ int solve(const char *tr, const double *A, const double *Y, int n,
     int m, double *X)
 {
     double *B = mat(n, n);
-    int info, *ipiv = imat(n, 1);
+    int info;
+    int *ipiv = imat(n, 1);
 
     matcpy(B, A, n, n);
     matcpy(X, Y, n, m);
@@ -1258,7 +1269,10 @@ int filter_(const double *x, const double *P, const double *H,
     const double *v, const double *R, int n, int m,
     double *xp, double *Pp)
 {
-    double *F = mat(n, m), *Q = mat(m, m), *K = mat(n, m), *I = eye(n);
+    double *F = mat(n, m);
+    double *Q = mat(m, m);
+    double *K = mat(n, m);
+    double *I = eye(n);
     int info;
 
     matcpy(Q, R, m, m);
@@ -1283,8 +1297,16 @@ int filter_(const double *x, const double *P, const double *H,
 int filter(double *x, double *P, const double *H, const double *v,
     const double *R, int n, int m)
 {
-    double *x_, *xp_, *P_, *Pp_, *H_;
-    int i, j, k, info, *ix;
+    double *x_;
+    double *xp_;
+    double *P_;
+    double *Pp_;
+    double *H_;
+    int i;
+    int j;
+    int k;
+    int info;
+    int *ix;
 
     ix = imat(n, 1);
     for (i = k = 0; i < n; i++)
@@ -1349,8 +1371,11 @@ int filter(double *x, double *P, const double *H, const double *v,
 int smoother(const double *xf, const double *Qf, const double *xb,
     const double *Qb, int n, double *xs, double *Qs)
 {
-    double *invQf = mat(n, n), *invQb = mat(n, n), *xx = mat(n, 1);
-    int i, info = -1;
+    double *invQf = mat(n, n);
+    double *invQb = mat(n, n);
+    double *xx = mat(n, 1);
+    int i;
+    int info = -1;
 
     matcpy(invQf, Qf, n, n);
     matcpy(invQb, Qb, n, n);
@@ -1385,7 +1410,8 @@ int smoother(const double *xf, const double *Qf, const double *xb,
  *-----------------------------------------------------------------------------*/
 void matfprint(const double A[], int n, int m, int p, int q, FILE *fp)
 {
-    int i, j;
+    int i;
+    int j;
 
     for (i = 0; i < n; i++)
         {
@@ -1399,7 +1425,8 @@ void matfprint(const double A[], int n, int m, int p, int q, FILE *fp)
 
 void matsprint(const double A[], int n, int m, int p, int q, std::string &buffer)
 {
-    int i, j;
+    int i;
+    int j;
     buffer += '\n';
     for (i = 0; i < n; i++)
         {
@@ -1430,7 +1457,8 @@ void matprint(const double A[], int n, int m, int p, int q)
 double str2num(const char *s, int i, int n)
 {
     double value;
-    char str[256], *p = str;
+    char str[256];
+    char *p = str;
 
     if (i < 0 || static_cast<int>(strlen(s)) < i || static_cast<int>(sizeof(str)) - 1 < n)
         {
@@ -1455,7 +1483,8 @@ double str2num(const char *s, int i, int n)
 int str2time(const char *s, int i, int n, gtime_t *t)
 {
     double ep[6];
-    char str[256], *p = str;
+    char str[256];
+    char *p = str;
 
     if (i < 0 || static_cast<int>(strlen(s)) < i || static_cast<int>(sizeof(str)) - 1 < i)
         {
@@ -1489,7 +1518,11 @@ gtime_t epoch2time(const double *ep)
 {
     const int doy[] = {1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
     gtime_t time = {0, 0};
-    int days, sec, year = static_cast<int>(ep[0]), mon = static_cast<int>(ep[1]), day = static_cast<int>(ep[2]);
+    int days;
+    int sec;
+    int year = static_cast<int>(ep[0]);
+    int mon = static_cast<int>(ep[1]);
+    int day = static_cast<int>(ep[2]);
 
     if (year < 1970 || 2099 < year || mon < 1 || 12 < mon)
         {
@@ -1517,7 +1550,10 @@ void time2epoch(gtime_t t, double *ep)
     const int mday[] = {/* # of days in a month */
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
         31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int days, sec, mon, day;
+    int days;
+    int sec;
+    int mon;
+    int day;
 
     /* leap year if year%4==0 in 1901-2099 */
     days = static_cast<int>(t.time / 86400);
@@ -1760,8 +1796,12 @@ void timeset(gtime_t t)
 /* read leap seconds table by text -------------------------------------------*/
 int read_leaps_text(FILE *fp)
 {
-    char buff[256], *p;
-    int i, n = 0, ep[6], ls;
+    char buff[256];
+    char *p;
+    int i;
+    int n = 0;
+    int ep[6];
+    int ls;
 
     rewind(fp);
 
@@ -1791,9 +1831,17 @@ int read_leaps_usno(FILE *fp)
 {
     static const char *months[] = {
         "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-    double jd, tai_utc;
-    char buff[256], month[32], ls[MAXLEAPS][7] = {};
-    int i, j, y, m, d, n = 0;
+    double jd;
+    double tai_utc;
+    char buff[256];
+    char month[32];
+    char ls[MAXLEAPS][7] = {};
+    int i;
+    int j;
+    int y;
+    int m;
+    int d;
+    int n = 0;
 
     rewind(fp);
 
@@ -1849,7 +1897,8 @@ int read_leaps_usno(FILE *fp)
 int read_leaps(const char *file)
 {
     FILE *fp;
-    int i, n;
+    int i;
+    int n;
 
     if (!(fp = fopen(file, "re")))
         {
@@ -1944,7 +1993,8 @@ gtime_t bdt2gpst(gtime_t t)
 /* time to day and sec -------------------------------------------------------*/
 double time2sec(gtime_t time, gtime_t *day)
 {
-    double ep[6], sec;
+    double ep[6];
+    double sec;
     time2epoch(time, ep);
     sec = ep[3] * 3600.0 + ep[4] * 60.0 + ep[5];
     ep[3] = ep[4] = ep[5] = 0.0;
@@ -1962,8 +2012,14 @@ double time2sec(gtime_t time, gtime_t *day)
 double utc2gmst(gtime_t t, double ut1_utc)
 {
     const double ep2000[] = {2000, 1, 1, 12, 0, 0};
-    gtime_t tut, tut0;
-    double ut, t1, t2, t3, gmst0, gmst;
+    gtime_t tut;
+    gtime_t tut0;
+    double ut;
+    double t1;
+    double t2;
+    double t3;
+    double gmst0;
+    double gmst;
 
     tut = timeadd(t, ut1_utc);
     ut = time2sec(tut, &tut0);
@@ -2120,7 +2176,8 @@ void sleepms(int ms)
  *-----------------------------------------------------------------------------*/
 void deg2dms(double deg, double *dms, int ndec)
 {
-    double sign = deg < 0.0 ? -1.0 : 1.0, a = fabs(deg);
+    double sign = deg < 0.0 ? -1.0 : 1.0;
+    double a = fabs(deg);
     double unit = pow(0.1, ndec);
     dms[0] = floor(a);
     a = (a - dms[0]) * 60.0;
@@ -2142,7 +2199,8 @@ void deg2dms(double deg, double *dms, int ndec)
 
 void deg2dms(double deg, double *dms)
 {
-    double sign = deg < 0.0 ? -1.0 : 1.0, a = fabs(deg);
+    double sign = deg < 0.0 ? -1.0 : 1.0;
+    double a = fabs(deg);
     dms[0] = floor(a);
     a = (a - dms[0]) * 60.0;
     dms[1] = floor(a);
@@ -2172,7 +2230,12 @@ double dms2deg(const double *dms)
  *-----------------------------------------------------------------------------*/
 void ecef2pos(const double *r, double *pos)
 {
-    double e2 = FE_WGS84 * (2.0 - FE_WGS84), r2 = dot(r, r, 2), z, zk, v = RE_WGS84, sinp;
+    double e2 = FE_WGS84 * (2.0 - FE_WGS84);
+    double r2 = dot(r, r, 2);
+    double z;
+    double zk;
+    double v = RE_WGS84;
+    double sinp;
 
     for (z = r[2], zk = 0.0; fabs(z - zk) >= 1e-4;)
         {
@@ -2196,8 +2259,12 @@ void ecef2pos(const double *r, double *pos)
  *-----------------------------------------------------------------------------*/
 void pos2ecef(const double *pos, double *r)
 {
-    double sinp = sin(pos[0]), cosp = cos(pos[0]), sinl = sin(pos[1]), cosl = cos(pos[1]);
-    double e2 = FE_WGS84 * (2.0 - FE_WGS84), v = RE_WGS84 / sqrt(1.0 - e2 * sinp * sinp);
+    double sinp = sin(pos[0]);
+    double cosp = cos(pos[0]);
+    double sinl = sin(pos[1]);
+    double cosl = cos(pos[1]);
+    double e2 = FE_WGS84 * (2.0 - FE_WGS84);
+    double v = RE_WGS84 / sqrt(1.0 - e2 * sinp * sinp);
 
     r[0] = (v + pos[2]) * cosp * cosl;
     r[1] = (v + pos[2]) * cosp * sinl;
@@ -2214,7 +2281,10 @@ void pos2ecef(const double *pos, double *r)
  *-----------------------------------------------------------------------------*/
 void xyz2enu(const double *pos, double *E)
 {
-    double sinp = sin(pos[0]), cosp = cos(pos[0]), sinl = sin(pos[1]), cosl = cos(pos[1]);
+    double sinp = sin(pos[0]);
+    double cosp = cos(pos[0]);
+    double sinl = sin(pos[1]);
+    double cosl = cos(pos[1]);
 
     E[0] = -sinl;
     E[3] = cosl;
@@ -2269,7 +2339,8 @@ void enu2ecef(const double *pos, const double *e, double *r)
  *-----------------------------------------------------------------------------*/
 void covenu(const double *pos, const double *P, double *Q)
 {
-    double E[9], EP[9];
+    double E[9];
+    double EP[9];
 
     xyz2enu(pos, E);
     matmul("NN", 3, 3, 3, 1.0, E, P, 0.0, EP);
@@ -2286,7 +2357,8 @@ void covenu(const double *pos, const double *P, double *Q)
  *-----------------------------------------------------------------------------*/
 void covecef(const double *pos, const double *Q, double *P)
 {
-    double E[9], EQ[9];
+    double E[9];
+    double EQ[9];
 
     xyz2enu(pos, E);
     matmul("TN", 3, 3, 3, 1.0, E, Q, 0.0, EQ);
@@ -2304,7 +2376,8 @@ void ast_args(double t, double *f)
         {297.85019547, 1602961601.2090, -6.3706, 0.006593, -0.00003169},
         {125.04455501, -6962890.2665, 7.4722, 0.007702, -0.00005939}};
     double tt[4];
-    int i, j;
+    int i;
+    int j;
 
     for (tt[0] = t, i = 1; i < 4; i++)
         {
@@ -2433,7 +2506,8 @@ void nut_iau1980(double t, const double *f, double *dpsi, double *deps)
         {-1, -1, 0, 2, 1, 35.0, 1, 0.0, 0, 0.0},
         {0, 1, 0, 1, 0, 27.3, 1, 0.0, 0, 0.0}};
     double ang;
-    int i, j;
+    int i;
+    int j;
 
     *dpsi = *deps = 0.0;
 
@@ -2467,10 +2541,28 @@ void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst)
 {
     const double ep2000[] = {2000, 1, 1, 12, 0, 0};
     static gtime_t tutc_;
-    static double U_[9], gmst_;
+    static double U_[9];
+    static double gmst_;
     gtime_t tgps;
-    double eps, ze, th, z, t, t2, t3, dpsi, deps, gast, f[5];
-    double R1[9], R2[9], R3[9], R[9], W[9], N[9], P[9], NP[9];
+    double eps;
+    double ze;
+    double th;
+    double z;
+    double t;
+    double t2;
+    double t3;
+    double dpsi;
+    double deps;
+    double gast;
+    double f[5];
+    double R1[9];
+    double R2[9];
+    double R3[9];
+    double R[9];
+    double W[9];
+    double N[9];
+    double P[9];
+    double NP[9];
     int i;
 
     trace(4, "eci2ecef: tutc=%s\n", time_str(tutc, 3));
@@ -2674,7 +2766,11 @@ int readantex(const char *file, pcvs_t *pcvs)
     static const pcv_t pcv0 = {0, {}, {}, {0, 0}, {0, 0}, {{}, {}}, {{}, {}}};
     pcv_t pcv = {0, {}, {}, {0, 0}, {0, 0}, {{}, {}}, {{}, {}}};
     double neu[3];
-    int i, f, freq = 0, state = 0, freqs[] = {1, 2, 5, 6, 7, 8, 0};
+    int i;
+    int f;
+    int freq = 0;
+    int state = 0;
+    int freqs[] = {1, 2, 5, 6, 7, 8, 0};
     char buff[256];
 
     trace(3, "readantex: file=%s\n", file);
@@ -2803,7 +2899,8 @@ int readpcv(const char *file, pcvs_t *pcvs)
 {
     pcv_t *pcv;
     const char *ext;
-    int i, stat;
+    int i;
+    int stat;
 
     trace(3, "readpcv: file=%s\n", file);
 
@@ -2843,8 +2940,12 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
     const pcvs_t *pcvs)
 {
     pcv_t *pcv;
-    char buff[MAXANT] = "", *types[2], *p;
-    int i, j, n = 0;
+    char buff[MAXANT] = "";
+    char *types[2];
+    char *p;
+    int i;
+    int j;
+    int n = 0;
 
     trace(3, "searchpcv: sat=%2d type=%s\n", sat, type);
 
@@ -2934,8 +3035,12 @@ void readpos(const char *file, const char *rcv, double *pos)
     static double poss[2048][3];
     static char stas[2048][16];
     FILE *fp;
-    int i, j, len, np = 0;
-    char buff[256], str[256];
+    int i;
+    int j;
+    int len;
+    int np = 0;
+    char buff[256];
+    char str[256];
 
     trace(3, "readpos: file=%s\n", file);
 
@@ -2984,7 +3089,8 @@ int readblqrecord(FILE *fp, double *odisp)
 {
     double v[11];
     char buff[256];
-    int i, n = 0;
+    int i;
+    int n = 0;
 
     while (fgets(buff, sizeof(buff), fp))
         {
@@ -3020,7 +3126,10 @@ int readblqrecord(FILE *fp, double *odisp)
 int readblq(const char *file, const char *sta, double *odisp)
 {
     FILE *fp;
-    char buff[256], staname[32] = "", name[32], *p;
+    char buff[256];
+    char staname[32] = "";
+    char name[32];
+    char *p;
 
     /* station name to upper case */
     sscanf(sta, "%16s", staname);
@@ -3131,8 +3240,12 @@ int readerp(const char *file, erp_t *erp)
 int geterp(const erp_t *erp, gtime_t time, double *erpv)
 {
     const double ep[] = {2000, 1, 1, 12, 0, 0};
-    double mjd, day, a;
-    int i, j, k;
+    double mjd;
+    double day;
+    double a;
+    int i;
+    int j;
+    int k;
 
     trace(4, "geterp:\n");
 
@@ -3191,7 +3304,8 @@ int geterp(const erp_t *erp, gtime_t time, double *erpv)
 /* compare ephemeris ---------------------------------------------------------*/
 int cmpeph(const void *p1, const void *p2)
 {
-    auto *q1 = (eph_t *)p1, *q2 = (eph_t *)p2;
+    auto *q1 = (eph_t *)p1;
+    auto *q2 = (eph_t *)p2;
     return q1->ttr.time != q2->ttr.time ? static_cast<int>(q1->ttr.time - q2->ttr.time) : (q1->toe.time != q2->toe.time ? static_cast<int>(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -3200,7 +3314,8 @@ int cmpeph(const void *p1, const void *p2)
 void uniqeph(nav_t *nav)
 {
     eph_t *nav_eph;
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "uniqeph: n=%d\n", nav->n);
 
@@ -3239,7 +3354,8 @@ void uniqeph(nav_t *nav)
 /* compare glonass ephemeris -------------------------------------------------*/
 int cmpgeph(const void *p1, const void *p2)
 {
-    auto *q1 = (geph_t *)p1, *q2 = (geph_t *)p2;
+    auto *q1 = (geph_t *)p1;
+    auto *q2 = (geph_t *)p2;
     return q1->tof.time != q2->tof.time ? static_cast<int>(q1->tof.time - q2->tof.time) : (q1->toe.time != q2->toe.time ? static_cast<int>(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -3248,7 +3364,8 @@ int cmpgeph(const void *p1, const void *p2)
 void uniqgeph(nav_t *nav)
 {
     geph_t *nav_geph;
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "uniqgeph: ng=%d\n", nav->ng);
 
@@ -3288,7 +3405,8 @@ void uniqgeph(nav_t *nav)
 /* compare sbas ephemeris ----------------------------------------------------*/
 int cmpseph(const void *p1, const void *p2)
 {
-    auto *q1 = (seph_t *)p1, *q2 = (seph_t *)p2;
+    auto *q1 = (seph_t *)p1;
+    auto *q2 = (seph_t *)p2;
     return q1->tof.time != q2->tof.time ? static_cast<int>(q1->tof.time - q2->tof.time) : (q1->t0.time != q2->t0.time ? static_cast<int>(q1->t0.time - q2->t0.time) : q1->sat - q2->sat);
 }
 
@@ -3297,7 +3415,8 @@ int cmpseph(const void *p1, const void *p2)
 void uniqseph(nav_t *nav)
 {
     seph_t *nav_seph;
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "uniqseph: ns=%d\n", nav->ns);
 
@@ -3340,7 +3459,8 @@ void uniqseph(nav_t *nav)
  *-----------------------------------------------------------------------------*/
 void uniqnav(nav_t *nav)
 {
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "uniqnav: neph=%d ngeph=%d nseph=%d\n", nav->n, nav->ng, nav->ns);
 
@@ -3363,7 +3483,8 @@ void uniqnav(nav_t *nav)
 /* compare observation data -------------------------------------------------*/
 int cmpobs(const void *p1, const void *p2)
 {
-    auto *q1 = (obsd_t *)p1, *q2 = (obsd_t *)p2;
+    auto *q1 = (obsd_t *)p1;
+    auto *q2 = (obsd_t *)p2;
     double tt = timediff(q1->time, q2->time);
     if (fabs(tt) > DTTOL)
         {
@@ -3384,7 +3505,9 @@ int cmpobs(const void *p1, const void *p2)
  *-----------------------------------------------------------------------------*/
 int sortobs(obs_t *obs)
 {
-    int i, j, n;
+    int i;
+    int j;
+    int n;
 
     trace(3, "sortobs: nobs=%d\n", obs->n);
 
@@ -3449,9 +3572,15 @@ int readnav(const char *file, nav_t *nav)
     eph_t eph0 = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
     geph_t geph0 = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {}, {}, {}, 0.0, 0.0, 0.0};
-    char buff[4096], *p;
-    int32_t toe_time, tof_time, toc_time, ttr_time;
-    int i, sat, prn;
+    char buff[4096];
+    char *p;
+    int32_t toe_time;
+    int32_t tof_time;
+    int32_t toc_time;
+    int32_t ttr_time;
+    int i;
+    int sat;
+    int prn;
 
     trace(3, "loadnav: file=%s\n", file);
 
@@ -3956,7 +4085,8 @@ int execcmd(const char *cmd)
  *-----------------------------------------------------------------------------*/
 void createdir(const char *path)
 {
-    char buff[1024], *p;
+    char buff[1024];
+    char *p;
     //tracet(3, "createdir: path=%s\n", path);
 
     if (strlen(path) < 1025)
@@ -3984,7 +4114,10 @@ void createdir(const char *path)
 int repstr(char *str, const char *pat, const char *rep)
 {
     int len = static_cast<int>(strlen(pat));
-    char buff[1024], *p, *q, *r;
+    char buff[1024];
+    char *p;
+    char *q;
+    char *r;
 
     for (p = str, r = buff; *p; p = q + len)
         {
@@ -4045,8 +4178,12 @@ int repstr(char *str, const char *pat, const char *rep)
 int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
     const char *base)
 {
-    double ep[6], ep0[6] = {2000, 1, 1, 0, 0, 0};
-    int week, dow, doy, stat = 0;
+    double ep[6];
+    double ep0[6] = {2000, 1, 1, 0, 0, 0};
+    int week;
+    int dow;
+    int doy;
+    int stat = 0;
     char rep[64];
 
     strcpy(rpath, path);
@@ -4130,8 +4267,11 @@ int reppaths(const char *path, char *rpath[], int nmax, gtime_t ts,
     gtime_t te, const char *rov, const char *base)
 {
     gtime_t time;
-    double tow, tint = 86400.0;
-    int i, n = 0, week;
+    double tow;
+    double tint = 86400.0;
+    int i;
+    int n = 0;
+    int week;
 
     trace(3, "reppaths: path =%s nmax=%d rov=%s base=%s\n", path, nmax, rov, base);
 
@@ -4180,7 +4320,8 @@ double satwavelen(int sat, int frq, const nav_t *nav)
 {
     const double freq_glo[] = {FREQ1_GLO, FREQ2_GLO};
     const double dfrq_glo[] = {DFRQ1_GLO, DFRQ2_GLO};
-    int i, sys = satsys(sat, nullptr);
+    int i;
+    int sys = satsys(sat, nullptr);
 
     if (sys == SYS_GLO)
         {
@@ -4290,7 +4431,9 @@ double geodist(const double *rs, const double *rr, double *e)
  *-----------------------------------------------------------------------------*/
 double satazel(const double *pos, const double *e, double *azel)
 {
-    double az = 0.0, el = PI / 2.0, enu[3];
+    double az = 0.0;
+    double el = PI / 2.0;
+    double enu[3];
 
     if (pos[2] > -RE_WGS84)
         {
@@ -4322,8 +4465,12 @@ double satazel(const double *pos, const double *e, double *azel)
  *-----------------------------------------------------------------------------*/
 void dops(int ns, const double *azel, double elmin, double *dop)
 {
-    double H[4 * MAXSAT], Q[16], cosel, sinel;
-    int i, n;
+    double H[4 * MAXSAT];
+    double Q[16];
+    double cosel;
+    double sinel;
+    int i;
+    int n;
 
     for (i = 0; i < 4; i++)
         {
@@ -4372,7 +4519,14 @@ double ionmodel(gtime_t t, const double *ion, const double *pos,
     const double ion_default[] = {/* 2004/1/1 */
         0.1118E-07, -0.7451e-08, -0.5961e-07, 0.1192E-06,
         0.1167E+06, -0.2294E+06, -0.1311e+06, 0.1049E+07};
-    double tt, f, psi, phi, lam, amp, per, x;
+    double tt;
+    double f;
+    double psi;
+    double phi;
+    double lam;
+    double amp;
+    double per;
+    double x;
     int week;
 
     if (pos[2] < -1e3 || azel[1] <= 0)
@@ -4450,7 +4604,11 @@ double ionmapf(const double *pos, const double *azel)
 double ionppp(const double *pos, const double *azel, double re,
     double hion, double *posp)
 {
-    double cosaz, rp, ap, sinap, tanap;
+    double cosaz;
+    double rp;
+    double ap;
+    double sinap;
+    double tanap;
 
     rp = re / (re + hion) * cos(azel[1]);
     ap = PI / 2.0 - azel[1] - asin(rp);
@@ -4484,7 +4642,13 @@ double tropmodel(gtime_t time __attribute__((unused)), const double *pos, const 
     double humi)
 {
     const double temp0 = 15.0; /* temparature at sea level */
-    double hgt, pres, temp, e, z, trph, trpw;
+    double hgt;
+    double pres;
+    double temp;
+    double e;
+    double z;
+    double trph;
+    double trpw;
 
     if (pos[2] < -100.0 || 1e4 < pos[2] || azel[1] <= 0)
         {
@@ -4548,7 +4712,14 @@ double nmf(gtime_t time, const double pos[], const double azel[],
         {4.3472961e-2, 4.6729510E-2, 4.3908931e-2, 4.4626982E-2, 5.4736038E-2}};
     const double aht[] = {2.53E-5, 5.49E-3, 1.14E-3}; /* height correction */
 
-    double y, cosy, ah[3], aw[3], dm, el = azel[1], lat = pos[0] * R2D, hgt = pos[2];
+    double y;
+    double cosy;
+    double ah[3];
+    double aw[3];
+    double dm;
+    double el = azel[1];
+    double lat = pos[0] * R2D;
+    double hgt = pos[2];
     int i;
 
     if (el <= 0.0)
@@ -4660,8 +4831,11 @@ double interpvar(double ang, const double *var)
 void antmodel(const pcv_t *pcv, const double *del, const double *azel,
     int opt, double *dant)
 {
-    double e[3], off[3], cosel = cos(azel[1]);
-    int i, j;
+    double e[3];
+    double off[3];
+    double cosel = cos(azel[1]);
+    int i;
+    int j;
 
     trace(4, "antmodel: azel=%6.1f %4.1f opt=%d\n", azel[0] * R2D, azel[1] * R2D, opt);
 
@@ -4707,7 +4881,21 @@ void antmodel_s(const pcv_t *pcv, double nadir, double *dant)
 void sunmoonpos_eci(gtime_t tut, double *rsun, double *rmoon)
 {
     const double ep2000[] = {2000, 1, 1, 12, 0, 0};
-    double t, f[5], eps, Ms, ls, rs, lm, pm, rm, sine, cose, sinp, cosp, sinl, cosl;
+    double t;
+    double f[5];
+    double eps;
+    double Ms;
+    double ls;
+    double rs;
+    double lm;
+    double pm;
+    double rm;
+    double sine;
+    double cose;
+    double sinp;
+    double cosp;
+    double sinl;
+    double cosl;
 
     trace(4, "sunmoonpos_eci: tut=%s\n", time_str(tut, 3));
 
@@ -4771,7 +4959,10 @@ void sunmoonpos(gtime_t tutc, const double *erpv, double *rsun,
     double *rmoon, double *gmst)
 {
     gtime_t tut;
-    double rs[3], rm[3], U[9], gmst_;
+    double rs[3];
+    double rm[3];
+    double U[9];
+    double gmst_;
 
     trace(4, "sunmoonpos: tutc=%s\n", time_str(tutc, 3));
 
@@ -4807,8 +4998,14 @@ void sunmoonpos(gtime_t tutc, const double *erpv, double *rsun,
  *-----------------------------------------------------------------------------*/
 void csmooth(obs_t *obs, int ns)
 {
-    double Ps[2][MAXSAT][NFREQ] = {}, Lp[2][MAXSAT][NFREQ] = {}, dcp;
-    int i, j, s, r, n[2][MAXSAT][NFREQ] = {};
+    double Ps[2][MAXSAT][NFREQ] = {};
+    double Lp[2][MAXSAT][NFREQ] = {};
+    double dcp;
+    int i;
+    int j;
+    int s;
+    int r;
+    int n[2][MAXSAT][NFREQ] = {};
     obsd_t *p;
 
     trace(3, "csmooth: nobs=%d,ns=%d\n", obs->n, ns);
@@ -4866,7 +5063,12 @@ void csmooth(obs_t *obs, int ns)
 int rtk_uncompress(const char *file, char *uncfile)
 {
     int stat = 0;
-    char *p, cmd[2048] = "", tmpfile[1024] = "", buff[1024], *fname, *dir = (char *)"";
+    char *p;
+    char cmd[2048] = "";
+    char tmpfile[1024] = "";
+    char buff[1024];
+    char *fname;
+    char *dir = (char *)"";
 
     trace(3, "rtk_uncompress: file=%s\n", file);
 
@@ -5001,12 +5203,19 @@ int rtk_uncompress(const char *file, char *uncfile)
  *-----------------------------------------------------------------------------*/
 int expath(const char *path, char *paths[], int nmax)
 {
-    int i, j, n = 0;
+    int i;
+    int j;
+    int n = 0;
     char tmp[1024] = "";
     struct dirent *d;
     DIR *dp;
     const char *file = path;
-    char dir[1024] = "", s1[1024], s2[1024], *p, *q, *r;
+    char dir[1024] = "";
+    char s1[1024];
+    char s2[1024];
+    char *p;
+    char *q;
+    char *r;
 
     trace(3, "expath  : path=%s nmax=%d\n", path, nmax);
 
@@ -5083,8 +5292,25 @@ int expath(const char *path, char *paths[], int nmax)
 /* From RTKLIB 2.4.2 */
 void windupcorr(gtime_t time, const double *rs, const double *rr, double *phw)
 {
-    double ek[3], exs[3], eys[3], ezs[3], ess[3], exr[3], eyr[3], eks[3], ekr[3], E[9];
-    double dr[3], ds[3], drs[3], r[3], pos[3], rsun[3], cosp, ph, erpv[5] = {0};
+    double ek[3];
+    double exs[3];
+    double eys[3];
+    double ezs[3];
+    double ess[3];
+    double exr[3];
+    double eyr[3];
+    double eks[3];
+    double ekr[3];
+    double E[9];
+    double dr[3];
+    double ds[3];
+    double drs[3];
+    double r[3];
+    double pos[3];
+    double rsun[3];
+    double cosp;
+    double ph;
+    double erpv[5] = {0};
     int i;
 
     trace(4, "windupcorr: time=%s\n", time_str(time, 0));

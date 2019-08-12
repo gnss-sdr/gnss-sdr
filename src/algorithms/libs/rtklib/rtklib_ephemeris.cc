@@ -123,7 +123,22 @@ double var_urassr(int ura)
  *-----------------------------------------------------------------------------*/
 void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
 {
-    double tk, M, E, Ek, sinE, cosE, u, r, i, O, x, y, sinO, cosO, cosi, mu;
+    double tk;
+    double M;
+    double E;
+    double Ek;
+    double sinE;
+    double cosE;
+    double u;
+    double r;
+    double i;
+    double O;
+    double x;
+    double y;
+    double sinO;
+    double cosO;
+    double cosi;
+    double mu;
     int n;
 
     trace(4, "alm2pos : time=%s sat=%2d\n", time_str(time, 3), alm->sat);
@@ -207,9 +222,33 @@ double eph2clk(gtime_t time, const eph_t *eph)
 void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     double *var)
 {
-    double tk, M, E, Ek, sinE, cosE, u, r, i, O, sin2u, cos2u, x, y, sinO, cosO, cosi, mu, omge;
-    double xg, yg, zg, sino, coso;
-    int n, sys, prn;
+    double tk;
+    double M;
+    double E;
+    double Ek;
+    double sinE;
+    double cosE;
+    double u;
+    double r;
+    double i;
+    double O;
+    double sin2u;
+    double cos2u;
+    double x;
+    double y;
+    double sinO;
+    double cosO;
+    double cosi;
+    double mu;
+    double omge;
+    double xg;
+    double yg;
+    double zg;
+    double sino;
+    double coso;
+    int n;
+    int sys;
+    int prn;
 
     trace(4, "eph2pos : time=%s sat=%2d\n", time_str(time, 3), eph->sat);
 
@@ -302,7 +341,12 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
 /* glonass orbit differential equations --------------------------------------*/
 void deq(const double *x, double *xdot, const double *acc)
 {
-    double a, b, c, r2 = dot(x, x, 3), r3 = r2 * sqrt(r2), omg2 = std::pow(OMGE_GLO, 2.0);
+    double a;
+    double b;
+    double c;
+    double r2 = dot(x, x, 3);
+    double r3 = r2 * sqrt(r2);
+    double omg2 = std::pow(OMGE_GLO, 2.0);
 
     if (r2 <= 0.0)
         {
@@ -325,7 +369,11 @@ void deq(const double *x, double *xdot, const double *acc)
 /* glonass position and velocity by numerical integration --------------------*/
 void glorbit(double t, double *x, const double *acc)
 {
-    double k1[6], k2[6], k3[6], k4[6], w[6];
+    double k1[6];
+    double k2[6];
+    double k3[6];
+    double k4[6];
+    double w[6];
     int i;
 
     deq(x, k1, acc);
@@ -388,7 +436,9 @@ double geph2clk(gtime_t time, const geph_t *geph)
 void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
     double *var)
 {
-    double t, tt, x[6];
+    double t;
+    double tt;
+    double x[6];
     int i;
 
     trace(4, "geph2pos: time=%s sat=%2d\n", time_str(time, 3), geph->sat);
@@ -476,8 +526,11 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 /* select ephemeris --------------------------------------------------------*/
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
 {
-    double t, tmax, tmin;
-    int i, j = -1;
+    double t;
+    double tmax;
+    double tmin;
+    int i;
+    int j = -1;
 
     trace(4, "seleph  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
 
@@ -535,8 +588,11 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
 /* select glonass ephemeris ------------------------------------------------*/
 geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav)
 {
-    double t, tmax = MAXDTOE_GLO, tmin = tmax + 1.0;
-    int i, j = -1;
+    double t;
+    double tmax = MAXDTOE_GLO;
+    double tmin = tmax + 1.0;
+    int i;
+    int j = -1;
 
     trace(4, "selgeph : time=%s sat=%2d iode=%2d\n", time_str(time, 3), sat, iode);
 
@@ -577,8 +633,11 @@ geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav)
 /* select sbas ephemeris ---------------------------------------------------*/
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
 {
-    double t, tmax = MAXDTOE_SBS, tmin = tmax + 1.0;
-    int i, j = -1;
+    double t;
+    double tmax = MAXDTOE_SBS;
+    double tmin = tmax + 1.0;
+    int i;
+    int j = -1;
 
     trace(4, "selseph : time=%s sat=%2d\n", time_str(time, 3), sat);
 
@@ -660,8 +719,11 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     eph_t *eph;
     geph_t *geph;
     seph_t *seph;
-    double rst[3], dtst[1], tt = 1e-3;
-    int i, sys;
+    double rst[3];
+    double dtst[1];
+    double tt = 1e-3;
+    int i;
+    int sys;
 
     trace(4, "ephpos  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
 
@@ -767,8 +829,19 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 {
     const ssr_t *ssr;
     eph_t *eph;
-    double t1, t2, t3, er[3], ea[3], ec[3], rc[3], deph[3], dclk, dant[3] = {0}, tk;
-    int i, sys;
+    double t1;
+    double t2;
+    double t3;
+    double er[3];
+    double ea[3];
+    double ec[3];
+    double rc[3];
+    double deph[3];
+    double dclk;
+    double dant[3] = {0};
+    double tk;
+    int i;
+    int sys;
 
     trace(4, "satpos_ssr: time=%s sat=%2d\n", time_str(time, 3), sat);
 
@@ -969,8 +1042,10 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     int ephopt, double *rs, double *dts, double *var, int *svh)
 {
     gtime_t time[MAXOBS] = {};
-    double dt, pr;
-    int i, j;
+    double dt;
+    double pr;
+    int i;
+    int j;
 
     trace(3, "satposs : teph=%s n=%d ephopt=%d\n", time_str(teph, 3), n, ephopt);
 

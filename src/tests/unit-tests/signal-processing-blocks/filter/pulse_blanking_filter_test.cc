@@ -104,7 +104,8 @@ TEST_F(PulseBlankingFilterTest, InstantiateGrComplexGrComplex)
 TEST_F(PulseBlankingFilterTest, ConnectAndRun)
 {
     int fs_in = 4000000;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Pulse Blanking filter test");
     init();
@@ -134,7 +135,8 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRun)
 
 TEST_F(PulseBlankingFilterTest, ConnectAndRunGrcomplex)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Pulse Blanking filter test");
     init();

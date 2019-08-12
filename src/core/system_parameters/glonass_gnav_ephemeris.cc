@@ -114,7 +114,8 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
     double tod = 0.0;
     double glot2utc = 3 * 3600;
     double days = 0.0;
-    double total_sec = 0.0, sec_of_day = 0.0;
+    double total_sec = 0.0;
+    double sec_of_day = 0.0;
     int i = 0;
 
     boost::gregorian::date gps_epoch{1980, 1, 6};

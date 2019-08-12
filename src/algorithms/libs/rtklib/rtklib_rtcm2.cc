@@ -59,7 +59,9 @@
 /* adjust hourly rollover of rtcm 2 time -------------------------------------*/
 void adjhour(rtcm_t *rtcm, double zcnt)
 {
-    double tow, hour, sec;
+    double tow;
+    double hour;
+    double sec;
     int week;
 
     /* if no time, get cpu time */
@@ -85,7 +87,8 @@ void adjhour(rtcm_t *rtcm, double zcnt)
 /* get observation data index ------------------------------------------------*/
 int obsindex(obs_t *obs, gtime_t time, int sat)
 {
-    int i, j;
+    int i;
+    int j;
 
     for (i = 0; i < obs->n; i++)
         {
@@ -116,8 +119,14 @@ int obsindex(obs_t *obs, gtime_t time, int sat)
 /* decode type 1/9: differential gps correction/partial correction set -------*/
 int decode_type1(rtcm_t *rtcm)
 {
-    int i = 48, fact, udre, prn, sat, iod;
-    double prc, rrc;
+    int i = 48;
+    int fact;
+    int udre;
+    int prn;
+    int sat;
+    int iod;
+    double prc;
+    double rrc;
 
     trace(4, "decode_type1: len=%d\n", rtcm->len);
 
@@ -186,7 +195,10 @@ int decode_type3(rtcm_t *rtcm)
 int decode_type14(rtcm_t *rtcm)
 {
     double zcnt;
-    int i = 48, week, hour, leaps;
+    int i = 48;
+    int week;
+    int hour;
+    int leaps;
 
     trace(4, "decode_type14: len=%d\n", rtcm->len);
 
@@ -214,7 +226,8 @@ int decode_type14(rtcm_t *rtcm)
 /* decode type 16: gps special message ---------------------------------------*/
 int decode_type16(rtcm_t *rtcm)
 {
-    int i = 48, n = 0;
+    int i = 48;
+    int n = 0;
 
     trace(4, "decode_type16: len=%d\n", rtcm->len);
 
@@ -236,8 +249,12 @@ int decode_type17(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    double toc, sqrtA;
-    int i = 48, week, prn, sat;
+    double toc;
+    double sqrtA;
+    int i = 48;
+    int week;
+    int prn;
+    int sat;
 
     trace(4, "decode_type17: len=%d\n", rtcm->len);
 
@@ -327,8 +344,18 @@ int decode_type17(rtcm_t *rtcm)
 int decode_type18(rtcm_t *rtcm)
 {
     gtime_t time;
-    double usec, cp, tt;
-    int i = 48, index, freq, sync = 1, code, sys, prn, sat, loss;
+    double usec;
+    double cp;
+    double tt;
+    int i = 48;
+    int index;
+    int freq;
+    int sync = 1;
+    int code;
+    int sys;
+    int prn;
+    int sat;
+    int loss;
 
     trace(4, "decode_type18: len=%d\n", rtcm->len);
 
@@ -403,8 +430,17 @@ int decode_type18(rtcm_t *rtcm)
 int decode_type19(rtcm_t *rtcm)
 {
     gtime_t time;
-    double usec, pr, tt;
-    int i = 48, index, freq, sync = 1, code, sys, prn, sat;
+    double usec;
+    double pr;
+    double tt;
+    int i = 48;
+    int index;
+    int freq;
+    int sync = 1;
+    int code;
+    int sys;
+    int prn;
+    int sat;
 
     trace(4, "decode_type19: len=%d\n", rtcm->len);
 
@@ -474,8 +510,11 @@ int decode_type19(rtcm_t *rtcm)
 /* decode type 22: extended reference station parameter ----------------------*/
 int decode_type22(rtcm_t *rtcm)
 {
-    double del[2][3] = {{0}}, hgt = 0.0;
-    int i = 48, j, noh;
+    double del[2][3] = {{0}};
+    double hgt = 0.0;
+    int i = 48;
+    int j;
+    int noh;
 
     trace(4, "decode_type22: len=%d\n", rtcm->len);
 
@@ -579,7 +618,11 @@ int decode_type59(rtcm_t *rtcm __attribute((unused)))
 int decode_rtcm2(rtcm_t *rtcm)
 {
     double zcnt;
-    int staid, seqno, stah, ret = 0, type = getbitu(rtcm->buff, 8, 6);
+    int staid;
+    int seqno;
+    int stah;
+    int ret = 0;
+    int type = getbitu(rtcm->buff, 8, 6);
 
     trace(3, "decode_rtcm2: type=%2d len=%3d\n", type, rtcm->len);
 

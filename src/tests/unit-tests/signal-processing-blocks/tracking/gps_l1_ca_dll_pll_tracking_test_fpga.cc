@@ -454,7 +454,8 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     // DO not generate signal raw signal samples and observations RINEX file by default
     //generate_signal();
 
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
 
     configure_receiver();

@@ -102,9 +102,12 @@ int dataindex(int i, int j, int k, const int *ndata)
 tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     double rb, nav_t *nav)
 {
-    tec_t *p, *nav_tec;
+    tec_t *p;
+    tec_t *nav_tec;
     gtime_t time0 = {0, 0};
-    int i, n, ndata[3];
+    int i;
+    int n;
+    int ndata[3];
 
     trace(3, "addtec  :\n");
 
@@ -159,8 +162,11 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
 /* read ionex dcb aux data ----------------------------------------------------*/
 void readionexdcb(FILE *fp, double *dcb, double *rms)
 {
-    int i, sat;
-    char buff[1024], id[32], *label;
+    int i;
+    int sat;
+    char buff[1024];
+    char id[32];
+    char *label;
 
     trace(3, "readionexdcb:\n");
 
@@ -203,7 +209,8 @@ double readionexh(FILE *fp, double *lats, double *lons, double *hgts,
     double *rb, double *nexp, double *dcb, double *rms)
 {
     double ver = 0.0;
-    char buff[1024], *label;
+    char buff[1024];
+    char *label;
 
     trace(3, "readionexh:\n");
 
@@ -268,9 +275,19 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
 {
     tec_t *p = nullptr;
     gtime_t time = {0, 0};
-    double lat, lon[3], hgt, x;
-    int i, j, k, n, m, index, type = 0;
-    char buff[1024], *label = buff + 60;
+    double lat;
+    double lon[3];
+    double hgt;
+    double x;
+    int i;
+    int j;
+    int k;
+    int n;
+    int m;
+    int index;
+    int type = 0;
+    char buff[1024];
+    char *label = buff + 60;
 
     trace(3, "readionexb:\n");
 
@@ -376,7 +393,9 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
 void combtec(nav_t *nav)
 {
     tec_t tmp;
-    int i, j, n = 0;
+    int i;
+    int j;
+    int n = 0;
 
     trace(3, "combtec : nav->nt=%d\n", nav->nt);
 
@@ -422,9 +441,15 @@ void combtec(nav_t *nav)
 void readtec(const char *file, nav_t *nav, int opt)
 {
     FILE *fp;
-    double lats[3] = {0}, lons[3] = {0}, hgts[3] = {0}, rb = 0.0, nexp = -1.0;
-    double dcb[MAXSAT] = {0}, rms[MAXSAT] = {0};
-    int i, n;
+    double lats[3] = {0};
+    double lons[3] = {0};
+    double hgts[3] = {0};
+    double rb = 0.0;
+    double nexp = -1.0;
+    double dcb[MAXSAT] = {0};
+    double rms[MAXSAT] = {0};
+    int i;
+    int n;
     char *efiles[MAXEXFILE];
 
     trace(3, "readtec : file=%s\n", file);
@@ -493,8 +518,16 @@ void readtec(const char *file, nav_t *nav, int opt)
 int interptec(const tec_t *tec, int k, const double *posp, double *value,
     double *rms)
 {
-    double dlat, dlon, a, b, d[4] = {0}, r[4] = {0};
-    int i, j, n, index;
+    double dlat;
+    double dlon;
+    double a;
+    double b;
+    double d[4] = {0};
+    double r[4] = {0};
+    int i;
+    int j;
+    int n;
+    int index;
 
     trace(3, "interptec: k=%d posp=%.2f %.2f\n", k, posp[0] * R2D, posp[1] * R2D);
     *value = *rms = 0.0;
@@ -587,7 +620,12 @@ int iondelay(gtime_t time, const tec_t *tec, const double *pos,
     const double *azel, int opt, double *delay, double *var)
 {
     const double fact = 40.30E16 / FREQ1 / FREQ1; /* tecu->L1 iono (m) */
-    double fs, posp[3] = {0}, vtec, rms, hion, rp;
+    double fs;
+    double posp[3] = {0};
+    double vtec;
+    double rms;
+    double hion;
+    double rp;
     int i;
 
     trace(3, "iondelay: time=%s pos=%.1f %.1f azel=%.1f %.1f\n", time_str(time, 0),
@@ -646,8 +684,12 @@ int iondelay(gtime_t time, const tec_t *tec, const double *pos,
 int iontec(gtime_t time, const nav_t *nav, const double *pos,
     const double *azel, int opt, double *delay, double *var)
 {
-    double dels[2], vars[2], a, tt;
-    int i, stat[2];
+    double dels[2];
+    double vars[2];
+    double a;
+    double tt;
+    int i;
+    int stat[2];
 
     trace(3, "iontec  : time=%s pos=%.1f %.1f azel=%.1f %.1f\n", time_str(time, 0),
         pos[0] * R2D, pos[1] * R2D, azel[0] * R2D, azel[1] * R2D);

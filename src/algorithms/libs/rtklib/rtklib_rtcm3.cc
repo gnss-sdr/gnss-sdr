@@ -149,7 +149,8 @@ int adjbdtweek(int week)
 void adjday_glot(rtcm_t *rtcm, double tod)
 {
     gtime_t time;
-    double tow, tod_p;
+    double tow;
+    double tod_p;
     int week;
 
     if (rtcm->time.time == 0)
@@ -212,7 +213,8 @@ unsigned char snratio(double snr)
 /* get observation data index ------------------------------------------------*/
 int obsindex3(obs_t *obs, gtime_t time, int sat)
 {
-    int i, j;
+    int i;
+    int j;
 
     for (i = 0; i < obs->n; i++)
         {
@@ -244,7 +246,8 @@ int obsindex3(obs_t *obs, gtime_t time, int sat)
 int test_staid(rtcm_t *rtcm, int staid)
 {
     char *p;
-    int type, id;
+    int type;
+    int id;
 
     /* test station id option */
     if ((p = strstr(rtcm->opt, "-STA=")) && sscanf(p, "-STA=%d", &id) == 1)
@@ -277,7 +280,10 @@ int decode_head1001(rtcm_t *rtcm, int *sync)
 {
     double tow;
     char *msg;
-    int i = 24, staid, nsat, type;
+    int i = 24;
+    int staid;
+    int nsat;
+    int type;
 
     type = getbitu(rtcm->buff, i, 12);
     i += 12;
@@ -334,8 +340,22 @@ int decode_type1001(rtcm_t *rtcm)
 /* decode type 1002: extended L1-only gps rtk observables --------------------*/
 int decode_type1002(rtcm_t *rtcm)
 {
-    double pr1, cnr1, tt, cp1;
-    int i = 24 + 64, j, index, nsat, sync, prn, code, sat, ppr1, lock1, amb, sys;
+    double pr1;
+    double cnr1;
+    double tt;
+    double cp1;
+    int i = 24 + 64;
+    int j;
+    int index;
+    int nsat;
+    int sync;
+    int prn;
+    int code;
+    int sat;
+    int ppr1;
+    int lock1;
+    int amb;
+    int sys;
 
     if ((nsat = decode_head1001(rtcm, &sync)) < 0)
         {
@@ -413,9 +433,28 @@ int decode_type1003(rtcm_t *rtcm)
 int decode_type1004(rtcm_t *rtcm)
 {
     const int L2codes[] = {CODE_L2X, CODE_L2P, CODE_L2D, CODE_L2W};
-    double pr1, cnr1, cnr2, tt, cp1, cp2;
-    int i = 24 + 64, j, index, nsat, sync, prn, sat, code1, code2, pr21, ppr1, ppr2;
-    int lock1, lock2, amb, sys;
+    double pr1;
+    double cnr1;
+    double cnr2;
+    double tt;
+    double cp1;
+    double cp2;
+    int i = 24 + 64;
+    int j;
+    int index;
+    int nsat;
+    int sync;
+    int prn;
+    int sat;
+    int code1;
+    int code2;
+    int pr21;
+    int ppr1;
+    int ppr2;
+    int lock1;
+    int lock2;
+    int amb;
+    int sys;
 
     if ((nsat = decode_head1001(rtcm, &sync)) < 0)
         {
@@ -510,9 +549,14 @@ double getbits_38(const unsigned char *buff, int pos)
 /* decode type 1005: stationary rtk reference station arp --------------------*/
 int decode_type1005(rtcm_t *rtcm)
 {
-    double rr[3], re[3], pos[3];
+    double rr[3];
+    double re[3];
+    double pos[3];
     char *msg;
-    int i = 24 + 12, j, staid, itrf;
+    int i = 24 + 12;
+    int j;
+    int staid;
+    int itrf;
 
     if (i + 140 == rtcm->len * 8)
         {
@@ -563,9 +607,15 @@ int decode_type1005(rtcm_t *rtcm)
 /* decode type 1006: stationary rtk reference station arp with height --------*/
 int decode_type1006(rtcm_t *rtcm)
 {
-    double rr[3], re[3], pos[3], anth;
+    double rr[3];
+    double re[3];
+    double pos[3];
+    double anth;
     char *msg;
-    int i = 24 + 12, j, staid, itrf;
+    int i = 24 + 12;
+    int j;
+    int staid;
+    int itrf;
 
     if (i + 156 <= rtcm->len * 8)
         {
@@ -620,7 +670,11 @@ int decode_type1007(rtcm_t *rtcm)
 {
     char des[32] = "";
     char *msg;
-    int i = 24 + 12, j, staid, n, setup;
+    int i = 24 + 12;
+    int j;
+    int staid;
+    int n;
+    int setup;
 
     n = getbitu(rtcm->buff, i + 12, 8);
 
@@ -662,9 +716,15 @@ int decode_type1007(rtcm_t *rtcm)
 /* decode type 1008: antenna descriptor & serial number ----------------------*/
 int decode_type1008(rtcm_t *rtcm)
 {
-    char des[32] = "", sno[32] = "";
+    char des[32] = "";
+    char sno[32] = "";
     char *msg;
-    int i = 24 + 12, j, staid, n, m, setup;
+    int i = 24 + 12;
+    int j;
+    int staid;
+    int n;
+    int m;
+    int setup;
 
     n = getbitu(rtcm->buff, i + 12, 8);
     m = getbitu(rtcm->buff, i + 28 + 8 * n, 8);
@@ -716,7 +776,10 @@ int decode_head1009(rtcm_t *rtcm, int *sync)
 {
     double tod;
     char *msg;
-    int i = 24, staid, nsat, type;
+    int i = 24;
+    int staid;
+    int nsat;
+    int type;
 
     type = getbitu(rtcm->buff, i, 12);
     i += 12;
@@ -773,8 +836,24 @@ int decode_type1009(rtcm_t *rtcm)
 /* decode type 1010: extended L1-only glonass rtk observables ----------------*/
 int decode_type1010(rtcm_t *rtcm)
 {
-    double pr1, cnr1, tt, cp1, lam1;
-    int i = 24 + 61, j, index, nsat, sync, prn, sat, code, freq, ppr1, lock1, amb, sys = SYS_GLO;
+    double pr1;
+    double cnr1;
+    double tt;
+    double cp1;
+    double lam1;
+    int i = 24 + 61;
+    int j;
+    int index;
+    int nsat;
+    int sync;
+    int prn;
+    int sat;
+    int code;
+    int freq;
+    int ppr1;
+    int lock1;
+    int amb;
+    int sys = SYS_GLO;
 
     if ((nsat = decode_head1009(rtcm, &sync)) < 0)
         {
@@ -845,9 +924,31 @@ int decode_type1011(rtcm_t *rtcm)
 /* decode type 1012: extended L1&L2 glonass rtk observables ------------------*/
 int decode_type1012(rtcm_t *rtcm)
 {
-    double pr1, cnr1, cnr2, tt, cp1, cp2, lam1, lam2;
-    int i = 24 + 61, j, index, nsat, sync, prn, sat, freq, code1, code2, pr21, ppr1, ppr2;
-    int lock1, lock2, amb, sys = SYS_GLO;
+    double pr1;
+    double cnr1;
+    double cnr2;
+    double tt;
+    double cp1;
+    double cp2;
+    double lam1;
+    double lam2;
+    int i = 24 + 61;
+    int j;
+    int index;
+    int nsat;
+    int sync;
+    int prn;
+    int sat;
+    int freq;
+    int code1;
+    int code2;
+    int pr21;
+    int ppr1;
+    int ppr2;
+    int lock1;
+    int lock2;
+    int amb;
+    int sys = SYS_GLO;
 
     if ((nsat = decode_head1009(rtcm, &sync)) < 0)
         {
@@ -940,9 +1041,14 @@ int decode_type1019(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    double toc, sqrtA;
+    double toc;
+    double sqrtA;
     char *msg;
-    int i = 24 + 12, prn, sat, week, sys = SYS_GPS;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int sys = SYS_GPS;
 
     if (i + 476 <= rtcm->len * 8)
         {
@@ -1053,9 +1159,21 @@ int decode_type1020(rtcm_t *rtcm)
 {
     geph_t geph = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
-    double tk_h, tk_m, tk_s, toe, tow, tod, tof;
+    double tk_h;
+    double tk_m;
+    double tk_s;
+    double toe;
+    double tow;
+    double tod;
+    double tof;
     char *msg;
-    int i = 24 + 12, prn, sat, week, tb, bn, sys = SYS_GLO;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int tb;
+    int bn;
+    int sys = SYS_GLO;
 
     if (i + 348 <= rtcm->len * 8)
         {
@@ -1218,7 +1336,10 @@ int decode_type1027(rtcm_t *rtcm __attribute__((unused)))
 int decode_type1029(rtcm_t *rtcm)
 {
     char *msg;
-    int i = 24 + 12, j, staid, nchar;  // mjd, tod, nchar, cunit;
+    int i = 24 + 12;
+    int j;
+    int staid;
+    int nchar;  // mjd, tod, nchar, cunit;
 
     if (i + 60 <= rtcm->len * 8)
         {
@@ -1283,9 +1404,21 @@ int decode_type1032(rtcm_t *rtcm __attribute__((unused)))
 /* decode type 1033: receiver and antenna descriptor -------------------------*/
 int decode_type1033(rtcm_t *rtcm)
 {
-    char des[32] = "", sno[32] = "", rec[32] = "", ver[32] = "", rsn[32] = "";
+    char des[32] = "";
+    char sno[32] = "";
+    char rec[32] = "";
+    char ver[32] = "";
+    char rsn[32] = "";
     char *msg;
-    int i = 24 + 12, j, staid, n, m, n1, n2, n3, setup;
+    int i = 24 + 12;
+    int j;
+    int staid;
+    int n;
+    int m;
+    int n1;
+    int n2;
+    int n3;
+    int setup;
 
     n = getbitu(rtcm->buff, i + 12, 8);
     m = getbitu(rtcm->buff, i + 28 + 8 * n, 8);
@@ -1407,9 +1540,14 @@ int decode_type1044(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    double toc, sqrtA;
+    double toc;
+    double sqrtA;
     char *msg;
-    int i = 24 + 12, prn, sat, week, sys = SYS_QZS;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int sys = SYS_QZS;
 
     if (i + 473 <= rtcm->len * 8)
         {
@@ -1515,9 +1653,16 @@ int decode_type1045(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    double toc, sqrtA;
+    double toc;
+    double sqrtA;
     char *msg;
-    int i = 24 + 12, prn, sat, week, e5a_hs, e5a_dvs, sys = SYS_GAL;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int e5a_hs;
+    int e5a_dvs;
+    int sys = SYS_GAL;
 
     if (i + 484 <= rtcm->len * 8)
         {
@@ -1622,9 +1767,16 @@ int decode_type1046(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    double toc, sqrtA;
+    double toc;
+    double sqrtA;
     char *msg;
-    int i = 24 + 12, prn, sat, week, e5a_hs, e5a_dvs, sys = SYS_GAL;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int e5a_hs;
+    int e5a_dvs;
+    int sys = SYS_GAL;
 
     if (i + 484 <= rtcm->len * 8)
         {
@@ -1730,9 +1882,14 @@ int decode_type1047(rtcm_t *rtcm)
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     ;
-    double toc, sqrtA;
+    double toc;
+    double sqrtA;
     char *msg;
-    int i = 24 + 12, prn, sat, week, sys = SYS_BDS;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int sys = SYS_BDS;
 
     if (i + 476 <= rtcm->len * 8)
         {
@@ -1842,9 +1999,14 @@ int decode_type63(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    double toc, sqrtA;
+    double toc;
+    double sqrtA;
     char *msg;
-    int i = 24 + 12, prn, sat, week, sys = SYS_BDS;
+    int i = 24 + 12;
+    int prn;
+    int sat;
+    int week;
+    int sys = SYS_BDS;
 
     if (i + 499 <= rtcm->len * 8)
         {
@@ -1948,9 +2110,15 @@ int decode_type63(rtcm_t *rtcm)
 int decode_ssr1_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     double *udint, int *refd, int *hsize)
 {
-    double tod, tow;
+    double tod;
+    double tow;
     char *msg;
-    int i = 24 + 12, nsat, udi, provid = 0, solid = 0, ns = 6;
+    int i = 24 + 12;
+    int nsat;
+    int udi;
+    int provid = 0;
+    int solid = 0;
+    int ns = 6;
 
 #ifndef SSR_QZSS_DRAFT_V05
     ns = sys == SYS_QZS ? 4 : 6;
@@ -2006,9 +2174,15 @@ int decode_ssr1_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
 int decode_ssr2_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     double *udint, int *hsize)
 {
-    double tod, tow;
+    double tod;
+    double tow;
     char *msg;
-    int i = 24 + 12, nsat, udi, provid = 0, solid = 0, ns = 6;
+    int i = 24 + 12;
+    int nsat;
+    int udi;
+    int provid = 0;
+    int solid = 0;
+    int ns = 6;
 
 #ifndef SSR_QZSS_DRAFT_V05
     ns = sys == SYS_QZS ? 4 : 6;
@@ -2062,9 +2236,15 @@ int decode_ssr2_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
 int decode_ssr7_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     double *udint, int *dispe, int *mw, int *hsize)
 {
-    double tod, tow;
+    double tod;
+    double tow;
     char *msg;
-    int i = 24 + 12, nsat, udi, provid = 0, solid = 0, ns = 6;
+    int i = 24 + 12;
+    int nsat;
+    int udi;
+    int provid = 0;
+    int solid = 0;
+    int ns = 6;
 
 #ifndef SSR_QZSS_DRAFT_V05
     ns = sys == SYS_QZS ? 4 : 6;
@@ -2121,8 +2301,25 @@ int decode_ssr7_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
 /* decode ssr 1: orbit corrections -------------------------------------------*/
 int decode_ssr1(rtcm_t *rtcm, int sys)
 {
-    double udint, deph[3], ddeph[3];
-    int i, j, k, type, sync, iod, nsat, prn, sat, iode, iodcrc, refd = 0, np, ni, nj, offp;
+    double udint;
+    double deph[3];
+    double ddeph[3];
+    int i;
+    int j;
+    int k;
+    int type;
+    int sync;
+    int iod;
+    int nsat;
+    int prn;
+    int sat;
+    int iode;
+    int iodcrc;
+    int refd = 0;
+    int np;
+    int ni;
+    int nj;
+    int offp;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2219,8 +2416,19 @@ int decode_ssr1(rtcm_t *rtcm, int sys)
 /* decode ssr 2: clock corrections -------------------------------------------*/
 int decode_ssr2(rtcm_t *rtcm, int sys)
 {
-    double udint, dclk[3];
-    int i, j, k, type, sync, iod, nsat, prn, sat, np, offp;
+    double udint;
+    double dclk[3];
+    int i;
+    int j;
+    int k;
+    int type;
+    int sync;
+    int iod;
+    int nsat;
+    int prn;
+    int sat;
+    int np;
+    int offp;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2292,8 +2500,23 @@ int decode_ssr2(rtcm_t *rtcm, int sys)
 int decode_ssr3(rtcm_t *rtcm, int sys)
 {
     const int *codes;
-    double udint, bias, cbias[MAXCODE];
-    int i, j, k, type, mode, sync, iod, nsat, prn, sat, nbias, np, offp, ncode;
+    double udint;
+    double bias;
+    double cbias[MAXCODE];
+    int i;
+    int j;
+    int k;
+    int type;
+    int mode;
+    int sync;
+    int iod;
+    int nsat;
+    int prn;
+    int sat;
+    int nbias;
+    int np;
+    int offp;
+    int ncode;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2391,8 +2614,26 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
 /* decode ssr 4: combined orbit and clock corrections ------------------------*/
 int decode_ssr4(rtcm_t *rtcm, int sys)
 {
-    double udint, deph[3], ddeph[3], dclk[3];
-    int i, j, k, type, nsat, sync, iod, prn, sat, iode, iodcrc, refd = 0, np, ni, nj, offp;
+    double udint;
+    double deph[3];
+    double ddeph[3];
+    double dclk[3];
+    int i;
+    int j;
+    int k;
+    int type;
+    int nsat;
+    int sync;
+    int iod;
+    int prn;
+    int sat;
+    int iode;
+    int iodcrc;
+    int refd = 0;
+    int np;
+    int ni;
+    int nj;
+    int offp;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2498,7 +2739,17 @@ int decode_ssr4(rtcm_t *rtcm, int sys)
 int decode_ssr5(rtcm_t *rtcm, int sys)
 {
     double udint;
-    int i, j, type, nsat, sync, iod, prn, sat, ura, np, offp;
+    int i;
+    int j;
+    int type;
+    int nsat;
+    int sync;
+    int iod;
+    int prn;
+    int sat;
+    int ura;
+    int np;
+    int offp;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2561,8 +2812,18 @@ int decode_ssr5(rtcm_t *rtcm, int sys)
 /* decode ssr 6: high rate clock correction ----------------------------------*/
 int decode_ssr6(rtcm_t *rtcm, int sys)
 {
-    double udint, hrclk;
-    int i, j, type, nsat, sync, iod, prn, sat, np, offp;
+    double udint;
+    double hrclk;
+    int i;
+    int j;
+    int type;
+    int nsat;
+    int sync;
+    int iod;
+    int prn;
+    int sat;
+    int np;
+    int offp;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2626,9 +2887,29 @@ int decode_ssr6(rtcm_t *rtcm, int sys)
 int decode_ssr7(rtcm_t *rtcm, int sys)
 {
     const int *codes;
-    double udint, bias, std, pbias[MAXCODE], stdpb[MAXCODE];
-    int i, j, k, type, mode, sync, iod, nsat, prn, sat, nbias, ncode, np, mw, offp;
-    int dispe, yaw_ang, yaw_rate;
+    double udint;
+    double bias;
+    double std;
+    double pbias[MAXCODE];
+    double stdpb[MAXCODE];
+    int i;
+    int j;
+    int k;
+    int type;
+    int mode;
+    int sync;
+    int iod;
+    int nsat;
+    int prn;
+    int sat;
+    int nbias;
+    int ncode;
+    int np;
+    int mw;
+    int offp;
+    int dispe;
+    int yaw_ang;
+    int yaw_rate;
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2733,7 +3014,12 @@ int decode_ssr7(rtcm_t *rtcm, int sys)
 void sigindex(int sys, const unsigned char *code, const int *freq, int n,
     const char *opt, int *ind)
 {
-    int i, nex, pri, pri_h[8] = {0}, index[8] = {0}, ex[32] = {0};
+    int i;
+    int nex;
+    int pri;
+    int pri_h[8] = {0};
+    int index[8] = {0};
+    int ex[32] = {0};
 
     /* test code priority */
     for (i = 0; i < n; i++)
@@ -2796,10 +3082,21 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
     const int *ex, const int *half)
 {
     const char *sig[32];
-    double tt, wl;
+    double tt;
+    double wl;
     unsigned char code[32];
-    char *msm_type = (char *)"", *q = nullptr;
-    int i, j, k, type, prn, sat, fn, index = 0, freq[32], ind[32];
+    char *msm_type = (char *)"";
+    char *q = nullptr;
+    int i;
+    int j;
+    int k;
+    int type;
+    int prn;
+    int sat;
+    int fn;
+    int index = 0;
+    int freq[32];
+    int ind[32];
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -2963,9 +3260,15 @@ int decode_msm_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     msm_h_t *h, int *hsize)
 {
     msm_h_t h0 = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
-    double tow, tod;
+    double tow;
+    double tod;
     char *msg;
-    int i = 24, j, mask, staid, type, ncell = 0;
+    int i = 24;
+    int j;
+    int mask;
+    int staid;
+    int type;
+    int ncell = 0;
 
     type = getbitu(rtcm->buff, i, 12);
     i += 12;
@@ -3080,7 +3383,9 @@ int decode_msm_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
 int decode_msm0(rtcm_t *rtcm, int sys)
 {
     msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
-    int i, sync, iod;
+    int i;
+    int sync;
+    int iod;
     if (decode_msm_head(rtcm, sys, &sync, &iod, &h, &i) < 0)
         {
             return -1;
@@ -3094,8 +3399,22 @@ int decode_msm0(rtcm_t *rtcm, int sys)
 int decode_msm4(rtcm_t *rtcm, int sys)
 {
     msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
-    double r[64], pr[64], cp[64], cnr[64];
-    int i, j, type, sync, iod, ncell, rng, rng_m, prv, cpv, lock[64], half[64];
+    double r[64];
+    double pr[64];
+    double cp[64];
+    double cnr[64];
+    int i;
+    int j;
+    int type;
+    int sync;
+    int iod;
+    int ncell;
+    int rng;
+    int rng_m;
+    int prv;
+    int cpv;
+    int lock[64];
+    int half[64];
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -3185,9 +3504,27 @@ int decode_msm4(rtcm_t *rtcm, int sys)
 int decode_msm5(rtcm_t *rtcm, int sys)
 {
     msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
-    double r[64], rr[64], pr[64], cp[64], rrf[64], cnr[64];
-    int i, j, type, sync, iod, ncell, rng, rng_m, rate, prv, cpv, rrv, lock[64];
-    int ex[64], half[64];
+    double r[64];
+    double rr[64];
+    double pr[64];
+    double cp[64];
+    double rrf[64];
+    double cnr[64];
+    int i;
+    int j;
+    int type;
+    int sync;
+    int iod;
+    int ncell;
+    int rng;
+    int rng_m;
+    int rate;
+    int prv;
+    int cpv;
+    int rrv;
+    int lock[64];
+    int ex[64];
+    int half[64];
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -3301,8 +3638,22 @@ int decode_msm5(rtcm_t *rtcm, int sys)
 int decode_msm6(rtcm_t *rtcm, int sys)
 {
     msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
-    double r[64], pr[64], cp[64], cnr[64];
-    int i, j, type, sync, iod, ncell, rng, rng_m, prv, cpv, lock[64], half[64];
+    double r[64];
+    double pr[64];
+    double cp[64];
+    double cnr[64];
+    int i;
+    int j;
+    int type;
+    int sync;
+    int iod;
+    int ncell;
+    int rng;
+    int rng_m;
+    int prv;
+    int cpv;
+    int lock[64];
+    int half[64];
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -3392,9 +3743,27 @@ int decode_msm6(rtcm_t *rtcm, int sys)
 int decode_msm7(rtcm_t *rtcm, int sys)
 {
     msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
-    double r[64], rr[64], pr[64], cp[64], rrf[64], cnr[64];
-    int i, j, type, sync, iod, ncell, rng, rng_m, rate, prv, cpv, rrv, lock[64];
-    int ex[64], half[64];
+    double r[64];
+    double rr[64];
+    double pr[64];
+    double cp[64];
+    double rrf[64];
+    double cnr[64];
+    int i;
+    int j;
+    int type;
+    int sync;
+    int iod;
+    int ncell;
+    int rng;
+    int rng_m;
+    int rate;
+    int prv;
+    int cpv;
+    int rrv;
+    int lock[64];
+    int ex[64];
+    int half[64];
 
     type = getbitu(rtcm->buff, 24, 12);
 
@@ -3516,7 +3885,9 @@ int decode_type1230(rtcm_t *rtcm __attribute__((unused)))
 int decode_rtcm3(rtcm_t *rtcm)
 {
     double tow;
-    int ret = 0, type = getbitu(rtcm->buff, 24, 12), week;
+    int ret = 0;
+    int type = getbitu(rtcm->buff, 24, 12);
+    int week;
 
     trace(3, "decode_rtcm3: len=%3d type=%d\n", rtcm->len, type);
 

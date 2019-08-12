@@ -110,7 +110,9 @@ double degfcorr(int ai)
 /* decode type 1: prn masks --------------------------------------------------*/
 int decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
-    int i, n, sat;
+    int i;
+    int n;
+    int sat;
 
     trace(4, "decode_sbstype1:\n");
 
@@ -164,8 +166,13 @@ int decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat)
 /* decode type 2-5,0: fast corrections ---------------------------------------*/
 int decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
-    int i, j, iodf, type, udre;
-    double prc, dt;
+    int i;
+    int j;
+    int iodf;
+    int type;
+    int udre;
+    double prc;
+    double dt;
     gtime_t t0;
 
     trace(4, "decode_sbstype2:\n");
@@ -211,7 +218,9 @@ int decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
 /* decode type 6: integrity info ---------------------------------------------*/
 int decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
-    int i, iodf[4], udre;
+    int i;
+    int iodf[4];
+    int udre;
 
     trace(4, "decode_sbstype6:\n");
 
@@ -259,7 +268,9 @@ int decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat)
 int decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
 {
     seph_t seph = {0, {0, 0}, {0, 0}, 0, 0, {}, {}, {}, 0.0, 0.0};
-    int i, sat, t;
+    int i;
+    int sat;
+    int t;
 
     trace(4, "decode_sbstype9:\n");
 
@@ -313,7 +324,11 @@ int decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
 int decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
 {
     const sbsigpband_t *p;
-    int i, j, n, m, band = getbitu(msg->msg, 18, 4);
+    int i;
+    int j;
+    int n;
+    int m;
+    int band = getbitu(msg->msg, 18, 4);
 
     trace(4, "decode_sbstype18:\n");
 
@@ -361,7 +376,8 @@ int decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
 /* decode half long term correction (vel code=0) -----------------------------*/
 int decode_longcorr0(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
 {
-    int i, n = getbitu(msg->msg, p, 6);
+    int i;
+    int n = getbitu(msg->msg, p, 6);
 
     trace(4, "decode_longcorr0:\n");
 
@@ -389,7 +405,9 @@ int decode_longcorr0(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
 /* decode half long term correction (vel code=1) -----------------------------*/
 int decode_longcorr1(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
 {
-    int i, n = getbitu(msg->msg, p, 6), t;
+    int i;
+    int n = getbitu(msg->msg, p, 6);
+    int t;
 
     trace(4, "decode_longcorr1:\n");
 
@@ -447,7 +465,11 @@ int decode_longcorrh(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
 /* decode type 24: mixed fast/long term correction ---------------------------*/
 int decode_sbstype24(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
-    int i, j, iodf, blk, udre;
+    int i;
+    int j;
+    int iodf;
+    int blk;
+    int udre;
 
     trace(4, "decode_sbstype24:\n");
 
@@ -488,7 +510,12 @@ int decode_sbstype25(const sbsmsg_t *msg, sbssat_t *sbssat)
 /* decode type 26: ionospheric deley corrections -----------------------------*/
 int decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
 {
-    int i, j, block, delay, give, band = getbitu(msg->msg, 14, 4);
+    int i;
+    int j;
+    int block;
+    int delay;
+    int give;
+    int band = getbitu(msg->msg, 14, 4);
 
     trace(4, "decode_sbstype26:\n");
 
@@ -533,7 +560,8 @@ int decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
  *-----------------------------------------------------------------------------*/
 int sbsupdatecorr(const sbsmsg_t *msg, nav_t *nav)
 {
-    int type = getbitu(msg->msg, 8, 6), stat = -1;
+    int type = getbitu(msg->msg, 8, 6);
+    int stat = -1;
 
     trace(3, "sbsupdatecorr: type=%d\n", type);
 
@@ -591,10 +619,16 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
     sbs_t *sbs)
 {
     sbsmsg_t *sbs_msgs;
-    int i, week, prn, ch, msg;
+    int i;
+    int week;
+    int prn;
+    int ch;
+    int msg;
     unsigned int b;
-    double tow, ep[6] = {};
-    char buff[256], *p;
+    double tow;
+    double ep[6] = {};
+    char buff[256];
+    char *p;
     gtime_t time;
     FILE *fp;
 
@@ -715,7 +749,8 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
 /* compare sbas messages -----------------------------------------------------*/
 int cmpmsgs(const void *p1, const void *p2)
 {
-    auto *q1 = (sbsmsg_t *)p1, *q2 = (sbsmsg_t *)p2;
+    auto *q1 = (sbsmsg_t *)p1;
+    auto *q2 = (sbsmsg_t *)p2;
     return q1->week != q2->week ? q1->week - q2->week : (q1->tow < q2->tow ? -1 : (q1->tow > q2->tow ? 1 : q1->prn - q2->prn));
 }
 
@@ -738,8 +773,10 @@ int cmpmsgs(const void *p1, const void *p2)
 int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
     sbs_t *sbs)
 {
-    char *efiles[MAXEXFILE] = {}, *ext;
-    int i, n;
+    char *efiles[MAXEXFILE] = {};
+    char *ext;
+    int i;
+    int n;
 
     trace(3, "sbsreadmsgt: file=%s sel=%d\n", file, sel);
 
@@ -787,7 +824,8 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
 
 int sbsreadmsg(const char *file, int sel, sbs_t *sbs)
 {
-    gtime_t ts = {0, 0}, te = {0, 0};
+    gtime_t ts = {0, 0};
+    gtime_t te = {0, 0};
 
     trace(3, "sbsreadmsg: file=%s sel=%d\n", file, sel);
 
@@ -803,7 +841,8 @@ int sbsreadmsg(const char *file, int sel, sbs_t *sbs)
  *-----------------------------------------------------------------------------*/
 void sbsoutmsg(FILE *fp, sbsmsg_t *sbsmsg)
 {
-    int i, type = sbsmsg->msg[1] >> 2;
+    int i;
+    int type = sbsmsg->msg[1] >> 2;
 
     trace(4, "sbsoutmsg:\n");
 
@@ -820,8 +859,11 @@ void sbsoutmsg(FILE *fp, sbsmsg_t *sbsmsg)
 void searchigp(gtime_t time __attribute__((unused)), const double *pos, const sbsion_t *ion,
     const sbsigp_t **igp, double *x, double *y)
 {
-    int i, latp[2], lonp[4];
-    double lat = pos[0] * R2D, lon = pos[1] * R2D;
+    int i;
+    int latp[2];
+    int lonp[4];
+    double lat = pos[0] * R2D;
+    double lon = pos[1] * R2D;
     const sbsigp_t *p;
 
     trace(4, "searchigp: pos=%.3f %.3f\n", pos[0] * R2D, pos[1] * R2D);
@@ -928,9 +970,16 @@ void searchigp(gtime_t time __attribute__((unused)), const double *pos, const sb
 int sbsioncorr(gtime_t time, const nav_t *nav, const double *pos,
     const double *azel, double *delay, double *var)
 {
-    const double re = 6378.1363, hion = 350.0;
-    int i, err = 0;
-    double fp, posp[2], x = 0.0, y = 0.0, t, w[4] = {};
+    const double re = 6378.1363;
+    const double hion = 350.0;
+    int i;
+    int err = 0;
+    double fp;
+    double posp[2];
+    double x = 0.0;
+    double y = 0.0;
+    double t;
+    double w[4] = {};
     const sbsigp_t *igp[4] = {}; /* {ws,wn,es,en} */
 
     trace(4, "sbsioncorr: pos=%.3f %.3f azel=%.3f %.3f\n", pos[0] * R2D, pos[1] * R2D,
@@ -1030,7 +1079,8 @@ void getmet(double lat, double *met)
         {1015.75, 283.15, 11.66, 5.58E-3, 2.57, -2.25, 11.00, 7.24, 0.32E-3, 0.46},
         {1011.75, 272.15, 6.78, 5.39E-3, 1.81, -1.75, 15.00, 5.36, 0.81E-3, 0.74},
         {1013.00, 263.65, 4.11, 4.53E-3, 1.55, -0.50, 14.50, 3.39, 0.62E-3, 0.30}};
-    int i, j;
+    int i;
+    int j;
     double a;
     lat = fabs(lat);
     if (lat <= 15.0)
@@ -1070,10 +1120,20 @@ void getmet(double lat, double *met)
 double sbstropcorr(gtime_t time, const double *pos, const double *azel,
     double *var)
 {
-    const double k1 = 77.604, k2 = 382000.0, rd = 287.054, gm = 9.784, g = 9.80665;
-    static double pos_[3] = {}, zh = 0.0, zw = 0.0;
+    const double k1 = 77.604;
+    const double k2 = 382000.0;
+    const double rd = 287.054;
+    const double gm = 9.784;
+    const double g = 9.80665;
+    static double pos_[3] = {};
+    static double zh = 0.0;
+    static double zw = 0.0;
     int i;
-    double c, met[10], sinel = sin(azel[1]), h = pos[2], m;
+    double c;
+    double met[10];
+    double sinel = sin(azel[1]);
+    double h = pos[2];
+    double m;
 
     trace(4, "sbstropcorr: pos=%.3f %.3f azel=%.3f %.3f\n", pos[0] * R2D, pos[1] * R2D,
         azel[0] * R2D, azel[1] * R2D);
@@ -1216,7 +1276,9 @@ int sbsfastcorr(gtime_t time, int sat, const sbssat_t *sbssat,
 int sbssatcorr(gtime_t time, int sat, const nav_t *nav, double *rs,
     double *dts, double *var)
 {
-    double drs[3] = {}, dclk = 0.0, prc = 0.0;
+    double drs[3] = {};
+    double dclk = 0.0;
+    double prc = 0.0;
     int i;
 
     trace(3, "sbssatcorr : sat=%2d\n", sat);
@@ -1256,7 +1318,8 @@ int sbssatcorr(gtime_t time, int sat, const nav_t *nav, double *rs,
 int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
     sbsmsg_t *sbsmsg)
 {
-    int i, j;
+    int i;
+    int j;
     unsigned char f[29];
     double tow;
 

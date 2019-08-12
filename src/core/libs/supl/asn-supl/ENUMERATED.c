@@ -50,7 +50,7 @@ ENUMERATED_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td
 	}
 
 	rval = NativeEnumerated_decode_uper(opt_codec_ctx, td, constraints,
-			&vptr, pd);
+			(void **)&vptr, pd);
 	if(rval.code == RC_OK)
 		if(asn_long2INTEGER(st, value))
 			rval.code = RC_FAIL;

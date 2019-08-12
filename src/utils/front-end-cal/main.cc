@@ -406,7 +406,8 @@ int main(int argc, char** argv)
     std::thread ch_thread;
 
     // record startup time
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds{};
     start = std::chrono::system_clock::now();
 
@@ -555,7 +556,9 @@ int main(int argc, char** argv)
                     std::cout << "  " << it.first << "   " << it.second << "   " << doppler_estimated_hz << std::endl;
                     // 7. Compute front-end IF and sampling frequency estimation
                     // Compare with the measurements and compute clock drift using FE model
-                    double estimated_fs_Hz, estimated_f_if_Hz, f_osc_err_ppm;
+                    double estimated_fs_Hz;
+                    double estimated_f_if_Hz;
+                    double f_osc_err_ppm;
                     front_end_cal.GPS_L1_front_end_model_E4000(doppler_estimated_hz, it.second, fs_in_, &estimated_fs_Hz, &estimated_f_if_Hz, &f_osc_err_ppm);
 
                     f_if_estimation_Hz_map.insert(std::pair<int, double>(it.first, estimated_f_if_Hz));

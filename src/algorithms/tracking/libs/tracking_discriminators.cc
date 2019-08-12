@@ -64,7 +64,8 @@ double phase_unwrap(double phase_rad)
  */
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
-    double cross, dot;
+    double cross;
+    double dot;
     dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
     cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
     return atan2(cross, dot) / (t2 - t1);

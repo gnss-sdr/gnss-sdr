@@ -1166,7 +1166,7 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
 
 
 // project Doppler from primary frequency to secondary frequency
-double GNSSFlowgraph::project_doppler(std::string searched_signal, double primary_freq_doppler_hz)
+double GNSSFlowgraph::project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz)
 {
     switch (mapStringValues_[searched_signal])
         {

@@ -68,8 +68,6 @@ _asn_i_ctfailcb(void *key, asn_TYPE_descriptor_t *td, const void *sptr, const ch
 		memcpy(arg->errbuf, "<broken vsnprintf>", arg->errlen);
 		arg->errbuf[arg->errlen] = 0;
 	}
-
-	return;
 }
 
 int

@@ -283,7 +283,6 @@ void Gnss_Satellite::set_rf_link(int32_t rf_link_)
 {
     // Set satellite's rf link. Identifies the GLONASS Frequency Channel
     rf_link = rf_link_;
-    return;
 }
 
 

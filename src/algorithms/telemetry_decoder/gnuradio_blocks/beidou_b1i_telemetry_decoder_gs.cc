@@ -373,7 +373,6 @@ void beidou_b1i_telemetry_decoder_gs::reset()
     d_sent_tlm_failed_msg = false;
     d_flag_valid_word = false;
     DLOG(INFO) << "Beidou B1I Telemetry decoder reset for satellite " << d_satellite;
-    return;
 }
 
 int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),

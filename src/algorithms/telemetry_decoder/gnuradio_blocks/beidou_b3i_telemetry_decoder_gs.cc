@@ -395,7 +395,6 @@ void beidou_b3i_telemetry_decoder_gs::reset()
     d_sent_tlm_failed_msg = false;
     d_flag_valid_word = false;
     DLOG(INFO) << "Beidou B3I Telemetry decoder reset for satellite " << d_satellite;
-    return;
 }
 
 

@@ -293,7 +293,6 @@ void receive_msg()
                         }
                 }
         }
-    return;
 }
 
 

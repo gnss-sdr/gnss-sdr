@@ -374,8 +374,8 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
             output_p[state] = nsc_enc_bit(nextstate, input, state, g, KK, nn);
             trans_p[state] = nextstate[0];
         }
-    return;
 }
+
 
 /* Function nsc_enc_bit()
 
@@ -395,7 +395,6 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
  (i.e. the state after encoding this bit)
 
  This function is used by rsc_encode(), nsc_transit(), rsc_transit(), and nsc_transit() */
-
 int Viterbi_Decoder::nsc_enc_bit(int state_out_p[], int input, int state_in,
     const int g[], int KK, int nn)
 {

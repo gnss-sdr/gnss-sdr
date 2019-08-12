@@ -69,7 +69,7 @@ option(ENABLE_OPENCL "Enable building of processing blocks implemented with Open
 
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
 
-option(ENABLE_FPGA "Enable building of processing blocks implemented with FPGA" OFF)
+option(ENABLE_FPGA "Enable building of processing blocks implementing FPGA offloading" OFF)
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -2152,11 +2152,11 @@ endif()
 # FPGA (OPTIONAL)
 ################################################################################
 if(ENABLE_FPGA)
-    message(STATUS "FPGA Acceleration will be enabled.")
+    message(STATUS "FPGA offloading will be enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_FPGA=OFF ..'")
 else()
-    message(STATUS "Fpga Acceleration will be not enabled.")
-    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for GPU-based acceleration using the FPGA.")
+    message(STATUS "FPGA offloading will be not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for FPGA offloading.")
 endif()
 
 
@@ -2463,7 +2463,7 @@ add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with
 add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
 add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
 add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
-add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
+add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA offloading.")
 add_feature_info(ENABLE_ARMA_NO_DEBUG ENABLE_ARMA_NO_DEBUG "Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.")
 add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")

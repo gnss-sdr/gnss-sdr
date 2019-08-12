@@ -15,7 +15,7 @@ ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
 	if(size == 0)
 		return 0;	/* Want more */
 
-	oct = *(const uint8_t *)buf;
+	oct = *buf;
 	if((oct & 0x80) == 0) {
 		/*
 		 * Short definite length.

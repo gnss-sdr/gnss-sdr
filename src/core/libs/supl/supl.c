@@ -76,7 +76,7 @@ int EXPORT supl_ulp_encode(supl_ulp_t *pdu)
             memset(pdu->buffer, 0, sizeof(pdu->buffer));
 
             pdu_len = (ret.encoded + 7) >> 3;
-            ((ULP_PDU_t *)pdu->pdu)->length = pdu_len;
+            (pdu->pdu)->length = pdu_len;
 
             ret = uper_encode_to_buffer(&asn_DEF_ULP_PDU, pdu->pdu, pdu->buffer, sizeof(pdu->buffer));
             if (ret.encoded > 0)
@@ -249,7 +249,7 @@ int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server)
 
     SSLeay_add_ssl_algorithms();
     // meth = TLSv1_client_method();
-    meth = (SSL_METHOD *)SSLv23_client_method();
+    meth = SSLv23_client_method();
     SSL_load_error_strings();
     ctx->ssl_ctx = SSL_CTX_new(meth);
     if (!ctx->ssl_ctx)

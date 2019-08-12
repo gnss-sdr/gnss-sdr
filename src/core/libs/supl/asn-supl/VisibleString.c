@@ -62,7 +62,7 @@ VisibleString_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 					"%s: value byte %ld (%d) "
 					"not in VisibleString alphabet (%s:%d)",
 					td->name,
-					(long)((buf - st->buf) + 1),
+					((buf - st->buf) + 1),
 					*buf,
 					__FILE__, __LINE__);
 				return -1;

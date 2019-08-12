@@ -50,7 +50,7 @@ per_get_few_bits(asn_per_data_t *pd, int nbits) {
                 if(!pd->refill || nbits > 31) return -1;
                 /* Accumulate unused bytes before refill */
                 ASN_DEBUG("Obtain the rest %d bits (want %d)",
-                        (int)nleft, (int)nbits);
+                        (int)nleft, nbits);
                 tailv = per_get_few_bits(pd, nleft);
                 if(tailv < 0) return -1;
                 /* Refill (replace pd contents with new data) */
@@ -105,7 +105,7 @@ per_get_few_bits(asn_per_data_t *pd, int nbits) {
         accum &= (((uint32_t)1 << nbits) - 1);
 
         ASN_DEBUG("  [PER got %2d<=%2d bits => span %d %+ld[%d..%d]:%02x (%d) => 0x%x]",
-                (int)nbits, (int)nleft,
+                nbits, (int)nleft,
                 (int)pd->moved,
                 (((long)pd->buffer) & 0xf),
                 (int)pd->nboff, (int)pd->nbits,
@@ -429,7 +429,7 @@ per_put_few_bits(asn_per_outp_t *po, uint32_t bits, int obits) {
 
         ASN_DEBUG("[PER out %u/%x => %02x buf+%ld]",
                 (int)bits, (int)bits, buf[0],
-                (long)(po->buffer - po->tmpspace));
+                (po->buffer - po->tmpspace));
 
         return 0;
 }

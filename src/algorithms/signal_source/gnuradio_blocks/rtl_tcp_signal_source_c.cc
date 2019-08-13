@@ -244,8 +244,8 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
         {
             const range &r = ranges[i];
             double error = gain;
-
-            for (double g = r.start; g < r.stop; g += r.step)
+            double g = r.start;
+            while (g < r.stop)
                 {
                     double sum = 0;
                     for (int j = 0; j < static_cast<int>(gains.size()); j++)
@@ -265,6 +265,7 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
                             error = err;
                             gains[i + 1] = g;
                         }
+                    g += r.step;;
                 }
         }
     for (unsigned stage = 1; stage <= gains.size(); stage++)

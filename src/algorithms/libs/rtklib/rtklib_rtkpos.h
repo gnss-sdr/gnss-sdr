@@ -84,11 +84,11 @@ const double TTOL_MOVEB = (1.0 + 2 * DTTOL);
 
 int rtkopenstat(const char *file, int level);
 
-void rtkclosestat(void);
+void rtkclosestat();
 
 void rtkoutstat(rtk_t *rtk);
 
-void swapsolstat(void);
+void swapsolstat();
 
 void outsolstat(rtk_t *rtk);
 

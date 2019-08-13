@@ -181,7 +181,7 @@ int rtkopenstat(const char *file, int level)
  * args   : none
  * return : none
  *-----------------------------------------------------------------------------*/
-void rtkclosestat(void)
+void rtkclosestat()
 {
     trace(3, "rtkclosestat:\n");
 
@@ -341,7 +341,7 @@ void rtkoutstat(rtk_t *rtk, char *buff __attribute__((unused)))
 
 
 /* swap solution status file -------------------------------------------------*/
-void swapsolstat(void)
+void swapsolstat()
 {
     gtime_t time = utc2gpst(timeget());
     char path[1024];

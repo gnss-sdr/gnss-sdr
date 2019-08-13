@@ -674,30 +674,37 @@ void setcodepri(int sys, int freq, const char *pri)
             if (sys & SYS_GPS)
                 {
                     std::strncpy(codepris[0][freq - 1], pri, 16);
+                    codepris[0][freq - 1][15] = '\0';
                 }
             if (sys & SYS_GLO)
                 {
                     std::strncpy(codepris[1][freq - 1], pri, 16);
+                    codepris[1][freq - 1][15] = '\0';
                 }
             if (sys & SYS_GAL)
                 {
                     std::strncpy(codepris[2][freq - 1], pri, 16);
+                    codepris[2][freq - 1][15] = '\0';
                 }
             if (sys & SYS_QZS)
                 {
                     std::strncpy(codepris[3][freq - 1], pri, 16);
+                    codepris[3][freq - 1][15] = '\0';
                 }
             if (sys & SYS_SBS)
                 {
                     std::strncpy(codepris[4][freq - 1], pri, 16);
+                    codepris[4][freq - 1][15] = '\0';
                 }
             if (sys & SYS_BDS)
                 {
                     std::strncpy(codepris[5][freq - 1], pri, 16);
+                    codepris[5][freq - 1][15] = '\0';
                 }
             if (sys & SYS_IRN)
                 {
                     std::strncpy(codepris[6][freq - 1], pri, 16);
+                    codepris[6][freq - 1][15] = '\0';
                 }
         }
     else
@@ -2982,6 +2989,7 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
             if (strlen(type) < MAXANT + 1)
                 {
                     std::strncpy(buff, type, MAXANT);
+                    buff[MAXANT - 1] = '\0';
                 }
             else
                 {
@@ -3873,6 +3881,7 @@ void traceopen(const char *file)
     if (strlen(file) < 1025)
         {
             std::strncpy(file_trace, file, 1024);
+            file_trace[1023] = '\0';
         }
     else
         {
@@ -4100,6 +4109,7 @@ void createdir(const char *path)
     if (strlen(path) < 1025)
         {
             std::strncpy(buff, path, 1024);
+            buff[1023] = '\0';
         }
     else
         {
@@ -4145,6 +4155,7 @@ int repstr(char *str, const char *pat, const char *rep)
     if (strlen(p) < 1025)
         {
             std::strncpy(r, p, 1024);
+            r[1023] = '\0';
         }
     else
         {
@@ -5083,6 +5094,7 @@ int rtk_uncompress(const char *file, char *uncfile)
     if (strlen(file) < 1025)
         {
             std::strncpy(tmpfile, file, 1024);
+            tmpfile[1023] = '\0';
         }
     else
         {
@@ -5279,6 +5291,7 @@ int expath(const char *path, char *paths[], int nmax)
                             if (strlen(paths[i]) < 1025)
                                 {
                                     std::strncpy(tmp, paths[i], 1024);
+                                    tmp[1023] = '\0';
                                 }
                             else
                                 {

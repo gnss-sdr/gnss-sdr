@@ -164,6 +164,7 @@ int rtkopenstat(const char *file, int level)
     if (strlen(file) < 1025)
         {
             std::strncpy(file_stat, file, 1024);
+            file_stat[1023] = '\0';
         }
     else
         {

@@ -36,11 +36,6 @@
 #include <stdexcept>
 
 
-Ls_Pvt::Ls_Pvt()
-{
-}
-
-
 arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
 {
     // BANCROFT Calculation of preliminary coordinates for a GPS receiver based on pseudoranges

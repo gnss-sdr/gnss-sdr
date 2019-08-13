@@ -42,7 +42,7 @@
 class Ls_Pvt : public Pvt_Solution
 {
 public:
-    Ls_Pvt();
+    Ls_Pvt() = default;
 
     /*!
      * \brief Computes the initial position solution based on the Bancroft algorithm

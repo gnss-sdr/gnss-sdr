@@ -414,11 +414,11 @@ char *decode_soltime(char *buff, const solopt_t *opt, gtime_t *time)
 
     if (!strcmp(opt->sep, "\\t"))
         {
-            strcpy(s, "\t");
+            std::strncpy(s, "\t", 2);
         }
     else if (*opt->sep)
         {
-            strcpy(s, opt->sep);
+            std::strncpy(s, opt->sep, 64);
         }
     len = static_cast<int>(strlen(s));
 
@@ -904,7 +904,7 @@ void decode_solopt(char *buff, solopt_t *opt)
             opt->times = TIMES_GPST;
             opt->posf = SOLF_GSIF;
             opt->degf = 0;
-            strcpy(opt->sep, " ");
+            std::strncpy(opt->sep, " ", 2);
         }
 }
 

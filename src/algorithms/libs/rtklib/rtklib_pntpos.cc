@@ -832,7 +832,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
             sat = obs[i].sat;
             rms = rms_e;
             vsat[i] = 0;
-            strcpy(msg, msg_e);
+            std::strncpy(msg, msg_e, 128);
         }
     if (stat)
         {
@@ -1013,7 +1013,7 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
 
     if (n <= 0)
         {
-            strcpy(msg, "no observation data");
+            std::strncpy(msg, "no observation data", 20);
             return 0;
         }
 

@@ -117,7 +117,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
         }
     else if (strlen(path) < 128)
         {
-            strcpy(port, path);
+            std::strncpy(port, path, 128);
         }
 
     for (i = 0; i < 10; i++)
@@ -422,7 +422,7 @@ file_t *openfile(const char *path, int mode, char *msg)
     file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = nullptr;
     if (strlen(path) < MAXSTRPATH)
         {
-            strcpy(file->path, path);
+            std::strncpy(file->path, path, MAXSTRPATH);
         }
     if ((p = strstr(file->path, "::")))
         {
@@ -743,7 +743,7 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
 
     if (strlen(path) < MAXSTRPATH)
         {
-            strcpy(buff, path);
+            std::strncpy(buff, path, MAXSTRPATH);
         }
 
     if (!(p = strrchr(buff, '@')))
@@ -758,13 +758,13 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
                     *q = '\0';
                     if (str)
                         {
-                            strcpy(str, q + 1);
+                            std::strncpy(str, q + 1, NTRIP_MAXSTR);
                         }
                 }
             *p = '\0';
             if (mntpnt)
                 {
-                    strcpy(mntpnt, p + 1);
+                    std::strncpy(mntpnt, p + 1, 256);
                 }
         }
     if ((p = strrchr(buff, '@')))
@@ -775,12 +775,12 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
                     *q = '\0';
                     if (passwd)
                         {
-                            strcpy(passwd, q + 1);
+                            std::strncpy(passwd, q + 1, 256);
                         }
                 }
             if (user)
                 {
-                    strcpy(user, buff);
+                    std::strncpy(user, buff, 256);
                 }
         }
     else
@@ -793,12 +793,12 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
             *q = '\0';
             if (port)
                 {
-                    strcpy(port, q + 1);
+                    std::strncpy(port, q + 1, 256);
                 }
         }
     if (addr)
         {
-            strcpy(addr, p);
+            std::strncpy(addr, p, 1024);
         }
 }
 
@@ -1080,7 +1080,7 @@ void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
                 {
                     continue;
                 }
-            strcpy(saddr, tcpsvr->cli[i].saddr);
+            std::strncpy(saddr, tcpsvr->cli[i].saddr, 256);
             n++;
         }
     if (n == 0)
@@ -1148,7 +1148,7 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
     memcpy(&tcpsvr->cli[i].addr, &addr, sizeof(addr));
     if (strlen(inet_ntoa(addr.sin_addr)) < 256)
         {
-            strcpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr));
+            std::strncpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr), 256);
         }
     sprintf(msg, "%s", tcpsvr->cli[i].saddr);
     tracet(2, "accsock: connected sock=%d addr=%s\n", tcpsvr->cli[i].sock, tcpsvr->cli[i].saddr);
@@ -1641,7 +1641,7 @@ int rspntrip_c(ntrip_t *ntrip, char *msg)
                 {
                     ntrip->buff[128] = '\0';
                 }
-            strcpy(msg, p);
+            std::strncpy(msg, p, MAXSTRMSG);
             tracet(1, "rspntrip_s: %s nb=%d\n", msg, ntrip->nb);
             ntrip->nb = 0;
             ntrip->buff[0] = '\0';
@@ -1756,7 +1756,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
                             ntrip->url[k] = s_aux[k];
                         }
                 }
-            strcpy(tpath, proxyaddr);
+            std::strncpy(tpath, proxyaddr, MAXSTRPATH);
         }
     /* open tcp client stream */
     if (!(ntrip->tcp = opentcpcli(tpath, msg)))
@@ -1847,7 +1847,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
         }
     if (strlen(path) < MAXSTRPATH)
         {
-            strcpy(buff, path);
+            std::strncpy(buff, path, MAXSTRPATH);
         }
 
     if ((p = strchr(buff, '/')))
@@ -1860,7 +1860,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                             sscanf(q + 2, "T=%d, %d, %d, %d", topts, topts + 1, topts + 2, topts + 3);
                         }
                 }
-            strcpy(file, p + 1);
+            std::strncpy(file, p + 1, 1024);
             *p = '\0';
         }
     else
@@ -1876,12 +1876,12 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                     *q = '\0';
                     if (passwd)
                         {
-                            strcpy(passwd, q + 1);
+                            std::strncpy(passwd, q + 1, 256);
                         }
                 }
             if (user)
                 {
-                    strcpy(user, buff);
+                    std::strncpy(user, buff, 256);
                 }
         }
     else
@@ -1889,7 +1889,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
             p = buff;
         }
 
-    strcpy(addr, p);
+    std::strncpy(addr, p, 1024);
 }
 
 
@@ -1985,7 +1985,7 @@ void *ftpthread(void *arg)
         }
 
     /* if local file exist, skip download */
-    strcpy(tmpfile, local);
+    std::strncpy(tmpfile, local, 1024);
     if ((p = strrchr(tmpfile, '.')) &&
         (!strcmp(p, ".z") || !strcmp(p, ".gz") || !strcmp(p, ".zip") ||
             !strcmp(p, ".Z") || !strcmp(p, ".GZ") || !strcmp(p, ".ZIP")))
@@ -1995,7 +1995,7 @@ void *ftpthread(void *arg)
     if ((fp = fopen(tmpfile, "rbe")))
         {
             fclose(fp);
-            strcpy(ftp->local, tmpfile);
+            std::strncpy(ftp->local, tmpfile, 1024);
             tracet(3, "ftpthread: file exists %s\n", ftp->local);
             ftp->state = 2;
             return nullptr;
@@ -2084,7 +2084,7 @@ void *ftpthread(void *arg)
                         }
                     if (strlen(tmpfile) < 1024)
                         {
-                            strcpy(local, tmpfile);
+                            std::strncpy(local, tmpfile, 1024);
                         }
                 }
             else
@@ -2097,7 +2097,7 @@ void *ftpthread(void *arg)
         }
     if (strlen(local) < 1024)
         {
-            strcpy(ftp->local, local);
+            std::strncpy(ftp->local, local, 1024);
         }
     ftp->state = 2; /* ftp completed */
 
@@ -2172,7 +2172,7 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
                 {
                     tracet(1, "readftp: ftp thread create error\n");
                     ftp->state = 3;
-                    strcpy(msg, "ftp thread error");
+                    std::strncpy(msg, "ftp thread error", 17);
                     return 0;
                 }
         }
@@ -2203,7 +2203,7 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
     ftp->tnext = nextdltime(ftp->topts, 1);
     ftp->state = 0;
 
-    strcpy(msg, "");
+    std::strncpy(msg, "", 1);
 
     return static_cast<int>(p - buff);
 }
@@ -2291,7 +2291,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
     stream->mode = mode;
     if (strlen(path) < MAXSTRPATH)
         {
-            strcpy(stream->path, path);
+            std::strncpy(stream->path, path, MAXSTRPATH);
         }
     stream->inb = stream->inr = stream->outb = stream->outr = 0;
     stream->tick = tickget();
@@ -2720,7 +2720,7 @@ void strsetdir(const char *dir)
     tracet(3, "strsetdir: dir=%s\n", dir);
     if (strlen(dir) < 1024)
         {
-            strcpy(localdir, dir);
+            std::strncpy(localdir, dir, 1024);
         }
 }
 
@@ -2735,7 +2735,7 @@ void strsetproxy(const char *addr)
     tracet(3, "strsetproxy: addr=%s\n", addr);
     if (strlen(addr) < 256)
         {
-            strcpy(proxyaddr, addr);
+            std::strncpy(proxyaddr, addr, 256);
         }
 }
 

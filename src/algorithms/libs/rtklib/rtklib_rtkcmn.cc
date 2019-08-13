@@ -52,6 +52,7 @@
 
 #include "rtklib_rtkcmn.h"
 #include <glog/logging.h>
+#include <cstring>
 #include <dirent.h>
 #include <iostream>
 #include <sstream>
@@ -502,7 +503,7 @@ void satno2id(int sat, char *id)
             sprintf(id, "%03d", prn);
             return;
         }
-    strcpy(id, "");
+    std::strncpy(id, "", 1);
 }
 
 
@@ -672,31 +673,31 @@ void setcodepri(int sys, int freq, const char *pri)
         {
             if (sys & SYS_GPS)
                 {
-                    strcpy(codepris[0][freq - 1], pri);
+                    std::strncpy(codepris[0][freq - 1], pri, 16);
                 }
             if (sys & SYS_GLO)
                 {
-                    strcpy(codepris[1][freq - 1], pri);
+                    std::strncpy(codepris[1][freq - 1], pri, 16);
                 }
             if (sys & SYS_GAL)
                 {
-                    strcpy(codepris[2][freq - 1], pri);
+                    std::strncpy(codepris[2][freq - 1], pri, 16);
                 }
             if (sys & SYS_QZS)
                 {
-                    strcpy(codepris[3][freq - 1], pri);
+                    std::strncpy(codepris[3][freq - 1], pri, 16);
                 }
             if (sys & SYS_SBS)
                 {
-                    strcpy(codepris[4][freq - 1], pri);
+                    std::strncpy(codepris[4][freq - 1], pri, 16);
                 }
             if (sys & SYS_BDS)
                 {
-                    strcpy(codepris[5][freq - 1], pri);
+                    std::strncpy(codepris[5][freq - 1], pri, 16);
                 }
             if (sys & SYS_IRN)
                 {
-                    strcpy(codepris[6][freq - 1], pri);
+                    std::strncpy(codepris[6][freq - 1], pri, 16);
                 }
         }
     else
@@ -2973,7 +2974,7 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
         {
             if (strlen(type) < MAXANT + 1)
                 {
-                    strcpy(buff, type);
+                    std::strncpy(buff, type, MAXANT);
                 }
             else
                 {
@@ -3864,7 +3865,7 @@ void traceopen(const char *file)
         }
     if (strlen(file) < 1025)
         {
-            strcpy(file_trace, file);
+            std::strncpy(file_trace, file, 1024);
         }
     else
         {
@@ -4091,7 +4092,7 @@ void createdir(const char *path)
 
     if (strlen(path) < 1025)
         {
-            strcpy(buff, path);
+            std::strncpy(buff, path, 1024);
         }
     else
         {
@@ -4136,13 +4137,13 @@ int repstr(char *str, const char *pat, const char *rep)
 
     if (strlen(p) < 1025)
         {
-            strcpy(r, p);
+            std::strncpy(r, p, 1024);
         }
     else
         {
             trace(1, "pat array is too long");
         }
-    strcpy(str, buff);
+    std::strncpy(str, buff, 1024);
     return 1;
 }
 
@@ -4186,7 +4187,7 @@ int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
     int stat = 0;
     char rep[64];
 
-    strcpy(rpath, path);
+    std::strncpy(rpath, path, 1024);
 
     if (!strstr(rpath, "%"))
         {
@@ -5074,7 +5075,7 @@ int rtk_uncompress(const char *file, char *uncfile)
 
     if (strlen(file) < 1025)
         {
-            strcpy(tmpfile, file);
+            std::strncpy(tmpfile, file, 1024);
         }
     else
         {
@@ -5090,7 +5091,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         !strcmp(p, ".gz") || !strcmp(p, ".GZ") ||
         !strcmp(p, ".zip") || !strcmp(p, ".ZIP"))
         {
-            strcpy(uncfile, tmpfile);
+            std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile] = '\0';
             sprintf(cmd, R"(gzip -f -d -c "%s" > "%s")", tmpfile, uncfile);
 
@@ -5104,16 +5105,16 @@ int rtk_uncompress(const char *file, char *uncfile)
                 }
             if (strlen(uncfile) < 1025)
                 {
-                    strcpy(tmpfile, uncfile);
+                    std::strncpy(tmpfile, uncfile, 1024);
                 }
             stat = 1;
         }
     /* extract tar file */
     if ((p = strrchr(tmpfile, '.')) && !strcmp(p, ".tar"))
         {
-            strcpy(uncfile, tmpfile);
+            std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile] = '\0';
-            strcpy(buff, tmpfile);
+            std::strncpy(buff, tmpfile, 1024);
             fname = buff;
             if ((p = strrchr(buff, '/')))
                 {
@@ -5160,7 +5161,7 @@ int rtk_uncompress(const char *file, char *uncfile)
     /* extract hatanaka-compressed file by cnx2rnx */
     else if ((p = strrchr(tmpfile, '.')) && strlen(p) > 3 && (*(p + 3) == 'd' || *(p + 3) == 'D'))
         {
-            strcpy(uncfile, tmpfile);
+            std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile + 3] = *(p + 3) == 'D' ? 'O' : 'o';
             sprintf(cmd, R"(crx2rnx < "%s" > "%s")", tmpfile, uncfile);
 
@@ -5270,14 +5271,14 @@ int expath(const char *path, char *paths[], int nmax)
                         {
                             if (strlen(paths[i]) < 1025)
                                 {
-                                    strcpy(tmp, paths[i]);
+                                    std::strncpy(tmp, paths[i], 1024);
                                 }
                             else
                                 {
                                     trace(1, "Path is too long");
                                 }
-                            strcpy(paths[i], paths[j]);
-                            strcpy(paths[j], tmp);
+                            std::strncpy(paths[i], paths[j], 1024);
+                            std::strncpy(paths[j], tmp, 1024);
                         }
                 }
         }

@@ -156,6 +156,15 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     // temporary buffers that we can release
     volk_gnsssdr_free(fft_codes_padded);
+
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
 
 

@@ -1321,6 +1321,13 @@ int filter(double *x, double *P, const double *H, const double *v,
     xp_ = mat(k, 1);
     P_ = mat(k, k);
     Pp_ = mat(k, k);
+    for (i = 0; i < k; i++)
+        {
+            for (j = 0; j < k; j++)
+                {
+                    Pp_[i * k + j] = 0.0;
+                }
+        }
     H_ = mat(k, m);
     for (i = 0; i < k; i++)
         {

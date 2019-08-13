@@ -36,7 +36,7 @@
 #include <stdexcept>
 
 
-Ls_Pvt::Ls_Pvt() : Pvt_Solution()
+Ls_Pvt::Ls_Pvt()
 {
 }
 

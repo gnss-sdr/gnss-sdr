@@ -537,7 +537,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
     if (file->fp == stdin)
         {
             /* input from stdin */
-            FD_ZERO(&rs);
+            std::memset(&rs, 0, sizeof(fd_set));
             FD_SET(0, &rs);
             if (!select(1, &rs, nullptr, nullptr, &tv))
                 {
@@ -844,7 +844,7 @@ socket_t accept_nb(socket_t sock, struct sockaddr *addr, socklen_t *len)
 {
     struct timeval tv = {0, 0};
     fd_set rs;
-    FD_ZERO(&rs);
+    std::memset(&rs, 0, sizeof(fd_set));
     FD_SET(sock, &rs);
     if (!select(sock + 1, &rs, nullptr, nullptr, &tv))
         {
@@ -875,7 +875,7 @@ int connect_nb(socket_t sock, struct sockaddr *addr, socklen_t len)
                 {
                     return -1;
                 }
-            FD_ZERO(&rs);
+            std::memset(&rs, 0, sizeof(fd_set));
             FD_SET(sock, &rs);
             ws = rs;
             if (select(sock + 1, &rs, &ws, nullptr, &tv) == 0)
@@ -892,7 +892,7 @@ int recv_nb(socket_t sock, unsigned char *buff, int n)
 {
     struct timeval tv = {0, 0};
     fd_set rs;
-    FD_ZERO(&rs);
+    std::memset(&rs, 0, sizeof(fd_set));
     FD_SET(sock, &rs);
     if (!select(sock + 1, &rs, nullptr, nullptr, &tv))
         {
@@ -907,7 +907,7 @@ int send_nb(socket_t sock, unsigned char *buff, int n)
 {
     struct timeval tv = {0, 0};
     fd_set ws;
-    FD_ZERO(&ws);
+    std::memset(&ws, 0, sizeof(fd_set));
     FD_SET(sock, &ws);
     if (!select(sock + 1, nullptr, &ws, nullptr, &tv))
         {

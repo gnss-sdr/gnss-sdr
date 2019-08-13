@@ -127,8 +127,8 @@ void tide_solid(const double *rsun, const double *rmoon,
     const double *pos, const double *E, double gmst, int opt,
     double *dr)
 {
-    double dr1[3];
-    double dr2[3];
+    double dr1[3] = {0.0, 0.0, 0.0};
+    double dr2[3] = {0.0, 0.0, 0.0};
     double eu[3];
     double du;
     double dn;

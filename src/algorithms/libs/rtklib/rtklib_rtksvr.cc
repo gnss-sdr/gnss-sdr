@@ -538,7 +538,7 @@ void decodefile(rtksvr_t *svr, int index)
             svr->nav.ne = svr->nav.nemax = nav.ne;
             svr->nav.peph = nav.peph;
             svr->ftime[index] = utc2gpst(timeget());
-            strcpy(svr->files[index], file);
+            std::strncpy(svr->files[index], file, MAXSTRPATH);
 
             rtksvrunlock(svr);
         }
@@ -561,7 +561,7 @@ void decodefile(rtksvr_t *svr, int index)
             svr->nav.nc = svr->nav.ncmax = nav.nc;
             svr->nav.pclk = nav.pclk;
             svr->ftime[index] = utc2gpst(timeget());
-            strcpy(svr->files[index], file);
+            std::strncpy(svr->files[index], file, MAXSTRPATH);
 
             rtksvrunlock(svr);
         }
@@ -991,11 +991,11 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
             /* set receiver and rtcm option */
             if (strlen(rcvopts[i]) < 256)
                 {
-                    strcpy(svr->raw[i].opt, rcvopts[i]);
+                    std::strncpy(svr->raw[i].opt, rcvopts[i], 256);
                 }
             if (strlen(rcvopts[i]) < 256)
                 {
-                    strcpy(svr->rtcm[i].opt, rcvopts[i]);
+                    std::strncpy(svr->rtcm[i].opt, rcvopts[i], 256);
                 }
 
             /* connect dgps corrections */

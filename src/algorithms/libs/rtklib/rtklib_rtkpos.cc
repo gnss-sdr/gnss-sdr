@@ -163,7 +163,7 @@ int rtkopenstat(const char *file, int level)
         }
     if (strlen(file) < 1025)
         {
-            strcpy(file_stat, file);
+            std::strncpy(file_stat, file, 1024);
         }
     else
         {

@@ -12,6 +12,12 @@
 - The CMake scripts now find dependencies in Debian's riscv64 architecture.
 
 
+### Improvements in Reliability:
+
+- Removed usage of functions with insecure API (e.g., strcpy)
+- Added clang-tidy checks clang-analyzer-security.*
+
+
 
 See the definitions of concepts and metrics at https://gnss-sdr.org/design-forces/
 

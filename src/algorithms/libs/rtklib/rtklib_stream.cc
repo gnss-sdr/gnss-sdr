@@ -786,7 +786,7 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
                 }
             if (user)
                 {
-                    std::strncpy(user, buff, 256);
+                    std::memcpy(user, buff, 256);
                     user[255] = '\0';
                 }
         }
@@ -1873,6 +1873,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                         }
                 }
             std::strncpy(file, p + 1, 1024);
+            file[1023] = '\0';
             *p = '\0';
         }
     else
@@ -1889,11 +1890,13 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                     if (passwd)
                         {
                             std::strncpy(passwd, q + 1, 256);
+                            passwd[255] = '\0';
                         }
                 }
             if (user)
                 {
-                    std::strncpy(user, buff, 256);
+                    std::memcpy(user, buff, 256);
+                    user[255] = '\0';
                 }
         }
     else
@@ -1902,6 +1905,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
         }
 
     std::strncpy(addr, p, 1024);
+    addr[1023] = '\0';
 }
 
 
@@ -1998,6 +2002,7 @@ void *ftpthread(void *arg)
 
     /* if local file exist, skip download */
     std::strncpy(tmpfile, local, 1024);
+    tmpfile[1023] = '\0';
     if ((p = strrchr(tmpfile, '.')) &&
         (!strcmp(p, ".z") || !strcmp(p, ".gz") || !strcmp(p, ".zip") ||
             !strcmp(p, ".Z") || !strcmp(p, ".GZ") || !strcmp(p, ".ZIP")))
@@ -2008,6 +2013,7 @@ void *ftpthread(void *arg)
         {
             fclose(fp);
             std::strncpy(ftp->local, tmpfile, 1024);
+            ftp->local[1023] = '\0';
             tracet(3, "ftpthread: file exists %s\n", ftp->local);
             ftp->state = 2;
             return nullptr;
@@ -2097,6 +2103,7 @@ void *ftpthread(void *arg)
                     if (strlen(tmpfile) < 1024)
                         {
                             std::strncpy(local, tmpfile, 1024);
+                            local[1023] = '\0';
                         }
                 }
             else
@@ -2110,6 +2117,7 @@ void *ftpthread(void *arg)
     if (strlen(local) < 1024)
         {
             std::strncpy(ftp->local, local, 1024);
+            ftp->local[1023] = '\0';
         }
     ftp->state = 2; /* ftp completed */
 
@@ -2812,6 +2820,7 @@ int gen_hex(const char *msg, unsigned char *buff)
     trace(4, "gen_hex: msg=%s\n", msg);
 
     strncpy(mbuff, msg, 1023);
+    mbuff[1022] = '\0';
     for (p = strtok(mbuff, " "); p && narg < 256; p = strtok(nullptr, " "))
         {
             args[narg++] = p;

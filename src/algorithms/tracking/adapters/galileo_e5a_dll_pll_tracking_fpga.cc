@@ -265,6 +265,15 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     channel_ = 0;
 
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
+
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

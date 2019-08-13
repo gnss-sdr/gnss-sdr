@@ -238,8 +238,6 @@ private:
     bool d_extended_correlation_in_fpga;
     bool d_current_extended_correlation_in_fpga;
     int32_t d_next_integration_length_samples;
-    double d_extended_integration_first_acc_carrier_phase_rad;
-    double d_extended_integration_next_acc_carrier_phase_rad_step;
     uint64_t d_sample_counter_next;
     bool d_sc_demodulate_enabled;
     int32_t d_extend_fpga_integration_periods;

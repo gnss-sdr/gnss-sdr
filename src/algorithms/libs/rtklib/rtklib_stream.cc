@@ -118,6 +118,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
     else if (strlen(path) < 128)
         {
             std::strncpy(port, path, 128);
+            port[127] = '\0';
         }
 
     for (i = 0; i < 10; i++)
@@ -423,6 +424,7 @@ file_t *openfile(const char *path, int mode, char *msg)
     if (strlen(path) < MAXSTRPATH)
         {
             std::strncpy(file->path, path, MAXSTRPATH);
+            file->path[MAXSTRPATH - 1] = '\0';
         }
     if ((p = strstr(file->path, "::")))
         {
@@ -744,6 +746,7 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
     if (strlen(path) < MAXSTRPATH)
         {
             std::strncpy(buff, path, MAXSTRPATH);
+            buff[MAXSTRPATH - 1] = '\0';
         }
 
     if (!(p = strrchr(buff, '@')))
@@ -759,12 +762,14 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
                     if (str)
                         {
                             std::strncpy(str, q + 1, NTRIP_MAXSTR);
+                            str[NTRIP_MAXSTR - 1] = '\0';
                         }
                 }
             *p = '\0';
             if (mntpnt)
                 {
                     std::strncpy(mntpnt, p + 1, 256);
+                    mntpnt[255] = '\0';
                 }
         }
     if ((p = strrchr(buff, '@')))
@@ -776,11 +781,13 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
                     if (passwd)
                         {
                             std::strncpy(passwd, q + 1, 256);
+                            passwd[255] = '\0';
                         }
                 }
             if (user)
                 {
                     std::strncpy(user, buff, 256);
+                    user[255] = '\0';
                 }
         }
     else
@@ -794,11 +801,13 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
             if (port)
                 {
                     std::strncpy(port, q + 1, 256);
+                    port[255] = '\0';
                 }
         }
     if (addr)
         {
-            std::strncpy(addr, p, 1024);
+            std::strncpy(addr, p, 256);
+            addr[255] = '\0';
         }
 }
 
@@ -1081,6 +1090,7 @@ void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
                     continue;
                 }
             std::strncpy(saddr, tcpsvr->cli[i].saddr, 256);
+            saddr[255] = '\0';
             n++;
         }
     if (n == 0)
@@ -1149,6 +1159,7 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
     if (strlen(inet_ntoa(addr.sin_addr)) < 256)
         {
             std::strncpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr), 256);
+            tcpsvr->cli[i].saddr[255] = '\0';
         }
     sprintf(msg, "%s", tcpsvr->cli[i].saddr);
     tracet(2, "accsock: connected sock=%d addr=%s\n", tcpsvr->cli[i].sock, tcpsvr->cli[i].saddr);
@@ -1848,6 +1859,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
     if (strlen(path) < MAXSTRPATH)
         {
             std::strncpy(buff, path, MAXSTRPATH);
+            buff[MAXSTRPATH - 1] = '\0';
         }
 
     if ((p = strchr(buff, '/')))
@@ -2292,6 +2304,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
     if (strlen(path) < MAXSTRPATH)
         {
             std::strncpy(stream->path, path, MAXSTRPATH);
+            stream->path[MAXSTRPATH - 1] = '\0';
         }
     stream->inb = stream->inr = stream->outb = stream->outr = 0;
     stream->tick = tickget();
@@ -2721,6 +2734,7 @@ void strsetdir(const char *dir)
     if (strlen(dir) < 1024)
         {
             std::strncpy(localdir, dir, 1024);
+            localdir[1023] = '\0';
         }
 }
 
@@ -2736,6 +2750,7 @@ void strsetproxy(const char *addr)
     if (strlen(addr) < 256)
         {
             std::strncpy(proxyaddr, addr, 256);
+            proxyaddr[255] = '\0';
         }
 }
 

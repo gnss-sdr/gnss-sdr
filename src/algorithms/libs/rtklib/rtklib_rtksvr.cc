@@ -996,6 +996,7 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
             if (strlen(rcvopts[i]) < 256)
                 {
                     std::strncpy(svr->rtcm[i].opt, rcvopts[i], 256);
+                    svr->rtcm[i].opt[255] = '\0';
                 }
 
             /* connect dgps corrections */

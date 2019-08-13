@@ -388,13 +388,16 @@ int decode_nmea(char *buff, sol_t *sol)
                 }
         }
     /* decode nmea sentence */
-    if (!strcmp(val[0], "$GPRMC"))
+    if (val[0])
         {
-            return decode_nmearmc(val + 1, n - 1, sol);
-        }
-    if (!strcmp(val[0], "$GPGGA"))
-        {
-            return decode_nmeagga(val + 1, n - 1, sol);
+            if (!strcmp(val[0], "$GPRMC"))
+                {
+                    return decode_nmearmc(val + 1, n - 1, sol);
+                }
+            if (!strcmp(val[0], "$GPGGA"))
+                {
+                    return decode_nmeagga(val + 1, n - 1, sol);
+                }
         }
     return 0;
 }

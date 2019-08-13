@@ -76,7 +76,7 @@ if(ENABLE_FPGA)
     )
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     set(ACQ_ADAPTER_SOURCES
         ${ACQ_ADAPTER_SOURCES}
         gps_l1_ca_pcps_opencl_acquisition.cc
@@ -98,6 +98,7 @@ target_link_libraries(acquisition_adapters
         algorithms_libs
         gnss_sdr_flags
         acquisition_gr_blocks
+        acquisition_libs
         channel_libs
         core_system_parameters
         Gnuradio::blocks
@@ -108,7 +109,6 @@ target_link_libraries(acquisition_adapters
         Glog::glog
         Gnuradio::fft
         Volkgnsssdr::volkgnsssdr
-        acquisition_libs
 )
 
 target_include_directories(acquisition_adapters

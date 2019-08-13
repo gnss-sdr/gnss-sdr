@@ -6,7 +6,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -78,14 +78,16 @@ public:
 
 private:
     boost::mutex d_mutex;
-    pcap_t *descr;  //ethernet pcap device descriptor
+    pcap_t *descr;  // ethernet pcap device descriptor
     char *fifo_buff;
     int fifo_read_ptr;
     int fifo_write_ptr;
     int fifo_items;
     int d_sock_raw;
     int d_udp_port;
+    // clang-format off
     struct sockaddr_in si_me{};
+    // clang-format on
     std::string d_src_device;
     std::string d_origin_address;
     int d_udp_payload_size;

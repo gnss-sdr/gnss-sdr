@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -175,9 +175,9 @@ int Nmea_Printer::init_serial(const std::string& serial_device)
      * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
      */
     int fd = 0;
-    struct termios options
-    {
-    };
+    // clang-format off
+    struct termios options{};
+    // clang-format on
     int64_t BAUD;
     int64_t DATABITS;
     int64_t STOPBITS;

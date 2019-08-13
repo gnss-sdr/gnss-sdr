@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -102,6 +102,6 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dotprodxnpuppet_32
         }
     volk_gnsssdr_free(in_a);
 }
-#endif   // Generic
+#endif  // Generic
 
 #endif  // INCLUDED_volk_gnsssdr_32fc_32f_high_dynamic_rotator_dotprodxnpuppet_32fc_H

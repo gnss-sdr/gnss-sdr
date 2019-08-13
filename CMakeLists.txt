@@ -155,9 +155,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 10)
+    set(VERSION_INFO_MINOR_VERSION 11)
 else()
-    set(VERSION_INFO_MINOR_VERSION 10.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 11.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -875,13 +875,9 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
     endif()
 
-    set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
-        endif()
-        if(NOT DEFINED ENV{PROTECT_PASSWORDS})
-            set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
         endif()
     endif()
 
@@ -920,11 +916,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         )
     else()
@@ -932,11 +928,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
@@ -2056,13 +2052,15 @@ set_package_properties(OPENCL PROPERTIES
     PURPOSE "Used in some processing block implementations."
     TYPE OPTIONAL
 )
+if(NOT OPENCL_FOUND)
+    set(ENABLE_OPENCL OFF)
+endif()
 if(ENABLE_OPENCL)
-    find_package(OPENCL)
     if(DEFINED ENV{DISABLE_OPENCL})
         set(DISABLE_OPENCL TRUE)
     endif()
     if(DISABLE_OPENCL)
-        set(OPENCL_FOUND FALSE)
+        set(ENABLE_OPENCL OFF)
     else()
         if(OPENCL_FOUND)
             message(STATUS "OpenCL has been found and will be used by some processing blocks")
@@ -2070,7 +2068,7 @@ if(ENABLE_OPENCL)
         endif()
     endif()
     if(ENABLE_GENERIC_ARCH)
-        set(OPENCL_FOUND FALSE)
+        set(ENABLE_OPENCL OFF)
         message(STATUS "ENABLE_GENERIC_ARCH is set to ON so the use of OpenCL has been disabled.")
     endif()
     if(NOT OPENCL_FOUND)

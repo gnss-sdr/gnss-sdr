@@ -36,7 +36,6 @@
 #include "GPS_L5.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex
@@ -46,17 +45,6 @@
 #include <algorithm>  // for copy_n
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
-
-#define NUM_PRNs 32
-
-// the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
-// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
-#define QUANT_BITS_LOCAL_CODE 16
-#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
-#define SHL_CODE_BITS 65536              // shift left by 10 bits
-
 
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     ConfigurationInterface* configuration,
@@ -118,7 +106,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l5i_code_gen_complex_sampled(gsl::span<gr_complex>(code.data(), nsamples_total), PRN, fs_in);
+            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -150,10 +138,10 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
             // and package codes in a format that is ready to be written to the FPGA
             for (uint32_t i = 0; i < nsamples_total; i++)
                 {
-                    tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
-                    tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max));
-                    local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
-                    fft_data = local_code & SELECT_ALL_CODE_BITS;
+                    tmp = static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, quant_bits_local_code - 1) - 1) / max));
+                    tmp2 = static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, quant_bits_local_code - 1) - 1) / max));
+                    local_code = (tmp & select_lsbits) | ((tmp2 * shl_code_bits) & select_msbits);  // put together the real part and the imaginary part
+                    fft_data = local_code & select_all_code_bits;
                     d_all_fft_codes_[i + (nsamples_total * (PRN - 1))] = fft_data;
                 }
         }
@@ -208,6 +196,14 @@ void GpsL5iPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
 }
 
 
+void GpsL5iPcpsAcquisitionFpga::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_fpga_->set_doppler_center(doppler_center_);
+}
+
+
 void GpsL5iPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -225,6 +221,7 @@ void GpsL5iPcpsAcquisitionFpga::init()
 {
     acquisition_fpga_->init();
 }
+
 
 void GpsL5iPcpsAcquisitionFpga::set_local_code()
 {

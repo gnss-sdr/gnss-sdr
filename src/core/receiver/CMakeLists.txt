@@ -109,7 +109,7 @@ if(ENABLE_FLEXIBAND)
     target_compile_definitions(core_receiver PRIVATE -DFLEXIBAND_DRIVER=1)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     message(STATUS "Adding processing blocks implemented using OpenCL")
     target_link_libraries(core_receiver PUBLIC algorithms_libs OpenCL::OpenCL)
     target_compile_definitions(core_receiver PRIVATE -DOPENCL_BLOCKS=1)
@@ -135,7 +135,6 @@ target_link_libraries(core_receiver
     PUBLIC
         core_libs
         core_monitor
-        Boost::thread
         Gnuradio::runtime
     PRIVATE
         signal_source_adapters
@@ -150,11 +149,16 @@ target_link_libraries(core_receiver
         obs_adapters
         pvt_adapters
         Boost::boost
-        Boost::chrono
         Gflags::gflags
         Glog::glog
         Armadillo::armadillo
 )
+
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+    target_compile_definitions(core_receiver
+        PRIVATE -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
 
 # Fix for Boost Asio < 1.70
 if(OS_IS_MACOSX)
@@ -171,6 +175,15 @@ if(OS_IS_MACOSX)
             )
         endif()
     endif()
+endif()
+
+if(ENABLE_FPGA)
+    target_link_libraries(core_receiver
+        PUBLIC
+            Boost::thread
+        PRIVATE
+            Boost::chrono
+    )
 endif()
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)

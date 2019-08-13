@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,23 +33,17 @@
 #ifndef GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H_
 #define GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H_
 
+#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
 
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
-
-//!Generates complex GLONASS L2 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
-void glonass_l2_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, /*int32_t  _prn,*/ uint32_t _chip_shift);
+//! Generates complex GLONASS L2 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
+void glonass_l2_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _chip_shift);
 
 //! Generates N complex GLONASS L2 C/A codes for the desired SV ID and code shift
-void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, /* uint32_t _prn,*/ int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
+void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
 
 //! Generates complex GLONASS L2 C/A code for the desired SV ID and code shift
-void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, /* uint32_t _prn,*/ int32_t _fs, uint32_t _chip_shift);
+void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift);
 
 #endif /* GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H_ */

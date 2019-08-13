@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,7 +30,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gnss_flowgraph.h"
 #include "acquisition_interface.h"
 #include "channel.h"
 #include "channel_interface.h"
@@ -38,6 +37,7 @@
 #include "file_configuration.h"
 #include "file_signal_source.h"
 #include "gnss_block_interface.h"
+#include "gnss_flowgraph.h"
 #include "in_memory_configuration.h"
 #include "pass_through.h"
 #include "tracking_interface.h"

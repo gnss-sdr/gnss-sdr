@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,7 +45,6 @@ Hybrid_Ls_Pvt::Hybrid_Ls_Pvt(int nchannels, std::string dump_filename, bool flag
     d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_galileo_current_time = 0;
-    count_valid_position = 0;
     this->set_averaging_flag(false);
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)

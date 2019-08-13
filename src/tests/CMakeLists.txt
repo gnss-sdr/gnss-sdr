@@ -149,7 +149,7 @@ if(OPENSSL_FOUND)
     add_definitions(-DUSE_OPENSSL_FALLBACK=1)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     add_definitions(-DOPENCL_BLOCKS_TEST=1)
 endif()
 

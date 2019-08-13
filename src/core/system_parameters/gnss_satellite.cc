@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -124,9 +124,9 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 {
     if (this != &other)
         {
-            this->system = std::move(other.get_system());
+            this->system = other.get_system();
             this->PRN = other.get_PRN();
-            this->block = std::move(other.get_block());
+            this->block = other.get_block();
             this->rf_link = other.get_rf_link();
         }
     return *this;

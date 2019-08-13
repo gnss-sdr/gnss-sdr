@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,7 +50,7 @@ class complex_float_to_complex_byte : public gr::sync_block
 private:
     friend complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
     complex_float_to_complex_byte();
-    
+
 public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,

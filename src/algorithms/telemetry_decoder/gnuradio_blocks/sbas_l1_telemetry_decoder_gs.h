@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,6 +40,7 @@
 #include <cstdint>
 #include <deque>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>  // for pair
 #include <vector>
@@ -50,12 +51,13 @@ class sbas_l1_telemetry_decoder_gs;
 
 using sbas_l1_telemetry_decoder_gs_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
-sbas_l1_telemetry_decoder_gs_sptr
-sbas_l1_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
- * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
- *
+ * \brief This class implements a block that decodes the SBAS integrity and
+ * corrections data defined in RTCA MOPS DO-229
  */
 class sbas_l1_telemetry_decoder_gs : public gr::block
 {
@@ -67,6 +69,7 @@ public:
     {
         return;
     }
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -74,8 +77,10 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend sbas_l1_telemetry_decoder_gs_sptr
-    sbas_l1_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
+        const Gnss_Satellite &satellite,
+        bool dump);
+
     sbas_l1_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
@@ -103,7 +108,7 @@ private:
     {
     public:
         Sample_Aligner();
-        ~Sample_Aligner();
+        ~Sample_Aligner() = default;
         void reset();
         /*
          * samples length must be a multiple of two
@@ -125,14 +130,14 @@ private:
     {
     public:
         Symbol_Aligner_And_Decoder();
-        ~Symbol_Aligner_And_Decoder();
+        ~Symbol_Aligner_And_Decoder() = default;
         void reset();
         bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
 
     private:
         int32_t d_KK;
-        Viterbi_Decoder *d_vd1;
-        Viterbi_Decoder *d_vd2;
+        std::shared_ptr<Viterbi_Decoder> d_vd1;
+        std::shared_ptr<Viterbi_Decoder> d_vd2;
         double d_past_symbol;
     } d_symbol_aligner_and_decoder;
 
@@ -157,7 +162,7 @@ private:
         void get_valid_frames(const std::vector<msg_candiate_int_t> &msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
 
     private:
-        typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
+        typedef boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false> crc_24_q_type;
         crc_24_q_type d_checksum_agent;
         void zerropad_front_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes);
         void zerropad_back_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes);

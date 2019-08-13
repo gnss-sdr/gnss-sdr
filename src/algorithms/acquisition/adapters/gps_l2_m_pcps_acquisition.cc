@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -211,12 +211,14 @@ void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
     acquisition_->set_doppler_step(doppler_step_);
 }
 
+
 void GpsL2MPcpsAcquisition::set_doppler_center(int doppler_center)
 {
     doppler_center_ = doppler_center;
 
     acquisition_->set_doppler_center(doppler_center_);
 }
+
 
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
@@ -235,27 +237,26 @@ signed int GpsL2MPcpsAcquisition::mag()
 void GpsL2MPcpsAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+    std::vector<std::complex<float>> code(code_length_);
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), gnss_synchro_->PRN, acq_parameters_.resampled_fs);
+            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs);
         }
     else
         {
-            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), gnss_synchro_->PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
         }
 
     gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
-            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());
@@ -276,7 +277,7 @@ void GpsL2MPcpsAcquisition::set_state(int state)
 
 float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

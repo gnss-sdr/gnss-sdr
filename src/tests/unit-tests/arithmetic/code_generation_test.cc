@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,14 +31,9 @@
 
 #include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
+#include <gsl/gsl>
 #include <chrono>
 #include <complex>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 
 TEST(CodeGenerationTest, CodeGenGPSL1Test)

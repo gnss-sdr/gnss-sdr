@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -209,8 +209,8 @@ GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : g
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
         boost::bind(
-                              &GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events,
-                              this, _1));
+            &GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events,
+            this, _1));
     rx_message = 0;
 }
 

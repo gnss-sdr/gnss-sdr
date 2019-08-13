@@ -43,6 +43,10 @@
 #ifndef GNSS_SDR_NONLINEAR_TRACKING_H_
 #define GNSS_SDR_NONLINEAR_TRACKING_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
 

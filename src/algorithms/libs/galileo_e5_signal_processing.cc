@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,7 +35,6 @@
 #include "Galileo_E5a.h"
 #include "gnss_signal_processing.h"
 #include <gnuradio/gr_complex.h>
-#include <array>
 #include <memory>
 
 

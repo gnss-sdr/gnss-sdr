@@ -3,7 +3,7 @@
  * \brief Defines addition of 16-bit integers with saturation
  * \author Javier Arribas, 2015. javier.arribas(at)cttc.es
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *

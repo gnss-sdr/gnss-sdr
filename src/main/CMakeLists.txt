@@ -31,10 +31,12 @@ endif()
 
 target_link_libraries(gnss-sdr
     PUBLIC
+        core_receiver
+        Boost::boost
+        Boost::thread
         Gflags::gflags
         Glog::glog
         Threads::Threads
-        core_receiver
 )
 
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

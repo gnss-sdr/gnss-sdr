@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,7 +44,7 @@ double phase_unwrap(double phase_rad)
         {
             return phase_rad - PI;
         }
-    else if (phase_rad <= -HALF_PI)
+    if (phase_rad <= -HALF_PI)
         {
             return phase_rad + PI;
         }

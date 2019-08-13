@@ -265,7 +265,7 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
                             error = err;
                             gains[i + 1] = g;
                         }
-                    g += r.step;;
+                    g += r.step;
                 }
         }
     for (unsigned stage = 1; stage <= gains.size(); stage++)

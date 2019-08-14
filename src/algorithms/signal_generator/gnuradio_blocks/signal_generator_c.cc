@@ -144,8 +144,7 @@ void signal_generator_c::init()
                         }
                 }
         }
-    //std::default_random_engine e1(r());
-    //std::default_random_engine e2(r());
+
     std::uniform_int_distribution<int> uniform_dist(0, RAND_MAX);
 }
 

@@ -176,7 +176,7 @@ private:
 
 public:
     int rx_message;
-    ~GpsL1CADllPllTrackingTestFpga_msg_rx();  //!< Default destructor
+    ~GpsL1CADllPllTrackingTestFpga_msg_rx() override;  //!< Default destructor
 };
 
 
@@ -252,7 +252,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CADllPllTrackingTestFpga() = default;
+    ~GpsL1CADllPllTrackingTestFpga() override = default;
 
     void configure_receiver();
 

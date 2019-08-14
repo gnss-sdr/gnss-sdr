@@ -152,7 +152,7 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
 }
 
 
-void Fpga_Acquisition::run_acquisition(void)
+void Fpga_Acquisition::run_acquisition()
 {
     // enable interrupts
     int32_t reenable = 1;
@@ -263,7 +263,7 @@ void Fpga_Acquisition::close_device()
 }
 
 
-void Fpga_Acquisition::reset_acquisition(void)
+void Fpga_Acquisition::reset_acquisition()
 {
     //printf("============ resetting the hw now from the acquisition ===============");
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the acquisition. This causes a reset of all

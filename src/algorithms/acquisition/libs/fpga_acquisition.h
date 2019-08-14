@@ -77,7 +77,7 @@ public:
     /*!
      * \brief Run the acquisition process in the FPGA
      */
-    void run_acquisition(void);
+    void run_acquisition();
 
     /*!
      * \brief Read the results of the acquisition process
@@ -112,7 +112,7 @@ public:
     /*!
      * \brief Reset the FPGA PL.
      */
-    void reset_acquisition(void);
+    void reset_acquisition();
 
     /*!
      * \brief Read the scaling factor that has been used by the FFT-IFFT

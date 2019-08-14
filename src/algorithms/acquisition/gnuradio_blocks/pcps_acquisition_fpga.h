@@ -199,7 +199,7 @@ public:
     /*!
      * \brief This function triggers a HW reset of the FPGA PL.
      */
-    void reset_acquisition(void);
+    void reset_acquisition();
 
 private:
     friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);

@@ -318,7 +318,7 @@ void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
 }
 
 
-void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
+void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
 {
     float frac_part;   // decimal part
     int32_t dec_part;  // fractional part
@@ -362,7 +362,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
 }
 
 
-void Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
+void Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga()
 {
     for (uint32_t i = 0; i < d_n_correlators; i++)
         {
@@ -377,7 +377,7 @@ void Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
 }
 
 
-void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
+void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga()
 {
     float d_rem_carrier_phase_in_rad_temp;
 
@@ -403,7 +403,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
 }
 
 
-void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
+void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga()
 {
     d_map_base[code_phase_step_chips_num_reg_addr] = d_code_phase_step_chips_num;  // code phase step
 
@@ -419,7 +419,7 @@ void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
 }
 
 
-void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
+void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga()
 {
     // enable interrupts
     int32_t reenable = 1;
@@ -433,7 +433,7 @@ void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 }
 
 
-void Fpga_Multicorrelator_8sc::read_tracking_gps_results(void)
+void Fpga_Multicorrelator_8sc::read_tracking_gps_results()
 {
     int32_t readval_real;
     int32_t readval_imag;
@@ -453,7 +453,7 @@ void Fpga_Multicorrelator_8sc::read_tracking_gps_results(void)
 }
 
 
-void Fpga_Multicorrelator_8sc::unlock_channel(void)
+void Fpga_Multicorrelator_8sc::unlock_channel()
 {
     // unlock the channel to let the next samples go through
     d_map_base[drop_samples_reg_addr] = drop_samples;  // unlock the channel and disable secondary codes
@@ -474,7 +474,7 @@ void Fpga_Multicorrelator_8sc::close_device()
 }
 
 
-void Fpga_Multicorrelator_8sc::lock_channel(void)
+void Fpga_Multicorrelator_8sc::lock_channel()
 {
     // lock the channel for processing
     d_map_base[drop_samples_reg_addr] = 0;  // lock the channel

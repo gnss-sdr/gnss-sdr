@@ -101,7 +101,7 @@ public:
     /*!
 	 * \brief This function disables the HW multicorrelator in the FPGA in order to stop the tracking process
 	 */
-    void reset(void);
+    void reset();
 
 private:
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
@@ -110,7 +110,7 @@ private:
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
-    void do_correlation_step(void);
+    void do_correlation_step();
     void run_dll_pll();
     void update_tracking_vars();
     void clear_tracking_vars();

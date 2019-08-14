@@ -29,10 +29,14 @@ Checks: '-*,
         misc-uniqueptr-reset-release,
         misc-unused-using-decls,
         modernize-avoid-bind,
+        modernize-use-default-member-init,
         modernize-deprecated-headers,
         modernize-loop-convert,
         modernize-pass-by-value,
         modernize-raw-string-literal,
+        modernize-redundant-void-arg,
+        modernize-return-braced-init-list,
+        modernize-shrink-to-fit,
         modernize-use-auto,
         modernize-use-bool-literals,
         modernize-use-emplace,
@@ -61,6 +65,7 @@ Checks: '-*,
         readability-named-parameter,
         readability-non-const-parameter,
         readability-redundant-control-flow,
+        readability-redundant-member-init,
         readability-string-compare,
         readability-uppercase-literal-suffix'
 WarningsAsErrors: ''
@@ -115,6 +120,10 @@ CheckOptions:
   - key:             modernize-use-auto.MinTypeNameLength
     value:           '5'
   - key:             modernize-use-auto.RemoveStars
+    value:           '0'
+  - key:             modernize-use-default-member-init.IgnoreMacros
+    value:           '1'
+  - key:             modernize-use-default-member-init.UseAssignment
     value:           '0'
   - key:             modernize-use-emplace.ContainersWithPushBack
     value:           '::std::vector;::std::list;::std::deque'

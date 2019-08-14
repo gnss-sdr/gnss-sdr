@@ -813,7 +813,7 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
 
 
 /* get socket error ----------------------------------------------------------*/
-int errsock(void) { return errno; }
+int errsock() { return errno; }
 
 
 /* set socket option ---------------------------------------------------------*/
@@ -2241,7 +2241,7 @@ int stateftp(ftp_t *ftp)
  * args   : none
  * return : none
  *-----------------------------------------------------------------------------*/
-void strinitcom(void)
+void strinitcom()
 {
     tracet(3, "strinitcom:\n");
 }

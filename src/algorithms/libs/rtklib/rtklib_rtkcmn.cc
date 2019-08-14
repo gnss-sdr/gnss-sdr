@@ -1768,7 +1768,7 @@ double timediffweekcrossover(gtime_t t1, gtime_t t2)
  * args   : none
  * return : current time in utc
  *-----------------------------------------------------------------------------*/
-gtime_t timeget(void)
+gtime_t timeget()
 {
     gtime_t time;
     double ep[6] = {};
@@ -2143,7 +2143,7 @@ int adjgpsweek(int week)
  * args   : none
  * return : current tick in ms
  *-----------------------------------------------------------------------------*/
-unsigned int tickget(void)
+unsigned int tickget()
 {
     struct timespec tp = {0, 0};
     struct timeval tv = {0, 0};
@@ -3835,7 +3835,7 @@ unsigned int tick_trace = 0;   /* tick time at traceopen (ms) */
 gtime_t time_trace = {0, 0.0}; /* time at traceopen */
 pthread_mutex_t lock_trace;    /* lock for trace */
 
-void traceswap(void)
+void traceswap()
 {
     gtime_t time = utc2gpst(timeget());
     char path[1024];
@@ -3893,7 +3893,7 @@ void traceopen(const char *file)
 }
 
 
-void traceclose(void)
+void traceclose()
 {
     if (fp_trace && fp_trace != stderr)
         {
@@ -5125,6 +5125,7 @@ int rtk_uncompress(const char *file, char *uncfile)
             if (strlen(uncfile) < 1025)
                 {
                     std::strncpy(tmpfile, uncfile, 1024);
+                    tmpfile[1023] = '\0';
                 }
             stat = 1;
         }

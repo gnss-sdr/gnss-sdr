@@ -657,7 +657,7 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
 // - updated remnant code phase in samples (d_rem_code_phase_samples)
 // - d_code_freq_chips
 // - d_carrier_doppler_hz
-void dll_pll_veml_tracking_fpga::do_correlation_step(void)
+void dll_pll_veml_tracking_fpga::do_correlation_step()
 {
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
@@ -1468,7 +1468,7 @@ void dll_pll_veml_tracking_fpga::stop_tracking()
 }
 
 
-void dll_pll_veml_tracking_fpga::reset(void)
+void dll_pll_veml_tracking_fpga::reset()
 {
     gr::thread::scoped_lock l(d_setlock);
     multicorrelator_fpga->unlock_channel();

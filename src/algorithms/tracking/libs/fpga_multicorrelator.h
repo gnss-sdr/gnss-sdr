@@ -110,12 +110,12 @@ public:
     /*!
      * \brief Start the tracking process in the FPGA
      */
-    void lock_channel(void);
+    void lock_channel();
 
     /*!
      * \brief finish the tracking process in the FPGA
      */
-    void unlock_channel(void);
+    void unlock_channel();
 
     /*!
      * \brief Set the secondary code length in the FPGA. This is only used when extended coherent integration
@@ -248,12 +248,12 @@ private:
     // private functions
     uint32_t fpga_acquisition_test_register(uint32_t writeval);
     void fpga_configure_tracking_gps_local_code(int32_t PRN);
-    void fpga_compute_code_shift_parameters(void);
-    void fpga_configure_code_parameters_in_fpga(void);
-    void fpga_compute_signal_parameters_in_fpga(void);
-    void fpga_configure_signal_parameters_in_fpga(void);
-    void fpga_launch_multicorrelator_fpga(void);
-    void read_tracking_gps_results(void);
+    void fpga_compute_code_shift_parameters();
+    void fpga_configure_code_parameters_in_fpga();
+    void fpga_compute_signal_parameters_in_fpga();
+    void fpga_configure_signal_parameters_in_fpga();
+    void fpga_launch_multicorrelator_fpga();
+    void read_tracking_gps_results();
     void close_device(void);
     void write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr);
 };

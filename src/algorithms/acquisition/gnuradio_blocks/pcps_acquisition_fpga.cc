@@ -313,7 +313,7 @@ void pcps_acquisition_fpga::set_active(bool active)
 }
 
 
-void pcps_acquisition_fpga::reset_acquisition(void)
+void pcps_acquisition_fpga::reset_acquisition()
 {
     // this function triggers a HW reset of the FPGA PL.
     acquisition_fpga->open_device();

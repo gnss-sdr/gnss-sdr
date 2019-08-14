@@ -40,9 +40,6 @@
 #include <gnuradio/block.h>
 #include <cstdint>
 
-// floating point math constants related to the parameters that are written in the FPGA
-#define PHASE_CARR_MAX_DIV_PI 683565275.5764316  // 2^(31)/pi
-#define TWO_PI 6.283185307179586
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -53,8 +50,14 @@ public:
     /*!
 	 * \brief Constructor
 	 */
-    Fpga_Multicorrelator_8sc(int32_t n_correlators, std::string device_name,
-        uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot, uint32_t code_samples_per_chip);
+    Fpga_Multicorrelator_8sc(int32_t n_correlators,
+        std::string device_name,
+        uint32_t device_base,
+        int32_t *ca_codes,
+        int32_t *data_codes,
+        uint32_t code_length_chips,
+        bool track_pilot,
+        uint32_t code_samples_per_chip);
 
     /*!
      * \brief Destructor
@@ -153,10 +156,8 @@ public:
      */
     void disable_secondary_codes();
 
-
 private:
     // FPGA register addresses
-
     // write addresses
     static const uint32_t code_phase_step_chips_num_reg_addr = 0;
     static const uint32_t initial_index_reg_base_addr = 1;

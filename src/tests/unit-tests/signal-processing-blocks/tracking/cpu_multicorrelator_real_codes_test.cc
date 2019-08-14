@@ -72,7 +72,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     std::chrono::duration<double> elapsed_seconds(0);
     int max_threads = FLAGS_cpu_multicorrelator_real_codes_max_threads_test;
     std::vector<std::thread> thread_pool;
-    Cpu_Multicorrelator_Real_Codes* correlator_pool[max_threads];
+    std::vector<Cpu_Multicorrelator_Real_Codes*> correlator_pool(max_threads);
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
     double execution_times[3];
 

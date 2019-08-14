@@ -481,8 +481,8 @@ void readsp3(const char *file, nav_t *nav, int opt)
  *-----------------------------------------------------------------------------*/
 int readsap(const char *file, gtime_t time, nav_t *nav)
 {
-    pcvs_t pcvs = {0, 0, (pcv_t *){nullptr}};
-    pcv_t pcv0 = {0, {}, {}, {0, 0}, {0, 0}, {{}, {}}, {{}, {}}};
+    pcvs_t pcvs{};
+    pcv_t pcv0{};
     pcv_t *pcv;
     int i;
 

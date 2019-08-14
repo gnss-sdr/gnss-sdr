@@ -471,15 +471,6 @@ int decoderaw(rtksvr_t *svr, int index)
 /* decode download file ------------------------------------------------------*/
 void decodefile(rtksvr_t *svr, int index)
 {
-    int i = 0;
-    char glo_fcn[MAXPRNGLO + 1];
-
-    // Allocate space for GLONASS frequency channels depending on availability
-    for (i = 0; i < MAXPRNGLO + 1; i++)
-        {
-            glo_fcn[i] = '0';
-        }
-
     nav_t nav{};
     char file[1024];
     int nb;

@@ -150,8 +150,6 @@ private:
     std::vector<gr_complex> complex_phase_;
     unsigned int work_counter_{};
     std::random_device r;
-    std::default_random_engine e1;
-    std::default_random_engine e2;
     std::uniform_int_distribution<int> uniform_dist;
     std::normal_distribution<float> normal_dist;
 };

@@ -2104,17 +2104,24 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                              *    30   |  Galileo E1B + GLONASS L2 C/A
                                              *    31   |  GPS L2C + GLONASS L2 C/A
                                              *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
-                                             *    50   |  Beidou B1I
-                                             *    51   |  Beidou B1I + GPS L1 C/A
-                                             *    52   |  Beidou B1I + Galileo E1B
-                                             *    53   |  Beidou B1I + GLONASS L1 C/A
-                                             *    54   |  Beidou B1I + GPS L1 C/A + Galileo E1B
-                                             *    55   |  Beidou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
-                                             *    56   |  Beidou B1I + Beidou B3I
-                                             *    60   |  Beidou B3I
-                                             *    61   |  Beidou B3I + GPS L2C
-                                             *    62   |  Beidou B3I + GLONASS L2 C/A
-                                             *    63   |  Beidou B3I + GPS L2C + GLONASS L2 C/A
+                                             *    500   |  BeiDou B1I
+                                             *    501   |  BeiDou B1I + GPS L1 C/A
+                                             *    502   |  BeiDou B1I + Galileo E1B
+                                             *    503   |  BeiDou B1I + GLONASS L1 C/A
+                                             *    504   |  BeiDou B1I + GPS L1 C/A + Galileo E1B
+                                             *    505   |  BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+                                             *    506   |  BeiDou B1I + Beidou B3I
+                                             *    600   |  BeiDou B3I
+                                             *    601   |  BeiDou B3I + GPS L2C
+                                             *    602   |  BeiDou B3I + GLONASS L2 C/A
+                                             *    603   |  BeiDou B3I + GPS L2C + GLONASS L2 C/A
+                                             *    604   |  BeiDou B3I + GPS L1 C/A
+                                             *    605   |  BeiDou B3I + Galileo E1B
+                                             *    606   |  BeiDou B3I + GLONASS L1 C/A
+                                             *    607   |  BeiDou B3I + GPS L1 C/A + Galileo E1B
+                                             *    608   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + BeiDou B1I
+                                             *    609   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A
+                                             *    610   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A + BeiDou B1I
                                              */
 
                                             // ####################### RINEX FILES #################

@@ -38,6 +38,7 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
+#include <vector>
 
 
 labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
@@ -428,9 +429,9 @@ int labsat23_source::general_work(int noutput_items,
                     int n_int16_to_read = noutput_items / 8;
                     if (n_int16_to_read > 0)
                         {
-                            int16_t memblock[n_int16_to_read];
-                            binary_input_file->read(reinterpret_cast<char *>(memblock), n_int16_to_read * 2);
-                            n_int16_to_read = binary_input_file->gcount() / 2;  //from bytes to int16
+                            std::vector<int16_t> memblock(n_int16_to_read);
+                            binary_input_file->read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
+                            n_int16_to_read = binary_input_file->gcount() / 2;  // from bytes to int16
                             if (n_int16_to_read > 0)
                                 {
                                     int output_pointer = 0;
@@ -486,8 +487,8 @@ int labsat23_source::general_work(int noutput_items,
                     int n_int16_to_read = noutput_items / 4;
                     if (n_int16_to_read > 0)
                         {
-                            int16_t memblock[n_int16_to_read];
-                            binary_input_file->read(reinterpret_cast<char *>(memblock), n_int16_to_read * 2);
+                            std::vector<int16_t> memblock(n_int16_to_read);
+                            binary_input_file->read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
                             n_int16_to_read = binary_input_file->gcount() / 2;  // from bytes to int16
                             if (n_int16_to_read > 0)
                                 {

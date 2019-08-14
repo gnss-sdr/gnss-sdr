@@ -144,8 +144,7 @@ void signal_generator_c::init()
                         }
                 }
         }
-    std::default_random_engine e1(r());
-    std::default_random_engine e2(r());
+
     std::uniform_int_distribution<int> uniform_dist(0, RAND_MAX);
 }
 
@@ -277,6 +276,8 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
 
     work_counter_++;
 
+    std::default_random_engine e1(r());
+    std::default_random_engine e2(r());
     unsigned int out_idx = 0;
     unsigned int i = 0;
     unsigned int k = 0;

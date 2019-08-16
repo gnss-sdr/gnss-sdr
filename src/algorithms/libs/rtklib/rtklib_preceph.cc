@@ -324,8 +324,8 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, co
 /* compare precise ephemeris -------------------------------------------------*/
 int cmppeph(const void *p1, const void *p2)
 {
-    auto *q1 = (peph_t *)p1;
-    auto *q2 = (peph_t *)p2;
+    auto *q1 = static_cast<const peph_t *>(p1);
+    auto *q2 = static_cast<const peph_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     return tt < -1e-9 ? -1 : (tt > 1e-9 ? 1 : q1->index - q2->index);
 }

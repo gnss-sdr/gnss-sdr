@@ -452,13 +452,15 @@ void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
             x[i] = geph->pos[i];
             x[i + 3] = geph->vel[i];
         }
-    for (tt = t < 0.0 ? -TSTEP : TSTEP; fabs(t) > 1e-9; t -= tt)
+    tt = t < 0.0 ? -TSTEP : TSTEP;
+    while (fabs(t) > 1e-9)
         {
             if (fabs(t) < TSTEP)
                 {
                     tt = t;
                 }
             glorbit(tt, x, geph->acc);
+            t -= tt;
         }
     for (i = 0; i < 3; i++)
         {

@@ -1940,10 +1940,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                         }
                     // debug code
-                    // else
-                    //     {
-                    //         LOG(INFO) << "Internal PVT solver error";
-                    //     }
+                    //                    else
+                    //                        {
+                    //                            DLOG(INFO) << "Internal PVT solver error";
+                    //                        }
 
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)

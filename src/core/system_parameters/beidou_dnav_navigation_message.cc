@@ -34,6 +34,7 @@
 #include "gnss_satellite.h"
 #include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
 #include <iostream>  // for string, operator<<, cout, ostream, endl
+#include <limits>    // for std::numeric_limits
 
 
 void Beidou_Dnav_Navigation_Message::reset()
@@ -273,55 +274,30 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
 {
     int64_t value = 0;
     int32_t num_of_slices = parameter.size();
-    // Discriminate between 64 bits and 32 bits compiler
-    int32_t long_int_size_bytes = sizeof(int64_t);
-    if (long_int_size_bytes == 8)  // if a long int takes 8 bytes, we are in a 64 bits system
-        {
-            // read the MSB and perform the sign extension
-            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
-                {
-                    value ^= 0xFFFFFFFFFFFFFFFF;  //64 bits variable
-                }
-            else
-                {
-                    value &= 0;
-                }
 
-            for (int32_t i = 0; i < num_of_slices; i++)
-                {
-                    for (int32_t j = 0; j < parameter[i].second; j++)
-                        {
-                            value <<= 1;                  //shift left
-                            value &= 0xFFFFFFFFFFFFFFFE;  //reset the corresponding bit (for the 64 bits variable)
-                            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1;  // insert the bit
-                                }
-                        }
-                }
+    // read the MSB and perform the sign extension
+    if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
+        {
+            value ^= 0xFFFFFFFFFFFFFFFF;  // 64 bits variable
         }
-    else  // we assume we are in a 32 bits system
+    else
         {
-            // read the MSB and perform the sign extension
-            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
+            value &= 0;
+        }
+    // Avoid saturation when decoding
+    if (value == std::numeric_limits<int64_t>::max() or value == std::numeric_limits<int64_t>::min())
+        {
+            value /= 2;
+        }
+    for (int32_t i = 0; i < num_of_slices; i++)
+        {
+            for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value ^= 0xFFFFFFFF;
-                }
-            else
-                {
-                    value &= 0;
-                }
-
-            for (int32_t i = 0; i < num_of_slices; i++)
-                {
-                    for (int32_t j = 0; j < parameter[i].second; j++)
+                    value *= 2;                   // shift left the signed integer
+                    value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
+                    if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                         {
-                            value <<= 1;          //shift left
-                            value &= 0xFFFFFFFE;  //reset the corresponding bit
-                            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1;  // insert the bit
-                                }
+                            value += 1;  // insert the bit
                         }
                 }
         }

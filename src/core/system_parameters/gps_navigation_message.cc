@@ -35,6 +35,7 @@ m * \file gps_navigation_message.cc
 #include <cmath>     // for fmod, abs, floor
 #include <cstring>   // for memcpy
 #include <iostream>  // for operator<<, cout, endl
+#include <limits>    // for std::numeric_limits
 
 
 void Gps_Navigation_Message::reset()
@@ -211,12 +212,16 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
         {
             value &= 0LL;
         }
-
+    // Avoid salutation when decoding;
+    if (value == std::numeric_limits<int64_t>::max() or value == std::numeric_limits<int64_t>::min())
+        {
+            value /= 2;
+        }
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;                    // shift left
+                    value *= 2;                     // shift left the signed integer
                     value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
                     if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[i].first - j]) == 1)
                         {

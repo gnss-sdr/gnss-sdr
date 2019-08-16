@@ -96,7 +96,8 @@ per_get_few_bits(asn_per_data_t *pd, int nbits) {
                 /* The number of available bits in the stream allow
                  * for the following operations to take place without
                  * invoking the ->refill() function */
-                accum  = per_get_few_bits(&tpd, nbits - 24) << 24;
+                uint32_t two_twentyfour = 16777216;
+                accum  = per_get_few_bits(&tpd, nbits - 24) * two_twentyfour;
                 accum |= per_get_few_bits(&tpd, 24);
         } else {
                 per_get_undo(pd, nbits);
@@ -424,7 +425,10 @@ per_put_few_bits(asn_per_outp_t *po, uint32_t bits, int obits) {
                 buf[2] = bits >> 8,
                 buf[3] = bits;
         else {
-                if(per_put_few_bits(po, bits >> (obits - 24), 24)) return -1;
+            if((obits - 24) > 0)
+                {
+                    if(per_put_few_bits(po, bits >> (obits - 24), 24)) return -1;
+                }
                 if(per_put_few_bits(po, bits, obits - 24)) return -1;
         }
 

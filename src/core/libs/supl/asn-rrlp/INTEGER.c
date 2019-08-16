@@ -137,7 +137,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 		} else {
 			accum = (*buf & 0x80) ? -1 : 0;
 			for(; buf < buf_end; buf++)
-				accum = (accum << 8) | *buf;
+				accum = (accum * 256) | *buf;
 		}
 
 		el = INTEGER_map_value2enum(specs, accum);
@@ -545,7 +545,7 @@ INTEGER_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 
 	(void)ilevel;
 	(void)flags;
-	
+
 	if(!st || !st->buf)
 		_ASN_ENCODE_FAILED;
 
@@ -818,7 +818,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 
 	/* Conversion engine */
 	for(; b < end; b++)
-		l = (l << 8) | *b;
+		l = (l * 256) | *b;
 
 	*lptr = l;
 	return 0;

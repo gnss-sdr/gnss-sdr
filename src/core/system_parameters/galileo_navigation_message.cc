@@ -36,6 +36,7 @@
 #include <glog/logging.h>            // for DLOG
 #include <algorithm>                 // for reverse
 #include <iostream>                  // for operator<<
+#include <limits>                    // for std::numeric_limits
 
 
 using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
@@ -310,12 +311,16 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
         {
             value &= 0LL;
         }
-
+    // Avoid saturation when decoding
+    if (value == std::numeric_limits<int64_t>::max() or value == std::numeric_limits<int64_t>::min())
+        {
+            value /= 2;
+        }
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;                  // shift left
+                    value *= 2;                   // shift left the signed integer
                     value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
                     if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
                         {

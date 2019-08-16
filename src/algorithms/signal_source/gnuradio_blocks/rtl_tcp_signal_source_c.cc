@@ -48,12 +48,12 @@ enum
     RTL_TCP_PAYLOAD_SIZE = 1024 * 4   //  4 KB
 };
 
-rtl_tcp_signal_source_c_sptr
-rtl_tcp_make_signal_source_c(const std::string &address,
+rtl_tcp_signal_source_c_sptr rtl_tcp_make_signal_source_c(
+    const std::string &address,
     int16_t port,
     bool flip_iq)
 {
-    return gnuradio::get_initial_sptr(new rtl_tcp_signal_source_c(address,
+    return rtl_tcp_signal_source_c_sptr(new rtl_tcp_signal_source_c(address,
         port,
         flip_iq));
 }

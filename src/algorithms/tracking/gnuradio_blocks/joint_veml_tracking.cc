@@ -1,6 +1,6 @@
 /*!
- * \file mixed_veml_tracking.cc
- * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \file joint_veml_tracking.cc
+ * \brief Implementation of a joint code + carrier tracking block.
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018. antonio.ramosdet(at)gmail.com
  * \author Gerald LaMountain, 2019. gerald(at)ece.neu.edu
@@ -35,7 +35,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "mixed_veml_tracking.h"
+#include "joint_veml_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
@@ -84,13 +84,13 @@ namespace fs = boost::filesystem;
 #endif
 
 
-mixed_veml_tracking_sptr mixed_veml_make_tracking(const Dll_Pll_Conf &conf_)
+joint_veml_tracking_sptr joint_veml_make_tracking(const Dll_Pll_Conf &conf_)
 {
-    return mixed_veml_tracking_sptr(new mixed_veml_tracking(conf_));
+    return joint_veml_tracking_sptr(new joint_veml_tracking(conf_));
 }
 
 
-mixed_veml_tracking::mixed_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("mixed_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+joint_veml_tracking::joint_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("joint_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     //prevent telemetry symbols accumulation in output buffers
@@ -102,7 +102,7 @@ mixed_veml_tracking::mixed_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block(
 
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&mixed_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
+    this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&joint_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
     d_dll_filt_history.set_capacity(1000);
@@ -352,7 +352,8 @@ mixed_veml_tracking::mixed_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block(
     d_code_loop_filter = Tracking_loop_filter(d_code_period, trk_parameters.dll_bw_hz, trk_parameters.dll_filter_order, false);
     d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
     d_carrier_loop_ckf.set_params(1.0, 1.0, static_cast<float>(d_code_period));
-    d_carrier_evolution_model.set_code_period(static_cast<float>(d_code_period));
+    // d_carrier_evolution_model.set_code_period(static_cast<float>(d_code_period));
+    // d_correlator_output_model.set_signal_power(1.0);
     d_carrier_loop_ckf.set_model(&d_carrier_evolution_model, &d_correlator_output_model);
 
     // Initialization of local code replica
@@ -529,7 +530,7 @@ mixed_veml_tracking::mixed_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block(
 }
 
 
-void mixed_veml_tracking::forecast(int noutput_items,
+void joint_veml_tracking::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
@@ -539,7 +540,7 @@ void mixed_veml_tracking::forecast(int noutput_items,
 }
 
 
-void mixed_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
+void joint_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
         {
@@ -571,7 +572,7 @@ void mixed_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 }
 
 
-void mixed_veml_tracking::start_tracking()
+void joint_veml_tracking::start_tracking()
 {
     gr::thread::scoped_lock l(d_setlock);
     // correct the code phase according to the delay between acq and trk
@@ -756,8 +757,8 @@ void mixed_veml_tracking::start_tracking()
     d_code_loop_filter.initialize();                                                 // initialize the code filter
     // Carrier Gaussian filter initialization
     d_carrier_loop_ckf.set_params(1.0, 1.0, static_cast<float>(d_code_period));
-    d_carrier_loop_ckf.set_state(0.0, static_cast<float>(d_acq_carrier_doppler_hz), 0.0, 1.0);
-    d_carrier_loop_ckf.set_state_cov(1.1, 22500.0, 15.0, 10.0);
+    d_carrier_loop_ckf.set_state(0.0, static_cast<float>(d_acq_carrier_doppler_hz), 0.0);
+    d_carrier_loop_ckf.set_state_cov(1.1, 22500.0, 15.0);
 
     // DEBUG OUTPUT
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
@@ -772,7 +773,7 @@ void mixed_veml_tracking::start_tracking()
 }
 
 
-mixed_veml_tracking::~mixed_veml_tracking()
+joint_veml_tracking::~joint_veml_tracking()
 {
     if (signal_type == "1C")
         {
@@ -821,7 +822,7 @@ mixed_veml_tracking::~mixed_veml_tracking()
 }
 
 
-bool mixed_veml_tracking::acquire_secondary()
+bool joint_veml_tracking::acquire_secondary()
 {
     // ******* preamble correlation ********
     int32_t corr_value = 0;
@@ -860,7 +861,7 @@ bool mixed_veml_tracking::acquire_secondary()
 }
 
 
-bool mixed_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
+bool joint_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
     if (d_cn0_estimation_counter < trk_parameters.cn0_samples)
@@ -925,7 +926,7 @@ bool mixed_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_ti
 // - updated remnant code phase in samples (d_rem_code_phase_samples)
 // - d_code_freq_chips
 // - d_carrier_doppler_hz
-void mixed_veml_tracking::do_correlation_step(const gr_complex *input_samples)
+void joint_veml_tracking::do_correlation_step(const gr_complex *input_samples)
 {
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
@@ -952,8 +953,7 @@ void mixed_veml_tracking::do_correlation_step(const gr_complex *input_samples)
         }
 }
 
-
-void mixed_veml_tracking::run_dll_pll()
+void joint_veml_tracking::run_dll_pll(const gr_complex *input_samples)
 {
     // ################## PLL ##########################################################
     // PLL discriminator
@@ -967,15 +967,27 @@ void mixed_veml_tracking::run_dll_pll()
         }
     else
         {
+            // Secondary code acquired. No symbols transition should be present in the signal
+            d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / PI_2;
+
+            // ################## CKF ##########################################################
+            // Set filter parameters
+            // TODO: Update the params for the first two, add to block builder
+            d_carrier_evolution_model.set_samp_length(0.1);
+            d_carrier_evolution_model.set_chip_length(0.1,0.1);
+            d_correlator_output_model.setup_correlator(&multicorrelator_cpu, input_samples, d_n_correlator_taps);
+            d_correlator_output_model.set_correlation_params(d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad, d_code_samples_per_chip, d_code_phase_step_chips, d_code_phase_rate_step_chips);
 
             // Carrier correlator output filter
-            arma::cx_vec correlator_vec = arma::zeros<arma::cx_vec>(1,1);
-            correlator_vec(0, 0) = *d_Prompt;
+            arma::cx_vec correlator_vec = arma::zeros<arma::cx_vec>(3,1);
+            correlator_vec(0, 0) = *d_Early;
+            correlator_vec(1, 0) = *d_Prompt;
+            correlator_vec(2, 0) = *d_Late;
             arma::vec carrier_nco = d_carrier_loop_ckf.get_carrier_nco(correlator_vec);
 
-            // New carrier Doppler frequency estimation
-            d_carr_error_filt_hz = carrier_nco(1);
-
+            // New filter estimation
+            d_code_error_filt_chips = carrier_nco(1);
+            d_carr_error_filt_hz = carrier_nco(2);
         }
 
     // New carrier Doppler frequency estimation
@@ -991,8 +1003,12 @@ void mixed_veml_tracking::run_dll_pll()
         {
             d_code_error_chips = dll_nc_e_minus_l_normalized(d_E_accu, d_L_accu);  // [chips/Ti]
         }
-    // Code discriminator filter
-    d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
+    if (d_cloop)
+        {
+            // Code discriminator filter
+            d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
+        }
+
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
 
@@ -1011,8 +1027,8 @@ void mixed_veml_tracking::run_dll_pll()
                                     float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                                     LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
                                     d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
-                                    d_carrier_loop_ckf.set_state(0.0, static_cast<float>(d_carrier_doppler_hz - carrier_doppler_error_hz), 0.0, 1.0);
-                                    d_carrier_loop_ckf.set_state_cov(1.1, 22500.0, 15.0, 10.0);
+                                    d_carrier_loop_ckf.set_state(0.0, static_cast<float>(d_carrier_doppler_hz - carrier_doppler_error_hz), 0.0);
+                                    d_carrier_loop_ckf.set_state_cov(1.1, 22500.0, 15.0);
                                     d_corrected_doppler = true;
                                 }
                             d_dll_filt_history.clear();
@@ -1022,7 +1038,7 @@ void mixed_veml_tracking::run_dll_pll()
 }
 
 
-void mixed_veml_tracking::clear_tracking_vars()
+void joint_veml_tracking::clear_tracking_vars()
 {
     std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
     if (trk_parameters.track_pilot)
@@ -1046,7 +1062,7 @@ void mixed_veml_tracking::clear_tracking_vars()
 }
 
 
-void mixed_veml_tracking::update_tracking_vars()
+void joint_veml_tracking::update_tracking_vars()
 {
     T_chip_seconds = 1.0 / d_code_freq_chips;
     T_prn_seconds = T_chip_seconds * static_cast<double>(d_code_length_chips);
@@ -1120,7 +1136,7 @@ void mixed_veml_tracking::update_tracking_vars()
 }
 
 
-void mixed_veml_tracking::save_correlation_results()
+void joint_veml_tracking::save_correlation_results()
 {
     if (d_secondary)
         {
@@ -1233,7 +1249,7 @@ void mixed_veml_tracking::save_correlation_results()
 }
 
 
-void mixed_veml_tracking::log_data()
+void joint_veml_tracking::log_data()
 {
     if (d_dump)
         {
@@ -1328,7 +1344,7 @@ void mixed_veml_tracking::log_data()
 }
 
 
-int32_t mixed_veml_tracking::save_matfile()
+int32_t joint_veml_tracking::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
@@ -1528,7 +1544,7 @@ int32_t mixed_veml_tracking::save_matfile()
 }
 
 
-void mixed_veml_tracking::set_channel(uint32_t channel)
+void joint_veml_tracking::set_channel(uint32_t channel)
 {
     gr::thread::scoped_lock l(d_setlock);
     d_channel = channel;
@@ -1561,21 +1577,21 @@ void mixed_veml_tracking::set_channel(uint32_t channel)
 }
 
 
-void mixed_veml_tracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+void joint_veml_tracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
     gr::thread::scoped_lock l(d_setlock);
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
 
-void mixed_veml_tracking::stop_tracking()
+void joint_veml_tracking::stop_tracking()
 {
     gr::thread::scoped_lock l(d_setlock);
     d_state = 0;
 }
 
 
-int mixed_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
+int joint_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
@@ -1663,7 +1679,7 @@ int mixed_veml_tracking::general_work(int noutput_items __attribute__((unused)),
                     {
                         bool next_state = false;
                         // Perform DLL/PLL tracking loop computations. Costas Loop enabled
-                        run_dll_pll();
+                        run_dll_pll(in);
                         update_tracking_vars();
 
                         // enable write dump file this cycle (valid DLL/PLL cycle)
@@ -1806,7 +1822,7 @@ int mixed_veml_tracking::general_work(int noutput_items __attribute__((unused)),
                     }
                 else
                     {
-                        run_dll_pll();
+                        run_dll_pll(in);
                         update_tracking_vars();
                         if (d_current_data_symbol == 0)
                             {

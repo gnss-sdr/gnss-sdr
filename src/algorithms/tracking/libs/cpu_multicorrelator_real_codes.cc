@@ -125,7 +125,6 @@ void Cpu_Multicorrelator_Real_Codes::update_local_code(int correlator_length_sam
         }
 }
 
-
 bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
@@ -151,6 +150,32 @@ bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     return true;
 }
 
+bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
+    std::complex<float> *corr_out,
+    const std::complex<float> *sig_in,
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float phase_rate_step_rad,
+    float rem_code_phase_chips,
+    float code_phase_step_chips,
+    float code_phase_rate_step_chips,
+    int signal_length_samples)
+{
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
+    // Regenerate phase at each call in order to avoid numerical issues
+    lv_32fc_t phase_offset_as_complex[1];
+    phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
+    // call VOLK_GNSSSDR kernel
+    if (d_use_high_dynamics_resampler)
+        {
+            volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn(corr_out, sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), std::exp(lv_32fc_t(0.0, -phase_rate_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+        }
+    else
+        {
+            volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(corr_out, sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+        }
+    return true;
+}
 
 bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
@@ -166,6 +191,25 @@ bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
     // call VOLK_GNSSSDR kernel
     volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+    return true;
+}
+
+bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
+    std::complex<float> *corr_out,
+    const std::complex<float> *sig_in,
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float rem_code_phase_chips,
+    float code_phase_step_chips,
+    float code_phase_rate_step_chips,
+    int signal_length_samples)
+{
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
+    // Regenerate phase at each call in order to avoid numerical issues
+    lv_32fc_t phase_offset_as_complex[1];
+    phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
+    // call VOLK_GNSSSDR kernel
+    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(corr_out, sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
     return true;
 }
 

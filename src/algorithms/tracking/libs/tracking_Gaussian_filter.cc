@@ -75,3 +75,21 @@ void TrackingGaussianFilter::set_state_cov(float P_x_1, float P_x_2, float P_x_3
     state_cov(1, 1) = P_x_2;
     state_cov(2, 2) = P_x_3;
 }
+
+void TrackingGaussianFilter::set_state(float x_1, float x_2, float x_3, float x_4)
+{
+    state = arma::zeros(4,1);
+    state(0) = x_1;
+    state(1) = x_2;
+    state(2) = x_3;
+    state(4) = x_4;
+}
+
+void TrackingGaussianFilter::set_state_cov(float P_x_1, float P_x_2, float P_x_3, float P_x_4)
+{
+    state_cov = arma::zeros(4,4);
+    state_cov(0, 0) = P_x_1;
+    state_cov(1, 1) = P_x_2;
+    state_cov(2, 2) = P_x_3;
+    state_cov(3, 3) = P_x_4;
+}

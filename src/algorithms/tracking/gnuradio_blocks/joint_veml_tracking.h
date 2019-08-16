@@ -1,6 +1,6 @@
 /*!
- * \file mixed_veml_tracking.h
- * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \file joint_veml_tracking.h
+ * \brief Implementation of a joint code + carrier tracking block.
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018. antonio.ramosdet(at)gmail.com
  * \author Gerald LaMountain, 2019. gerald(at)ece.neu.edu
@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_MIXED_VEML_TRACKING_H
-#define GNSS_SDR_MIXED_VEML_TRACKING_H
+#ifndef GNSS_SDR_JOINT_VEML_TRACKING_H
+#define GNSS_SDR_JOINT_VEML_TRACKING_H
 
 //#include "tracking_models.h"
 #include "tracking_Gaussian_filter.h"
@@ -46,63 +46,136 @@
 #include <gnuradio/block.h>       // for block
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <pmt/pmt.h>              // for pmt_t
 #include <cstdint>                // for int32_t
 #include <fstream>                // for string, ofstream
 #include <utility>                // for pair
 #include <vector>
 
-class MixedCarrierTransitionModel : public ModelFunction<arma::vec>
+template <class OutputType>
+class JointCarrierTransitionModel : public ModelFunction<OutputType>
 {
 public:
-    arma::vec operator()(const arma::vec& input) override { 
-        /* 
-         * output(0) - Carrier Phase
-         * output(1) - Carrier Doppler
-         * output(2) - Carrier Doppler Rate
-         * output(3) - Correlator Output Amplitude
-         */
-        arma::vec output = arma::zeros(4,1);
-        output(0, 0) = input(0) + PI_2*pdi*input(1) + 0.5*PI_2*std::pow(pdi, 2)*input(2);
-        output(1, 0) = input(1) + pdi*input(2);
-        output(2, 0) = input(2);
-        output(3, 0) = input(3);
+    // explicit CarrierTransitionModel(const float carrier_pdi) { pdi = carrier_pdi; };
+    OutputType operator()(const arma::vec& input) override { 
+        // input(0) = A_k;
+        // input(1) = dZ_k;
+        // input(2) = dPsi_k;
+        // input(3) = dot_dPsi_k;
+        // input(4) = ddot_dPsi_k)
+        OutputType output = arma::zeros<OutputType>(5,1);
+        output(0, 0) = input(0);
+        output(1, 0) = input(1) + beta*t_samp*input(3) + 0.5*beta*std::pow(t_samp,2)*input(4);
+        output(2, 0) = input(2) + t_samp*input(3) + 0.5*std::pow(t_samp,2)*input(4);
+        output(3, 0) = input(3) + t_samp*input(4);
+        output(4, 0) = input(4);
 
         return output;
     };
-    void set_code_period(const float carrier_pdi) { pdi = carrier_pdi; };
+    void set_samp_length(const float ts) { t_samp = ts; };
+    void set_chip_length(const float f_carr, const float tc) { beta = f_carr*tc; };
 
 private:
-    float pdi;
+    float t_samp;
+    float beta;
 };
 
-class MixedCarrierMeasurementModel : public ModelFunction<arma::cx_vec>
+template <class OutputType>
+class JointCarrierMeasurementModel : public ModelFunction<OutputType>
 {
 public:
-    arma::cx_vec operator()(const arma::vec& input) override {
+    OutputType operator()(const arma::vec& input) override {
         using namespace std::complex_literals;
-        arma::cx_vec output = arma::zeros<arma::cx_vec>(1,1);
-        output(0) = static_cast<double>(input(3)) * std::exp( -1i * static_cast<double>(input(0)) );
+
+        // Allocate memory for correlator outputs
+        gr_complex *correlator_outs;
+        correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+
+        // Do correlation
+        // arma::mat input = arma::real(cx_input);
+        do_correlation( correlator_outs, input(2), input(1) );
+        
+        uint32_t offset = 0;
+        if (d_n_correlator_taps == 5) { offset++; }
+        gr_complex R_Early = correlator_outs[offset];
+        gr_complex R_Prompt = correlator_outs[offset+1];
+        gr_complex R_Late = correlator_outs[offset+2];
+
+        arma::cx_mat output = arma::zeros<arma::cx_mat>(3,1);
+        gr_complex Y_Gain = static_cast<gr_complex>( input(0) * std::exp( 1i * input(2) ) );
+        output(0, 0) = Y_Gain * R_Early;
+        output(1, 0) = Y_Gain * R_Prompt;
+        output(2, 0) = Y_Gain * R_Late;
+
         return output;
     };
+
+    void setup_correlator( Cpu_Multicorrelator_Real_Codes* multicorrelator, const gr_complex* input_buffer, const int32_t n_correlator_taps)
+    {
+
+        // Correlator and input buffer pointers
+        d_multicorrelator_cpu = multicorrelator;
+        d_input_buffer = input_buffer;
+        d_n_correlator_taps = n_correlator_taps;
+
+    };
+   
+    void set_correlation_params( const double carrier_step, const double carrier_rate_step, const uint32_t samples_per_chip, const double code_phase_step, const double code_phase_rate_step)
+    {
+        // Correlation parameters
+        d_carrier_phase_step_rad = carrier_step;
+        d_carrier_phase_rate_step_rad = carrier_rate_step;
+        d_code_samples_per_chip = samples_per_chip;
+        d_code_phase_step_chips = code_phase_step;
+        d_code_phase_rate_step_chips = code_phase_rate_step;
+    };
+
 private:
+
+    void do_correlation(gr_complex* correlator_outs, double rem_carr_phase_rad, double rem_code_phase_chips)
+    {
+        // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
+        // perform carrier wipe-off and compute Early, Prompt and Late correlation
+        d_multicorrelator_cpu->Carrier_wipeoff_multicorrelator_resampler(
+            correlator_outs,
+            d_input_buffer,
+            rem_carr_phase_rad,
+            d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
+            static_cast<float>(rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
+            static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
+            static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
+            d_vector_length);
+
+    };
+    
+    Cpu_Multicorrelator_Real_Codes* d_multicorrelator_cpu;
+    const gr_complex *d_input_buffer;
+
+    int32_t d_n_correlator_taps;
+    double d_carrier_phase_step_rad;
+    double d_carrier_phase_rate_step_rad;
+    uint32_t d_code_samples_per_chip;
+    double d_code_phase_step_chips;
+    double d_code_phase_rate_step_chips;
+    double d_vector_length;
 };
 
 
 class Gnss_Synchro;
-class mixed_veml_tracking;
+class joint_veml_tracking;
 
-using mixed_veml_tracking_sptr = boost::shared_ptr<mixed_veml_tracking>;
+using joint_veml_tracking_sptr = boost::shared_ptr<joint_veml_tracking>;
 
-mixed_veml_tracking_sptr mixed_veml_make_tracking(const Dll_Pll_Conf &conf_);
+joint_veml_tracking_sptr joint_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking block.
  */
-class mixed_veml_tracking : public gr::block
+class joint_veml_tracking : public gr::block
 {
 public:
-    ~mixed_veml_tracking();
+    ~joint_veml_tracking();
 
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
@@ -114,18 +187,18 @@ public:
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
-    MixedCarrierTransitionModel d_carrier_evolution_model;
-    MixedCarrierMeasurementModel d_correlator_output_model;
+    JointCarrierTransitionModel<arma::vec> d_carrier_evolution_model;
+    JointCarrierMeasurementModel<arma::cx_vec> d_correlator_output_model;
 
 private:
-    friend mixed_veml_tracking_sptr mixed_veml_make_tracking(const Dll_Pll_Conf &conf_);
+    friend joint_veml_tracking_sptr joint_veml_make_tracking(const Dll_Pll_Conf &conf_);
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
-    mixed_veml_tracking(const Dll_Pll_Conf &conf_);
+    joint_veml_tracking(const Dll_Pll_Conf &conf_);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
     void do_correlation_step(const gr_complex *input_samples);
-    void run_dll_pll();
+    void run_dll_pll(const gr_complex *input_samples);
     void update_tracking_vars();
     void clear_tracking_vars();
     void save_correlation_results();
@@ -259,6 +332,9 @@ private:
     std::string d_dump_filename;
     bool d_dump;
     bool d_dump_mat;
+
+    friend class JointCarrierTransitionModel<arma::vec>;
+    friend class JointCarrierMeasurementModel<arma::cx_vec>;
 };
 
-#endif  // GNSS_SDR_MIXED_VEML_TRACKING_H
+#endif  // GNSS_SDR_JOINT_VEML_TRACKING_H

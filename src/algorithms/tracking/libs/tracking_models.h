@@ -49,14 +49,23 @@
 #include <vector>
 
 // Abstract model function
+template <class OutputType>
 class ModelFunction
 {
 public:
     ModelFunction(){};
-    virtual arma::vec operator()(const arma::vec& input) = 0;
+    virtual OutputType operator()(const arma::vec& input) = 0;
     virtual ~ModelFunction() = default;
 };
 
+/*
+class CxModelFunction
+{
+public:
+    CxModelFunction(){};
+    virtual arma::cx_vec operator()(const arma::cx_vec& input) = 0;
+    virtual ~CxModelFunction() = default;
+};
 class CarrierTransitionModel : public ModelFunction
 {
 public:
@@ -93,5 +102,5 @@ public:
 private:
     float alpha;
 };
-
+*/
 #endif

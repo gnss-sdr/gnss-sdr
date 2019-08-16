@@ -32,6 +32,7 @@
 
 #include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include <limits>  // for std::numeric_limits
 
 
 void Gps_CNAV_Navigation_Message::reset()
@@ -121,12 +122,16 @@ int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV
         {
             value &= 0LL;
         }
-
+    // Avoid saturation when decoding
+    if (value == std::numeric_limits<int64_t>::max() or value == std::numeric_limits<int64_t>::min())
+        {
+            value /= 2;
+        }
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;                    // shift left
+                    value *= 2;                     // shift left the signed integer
                     value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
                     if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j]) == 1)
                         {

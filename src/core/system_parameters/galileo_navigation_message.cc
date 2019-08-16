@@ -311,11 +311,7 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
         {
             value &= 0LL;
         }
-    // Avoid saturation when decoding
-    if (value == std::numeric_limits<int64_t>::max() or value == std::numeric_limits<int64_t>::min())
-        {
-            value /= 2;
-        }
+
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)

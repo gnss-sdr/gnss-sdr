@@ -293,7 +293,7 @@ INTEGER__compar_value2enum(const void *kp, const void *am) {
 }
 
 const asn_INTEGER_enum_map_t *
-INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, long value) {
+INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, int64_t value) {
 	int count = specs ? specs->map_count : 0;
 	if(!count) return 0;
 	return (asn_INTEGER_enum_map_t *)bsearch(&value, specs->value2enum,
@@ -651,7 +651,7 @@ INTEGER_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		/*
 		 * TODO: replace by in-place arithmetics.
 		 */
-		long value;
+		int64_t value;
 		if(asn_INTEGER2long(st, &value))
 			_ASN_DECODE_FAILED;
 		if(asn_long2INTEGER(st, value + ct->lower_bound))
@@ -670,7 +670,7 @@ INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
 	const uint8_t *buf;
 	const uint8_t *end;
 	asn_per_constraint_t *ct;
-	long value = 0;
+	int64_t value = 0;
 
 	if(!st || st->size == 0) _ASN_ENCODE_FAILED;
 
@@ -682,7 +682,7 @@ INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
 	if(ct) {
 		int inext = 0;
 		if(specs && specs->field_unsigned) {
-			unsigned long uval;
+			uint64_t uval;
 			if(asn_INTEGER2ulong(st, &uval))
 				_ASN_ENCODE_FAILED;
 			/* Check proper range */
@@ -764,7 +764,7 @@ INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
 }
 
 int
-asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
+asn_INTEGER2long(const INTEGER_t *iptr, int64_t *lptr) {
 	uint8_t *b;
 	uint8_t *end;
 	size_t size;
@@ -825,7 +825,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 }
 
 int
-asn_INTEGER2ulong(const INTEGER_t *iptr, unsigned long *lptr) {
+asn_INTEGER2ulong(const INTEGER_t *iptr, uint64_t *lptr) {
 	uint8_t *b;
 	uint8_t *end;
 	unsigned long l;
@@ -858,7 +858,7 @@ asn_INTEGER2ulong(const INTEGER_t *iptr, unsigned long *lptr) {
 }
 
 int
-asn_ulong2INTEGER(INTEGER_t *st, unsigned long value) {
+asn_ulong2INTEGER(INTEGER_t *st, uint64_t value) {
 	uint8_t *buf;
 	uint8_t *end;
 	uint8_t *b;
@@ -883,7 +883,7 @@ asn_ulong2INTEGER(INTEGER_t *st, unsigned long value) {
 }
 
 int
-asn_long2INTEGER(INTEGER_t *st, long value) {
+asn_long2INTEGER(INTEGER_t *st, int64_t value) {
 	uint8_t *buf;
 	uint8_t *bp;
 	uint8_t *p;
@@ -897,7 +897,7 @@ asn_long2INTEGER(INTEGER_t *st, long value) {
 		return -1;
 	}
 
-	buf = (uint8_t *)MALLOC(sizeof(value));
+	buf = (uint8_t *)MALLOC(8);
 	if(!buf) return -1;
 
 	if(*(char *)&littleEndian) {

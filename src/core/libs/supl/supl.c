@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -900,7 +901,7 @@ int EXPORT supl_ctx_free(supl_ctx_t *ctx)
 
 static int supl_more_rrlp(PDU_t *rrlp)
 {
-    long value;
+    int64_t value;
 
     return (rrlp->component.present == RRLP_Component_PR_assistanceData &&
             rrlp->component.choice.assistanceData.moreAssDataToBeSent &&

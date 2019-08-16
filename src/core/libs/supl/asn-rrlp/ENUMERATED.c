@@ -61,7 +61,7 @@ asn_enc_rval_t
 ENUMERATED_encode_uper(asn_TYPE_descriptor_t *td,
 	asn_per_constraints_t *constraints, void *sptr, asn_per_outp_t *po) {
 	ENUMERATED_t *st = (ENUMERATED_t *)sptr;
-	long value;
+	int64_t value;
 
 	if(asn_INTEGER2long(st, &value))
 		_ASN_ENCODE_FAILED;

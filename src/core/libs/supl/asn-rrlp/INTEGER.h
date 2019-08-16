@@ -7,6 +7,7 @@
 
 #include <asn_application.h>
 #include <asn_codecs_prim.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -20,7 +21,7 @@ extern "C"
     /* Map with <tag> to integer value association */
     typedef struct asn_INTEGER_enum_map_s
     {
-        long nat_value;        /* associated native integer value */
+        int64_t nat_value;        /* associated native integer value */
         size_t enum_len;       /* strlen("tag") */
         const char *enum_name; /* "tag" */
     } asn_INTEGER_enum_map_t;
@@ -55,15 +56,15 @@ extern "C"
  * -1/ERANGE: Value encoded is out of range for long representation
  * -1/ENOMEM: Memory allocation failed (in asn_long2INTEGER()).
  */
-    int asn_INTEGER2long(const INTEGER_t *i, long *l);
-    int asn_INTEGER2ulong(const INTEGER_t *i, unsigned long *l);
-    int asn_long2INTEGER(INTEGER_t *i, long l);
-    int asn_ulong2INTEGER(INTEGER_t *i, unsigned long l);
+    int asn_INTEGER2long(const INTEGER_t *i, int64_t *l);
+    int asn_INTEGER2ulong(const INTEGER_t *i, uint64_t *l);
+    int asn_long2INTEGER(INTEGER_t *i, int64_t l);
+    int asn_ulong2INTEGER(INTEGER_t *i, uint64_t l);
 
     /*
  * Convert the integer value into the corresponding enumeration map entry.
  */
-    const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, long value);
+    const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, int64_t value);
 
 #ifdef __cplusplus
 }

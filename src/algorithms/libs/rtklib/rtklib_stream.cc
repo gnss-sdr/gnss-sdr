@@ -274,11 +274,11 @@ int openfile_(file_t *file, gtime_t time, char *msg)
         }
     if (file->mode & STR_MODE_R)
         {
-            rw = (char *)"rb";
+            rw = const_cast<char *>("rb");
         }
     else
         {
-            rw = (char *)"wb";
+            rw = const_cast<char *>("wb");
         }
 
     if (!(file->fp = fopen(file->openpath, rw)))
@@ -1953,7 +1953,7 @@ void *ftpthread(void *arg)
     char cmd[2048];
     char env[1024] = "";
     char opt[1024];
-    char *proxyopt = (char *)"";
+    char *proxyopt = const_cast<char *>("");
     char *proto;
     int ret;
 
@@ -2021,9 +2021,9 @@ void *ftpthread(void *arg)
     /* proxy settings for wget (ref [2]) */
     if (*proxyaddr)
         {
-            proto = ftp->proto ? (char *)"http" : (char *)"ftp";
+            proto = ftp->proto ? const_cast<char *>("http") : const_cast<char *>("ftp");
             sprintf(env, "set %s_proxy=http://%s & ", proto, proxyaddr);
-            proxyopt = (char *)"--proxy=on ";
+            proxyopt = const_cast<char *>("--proxy=on ");
         }
     /* download command (ref [2]) */
     if (ftp->proto == 0)

@@ -3085,7 +3085,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
     double tt;
     double wl;
     unsigned char code[32];
-    char *msm_type = (char *)"";
+    char *msm_type = const_cast<char *>("");
     char *q = nullptr;
     int i;
     int j;

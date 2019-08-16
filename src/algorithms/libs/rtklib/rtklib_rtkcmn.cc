@@ -643,7 +643,7 @@ char *code2obs(unsigned char code, int *freq)
         }
     if (code <= CODE_NONE || MAXCODE < code)
         {
-            return (char *)"";
+            return const_cast<char *>("");
         }
     if (freq)
         {
@@ -1450,7 +1450,7 @@ void matsprint(const double A[], int n, int m, int p, int q, std::string &buffer
                     char buf_[256];
                     sprintf(buf_, " %*.*f", p, q, A[i + j * n]);
                     std::string s(buf_);
-                    buffer = buffer + s;
+                    buffer += s;
                 }
             buffer += '\n';
         }
@@ -3320,8 +3320,8 @@ int geterp(const erp_t *erp, gtime_t time, double *erpv)
 /* compare ephemeris ---------------------------------------------------------*/
 int cmpeph(const void *p1, const void *p2)
 {
-    auto *q1 = (eph_t *)p1;
-    auto *q2 = (eph_t *)p2;
+    auto *q1 = static_cast<const eph_t *>(p1);
+    auto *q2 = static_cast<const eph_t *>(p2);
     return q1->ttr.time != q2->ttr.time ? static_cast<int>(q1->ttr.time - q2->ttr.time) : (q1->toe.time != q2->toe.time ? static_cast<int>(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -3370,8 +3370,8 @@ void uniqeph(nav_t *nav)
 /* compare glonass ephemeris -------------------------------------------------*/
 int cmpgeph(const void *p1, const void *p2)
 {
-    auto *q1 = (geph_t *)p1;
-    auto *q2 = (geph_t *)p2;
+    auto *q1 = static_cast<const geph_t *>(p1);
+    auto *q2 = static_cast<const geph_t *>(p2);
     return q1->tof.time != q2->tof.time ? static_cast<int>(q1->tof.time - q2->tof.time) : (q1->toe.time != q2->toe.time ? static_cast<int>(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -3421,8 +3421,8 @@ void uniqgeph(nav_t *nav)
 /* compare sbas ephemeris ----------------------------------------------------*/
 int cmpseph(const void *p1, const void *p2)
 {
-    auto *q1 = (seph_t *)p1;
-    auto *q2 = (seph_t *)p2;
+    auto *q1 = static_cast<const seph_t *>(p1);
+    auto *q2 = static_cast<const seph_t *>(p2);
     return q1->tof.time != q2->tof.time ? static_cast<int>(q1->tof.time - q2->tof.time) : (q1->t0.time != q2->t0.time ? static_cast<int>(q1->t0.time - q2->t0.time) : q1->sat - q2->sat);
 }
 
@@ -3499,8 +3499,8 @@ void uniqnav(nav_t *nav)
 /* compare observation data -------------------------------------------------*/
 int cmpobs(const void *p1, const void *p2)
 {
-    auto *q1 = (obsd_t *)p1;
-    auto *q2 = (obsd_t *)p2;
+    auto *q1 = static_cast<const obsd_t *>(p1);
+    auto *q2 = static_cast<const obsd_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     if (fabs(tt) > DTTOL)
         {
@@ -5087,7 +5087,7 @@ int rtk_uncompress(const char *file, char *uncfile)
     char tmpfile[1024] = "";
     char buff[1024];
     char *fname;
-    char *dir = (char *)"";
+    char *dir = const_cast<char *>("");
 
     trace(3, "rtk_uncompress: file=%s\n", file);
 

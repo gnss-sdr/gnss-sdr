@@ -1001,8 +1001,8 @@ int readsoldata(FILE *fp, gtime_t ts, gtime_t te, double tint, int qflag,
 /* compare solution data -----------------------------------------------------*/
 int cmpsol(const void *p1, const void *p2)
 {
-    auto *q1 = (sol_t *)p1;
-    auto *q2 = (sol_t *)p2;
+    auto *q1 = static_cast<const sol_t *>(p1);
+    auto *q2 = static_cast<const sol_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }
@@ -1230,8 +1230,8 @@ void freesolstatbuf(solstatbuf_t *solstatbuf)
 /* compare solution status ---------------------------------------------------*/
 int cmpsolstat(const void *p1, const void *p2)
 {
-    auto *q1 = (solstat_t *)p1;
-    auto *q2 = (solstat_t *)p2;
+    auto *q1 = static_cast<const solstat_t *>(p1);
+    auto *q2 = static_cast<const solstat_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }
@@ -1544,7 +1544,7 @@ int outnmea_rmc(unsigned char *buff, const sol_t *sol)
     char *p = reinterpret_cast<char *>(buff);
     char *q;
     char sum;
-    char *emag = (char *)"E";
+    char *emag = const_cast<char *>("E");
 
     trace(3, "outnmea_rmc:\n");
 

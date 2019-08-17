@@ -925,8 +925,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
             if (result == 0)
                 {
-                    LOG(INFO) << "RTKLIB rtkpos error";
-                    DLOG(INFO) << "RTKLIB rtkpos error message: " << rtk_.errbuf;
+                    LOG(INFO) << "RTKLIB rtkpos error: " << rtk_.errbuf;
+                    rtk_.neb = 0;                  //clear error buffer to avoid repeating the error message
                     this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
                 }

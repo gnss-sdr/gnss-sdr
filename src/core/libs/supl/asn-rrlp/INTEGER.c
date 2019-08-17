@@ -133,9 +133,9 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 		char *scr;
 
 		if(buf == buf_end) {
-			accum = 0;
+			accum = 0LL;
 		} else {
-			accum = (*buf & 0x80) ? -1 : 0;
+			accum = (*buf & 0x80) ? -1LL : 0LL;
 			for(; buf < buf_end; buf++)
 				accum = (accum * 256) | *buf;
 		}
@@ -160,7 +160,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 			scr = scratch;
 			ret = snprintf(scr, scrsize,
 				(specs && specs->field_unsigned)
-                           ?"%lld":"%lld", accum);
+                           ?"%llu":"%lld", accum);
 		}
 		assert(ret > 0 && (size_t)ret < scrsize);
 		return (cb(scr, ret, app_key) < 0) ? -1 : ret;

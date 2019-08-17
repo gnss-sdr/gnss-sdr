@@ -494,7 +494,6 @@ void decodefile(rtksvr_t *svr, int index)
 
     if (svr->format[index] == STRFMT_SP3)
         { /* precise ephemeris */
-
             /* read sp3 precise ephemeris */
             readsp3(file, &nav, 0);
             if (nav.ne <= 0)
@@ -517,8 +516,8 @@ void decodefile(rtksvr_t *svr, int index)
             rtksvrunlock(svr);
         }
     else if (svr->format[index] == STRFMT_RNXCLK)
-        { /* precise clock */
-
+        {
+            /* precise clock */
             /* read rinex clock */  // Disabled!!
             if (true /*readrnxc(file, &nav)<=0 */)
                 {

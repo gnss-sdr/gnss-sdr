@@ -27,7 +27,6 @@ extern "C"
         SLPAddress_PR_iPAddress,
         SLPAddress_PR_fQDN,
         /* Extensions may appear below */
-
     } SLPAddress_PR;
 
     /* SLPAddress */

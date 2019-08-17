@@ -33,7 +33,6 @@ extern "C"
         RRLP_Component_PR_assistanceDataAck,
         RRLP_Component_PR_protocolError,
         /* Extensions may appear below */
-
     } RRLP_Component_PR;
 
     /* RRLP-Component */

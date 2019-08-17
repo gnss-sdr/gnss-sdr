@@ -355,7 +355,6 @@ void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
 
     if (opt & 1)
         { /* solid earth tides */
-
             /* sun and moon position in ecef */
             sunmoonpos(tutc, erpv, rs, rm, &gmst);
 

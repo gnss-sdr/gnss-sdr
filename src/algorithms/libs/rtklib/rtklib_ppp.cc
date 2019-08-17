@@ -1689,7 +1689,6 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
 
             for (j = 0; j < 2; j++)
                 { /* for phase and code */
-
                     if (meas[j] == 0.0)
                         {
                             continue;

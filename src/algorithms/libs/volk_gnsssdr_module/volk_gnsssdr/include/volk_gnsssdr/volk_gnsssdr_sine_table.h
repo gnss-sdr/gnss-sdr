@@ -28,7 +28,6 @@
 /* From gnuradio/gnuradio-runtime/lib/math/sine_table.h
  * max_error =  2.353084136763606e-06 */
 static const float sine_table_10bits[1 << 10][2] = {
-
     {2.925817799165007e-09, 7.219194364267018e-09},
     {2.925707643778599e-09, 2.526699001579799e-07},
     {2.925487337153070e-09, 1.191140162167675e-06},

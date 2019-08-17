@@ -1657,7 +1657,6 @@ int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
         }
     for (m = 0; m < 4; m++)
         { /* m=0:gps/qzs/sbs, 1:glo, 2:gal, 3:bds */
-
             for (f = opt->mode > PMODE_DGPS ? 0 : nf; f < nf * 2; f++)
                 {
                     /* search reference satellite with highest elevation */
@@ -2863,7 +2862,6 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         }
     if (opt->mode == PMODE_MOVEB)
         { /*  moving baseline */
-
             /* estimate position/velocity of base station */
             if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, nullptr, nullptr, msg))
                 {

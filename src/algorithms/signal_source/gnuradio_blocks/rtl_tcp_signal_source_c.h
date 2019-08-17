@@ -47,6 +47,7 @@
 #include <gnuradio/sync_block.h>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 class rtl_tcp_signal_source_c;
 

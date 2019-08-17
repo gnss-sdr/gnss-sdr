@@ -1069,14 +1069,12 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                 }
                                         }
                                 }  //end plot
-
-                        }  //end acquisition Delay errors loop
-                }          //end acquisition Doppler errors loop
+                        }          //end acquisition Delay errors loop
+                }                  //end acquisition Doppler errors loop
             pull_in_results_v_v.push_back(pull_in_results_v);
-
-
         }  //end CN0 LOOP
-           //build the mesh grid
+
+    //build the mesh grid
     std::vector<double> doppler_error_mesh;
     std::vector<double> code_delay_error_mesh;
     for (unsigned int current_acq_doppler_error_idx = 0; current_acq_doppler_error_idx < acq_doppler_error_hz_values.size(); current_acq_doppler_error_idx++)

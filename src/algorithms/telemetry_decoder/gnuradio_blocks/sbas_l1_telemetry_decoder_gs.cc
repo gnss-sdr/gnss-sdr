@@ -34,6 +34,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
+#include <algorithm>        // for copy
 #include <array>
 #include <cmath>      // for abs
 #include <exception>  // for exception

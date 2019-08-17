@@ -390,9 +390,10 @@ void* handler_DMA_obs_test(void* arguments)
             exit(1);
         }
     else
-
-        // open input file
-        rx_signal_file_id = fopen(file.c_str(), "rb");
+        {
+            // open input file
+            rx_signal_file_id = fopen(file.c_str(), "rb");
+        }
     if (rx_signal_file_id == nullptr)
         {
             std::cout << "DMA can't open input file" << std::endl;
@@ -463,7 +464,6 @@ void* handler_DMA_obs_test(void* arguments)
                 }
         }
 
-
     close(tx_fd);
     fclose(rx_signal_file_id);
     return nullptr;
@@ -516,7 +516,6 @@ bool HybridObservablesTestFpga::acquire_signal()
 
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
         }
-
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_Fpga")
         {
             tmp_gnss_synchro.System = 'E';
@@ -568,7 +567,6 @@ bool HybridObservablesTestFpga::acquire_signal()
 
     top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
-
     // 5. Run the flowgraph
     // Get visible GPS satellites (positive acquisitions with Doppler measurements)
     // record startup time
@@ -615,7 +613,6 @@ bool HybridObservablesTestFpga::acquire_signal()
     int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
     int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
 
-
     for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
         {
             tmp_gnss_synchro.PRN = PRN;
@@ -628,7 +625,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             acquisition->set_local_code();
 
             args.file = file;
-
 
             send_samples_start_obs_test = 0;
 
@@ -658,7 +654,6 @@ bool HybridObservablesTestFpga::acquire_signal()
 
                     args.skip_used_samples = 0;
                 }
-
 
             // create DMA child process
             if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, (void*)&args) < 0)
@@ -709,7 +704,6 @@ bool HybridObservablesTestFpga::acquire_signal()
                     tmp_gnss_synchro.Acq_samplestamp_samples = 0;                                         // do not take into account the filter internal state initialisation
                     tmp_gnss_synchro.Acq_samplestamp_samples = tmp_gnss_synchro.Acq_samplestamp_samples;  // delay due to the downsampling filter in the acquisition
 
-
                     gnss_synchro_vec.push_back(tmp_gnss_synchro);
                 }
             else
@@ -717,10 +711,7 @@ bool HybridObservablesTestFpga::acquire_signal()
                     std::cout << " . ";
                 }
 
-
             top_block->stop();
-
-
             std::cout.flush();
         }
     std::cout << "]" << std::endl;
@@ -749,9 +740,6 @@ bool HybridObservablesTestFpga::acquire_signal()
         {
             return false;
         }
-
-
-    return true;
 }
 
 
@@ -857,6 +845,7 @@ void HybridObservablesTestFpga::configure_receiver(
     std::cout << "*****************************************\n";
 }
 
+
 void HybridObservablesTestFpga::check_results_carrier_phase(
     arma::mat& true_ch0,
     arma::vec& true_tow_s,
@@ -864,7 +853,6 @@ void HybridObservablesTestFpga::check_results_carrier_phase(
     const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
-
     double t0 = measured_ch0(0, 0);
     int size1 = measured_ch0.col(0).n_rows;
     double t1 = measured_ch0(size1 - 1, 0);
@@ -945,7 +933,6 @@ void HybridObservablesTestFpga::check_results_carrier_phase_double_diff(
     const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
-
     double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
@@ -955,7 +942,6 @@ void HybridObservablesTestFpga::check_results_carrier_phase_double_diff(
     //conversion between arma::vec and std:vector
     arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
     std::vector<double> time_vector(t_from_start.colptr(0), t_from_start.colptr(0) + t_from_start.n_rows);
-
 
     arma::vec true_ch0_carrier_phase_interp;
     arma::vec true_ch1_carrier_phase_interp;
@@ -1036,7 +1022,6 @@ void HybridObservablesTestFpga::check_results_carrier_doppler_double_diff(
     const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
-
     double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
@@ -1046,7 +1031,6 @@ void HybridObservablesTestFpga::check_results_carrier_doppler_double_diff(
     //conversion between arma::vec and std:vector
     arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
     std::vector<double> time_vector(t_from_start.colptr(0), t_from_start.colptr(0) + t_from_start.n_rows);
-
 
     arma::vec true_ch0_carrier_doppler_interp;
     arma::vec true_ch1_carrier_doppler_interp;
@@ -1124,7 +1108,6 @@ void HybridObservablesTestFpga::check_results_carrier_doppler(
     const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
-
     double t0 = measured_ch0(0, 0);
     int size1 = measured_ch0.col(0).n_rows;
     double t1 = measured_ch0(size1 - 1, 0);
@@ -1195,6 +1178,7 @@ void HybridObservablesTestFpga::check_results_carrier_doppler(
     ASSERT_LT(rmse_ch0, 30);
 }
 
+
 bool HybridObservablesTestFpga::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
 {
     try
@@ -1230,6 +1214,7 @@ bool HybridObservablesTestFpga::save_mat_xy(std::vector<double>& x, std::vector<
         }
 }
 
+
 void HybridObservablesTestFpga::check_results_code_pseudorange(
     arma::mat& true_ch0,
     arma::mat& true_ch1,
@@ -1240,7 +1225,6 @@ void HybridObservablesTestFpga::check_results_code_pseudorange(
     const std::string& data_title)
 {
     //1. True value interpolation to match the measurement times
-
     double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
@@ -1250,7 +1234,6 @@ void HybridObservablesTestFpga::check_results_code_pseudorange(
     //conversion between arma::vec and std:vector
     arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
     std::vector<double> time_vector(t_from_start.colptr(0), t_from_start.colptr(0) + t_from_start.n_rows);
-
 
     arma::vec true_ch0_dist_interp;
     arma::vec true_ch1_dist_interp;
@@ -1318,6 +1301,7 @@ void HybridObservablesTestFpga::check_results_code_pseudorange(
     ASSERT_LT(max_error, 10.0);
     ASSERT_GT(min_error, -10.0);
 }
+
 
 bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_Synchro gnss)
 {
@@ -1459,6 +1443,8 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
         }
     return true;
 }
+
+
 TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 {
     // pointer to the DMA thread that sends the samples to the acquisition engine
@@ -1474,7 +1460,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         {
             generate_signal();
         }
-
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
@@ -1556,7 +1541,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-
     // The HW has been reset after the acquisition phase when the acquisition class was destroyed.
     // No more samples remained in the DMA. Therefore any intermediate state in the LPF of the
     // GPS L1 / Galileo E1 filter has been cleared.
@@ -1566,7 +1550,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
     // instantiate the acquisition modules in order to use them to reset the HW.
     // (note that the constructor of the acquisition modules resets the HW too)
-
 
     std::shared_ptr<AcquisitionInterface> acquisition;
 
@@ -1597,18 +1580,16 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             throw(std::exception());
         }
 
-
     std::vector<std::shared_ptr<TrackingInterface>> tracking_ch_vec;
     std::vector<std::shared_ptr<TelemetryDecoderInterface>> tlm_ch_vec;
 
     std::vector<gr::blocks::null_sink::sptr> null_sink_vec;
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
         {
-            //set channels ids
+            // set channels ids
             gnss_synchro_vec.at(n).Channel_ID = n;
 
-            //create the tracking channels and create the telemetry decoders
-
+            // create the tracking channels and create the telemetry decoders
             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
             tracking_ch_vec.push_back(std::dynamic_pointer_cast<TrackingInterface>(trk_));
             std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config, "TelemetryDecoder", config->property("TelemetryDecoder.implementation", std::string("undefined")), 1, 1);
@@ -1673,7 +1654,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
         ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
 
-
         for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
             {
                 //top_block->connect(gr_interleaved_char_to_complex, 0, tracking_ch_vec.at(n)->get_left_block(), 0);
@@ -1687,10 +1667,8 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         top_block->connect(ch_out_fpga_sample_counter, 0, observables->get_left_block(), tracking_ch_vec.size());  //extra port for the sample counter pulse
     }) << "Failure connecting the blocks.";
 
-
     args.file = file;
     args.nsamples_tx = baseband_sampling_freq * FLAGS_duration;
-    ;
 
     args.skip_used_samples = 0;
 
@@ -1698,7 +1676,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         {
             std::cout << "ERROR cannot create DMA Process" << std::endl;
         }
-
 
     for (auto& n : tracking_ch_vec)
         {
@@ -1709,9 +1686,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     send_samples_start_obs_test = 1;
     pthread_mutex_unlock(&mutex_obs_test);
 
-
     top_block->start();
-
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
@@ -1720,30 +1695,25 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-
     // wait for the child DMA process to finish
     pthread_join(thread_DMA, nullptr);
 
-
     top_block->stop();
-
 
     // reset the HW AGAIN
     acquisition->stop_acquisition();
 
+    // pthread_mutex_lock(&mutex_obs_test);
+    // send_samples_start_obs_test = 0;
+    // pthread_mutex_unlock(&mutex_obs_test);
 
-    //	pthread_mutex_lock(&mutex_obs_test);
-    //	send_samples_start_obs_test = 0;
-    //	pthread_mutex_unlock(&mutex_obs_test);
-
-
-    //check results
+    // check results
     // Matrices for storing columnwise true GPS time, Range, Doppler and Carrier phase
     std::vector<arma::mat> true_obs_vec;
 
     if (!FLAGS_enable_external_signal_file)
         {
-            //load the true values
+            // load the true values
             True_Observables_Reader true_observables;
             ASSERT_NO_THROW({
                 if (true_observables.open_obs_file(std::string("./obs_out.bin")) == false)
@@ -1789,8 +1759,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 << "Failure reading RINEX file";
         }
 
-
-    //read measured values
+    // read measured values
     Observables_Dump_Reader estimated_observables(tracking_ch_vec.size());
     ASSERT_NO_THROW({
         if (estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
@@ -1828,8 +1797,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-
-    //Cut measurement tail zeros
+    // Cut measurement tail zeros
     arma::uvec index;
     for (auto& n : measured_obs_vec)
         {
@@ -1840,8 +1808,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-    //Cut measurement initial transitory of the measurements
-
+    // Cut measurement initial transitory of the measurements
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
 
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
@@ -1859,12 +1826,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
+    // Correct the clock error using true values (it is not possible for a receiver to correct
+    // the receiver clock offset error at the observables level because it is required the
+    // decoding of the ephemeris data and solve the PVT equations)
 
-    //Correct the clock error using true values (it is not possible for a receiver to correct
-    //the receiver clock offset error at the observables level because it is required the
-    //decoding of the ephemeris data and solve the PVT equations)
-
-    //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
+    // Find the reference satellite (the nearest) and compute the receiver time offset at observable level
     double min_pr = std::numeric_limits<double>::max();
     unsigned int min_pr_ch_id = 0;
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
@@ -1968,7 +1934,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                     std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
                 }
         }
-
 
     std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
 }

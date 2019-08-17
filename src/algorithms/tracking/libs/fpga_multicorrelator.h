@@ -39,6 +39,7 @@
 
 #include <gnuradio/block.h>
 #include <cstdint>
+#include <string>
 
 
 /*!

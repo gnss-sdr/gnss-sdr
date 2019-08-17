@@ -29,7 +29,6 @@ extern "C"
         CellInfo_PR_wcdmaCell,
         CellInfo_PR_cdmaCell,
         /* Extensions may appear below */
-
     } CellInfo_PR;
 
     /* CellInfo */

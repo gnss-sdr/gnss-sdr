@@ -33,6 +33,7 @@
 
 #include <gflags/gflags.h>
 #include <limits>
+#include <string>
 
 DEFINE_bool(disable_generator, false, "Disable the signal generator (a external signal file must be available for the test)");
 DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");

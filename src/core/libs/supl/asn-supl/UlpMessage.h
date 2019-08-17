@@ -38,7 +38,6 @@ extern "C"
         UlpMessage_PR_msDUMMY2,
         UlpMessage_PR_msDUMMY3,
         /* Extensions may appear below */
-
     } UlpMessage_PR;
 
     /* UlpMessage */

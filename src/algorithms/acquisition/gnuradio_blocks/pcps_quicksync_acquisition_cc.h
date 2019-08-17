@@ -60,6 +60,7 @@
 #include <cassert>
 #include <fstream>
 #include <functional>
+#include <memory>  // for weak_ptr
 #include <string>
 #include <utility>
 #include <vector>

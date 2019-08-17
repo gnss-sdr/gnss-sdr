@@ -70,6 +70,7 @@
 
 #include <gnuradio/sync_interpolator.h>
 #include <cstdint>
+#include <vector>
 
 class unpack_2bit_samples;
 

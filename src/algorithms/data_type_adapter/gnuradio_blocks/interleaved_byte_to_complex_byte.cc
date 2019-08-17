@@ -32,6 +32,7 @@
 #include "interleaved_byte_to_complex_byte.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <algorithm>  // for max
 
 
 interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte()

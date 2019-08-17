@@ -40,6 +40,7 @@
 #include <gnuradio/blocks/vector_to_stream.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
+#include <memory>
 #include <string>
 #include <vector>
 

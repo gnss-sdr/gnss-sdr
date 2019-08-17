@@ -43,6 +43,7 @@
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
+#include <memory>
 #include <string>
 
 class ConfigurationInterface;

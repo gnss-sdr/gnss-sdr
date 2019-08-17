@@ -191,7 +191,6 @@ typedef struct supl_rrlp_ctx_s
     int cnt_acq;
     int acq_time;
     struct supl_acquis_s acq[MAX_EPHEMERIS];
-
 } supl_assist_t;
 
 typedef struct supl_param_s
@@ -232,7 +231,6 @@ typedef struct supl_ctx_s
         void *buf;
         size_t size;
     } slp_session_id;
-
 } supl_ctx_t;
 
 int supl_ctx_new(supl_ctx_t *ctx);

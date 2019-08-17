@@ -25,7 +25,6 @@ extern "C"
         GANSSOrbitModel_PR_NOTHING, /* No components present */
         GANSSOrbitModel_PR_keplerianSet,
         /* Extensions may appear below */
-
     } GANSSOrbitModel_PR;
 
     /* GANSSOrbitModel */

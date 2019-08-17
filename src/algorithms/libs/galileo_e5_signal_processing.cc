@@ -36,6 +36,7 @@
 #include "gnss_signal_processing.h"
 #include <gnuradio/gr_complex.h>
 #include <memory>
+#include <utility>
 
 
 void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, const std::array<char, 3>& _Signal)

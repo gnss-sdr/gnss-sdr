@@ -40,6 +40,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <pmt/pmt.h>
+#include <memory>
 #include <stdexcept>
 #include <string>
 

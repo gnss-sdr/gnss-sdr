@@ -27,7 +27,6 @@ extern "C"
         PosPayLoad_PR_rrcPayload,
         PosPayLoad_PR_rrlpPayload,
         /* Extensions may appear below */
-
     } PosPayLoad_PR;
 
     /* PosPayLoad */

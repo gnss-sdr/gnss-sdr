@@ -35,6 +35,7 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
+#include <string>
 #include <utility>  // std::pair
 #include <vector>
 

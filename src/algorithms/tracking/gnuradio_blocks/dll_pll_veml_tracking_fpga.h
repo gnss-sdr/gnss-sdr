@@ -44,7 +44,9 @@
 #include <pmt/pmt.h>              // for pmt_t
 #include <cstdint>                // for int32_t
 #include <fstream>                // for string, ofstream
-#include <utility>                // for pair
+#include <memory>
+#include <string>
+#include <utility>  // for pair
 #include <vector>
 
 class Fpga_Multicorrelator_8sc;

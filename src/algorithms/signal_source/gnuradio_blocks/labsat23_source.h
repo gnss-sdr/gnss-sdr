@@ -36,6 +36,7 @@
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 
 

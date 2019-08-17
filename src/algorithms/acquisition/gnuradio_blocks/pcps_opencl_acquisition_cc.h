@@ -61,6 +61,7 @@
 #include "opencl/cl.hpp"
 #include <cstdint>
 #include <fstream>
+#include <memory>  // for weak_ptr
 #include <string>
 #include <vector>
 

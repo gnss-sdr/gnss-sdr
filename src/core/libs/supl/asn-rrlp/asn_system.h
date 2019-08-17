@@ -116,8 +116,8 @@ typedef unsigned int uint32_t;
 
 #ifndef MIN /* Suitable for comparing primitive types (integers) */
 #if defined(__GNUC__)
-#define MIN(a, b) ({ __typeof a _a = a; __typeof b _b = b;	\
-	((_a)<(_b)?(_a):(_b)); })
+#define MIN(a, b) ({ __typeof a _a = a; __typeof b _b = b;  \
+    ((_a)<(_b)?(_a):(_b)); })
 #else                                     /* !__GNUC__ */
 #define MIN(a, b) ((a) < (b) ? (a) : (b)) /* Unsafe variant */
 #endif                                    /* __GNUC__ */

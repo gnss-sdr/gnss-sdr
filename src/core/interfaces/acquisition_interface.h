@@ -40,6 +40,7 @@
 
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
+#include <memory>
 
 template <typename Data>
 class Concurrent_Queue;

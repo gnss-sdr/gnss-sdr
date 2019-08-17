@@ -32,7 +32,7 @@
 #include <boost/math/distributions/chi_squared.hpp>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <cmath>
+#include <algorithm>
 
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_,

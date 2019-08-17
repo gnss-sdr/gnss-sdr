@@ -26,7 +26,6 @@ extern "C"
         SETAuthKey_PR_shortKey,
         SETAuthKey_PR_longKey,
         /* Extensions may appear below */
-
     } SETAuthKey_PR;
 
     /* SETAuthKey */

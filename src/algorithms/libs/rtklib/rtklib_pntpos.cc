@@ -236,8 +236,8 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
     //CHECK IF IT IS STILL NEEDED
     if (opt->ionoopt == IONOOPT_IFLC)
-        { /* dual-frequency */
-
+        {
+            /* dual-frequency */
             if (P1 == 0.0 || P2 == 0.0)
                 {
                     return 0.0;

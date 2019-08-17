@@ -79,6 +79,7 @@
 #define GNSS_SDR_RTKLIB_RTKCMN_H_
 
 #include "rtklib.h"
+#include <string>
 
 
 /* coordinate rotation matrix ------------------------------------------------*/

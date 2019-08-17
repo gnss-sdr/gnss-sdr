@@ -955,7 +955,6 @@ int gentcp(tcp_t *tcp, int type, char *msg)
 
     if (type == 0)
         { /* server socket */
-
 #ifdef SVR_REUSEADDR
             /* multiple-use of server socket */
             setsockopt(tcp->sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt,

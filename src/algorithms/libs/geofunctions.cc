@@ -516,18 +516,18 @@ void cart2utm(const arma::vec &r_eb_e, int zone, arma::vec &r_enu)
     //  Erster Band, Springer Verlag
     //
     // Explanation of variables used:
-    // f	   flattening of ellipsoid
-    // a	   semi major axis in m
-    // m0	   1 - scale at central meridian; for UTM 0.0004
-    // Q_n	   normalized meridian quadrant
-    // E0	   Easting of central meridian
-    // L0	   Longitude of central meridian
-    // bg	   constants for ellipsoidal geogr. to spherical geogr.
-    // gb	   constants for spherical geogr. to ellipsoidal geogr.
-    // gtu	   constants for ellipsoidal N, E to spherical N, E
-    // utg	   constants for spherical N, E to ellipoidal N, E
-    // tolutm	tolerance for utm, 1.2E-10*meridian quadrant
-    // tolgeo	tolerance for geographical, 0.00040 second of arc
+    // r       flattening of ellipsoid
+    // a       semi major axis in m
+    // m0      1 - scale at central meridian; for UTM 0.0004
+    // Q_n     normalized meridian quadrant
+    // E0      Easting of central meridian
+    // L0      Longitude of central meridian
+    // bg      constants for ellipsoidal geogr. to spherical geogr.
+    // gb      constants for spherical geogr. to ellipsoidal geogr.
+    // gtu     constants for ellipsoidal N, E to spherical N, E
+    // utg     constants for spherical N, E to ellipoidal N, E
+    // tolutm  tolerance for utm, 1.2E-10*meridian quadrant
+    // tolgeo  tolerance for geographical, 0.00040 second of arc
     //
     // B, L refer to latitude and longitude. Southern latitude is negative
     // International ellipsoid of 1924, valid for ED50

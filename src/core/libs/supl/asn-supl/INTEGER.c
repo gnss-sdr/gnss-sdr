@@ -50,7 +50,7 @@ INTEGER_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 
 	/*
 	 * Canonicalize integer in the buffer.
-	 * (Remove too long sign extension, remove some first 0x00 bytes)
+	 * (Remove too int64_t sign extension, remove some first 0x00 bytes)
 	 */
 	if(st->buf) {
 		uint8_t *buf = st->buf;
@@ -106,7 +106,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 	char scratch[32];	/* Enough for 64-bit integer */
 	uint8_t *buf = st->buf;
 	uint8_t *buf_end = st->buf + st->size;
-	signed long accum;
+	int64_t accum;
 	ssize_t wrote = 0;
 	char *p;
 	int ret;
@@ -133,9 +133,9 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 		char *scr;
 
 		if(buf == buf_end) {
-			accum = 0;
+			accum = 0LL;
 		} else {
-			accum = (*buf & 0x80) ? -1 : 0;
+			accum = (*buf & 0x80) ? -1LL : 0LL;
 			for(; buf < buf_end; buf++)
 				accum = (accum * 256) | *buf;
 		}
@@ -146,7 +146,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 			scr = (char *)alloca(scrsize);
 			if(plainOrXER == 0)
 				ret = snprintf(scr, scrsize,
-					"%ld (%s)", accum, el->enum_name);
+					"%lld (%s)", accum, el->enum_name);
 			else
 				ret = snprintf(scr, scrsize,
 					"<%s/>", el->enum_name);
@@ -160,7 +160,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 			scr = scratch;
 			ret = snprintf(scr, scrsize,
 				(specs && specs->field_unsigned)
-				?"%lu":"%ld", accum);
+				?"%llu":"%lld", accum);
 		}
 		assert(ret > 0 && (size_t)ret < scrsize);
 		return (cb(scr, ret, app_key) < 0) ? -1 : ret;
@@ -175,7 +175,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 		return -1;
 	}
 
-	/* Output in the long xx:yy:zz... format */
+	/* Output in the int64_t xx:yy:zz... format */
 	/* TODO: replace with generic algorithm (Knuth TAOCP Vol 2, 4.3.1) */
 	for(p = scratch; buf < buf_end; buf++) {
 		static const char *h2c = "0123456789ABCDEF";
@@ -284,9 +284,9 @@ INTEGER_map_enum2value(asn_INTEGER_specifics_t *specs, const char *lstart, const
 
 static int
 INTEGER__compar_value2enum(const void *kp, const void *am) {
-	long a = *(const long *)kp;
+	int64_t a = *(const int64_t *)kp;
 	const asn_INTEGER_enum_map_t *el = (const asn_INTEGER_enum_map_t *)am;
-	long b = el->nat_value;
+	int64_t b = el->nat_value;
 	if(a < b) return -1;
 	else if(a == b) return 0;
 	else return 1;
@@ -321,8 +321,8 @@ INTEGER_st_prealloc(INTEGER_t *st, int min_size) {
 static enum xer_pbd_rval
 INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td, void *sptr, const void *chunk_buf, size_t chunk_size) {
 	INTEGER_t *st = (INTEGER_t *)sptr;
-	long sign = 1;
-	long value;
+	int64_t sign = 1LL;
+	int64_t value;
 	const char *lp;
 	const char *lstart = (const char *)chunk_buf;
 	const char *lstop = lstart + chunk_size;
@@ -339,7 +339,7 @@ INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td, void *sptr, const void *chun
 
 	if(chunk_size)
 		ASN_DEBUG("INTEGER body %ld 0x%2x..0x%2x",
-			(long)chunk_size, *lstart, lstop[-1]);
+			(int64_t)chunk_size, *lstart, lstop[-1]);
 
 	/*
 	 * We may have received a tag here. It will be processed inline.
@@ -398,7 +398,7 @@ INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td, void *sptr, const void *chun
 			}
 
 		    {
-			long new_value = value * 10;
+			int64_t new_value = value * 10;
 
 			if(new_value / 10 != value)
 				/* Overflow */
@@ -409,8 +409,8 @@ INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td, void *sptr, const void *chun
 			if(value < 0) {
 				/* Check whether it is a LONG_MIN */
 				if(sign == -1
-				&& (unsigned long)value
-						== ~((unsigned long)-1 >> 1)) {
+				&& (uint64_t)value
+						== ~((uint64_t)-1 >> 1)) {
 					sign = 1;
 				} else {
 					/* Overflow */
@@ -601,9 +601,9 @@ INTEGER_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		/* #10.5.6 */
 		ASN_DEBUG("Integer with range %d bits", ct->range_bits);
 		if(ct->range_bits >= 0) {
-			long value;
+			int64_t value;
 			if(ct->range_bits == 32) {
-				long lhalf;
+				int64_t lhalf;
 				value = per_get_few_bits(pd, 16);
 				if(value < 0) _ASN_DECODE_STARVED;
 				lhalf = per_get_few_bits(pd, 16);
@@ -687,11 +687,11 @@ INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
 				_ASN_ENCODE_FAILED;
 			/* Check proper range */
 			if(ct->flags & APC_SEMI_CONSTRAINED) {
-				if(uval < (unsigned long)ct->lower_bound)
+				if(uval < (uint64_t)ct->lower_bound)
 					inext = 1;
 			} else if(ct->range_bits >= 0) {
-				if(uval < (unsigned long)ct->lower_bound
-				|| uval > (unsigned long)ct->upper_bound)
+				if(uval < (uint64_t)ct->lower_bound
+				|| uval > (uint64_t)ct->upper_bound)
 					inext = 1;
 			}
 			ASN_DEBUG("Value %lu (%02x/%d) lb %lu ub %lu %s",
@@ -733,7 +733,7 @@ INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
 			ct->range_bits);
 		if(ct->range_bits == 32) {
 			/* TODO: extend to >32 bits */
-			long v = value - ct->lower_bound;
+			int64_t v = value - ct->lower_bound;
 			if(per_put_few_bits(po, v >> 1, 31)
 			|| per_put_few_bits(po, v, 1))
 				_ASN_ENCODE_FAILED;
@@ -768,7 +768,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, int64_t *lptr) {
 	uint8_t *b;
 	uint8_t *end;
 	size_t size;
-	long l;
+	int64_t l;
 
 	/* Sanity checking */
 	if(!iptr || !iptr->buf || !lptr) {
@@ -781,11 +781,11 @@ asn_INTEGER2long(const INTEGER_t *iptr, int64_t *lptr) {
 	size = iptr->size;
 	end = b + size;	/* Where to stop */
 
-	if(size > sizeof(long)) {
+	if(size > sizeof(int64_t)) {
 		uint8_t *end1 = end - 1;
 		/*
 		 * Slightly more advanced processing,
-		 * able to >sizeof(long) bytes,
+		 * able to >sizeof(int64_t) bytes,
 		 * when the actual value is small
 		 * (0x0000000000abcdef would yield a fine 0x00abcdef)
 		 */
@@ -799,8 +799,8 @@ asn_INTEGER2long(const INTEGER_t *iptr, int64_t *lptr) {
 		}
 
 		size = end - b;
-		if(size > sizeof(long)) {
-			/* Still cannot fit the long */
+		if(size > sizeof(int64_t)) {
+			/* Still cannot fit the int64_t */
 			errno = ERANGE;
 			return -1;
 		}
@@ -828,7 +828,7 @@ int
 asn_INTEGER2ulong(const INTEGER_t *iptr, uint64_t *lptr) {
 	uint8_t *b;
 	uint8_t *end;
-	unsigned long l;
+	uint64_t l;
 	size_t size;
 
 	if(!iptr || !iptr->buf || !lptr) {
@@ -841,9 +841,9 @@ asn_INTEGER2ulong(const INTEGER_t *iptr, uint64_t *lptr) {
 	end = b + size;
 
 	/* If all extra leading bytes are zeroes, ignore them */
-	for(; size > sizeof(unsigned long); b++, size--) {
+	for(; size > sizeof(uint64_t); b++, size--) {
 		if(*b) {
-			/* Value won't fit unsigned long */
+			/* Value won't fit uint64_t */
 			errno = ERANGE;
 			return -1;
 		}
@@ -872,7 +872,7 @@ asn_ulong2INTEGER(INTEGER_t *st, uint64_t value) {
 
 	end = buf + (sizeof(value) + 1);
 	buf[0] = 0;
-	for(b = buf + 1, shr = (sizeof(long)-1)*8; b < end; shr -= 8, b++)
+	for(b = buf + 1, shr = (sizeof(int64_t)-1)*8; b < end; shr -= 8, b++)
 		*b = (uint8_t)(value >> shr);
 
 	if(st->buf) FREEMEM(st->buf);

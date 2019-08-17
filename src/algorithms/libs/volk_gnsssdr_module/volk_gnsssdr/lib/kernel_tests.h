@@ -30,6 +30,7 @@
 
 #include "qa_utils.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <string>
 #include <vector>
 
 

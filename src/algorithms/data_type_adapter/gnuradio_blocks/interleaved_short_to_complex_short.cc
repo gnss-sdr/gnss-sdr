@@ -32,6 +32,7 @@
 #include "interleaved_short_to_complex_short.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <algorithm>  // for max
 
 
 interleaved_short_to_complex_short_sptr make_interleaved_short_to_complex_short()

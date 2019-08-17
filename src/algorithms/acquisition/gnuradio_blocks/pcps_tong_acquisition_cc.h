@@ -57,6 +57,7 @@
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
 #include <fstream>
+#include <memory>  // for weak_ptr
 #include <string>
 #include <utility>
 #include <vector>

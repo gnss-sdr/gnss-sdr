@@ -35,6 +35,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <cmath>
+#include <string>
 
 
 Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()

@@ -37,6 +37,7 @@
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <pmt/pmt.h>
+#include <memory>
 #include <string>
 
 /*!

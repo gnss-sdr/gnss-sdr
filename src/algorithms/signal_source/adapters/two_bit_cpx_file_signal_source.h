@@ -44,6 +44,7 @@
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 

@@ -57,7 +57,7 @@ extern "C"
     } PositionEstimate_t;
 
     /* Implementation */
-    /* extern asn_TYPE_descriptor_t asn_DEF_latitudeSign_2;	// (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_latitudeSign_2;  // (Use -fall-defs-global to expose) */
     extern asn_TYPE_descriptor_t asn_DEF_PositionEstimate;
 
 #ifdef __cplusplus

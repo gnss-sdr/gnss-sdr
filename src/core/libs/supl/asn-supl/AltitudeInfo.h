@@ -43,7 +43,7 @@ extern "C"
     } AltitudeInfo_t;
 
     /* Implementation */
-    /* extern asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2;	// (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2;   // (Use -fall-defs-global to expose) */
     extern asn_TYPE_descriptor_t asn_DEF_AltitudeInfo;
 
 #ifdef __cplusplus

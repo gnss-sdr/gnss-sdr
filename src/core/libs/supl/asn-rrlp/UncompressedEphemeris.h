@@ -58,8 +58,8 @@ extern "C"
     } UncompressedEphemeris_t;
 
     /* Implementation */
-    /* extern asn_TYPE_descriptor_t asn_DEF_ephemE_17;	// (Use -fall-defs-global to expose) */
-    /* extern asn_TYPE_descriptor_t asn_DEF_ephemAPowerHalf_19;	// (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_ephemE_17;  // (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_ephemAPowerHalf_19; // (Use -fall-defs-global to expose) */
     extern asn_TYPE_descriptor_t asn_DEF_UncompressedEphemeris;
 
 #ifdef __cplusplus

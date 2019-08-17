@@ -148,7 +148,7 @@ private:
     ///\brief checks if file is available
     ///
     /// \param filename --> the filename
-    /// \param mode 	--> the mode [optional,default value = 0]
+    /// \param mode     --> the mode [optional,default value = 0]
     ///
     /// \return file exists (yes == true, no == false)
     // ---------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ private:
     ///\brief checks if file exists
     ///
     /// \param filename --> the filename
-    /// \param mode 	--> the mode [optional,default value = 0]
+    /// \param mode     --> the mode [optional,default value = 0]
     ///
     /// \return file exists (yes == true, no == false)
     // ---------------------------------------------------------------------------------

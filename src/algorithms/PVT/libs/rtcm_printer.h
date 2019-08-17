@@ -38,6 +38,7 @@
 #include <fstream>  // for std::ofstream
 #include <map>      // for std::map
 #include <memory>   // std::shared_ptr
+#include <string>
 
 class Galileo_Ephemeris;
 class Glonass_Gnav_Ephemeris;

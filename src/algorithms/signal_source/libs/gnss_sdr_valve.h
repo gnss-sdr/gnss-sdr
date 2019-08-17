@@ -41,6 +41,7 @@
 #include <pmt/pmt.h>
 #include <cstddef>  // for size_t
 #include <cstdint>
+#include <memory>
 
 class Gnss_Sdr_Valve;
 

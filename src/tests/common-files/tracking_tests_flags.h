@@ -33,6 +33,7 @@
 
 #include <gflags/gflags.h>
 #include <limits>
+#include <string>
 
 
 DEFINE_string(trk_test_implementation, std::string("GPS_L1_CA_DLL_PLL_Tracking"), "Tracking block implementation under test, defaults to GPS_L1_CA_DLL_PLL_Tracking");

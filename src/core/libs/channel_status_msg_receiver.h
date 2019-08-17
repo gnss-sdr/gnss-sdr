@@ -35,6 +35,7 @@
 #include "monitor_pvt.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
+#include <map>
 #include <memory>
 
 class channel_status_msg_receiver;

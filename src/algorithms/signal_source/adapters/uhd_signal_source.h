@@ -39,6 +39,7 @@
 #include <gnuradio/uhd/usrp_source.h>
 #include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 

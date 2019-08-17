@@ -33,6 +33,7 @@
 
 #include <gflags/gflags.h>
 #include <limits>
+#include <string>
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
 DEFINE_bool(plot_position_test, false, "Plots results of with gnuplot");

@@ -43,6 +43,7 @@
 #endif
 #include "concurrent_queue.h"
 #include <pmt/pmt.h>
+#include <memory>
 #include <string>
 
 class ConfigurationInterface;

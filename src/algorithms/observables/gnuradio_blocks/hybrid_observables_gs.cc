@@ -45,7 +45,6 @@
 #include <iostream>   // for cerr, cout
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
-#include <vector>     // for vector
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>

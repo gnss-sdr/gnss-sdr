@@ -39,6 +39,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <osmosdr/source.h>
 #include <stdexcept>
 #include <string>

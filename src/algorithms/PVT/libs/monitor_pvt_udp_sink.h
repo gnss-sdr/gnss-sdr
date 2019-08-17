@@ -35,6 +35,9 @@
 #include "monitor_pvt.h"
 #include "serdes_monitor_pvt.h"
 #include <boost/asio.hpp>
+#include <memory>
+#include <string>
+#include <vector>
 
 #if BOOST_GREATER_1_65
 using b_io_context = boost::asio::io_context;

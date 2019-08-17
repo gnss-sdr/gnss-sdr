@@ -42,6 +42,7 @@
 #include "gnss_block_interface.h"
 #include "gps_almanac.h"
 #include "gps_ephemeris.h"
+#include <map>
 
 /*!
  * \brief This class represents an interface to a PVT block.

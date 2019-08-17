@@ -35,7 +35,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <cmath>
 #include <limits>
-
+#include <vector>
 
 MmseResamplerConditioner::MmseResamplerConditioner(
     ConfigurationInterface* configuration, const std::string& role,

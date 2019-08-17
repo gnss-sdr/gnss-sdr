@@ -32,6 +32,7 @@
 #define GNSS_SDR_TEST_FLAGS_H_
 
 #include <gflags/gflags.h>
+#include <string>
 
 #if defined GNUPLOT_EXECUTABLE
 DEFINE_string(gnuplot_executable, std::string(GNUPLOT_EXECUTABLE), "Gnuplot binary path");

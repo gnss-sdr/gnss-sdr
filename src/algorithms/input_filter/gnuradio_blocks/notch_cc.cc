@@ -32,7 +32,7 @@
 #include <boost/math/distributions/chi_squared.hpp>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <cmath>
+#include <algorithm>
 #include <cstring>
 
 

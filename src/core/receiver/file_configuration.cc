@@ -39,6 +39,7 @@
 #include "string_converter.h"
 #include <glog/logging.h>
 #include <string>
+#include <utility>
 
 
 FileConfiguration::FileConfiguration(std::string filename)

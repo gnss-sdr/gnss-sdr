@@ -33,6 +33,7 @@
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 

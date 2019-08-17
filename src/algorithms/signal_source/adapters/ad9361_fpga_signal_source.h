@@ -38,6 +38,7 @@
 #include <boost/shared_ptr.hpp>
 #include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 class ConfigurationInterface;

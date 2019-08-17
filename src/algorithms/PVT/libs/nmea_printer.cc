@@ -43,6 +43,7 @@
 #include <fcntl.h>
 #include <iostream>  // for cout, cerr
 #include <termios.h>
+#include <utility>
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>

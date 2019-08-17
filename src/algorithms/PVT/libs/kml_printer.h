@@ -35,7 +35,7 @@
 
 #include <fstream>  // for ofstream
 #include <memory>   // for shared_ptr
-
+#include <string>
 
 class Rtklib_Solver;
 

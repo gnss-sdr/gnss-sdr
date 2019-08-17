@@ -44,6 +44,7 @@
 #include "tracking_FLL_PLL_filter.h"
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <deque>
 #include <fstream>
 #include <map>
 #include <string>

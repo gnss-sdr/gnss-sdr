@@ -35,6 +35,8 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt.pb.h"  // file created by Protocol Buffers at compile time
 #include <memory>
+#include <string>
+#include <utility>
 
 /*!
  * \brief This class implements serialization and deserialization of

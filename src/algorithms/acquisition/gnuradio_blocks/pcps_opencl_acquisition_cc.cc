@@ -62,6 +62,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(

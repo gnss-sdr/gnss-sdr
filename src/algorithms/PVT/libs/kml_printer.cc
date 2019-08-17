@@ -39,7 +39,6 @@
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <sstream>
-#include <string>
 #include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
 #include <sys/types.h>  // for mode_t
 

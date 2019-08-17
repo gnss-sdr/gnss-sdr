@@ -34,6 +34,7 @@
 
 #include "direct_resampler_conditioner_cs.h"
 #include <gnuradio/io_signature.h>
+#include <algorithm>  // for min
 
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(

@@ -34,7 +34,7 @@
 #include "notch_lite_cc.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
-#include <cmath>
+#include <algorithm>  // for max
 
 
 NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, const std::string& role,

@@ -543,7 +543,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-            //acquisition->set_state(1);
+            // acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
@@ -633,7 +633,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
                 }
 
             acquisition->set_local_code();
-            //acquisition->set_state(1);
+            // acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({

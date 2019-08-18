@@ -45,7 +45,7 @@ public:
     int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
-    //telemetry decoder dump variables
+    // telemetry decoder dump variables
     double TOW_at_current_symbol;
     uint64_t Tracking_sample_counter;
     double d_TOW_at_Preamble;
@@ -55,4 +55,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif  //GNSS_SDR_TLM_DUMP_READER_H
+#endif  // GNSS_SDR_TLM_DUMP_READER_H

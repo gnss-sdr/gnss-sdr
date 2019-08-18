@@ -183,8 +183,8 @@ TEST_F(NmeaPrinterTest, PrintLine)
     gtime.time = tim;
     gtime.sec = 0.0;
 
-    pvt_solution->pvt_sol.rr[0] = -2282104.0;  //49.27416667;
-    pvt_solution->pvt_sol.rr[1] = -3489369.0;  //-123.18533333;
+    pvt_solution->pvt_sol.rr[0] = -2282104.0;  // 49.27416667;
+    pvt_solution->pvt_sol.rr[1] = -3489369.0;  // -123.18533333;
     pvt_solution->pvt_sol.rr[2] = 4810507.0;   // 0
     pvt_solution->pvt_sol.rr[3] = 0.0;
     pvt_solution->pvt_sol.rr[4] = 0.0;

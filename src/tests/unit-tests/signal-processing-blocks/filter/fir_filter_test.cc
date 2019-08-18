@@ -99,7 +99,7 @@ void FirFilterTest::init()
 
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
-    //config->set_property("InputFilter.dump", "true");
+    // config->set_property("InputFilter.dump", "true");
 }
 
 

@@ -168,7 +168,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1G.doppler_max", "5000");
     config->set_property("Acquisition_1G.doppler_step", "500");
     config->set_property("Acquisition_1G.repeat_satellite", "false");
-    //config->set_property("Acquisition_1G.pfa", "0.0");
+    // config->set_property("Acquisition_1G.pfa", "0.0");
 }
 
 

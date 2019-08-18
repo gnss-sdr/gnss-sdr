@@ -545,8 +545,8 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
 
-            //std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
-            //std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
+            // std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
+            // std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
             ch_thread.join();
         }
 }

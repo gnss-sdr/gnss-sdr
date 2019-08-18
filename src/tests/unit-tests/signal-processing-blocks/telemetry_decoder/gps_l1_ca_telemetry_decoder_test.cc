@@ -223,7 +223,7 @@ int GpsL1CATelemetryDecoderTest::configure_generator()
         }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
     return 0;
 }
 
@@ -280,7 +280,7 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
 {
-    //1. True value interpolation to match the measurement times
+    // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
     arma::uvec true_time_s_valid = find(true_time_s > 0);
     true_time_s = true_time_s(true_time_s_valid);
@@ -291,14 +291,14 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
 
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
-    //arma::vec err = meas_value - true_value_interp + 0.001;
+    // 2. RMSE
+    // arma::vec err = meas_value - true_value_interp + 0.001;
     arma::vec err = meas_value - true_value_interp;  // - 0.001;
 
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
@@ -306,7 +306,7 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TLM TOW RMSE="
               << rmse << ", mean=" << error_mean
@@ -341,7 +341,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     configure_receiver();
 
-    //open true observables log file written by the simulator
+    // open true observables log file written by the simulator
     Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
@@ -357,7 +357,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
-    //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
+    // std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx> msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
 
@@ -369,7 +369,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
             };
     }) << "Failure reading true observables file";
 
-    //restart the epoch counter
+    // restart the epoch counter
     true_obs_data.restart();
 
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
@@ -416,8 +416,8 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    //check results
-    //load the true values
+    // check results
+    // load the true values
     int64_t nepoch = true_obs_data.num_epochs();
     std::cout << "True observation epochs=" << nepoch << std::endl;
 
@@ -438,7 +438,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
             epoch_counter++;
         }
 
-    //load the measured values
+    // load the measured values
     Tlm_Dump_Reader tlm_dump;
     ASSERT_NO_THROW({
         if (tlm_dump.open_obs_file(std::string("./telemetry0.dat")) == false)
@@ -463,7 +463,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
             epoch_counter++;
         }
 
-    //Cut measurement initial transitory of the measurements
+    // Cut measurement initial transitory of the measurements
     arma::uvec initial_meas_point = arma::find(tlm_tow_s >= true_tow_s(0), 1, "first");
     ASSERT_EQ(initial_meas_point.is_empty(), false);
     tlm_timestamp_s = tlm_timestamp_s.subvec(initial_meas_point(0), tlm_timestamp_s.size() - 1);

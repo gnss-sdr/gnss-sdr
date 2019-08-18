@@ -51,7 +51,7 @@ TEST(DirectResamplerConditionerCcTest, InstantiationAndRunTest)
     double fs_out = 4000000.0;  // sampling freuqncy of the resampled signal in Hz
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    int nsamples = 1000000;  //Number of samples to be computed
+    int nsamples = 1000000;  // Number of samples to be computed
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     gr::top_block_sptr top_block = gr::make_top_block("direct_resampler_conditioner_cc_test");
     boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));

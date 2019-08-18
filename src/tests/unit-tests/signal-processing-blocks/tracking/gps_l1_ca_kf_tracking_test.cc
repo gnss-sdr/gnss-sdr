@@ -399,7 +399,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
     top_block = gr::make_top_block("Tracking test");
 
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
-    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);  //std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);  // std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx> msg_rx = GpsL1CAKfTrackingTest_msg_rx_make();
 
@@ -471,7 +471,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
             epoch_counter++;
         }
 
-    //load the measured values
+    // load the measured values
     Tracking_Dump_Reader trk_dump;
 
     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
@@ -479,7 +479,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
 
     nepoch = trk_dump.num_epochs();
     std::cout << "Measured observation epochs=" << nepoch << std::endl;
-    //trk_dump.restart();
+    // trk_dump.restart();
 
     arma::vec trk_timestamp_s = arma::zeros(nepoch, 1);
     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);

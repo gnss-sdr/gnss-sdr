@@ -179,13 +179,13 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.repeat_satellite", "false");
-    //config->set_property("Acquisition_1C.pfa", "0.0");
+    // config->set_property("Acquisition_1C.pfa", "0.0");
 }
 
 
 void GpsL1CaPcpsAcquisitionTest::plot_grid()
 {
-    //load the measured values
+    // load the measured values
     std::string basename = "./tmp-acq-gps1/acquisition_G_1C";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
@@ -230,7 +230,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
                     g1.set_title("GPS L1 C/A signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
-                    //g1.cmd("set view 60, 105, 1, 1");
+                    // g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("GPS_L1_acq_grid");

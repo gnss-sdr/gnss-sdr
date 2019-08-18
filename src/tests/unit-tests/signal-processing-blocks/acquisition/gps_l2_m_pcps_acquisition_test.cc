@@ -189,7 +189,7 @@ void GpsL2MPcpsAcquisitionTest::init()
 
 void GpsL2MPcpsAcquisitionTest::plot_grid()
 {
-    //load the measured values
+    // load the measured values
     std::string basename = "./tmp-acq-gps2/acquisition_test_G_2S";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
@@ -233,7 +233,7 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                     g1.set_title("GPS L2CM signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
-                    //g1.cmd("set view 60, 105, 1, 1");
+                    // g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("GPS_L2CM_acq_grid");
@@ -296,8 +296,8 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    double expected_delay_samples = 1;  //2004;
-    double expected_doppler_hz = 1200;  //3000;
+    double expected_delay_samples = 1;  // 2004;
+    double expected_doppler_hz = 1200;  // 3000;
 
     if (FLAGS_plot_acq_grid == true)
         {
@@ -339,16 +339,16 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);
-        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        // std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         std::string file = path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
-        //std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
+        // std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
         const char *file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-        //gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
-        //gr::blocks::char_to_short::sptr gr_char_to_short_ = gr::blocks::char_to_short::make();
+        // gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
+        // gr::blocks::char_to_short::sptr gr_char_to_short_ = gr::blocks::char_to_short::make();
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-        //top_block->connect(file_source, 0, gr_char_to_short_, 0);
-        //top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
+        // top_block->connect(file_source, 0, gr_char_to_short_, 0);
+        // top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
         top_block->connect(file_source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));

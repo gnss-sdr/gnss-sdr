@@ -144,7 +144,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run();  //Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";

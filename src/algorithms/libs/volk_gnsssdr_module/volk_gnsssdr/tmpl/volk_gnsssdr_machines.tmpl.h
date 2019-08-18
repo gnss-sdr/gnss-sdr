@@ -29,9 +29,9 @@ __VOLK_DECL_BEGIN
 
 // clang-format off
 struct volk_gnsssdr_machine {
-    const unsigned int caps; //capabilities (i.e., archs compiled into this machine, in the volk_gnsssdr_get_lvarch format)
+    const unsigned int caps;  // capabilities (i.e., archs compiled into this machine, in the volk_gnsssdr_get_lvarch format)
     const char *name;
-    const size_t alignment; //the maximum byte alignment required for functions in this library
+    const size_t alignment;  // the maximum byte alignment required for functions in this library
     %for kern in kernels:
     const char *${kern.name}_name;
     const char *${kern.name}_impl_names[<%len_archs=len(archs)%>${len_archs}];
@@ -51,4 +51,4 @@ extern struct volk_gnsssdr_machine volk_gnsssdr_machine_${machine.name};
 __VOLK_DECL_END
 // clang-format on
 
-#endif  //INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H
+#endif  // INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H

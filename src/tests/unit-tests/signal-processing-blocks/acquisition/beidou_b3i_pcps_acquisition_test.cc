@@ -2,7 +2,7 @@
  * \file beidou_b3i_pcps_acquisition_test.cc
  * \brief  This class implements an acquisition test for
  * BeidouB3iPcpsAcquisition class based on some input parameters.
-  * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
+ * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
  *
  *
  * -------------------------------------------------------------------------
@@ -184,7 +184,7 @@ void BeidouB3iPcpsAcquisitionTest::init()
 
 void BeidouB3iPcpsAcquisitionTest::plot_grid()
 {
-    //load the measured values
+    // load the measured values
     std::string basename = "./tmp-acq-bds-b3i/acquisition_C_B3";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
@@ -229,7 +229,7 @@ void BeidouB3iPcpsAcquisitionTest::plot_grid()
                     g1.set_title("BeiDou B3I signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
-                    //g1.cmd("set view 60, 105, 1, 1");
+                    // g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("BDS_B3I_acq_grid");

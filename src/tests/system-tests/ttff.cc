@@ -499,7 +499,7 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
         {
             print_TTFF_report(TTFF_v, config2);
         }
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));  //let the USRP some time to rest before the next test
+    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));  // let the USRP some time to rest before the next test
 }
 
 

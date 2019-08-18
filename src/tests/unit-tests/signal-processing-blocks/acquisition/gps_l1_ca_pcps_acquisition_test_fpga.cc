@@ -173,7 +173,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
                             buffer_DMA[t] = static_cast<signed char>((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1) / max));
                         }
 
-                    //send_acquisition_gps_input_samples(buffer_DMA, transfer_size, dma_descr);
+                    // send_acquisition_gps_input_samples(buffer_DMA, transfer_size, dma_descr);
                     assert(transfer_size == write(dma_descr, &buffer_DMA[0], transfer_size));
                 }
         }
@@ -351,8 +351,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     std::string file = "./GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
 
     // uncomment the next two lines to load the file from the signal samples subdirectory
-    //std::string path = std::string(TEST_PATH);
-    //std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+    // std::string path = std::string(TEST_PATH);
+    // std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
 
     const char *file_name = file.c_str();
 

@@ -187,7 +187,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
 
 void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 {
-    //load the measured values
+    // load the measured values
     std::string basename = "./tmp-acq-gal1/acquisition_E_1B";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
@@ -232,7 +232,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                     g1.set_title("Galileo E1b/c signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
-                    //g1.cmd("set view 60, 105, 1, 1");
+                    // g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("Galileo_E1_acq_grid");
@@ -306,7 +306,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
             fs::create_directory(data_str);
         }
 
-    double expected_delay_samples = 2920;  //18250;
+    double expected_delay_samples = 2920;  // 18250;
     double expected_doppler_hz = -632;
     init();
     top_block = gr::make_top_block("Acquisition test");

@@ -71,4 +71,4 @@ private:
 };
 
 
-#endif  //VOLK_GNSSSDR_OPTION_HELPERS_H
+#endif  // VOLK_GNSSSDR_OPTION_HELPERS_H

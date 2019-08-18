@@ -117,7 +117,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_5X", "Galileo_E5a_DLL_PLL_Tracking", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
-    //REAL
+    // REAL
     gnss_synchro.Acq_delay_samples = 10;  // 32 Msps
     //    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
     gnss_synchro.Acq_doppler_hz = 2000;  // 500 Hz resolution

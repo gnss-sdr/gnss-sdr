@@ -295,7 +295,7 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
             std::cout << "Updating " << path << " ..." << std::endl;
             config.open(path.c_str(), std::ofstream::app);
             if (!config.is_open())
-                {  //either we don't have write access or we don't have the dir yet
+                {  // either we don't have write access or we don't have the dir yet
                     std::cout << "Error opening file " << path << std::endl;
                 }
         }
@@ -304,7 +304,7 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
             std::cout << "Writing " << path << " ..." << std::endl;
             config.open(path.c_str());
             if (!config.is_open())
-                {  //either we don't have write access or we don't have the dir yet
+                {  // either we don't have write access or we don't have the dir yet
                     std::cout << "Error opening file " << path << std::endl;
                 }
 

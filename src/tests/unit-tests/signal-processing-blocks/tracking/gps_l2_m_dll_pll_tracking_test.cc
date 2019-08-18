@@ -182,7 +182,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     }) << "Failure connecting tracking to the top_block.";
 
     ASSERT_NO_THROW({
-        //gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        // gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         std::string path = std::string(TEST_PATH);
         std::string file = path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
         const char* file_name = file.c_str();

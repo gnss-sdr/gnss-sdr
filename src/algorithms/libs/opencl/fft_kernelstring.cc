@@ -620,7 +620,7 @@ insertTwiddleKernel(string &kernelString, int Nr, int numIter, int Nprev, int le
             for (k = 1; k < Nr; k++)
                 {
                     int ind = z * Nr + k;
-                    //float fac =  (float) (2.0 * M_PI * (double) k / (double) len);
+                    // float fac =  (float) (2.0 * M_PI * (double) k / (double) len);
                     kernelString += string("    ang = dir * ( 2.0f * M_PI * ") + num2str(k) + string(".0f / ") + num2str(len) + string(".0f )") + string(" * angf;\n");
                     kernelString += string("    w = (float2)(native_cos(ang), native_sin(ang));\n");
                     kernelString += string("    a[") + num2str(ind) + string("] = complexMul(a[") + num2str(ind) + string("], w);\n");

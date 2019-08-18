@@ -45,7 +45,7 @@ public:
     int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
-    //tracking dump variables
+    // tracking dump variables
     // VEPLVL
     float abs_VE;
     float abs_E;
@@ -90,4 +90,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif  //GNSS_SDR_TRACKING_DUMP_READER_H
+#endif  // GNSS_SDR_TRACKING_DUMP_READER_H

@@ -283,7 +283,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);
-        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        // std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         std::string file = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
         const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);

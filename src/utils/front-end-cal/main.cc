@@ -160,15 +160,15 @@ void wait_message()
         {
             int message;
             channel_internal_queue.wait_and_pop(message);
-            //std::cout<<"Acq message rx="<<message<<std::endl;
+            // std::cout<<"Acq message rx="<<message<<std::endl;
             switch (message)
                 {
                 case 1:  // Positive acq
                     gnss_sync_vector.push_back(*gnss_synchro);
-                    //acquisition->reset();
+                    // acquisition->reset();
                     break;
                 case 2:  // negative acq
-                    //acquisition->reset();
+                    // acquisition->reset();
                     break;
                 case 3:
                     stop = true;
@@ -399,7 +399,7 @@ int main(int argc, char** argv)
     // Get visible GPS satellites (positive acquisitions with Doppler measurements)
     // Compute Doppler estimations
 
-    //todo: Fix the front-end cal to support new channel internal message system (no more external queues)
+    // todo: Fix the front-end cal to support new channel internal message system (no more external queues)
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> cn0_measurements_map;
 

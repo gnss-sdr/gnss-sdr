@@ -316,7 +316,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    //std::string signal = "5Q";
+    // std::string signal = "5Q";
     std::string signal = "5X";
     signal.copy(gnss_synchro.Signal, 2, 0);
 
@@ -499,9 +499,9 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
 
     realization_counter++;
 
-    //std::cout << correct_estimation_counter << "correct estimation counter" << std::endl;
+    // std::cout << correct_estimation_counter << "correct estimation counter" << std::endl;
     std::cout << "Progress: " << round(static_cast<float>(realization_counter / num_of_realizations * 100)) << "% \r" << std::flush;
-    //std::cout << message << "message" <<std::endl;
+    // std::cout << message << "message" <<std::endl;
     if (realization_counter == num_of_realizations)
         {
             mse_delay /= num_of_realizations;
@@ -535,7 +535,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, Instantiate)
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
 {
     config_1();
-    //int nsamples = floor(5*fs_in*integration_time_ms*1e-3);
+    // int nsamples = floor(5*fs_in*integration_time_ms*1e-3);
     int nsamples = 21000 * 3;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);

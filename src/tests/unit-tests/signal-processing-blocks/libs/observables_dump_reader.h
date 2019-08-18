@@ -47,9 +47,7 @@ public:
     bool open_obs_file(std::string out_file);
     void close_obs_file();
 
-
-    //dump variables
-
+    // dump variables
     double* RX_time;
     double* TOW_at_current_symbol_s;
     double* Carrier_Doppler_hz;
@@ -64,4 +62,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif  //GNSS_SDR_OBSERVABLES_DUMP_READER_H
+#endif  // GNSS_SDR_OBSERVABLES_DUMP_READER_H

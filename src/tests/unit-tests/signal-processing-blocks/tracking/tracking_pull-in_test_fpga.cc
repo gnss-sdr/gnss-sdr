@@ -119,7 +119,7 @@ void Acquisition_msg_rx_Fpga::msg_handler_events(pmt::pmt_t msg)
         {
             int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
-            top_block->stop();  //stop the flowgraph
+            top_block->stop();  // stop the flowgraph
         }
     catch (boost::bad_any_cast& e)
         {
@@ -165,7 +165,7 @@ void TrackingPullInTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
     try
         {
             int64_t message = pmt::to_long(std::move(msg));
-            rx_message = message;  //3 -> loss of lock
+            rx_message = message;  // 3 -> loss of lock
         }
     catch (boost::bad_any_cast& e)
         {
@@ -268,7 +268,7 @@ int TrackingPullInTestFpga::configure_generator(double CN0_dBHz, int file_idx)
         }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;                    // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_signal_file + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);       //Baseband sampling frequency [MSps]
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);       // Baseband sampling frequency [MSps]
     p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                          // Signal generator CN0
     return 0;
 }
@@ -425,11 +425,11 @@ void setup_fpga_switch(void)
             LOG(INFO) << "Test register sanity check success !";
         }
 
-    switch_map_base[0] = 0;  //0 -> DMA to queue 0, 1 -> DMA to queue 1, 2 -> A/Ds to queues
+    switch_map_base[0] = 0;  // 0 -> DMA to queue 0, 1 -> DMA to queue 1, 2 -> A/Ds to queues
 }
 
 
-//static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+// static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 volatile unsigned int send_samples_start = 0;
 
@@ -825,18 +825,18 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     pthread_t thread_DMA;
     struct DMA_handler_args args;
 
-    //*************************************************
-    //***** STEP 1: Prepare the parameters sweep ******
-    //*************************************************
+    // *************************************************
+    // ***** STEP 1: Prepare the parameters sweep ******
+    // *************************************************
     std::vector<double>
         acq_doppler_error_hz_values;
-    std::vector<std::vector<double>> acq_delay_error_chips_values;  //vector of vector
+    std::vector<std::vector<double>> acq_delay_error_chips_values;  // vector of vector
 
     for (double doppler_hz = FLAGS_acq_Doppler_error_hz_start; doppler_hz >= FLAGS_acq_Doppler_error_hz_stop; doppler_hz = doppler_hz + FLAGS_acq_Doppler_error_hz_step)
         {
             acq_doppler_error_hz_values.push_back(doppler_hz);
             std::vector<double> tmp_vector;
-            //Code Delay Sweep
+            // Code Delay Sweep
             for (double code_delay_chips = FLAGS_acq_Delay_error_chips_start; code_delay_chips >= FLAGS_acq_Delay_error_chips_stop; code_delay_chips = code_delay_chips + FLAGS_acq_Delay_error_chips_step)
                 {
                     tmp_vector.push_back(code_delay_chips);
@@ -844,9 +844,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
             acq_delay_error_chips_values.push_back(tmp_vector);
         }
 
-    //***********************************************************
-    //***** STEP 2: Generate the input signal (if required) *****
-    //***********************************************************
+    // ***********************************************************
+    // ***** STEP 2: Generate the input signal (if required) *****
+    // ***********************************************************
     std::vector<double> generator_CN0_values;
     if (FLAGS_enable_external_signal_file)
         {
@@ -870,7 +870,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     // use generator or use an external capture file
     if (FLAGS_enable_external_signal_file)
         {
-            //create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
+            // create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
             ASSERT_EQ(acquire_signal(FLAGS_test_satellite_PRN), true);
             bool found_satellite = doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end();
             EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
@@ -896,9 +896,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
         FLAGS_DLL_narrow_bw_hz,
         FLAGS_extend_correlation_symbols);
 
-    //******************************************************************************************
-    //***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
-    //******************************************************************************************
+    // ******************************************************************************************
+    // ***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
+    // ******************************************************************************************
     int test_satellite_PRN = 0;
     double true_acq_doppler_hz = 0.0;
     double true_acq_delay_samples = 0.0;
@@ -1006,12 +1006,12 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             acquisition->stop_acquisition();
 
                             gnss_synchro.Acq_samplestamp_samples = acq_samplestamp_samples;
-                            //simulate a Doppler error in acquisition
+                            // simulate a Doppler error in acquisition
                             gnss_synchro.Acq_doppler_hz = true_acq_doppler_hz + acq_doppler_error_hz_values.at(current_acq_doppler_error_idx);
-                            //simulate Code Delay error in acquisition
+                            // simulate Code Delay error in acquisition
                             gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_HZ) * static_cast<double>(baseband_sampling_freq);
 
-                            //create flowgraph
+                            // create flowgraph
                             top_block = gr::make_top_block("Tracking test");
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
@@ -1048,9 +1048,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                     args.skip_used_samples = 0;
                                 }
 
-                            //********************************************************************
-                            //***** STEP 5: Perform the signal tracking and read the results *****
-                            //********************************************************************
+                            // ********************************************************************
+                            // ***** STEP 5: Perform the signal tracking and read the results *****
+                            // ********************************************************************
                             args.nsamples_tx = baseband_sampling_freq * FLAGS_duration;
 
                             if (pthread_create(&thread_DMA, nullptr, handler_DMA, reinterpret_cast<void*>(&args)) < 0)
@@ -1080,20 +1080,20 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             send_samples_start = 0;
                             pthread_mutex_unlock(&the_mutex);
 
-                            pull_in_results_v.push_back(msg_rx->rx_message != 3);  //save last asynchronous tracking message in order to detect a loss of lock
+                            pull_in_results_v.push_back(msg_rx->rx_message != 3);  // save last asynchronous tracking message in order to detect a loss of lock
 
-                            //********************************
-                            //***** STEP 7: Plot results *****
-                            //********************************
+                            // ********************************
+                            // ***** STEP 7: Plot results *****
+                            // ********************************
                             if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                 {
-                                    //load the measured values
+                                    // load the measured values
                                     Tracking_Dump_Reader trk_dump;
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 
                                     int64_t n_measured_epochs = trk_dump.num_epochs();
-                                    //todo: use vectors instead
+                                    // todo: use vectors instead
                                     arma::vec trk_timestamp_s = arma::zeros(n_measured_epochs, 1);
                                     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(n_measured_epochs, 1);
                                     arma::vec trk_Doppler_Hz = arma::zeros(n_measured_epochs, 1);
@@ -1164,7 +1164,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                                             g1.set_grid();
                                                             g1.set_xlabel("Time [s]");
                                                             g1.set_ylabel("Correlators' output");
-                                                            //g1.cmd("set key box opaque");
+                                                            // g1.cmd("set key box opaque");
                                                             g1.plot_xy(trk_timestamp_s, prompt, "Prompt", decimate);
                                                             g1.plot_xy(trk_timestamp_s, early, "Early", decimate);
                                                             g1.plot_xy(trk_timestamp_s, late, "Late", decimate);
@@ -1190,7 +1190,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                                             g2.set_grid();
                                                             g2.set_xlabel("Inphase");
                                                             g2.set_ylabel("Quadrature");
-                                                            //g2.cmd("set size ratio -1");
+                                                            // g2.cmd("set size ratio -1");
                                                             g2.plot_xy(promptI, promptQ);
                                                             g2.savetops("Constellation");
 
@@ -1244,14 +1244,14 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                                     std::cout << ge.what() << std::endl;
                                                 }
                                         }
-                                }    //end plot
-                        }            //end acquisition Delay errors loop
+                                }    // end plot
+                        }            // end acquisition Delay errors loop
                     usleep(100000);  // give time to the HW to consume all the remaining samples
-                }                    //end acquisition Doppler errors loop
+                }                    // end acquisition Doppler errors loop
             pull_in_results_v_v.push_back(pull_in_results_v);
-        }  //end CN0 LOOP
+        }  // end CN0 LOOP
 
-    //build the mesh grid
+    // build the mesh grid
     std::vector<double> doppler_error_mesh;
     std::vector<double> code_delay_error_mesh;
     for (unsigned int current_acq_doppler_error_idx = 0; current_acq_doppler_error_idx < acq_doppler_error_hz_values.size(); current_acq_doppler_error_idx++)
@@ -1267,7 +1267,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
         {
             std::vector<double> pull_in_result_mesh;
             pull_in_result_mesh = pull_in_results_v_v.at(current_cn0_idx);
-            //plot grid
+            // plot grid
             if (FLAGS_show_plots)
                 {
                     Gnuplot g4("points palette pointsize 2 pointtype 7");

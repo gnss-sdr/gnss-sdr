@@ -344,13 +344,13 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                                          << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                                          << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                                d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  //write directly |abs(x)|^2 in this Doppler bin?
+                                d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  // write directly |abs(x)|^2 in this Doppler bin?
                                 d_dump_file.close();
                             }
                     }
 
                 // 5- Compute the test statistics and compare to the threshold
-                //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                 d_test_statistics = d_mag / d_input_power;
 
                 if (d_test_statistics > d_threshold)

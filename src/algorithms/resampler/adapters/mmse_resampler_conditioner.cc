@@ -64,8 +64,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
         {
             item_size_ = sizeof(gr_complex);
 
-
-            //create a FIR low pass filter
+            // create a FIR low pass filter
             std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                 sample_freq_in_,
                 sample_freq_out_ / 2.1,

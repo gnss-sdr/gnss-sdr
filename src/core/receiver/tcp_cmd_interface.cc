@@ -124,7 +124,7 @@ std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine
 std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::stringstream str_stream;
-    //todo: implement the receiver status report
+    // todo: implement the receiver status report
 
     //    str_stream << "-------------------------------------------------------\n";
     //    str_stream << "ch | sys | sig | mode | Tlm | Eph | Doppler | CN0 |\n";
@@ -290,7 +290,7 @@ std::string TcpCmdInterface::coldstart(const std::vector<std::string> &commandLi
 std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    //todo: implement the set satellite command
+    // todo: implement the set satellite command
     response = "Not implemented\n";
     return response;
 }

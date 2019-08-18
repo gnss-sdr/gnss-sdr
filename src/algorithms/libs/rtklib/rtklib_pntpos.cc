@@ -151,10 +151,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_C1 = 0.0;
     double P2_C2 = 0.0;
     // Intersignal corrections (m). See GPS IS-200 CNAV message
-    //double ISCl1 = 0.0;
+    // double ISCl1 = 0.0;
     double ISCl2 = 0.0;
     double ISCl5i = 0.0;
-    //double ISCl5q = 0.0;
+    // double ISCl5q = 0.0;
     double gamma_ = 0.0;
     int i = 0;
     int j = 1;
@@ -234,7 +234,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             // ISCl5q = getiscl5q(obs->sat, nav);
         }
 
-    //CHECK IF IT IS STILL NEEDED
+    // CHECK IF IT IS STILL NEEDED
     if (opt->ionoopt == IONOOPT_IFLC)
         {
             /* dual-frequency */
@@ -272,12 +272,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     if (sys == SYS_GPS)
                         {
                             P2 += P2_C2; /* C2->P2 */
-                            //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
-                            if (obs->code[j] == CODE_L2S)  //L2 single freq.
+                            // PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                            if (obs->code[j] == CODE_L2S)  // L2 single freq.
                                 {
                                     PC = P2 + P1_P2 - ISCl2;
                                 }
-                            else if (obs->code[j] == CODE_L5X)  //L5 single freq.
+                            else if (obs->code[j] == CODE_L5X)  // L5 single freq.
                                 {
                                     PC = P2 + P1_P2 - ISCl5i;
                                 }
@@ -298,15 +298,15 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     if (obs->code[j] == CODE_L2S) /* L1 + L2 */
                         {
-                            //By the moment, GPS L2 pseudoranges are not used
-                            //PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                            // By the moment, GPS L2 pseudoranges are not used
+                            // PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                             P1 += P1_C1; /* C1->P1 */
                             PC = P1 + P1_P2;
                         }
                     else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
                         {
-                            //By the moment, GPS L5 pseudoranges are not used
-                            //PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
+                            // By the moment, GPS L5 pseudoranges are not used
+                            // PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
                             P1 += P1_C1; /* C1->P1 */
                             PC = P1 + P1_P2;
                         }
@@ -371,9 +371,9 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
             return 1;
         }
     /* lex ionosphere model */
-    //if (ionoopt == IONOOPT_LEX) {
+    // if (ionoopt == IONOOPT_LEX) {
     //    return lexioncorr(time, nav, pos, azel, ion, var);
-    //}
+    // }
     *ion = 0.0;
     *var = ionoopt == IONOOPT_OFF ? std::pow(ERR_ION, 2.0) : 0.0;
     return 1;

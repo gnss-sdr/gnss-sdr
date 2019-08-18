@@ -170,7 +170,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
             throw(e);
         }
 
-    //todo from here.... add mux demux also
+    // todo from here.... add mux demux also
     if (samples_ == 0)  // read all file
         {
             /*!

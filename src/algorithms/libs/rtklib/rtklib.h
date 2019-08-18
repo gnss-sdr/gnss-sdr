@@ -1323,9 +1323,9 @@ const int STRFMT_SP3 = 16;    /* stream format: SP3 */
 const int STRFMT_RNXCLK = 17; /* stream format: RINEX CLK */
 const int STRFMT_SBAS = 18;   /* stream format: SBAS messages */
 const int STRFMT_NMEA = 19;   /* stream format: NMEA 0183 */
-//const solopt_t solopt_default;   /* default solution output options */
+// const solopt_t solopt_default;   /* default solution output options */
 
 const int MAXSTRRTK = 8; /* max number of stream in RTK server */
 
 
-#endif
+#endif  // GNSS_SDR_RTKLIB_H_

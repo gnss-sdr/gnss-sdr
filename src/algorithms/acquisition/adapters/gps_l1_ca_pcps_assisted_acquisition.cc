@@ -67,7 +67,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     max_dwells_ = configuration->property(role + ".max_dwells", 1);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    //--- Find number of samples per spreading code -------------------------
+    // --- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     code_ = std::make_shared<std::complex<float>>(vector_length_);
@@ -164,7 +164,7 @@ void GpsL1CaPcpsAssistedAcquisition::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -173,7 +173,7 @@ void GpsL1CaPcpsAssistedAcquisition::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

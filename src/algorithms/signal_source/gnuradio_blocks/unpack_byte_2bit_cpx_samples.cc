@@ -69,11 +69,11 @@ int unpack_byte_2bit_cpx_samples::work(int noutput_items,
     for (int i = 0; i < noutput_items / 4; i++)
         {
             // Read packed input sample (1 byte = 2 complex samples)
-            //*     Packing Order
-            //*     Most Significant Nibble  - Sample n
-            //*     Least Significant Nibble - Sample n+1
-            //*     Packing order in Nibble Q1 Q0 I1 I0
-            //normal
+            // *     Packing Order
+            // *     Most Significant Nibble  - Sample n
+            // *     Least Significant Nibble - Sample n+1
+            // *     Packing order in Nibble Q1 Q0 I1 I0
+            // normal
             //  int8_t c = in[i];
             //  //Q[n]
             //  sample.two_bit_sample = (c>>6) & 3;
@@ -88,18 +88,18 @@ int unpack_byte_2bit_cpx_samples::work(int noutput_items,
             //  sample.two_bit_sample = c & 3;
             //  out[n++] = (2*(int16_t)sample.two_bit_sample+1);
 
-            //I/Q swap
+            // I/Q swap
             int8_t c = in[i];
-            //I[n]
+            // I[n]
             sample.two_bit_sample = (c >> 4) & 3;
             out[n++] = (2 * static_cast<int16_t>(sample.two_bit_sample) + 1);
-            //Q[n]
+            // Q[n]
             sample.two_bit_sample = (c >> 6) & 3;
             out[n++] = (2 * static_cast<int16_t>(sample.two_bit_sample) + 1);
-            //I[n+1]
+            // I[n+1]
             sample.two_bit_sample = c & 3;
             out[n++] = (2 * static_cast<int16_t>(sample.two_bit_sample) + 1);
-            //Q[n+1]
+            // Q[n+1]
             sample.two_bit_sample = (c >> 2) & 3;
             out[n++] = (2 * static_cast<int16_t>(sample.two_bit_sample) + 1);
         }

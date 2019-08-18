@@ -69,7 +69,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
     max_code_lock_fail = FLAGS_max_lock_fail;
     carrier_lock_th = FLAGS_carrier_lock_th;
-    //max_lock_fail = 50;
+    // max_lock_fail = 50;
     enable_doppler_correction = false;
     track_pilot = false;
     system = 'G';

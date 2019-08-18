@@ -370,7 +370,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     }
 
                 // 5- Compute the test statistics and compare to the threshold
-                //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                 d_test_statistics = d_mag / d_input_power;
 
                 // 6- Declare positive or negative acquisition using a message port

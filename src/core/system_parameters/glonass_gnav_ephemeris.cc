@@ -188,8 +188,8 @@ double Glonass_Gnav_Ephemeris::sv_clock_drift(double transmitTime, double timeCo
     double dt;
     dt = check_t(transmitTime - d_t_b);
     d_satClkDrift = -(d_tau_n + timeCorrUTC - d_gamma_n * dt);
-    //Correct satellite group delay and missing relativistic term here
-    //d_satClkDrift-=d_TGD;
+    // Correct satellite group delay and missing relativistic term here
+    // d_satClkDrift-=d_TGD;
 
     return d_satClkDrift;
 }

@@ -1601,7 +1601,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 d_state = 1;  // loss-of-lock detected
 
                                 // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                //current_synchro_data.Flag_valid_symbol_output=1;
+                                // current_synchro_data.Flag_valid_symbol_output=1;
                             }
                         else
                             {
@@ -1793,7 +1793,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 d_state = 1;  // loss-of-lock detected
 
                                 // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                //current_synchro_data.Flag_valid_symbol_output=1;
+                                // current_synchro_data.Flag_valid_symbol_output=1;
                             }
                         else
                             {
@@ -1900,7 +1900,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 d_state = 1;  // loss-of-lock detected
 
                                 // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                //current_synchro_data.Flag_valid_symbol_output=1;
+                                // current_synchro_data.Flag_valid_symbol_output=1;
                             }
                         else
                             {

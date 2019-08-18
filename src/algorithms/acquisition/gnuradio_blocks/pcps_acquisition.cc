@@ -445,7 +445,7 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
     if (matfp == nullptr)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
-            //acq_parameters.dump = false;
+            // acq_parameters.dump = false;
         }
     else
         {
@@ -722,7 +722,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 {
                     // take into account the acquisition resampler ratio
                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code)) * acq_parameters.resampler_ratio;
-                    d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  //account the resampler filter latency
+                    d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  // account the resampler filter latency
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                     d_gnss_synchro->Acq_samplestamp_samples = rint(static_cast<double>(samp_count) * acq_parameters.resampler_ratio);
                 }
@@ -780,7 +780,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 {
                     // take into account the acquisition resampler ratio
                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code)) * acq_parameters.resampler_ratio;
-                    d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  //account the resampler filter latency
+                    d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  // account the resampler filter latency
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                     d_gnss_synchro->Acq_samplestamp_samples = rint(static_cast<double>(samp_count) * acq_parameters.resampler_ratio);
                     d_gnss_synchro->Acq_doppler_step = acq_parameters.doppler_step2;

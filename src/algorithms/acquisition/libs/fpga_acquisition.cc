@@ -156,7 +156,7 @@ void Fpga_Acquisition::run_acquisition()
 {
     // enable interrupts
     int32_t reenable = 1;
-    //int32_t disable_int = 0;
+    // int32_t disable_int = 0;
     ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
     if (nbytes != sizeof(int32_t))
         {
@@ -207,7 +207,7 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 
 void Fpga_Acquisition::configure_acquisition()
 {
-    //Fpga_Acquisition::();
+    // Fpga_Acquisition::();
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
@@ -265,7 +265,7 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition()
 {
-    //printf("============ resetting the hw now from the acquisition ===============");
+    // printf("============ resetting the hw now from the acquisition ===============");
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the acquisition. This causes a reset of all
                                         // the FPGA HW modules including the multicorrelators
 }

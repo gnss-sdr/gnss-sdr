@@ -285,7 +285,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_code_period = BEIDOU_B1I_CODE_PERIOD;
                     d_code_chip_rate = BEIDOU_B1I_CODE_RATE_HZ;
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
-                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = true;
@@ -303,7 +303,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_code_period = BEIDOU_B3I_CODE_PERIOD;
                     d_code_chip_rate = BEIDOU_B3I_CODE_RATE_HZ;
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B3I_CODE_LENGTH_CHIPS);
-                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = false;
@@ -641,7 +641,7 @@ void dll_pll_veml_tracking::start_tracking()
             // GEO Satellites use different secondary code
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
-                    d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = false;
@@ -654,7 +654,7 @@ void dll_pll_veml_tracking::start_tracking()
                 }
             else
                 {
-                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = true;
@@ -674,7 +674,7 @@ void dll_pll_veml_tracking::start_tracking()
             // Update secondary code settings for geo satellites
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
-                    d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = false;
@@ -687,7 +687,7 @@ void dll_pll_veml_tracking::start_tracking()
                 }
             else
                 {
-                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  //todo: enable after fixing beidou symbol synchronization
+                    d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_secondary = true;
@@ -1193,7 +1193,7 @@ void dll_pll_veml_tracking::save_correlation_results()
                     else
                         {
                             d_P_data_accu += *d_Prompt;
-                            //std::cout << "s[" << d_current_data_symbol << "]=" << (int)((*d_Prompt).real() > 0) << std::endl;
+                            // std::cout << "s[" << d_current_data_symbol << "]=" << (int)((*d_Prompt).real() > 0) << std::endl;
                         }
                     d_current_data_symbol++;
                     d_current_data_symbol %= d_symbols_per_bit;

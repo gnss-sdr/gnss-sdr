@@ -58,7 +58,7 @@ GpsL1CaDllPllTrackingGPU::GpsL1CaDllPllTrackingGPU(
     float dll_bw_hz;
     float early_late_space_chips;
     item_type = configuration->property(role + ".item_type", default_item_type);
-    //vector_length = configuration->property(role + ".vector_length", 2048);
+    // vector_length = configuration->property(role + ".vector_length", 2048);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump = configuration->property(role + ".dump", false);
@@ -71,7 +71,7 @@ GpsL1CaDllPllTrackingGPU::GpsL1CaDllPllTrackingGPU(
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
@@ -139,7 +139,7 @@ void GpsL1CaDllPllTrackingGPU::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -148,7 +148,7 @@ void GpsL1CaDllPllTrackingGPU::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

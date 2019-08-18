@@ -66,7 +66,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
         }
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 8);
 
-    /*--- Find number of samples per spreading code (4 ms)  -----------------*/
+    /* --- Find number of samples per spreading code (4 ms)  -----------------*/
     code_length_ = round(
         fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
 
@@ -78,7 +78,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     out that by making the folding factor smaller we were able to get QuickSync work with
     Galileo. Future work should be directed to test this assumption statistically.*/
 
-    //folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
+    // folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", 2);
 
     if (sampled_ms_ % (folding_factor_ * 4) != 0)

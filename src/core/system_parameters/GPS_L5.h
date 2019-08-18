@@ -64,7 +64,7 @@ const double GPS_L5Q_PERIOD = 0.001;              //!< GPS L5 code period [secon
 
 const int32_t GPS_L5_HISTORY_DEEP = 5;
 
-//optimum parameters
+// optimum parameters
 const uint32_t GPS_L5_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 const int32_t GPS_L5I_INIT_REG[210] =

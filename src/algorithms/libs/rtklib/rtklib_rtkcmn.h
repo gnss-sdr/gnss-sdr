@@ -240,12 +240,12 @@ void trace(int level, const char *format, ...);
 void tracet(int level, const char *format, ...);
 void tracemat(int level, const double *A, int n, int m, int p, int q);
 void traceobs(int level, const obsd_t *obs, int n);
-//void tracenav(int level, const nav_t *nav);
-//void tracegnav(int level, const nav_t *nav);
-//void tracehnav(int level, const nav_t *nav);
-//void tracepeph(int level, const nav_t *nav);
-//void tracepclk(int level, const nav_t *nav);
-//void traceb  (int level, const unsigned char *p, int n);
+// void tracenav(int level, const nav_t *nav);
+// void tracegnav(int level, const nav_t *nav);
+// void tracehnav(int level, const nav_t *nav);
+// void tracepeph(int level, const nav_t *nav);
+// void tracepclk(int level, const nav_t *nav);
+// void traceb  (int level, const unsigned char *p, int n);
 
 int execcmd(const char *cmd);
 void createdir(const char *path);
@@ -258,7 +258,6 @@ double satwavelen(int sat, int frq, const nav_t *nav);
 double geodist(const double *rs, const double *rr, double *e);
 double satazel(const double *pos, const double *e, double *azel);
 
-//#define SQRT(x)     ((x)<0.0?0.0:sqrt(x))
 void dops(int ns, const double *azel, double elmin, double *dop);
 double ionmodel(gtime_t t, const double *ion, const double *pos,
     const double *azel);

@@ -169,7 +169,7 @@ void gnss_sdr_fpga_sample_counter::open_device()
     else
         {
             LOG(INFO) << "Acquisition test register sanity check success!";
-            //std::cout << "Acquisition test register sanity check success!" << std::endl;
+            // std::cout << "Acquisition test register sanity check success!" << std::endl;
         }
 }
 

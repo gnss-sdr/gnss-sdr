@@ -85,7 +85,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN)
                     Delta_t_Utc = Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
                     double W = fmod(t_e - Delta_t_Utc - 43200, 86400) + 43200;
                     t_Utc_daytime = fmod(W, 86400 + Delta_tLSF_6 - Delta_tLS_6);
-                    //implement something to handle a leap second event!
+                    // implement something to handle a leap second event!
                 }
         }
     else  // the effectivity time is in the past

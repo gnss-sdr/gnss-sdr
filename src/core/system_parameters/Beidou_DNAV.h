@@ -98,7 +98,7 @@ const double D1_CIS_LSB = TWO_N31;
 const double D1_IDOT_LSB = PI_TWO_N43;
 const double D1_OMEGA0_LSB = PI_TWO_N31;
 const double D1_OMEGA_LSB = PI_TWO_N31;
-//ALM
+// ALM
 const double D1_SQRT_A_ALMANAC_LSB = TWO_N11;
 const double D1_A1_ALMANAC_LSB = TWO_N38;
 const double D1_A0_ALMANAC_LSB = TWO_N20;
@@ -139,7 +139,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_A0({{226, 7}, {241, 17}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1({{258, 5}, {271, 17}});
 const std::vector<std::pair<int32_t, int32_t> > D1_AODE({{288, 5}});
 
-//SUBFRAME 2
+// SUBFRAME 2
 const std::vector<std::pair<int32_t, int32_t> > D1_DELTA_N({{43, 10}, {61, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_CUC({{67, 16}, {91, 2}});
 const std::vector<std::pair<int32_t, int32_t> > D1_M0({{93, 20}, {121, 12}});
@@ -150,7 +150,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_CRS({{225, 8}, {241, 10}});
 const std::vector<std::pair<int32_t, int32_t> > D1_SQRT_A({{251, 12}, {271, 20}});
 const std::vector<std::pair<int32_t, int32_t> > D1_TOE_SF2({{291, 2}});
 
-//SUBFRAME 3
+// SUBFRAME 3
 const std::vector<std::pair<int32_t, int32_t> > D1_TOE_SF3({{43, 10}, {61, 5}});
 const std::vector<std::pair<int32_t, int32_t> > D1_I0({{66, 17}, {91, 15}});
 const std::vector<std::pair<int32_t, int32_t> > D1_CIC({{106, 7}, {121, 11}});
@@ -160,7 +160,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_IDOT({{190, 13}, {211, 1}});
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA0({{212, 21}, {241, 11}});
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA({{252, 11}, {271, 21}});
 
-//SUBFRAME 4 AND PAGES 1 THROUGH 6 IN SUBFRAME 5
+// SUBFRAME 4 AND PAGES 1 THROUGH 6 IN SUBFRAME 5
 const std::vector<std::pair<int32_t, int32_t> > D1_SQRT_A_ALMANAC({{51, 2}, {61, 22}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1_ALMANAC({{91, 11}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A0_ALMANAC({{102, 11}});
@@ -172,7 +172,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA_DOT_ALMANAC({{202, 1}, 
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA_ALMANAC({{227, 6}, {241, 18}});
 const std::vector<std::pair<int32_t, int32_t> > D1_M0_ALMANAC({{259, 4}, {271, 20}});
 
-//SUBFRAME 5 PAGE 7
+// SUBFRAME 5 PAGE 7
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA1({{51, 2}, {61, 7}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA2({{68, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA3({{77, 6}, {91, 3}});
@@ -193,7 +193,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_HEA17({{251, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA18({{260, 3}, {271, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA19({{277, 9}});
 
-//SUBFRAME 5 PAGE 8
+// SUBFRAME 5 PAGE 8
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA20({{51, 2}, {61, 7}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA21({{68, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA22({{77, 6}, {91, 3}});
@@ -208,7 +208,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_HEA30({{181, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_WNA({{190, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_TOA2({{198, 5}, {211, 3}});
 
-//SUBFRAME 5 PAGE 9
+// SUBFRAME 5 PAGE 9
 const std::vector<std::pair<int32_t, int32_t> > D1_A0GPS({{97, 14}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1GPS({{111, 2}, {121, 14}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A0GAL({{135, 8}, {151, 6}});
@@ -216,7 +216,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_A1GAL({{157, 16}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A0GLO({{181, 14}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1GLO({{195, 8}, {211, 8}});
 
-//SUBFRAME 5 PAGE 10
+// SUBFRAME 5 PAGE 10
 const std::vector<std::pair<int32_t, int32_t> > D1_DELTA_T_LS({{51, 2}, {61, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_DELTA_T_LSF({{67, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_WN_LSF({{75, 8}});

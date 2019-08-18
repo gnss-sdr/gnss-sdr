@@ -71,7 +71,7 @@ DEFINE_int32(max_carrier_lock_fail, 5000, "Maximum number of carrier lock failur
 
 DEFINE_int32(max_lock_fail, 50, "Maximum number of code lock failures before dropping a satellite.");
 
-//cos(2xError_angle)=0.7 -> Error_angle=22 deg
+// cos(2xError_angle)=0.7 -> Error_angle=22 deg
 DEFINE_double(carrier_lock_th, 0.7, "Carrier lock threshold (in rad).");
 
 DEFINE_string(RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");

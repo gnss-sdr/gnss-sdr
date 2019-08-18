@@ -64,7 +64,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  //set the required available samples in each call
+            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  // set the required available samples in each call
         }
 }
 
@@ -94,13 +94,13 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
     d_carrier_loop_filter.set_params(10.0, pll_bw_hz, 2);
 
-    //--- DLL variables --------------------------------------------------------
+    // --- DLL variables -------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
 
     // Set GPU flags
     cudaSetDeviceFlags(cudaDeviceMapHost);
-    //allocate host memory
-    //pinned memory mode - use special function to get OS-pinned memory
+    // allocate host memory
+    // pinned memory mode - use special function to get OS-pinned memory
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
     // Get space for a vector with the C/A code replica sampled 1x/chip
     cudaHostAlloc(reinterpret_cast<void **>(&d_ca_code), (static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped || cudaHostAllocWriteCombined);
@@ -115,9 +115,9 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    //--- Perform initializations ------------------------------
+    // --- Perform initializations ------------------------------
     multicorrelator_gpu = new cuda_multicorrelator();
-    //local code resampler on GPU
+    // local code resampler on GPU
     multicorrelator_gpu->init_cuda_integrated_resampler(2 * d_vector_length, GPS_L1_CA_CODE_LENGTH_CHIPS, d_n_correlator_taps);
     multicorrelator_gpu->set_input_output_vectors(d_correlator_outs, in_gpu);
 
@@ -130,7 +130,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     // sample synchronization
     d_sample_counter = 0ULL;
-    //d_sample_counter_seconds = 0;
+    // d_sample_counter_seconds = 0;
     d_acq_sample_stamp = 0;
 
     d_enable_tracking = false;
@@ -161,7 +161,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_rem_code_phase_chips = 0.0;
     d_code_phase_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
-    //set_min_output_buffer((int64_t)300);
+    // set_min_output_buffer((int64_t)300);
 }
 
 
@@ -176,10 +176,10 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
 
     int64_t acq_trk_diff_samples;
     double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  //-d_vector_length;
+    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  // -d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
-    //doppler effect
+    // doppler effect
     // Fd=(C/(C+Vr))*F
     double radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
     // new chip and prn sequence periods based on acq Doppler
@@ -213,7 +213,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz);  //The carrier loop filter implements the Doppler accumulator
+    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz);  // The carrier loop filter implements the Doppler accumulator
     d_code_loop_filter.initialize();                             // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
@@ -347,9 +347,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
                     *out[0] = current_synchro_data;
-                    d_sample_counter += static_cast<uint64_t>(samples_offset);  //count for the processed samples
+                    d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
-                    consume_each(samples_offset);  //shift input to perform alignment with local replica
+                    consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
                 }
 
@@ -364,17 +364,17 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                 static_cast<float>(d_rem_code_phase_chips),
                 d_correlation_length_samples, d_n_correlator_taps);
             cudaProfilerStop();
-            //std::cout<<"c_out[0]="<<d_correlator_outs[0]<<"c_out[1]="<<d_correlator_outs[1]<<"c_out[2]="<<d_correlator_outs[2]<<std::endl;
+            // std::cout<<"c_out[0]="<<d_correlator_outs[0]<<"c_out[1]="<<d_correlator_outs[1]<<"c_out[2]="<<d_correlator_outs[2]<<std::endl;
 
             // UPDATE INTEGRATION TIME
             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in);
 
             // ################## PLL ##########################################################
             // Update PLL discriminator [rads/Ti -> Secs/Ti]
-            carr_phase_error_secs_Ti = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / GPS_TWO_PI;  //prompt output
+            carr_phase_error_secs_Ti = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / GPS_TWO_PI;  // prompt output
             // Carrier discriminator filter
             // NOTICE: The carrier loop filter includes the Carrier Doppler accumulator, as described in Kaplan
-            //d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_phase_error_filt_secs_ti/INTEGRATION_TIME;
+            // d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_phase_error_filt_secs_ti/INTEGRATION_TIME;
             // Input [s/Ti] -> output [Hz]
             d_carrier_doppler_hz = d_carrier_loop_filter.get_carrier_error(0.0, carr_phase_error_secs_Ti, CURRENT_INTEGRATION_TIME_S);
             // PLL to DLL assistance [Secs/Ti]
@@ -384,9 +384,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
 
             // ################## DLL ##########################################################
             // DLL discriminator
-            code_error_chips_Ti = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2]);  //[chips/Ti] //early and late
+            code_error_chips_Ti = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2]);  // [chips/Ti]  // early and late
             // Code discriminator filter
-            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips_Ti);                      //input [chips/Ti] -> output [chips/second]
+            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips_Ti);                      // input [chips/Ti] -> output [chips/second]
             code_error_filt_secs_Ti = code_error_filt_chips * CURRENT_INTEGRATION_TIME_S / d_code_freq_chips;  // [s/Ti]
             // DLL code error estimation [s/Ti]
             // TODO: PLL carrier aid to DLL is disabled. Re-enable it and measure performance
@@ -404,32 +404,32 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples - dll_code_error_secs_Ti * static_cast<double>(d_fs_in);
 
-            d_correlation_length_samples = round(K_blk_samples);                                           //round to a discrete samples
-            d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_correlation_length_samples);  //rounding error < 1 sample
+            d_correlation_length_samples = round(K_blk_samples);                                           // round to a discrete samples
+            d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_correlation_length_samples);  // rounding error < 1 sample
 
             // UPDATE REMNANT CARRIER PHASE
             CORRECTED_INTEGRATION_TIME_S = (static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in));
-            //remnant carrier phase [rad]
+            // remnant carrier phase [rad]
             d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, GPS_TWO_PI);
             // UPDATE CARRIER PHASE ACCUULATOR
-            //carrier phase accumulator prior to update the PLL estimators (accumulated carrier in this loop depends on the old estimations!)
+            // carrier phase accumulator prior to update the PLL estimators (accumulated carrier in this loop depends on the old estimations!)
             d_acc_carrier_phase_cycles -= d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S;
 
-            //################### PLL COMMANDS #################################################
-            //carrier phase step (NCO phase increment per sample) [rads/sample]
+            // ################### PLL COMMANDS #################################################
+            // carrier phase step (NCO phase increment per sample) [rads/sample]
             d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
-            //################### DLL COMMANDS #################################################
-            //code phase step (Code resampler phase increment per sample) [chips/sample]
+            // ################### DLL COMMANDS #################################################
+            // code phase step (Code resampler phase increment per sample) [chips/sample]
             d_code_phase_step_chips = d_code_freq_chips / static_cast<double>(d_fs_in);
-            //remnant code phase [chips]
+            // remnant code phase [chips]
             d_rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS #######################################
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
                 {
                     // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];  //prompt
+                    d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];  // prompt
                     d_cn0_estimation_counter++;
                 }
             else
@@ -452,7 +452,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  //3 -> loss of lock
+                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false;  // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -481,7 +481,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
         }
 
-    //assign the GNURadio block output data
+    // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
 
@@ -551,7 +551,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
         }
 
     consume_each(d_correlation_length_samples);        // this is necessary in gr::block derivates
-    d_sample_counter += d_correlation_length_samples;  //count for the processed samples
+    d_sample_counter += d_correlation_length_samples;  // count for the processed samples
 
     if (d_enable_tracking)
         {

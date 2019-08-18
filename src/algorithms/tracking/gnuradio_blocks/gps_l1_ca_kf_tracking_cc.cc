@@ -264,6 +264,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     bayes_estimator.init(arma::zeros(1, 1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R) * (bayes_nu + 2));
 }
 
+
 void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 {
     /*
@@ -283,7 +284,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 
     int64_t acq_trk_diff_samples;
     double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  //-d_vector_length;
+    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  // -d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // Doppler effect Fd = (C / (C + Vr)) * F
@@ -703,8 +704,8 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             // ################## Kalman Carrier Tracking ######################################
 
             // Kalman state prediction (time update)
-            kf_x_pre = kf_F * kf_x;                        //state prediction
-            kf_P_x_pre = kf_F * kf_P_x * kf_F.t() + kf_Q;  //state error covariance prediction
+            kf_x_pre = kf_F * kf_x;                        // state prediction
+            kf_P_x_pre = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
 
             // Update discriminator [rads/Ti]
             d_carr_phase_error_rad = pll_cloop_two_quadrant_atan(d_correlator_outs[1]);  // prompt output
@@ -786,7 +787,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
                 {
                     // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];  //prompt
+                    d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];  // prompt
                     d_cn0_estimation_counter++;
                 }
             else
@@ -799,10 +800,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
-                            //if (d_channel == 1)
-                            //std::cout << "Carrier Lock Test Fail in channel " << d_channel << ": " << d_carrier_lock_test << " < " << d_carrier_lock_threshold << "," << nfail++ << std::endl;
+                            // if (d_channel == 1)
+                            // std::cout << "Carrier Lock Test Fail in channel " << d_channel << ": " << d_carrier_lock_test << " < " << d_carrier_lock_threshold << "," << nfail++ << std::endl;
                             d_carrier_lock_fail_counter++;
-                            //nfail++;
+                            // nfail++;
                         }
                     else
                         {

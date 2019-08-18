@@ -42,7 +42,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-//#include "tracking_loop_filter.h"
+// #include "tracking_loop_filter.h"
 #include "cpu_multicorrelator.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
@@ -135,7 +135,7 @@ private:
     int32_t d_rem_code_phase_integer_samples;
 
     // PLL and DLL filter library
-    //Tracking_2nd_DLL_filter d_code_loop_filter;
+    // Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
@@ -172,10 +172,10 @@ private:
     bool d_preamble_synchronized;
     void msg_handler_preamble_index(pmt::pmt_t msg);
 
-    //Integration period in samples
+    // Integration period in samples
     int32_t d_correlation_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
@@ -201,4 +201,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

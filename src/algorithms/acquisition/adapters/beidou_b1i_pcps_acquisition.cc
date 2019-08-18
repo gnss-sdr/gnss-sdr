@@ -75,7 +75,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     acq_parameters_.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters_.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters_.max_dwells = max_dwells_;
@@ -102,7 +102,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
 
     acq_parameters_.resampled_fs = fs_in_;
-    //--- Find number of samples per spreading code -------------------------
+    // --- Find number of samples per spreading code -------------------------
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
     acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / BEIDOU_B1I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
@@ -227,7 +227,7 @@ void BeidouB1iPcpsAcquisition::set_state(int state)
 
 float BeidouB1iPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     uint32_t frequency_bins = 0;
     frequency_bins = (2 * doppler_max_ + doppler_step_) / doppler_step_;
     DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;

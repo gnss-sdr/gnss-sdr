@@ -3686,7 +3686,7 @@ uint32_t Rtcm::msm_extended_lock_time_indicator(uint32_t lock_time_period_s)
     if( 16777216 <= lock_time_period_s && lock_time_period_s < 33554432 ) return (640 + (lock_time_period_s - 16777216) / 524288 );
     if( 33554432 <= lock_time_period_s && lock_time_period_s < 67108864 ) return (672 + (lock_time_period_s - 33554432) / 1048576);
     if( 67108864 <= lock_time_period_s                                  ) return (704                                            );
-    return 1023; // will never happen
+    return 1023;  // will never happen
  }
 // clang-format on
 
@@ -4173,7 +4173,7 @@ int32_t Rtcm::set_DF047(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& 
     return 0;
 }
 
-//TODO Need to consider frequency channel in this fields
+// TODO Need to consider frequency channel in this fields
 int32_t Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
     const double lambda2 = GLONASS_C_M_S / GLONASS_L2_CA_FREQ_HZ;
@@ -5554,7 +5554,7 @@ int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
         }
     if ((sig_ == "2C") && (sys_ == "R"))
         {
-            //TODO Need to add slot number and freq number to gnss syncro
+            // TODO Need to add slot number and freq number to gnss syncro
             lambda = GLONASS_C_M_S / (GLONASS_L2_CA_FREQ_HZ);
         }
     double rough_phase_range_rate = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
@@ -5641,7 +5641,7 @@ int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     if ((sig_ == "2C") && (sys_ == "R"))
         {
-            //TODO Need to add slot number and freq number to gnss syncro
+            // TODO Need to add slot number and freq number to gnss syncro
             lambda = GLONASS_C_M_S / (GLONASS_L2_CA_FREQ_HZ);
         }
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;

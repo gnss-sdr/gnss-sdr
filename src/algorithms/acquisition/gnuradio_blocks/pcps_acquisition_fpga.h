@@ -63,7 +63,7 @@ typedef struct
     uint32_t select_queue_Fpga;
     std::string device_name;
     uint32_t* all_fft_codes;  // pointer to memory that contains all the code ffts
-    //float downsampling_factor;
+    // float downsampling_factor;
     uint32_t downsampling_factor;
     uint32_t total_block_exp;
     uint32_t excludelimit;

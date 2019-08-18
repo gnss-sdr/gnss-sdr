@@ -301,7 +301,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                             break;
                         case 5:
                             // get almanac (if available)
-                            //TODO: implement almanac reader in navigation_message
+                            // TODO: implement almanac reader in navigation_message
                             break;
                         default:
                             break;

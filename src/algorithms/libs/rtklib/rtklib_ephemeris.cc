@@ -1007,8 +1007,8 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
                 {
                     return 1;
                 }
-            //TODO: enable lex
-            //case EPHOPT_LEX   :
+            // TODO: enable lex
+            // case EPHOPT_LEX   :
             //    if (!lexeph2pos(time, sat, nav, rs, dts, var)) break; else return 1;
         }
     *svh = -1;

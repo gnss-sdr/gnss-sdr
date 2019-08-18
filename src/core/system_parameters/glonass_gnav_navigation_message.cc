@@ -95,7 +95,7 @@ void Glonass_Gnav_Navigation_Message::reset()
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system("GLONASS");
-    //TODO SHould number of channels be hardcoded?
+    // TODO SHould number of channels be hardcoded?
     for (uint32_t i = 1; i < 14; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
@@ -715,7 +715,7 @@ Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(uint32_t satel
 }
 
 
-bool Glonass_Gnav_Navigation_Message::have_new_ephemeris()  //Check if we have a new ephemeris stored in the galileo navigation class
+bool Glonass_Gnav_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
     bool new_eph = false;
     // We need to make sure we have received the ephemeris info plus the time info

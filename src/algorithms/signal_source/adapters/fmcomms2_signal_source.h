@@ -84,11 +84,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;     //device direction
-    unsigned long freq_;  //frequency of local oscilator
+    std::string uri_;     // device direction
+    unsigned long freq_;  // frequency of local oscilator
     unsigned long sample_rate_;
     unsigned long bandwidth_;
-    unsigned long buffer_size_;  //reception buffer
+    unsigned long buffer_size_;  // reception buffer
     bool rx1_en_;
     bool rx2_en_;
     bool quadrature_;
@@ -103,7 +103,7 @@ private:
     std::string filter_file_;
     bool filter_auto_;
 
-    //DDS configuration for LO generation for external mixer
+    // DDS configuration for LO generation for external mixer
     bool enable_dds_lo_;
     unsigned long freq_rf_tx_hz_;
     unsigned long freq_dds_tx_hz_;
@@ -127,4 +127,4 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif /*GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_*/
+#endif /* GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_ */

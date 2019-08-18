@@ -157,11 +157,11 @@ private:
     float d_control_id;
     Tcp_Communication d_tcp_com;
 
-    //PRN period in samples
+    // PRN period in samples
     int32_t d_current_prn_length_samples;
     int32_t d_next_prn_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
@@ -185,4 +185,4 @@ private:
     std::string sys;
 };
 
-#endif  //GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
+#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H

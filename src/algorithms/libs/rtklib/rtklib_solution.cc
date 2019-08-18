@@ -1643,7 +1643,7 @@ int outnmea_gga(unsigned char *buff, const sol_t *sol)
         }
     time2epoch(time, ep);
     ecef2pos(sol->rr, pos);
-    h = 0;  //geoidh(pos);
+    h = 0;  // geoidh(pos);
     deg2dms(fabs(pos[0]) * R2D, dms1);
     deg2dms(fabs(pos[1]) * R2D, dms2);
     p += sprintf(p, "$GPGGA,%02.0f%02.0f%05.2f,%02.0f%010.7f,%s,%03.0f%010.7f,%s,%d,%02d,%.1f,%.3f,M,%.3f,M,%.1f,",

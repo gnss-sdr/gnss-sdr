@@ -508,7 +508,7 @@ private:
     // Classes for TCP communication
     //
     uint16_t RTCM_port;
-    //uint16_t RTCM_Station_ID;
+    // uint16_t RTCM_Station_ID;
     class Rtcm_Message
     {
     public:
@@ -718,9 +718,9 @@ private:
                     if (!ec)
                         {
                             room_.deliver(read_msg_);
-                            //std::cout << "Delivered message (session): ";
-                            //std::cout.write(read_msg_.body(), read_msg_.body_length());
-                            //std::cout << std::endl;
+                            // std::cout << "Delivered message (session): ";
+                            // std::cout.write(read_msg_.body(), read_msg_.body_length());
+                            // std::cout << std::endl;
                             do_read_message_header();
                         }
                     else
@@ -868,7 +868,7 @@ private:
                 {
                     std::string message;
                     Rtcm_Message msg;
-                    queue_->wait_and_pop(message);  //message += '\n';
+                    queue_->wait_and_pop(message);  // message += '\n';
                     if (message == "Goodbye")
                         {
                             break;
@@ -1417,7 +1417,7 @@ private:
 
     // Content of message header for MSM1, MSM2, MSM3, MSM4, MSM5, MSM6 and MSM7
     std::bitset<1> DF393;
-    int32_t set_DF393(bool more_messages);  //1 indicates that more MSMs follow for given physical time and reference station ID
+    int32_t set_DF393(bool more_messages);  // 1 indicates that more MSMs follow for given physical time and reference station ID
 
     std::bitset<64> DF394;
     int32_t set_DF394(const std::map<int32_t, Gnss_Synchro>& gnss_synchro);

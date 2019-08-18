@@ -57,7 +57,7 @@ void unpack_spir_gss6450_samples::decode_4bits_word(uint32_t input_uint32, gr_co
     switch (adc_bits)
         {
         case 2:
-            //four bits per complex sample (2 I + 2 Q), 8 samples per int32[s0,s1,s2,s3,s4,s5,s6,s7]
+            // four bits per complex sample (2 I + 2 Q), 8 samples per int32[s0,s1,s2,s3,s4,s5,s6,s7]
             for (int i = 0; i < 8; i++)
                 {
                     tmp_char = input_uint32 & 3;
@@ -86,7 +86,7 @@ void unpack_spir_gss6450_samples::decode_4bits_word(uint32_t input_uint32, gr_co
                 }
             break;
         case 4:
-            //eight bits per complex sample (4 I + 4 Q), 4 samples per int32= [s0,s1,s2,s3]
+            // eight bits per complex sample (4 I + 4 Q), 4 samples per int32= [s0,s1,s2,s3]
             for (int i = 0; i < 4; i++)
                 {
                     tmp_char = input_uint32 & 0x0F;

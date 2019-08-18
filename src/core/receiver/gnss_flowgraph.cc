@@ -1287,7 +1287,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
-    //todo: the acquisition events are initiated from the acquisition success or failure queued msg. If the acquisition is disabled for non-assisted secondary freq channels, the engine stops..
+    // todo: the acquisition events are initiated from the acquisition success or failure queued msg. If the acquisition is disabled for non-assisted secondary freq channels, the engine stops..
     std::lock_guard<std::mutex> lock(signal_list_mutex);
     DLOG(INFO) << "Received " << what << " from " << who;
     unsigned int sat = 0;
@@ -1903,7 +1903,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     switch (mapStringValues_[searched_signal])
         {
         case evGPS_1C:
-            //todo: assist the satellite selection with almanac and current PVT here (rehuse priorize_satellite function used in control_thread)
+            // todo: assist the satellite selection with almanac and current PVT here (rehuse priorize_satellite function used in control_thread)
             result = available_GPS_1C_signals_.front();
             available_GPS_1C_signals_.pop_front();
             if (!pop)

@@ -181,7 +181,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
     int nmbOfSatellites;
     nmbOfSatellites = satpos.n_cols;  // Armadillo
     arma::mat w = arma::zeros(nmbOfSatellites, nmbOfSatellites);
-    w.diag() = w_vec;  //diagonal weight matrix
+    w.diag() = w_vec;  // diagonal weight matrix
 
     arma::vec rx_pos = this->get_rx_pos();
     arma::vec pos = {rx_pos(0), rx_pos(1), rx_pos(2), 0};  // time error in METERS (time x speed)
@@ -206,13 +206,13 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                 {
                     if (iter == 0)
                         {
-                            //--- Initialize variables at the first iteration --------------
-                            Rot_X = X.col(i);  //Armadillo
+                            // --- Initialize variables at the first iteration -------------
+                            Rot_X = X.col(i);  // Armadillo
                             trop = 0.0;
                         }
                     else
                         {
-                            //--- Update equations -----------------------------------------
+                            // --- Update equations ----------------------------------------
                             rho2 = (X(0, i) - pos(0)) *
                                        (X(0, i) - pos(0)) +
                                    (X(1, i) - pos(1)) *
@@ -221,8 +221,8 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                                        (X(2, i) - pos(2));
                             traveltime = sqrt(rho2) / GPS_C_M_S;
 
-                            //--- Correct satellite position (do to earth rotation) --------
-                            Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i));  //armadillo
+                            // --- Correct satellite position (do to earth rotation) -------
+                            Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i));  // armadillo
 
                             //--- Find DOA and range of satellites
                             double* azim = nullptr;
@@ -232,30 +232,30 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
 
                             if (traveltime < 0.1 && nmbOfSatellites > 3)
                                 {
-                                    //--- Find receiver's height
+                                    // --- Find receiver's height
                                     togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
                                     // Add troposphere correction if the receiver is below the troposphere
                                     if (h > 15000)
                                         {
-                                            //receiver is above the troposphere
+                                            // receiver is above the troposphere
                                             trop = 0.0;
                                         }
                                     else
                                         {
-                                            //--- Find delay due to troposphere (in meters)
+                                            // --- Find delay due to troposphere (in meters)
                                             Ls_Pvt::tropo(&trop, sin(*elev * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                             if (trop > 5.0)
                                                 {
-                                                    trop = 0.0;  //check for erratic values
+                                                    trop = 0.0;  // check for erratic values
                                                 }
                                         }
                                 }
                         }
-                    //--- Apply the corrections ----------------------------------------
+                    // --- Apply the corrections ----------------------------------------
                     omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop);  // Armadillo
 
                     //--- Construct the A matrix ---------------------------------------
-                    //Armadillo
+                    // Armadillo
                     A(i, 0) = (-(Rot_X(0) - pos(0))) / obs(i);
                     A(i, 1) = (-(Rot_X(1) - pos(1))) / obs(i);
                     A(i, 2) = (-(Rot_X(2) - pos(2))) / obs(i);

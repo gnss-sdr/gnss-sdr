@@ -64,11 +64,11 @@ const int32_t GALILEO_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C seco
 const int32_t GALILEO_E1_NUMBER_OF_CODES = 50;
 
 
-//optimum parameters
+// optimum parameters
 const uint32_t GALILEO_E1_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 
-const double GALILEO_STARTOFFSET_MS = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
+const double GALILEO_STARTOFFSET_MS = 68.802;  // [ms] Initial sign. travel time (this cannot go here)
 
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
@@ -88,7 +88,7 @@ const int32_t GALILEO_INAV_PAGE_PART_MS = 1000;      // a page part last 1 sec
 const int32_t GALILEO_INAV_PAGE_SECONDS = 2;         // a full page last 2 sec
 const int32_t GALILEO_INAV_INTERLEAVER_ROWS = 8;
 const int32_t GALILEO_INAV_INTERLEAVER_COLS = 30;
-const int32_t GALILEO_TELEMETRY_RATE_BITS_SECOND = 250;  //bps
+const int32_t GALILEO_TELEMETRY_RATE_BITS_SECOND = 250;  // bps
 const int32_t GALILEO_PAGE_TYPE_BITS = 6;
 const int32_t GALILEO_DATA_JK_BITS = 128;
 const int32_t GALILEO_DATA_FRAME_BITS = 196;
@@ -97,7 +97,7 @@ const int32_t GALILEO_DATA_FRAME_BYTES = 25;
 const std::vector<std::pair<int32_t, int32_t>> TYPE({{1, 6}});
 const std::vector<std::pair<int32_t, int32_t>> PAGE_TYPE_BIT({{1, 6}});
 
-/*Page 1 - Word type 1: Ephemeris (1/4)*/
+/* Page 1 - Word type 1: Ephemeris (1/4) */
 const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_1_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> T0_E_1_BIT({{17, 14}});
 const int32_t T0E_1_LSB = 60;
@@ -107,10 +107,10 @@ const std::vector<std::pair<int32_t, int32_t>> E_1_BIT({{63, 32}});
 const double E_1_LSB = TWO_N33;
 const std::vector<std::pair<int32_t, int32_t>> A_1_BIT({{95, 32}});
 const double A_1_LSB_GAL = TWO_N19;
-//last two bits are reserved
+// last two bits are reserved
 
 
-/*Page 2 - Word type 2: Ephemeris (2/4)*/
+/* Page 2 - Word type 2: Ephemeris (2/4) */
 const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_2_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> OMEGA_0_2_BIT({{17, 32}});
 const double OMEGA_0_2_LSB = PI_TWO_N31;
@@ -120,10 +120,10 @@ const std::vector<std::pair<int32_t, int32_t>> OMEGA_2_BIT({{81, 32}});
 const double OMEGA_2_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> I_DOT_2_BIT({{113, 14}});
 const double I_DOT_2_LSB = PI_TWO_N43;
-//last two bits are reserved
+// last two bits are reserved
 
 
-/*Word type 3: Ephemeris (3/4) and SISA*/
+/* Word type 3: Ephemeris (3/4) and SISA */
 const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_3_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> OMEGA_DOT_3_BIT({{17, 24}});
 const double OMEGA_DOT_3_LSB = PI_TWO_N43;
@@ -140,7 +140,7 @@ const double C_RS_3_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> SISA_3_BIT({{121, 8}});
 
 
-/*Word type 4: Ephemeris (4/4) and Clock correction parameters*/
+/* Word type 4: Ephemeris (4/4) and Clock correction parameters */
 const std::vector<std::pair<int32_t, int32_t>> IOD_NAV_4_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> SV_ID_PRN_4_BIT({{17, 6}});
 const std::vector<std::pair<int32_t, int32_t>> C_IC_4_BIT({{23, 16}});
@@ -156,19 +156,19 @@ const double AF1_4_LSB = TWO_N46;
 const std::vector<std::pair<int32_t, int32_t>> AF2_4_BIT({{121, 6}});
 const double AF2_4_LSB = TWO_N59;
 const std::vector<std::pair<int32_t, int32_t>> SPARE_4_BIT({{127, 2}});
-//last two bits are reserved
+// last two bits are reserved
 
 
-/*Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
-/*Ionospheric correction*/
-/*Az*/
+/* Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST */
+/* Ionospheric correction */
+/* Az */
 const std::vector<std::pair<int32_t, int32_t>> AI0_5_BIT({{7, 11}});  //
 const double AI0_5_LSB = TWO_N2;
 const std::vector<std::pair<int32_t, int32_t>> AI1_5_BIT({{18, 11}});  //
 const double AI1_5_LSB = TWO_N8;
 const std::vector<std::pair<int32_t, int32_t>> AI2_5_BIT({{29, 14}});  //
 const double AI2_5_LSB = TWO_N15;
-/*Ionospheric disturbance flag*/
+/* Ionospheric disturbance flag */
 const std::vector<std::pair<int32_t, int32_t>> REGION1_5_BIT({{43, 1}});      //
 const std::vector<std::pair<int32_t, int32_t>> REGION2_5_BIT({{44, 1}});      //
 const std::vector<std::pair<int32_t, int32_t>> REGION3_5_BIT({{45, 1}});      //
@@ -182,7 +182,7 @@ const std::vector<std::pair<int32_t, int32_t>> E5B_HS_5_BIT({{68, 2}});    //
 const std::vector<std::pair<int32_t, int32_t>> E1_B_HS_5_BIT({{70, 2}});   //
 const std::vector<std::pair<int32_t, int32_t>> E5B_DVS_5_BIT({{72, 1}});   //
 const std::vector<std::pair<int32_t, int32_t>> E1_B_DVS_5_BIT({{73, 1}});  //
-/*GST*/
+/* GST */
 const std::vector<std::pair<int32_t, int32_t>> WN_5_BIT({{74, 12}});
 const std::vector<std::pair<int32_t, int32_t>> TOW_5_BIT({{86, 20}});
 const std::vector<std::pair<int32_t, int32_t>> SPARE_5_BIT({{106, 23}});

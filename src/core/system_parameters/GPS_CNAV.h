@@ -58,7 +58,6 @@ const int32_t CNAV_TOW_LSB = 6;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_ALERT_FLAG({{38, 1}});
 
 // MESSAGE TYPE 10 (Ephemeris 1)
-
 const std::vector<std::pair<int32_t, int32_t> > CNAV_WN({{39, 13}});
 const std::vector<std::pair<int32_t, int32_t> > CNAV_HEALTH({{52, 3}});
 const std::vector<std::pair<int32_t, int32_t> > CNAV_TOP1({{55, 11}});
@@ -77,7 +76,7 @@ const double CNAV_A_DOT_LSB = TWO_N21;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_N0({{133, 17}});
 const double CNAV_DELTA_N0_LSB = TWO_N44 * PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_N0_DOT({{150, 23}});
-const double CNAV_DELTA_N0_DOT_LSB = TWO_N57 * PI;  //semi-circles to radians
+const double CNAV_DELTA_N0_DOT_LSB = TWO_N57 * PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_M0({{173, 33}});
 const double CNAV_M0_LSB = TWO_N32 * PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_E_ECCENTRICITY({{206, 33}});
@@ -88,7 +87,6 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV_INTEGRITY_FLAG({{272, 1}});
 const std::vector<std::pair<int32_t, int32_t> > CNAV_L2_PHASING_FLAG({{273, 1}});
 
 // MESSAGE TYPE 11 (Ephemeris 2)
-
 const std::vector<std::pair<int32_t, int32_t> > CNAV_TOE2({{39, 11}});
 const int32_t CNAV_TOE2_LSB = 300;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_OMEGA0({{50, 33}});
@@ -114,7 +112,6 @@ const double CNAV_CUC_LSB = TWO_N30;
 
 
 // MESSAGE TYPE 30 (CLOCK, IONO, GRUP DELAY)
-
 const std::vector<std::pair<int32_t, int32_t> > CNAV_TOP2({{39, 11}});
 const int32_t CNAV_TOP2_LSB = 300;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_URA_NED0({{50, 5}});
@@ -159,7 +156,6 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV_WNOP({{257, 8}});
 
 
 // MESSAGE TYPE 33 (CLOCK and UTC)
-
 const std::vector<std::pair<int32_t, int32_t> > CNAV_A0({{128, 16}});
 const double CNAV_A0_LSB = TWO_N35;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_A1({{144, 13}});

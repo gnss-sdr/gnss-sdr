@@ -77,9 +77,9 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     // we want for the test
     usleep(ONE_SECOND);
 
-    char *buffer_float;                         // temporary buffer to convert from binary char to float and from float to char
-    signed char *buffer_DMA;                    // temporary buffer to store the samples to be sent to the DMA
-    buffer_float = (char *)malloc(FLOAT_SIZE);  // allocate space for the temporary buffer
+    char *buffer_float;                                           // temporary buffer to convert from binary char to float and from float to char
+    signed char *buffer_DMA;                                      // temporary buffer to store the samples to be sent to the DMA
+    buffer_float = reinterpret_cast<char *>(malloc(FLOAT_SIZE));  // allocate space for the temporary buffer
     if (!buffer_float)
         {
             std::cerr << "Memory error!" << std::endl;
@@ -102,7 +102,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     // first step: check for the maximum value of the received signal
     float max = 0;
     float *pointer_float;
-    pointer_float = (float *)&buffer_float[0];
+    pointer_float = reinterpret_cast<float *>(&buffer_float[0]);
     for (int k = 0; k < file_length; k = k + FLOAT_SIZE)
         {
             size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);

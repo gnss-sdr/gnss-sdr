@@ -58,7 +58,7 @@
 
 
 #define MIN_PPP(x, y) ((x) <= (y) ? (x) : (y))
-#define ROUND_PPP(x) (int)floor((x) + 0.5)
+#define ROUND_PPP(x) static_cast<int>(floor((x) + 0.5))
 
 #define SWAP_I(x, y)    \
     do                  \

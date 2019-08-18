@@ -485,7 +485,7 @@ void* handler_DMA(void* arguments)
         ;  // wait until main thread tells the DMA to start
 
     // skip initial samples
-    int skip_samples = (int)FLAGS_skip_samples;
+    int skip_samples = static_cast<int>(FLAGS_skip_samples);
 
     fseek(rx_signal_file_id, (skip_samples + skip_used_samples) * 2, SEEK_SET);
 
@@ -723,7 +723,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
                     args.nsamples_tx = DOWNAMPLING_FILTER_INIT_SAMPLES + DOWNSAMPLING_FILTER_DELAY;
 
-                    if (pthread_create(&thread_DMA, nullptr, handler_DMA, (void*)&args) < 0)
+                    if (pthread_create(&thread_DMA, nullptr, handler_DMA, reinterpret_cast<void*>(&args)) < 0)
                         {
                             std::cout << "ERROR cannot create DMA Process" << std::endl;
                         }
@@ -744,7 +744,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
                     args.skip_used_samples = 0;
                 }
 
-            if (pthread_create(&thread_DMA, nullptr, handler_DMA, (void*)&args) < 0)
+            if (pthread_create(&thread_DMA, nullptr, handler_DMA, reinterpret_cast<void*>(&args)) < 0)
                 {
                     std::cout << "ERROR cannot create DMA Process" << std::endl;
                 }
@@ -954,7 +954,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
             code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
         }
 
-    float nbits = ceilf(log2f((float)code_length));
+    float nbits = ceilf(log2f(static_cast<float>(code_length)));
     unsigned int fft_size = pow(2, nbits);
 
     // The HW has been reset after the acquisition phase when the acquisition class was destroyed.
@@ -1053,7 +1053,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             //********************************************************************
                             args.nsamples_tx = baseband_sampling_freq * FLAGS_duration;
 
-                            if (pthread_create(&thread_DMA, nullptr, handler_DMA, (void*)&args) < 0)
+                            if (pthread_create(&thread_DMA, nullptr, handler_DMA, reinterpret_cast<void*>(&args)) < 0)
                                 {
                                     std::cout << "ERROR cannot create DMA Process" << std::endl;
                                 }

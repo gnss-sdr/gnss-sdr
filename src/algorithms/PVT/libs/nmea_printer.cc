@@ -300,7 +300,7 @@ char Nmea_Printer::checkSum(const std::string& sentence)
     // iterate over the string, XOR each byte with the total sum:
     for (char c : sentence)
         {
-            check = char(check ^ c);
+            check = static_cast<char>(check ^ c);
         }
     // return the result
     return check;

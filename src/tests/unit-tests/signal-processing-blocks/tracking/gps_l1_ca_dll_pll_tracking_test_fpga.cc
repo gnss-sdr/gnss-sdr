@@ -83,7 +83,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
             return;
         }
 
-    buffer_DMA = (char *)malloc(DMA_TRACK_TRANSFER_SIZE);
+    buffer_DMA = reinterpret_cast<char *>(malloc(DMA_TRACK_TRANSFER_SIZE));
     if (!buffer_DMA)
         {
             std::cerr << "Memory error!" << std::endl;

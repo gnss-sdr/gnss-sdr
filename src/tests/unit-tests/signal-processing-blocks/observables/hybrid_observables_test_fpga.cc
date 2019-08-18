@@ -402,7 +402,7 @@ void* handler_DMA_obs_test(void* arguments)
     while (send_samples_start_obs_test == 0)
         ;  // wait until acquisition starts
     // skip initial samples
-    int skip_samples = (int)FLAGS_skip_samples;
+    int skip_samples = static_cast<int>(FLAGS_skip_samples);
 
     fseek(rx_signal_file_id, (skip_samples + skip_used_samples) * 2, SEEK_SET);
 
@@ -634,7 +634,7 @@ bool HybridObservablesTestFpga::acquire_signal()
 
                     args.nsamples_tx = TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES + TEST_OBS_DOWNSAMPLING_FILTER_DELAY;
 
-                    if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, (void*)&args) < 0)
+                    if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
                         {
                             std::cout << "ERROR cannot create DMA Process" << std::endl;
                         }
@@ -656,7 +656,7 @@ bool HybridObservablesTestFpga::acquire_signal()
                 }
 
             // create DMA child process
-            if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, (void*)&args) < 0)
+            if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
                 {
                     std::cout << "ERROR cannot create DMA Process" << std::endl;
                 }
@@ -1672,7 +1672,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
     args.skip_used_samples = 0;
 
-    if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, (void*)&args) < 0)
+    if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
         {
             std::cout << "ERROR cannot create DMA Process" << std::endl;
         }

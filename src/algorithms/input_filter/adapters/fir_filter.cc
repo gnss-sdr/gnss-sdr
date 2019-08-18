@@ -389,6 +389,6 @@ void FirFilter::init()
     taps_.reserve(taps_d.size());
     for (double& it : taps_d)
         {
-            taps_.push_back(float(it));
+            taps_.push_back(static_cast<float>(it));
         }
 }

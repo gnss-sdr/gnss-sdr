@@ -252,7 +252,7 @@ float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    auto lambda = double(vector_length_);
+    auto lambda = static_cast<double>(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
     auto threshold = static_cast<float>(quantile(mydist, val));
 

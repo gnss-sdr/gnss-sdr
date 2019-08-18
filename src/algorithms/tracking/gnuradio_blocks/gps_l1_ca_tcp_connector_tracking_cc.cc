@@ -72,7 +72,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  //set the required available samples in each call
+            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  // set the required available samples in each call
         }
 }
 
@@ -129,7 +129,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
-    //--- Perform initializations ------------------------------
+    // --- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
     d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ;
     // define residual code phase (in chips)
@@ -189,7 +189,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
     std::cout << "acq_trk_diff_samples=" << acq_trk_diff_samples << std::endl;
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
-    //doppler effect
+    // doppler effect
     // Fd=(C/(C+Vr))*F
     float radial_velocity;
     radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
@@ -362,9 +362,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     current_synchro_data.fs = d_fs_in;
                     *out[0] = current_synchro_data;
                     d_sample_counter_seconds = d_sample_counter_seconds + (static_cast<double>(samples_offset) / static_cast<double>(d_fs_in));
-                    d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  //count for the processed samples
+                    d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
-                    consume_each(samples_offset);  //shift input to perform alignment with local replica
+                    consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
                 }
 
@@ -386,10 +386,10 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                 d_code_phase_step_chips,
                 d_current_prn_length_samples);
 
-            //! Variable used for control
+            // Variable used for control
             d_control_id++;
 
-            //! Send and receive a TCP packet
+            // Send and receive a TCP packet
             boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> tx_variables_array = {{d_control_id,
                 (*d_Early).real(),
                 (*d_Early).imag(),
@@ -401,7 +401,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                 1}};
             d_tcp_com.send_receive_tcp_packet_gps_l1_ca(tx_variables_array, &tcp_data);
 
-            //! Recover the tracking data
+            // Recover the tracking data
             code_error = tcp_data.proc_pack_code_error;
             carr_error = tcp_data.proc_pack_carr_error;
             // Modify carrier freq based on NCO command
@@ -412,7 +412,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
 
             // Update the phasestep based on code freq (variable) and
             // sampling frequency (fixed)
-            d_code_phase_step_chips = d_code_freq_hz / static_cast<float>(d_fs_in);  //[chips]
+            d_code_phase_step_chips = d_code_freq_hz / static_cast<float>(d_fs_in);  // [chips]
             // variable code PRN sample block size
             double T_chip_seconds;
             double T_prn_seconds;
@@ -422,7 +422,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             d_rem_code_phase_samples = d_next_rem_code_phase_samples;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;  //-code_error*(double)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;  // -code_error*(double)d_fs_in;
 
             // Update the current PRN delay (code phase in samples)
             double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
@@ -434,8 +434,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                 }
 
             d_code_phase_samples = fmod(d_code_phase_samples, T_prn_true_samples);
-            d_next_prn_length_samples = round(K_blk_samples);                           //round to a discrete samples
-            d_next_rem_code_phase_samples = K_blk_samples - d_next_prn_length_samples;  //rounding error
+            d_next_prn_length_samples = round(K_blk_samples);                           // round to a discrete number of samples
+            d_next_rem_code_phase_samples = K_blk_samples - d_next_prn_length_samples;  // rounding error
 
             /*!
              * \todo Improve the lock detection algorithm!
@@ -469,7 +469,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  //3 -> loss of lock
+                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false;  // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -479,8 +479,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
 
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
-            //compute remnant code phase samples AFTER the Tracking timestamp
-            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples;  //rounding error < 1 sample
+            // compute remnant code phase samples AFTER the Tracking timestamp
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples;  // rounding error < 1 sample
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
@@ -496,7 +496,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             *d_Late = gr_complex(0, 0);
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
-            //! When tracking is disabled an array of 1's is sent to maintain the TCP connection
+            // When tracking is disabled an array of 1's is sent to maintain the TCP connection
             boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> tx_variables_array = {{1, 1, 1, 1, 1, 1, 1, 1, 0}};
             d_tcp_com.send_receive_tcp_packet_gps_l1_ca(tx_variables_array, &tcp_data);
         }
@@ -579,7 +579,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
 
     consume_each(d_current_prn_length_samples);  // this is necessary in gr::block derivates
     d_sample_counter_seconds = d_sample_counter_seconds + (static_cast<double>(d_current_prn_length_samples) / static_cast<double>(d_fs_in));
-    d_sample_counter += d_current_prn_length_samples;  //count for the processed samples
+    d_sample_counter += d_current_prn_length_samples;  // count for the processed samples
 
     if (d_enable_tracking)
         {

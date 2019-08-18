@@ -178,7 +178,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::connect(boost::shared_ptr<gr::top_block>
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -187,7 +187,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(boost::shared_ptr<gr::top_blo
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

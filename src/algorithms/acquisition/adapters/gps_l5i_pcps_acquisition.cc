@@ -74,7 +74,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     acq_parameters_.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters_.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters_.max_dwells = max_dwells_;

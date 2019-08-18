@@ -63,15 +63,15 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     int n_segments_reset = config_->property(role_ + ".segments_reset", default_n_segments_reset);
     if (input_item_type_ == "gr_complex")
         {
-            item_size = sizeof(gr_complex);    //output
-            input_size_ = sizeof(gr_complex);  //input
+            item_size = sizeof(gr_complex);    // output
+            input_size_ = sizeof(gr_complex);  // input
             pulse_blanking_cc_ = make_pulse_blanking_cc(pfa, length_, n_segments_est, n_segments_reset);
         }
     else
         {
             LOG(ERROR) << " Unknown input filter input/output item type conversion";
-            item_size = sizeof(gr_complex);    //avoids uninitialization
-            input_size_ = sizeof(gr_complex);  //avoids uninitialization
+            item_size = sizeof(gr_complex);    // avoids uninitialization
+            input_size_ = sizeof(gr_complex);  // avoids uninitialization
         }
     double default_if = 0.0;
     double if_aux = config_->property(role_ + ".if", default_if);

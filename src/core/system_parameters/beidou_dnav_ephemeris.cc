@@ -168,7 +168,7 @@ double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
             dE = fmod(E - E_old, 2.0 * BEIDOU_DNAV_PI);
             if (fabs(dE) < 1e-12)
                 {
-                    //Necessary precision is reached, exit from the loop
+                    // Necessary precision is reached, exit from the loop
                     break;
                 }
         }
@@ -227,7 +227,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
             dE = fmod(E - E_old, 2.0 * BEIDOU_DNAV_PI);
             if (fabs(dE) < 1e-12)
                 {
-                    //Necessary precision is reached, exit from the loop
+                    // Necessary precision is reached, exit from the loop
                     break;
                 }
         }

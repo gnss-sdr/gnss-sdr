@@ -403,7 +403,7 @@ public:
     /*!
      *  \brief Writes raw SBAS messages into the RINEX file
      */
-    //void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
+    // void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
 
     void update_nav_header(std::fstream& out, const Gps_Utc_Model& utc_model, const Gps_Iono& gps_iono, const Gps_Ephemeris& eph);
 
@@ -775,8 +775,8 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
     int expAdd = 0;
     std::string exp;
     int64_t iexp;
-    //If checkSwitch is false, always redo the exponential. Otherwise,
-    //set it to false.
+    // If checkSwitch is false, always redo the exponential. Otherwise,
+    // set it to false.
     bool redoexp = !checkSwitch;
 
     // Check for decimal place within specified boundaries
@@ -852,7 +852,7 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
             aStr.insert(static_cast<std::string::size_type>(0), 1, ' ');
         }
 
-    //If checkSwitch is false, add on one leading zero to the string
+    // If checkSwitch is false, add on one leading zero to the string
     if (!checkSwitch)
         {
             aStr.insert(static_cast<std::string::size_type>(1), 1, '0');

@@ -62,7 +62,7 @@ int beamformer::work(int noutput_items, gr_vector_const_void_star &input_items,
     //  gr_complex *ch8 = (gr_complex *) input_items[7];
 
     // NON-VOLK beamforming operation
-    //TODO: Implement VOLK SIMD-accelerated beamformer!
+    // TODO: Implement VOLK SIMD-accelerated beamformer!
     gr_complex sum;
     for (int n = 0; n < noutput_items; n++)
         {

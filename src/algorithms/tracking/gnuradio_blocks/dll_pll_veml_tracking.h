@@ -128,7 +128,7 @@ private:
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
     Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
+    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  // for data channel
 
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.

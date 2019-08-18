@@ -76,14 +76,14 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters.max_dwells = max_dwells_;
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
-    //--- Find number of samples per spreading code -------------------------
+    // --- Find number of samples per spreading code -------------------------
     code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
@@ -229,7 +229,7 @@ void GlonassL2CaPcpsAcquisition::set_state(int state)
 
 float GlonassL2CaPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     /*
     for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)

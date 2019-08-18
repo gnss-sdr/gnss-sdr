@@ -55,7 +55,7 @@
 
 
 /* solar/lunar tides (ref [2] 7) ---------------------------------------------*/
-//#ifndef IERS_MODEL
+// #ifndef IERS_MODEL
 void tide_pl(const double *eu, const double *rp, double GMp,
     const double *pos, double *dr)
 {
@@ -164,7 +164,7 @@ void tide_solid(const double *rsun, const double *rmoon,
         }
     trace(5, "tide_solid: dr=%.3f %.3f %.3f\n", dr[0], dr[1], dr[2]);
 }
-//#endif /* !IERS_MODEL */
+// #endif /* !IERS_MODEL */
 
 
 /* displacement by ocean tide loading (ref [2] 7) ----------------------------*/

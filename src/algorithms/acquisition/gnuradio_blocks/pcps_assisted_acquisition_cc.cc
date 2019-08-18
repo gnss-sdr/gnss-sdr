@@ -164,7 +164,7 @@ void pcps_assisted_acquisition_cc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = d_gnuradio_forecast_samples;  //set the required available samples in each call
+            ninput_items_required[0] = d_gnuradio_forecast_samples;  // set the required available samples in each call
         }
 }
 
@@ -174,7 +174,7 @@ void pcps_assisted_acquisition_cc::get_assistance()
     Gps_Acq_Assist gps_acq_assisistance;
     if (global_gps_acq_assist_map.read(this->d_gnss_synchro->PRN, gps_acq_assisistance) == true)
         {
-            //TODO: use the LO tolerance here
+            // TODO: use the LO tolerance here
             if (gps_acq_assisistance.dopplerUncertainty >= 1000)
                 {
                     d_doppler_max = gps_acq_assisistance.d_Doppler0 + gps_acq_assisistance.dopplerUncertainty * 2;

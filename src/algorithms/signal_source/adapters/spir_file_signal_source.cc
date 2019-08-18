@@ -137,7 +137,7 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
                 {
                     int sample_packet_factor = 1;  // 1 int -> 1 complex sample (I&Q from 1 channel)
                     samples_ = floor(static_cast<double>(size) / static_cast<double>(item_size())) * sample_packet_factor;
-                    samples_ = samples_ - ceil(0.002 * static_cast<double>(sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
+                    samples_ = samples_ - ceil(0.002 * static_cast<double>(sampling_frequency_));  // process all the samples available in the file excluding the last 2 ms
                 }
         }
 
@@ -152,7 +152,7 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
 
     if (dump_)
         {
-            //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            // sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
             sink_ = gr::blocks::file_sink::make(sizeof(float), dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
@@ -297,7 +297,7 @@ void SpirFileSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr SpirFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
-    //return gr_block_sptr();
+    // return gr_block_sptr();
     return gr::blocks::file_source::sptr();
 }
 

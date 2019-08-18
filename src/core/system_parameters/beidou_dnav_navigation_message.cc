@@ -120,7 +120,7 @@ void Beidou_Dnav_Navigation_Message::reset()
     d_TGD1 = 0.0;
     d_TGD2 = 0.0;
     d_AODC = -1.0;
-    //    i_AODO = 0;
+    // i_AODO = 0;
 
     b_fit_interval_flag = false;
     d_spare1 = 0.0;
@@ -130,8 +130,8 @@ void Beidou_Dnav_Navigation_Message::reset()
     d_A_f1 = 0.0;
     d_A_f2 = 0.0;
 
-    //clock terms
-    //d_master_clock=0;
+    // clock terms
+    // d_master_clock=0;
     d_dtr = 0.0;
     d_satClkCorr = 0.0;
     d_satClkDrift = 0.0;
@@ -172,7 +172,7 @@ void Beidou_Dnav_Navigation_Message::reset()
     i_DN = 0;
     d_DeltaT_LSF = 0.0;
 
-    //Almanac
+    // Almanac
     d_Toa = 0.0;
     i_WN_A = 0;
     for (int32_t i = 1; i < 36; i++)
@@ -376,7 +376,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
             dE = fmod(E - E_old, 2 * BEIDOU_DNAV_PI);
             if (fabs(dE) < 1e-12)
                 {
-                    //Necessary precision is reached, exit from the loop
+                    // Necessary precision is reached, exit from the loop
                     break;
                 }
         }
@@ -916,13 +916,13 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
-            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+            // Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
             if (weeksToLeapSecondEvent > 0)
                 {
                     t_utc_daytime = fmod(beidoutime_corrected - Delta_t_UTC, 86400);
                 }
-            else  //we are in the same week than the leap second event
+            else  // we are in the same week than the leap second event
                 {
                     if ((beidoutime_corrected - secondOfLeapSecondEvent) < (2 / 3) * 24 * 60 * 60)
                         {
@@ -1063,7 +1063,7 @@ Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
     iono.d_beta2 = d_beta2;
     iono.d_beta3 = d_beta3;
     iono.valid = flag_iono_valid;
-    //WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+    // WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_iono_valid = false;
     return iono;
 }

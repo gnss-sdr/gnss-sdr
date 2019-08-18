@@ -377,12 +377,12 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_w_2_5 *= FNAV_W_5_LSB;
             FNAV_deltai_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_DELTAI_2_5_BIT));
             FNAV_deltai_2_5 *= FNAV_DELTAI_5_LSB;
-            //TODO check this
+            // TODO check this
             // Omega0_2 must be decoded when the two pieces are joined
             omega0_1 = data.substr(210, 4);
-            //omega_flag=true;
+            // omega_flag=true;
             //
-            //FNAV_Omega012_2_5=static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega012_2_5_bit);
+            // FNAV_Omega012_2_5=static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega012_2_5_bit);
             flag_almanac_1 = true;
             break;
         case 6:  // Almanac (SVID2(2/2) and SVID3)
@@ -624,8 +624,8 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model()
     utc_model.Delta_tLSF_6 = FNAV_deltatlsf_4;
     utc_model.flag_utc_model = flag_utc_model;
     // GST
-    //utc_model.WN_5 = WN_5; //Week number
-    //utc_model.TOW_5 = WN_5; //Time of Week
+    // utc_model.WN_5 = WN_5; //Week number
+    // utc_model.TOW_5 = WN_5; //Time of Week
     return utc_model;
 }
 

@@ -62,12 +62,12 @@ void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
             LOG(WARNING) << "Array Signal conditioner already connected internally";
             return;
         }
-    //data_type_adapt_->connect(top_block);
+    // data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);
     res_->connect(top_block);
 
-    //top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
-    //DLOG(INFO) << "data_type_adapter -> input_filter";
+    // top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
+    // DLOG(INFO) << "data_type_adapter -> input_filter";
 
     top_block->connect(in_filt_->get_right_block(), 0,
         res_->get_left_block(), 0);
@@ -86,12 +86,12 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
             return;
         }
 
-    //top_block->disconnect(data_type_adapt_->get_right_block(), 0,
+    // top_block->disconnect(data_type_adapt_->get_right_block(), 0,
     //                      in_filt_->get_left_block(), 0);
     top_block->disconnect(in_filt_->get_right_block(), 0,
         res_->get_left_block(), 0);
 
-    //data_type_adapt_->disconnect(top_block);
+    // data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
     res_->disconnect(top_block);
 
@@ -101,7 +101,7 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr ArraySignalConditioner::get_left_block()
 {
-    //return data_type_adapt_->get_left_block();
+    // return data_type_adapt_->get_left_block();
     return in_filt_->get_left_block();
 }
 

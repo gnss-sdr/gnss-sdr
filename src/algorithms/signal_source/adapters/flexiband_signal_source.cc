@@ -58,7 +58,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     gain3_ = configuration->property(role + ".gain3", 0);  // check gain DAC values for Flexiband frontend!
 
     AGC_ = configuration->property(role + ".AGC", true);                        // enabled AGC by default
-    flag_read_file = configuration->property(role + ".flag_read_file", false);  //disable read samples from file by default
+    flag_read_file = configuration->property(role + ".flag_read_file", false);  // disable read samples from file by default
     std::string default_signal_file = "flexiband_frame_samples.bin";
     signal_file = configuration->property(role + ".signal_file", default_signal_file);
 
@@ -79,7 +79,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
             item_size_ = sizeof(gr_complex);
             flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(), gain1_, gain2_, gain3_, AGC_, usb_packet_buffer_size_, signal_file.c_str(), flag_read_file);
 
-            //create I, Q -> gr_complex type conversion blocks
+            // create I, Q -> gr_complex type conversion blocks
             for (int n = 0; n < (n_channels_ * 2); n++)
                 {
                     char_to_float.push_back(gr::blocks::char_to_float::make());
@@ -157,12 +157,13 @@ gr::basic_block_sptr FlexibandSignalSource::get_right_block()
     return get_right_block(0);
 }
 
+
 gr::basic_block_sptr FlexibandSignalSource::get_right_block(int RF_channel)
 {
     if (RF_channel == 0)
         {
-            //in the first RF channel, return the signalsource selected channel.
-            //this trick enables the use of the second or the third frequency of a FlexiBand signal without a dual frequency configuration
+            // in the first RF channel, return the signalsource selected channel.
+            // this trick enables the use of the second or the third frequency of a FlexiBand signal without a dual frequency configuration
             return float_to_complex_.at(sel_ch_ - 1);
         }
     else

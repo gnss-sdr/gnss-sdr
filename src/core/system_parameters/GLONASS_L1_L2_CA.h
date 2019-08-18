@@ -130,102 +130,102 @@ const std::map<uint32_t, int32_t> GLONASS_PRN = {
     {
         0,
         8,
-    },  //For test
+    },  // For test
     {
         1,
         1,
-    },  //Plane 1
+    },  // Plane 1
     {
         2,
         -4,
-    },  //Plane 1
+    },  // Plane 1
     {
         3,
         5,
-    },  //Plane 1
+    },  // Plane 1
     {
         4,
         6,
-    },  //Plane 1
+    },  // Plane 1
     {
         5,
         1,
-    },  //Plane 1
+    },  // Plane 1
     {
         6,
         -4,
-    },  //Plane 1
+    },  // Plane 1
     {
         7,
         5,
-    },  //Plane 1
+    },  // Plane 1
     {
         8,
         6,
-    },  //Plane 1
+    },  // Plane 1
     {
         9,
         -2,
-    },  //Plane 2
+    },  // Plane 2
     {
         10,
         -7,
-    },  //Plane 2
+    },  // Plane 2
     {
         11,
         0,
-    },  //Plane 2
+    },  // Plane 2
     {
         12,
         -1,
-    },  //Plane 2
+    },  // Plane 2
     {
         13,
         -2,
-    },  //Plane 2
+    },  // Plane 2
     {
         14,
         -7,
-    },  //Plane 2
+    },  // Plane 2
     {
         15,
         0,
-    },  //Plane 2
+    },  // Plane 2
     {
         16,
         -1,
-    },  //Plane 2
+    },  // Plane 2
     {
         17,
         4,
-    },  //Plane 3
+    },  // Plane 3
     {
         18,
         -3,
-    },  //Plane 3
+    },  // Plane 3
     {
         19,
         3,
-    },  //Plane 3
+    },  // Plane 3
     {
         20,
         -5,
-    },  //Plane 3
+    },  // Plane 3
     {
         21,
         4,
-    },  //Plane 3
+    },  // Plane 3
     {
         22,
         -3,
-    },  //Plane 3
+    },  // Plane 3
     {
         23,
         3,
-    },         //Plane 3
-    {24, 2}};  //Plane 3
+    },         // Plane 3
+    {24, 2}};  // Plane 3
 
-const double GLONASS_STARTOFFSET_MS = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
+const double GLONASS_STARTOFFSET_MS = 68.802;  // [ms] Initial sign. travel time (this cannot go here)
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
@@ -264,7 +264,7 @@ const std::vector<int32_t> GLONASS_GNAV_CRC_Q_INDEX{9, 10, 11, 12, 13, 14, 15, 1
 // COMMON FIELDS
 const std::vector<std::pair<int32_t, int32_t>> STRING_ID({{2, 4}});
 const std::vector<std::pair<int32_t, int32_t>> KX({{78, 8}});
-//STRING 1
+// STRING 1
 const std::vector<std::pair<int32_t, int32_t>> P1({{8, 2}});
 const std::vector<std::pair<int32_t, int32_t>> T_K_HR({{10, 5}});
 const std::vector<std::pair<int32_t, int32_t>> T_K_MIN({{15, 6}});
@@ -273,7 +273,7 @@ const std::vector<std::pair<int32_t, int32_t>> X_N_DOT({{22, 24}});
 const std::vector<std::pair<int32_t, int32_t>> X_N_DOT_DOT({{46, 5}});
 const std::vector<std::pair<int32_t, int32_t>> X_N({{51, 27}});
 
-//STRING 2
+// STRING 2
 const std::vector<std::pair<int32_t, int32_t>> B_N({{6, 3}});
 const std::vector<std::pair<int32_t, int32_t>> P2({{9, 1}});
 const std::vector<std::pair<int32_t, int32_t>> T_B({{10, 7}});
@@ -281,7 +281,7 @@ const std::vector<std::pair<int32_t, int32_t>> Y_N_DOT({{22, 24}});
 const std::vector<std::pair<int32_t, int32_t>> Y_N_DOT_DOT({{46, 5}});
 const std::vector<std::pair<int32_t, int32_t>> Y_N({{51, 27}});
 
-//STRING 3
+// STRING 3
 const std::vector<std::pair<int32_t, int32_t>> P3({{6, 1}});
 const std::vector<std::pair<int32_t, int32_t>> GAMMA_N({{7, 11}});
 const std::vector<std::pair<int32_t, int32_t>> P({{19, 2}});
@@ -316,7 +316,7 @@ const std::vector<std::pair<int32_t, int32_t>> LAMBDA_N_A({{24, 21}});
 const std::vector<std::pair<int32_t, int32_t>> DELTA_I_N_A({{45, 18}});
 const std::vector<std::pair<int32_t, int32_t>> EPSILON_N_A({{63, 15}});
 
-//STRING 7, 9, 11, 13, 15
+// STRING 7, 9, 11, 13, 15
 const std::vector<std::pair<int32_t, int32_t>> OMEGA_N_A({{6, 16}});
 const std::vector<std::pair<int32_t, int32_t>> T_LAMBDA_N_A({{22, 21}});
 const std::vector<std::pair<int32_t, int32_t>> DELTA_T_N_A({{43, 22}});
@@ -326,6 +326,5 @@ const std::vector<std::pair<int32_t, int32_t>> H_N_A({{72, 5}});
 // STRING 14 FRAME 5
 const std::vector<std::pair<int32_t, int32_t>> B1({{6, 11}});
 const std::vector<std::pair<int32_t, int32_t>> B2({{17, 10}});
-
 
 #endif /* GNSS_SDR_GLONASS_L1_L2_CA_H_ */

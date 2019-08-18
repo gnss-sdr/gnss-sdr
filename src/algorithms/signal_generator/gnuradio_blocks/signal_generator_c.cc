@@ -151,14 +151,12 @@ void signal_generator_c::init()
 
 void signal_generator_c::generate_codes()
 {
-    //sampled_code_data_.reset(new gr_complex *[num_sats_]);
-    //sampled_code_pilot_.reset(new gr_complex *[num_sats_]);
     sampled_code_data_ = std::vector<std::vector<gr_complex>>(num_sats_, std::vector<gr_complex>(vector_length_));
     sampled_code_pilot_ = std::vector<std::vector<gr_complex>>(num_sats_, std::vector<gr_complex>(vector_length_));
 
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
-            std::array<gr_complex, 64000> code{};  //[samples_per_code_[sat]];
+            std::array<gr_complex, 64000> code{};
 
             if (system_[sat] == "G")
                 {
@@ -212,7 +210,7 @@ void signal_generator_c::generate_codes()
 
                             galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat], signal, PRN_[sat], fs_in_,
                                 static_cast<int>(GALILEO_E5A_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
-                            //noise
+                            // noise
                             if (noise_flag_)
                                 {
                                     for (unsigned int i = 0; i < vector_length_; i++)

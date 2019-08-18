@@ -1741,17 +1741,16 @@ double timediff(gtime_t t1, gtime_t t2)
     return difftime(t1.time, t2.time) + t1.sec - t2.sec;
 }
 
-/* time difference accounting with week crossovers -------------------------------------------------------------
+/* time difference accounting with week crossovers -----------------------------
  * difference between gtime_t structs
  * args   : gtime_t t1,t2    I   gtime_t structs
  * return : time difference (t1-t2) (s)
  *-----------------------------------------------------------------------------*/
 double timediffweekcrossover(gtime_t t1, gtime_t t2)
 {
-    //as stated in IS-GPS-200J table 20-IV footnote among other parts of the ICD,
-
-    //if tk=(t - toe) > 302400s then tk = tk - s
-    //if tk=(t - toe) < -302400s then tk = tk + 604800s
+    // as stated in IS-GPS-200J table 20-IV footnote among other parts of the ICD,
+    // if tk=(t - toe) > 302400s then tk = tk - s
+    // if tk=(t - toe) < -302400s then tk = tk + 604800s
     double tk = difftime(t1.time, t2.time) + t1.sec - t2.sec;
     if (tk > 302400.0)
         {
@@ -1763,6 +1762,7 @@ double timediffweekcrossover(gtime_t t1, gtime_t t2)
         }
     return tk;
 }
+
 /* get current time in utc -----------------------------------------------------
  * get current time in utc
  * args   : none
@@ -3826,7 +3826,7 @@ void freenav(nav_t *nav, int opt)
 
 
 /* debug trace functions -----------------------------------------------------*/
-//#ifdef TRACE
+// #ifdef TRACE
 //
 FILE *fp_trace = nullptr;      /* file pointer of trace */
 char file_trace[1024];         /* trace file */
@@ -3908,8 +3908,9 @@ void tracelevel(int level)
 {
     level_trace = level;
 }
-//extern void trace(int level, const char *format, ...)
-//{
+
+// extern void trace(int level, const char *format, ...)
+// {
 //    va_list ap;
 //
 //    /* print error message to stderr */
@@ -3921,7 +3922,7 @@ void tracelevel(int level)
 //    fprintf(fp_trace,"%d ",level);
 //    va_start(ap,format); vfprintf(fp_trace,format,ap); va_end(ap);
 //    fflush(fp_trace);
-//}
+// }
 
 void tracet(int level, const char *format, ...)
 {
@@ -3962,8 +3963,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
     //    }
     //    fflush(fp_trace);
 }
-//extern void tracenav(int level, const nav_t *nav)
-//{
+
+// extern void tracenav(int level, const nav_t *nav)
+// {
 //    char s1[64],s2[64],id[16];
 //    int i;
 //
@@ -3981,9 +3983,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //            nav->ion_gps[5],nav->ion_gps[6],nav->ion_gps[7]);
 //    fprintf(fp_trace,"(ion) %9.4e %9.4e %9.4e %9.4e\n",nav->ion_gal[0],
 //            nav->ion_gal[1],nav->ion_gal[2],nav->ion_gal[3]);
-//}
-//extern void tracegnav(int level, const nav_t *nav)
-//{
+// }
+// extern void tracegnav(int level, const nav_t *nav)
+// {
 //    char s1[64],s2[64],id[16];
 //    int i;
 //
@@ -3995,9 +3997,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //        fprintf(fp_trace,"(%3d) %-3s : %s %s %2d %2d %8.3f\n",i+1,
 //                id,s1,s2,nav->geph[i].frq,nav->geph[i].svh,nav->geph[i].taun*1e6);
 //    }
-//}
-//extern void tracehnav(int level, const nav_t *nav)
-//{
+// }
+// extern void tracehnav(int level, const nav_t *nav)
+// {
 //    char s1[64],s2[64],id[16];
 //    int i;
 //
@@ -4009,9 +4011,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //        fprintf(fp_trace,"(%3d) %-3s : %s %s %2d %2d\n",i+1,
 //                id,s1,s2,nav->seph[i].svh,nav->seph[i].sva);
 //    }
-//}
-//extern void tracepeph(int level, const nav_t *nav)
-//{
+// }
+// extern void tracepeph(int level, const nav_t *nav)
+// {
 //    char s[64],id[16];
 //    int i,j;
 //
@@ -4029,9 +4031,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //                    nav->peph[i].std[j][2],nav->peph[i].std[j][3]*1e9);
 //        }
 //    }
-//}
-//extern void tracepclk(int level, const nav_t *nav)
-//{
+// }
+// extern void tracepclk(int level, const nav_t *nav)
+// {
 //    char s[64],id[16];
 //    int i,j;
 //
@@ -4046,19 +4048,19 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //                    nav->pclk[i].clk[j][0]*1e9,nav->pclk[i].std[j][0]*1e9);
 //        }
 //    }
-//}
-//extern void traceb(int level, const unsigned char *p, int n)
-//{
+// }
+// extern void traceb(int level, const unsigned char *p, int n)
+// {
 //    int i;
 //    if (!fp_trace||level>level_trace) return;
 //    for (i=0;i<n;i++) fprintf(fp_trace,"%02X%s",*p++,i%8==7?" ":"");
 //    fprintf(fp_trace,"\n");
-//}
-//#else
+// }
+// #else
 
-//void traceopen(const char *file) {}
-//void traceclose(void) {}
-//void tracelevel(int level) {}
+// void traceopen(const char *file) {}
+// void traceclose(void) {}
+// void tracelevel(int level) {}
 void trace(int level, const char *format, ...)
 {
     va_list ap;
@@ -4069,17 +4071,17 @@ void trace(int level, const char *format, ...)
     std::string str(buffer);
     VLOG(level) << "RTKLIB TRACE[" << level << "]:" << str;
 }
-//void tracet  (int level, const char *format, ...) {}
-//void tracemat(int level, const double *A, int n, int m, int p, int q) {}
-//void traceobs(int level, const obsd_t *obs, int n) {}
-//void tracenav(int level, const nav_t *nav) {}
-//void tracegnav(int level, const nav_t *nav) {}
-//void tracehnav(int level, const nav_t *nav) {}
-//void tracepeph(int level, const nav_t *nav) {}
-//void tracepclk(int level, const nav_t *nav) {}
-//void traceb  (int level, const unsigned char *p, int n) {}
+// void tracet  (int level, const char *format, ...) {}
+// void tracemat(int level, const double *A, int n, int m, int p, int q) {}
+// void traceobs(int level, const obsd_t *obs, int n) {}
+// void tracenav(int level, const nav_t *nav) {}
+// void tracegnav(int level, const nav_t *nav) {}
+// void tracehnav(int level, const nav_t *nav) {}
+// void tracepeph(int level, const nav_t *nav) {}
+// void tracepclk(int level, const nav_t *nav) {}
+// void traceb  (int level, const unsigned char *p, int n) {}
 
-//#endif /* TRACE */
+// #endif /* TRACE */
 
 
 /* execute command -------------------------------------------------------------
@@ -4104,7 +4106,7 @@ void createdir(const char *path)
 {
     char buff[1024];
     char *p;
-    //tracet(3, "createdir: path=%s\n", path);
+    // tracet(3, "createdir: path=%s\n", path);
 
     if (strlen(path) < 1025)
         {
@@ -5240,10 +5242,10 @@ int expath(const char *path, char *paths[], int nmax)
 
     trace(3, "expath  : path=%s nmax=%d\n", path, nmax);
 
-    //TODO: Fix  invalid conversion from ‘const char*’ to ‘char*’
-    //if ((p=strrchr(path,'/')) || (p=strrchr(path,'\\'))) {
+    // TODO: Fix  invalid conversion from ‘const char*’ to ‘char*’
+    // if ((p=strrchr(path,'/')) || (p=strrchr(path,'\\'))) {
     //    file=p+1; strncpy(dir,path,p-path+1); dir[p-path+1]='\0';
-    //}
+    // }
     if (!(dp = opendir(*dir ? dir : ".")))
         {
             return 0;

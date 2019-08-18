@@ -112,7 +112,7 @@ public:
     // Word type 4: Ephemeris (4/4) and Clock correction parameters*/
     int32_t IOD_nav_4;    //
     int32_t SV_ID_PRN_4;  //
-    double C_ic_4;        //!<Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
+    double C_ic_4;        //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
     double C_is_4;        //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
 
     // Clock correction parameters

@@ -44,9 +44,6 @@
 #include <utility>
 #include <vector>
 
-//TODO: Create GPS CNAV almanac
-//#include "gps_almanac.h"
-
 
 /*!
  * \brief This class decodes a GPS CNAV Data message as described in IS-GPS-200H

@@ -127,7 +127,7 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
     d_latitude_d = phi * 180.0 / GPS_PI;
     d_longitude_d = lambda * 180.0 / GPS_PI;
     d_height_m = h;
-    //todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
+    // todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
     return 0;
 }
 
@@ -284,7 +284,7 @@ void Pvt_Solution::perform_pos_averaging()
                 }
             else
                 {
-                    //int current_depth=d_hist_longitude_d.size();
+                    // int current_depth=d_hist_longitude_d.size();
                     // Push new values
                     d_hist_longitude_d.push_front(d_longitude_d);
                     d_hist_latitude_d.push_front(d_latitude_d);

@@ -126,9 +126,9 @@ private:
     gr_complex* d_ca_code;
     lv_16sc_t* d_ca_code_16sc;
     float* d_local_code_shift_chips;
-    //gr_complex* d_correlator_outs;
+    // gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
-    //cpu_multicorrelator multicorrelator_cpu;
+    // cpu_multicorrelator multicorrelator_cpu;
     Cpu_Multicorrelator_16sc multicorrelator_cpu_16sc;
 
     // remaining code phase and carrier phase between tracking loops
@@ -174,10 +174,10 @@ private:
     std::deque<lv_16sc_t> d_P_history;
     std::deque<lv_16sc_t> d_L_history;
 
-    //Integration period in samples
+    // Integration period in samples
     int32_t d_correlation_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
@@ -203,4 +203,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

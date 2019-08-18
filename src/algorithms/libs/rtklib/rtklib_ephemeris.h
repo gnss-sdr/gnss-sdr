@@ -77,7 +77,7 @@ geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav);
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav);
 int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     double *dts);
-//satellite position and clock by broadcast ephemeris
+// satellite position and clock by broadcast ephemeris
 int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     int iode, double *rs, double *dts, double *var, int *svh);
 int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,

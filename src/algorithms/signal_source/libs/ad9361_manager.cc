@@ -154,7 +154,7 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
     struct iio_channel *chn = nullptr;
 
     // Configure phy and lo channels
-    //LOG(INFO)<<"* Acquiring AD9361 phy channel"<<chid;
+    // LOG(INFO)<<"* Acquiring AD9361 phy channel"<<chid;
     std::cout << "* Acquiring AD9361 phy channel" << chid << std::endl;
     if (!get_phy_chan(ctx, type, chid, &chn))
         {
@@ -165,7 +165,7 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
     wr_ch_lli(chn, "sampling_frequency", cfg->fs_hz);
 
     // Configure LO channel
-    //LOG(INFO)<<"* Acquiring AD9361 "<<type == TX ? "TX" : "RX";
+    // LOG(INFO)<<"* Acquiring AD9361 "<<type == TX ? "TX" : "RX";
     std::cout << "* Acquiring AD9361 " << (type == TX ? "TX" : "RX") << std::endl;
     if (!get_lo_chan(ctx, type, &chn))
         {
@@ -431,7 +431,7 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
             throw std::runtime_error("AD9361 IIO No context");
         }
 
-    //find tx device
+    // find tx device
     struct iio_device *tx;
 
     std::cout << "* Acquiring AD9361 TX streaming devices\n";
@@ -449,11 +449,11 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
             throw std::runtime_error("AD9361 IIO TX port 0 not found");
         }
 
-    //ENABLE DDS on TX1
+    // ENABLE DDS on TX1
     struct iio_device *ad9361_phy;
     ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
     int ret;
-    //set output amplifier attenuation
+    // set output amplifier attenuation
     ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -tx_attenuation_db_);
     if (ret < 0)
         {
@@ -474,8 +474,7 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
             std::cout << "Failed to toggle DDS: " << ret << std::endl;
         }
 
-    //set frequency, scale and phase
-
+    // set frequency, scale and phase
     ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
@@ -512,8 +511,7 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
             std::cout << "Failed to set TX DDS scale Q: " << ret << std::endl;
         }
 
-    //disable TX2
-
+    // disable TX2
     ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.0);
     if (ret < 0)
         {
@@ -568,7 +566,7 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
             throw std::runtime_error("AD9361 IIO No context");
         }
 
-    //find tx device
+    // find tx device
     struct iio_device *tx;
 
     std::cout << "* Acquiring AD9361 TX streaming devices\n";
@@ -586,11 +584,11 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
             throw std::runtime_error("AD9361 IIO TX port 0 not found");
         }
 
-    //ENABLE DDS on TX1
+    // ENABLE DDS on TX1
     struct iio_device *ad9361_phy;
     ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
     int ret;
-    //set output amplifier attenuation
+    // set output amplifier attenuation
     ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -tx_attenuation_db_);
     if (ret < 0)
         {
@@ -611,8 +609,7 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
             std::cout << "Failed to toggle DDS: " << ret << std::endl;
         }
 
-    //set frequency, scale and phase
-
+    // set frequency, scale and phase
     ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
@@ -649,8 +646,7 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
             std::cout << "Failed to set TX DDS scale Q: " << ret << std::endl;
         }
 
-    //disable TX2
-
+    // disable TX2
     ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.0);
     if (ret < 0)
         {

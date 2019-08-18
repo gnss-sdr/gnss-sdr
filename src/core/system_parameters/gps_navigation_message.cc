@@ -83,8 +83,8 @@ void Gps_Navigation_Message::reset()
     d_A_f1 = 0.0;
     d_A_f2 = 0.0;
 
-    //clock terms
-    //d_master_clock=0;
+    // clock terms
+    // d_master_clock=0;
     d_dtr = 0.0;
     d_satClkCorr = 0.0;
     d_satClkDrift = 0.0;
@@ -252,16 +252,16 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
     // Decode all 5 sub-frames
     switch (subframe_ID)
         {
-        //--- Decode the sub-frame id ------------------------------------------
+        // --- Decode the sub-frame id -----------------------------------------
         // ICD (IS-GPS-200E Appendix II). http://www.losangeles.af.mil/shared/media/document/AFD-100813-045.pdf
         case 1:
-            //--- It is subframe 1 -------------------------------------
+            // --- It is subframe 1 -------------------------------------
             // Compute the time of week (TOW) of the first sub-frames in the array ====
             // The transmitted TOW is actual TOW of the next subframe
             // (the variable subframe at this point contains bits of the last subframe).
-            //TOW = bin2dec(subframe(31:47)) * 6;
+            // TOW = bin2dec(subframe(31:47)) * 6;
             d_TOW_SF1 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
-            //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
+            // we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
             d_TOW_SF1 = d_TOW_SF1 * 6;
             d_TOW = d_TOW_SF1;  // Set transmission time
             b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
@@ -285,7 +285,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             d_A_f2 = d_A_f2 * A_F2_LSB;
             break;
 
-        case 2:  //--- It is subframe 2 -------------------
+        case 2:  // --- It is subframe 2 -------------------
             d_TOW_SF2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
             d_TOW_SF2 = d_TOW_SF2 * 6;
             d_TOW = d_TOW_SF2;  // Set transmission time
@@ -486,13 +486,13 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
-            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+            // Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
             if (weeksToLeapSecondEvent > 0)
                 {
                     t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                 }
-            else  //we are in the same week than the leap second event
+            else  // we are in the same week than the leap second event
                 {
                     if (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
@@ -515,7 +515,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
                              */
                             int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
-                            //implement something to handle a leap second event!
+                            // implement something to handle a leap second event!
                         }
                     if ((gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {

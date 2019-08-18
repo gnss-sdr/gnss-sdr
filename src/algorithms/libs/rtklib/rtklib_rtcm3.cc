@@ -1720,7 +1720,7 @@ int decode_type1045(rtcm_t *rtcm)
             i += 2; /* OSHS */
             e5a_dvs = getbitu(rtcm->buff, i, 1);
             i += 1; /* OSDVS */
-            //rsv        = getbitu(rtcm->buff, i, 7);
+            // rsv        = getbitu(rtcm->buff, i, 7);
         }
     else
         {
@@ -1834,7 +1834,7 @@ int decode_type1046(rtcm_t *rtcm)
             i += 2; /* OSHS */
             e5a_dvs = getbitu(rtcm->buff, i, 1);
             i += 1; /* OSDVS */
-            //rsv        = getbitu(rtcm->buff, i, 7);
+            // rsv        = getbitu(rtcm->buff, i, 7);
         }
     else
         {

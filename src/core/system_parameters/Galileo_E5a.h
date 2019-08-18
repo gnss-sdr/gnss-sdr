@@ -57,7 +57,7 @@ const int32_t GALILEO_E5A_NUMBER_OF_CODES = 50;
 const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
 const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
 
-//optimum parameters
+// optimum parameters
 const uint32_t GALILEO_E5A_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // F/NAV message structure
@@ -203,11 +203,11 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTAA12_2_5_BIT({{160, 13}}
 const std::vector<std::pair<int32_t, int32_t>> FNAV_E_2_5_BIT({{173, 11}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_2_5_BIT({{184, 16}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTAI_2_5_BIT({{200, 11}});
-//const std::vector<std::pair<int,int>> FNAV_Omega012_2_5_bit({{210,4}});
+// const std::vector<std::pair<int,int>> FNAV_Omega012_2_5_bit({{210,4}});
 
 // WORD 6 Almanac SVID2(1/2) SVID3
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IO_DA_6_BIT({{7, 4}});
-//const std::vector<std::pair<int,int>> FNAV_Omega022_2_6_bit({{10,12}});
+// const std::vector<std::pair<int,int>> FNAV_Omega022_2_6_bit({{10,12}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_OMEGADOT_2_6_BIT({{23, 11}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_M0_2_6_BIT({{34, 16}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF0_2_6_BIT({{50, 16}});

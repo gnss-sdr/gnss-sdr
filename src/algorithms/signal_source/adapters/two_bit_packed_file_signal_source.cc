@@ -197,7 +197,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
                     LOG(INFO) << "Total samples in the file= " << samples_;  // 4 samples per byte
                     samples_ -= bytes_to_skip;
 
-                    //Also skip the last two milliseconds:
+                    // Also skip the last two milliseconds:
                     samples_ -= ceil(0.002 * sampling_frequency_ / (is_complex_ ? 2.0 : 4.0));
                 }
             else
@@ -222,7 +222,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 
     if (dump_)
         {
-            //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            // sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
             sink_ = gr::blocks::file_sink::make(output_item_size, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
@@ -318,7 +318,7 @@ void TwoBitPackedFileSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr TwoBitPackedFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
-    //return gr_block_sptr();
+    // return gr_block_sptr();
     return gr::blocks::file_source::sptr();
 }
 

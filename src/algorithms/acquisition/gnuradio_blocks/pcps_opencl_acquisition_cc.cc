@@ -49,7 +49,7 @@
  */
 
 #include "pcps_opencl_acquisition_cc.h"
-#include "GPS_L1_CA.h"  //GPS_TWO_PI
+#include "GPS_L1_CA.h"  // GPS_TWO_PI
 #include "opencl/fft_base_kernels.h"
 #include "opencl/fft_internal.h"
 #include <glog/logging.h>
@@ -425,7 +425,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                             d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
-                            //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                            // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                             d_test_statistics = d_mag / d_input_power;
                         }
                 }
@@ -440,7 +440,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                              << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                              << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                     d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  //write directly |abs(x)|^2 in this Doppler bin?
+                    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  // write directly |abs(x)|^2 in this Doppler bin?
                     d_dump_file.close();
                 }
         }
@@ -481,7 +481,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     int doppler;
     uint32_t indext = 0;
     float magt = 0.0;
-    float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  //This works, but I am not sure why.
+    float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  // This works, but I am not sure why.
     uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
@@ -520,9 +520,9 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             // Multiply input signal with doppler wipe-off
             kernel = cl::Kernel(d_cl_program, "mult_vectors");
-            kernel.setArg(0, *d_cl_buffer_in);                                    //input 1
-            kernel.setArg(1, *d_cl_buffer_grid_doppler_wipeoffs[doppler_index]);  //input 2
-            kernel.setArg(2, *d_cl_buffer_1);                                     //output
+            kernel.setArg(0, *d_cl_buffer_in);                                    // input 1
+            kernel.setArg(1, *d_cl_buffer_grid_doppler_wipeoffs[doppler_index]);  // input 2
+            kernel.setArg(2, *d_cl_buffer_1);                                     // output
             d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size),
                 cl::NullRange);
 
@@ -536,9 +536,9 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference
             kernel = cl::Kernel(d_cl_program, "mult_vectors");
-            kernel.setArg(0, *d_cl_buffer_2);          //input 1
-            kernel.setArg(1, *d_cl_buffer_fft_codes);  //input 2
-            kernel.setArg(2, *d_cl_buffer_2);          //output
+            kernel.setArg(0, *d_cl_buffer_2);          // input 1
+            kernel.setArg(1, *d_cl_buffer_fft_codes);  // input 2
+            kernel.setArg(2, *d_cl_buffer_2);          // output
             d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2),
                 cl::NullRange);
 
@@ -549,8 +549,8 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             // Compute magnitude
             kernel = cl::Kernel(d_cl_program, "magnitude_squared");
-            kernel.setArg(0, *d_cl_buffer_2);          //input 1
-            kernel.setArg(1, *d_cl_buffer_magnitude);  //output
+            kernel.setArg(0, *d_cl_buffer_2);          // input 1
+            kernel.setArg(1, *d_cl_buffer_magnitude);  // output
             d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size),
                 cl::NullRange);
 
@@ -586,7 +586,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                             d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
-                            //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                            // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                             d_test_statistics = d_mag / d_input_power;
                         }
                 }
@@ -601,7 +601,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                              << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                              << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                     d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  //write directly |abs(x)|^2 in this Doppler bin?
+                    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  // write directly |abs(x)|^2 in this Doppler bin?
                     d_dump_file.close();
                 }
         }

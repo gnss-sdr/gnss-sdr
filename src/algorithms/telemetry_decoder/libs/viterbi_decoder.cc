@@ -154,7 +154,7 @@ void Viterbi_Decoder::init_trellis_state()
     for (state = 0; state < d_states; state++)
         {
             d_pm_t[state] = -MAXLOG;
-            //d_pm_t_next[state] = -MAXLOG;
+            // d_pm_t_next[state] = -MAXLOG;
         }
     d_pm_t[0] = 0; /* start in all-zeros state */
 
@@ -237,7 +237,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
             d_trellis_paths.push_front(next_trellis_states);
 
             /* normalize -> afterwards, the largest metric value is always 0 */
-            //max_val = 0;
+            // max_val = 0;
             max_val = -MAXLOG;
             for (state_at_t = 0; state_at_t < d_states; state_at_t++)
                 {
@@ -301,7 +301,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
         {
             state = it->get_anchestor_state_of_current_state(state);
         }
-    t_out = d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1;  //requested_decoding_length-1;
+    t_out = d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1;  // requested_decoding_length-1;
     indicator_metric = 0;
     for (it = d_trellis_paths.begin() + traceback_length + overstep_length; it < d_trellis_paths.end(); ++it)
         {
@@ -352,15 +352,16 @@ float Viterbi_Decoder::gamma(const float rec_array[], int symbol, int nn)
 
     for (i = 0; i < nn; i++)
         {
-            //if (symbol & mask) rm += rec_array[nn - i - 1];
+            // if (symbol & mask) rm += rec_array[nn - i - 1];
             txsym = symbol & mask ? 1 : -1;
             rm += txsym * rec_array[nn - i - 1];
             mask = mask << 1U;
         }
-    //rm = rm > 50 ? rm : -1000;
+    // rm = rm > 50 ? rm : -1000;
 
     return (rm);
 }
+
 
 /* function that creates the transit and output vectors */
 void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, const int g[],
@@ -528,7 +529,7 @@ Viterbi_Decoder::Prev::~Prev()
             delete[] bit;
             delete[] metric;
             delete refcount;
-            //std::cout << "~Prev(" << "?" << ", " << t << ")" << " destructor with delete" << std::endl;
+            // std::cout << "~Prev(" << "?" << ", " << t << ")" << " destructor with delete" << std::endl;
         }
     else
         {
@@ -543,20 +544,20 @@ Viterbi_Decoder::Prev::~Prev()
 
 int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_state)
 {
-    //std::cout << "get prev state: for state " << current_state << " at time " << t << ", the prev state at time " << t-1 << " is " << state[current_state] << std::endl;
+    // std::cout << "get prev state: for state " << current_state << " at time " << t << ", the prev state at time " << t-1 << " is " << state[current_state] << std::endl;
     if (num_states > current_state)
         {
             return state[current_state];
         }
-    //std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
-    //return state[current_state];
+    // std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
+    // return state[current_state];
     return 0;
 }
 
 
 int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
 {
-    //std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << std::endl;
+    // std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << std::endl;
     if (num_states > current_state)
         {
             return bit[current_state];

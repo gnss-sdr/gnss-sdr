@@ -206,7 +206,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                 {
                     int64_t bytes_to_skip = samples_to_skip * item_size_;
                     int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
-                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  //process all the samples available in the file excluding at least the last 1 ms
+                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  // process all the samples available in the file excluding at least the last 1 ms
                 }
         }
 

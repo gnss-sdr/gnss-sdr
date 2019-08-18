@@ -54,7 +54,7 @@
 #include "rtklib_rtcm.h"
 #include "rtklib_rtkcmn.h"
 
-//extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync);
+// extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync);
 
 
 /* initialize rtcm control -----------------------------------------------------
@@ -440,15 +440,15 @@ int gen_rtcm2(rtcm_t *rtcm, int type, int sync)
 }
 
 
-///* generate rtcm 3 message -----------------------------------------------------
+// /* generate rtcm 3 message -----------------------------------------------------
 // * generate rtcm 3 message
 // * args   : rtcm_t *rtcm   IO rtcm control struct
 // *          int    type    I  message type
 // *          int    sync    I  sync flag (1:another message follows)
 // * return : status (1:ok,0:error)
 // *-----------------------------------------------------------------------------*/
-//int gen_rtcm3(rtcm_t *rtcm, int type, int sync)
-//{
+// int gen_rtcm3(rtcm_t *rtcm, int type, int sync)
+// {
 //    unsigned int crc;
 //    int i = 0;
 //
@@ -487,4 +487,4 @@ int gen_rtcm2(rtcm_t *rtcm, int type, int sync)
 //    rtcm->nbyte = rtcm->len+3;
 //
 //    return 1;
-//}
+// }

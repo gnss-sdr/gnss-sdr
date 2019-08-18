@@ -90,7 +90,7 @@ public:
     bool flag_sf1_p9;   //!< D2 NAV Message, Subframe 1, Page 9 decoded indicator
     bool flag_sf1_p10;  //!< D2 NAV Message, Subframe 1, Page 10 decoded indicator
 
-    //broadcast orbit 1
+    // broadcast orbit 1
     double d_SOW;      //!< Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
     double d_SOW_SF1;  //!< Time of BeiDou Week from HOW word of Subframe 1 [s]
     double d_SOW_SF2;  //!< Time of BeiDou Week from HOW word of Subframe 2 [s]
@@ -102,12 +102,14 @@ public:
     double d_Crs;      //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
     double d_Delta_n;  //!< Mean Motion Difference From Computed Value [semi-circles/s]
     double d_M_0;      //!< Mean Anomaly at Reference Time [semi-circles]
-    //broadcast orbit 2
+
+    // broadcast orbit 2
     double d_Cuc;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_eccentricity;  //!< Eccentricity [dimensionless]
     double d_Cus;           //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A;        //!< Square Root of the Semi-Major Axis [sqrt(m)]
-    //broadcast orbit 3
+
+    // broadcast orbit 3
     double d_Toe_sf2;  //!< Ephemeris data reference time of week in subframe 2, D1 Message
     double d_Toe_sf3;  //!< Ephemeris data reference time of week in subframe 3, D1 Message
     double d_Toe;      //!< Ephemeris data reference time of week in subframe 1, D2 Message
@@ -115,22 +117,26 @@ public:
     double d_Cic;      //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0;   //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
     double d_Cis;      //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
-    //broadcast orbit 4
+
+    // broadcast orbit 4
     double d_i_0;        //!< Inclination Angle at Reference Time [semi-circles]
     double d_Crc;        //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
     double d_OMEGA;      //!< Argument of Perigee [semi-cicles]
     double d_OMEGA_DOT;  //!< Rate of Right Ascension [semi-circles/s]
-    //broadcast orbit 5
+
+    // broadcast orbit 5
     double d_IDOT;          //!< Rate of Inclination Angle [semi-circles/s]
     int32_t i_BEIDOU_week;  //!< BeiDou week number, aka WN [week]
-    //broadcast orbit 6
+
+    // broadcast orbit 6
     int32_t i_SV_accuracy;  //!< User Range Accuracy (URA) index of the SV
     int32_t i_SV_health;
     double d_TGD1;  //!< Estimated Group Delay Differential in B1 [s]
     double d_TGD2;  //!< Estimated Group Delay Differential in B2 [s]
     double d_AODC;  //!< Age of Data, Clock
-    //broadcast orbit 7
-    //    int32_t i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
+
+    // broadcast orbit 7
+    // int32_t i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
     bool b_fit_interval_flag;  //!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
     double d_spare1;
@@ -182,7 +188,7 @@ public:
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     // clock terms
-    //double d_master_clock;  // GPS transmission time
+    // double d_master_clock;  // GPS transmission time
     double d_satClkCorr;  // GPS clock error
     double d_dtr;         // relativistic clock correction term
     double d_satClkDrift;
@@ -198,7 +204,7 @@ public:
     uint32_t i_satellite_PRN;
 
     // time synchro
-    double d_subframe_timestamp_ms;  //[ms]
+    double d_subframe_timestamp_ms;  // [ms]
 
     // Ionospheric parameters
     double d_alpha0;  //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
@@ -289,22 +295,22 @@ public:
 
     bool satellite_validation();
 
-    /*
+    /*!
      * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
      */
     bool have_new_ephemeris();
 
-    /*
+    /*!
      * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
      */
     bool have_new_iono();
 
-    /*
+    /*!
      * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
      */
     bool have_new_utc_model();
 
-    /*
+    /*!
      * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
      */
     bool have_new_almanac();

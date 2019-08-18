@@ -76,13 +76,13 @@ struct GPU_Complex
     }
     CUDA_CALLABLE_MEMBER_DEVICE void multiply_acc(const GPU_Complex& a, const GPU_Complex& b)
     {
-        //c=a*b+c
-        //real part
-        //c.r=(a.r*b.r - a.i*b.i)+c.r
+        // c=a*b+c
+        // real part
+        // c.r=(a.r*b.r - a.i*b.i)+c.r
 #ifdef __CUDACC__
         r = __fmaf_rn(a.r, b.r, r);
         r = __fmaf_rn(-a.i, b.i, r);
-        //imag part
+        // imag part
         i = __fmaf_rn(a.i, b.r, i);
         i = __fmaf_rn(a.r, b.i, i);
 #else
@@ -162,7 +162,7 @@ private:
     int blocksPerGrid;
 
     cudaStream_t stream1;
-    //cudaStream_t stream2;
+    // cudaStream_t stream2;
     int num_gpu_devices;
     int selected_device;
 };

@@ -428,7 +428,7 @@ int decoderaw(rtksvr_t *svr, int index)
             else
                 {
                     // Disabled !!
-                    //ret = input_raw(svr->raw+index, svr->format[index], svr->buff[index][i]);
+                    // ret = input_raw(svr->raw+index, svr->format[index], svr->buff[index][i]);
                     obs = &svr->raw[index].obs;
                     nav = &svr->raw[index].nav;
                     sat = svr->raw[index].ephsat;
@@ -678,7 +678,7 @@ void *rtksvrthread(void *arg)
             svr->buff[i] = nullptr;
             free(svr->pbuf[i]);
             svr->pbuf[i] = nullptr;
-            //free_raw (svr->raw +i);
+            // free_raw (svr->raw +i);
             free_rtcm(svr->rtcm + i);
         }
     for (i = 0; i < 2; i++)
@@ -958,7 +958,7 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
                 }
 
             /* initialize receiver raw and rtcm control */
-            //init_raw (svr->raw +i);
+            // init_raw (svr->raw +i);
             init_rtcm(svr->rtcm + i);
 
             /* set receiver and rtcm option */

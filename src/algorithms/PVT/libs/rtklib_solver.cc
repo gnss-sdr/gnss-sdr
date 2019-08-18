@@ -678,7 +678,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
                         break;
                     }
-                case 'R':  //TODO This should be using rtk lib nomenclature
+                case 'R':  // TODO This should be using rtk lib nomenclature
                     {
                         std::string sig_(gnss_observables_iter->second.Signal);
                         // GLONASS GNAV L1
@@ -967,7 +967,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]
                     rx_position_and_time(1) = pvt_sol.rr[1];  // [m]
                     rx_position_and_time(2) = pvt_sol.rr[2];  // [m]
-                    //todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
+                    // todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
                     if (rtk_.opt.mode == PMODE_SINGLE)
                         {
                             // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]

@@ -319,7 +319,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 {
     // "appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
     // can find their specific configurations when they read the config
-    //TODO: REMOVE APPENDIX!! AND CHECK ALTERNATIVE MECHANISM TO GET PARTICULARIZED PARAMETERS
+    // TODO: REMOVE APPENDIX!! AND CHECK ALTERNATIVE MECHANISM TO GET PARTICULARIZED PARAMETERS
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
 

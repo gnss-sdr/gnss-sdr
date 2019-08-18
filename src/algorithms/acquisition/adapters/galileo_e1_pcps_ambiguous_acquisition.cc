@@ -75,9 +75,9 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
         }
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters_.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
-    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
+    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  // will be true in future versions
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters_.max_dwells = max_dwells_;
     dump_ = configuration_->property(role + ".dump", false);

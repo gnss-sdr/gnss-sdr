@@ -114,7 +114,7 @@ private:
     int64_t sampling_frequency_;
     std::string filename_;
     bool repeat_;
-    bool dump_;  //Enables dumping the gr_complex sample output
+    bool dump_;  // Enables dumping the gr_complex sample output
     bool enable_throttle_control_;
     bool endian_swap_;
     std::string dump_filename_;

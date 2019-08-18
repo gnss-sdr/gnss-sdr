@@ -143,7 +143,6 @@ private:
     std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
-
     // dll filter buffer
     boost::circular_buffer<float> d_dll_filt_history;
     // tracking state machine
@@ -252,4 +251,4 @@ private:
     bool d_stop_tracking;
 };
 
-#endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
+#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

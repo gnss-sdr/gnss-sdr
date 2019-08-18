@@ -129,7 +129,6 @@ private:
     gr_complex* d_correlator_outs;
     Cpu_Multicorrelator multicorrelator_cpu;
 
-
     // tracking vars
     double d_code_freq_chips;
     double d_code_phase_step_chips;
@@ -140,10 +139,10 @@ private:
     double d_acc_carrier_phase_rad;
     double d_code_phase_samples;
 
-    //PRN period in samples
+    // PRN period in samples
     int32_t d_current_prn_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
@@ -169,4 +168,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H
+#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H

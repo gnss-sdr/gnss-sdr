@@ -115,7 +115,7 @@ private:
     double d_early_late_spc_chips;
     int32_t d_n_correlator_taps;
 
-    //GPU HOST PINNED MEMORY IN/OUT VECTORS
+    // GPU HOST PINNED MEMORY IN/OUT VECTORS
     gr_complex *in_gpu;
     float *d_local_code_shift_chips;
     gr_complex *d_correlator_outs;
@@ -125,7 +125,6 @@ private:
     gr_complex *d_Early;
     gr_complex *d_Prompt;
     gr_complex *d_Late;
-
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
@@ -149,10 +148,10 @@ private:
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
 
-    //Integration period in samples
+    // Integration period in samples
     int32_t d_correlation_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
@@ -176,4 +175,4 @@ private:
     std::string sys;
 };
 
-#endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H

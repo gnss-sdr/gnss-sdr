@@ -143,8 +143,7 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", input signal power " << d_input_power
                << ", Assist doppler_center " << d_doppler_center;
 
-
-    //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
+    // the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
     d_channel_fsm.lock()->Event_valid_acquisition();
 }
 
@@ -220,7 +219,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
             if (d_downsampling_factor > 1)
                 {
                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor * (indext));
-                    d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor * static_cast<uint64_t>(d_sample_counter) - static_cast<uint64_t>(44);  //33; //41; //+ 81*0.5; // delay due to the downsampling filter in the acquisition
+                    d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor * static_cast<uint64_t>(d_sample_counter) - static_cast<uint64_t>(44);  // 33;  // 41;  // + 81*0.5;  // delay due to the downsampling filter in the acquisition
                 }
             else
                 {
@@ -239,9 +238,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
 void pcps_acquisition_fpga::set_active(bool active)
 {
     d_active = active;
-
     d_input_power = 0.0;
-
     d_mag = 0.0;
 
     DLOG(INFO) << "Channel: " << d_channel

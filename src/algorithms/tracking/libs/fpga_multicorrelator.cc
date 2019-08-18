@@ -522,7 +522,7 @@ void Fpga_Multicorrelator_8sc::initialize_secondary_code(uint32_t secondary_code
 
 void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr)
 {
-    uint32_t num_words = ceil(((float)secondary_code_length) / secondary_code_word_size);
+    uint32_t num_words = ceil(static_cast<float>(secondary_code_length) / secondary_code_word_size);
     uint32_t last_word_size = secondary_code_length % secondary_code_word_size;
 
     if (last_word_size == 0)

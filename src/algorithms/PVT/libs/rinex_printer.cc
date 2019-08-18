@@ -11769,7 +11769,7 @@ void Rinex_Printer::to_date_time(int32_t gps_week, int32_t gps_tow, int& year, i
 int32_t Rinex_Printer::signalStrength(const double snr)
 {
     int32_t ss;
-    ss = int(std::min(std::max(int(floor(snr / 6)), 1), 9));
+    ss = static_cast<int>(std::min(std::max(static_cast<int>(floor(snr / 6)), 1), 9));
     return ss;
 }
 

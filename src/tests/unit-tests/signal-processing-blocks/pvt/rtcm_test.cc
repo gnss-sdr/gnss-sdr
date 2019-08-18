@@ -386,12 +386,12 @@ TEST(RtcmTest, MSMCell)
     gnss_synchro5.System = *gps.c_str();
     gnss_synchro6.System = *glo.c_str();
 
-    std::memcpy((void*)gnss_synchro.Signal, x5.c_str(), 3);
-    std::memcpy((void*)gnss_synchro2.Signal, s2.c_str(), 3);
-    std::memcpy((void*)gnss_synchro3.Signal, c1.c_str(), 3);
-    std::memcpy((void*)gnss_synchro4.Signal, x5.c_str(), 3);
-    std::memcpy((void*)gnss_synchro5.Signal, c1.c_str(), 3);
-    std::memcpy((void*)gnss_synchro6.Signal, c1.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro.Signal), x5.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro2.Signal), s2.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro3.Signal), c1.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro4.Signal), x5.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro5.Signal), c1.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro6.Signal), c1.c_str(), 3);
 
     gnss_synchro.Pseudorange_m = 20000000.0;
     gnss_synchro2.Pseudorange_m = 20001010.0;
@@ -465,7 +465,7 @@ TEST(RtcmTest, MSMCell)
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;
     gnss_synchro7.System = *gps.c_str();
-    std::memcpy((void*)gnss_synchro7.Signal, s2.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gnss_synchro7.Signal), s2.c_str(), 3);
     gnss_synchro7.Pseudorange_m = 24000000.0;
 
     std::map<int, Gnss_Synchro> pseudoranges3;

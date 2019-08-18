@@ -360,9 +360,9 @@ void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
 
 #ifdef IERS_MODEL
             time2epoch(tutc, ep);
-            year = (int)ep[0];
-            mon = (int)ep[1];
-            day = (int)ep[2];
+            year = static_cast<int>(ep[0]);
+            mon = static_cast<int>(ep[1]);
+            day = static_cast<int>(ep[2]);
             fhr = ep[3] + ep[4] / 60.0 + ep[5] / 3600.0;
 
             /* call DEHANTTIDEINEL */

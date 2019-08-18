@@ -86,12 +86,12 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
     //pinned memory mode - use special function to get OS-pinned memory
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    cudaHostAlloc((void**)&d_ca_code, (static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&d_ca_code), (static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped | cudaHostAllocWriteCombined);
     // Get space for the resampled early / prompt / late local replicas
-    cudaHostAlloc((void**)&d_local_code_shift_chips, d_n_correlator_taps * sizeof(float), cudaHostAllocMapped | cudaHostAllocWriteCombined);
-    cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&d_local_code_shift_chips), d_n_correlator_taps * sizeof(float), cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&in_gpu), 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped | cudaHostAllocWriteCombined);
     // correlator outputs (scalar)
-    cudaHostAlloc((void**)&d_correlator_outs, sizeof(gr_complex) * d_n_correlator_taps, cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&d_correlator_outs), sizeof(gr_complex) * d_n_correlator_taps, cudaHostAllocMapped | cudaHostAllocWriteCombined);
 
     //--- Perform initializations ------------------------------
     //local code resampler on GPU

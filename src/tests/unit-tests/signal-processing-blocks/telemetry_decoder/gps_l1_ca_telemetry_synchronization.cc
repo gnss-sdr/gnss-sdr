@@ -326,7 +326,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 						preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
 						if (abs(preamble_diff - d_preamble_period_symbols) == 0)
 							{
-								std::cout << "Preamble confirmation for SAT " << std::endl;
+								std::cout << "Preamble confirmation " << std::endl;
 								d_preamble_index = d_sample_counter;  // record the preamble sample stamp
 								if (corr_value < 0)
 									{
@@ -356,7 +356,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 			{
 				 if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
 					{
-					 	 std::cout << "Preamble received for SAT "  << "d_sample_counter= " << d_sample_counter << std::endl;
+					 	 std::cout << "Preamble received. "  << "d_sample_counter= " << d_sample_counter << std::endl;
 					 	 // call the decoder
 					 	 // 0. fetch the symbols into an array
 					 	 d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)

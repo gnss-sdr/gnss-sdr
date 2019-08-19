@@ -68,12 +68,12 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result,
     unsigned int n;
     for (n = 0; n < num_points; n++)
         {
-            //r*a.r - i*a.i, i*a.r + r*a.i
+            // r*a.r - i*a.i, i*a.r + r*a.i
             result[n] = in_a[n] * in_b[n];
         }
 }
 
-#endif /*LV_HAVE_GENERIC*/
+#endif /* LV_HAVE_GENERIC */
 
 
 #ifdef LV_HAVE_SSE2
@@ -93,10 +93,10 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
     lv_16sc_t* _out = out;
     for (number = 0; number < sse_iters; number++)
         {
-            //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-            //imaginary part -> reinterpret_cast<cv T*>(a)[2*i + 1]
+            // std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
+            // imaginary part -> reinterpret_cast<cv T*>(a)[2*i + 1]
             // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-            a = _mm_load_si128((__m128i*)_in_a);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+            a = _mm_load_si128((__m128i*)_in_a);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
             b = _mm_load_si128((__m128i*)_in_b);
             c = _mm_mullo_epi16(a, b);  // a3.i*b3.i, a3.r*b3.r, ....
 
@@ -147,10 +147,10 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, con
     lv_16sc_t* _out = out;
     for (number = 0; number < sse_iters; number++)
         {
-            //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-            //imaginary part -> reinterpret_cast<cv T*>(a)[2*i + 1]
+            // std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
+            // imaginary part -> reinterpret_cast<cv T*>(a)[2*i + 1]
             // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-            a = _mm_loadu_si128((__m128i*)_in_a);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+            a = _mm_loadu_si128((__m128i*)_in_a);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
             b = _mm_loadu_si128((__m128i*)_in_b);
             c = _mm_mullo_epi16(a, b);  // a3.i*b3.i, a3.r*b3.r, ....
 
@@ -340,4 +340,4 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const
 }
 #endif /* LV_HAVE_NEONV7*/
 
-#endif /*INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H*/
+#endif /* INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H */

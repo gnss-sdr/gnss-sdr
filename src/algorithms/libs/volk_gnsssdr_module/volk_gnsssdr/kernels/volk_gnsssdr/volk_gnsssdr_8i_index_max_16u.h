@@ -121,7 +121,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, co
         }
 }
 
-#endif /*LV_HAVE_AVX2*/
+#endif /* LV_HAVE_AVX2 */
 
 
 #ifdef LV_HAVE_AVX
@@ -156,7 +156,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
                     compareResultslo = _mm_cmpgt_epi8(maxValues, lo);
                     compareResultshi = _mm_cmpgt_epi8(maxValues, hi);
 
-                    //compareResults = _mm256_set_m128i(compareResultshi , compareResultslo); //not defined in some versions of immintrin.h
+                    // compareResults = _mm256_set_m128i(compareResultshi , compareResultslo); //not defined in some versions of immintrin.h
                     compareResults = _mm256_insertf128_si256(_mm256_castsi128_si256(compareResultslo), (compareResultshi), 1);
 
                     if (!_mm256_testc_si256(compareResults, ones))
@@ -437,7 +437,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
                     compareResultslo = _mm_cmpgt_epi8(maxValues, lo);
                     compareResultshi = _mm_cmpgt_epi8(maxValues, hi);
 
-                    //compareResults = _mm256_set_m128i(compareResultshi , compareResultslo); //not defined in some versions of immintrin.h
+                    // compareResults = _mm256_set_m128i(compareResultshi , compareResultslo); //not defined in some versions of immintrin.h
                     compareResults = _mm256_insertf128_si256(_mm256_castsi128_si256(compareResultslo), (compareResultshi), 1);
 
                     if (!_mm256_testc_si256(compareResults, ones))

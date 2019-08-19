@@ -52,6 +52,8 @@
  * \b Outputs
  * \li out:            Vector of the form lv_32fc_t out[n] = lv_cmake(cos(in[n]), sin(in[n]))
  *
+ * Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier
+ * Based on algorithms from the cephes library http://www.netlib.org/cephes/
  */
 
 #ifndef INCLUDED_volk_gnsssdr_32f_sincos_32fc_H
@@ -251,8 +253,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse4_1(lv_32fc_t* out, const f
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-/* Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier  */
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
+
 static inline void volk_gnsssdr_32f_sincos_32fc_a_sse2(lv_32fc_t* out, const float* in, unsigned int num_points)
 {
     lv_32fc_t* bPtr = out;
@@ -421,8 +422,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse2(lv_32fc_t* out, const flo
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-/* Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier  */
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
+
 static inline void volk_gnsssdr_32f_sincos_32fc_u_sse2(lv_32fc_t* out, const float* in, unsigned int num_points)
 {
     lv_32fc_t* bPtr = out;
@@ -644,8 +644,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, con
 
 #ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
-/* Adapted from http://gruntthepeon.free.fr/ssemath/neon_mathfun.h, original code from Julien Pommier  */
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
+
 static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float* in, unsigned int num_points)
 {
     lv_32fc_t* bPtr = out;

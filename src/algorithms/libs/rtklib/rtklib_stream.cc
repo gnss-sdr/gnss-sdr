@@ -535,7 +535,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
         {
             return 0;
         }
-    tracet(4, "readfile: fp=%zd nmax=%d\n", file->fp, nmax);
+    tracet(4, "readfile: fp=%p nmax=%d\n", file->fp, nmax);
 
     if (file->fp == stdin)
         {

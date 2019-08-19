@@ -67,7 +67,7 @@
 
 #include <random>
 
-#define vector_size 1500 	// 5 frames with 300 bits
+#define vector_size 6000 	// 20 frames with 300 bits
 
 
 class GpsL1CATelemetrySynchronizationTest : public ::testing::Test
@@ -226,7 +226,7 @@ void GpsL1CATelemetrySynchronizationTest::fill_gnss_synchro()
 	
     // Random generator with Gaussian distribution
     const double mean = 0.0;
-    const double stddev = 0.1;
+    const double stddev = 0.0;
     auto dist = std::bind(std::normal_distribution<double>{mean, stddev},
                           std::mt19937(std::random_device{}()));
 	
@@ -356,7 +356,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 			{
 				 if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
 					{
-					 	 std::cout << "Preamble received for SAT "  << "d_sample_counter=" << d_sample_counter << std::endl;
+					 	 std::cout << "Preamble received for SAT "  << "d_sample_counter= " << d_sample_counter << std::endl;
 					 	 // call the decoder
 					 	 // 0. fetch the symbols into an array
 					 	 d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)

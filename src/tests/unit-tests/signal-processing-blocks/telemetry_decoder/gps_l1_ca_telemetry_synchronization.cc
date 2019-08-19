@@ -273,7 +273,29 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 			{
 				// correlate with preamble
 				int32_t corr_value = 0;
-					
+				if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
+					{
+						// ******* preamble correlation ********
+						for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+							{
+								if (d_symbol_history[i] < 0.0)  // symbols clipping
+									{
+										corr_value -= d_preamble_samples[i];
+									}
+								else
+									{
+										corr_value += d_preamble_samples[i];
+									}
+							}
+					}
+				 if (abs(corr_value) >= d_samples_per_preamble)
+					{
+						d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+						std::cout << "Preamble detection for GPS L1 satellite " << std::endl;
+						//decode_subframe();
+						d_stat = 1;  // enter into frame pre-detection status
+					}
+				flag_TOW_set = false;
 					
 					
 				break;
@@ -283,14 +305,62 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 				// correlate with preamble
 				int32_t corr_value = 0;
 				int32_t preamble_diff = 0;
-				
+				if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
+					{
+						// ******* preamble correlation ********
+						for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+							{
+								if (d_symbol_history[i] < 0.0)  // symbols clipping
+									{
+										corr_value -= d_preamble_samples[i];
+									}
+								else
+									{
+										corr_value += d_preamble_samples[i];
+									}
+							}
+					}
+				if (abs(corr_value) >= d_samples_per_preamble)
+					{
+						// check preamble separation
+						preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
+						if (abs(preamble_diff - d_preamble_period_symbols) == 0)
+							{
+								std::cout << "Preamble confirmation for SAT " << std::endl;
+								d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+								if (corr_value < 0)
+									{
+										flag_PLL_180_deg_phase_locked = true;
+									}
+								else
+									{
+										flag_PLL_180_deg_phase_locked = false;
+									}
+								// decode_subframe();
+								d_stat = 2;
+							}
+						else
+							{
+								if (preamble_diff > d_preamble_period_symbols)
+									{
+										d_stat = 0;  // start again
+										flag_TOW_set = false;
+									}
+							}
+					}
 				
 				break;
 			}
 			
 			case 2: // preamble acquired
 			{
-				
+				 if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
+					{
+					 	 std::cout << "Preamble received for SAT "  << "d_sample_counter=" << d_sample_counter << std::endl;
+					 	 // call the decoder
+					 	 // 0. fetch the symbols into an array
+					 	 d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+					}
 				
 				break;
 			}

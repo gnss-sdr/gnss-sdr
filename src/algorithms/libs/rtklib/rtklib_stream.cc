@@ -56,6 +56,7 @@
 #include <arpa/inet.h>
 #include <cctype>
 #include <cerrno>
+#include <cinttypes>
 #include <cstring>
 #include <fcntl.h>
 #include <netdb.h>
@@ -461,7 +462,7 @@ void closefile(file_t *file)
         {
             return;
         }
-    tracet(3, "closefile: fp=%d\n", file->fp);
+    tracet(3, "closefile: fp=%p \n", file->fp);
     closefile_(file);
     free(file);
 }
@@ -472,7 +473,7 @@ void swapfile(file_t *file, gtime_t time, char *msg)
 {
     char openpath[MAXSTRPATH];
 
-    tracet(3, "swapfile: fp=%d time=%s\n", file->fp, time_str(time, 0));
+    tracet(3, "swapfile: fp=%p \n time=%s\n", file->fp, time_str(time, 0));
 
     /* return if old swap file open */
     if (file->fp_tmp || file->fp_tag_tmp)
@@ -500,7 +501,7 @@ void swapfile(file_t *file, gtime_t time, char *msg)
 /* close old swap file -------------------------------------------------------*/
 void swapclose(file_t *file)
 {
-    tracet(3, "swapclose: fp_tmp=%d\n", file->fp_tmp);
+    tracet(3, "swapclose: fp_tmp=%p \n", file->fp_tmp);
     if (file->fp_tmp)
         {
             fclose(file->fp_tmp);
@@ -534,7 +535,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
         {
             return 0;
         }
-    tracet(4, "readfile: fp=%d nmax=%d\n", file->fp, nmax);
+    tracet(4, "readfile: fp=%zd nmax=%d\n", file->fp, nmax);
 
     if (file->fp == stdin)
         {
@@ -617,7 +618,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                     sprintf(msg, "end");
                 }
         }
-    tracet(5, "readfile: fp=%d nr=%d fpos=%d\n", file->fp, nr, file->fpos);
+    tracet(5, "readfile: fp=%p \n nr=%d fpos=%u\n", file->fp, nr, file->fpos);
     return nr;
 }
 
@@ -640,7 +641,7 @@ int writefile(file_t *file, unsigned char *buff, int n, char *msg)
         {
             return 0;
         }
-    tracet(3, "writefile: fp=%d n=%d\n", file->fp, n);
+    tracet(3, "writefile: fp=%p \n n=%d\n", file->fp, n);
 
     wtime = utc2gpst(timeget()); /* write time in gpst */
 
@@ -693,7 +694,7 @@ int writefile(file_t *file, unsigned char *buff, int n, char *msg)
                     fflush(file->fp_tag_tmp);
                 }
         }
-    tracet(5, "writefile: fp=%d ns=%d tick=%5d fpos=%d\n", file->fp, ns, tick, fpos);
+    tracet(5, "writefile: fp=%p \n ns=%d tick=%5d fpos=%zd\n", file->fp, ns, tick, fpos);
 
     return static_cast<int>(ns);
 }
@@ -1497,8 +1498,8 @@ int reqntrip_s(ntrip_t *ntrip, char *msg)
             return 0;
         }
 
-    tracet(2, "reqntrip_s: send request state=%d ns=%d\n", ntrip->state, p - buff);
-    tracet(5, "reqntrip_s: n=%d buff=\n%s\n", p - buff, buff);
+    tracet(2, "reqntrip_s: send request state=%d ns=%" PRIdPTR "\n", ntrip->state, p - buff);
+    tracet(5, "reqntrip_s: n=%" PRIdPTR " buff=\n%s\n", p - buff, buff);
     ntrip->state = 1;
     return 1;
 }
@@ -1535,8 +1536,8 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
             return 0;
         }
 
-    tracet(2, "reqntrip_c: send request state=%d ns=%d\n", ntrip->state, p - buff);
-    tracet(5, "reqntrip_c: n=%d buff=\n%s\n", p - buff, buff);
+    tracet(2, "reqntrip_c: send request state=%d ns=%" PRIdPTR "\n", ntrip->state, p - buff);
+    tracet(5, "reqntrip_c: n=%" PRIdPTR " buff=\n%s\n", p - buff, buff);
     ntrip->state = 1;
     return 1;
 }

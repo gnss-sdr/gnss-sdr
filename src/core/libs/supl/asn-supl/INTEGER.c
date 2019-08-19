@@ -7,6 +7,7 @@
 #include <INTEGER.h>
 #include <asn_codecs_prim.h>	/* Encoder and decoder of a primitive type */
 #include <errno.h>
+#include <inttypes.h>
 
 /*
  * INTEGER basic type description.
@@ -146,7 +147,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 			scr = (char *)alloca(scrsize);
 			if(plainOrXER == 0)
 				ret = snprintf(scr, scrsize,
-					"%lld (%s)", accum, el->enum_name);
+					"%+"PRId64"(%s)", accum, el->enum_name);
 			else
 				ret = snprintf(scr, scrsize,
 					"<%s/>", el->enum_name);
@@ -160,7 +161,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 			scr = scratch;
 			ret = snprintf(scr, scrsize,
 				(specs && specs->field_unsigned)
-				?"%llu":"%lld", accum);
+				?"%"PRIu64:"%+"PRId64, accum);
 		}
 		assert(ret > 0 && (size_t)ret < scrsize);
 		return (cb(scr, ret, app_key) < 0) ? -1 : ret;

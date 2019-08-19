@@ -56,6 +56,8 @@
  * \li out:            Vector of the form lv_32fc_t out[n] = lv_cmake(cos(in[n]), sin(in[n]))
  * \li phase:          Pointer to a float containing the final phase, in radians.
  *
+ * Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier
+ * Based on algorithms from the cephes library http://www.netlib.org/cephes/
  */
 
 
@@ -69,8 +71,7 @@
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-/* Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier  */
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
+
 static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
     lv_32fc_t *bPtr = out;
@@ -225,8 +226,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t *out, const fl
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-/* Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier  */
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
+
 static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
     lv_32fc_t *bPtr = out;
@@ -459,8 +459,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t *out, co
 
 #ifdef LV_HAVE_AVX2
 #include <immintrin.h>
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/
- * Adapted to AVX2 by Carles Fernandez, based on original SSE2 code by Julien Pommier*/
+
 static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
     lv_32fc_t *bPtr = out;
@@ -647,8 +646,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t *out, const fl
 
 #ifdef LV_HAVE_AVX2
 #include <immintrin.h>
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/
- * Adapted to AVX2 by Carles Fernandez, based on original SSE2 code by Julien Pommier*/
+
 static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
     lv_32fc_t *bPtr = out;
@@ -835,8 +833,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t *out, const fl
 
 #ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
-/* Adapted from http://gruntthepeon.free.fr/ssemath/neon_mathfun.h, original code from Julien Pommier  */
-/* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
+
 static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
 {
     lv_32fc_t *bPtr = out;

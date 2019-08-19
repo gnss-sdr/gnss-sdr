@@ -179,7 +179,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_avx2(lv_16sc_t* outputVector
     int16_t* outputVectorPtr = (int16_t*)outputVector;
     float aux;
     unsigned int i;
-    const float min_val = (float)SHRT_MIN;  ///todo Something off here, compiler does not perform right cast
+    const float min_val = (float)SHRT_MIN;  /// todo Something off here, compiler does not perform right cast
     const float max_val = (float)SHRT_MAX;
 
     __m256 inputVal1, inputVal2;
@@ -342,7 +342,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_avx2(lv_16sc_t* outputVector
     int16_t* outputVectorPtr = (int16_t*)outputVector;
     float aux;
     unsigned int i;
-    const float min_val = (float)SHRT_MIN;  ///todo Something off here, compiler does not perform right cast
+    const float min_val = (float)SHRT_MIN;  /// todo Something off here, compiler does not perform right cast
     const float max_val = (float)SHRT_MAX;
 
     __m256 inputVal1, inputVal2;

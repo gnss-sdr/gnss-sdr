@@ -313,7 +313,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_avx2(char* target, const char* src0
                 {
                     currentValues = _mm256_load_si256((__m256i*)inputPtr);
                     compareResults = _mm256_max_epi8(maxValues, currentValues);
-                    maxValues = compareResults;  //_mm256_blendv_epi8(currentValues, maxValues, compareResults);
+                    maxValues = compareResults;  // _mm256_blendv_epi8(currentValues, maxValues, compareResults);
                     inputPtr += 32;
                 }
 

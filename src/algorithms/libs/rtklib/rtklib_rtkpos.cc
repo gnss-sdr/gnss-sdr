@@ -2340,7 +2340,7 @@ int valpos(rtk_t *rtk, const double *v, const double *R, const int *vflg,
             type = (vflg[i] >> 4) & 0xF;
             freq = vflg[i] & 0xF;
             stype = type == 0 ? 'L' : (type == 1 ? 'L' : 'C');
-            errmsg(rtk, "large residual (sat=%2d-%2d %s%d v=%6.3f sig=%.3f)\n",
+            errmsg(rtk, "large residual (sat=%2d-%2d %c%d v=%6.3f sig=%.3f)\n",
                 sat1, sat2, stype, freq + 1, v[i], std::sqrt(R[i + i * nv]));
         }
 #if 0 /* omitted v.2.4.0 */

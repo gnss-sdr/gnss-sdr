@@ -83,7 +83,7 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_generic(fl
     int local_code_chip_index;
     int current_correlator_tap;
     unsigned int n;
-    //first correlator
+    // first correlator
     for (n = 0; n < num_points; n++)
         {
             // resample code for first tap
@@ -94,7 +94,7 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_generic(fl
             result[0][n] = local_code[local_code_chip_index];
         }
 
-    //adjacent correlators
+    // adjacent correlators
     unsigned int shift_samples = 0;
     for (current_correlator_tap = 1; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
@@ -618,11 +618,11 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(floa
 #endif
 //
 //
-//#ifdef LV_HAVE_NEONV7
-//#include <arm_neon.h>
+// #ifdef LV_HAVE_NEONV7
+// #include <arm_neon.h>
 //
-//static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_neon(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
-//{
+// static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_neon(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+// {
 //    float** _result = result;
 //    const unsigned int neon_iters = num_points / 4;
 //    int current_correlator_tap;
@@ -662,7 +662,7 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(floa
 //                    aux = vmulq_f32(code_phase_step_chips_reg, indexn);
 //                    aux = vaddq_f32(aux, aux2);
 //
-//                    //floor
+//                    // floor
 //                    i = vcvtq_s32_f32(aux);
 //                    fi = vcvtq_f32_s32(i);
 //                    igx = vcgtq_f32(fi, aux);
@@ -700,8 +700,8 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(floa
 //                    _result[current_correlator_tap][n] = local_code[local_code_chip_index_];
 //                }
 //        }
-//}
+// }
 //
-//#endif
+// #endif
 
-#endif /*INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H*/
+#endif /* INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H */

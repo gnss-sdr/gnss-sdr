@@ -77,15 +77,15 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
             result[n_vec] = lv_cmake(0, 0);
             for (n = 0; n < num_points; n++)
                 {
-                    //r*a.r - i*a.i, i*a.r + r*a.i
-                    //result[n_vec]+=in_common[n]*in_a[n_vec][n];
+                    // r*a.r - i*a.i, i*a.r + r*a.i
+                    // result[n_vec]+=in_common[n]*in_a[n_vec][n];
                     lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
                     result[n_vec] = lv_cmake(sat_adds16i(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
 
-#endif /*LV_HAVE_GENERIC*/
+#endif /* LV_HAVE_GENERIC */
 
 
 #ifdef LV_HAVE_GENERIC
@@ -106,7 +106,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic_sat(lv_16sc_t* 
         }
 }
 
-#endif /*LV_HAVE_GENERIC*/
+#endif /* LV_HAVE_GENERIC */
 
 
 #ifdef LV_HAVE_SSE2
@@ -145,11 +145,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
             for (index = 0; index < sse_iters; index++)
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-                    b = _mm_load_si128((__m128i*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b = _mm_load_si128((__m128i*)_in_common);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a = _mm_load_si128((__m128i*)&(_in_a[n_vec][index * 4]));  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            a = _mm_load_si128((__m128i*)&(_in_a[n_vec][index * 4]));  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
                             c = _mm_mullo_epi16(a, b);  // a3.i*b3.i, a3.r*b3.r, ....
 
@@ -240,11 +240,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
             for (index = 0; index < sse_iters; index++)
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-                    b = _mm_loadu_si128((__m128i*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b = _mm_loadu_si128((__m128i*)_in_common);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][index * 4]));  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][index * 4]));  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
                             c = _mm_mullo_epi16(a, b);  // a3.i*b3.i, a3.r*b3.r, ....
 
@@ -522,12 +522,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
             for (index = 0; index < neon_iters; index++)
                 {
-                    b_val = vld2_s16((int16_t*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b_val = vld2_s16((int16_t*)_in_common);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index * 4]));  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                            //__VOLK_GNSSSDR_PREFETCH(&_in_a[n_vec][index*4] + 8);
+                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index * 4]));  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            // __VOLK_GNSSSDR_PREFETCH(&_in_a[n_vec][index*4] + 8);
 
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
@@ -609,7 +609,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
 
             for (index = 0; index < neon_iters; index++)
                 {
-                    b_val = vld2_s16((int16_t*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b_val = vld2_s16((int16_t*)_in_common);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
@@ -690,7 +690,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 
             for (index = 0; index < neon_iters; index++)
                 {
-                    b_val = vld2_s16((int16_t*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b_val = vld2_s16((int16_t*)_in_common);  // load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
@@ -738,4 +738,4 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 }
 #endif /* LV_HAVE_NEONV7 */
 
-#endif /*INCLUDED_volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_H*/
+#endif /* INCLUDED_volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_H */

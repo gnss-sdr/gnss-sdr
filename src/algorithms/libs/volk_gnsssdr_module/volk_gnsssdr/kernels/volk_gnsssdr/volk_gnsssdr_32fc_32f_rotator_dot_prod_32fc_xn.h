@@ -74,7 +74,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <math.h>
-//#include <stdio.h>
+// #include <stdio.h>
 
 #ifdef LV_HAVE_GENERIC
 
@@ -89,18 +89,18 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic(lv_32f
         }
     for (n = 0; n < num_points; n++)
         {
-            tmp32_1 = *in_common++ * (*phase);  //if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp32_1 = *in_common++ * (*phase);  // if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
 
             // Regenerate phase
             if (n % 256 == 0)
                 {
-                    //printf("Phase before regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
+                    // printf("Phase before regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
 #ifdef __cplusplus
                     (*phase) /= std::abs((*phase));
 #else
                     (*phase) /= hypotf(lv_creal(*phase), lv_cimag(*phase));
 #endif
-                    //printf("Phase after regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
+                    // printf("Phase after regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
                 }
 
             (*phase) *= phase_inc;
@@ -112,7 +112,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic(lv_32f
         }
 }
 
-#endif /*LV_HAVE_GENERIC*/
+#endif /* LV_HAVE_GENERIC */
 
 
 #ifdef LV_HAVE_GENERIC
@@ -145,7 +145,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload
 #ifdef __cplusplus
             (*phase) /= std::abs((*phase));
 #else
-            //(*phase) /= cabsf((*phase));
+            // (*phase) /= cabsf((*phase));
             (*phase) /= hypotf(lv_creal(*phase), lv_cimag(*phase));
 #endif
         }
@@ -162,7 +162,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload
         }
 }
 
-#endif /*LV_HAVE_GENERIC*/
+#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_AVX
 #include <volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h>

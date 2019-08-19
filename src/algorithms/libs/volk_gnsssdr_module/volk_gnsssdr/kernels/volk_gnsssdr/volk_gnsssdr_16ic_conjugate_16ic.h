@@ -200,34 +200,4 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_u_avx2(lv_16sc_t* cVector, c
 }
 #endif /* LV_HAVE_AVX2 */
 
-//
-//
-//#ifdef LV_HAVE_NEONV7
-//#include <arm_neon.h>
-//
-//static inline void volk_gnsssdr_16ic_conjugate_16ic_neon(lv_16sc_t* cVector, const lv_16sc_t* aVector, unsigned int num_points)
-//{
-//    const unsigned int sse_iters = num_points / 4;
-//    unsigned int i;
-//    lv_16sc_t* c = cVector;
-//    const lv_16sc_t* a = aVector;
-//    int16x4x2_t a_val;
-//
-//    for (i = 0; i < sse_iters; ++i)
-//        {
-//            a_val = vld2_s16((const int16_t*)a);
-//            __VOLK_GNSSSDR_PREFETCH(a + 4);
-//            a_val.val[1] = vneg_s16(a_val.val[1]);
-//            vst2_s16((int16_t*)c, a_val);
-//            a += 4;
-//            c += 4;
-//        }
-//
-//    for (i = sse_iters * 4; i < num_points; ++i)
-//        {
-//            *c++ = lv_conj(*a++);
-//        }
-//}
-//#endif /* LV_HAVE_NEONV7 */
-
 #endif /* INCLUDED_volk_gnsssdr_16ic_conjugate_16ic_H */

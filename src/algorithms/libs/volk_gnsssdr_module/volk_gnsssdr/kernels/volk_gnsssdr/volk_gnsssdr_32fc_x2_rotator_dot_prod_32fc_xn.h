@@ -89,18 +89,18 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_generic(lv_32fc
         }
     for (n = 0; n < num_points; n++)
         {
-            tmp32_1 = *in_common++ * (*phase);  //if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp32_1 = *in_common++ * (*phase);  // if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
 
             // Regenerate phase
             if (n % 256 == 0)
                 {
-                    //printf("Phase before regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
+                    // printf("Phase before regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
 #ifdef __cplusplus
                     (*phase) /= std::abs((*phase));
 #else
                     (*phase) /= hypotf(lv_creal(*phase), lv_cimag(*phase));
 #endif
-                    //printf("Phase after regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
+                    // printf("Phase after regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
                 }
 
             (*phase) *= phase_inc;
@@ -145,7 +145,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_generic_reload(
 #ifdef __cplusplus
             (*phase) /= std::abs((*phase));
 #else
-            //(*phase) /= cabsf((*phase));
+            // (*phase) /= cabsf((*phase));
             (*phase) /= hypotf(lv_creal(*phase), lv_cimag(*phase));
 #endif
         }
@@ -225,7 +225,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
             yl = _mm_moveldup_ps(z1);  // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(z1);
 
-            //next two samples
+            // next two samples
             _in_common += 2;
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
@@ -337,7 +337,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
             yl = _mm_moveldup_ps(z1);  // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(z1);
 
-            //next two samples
+            // next two samples
             _in_common += 2;
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
@@ -457,7 +457,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
             yl = _mm256_moveldup_ps(z);  // Load yl with cr,cr,dr,dr
             yh = _mm256_movehdup_ps(z);
 
-            //next two samples
+            // next two samples
             _in_common += 4;
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
@@ -587,7 +587,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
             yl = _mm256_moveldup_ps(z);  // Load yl with cr,cr,dr,dr
             yh = _mm256_movehdup_ps(z);
 
-            //next two samples
+            // next two samples
             _in_common += 4;
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)

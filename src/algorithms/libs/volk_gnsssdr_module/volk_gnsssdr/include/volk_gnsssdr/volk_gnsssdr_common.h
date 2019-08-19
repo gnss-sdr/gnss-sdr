@@ -24,9 +24,9 @@
 #ifndef INCLUDED_LIBVOLK_GNSSSDR_COMMON_H
 #define INCLUDED_LIBVOLK_GNSSSDR_COMMON_H
 
-////////////////////////////////////////////////////////////////////////
+//
 // Cross-platform attribute macros not included in VOLK
-////////////////////////////////////////////////////////////////////////
+//
 #if defined __GNUC__
 #define __VOLK_GNSSSDR_PREFETCH(addr) __builtin_prefetch(addr)
 #define __VOLK_GNSSSDR_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
@@ -41,9 +41,9 @@
 #ifndef INCLUDED_LIBVOLK_COMMON_H
 #define INCLUDED_LIBVOLK_COMMON_H
 
-////////////////////////////////////////////////////////////////////////
+//
 // Cross-platform attribute macros
-////////////////////////////////////////////////////////////////////////
+//
 #if defined __GNUC__
 #define __VOLK_ATTR_ALIGNED(x) __attribute__((aligned(x)))
 #define __VOLK_ATTR_UNUSED __attribute__((unused))
@@ -78,18 +78,18 @@
 #define __VOLK_VOLATILE __volatile__
 #endif
 
-////////////////////////////////////////////////////////////////////////
+//
 // Ignore annoying warnings in MSVC
-////////////////////////////////////////////////////////////////////////
+//
 #if defined(_MSC_VER)
-#pragma warning(disable : 4244)  //'conversion' conversion from 'type1' to 'type2', possible loss of data
-#pragma warning(disable : 4305)  //'identifier' : truncation from 'type1' to 'type2'
+#pragma warning(disable : 4244)  // 'conversion' conversion from 'type1' to 'type2', possible loss of data
+#pragma warning(disable : 4305)  // 'identifier' : truncation from 'type1' to 'type2'
 #endif
 
-////////////////////////////////////////////////////////////////////////
+//
 // C-linkage declaration macros
 // FIXME: due to the usage of complex.h, require gcc for c-linkage
-////////////////////////////////////////////////////////////////////////
+//
 #if defined(__cplusplus) && (__GNUC__)
 #define __VOLK_DECL_BEGIN \
     extern "C"            \
@@ -100,19 +100,19 @@
 #define __VOLK_DECL_END
 #endif
 
-////////////////////////////////////////////////////////////////////////
+//
 // Define VOLK_API for library symbols
 // http://gcc.gnu.org/wiki/Visibility
-////////////////////////////////////////////////////////////////////////
+//
 #ifdef volk_gnsssdr_EXPORTS
 #define VOLK_API __VOLK_ATTR_EXPORT
 #else
 #define VOLK_API __VOLK_ATTR_IMPORT
 #endif
 
-////////////////////////////////////////////////////////////////////////
+//
 // The bit128 union used by some
-////////////////////////////////////////////////////////////////////////
+//
 #include <inttypes.h>
 
 #ifdef LV_HAVE_SSE

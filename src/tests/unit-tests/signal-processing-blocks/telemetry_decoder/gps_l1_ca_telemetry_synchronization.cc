@@ -73,21 +73,12 @@
 class GpsL1CATelemetrySynchronizationTest : public ::testing::Test
 {
 public:
-
-	Gnss_Synchro gnss_synchro;
-	std::vector<double> synchro_vector;
-	
 	std::vector<int> initial_vector;
-	
-	GpsL1CATelemetrySynchronizationTest()
-	{
-		gnss_synchro = Gnss_Synchro();
-	}
+	std::vector<double> synchro_vector;
 	
 	void preamble_samples();
 	void make_vector();
 	void fill_gnss_synchro();
-	
 	
 	// gps_l1_ca_telemetry_decoder_gs.h
 	int32_t d_bits_per_preamble = GPS_CA_PREAMBLE_LENGTH_BITS;
@@ -195,7 +186,7 @@ void GpsL1CATelemetrySynchronizationTest::fill_gnss_synchro()
 	
     // Random generator with Gaussian distribution
     const double mean = 0.0;
-    const double stddev = 0.1;
+    const double stddev = 0.0;
     auto dist = std::bind(std::normal_distribution<double>{mean, stddev},
                           std::mt19937(std::random_device{}()));
 	
@@ -220,6 +211,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, Check)
 	make_vector();
 	fill_gnss_synchro();
 	
+	for (int32_t i = 0; i < vector_size; i++)
+	{
+		std::cout << i << "\t\t" << initial_vector[i] << std::endl;
+	}
+	
 	
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
@@ -239,6 +235,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     make_vector();
     fill_gnss_synchro();
     
+    //int32_t n_
     
     for (int32_t i = 0; i < vector_size; i++) 
     {
@@ -276,6 +273,8 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 					{
 						d_preamble_index = d_sample_counter;  // record the preamble sample stamp
 						std::cout << "Preamble detection for GPS L1 satellite " << i << std::endl;
+						
+						
 						//decode_subframe();
 						d_stat = 1;  // enter into frame pre-detection status
 					}

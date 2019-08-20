@@ -235,7 +235,9 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     make_vector();
     fill_gnss_synchro();
     
-    //int32_t n_
+    int32_t n_preamble_detections = 0;
+    int32_t n_correct_detections = 0;
+    int32_t n_wrong_detections = 0;
     
     for (int32_t i = 0; i < vector_size; i++) 
     {
@@ -272,8 +274,13 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 				 if (abs(corr_value) >= d_samples_per_preamble)
 					{
 						d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-						std::cout << "Preamble detection for GPS L1 satellite " << i << std::endl;
+						n_preamble_detections++;
+						std::cout << "Preamble detection for GPS L1 satellite " << d_preamble_index << std::endl;
 						
+						if((d_preamble_index == 8) | (d_preamble_index % d_preamble_period_symbols == 0))
+							n_correct_detections++;
+						else
+							n_wrong_detections++;
 						
 						//decode_subframe();
 						d_stat = 1;  // enter into frame pre-detection status
@@ -309,8 +316,9 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 						preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
 						if (abs(preamble_diff - d_preamble_period_symbols) == 0)
 							{
-								std::cout << "Preamble confirmation " << i << std::endl;
 								d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+								std::cout << "Preamble confirmation " << d_preamble_index << std::endl;
+								
 								if (corr_value < 0)
 									{
 										flag_PLL_180_deg_phase_locked = true;
@@ -351,10 +359,9 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     }
     
     
-    
-    // std::cout << "Synchro vector " << synchro_vector[0].Prompt_I;
-    
-    std::cout << "\n";
+    std::cout << "n_preamble_detections " << n_preamble_detections << std::endl;
+    std::cout << "n_correct_detections " << n_correct_detections << std::endl;
+    std::cout << "n_wrong_detections " << n_wrong_detections << std::endl;
 	
     
     

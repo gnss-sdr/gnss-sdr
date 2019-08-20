@@ -194,12 +194,6 @@ endif()
 # GPSTk and optional generator
 ################################################################################
 
-find_package(GPSTK)
-set_package_properties(GPSTK PROPERTIES
-    PURPOSE "Used in some Extra Tests."
-    TYPE OPTIONAL
-)
-
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)
         set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
@@ -241,11 +235,18 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
     endif()
 
-    ################################################################################
-    # Local installation of GPSTk http://www.gpstk.org/
-    ################################################################################
+    ############################################################################
+    # Local installation of GPSTk https://github.com/SGL-UT/GPSTk
+    ############################################################################
+    find_package(GPSTK)
+    set_package_properties(GPSTK PROPERTIES
+        PURPOSE "Used in some Extra Tests."
+        TYPE REQUIRED
+    )
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-        message(STATUS " GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
+        set_package_properties(GPSTK PROPERTIES
+            PURPOSE "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+        )
         if("${TOOLCHAIN_ARG}" STREQUAL "")
             set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=-Wno-deprecated")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
@@ -277,7 +278,6 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
         set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
         add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
-        set(OWN_GPSTK True)
         add_library(Gpstk::gpstk SHARED IMPORTED)
         add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
         file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS})

@@ -235,9 +235,10 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     make_vector();
     fill_gnss_synchro();
     
-    int32_t n_preamble_detections = 0;
-    int32_t n_correct_detections = 0;
-    int32_t n_wrong_detections = 0;
+    int32_t n_preamble_detections = 0; 	// Number of detected preambles
+    int32_t n_correct_detections = 0;	// Number of correct detected preambles
+    int32_t n_wrong_detections = 0;		// Number of wrong detected preambles
+    int32_t n_preambles = 0;			// Number of total preambles (missed and detected)
     
     for (int32_t i = 0; i < vector_size; i++) 
     {
@@ -281,6 +282,8 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 							n_correct_detections++;
 						else
 							n_wrong_detections++;
+						
+						n_preambles = d_preamble_index / d_preamble_period_symbols + 1;
 						
 						//decode_subframe();
 						d_stat = 1;  // enter into frame pre-detection status
@@ -362,6 +365,8 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     std::cout << "n_preamble_detections " << n_preamble_detections << std::endl;
     std::cout << "n_correct_detections " << n_correct_detections << std::endl;
     std::cout << "n_wrong_detections " << n_wrong_detections << std::endl;
+    std::cout << "n_preambles " << n_preambles << std::endl;
+    
 	
     
     

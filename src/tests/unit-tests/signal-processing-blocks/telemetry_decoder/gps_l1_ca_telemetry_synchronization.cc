@@ -249,6 +249,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     int32_t n_correct_detections_s1 = 0;	// Number of correct detected preambles in state 1
     int32_t n_wrong_detections_s1 = 0;		// Number of wrong detected preambles in state 1
     int32_t n_preambles = 0;				// Number of total preambles (missed and detected)
+
     
     for (int32_t i = 0; i < vector_size; i++) 
     {    	
@@ -256,7 +257,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     	d_sample_counter++;
     	
     	d_flag_preamble = false;
-    	
+    	    	
     	// ******* frame sync ******************
 		switch (d_stat)
 		{
@@ -296,8 +297,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 						d_stat = 1;  // enter into frame pre-detection status
 					}
 				flag_TOW_set = false;
-					
-					
+				
 				break;
 			}
 			case 1:  // possible preamble lock
@@ -322,7 +322,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 					}
 				if (abs(corr_value) >= d_samples_per_preamble)
 					{
-						if((d_preamble_index - preamble_offset) % d_preamble_period_symbols == 0)
+						if((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
 							n_correct_detections_s1++;
 						else
 							n_wrong_detections_s1++;
@@ -330,7 +330,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 						n_preamble_detections_s1++;
 						
 						// check preamble separation
-						preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
+						preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);						
 						if (abs(preamble_diff - d_preamble_period_symbols) == 0)
 							{
 								d_preamble_index = d_sample_counter;  // record the preamble sample stamp
@@ -353,6 +353,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 							{
 								if (preamble_diff > d_preamble_period_symbols)
 									{
+										// std::cout << "Preamble missed in s1 " << d_sample_counter << std::endl;
 										d_stat = 0;  // start again
 										flag_TOW_set = false;
 									}
@@ -379,9 +380,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     
     std::cout << std::endl;
     std::cout << "n_preambles " << n_preambles << std::endl;
+    std::cout << std::endl;
     std::cout << "n_preamble_detections_s0 " << n_preamble_detections_s0 << std::endl;
     std::cout << "n_correct_detections_s0 " << n_correct_detections_s0 << std::endl;
     std::cout << "n_wrong_detections_s0 " << n_wrong_detections_s0 << std::endl;
+    std::cout << std::endl;
     std::cout << "n_preamble_detections_s1 " << n_preamble_detections_s1 << std::endl;
     std::cout << "n_correct_detections_s1 " << n_correct_detections_s1 << std::endl;
     std::cout << "n_wrong_detections_s1 " << n_wrong_detections_s1 << std::endl;

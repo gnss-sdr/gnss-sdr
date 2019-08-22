@@ -30,41 +30,9 @@
  * -------------------------------------------------------------------------
  */
 
-#include <armadillo>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
 #include <chrono>
-#include <exception>
-#include <string>
-#include <unistd.h>
-#include <utility>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
-#include "GPS_L1_CA.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_telemetry_decoder.h"
-#include "in_memory_configuration.h"
-#include "signal_generator_flags.h"
-#include "telemetry_decoder_interface.h"
-#include "tlm_dump_reader.h"
-#include "tracking_dump_reader.h"
-#include "tracking_interface.h"
-#include "tracking_true_obs_reader.h"
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
 #include <gtest/gtest.h>
-
-#include "gnss_satellite.h"
-#include "gps_navigation_message.h"
-
 #include <random>
 
 #define vector_size 6000 		// 20 sub-frames with 300 bits

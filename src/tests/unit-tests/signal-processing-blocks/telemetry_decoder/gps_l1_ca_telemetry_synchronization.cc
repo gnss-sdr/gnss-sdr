@@ -94,34 +94,16 @@ public:
 	
 	std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
 	
-
 	bool flag_PLL_180_deg_phase_locked;
 	
-	// navigation message vars
-	uint32_t d_prev_GPS_frame_4bytes = 0;
-
 	boost::circular_buffer<float> d_symbol_history;
 
 	uint64_t d_sample_counter = 0ULL;
 	uint64_t d_preamble_index = 0ULL;
-	uint64_t d_last_valid_preamble = 0;
 	
-	bool d_sent_tlm_failed_msg = false;
 	uint32_t d_stat = 0;
-	bool d_flag_frame_sync = false;
-	bool d_flag_parity = false;
 	bool d_flag_preamble = false;
-	int32_t d_CRC_error_counter = 0;
 
-	int32_t d_channel = 0;
-
-	uint32_t d_TOW_at_Preamble_ms = 0;
-	uint32_t d_TOW_at_current_symbol_ms = 0;
-
-	bool flag_TOW_set = false;
-		//bool d_dump;
-		//std::string d_dump_filename = "telemetry";
-		// std::ofstream d_dump_file;
 };
 
 
@@ -296,7 +278,6 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 						//decode_subframe();
 						d_stat = 1;  // enter into frame pre-detection status
 					}
-				flag_TOW_set = false;
 				
 				break;
 			}
@@ -355,7 +336,6 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 									{
 										// std::cout << "Preamble missed in s1 " << d_sample_counter << std::endl;
 										d_stat = 0;  // start again
-										flag_TOW_set = false;
 									}
 							}
 					}

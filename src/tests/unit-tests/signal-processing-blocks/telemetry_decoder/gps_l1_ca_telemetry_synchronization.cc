@@ -32,11 +32,18 @@
 
 #include "gnss_synchro.h"
 #include <gtest/gtest.h>
+#include <iostream>
+#include <fstream>
 #include <chrono>
 #include <random>
 
-#define vector_size 6000     // 20 sub-frames with 300 bits
-#define preamble_offset 200  // Random data before preamble
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#define vector_size 6000		// 20 sub-frames with 300 bits
+#define preamble_offset 200		// Random data before preamble
+#define Nw 1					// Number of Monte-Carlo realizations
 
 
 class GpsL1CATelemetrySynchronizationTest : public ::testing::Test
@@ -69,6 +76,8 @@ public:
     uint64_t d_preamble_index = 0ULL;
 
     uint32_t d_stat = 0;
+    
+    const double stddev = 0.0;
 };
 
 
@@ -134,15 +143,14 @@ void GpsL1CATelemetrySynchronizationTest::make_vector()
 
 
 /*!
- * \ Simulates Prompt_I in the gnss_synchro vector
+ * \ Simulates Prompt_I in the gnss_synchro vector.
  *
- * Adds noise with a mean and standard deviation to the initial_vector
+ * Adds noise with a mean and standard deviation to the initial_vector.
  */
 void GpsL1CATelemetrySynchronizationTest::fill_gnss_synchro()
 {
     // Random generator with Gaussian distribution
     const double mean = 0.0;
-    const double stddev = 0.0;
     auto dist = std::bind(std::normal_distribution<double>{mean, stddev},
         std::mt19937(std::random_device{}()));
 
@@ -164,18 +172,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, Check)
 	make_vector();
 	fill_gnss_synchro();
 	
-	for (int32_t i = 0; i < vector_size; i++)
-	{
-		std::cout << i << "\t\t" << initial_vector[i] << std::endl;
-	}
-	
-	
-    end = std::chrono::system_clock::now();
+	end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
-    std::cout << "GPSL1CA Telemetry decoder Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
-	
-}
-*/
+    std::cout << "GPSL1CA Telemetry decoder Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;	
+}*/
+
 
 // TEST ValidationOfResults
 TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
@@ -183,155 +184,184 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     start = std::chrono::system_clock::now();
-
+    
     preamble_samples();
-    make_vector();
-    fill_gnss_synchro();
+    
+	
+	// file pointer 
+	std::fstream fout; 
+  
+	// opens an existing csv file or creates a new file. 
+	fout.open("../../test_results/synchronization_SC_test.csv", std::ios::out | std::ios::app);
+	
+	fout << "stddev" << ", "
+			<< "n_preambles" << ", " 
+			<< "n_preamble_detections_s0, n_correct_detections_s0, n_wrong_detections_s0" 
+			<< "n_preamble_detections_s1, n_correct_detections_s1, n_wrong_detections_s1"
+			<< "\n";
+	
+    
+    for (int32_t n = 0; n < Nw; n++)
+    {
+		make_vector();
+		fill_gnss_synchro();
+	
+		int32_t n_preamble_detections_s0 = 0;  // Number of detected preambles in state 0
+		int32_t n_preamble_detections_s1 = 0;  // Number of detected preambles in state 1
+		int32_t n_correct_detections_s0 = 0;   // Number of correct detected preambles in state 0
+		int32_t n_wrong_detections_s0 = 0;     // Number of wrong detected preambles in state 0
+		int32_t n_correct_detections_s1 = 0;   // Number of correct detected preambles in state 1
+		int32_t n_wrong_detections_s1 = 0;     // Number of wrong detected preambles in state 1
+		int32_t n_preambles = 0;               // Number of total preambles (missed and detected)
+	
+	
+		for (int32_t i = 0; i < vector_size; i++)
+			{
+				d_symbol_history.push_back(synchro_vector[i]);
+				d_sample_counter++;
+	
+				// ******* frame sync ******************
+				switch (d_stat)
+					{
+					case 0:  // no preamble information
+						{
+							// correlate with preamble
+							int32_t corr_value = 0;
+							if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
+								{
+									// ******* preamble correlation ********
+									for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+										{
+											if (d_symbol_history[i] < 0.0)  // symbols clipping
+												{
+													corr_value -= d_preamble_samples[i];
+												}
+											else
+												{
+													corr_value += d_preamble_samples[i];
+												}
+										}
+								}
+	
+							if (abs(corr_value) >= d_samples_per_preamble)
+								{
+									d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+									std::cout << "Preamble detection for GPS L1 satellite " << d_preamble_index << std::endl;
+	
+									if ((d_preamble_index - preamble_offset) % d_preamble_period_symbols == 0)
+										n_correct_detections_s0++;
+									else
+										n_wrong_detections_s0++;
+	
+									n_preamble_detections_s0++;
+	
+									//decode_subframe();
+									d_stat = 1;  // enter into frame pre-detection status
+								}
+	
+							break;
+						}
+					case 1:  // possible preamble lock
+						{
+							// correlate with preamble
+							int32_t corr_value = 0;
+							int32_t preamble_diff = 0;
+							if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
+								{
+									// ******* preamble correlation ********
+									for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+										{
+											if (d_symbol_history[i] < 0.0)  // symbols clipping
+												{
+													corr_value -= d_preamble_samples[i];
+												}
+											else
+												{
+													corr_value += d_preamble_samples[i];
+												}
+										}
+								}
+							if (abs(corr_value) >= d_samples_per_preamble)
+								{
+									if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
+										n_correct_detections_s1++;
+									else
+										n_wrong_detections_s1++;
+	
+									n_preamble_detections_s1++;
+	
+									// check preamble separation
+									preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
+									if (abs(preamble_diff - d_preamble_period_symbols) == 0)
+										{
+											d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+											std::cout << "Preamble confirmation " << d_preamble_index << std::endl;
+	
+											n_preambles = (d_preamble_index - preamble_offset) / d_preamble_period_symbols + 1;
+	
+											if (corr_value < 0)
+												{
+													flag_PLL_180_deg_phase_locked = true;
+												}
+											else
+												{
+													flag_PLL_180_deg_phase_locked = false;
+												}
+											// decode_subframe();
+											d_stat = 2;
+										}
+									else
+										{
+											if (preamble_diff > d_preamble_period_symbols)
+												{
+													// std::cout << "Preamble missed in s1 " << d_sample_counter << std::endl;
+													d_stat = 0;  // start again
+												}
+										}
+								}
+	
+							break;
+						}
+	
+					case 2:  // preamble acquired
+						{
+							if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
+								{
+									std::cout << "Preamble received. "
+											  << "d_sample_counter= " << d_sample_counter << std::endl;
+									// call the decoder
+									// 0. fetch the symbols into an array
+									d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+								}
+	
+							break;
+						}
+					}
+			}
+		
+		
+		fout << stddev << ", "
+				<< n_preambles << ", " 
+				<< n_preamble_detections_s0 << ", " << n_correct_detections_s0 << ", " << n_wrong_detections_s0 
+				<< n_preamble_detections_s1 << ", " << n_correct_detections_s1 << ", " << n_wrong_detections_s1
+				<< "\n";
+		
+		
+	    std::cout << std::endl;
+	    std::cout << "n_preambles " << n_preambles << std::endl;
+	    std::cout << std::endl;
+	    std::cout << "n_preamble_detections_s0 " << n_preamble_detections_s0 << std::endl;
+	    std::cout << "n_correct_detections_s0 " << n_correct_detections_s0 << std::endl;
+	    std::cout << "n_wrong_detections_s0 " << n_wrong_detections_s0 << std::endl;
+	    std::cout << std::endl;
+	    std::cout << "n_preamble_detections_s1 " << n_preamble_detections_s1 << std::endl;
+	    std::cout << "n_correct_detections_s1 " << n_correct_detections_s1 << std::endl;
+	    std::cout << "n_wrong_detections_s1 " << n_wrong_detections_s1 << std::endl;
+	    std::cout << std::endl;
+    }
+	
 
-    int32_t n_preamble_detections_s0 = 0;  // Number of detected preambles in state 0
-    int32_t n_preamble_detections_s1 = 0;  // Number of detected preambles in state 1
-    int32_t n_correct_detections_s0 = 0;   // Number of correct detected preambles in state 0
-    int32_t n_wrong_detections_s0 = 0;     // Number of wrong detected preambles in state 0
-    int32_t n_correct_detections_s1 = 0;   // Number of correct detected preambles in state 1
-    int32_t n_wrong_detections_s1 = 0;     // Number of wrong detected preambles in state 1
-    int32_t n_preambles = 0;               // Number of total preambles (missed and detected)
-
-
-    for (int32_t i = 0; i < vector_size; i++)
-        {
-            d_symbol_history.push_back(synchro_vector[i]);
-            d_sample_counter++;
-
-            // ******* frame sync ******************
-            switch (d_stat)
-                {
-                case 0:  // no preamble information
-                    {
-                        // correlate with preamble
-                        int32_t corr_value = 0;
-                        if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
-                            {
-                                // ******* preamble correlation ********
-                                for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                                    {
-                                        if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                            {
-                                                corr_value -= d_preamble_samples[i];
-                                            }
-                                        else
-                                            {
-                                                corr_value += d_preamble_samples[i];
-                                            }
-                                    }
-                            }
-
-                        if (abs(corr_value) >= d_samples_per_preamble)
-                            {
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                std::cout << "Preamble detection for GPS L1 satellite " << d_preamble_index << std::endl;
-
-                                if ((d_preamble_index - preamble_offset) % d_preamble_period_symbols == 0)
-                                    n_correct_detections_s0++;
-                                else
-                                    n_wrong_detections_s0++;
-
-                                n_preamble_detections_s0++;
-
-                                //decode_subframe();
-                                d_stat = 1;  // enter into frame pre-detection status
-                            }
-
-                        break;
-                    }
-                case 1:  // possible preamble lock
-                    {
-                        // correlate with preamble
-                        int32_t corr_value = 0;
-                        int32_t preamble_diff = 0;
-                        if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
-                            {
-                                // ******* preamble correlation ********
-                                for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                                    {
-                                        if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                            {
-                                                corr_value -= d_preamble_samples[i];
-                                            }
-                                        else
-                                            {
-                                                corr_value += d_preamble_samples[i];
-                                            }
-                                    }
-                            }
-                        if (abs(corr_value) >= d_samples_per_preamble)
-                            {
-                                if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
-                                    n_correct_detections_s1++;
-                                else
-                                    n_wrong_detections_s1++;
-
-                                n_preamble_detections_s1++;
-
-                                // check preamble separation
-                                preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
-                                if (abs(preamble_diff - d_preamble_period_symbols) == 0)
-                                    {
-                                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                        std::cout << "Preamble confirmation " << d_preamble_index << std::endl;
-
-                                        n_preambles = (d_preamble_index - preamble_offset) / d_preamble_period_symbols + 1;
-
-                                        if (corr_value < 0)
-                                            {
-                                                flag_PLL_180_deg_phase_locked = true;
-                                            }
-                                        else
-                                            {
-                                                flag_PLL_180_deg_phase_locked = false;
-                                            }
-                                        // decode_subframe();
-                                        d_stat = 2;
-                                    }
-                                else
-                                    {
-                                        if (preamble_diff > d_preamble_period_symbols)
-                                            {
-                                                // std::cout << "Preamble missed in s1 " << d_sample_counter << std::endl;
-                                                d_stat = 0;  // start again
-                                            }
-                                    }
-                            }
-
-                        break;
-                    }
-
-                case 2:  // preamble acquired
-                    {
-                        if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
-                            {
-                                std::cout << "Preamble received. "
-                                          << "d_sample_counter= " << d_sample_counter << std::endl;
-                                // call the decoder
-                                // 0. fetch the symbols into an array
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                            }
-
-                        break;
-                    }
-                }
-        }
-
-    std::cout << std::endl;
-    std::cout << "n_preambles " << n_preambles << std::endl;
-    std::cout << std::endl;
-    std::cout << "n_preamble_detections_s0 " << n_preamble_detections_s0 << std::endl;
-    std::cout << "n_correct_detections_s0 " << n_correct_detections_s0 << std::endl;
-    std::cout << "n_wrong_detections_s0 " << n_wrong_detections_s0 << std::endl;
-    std::cout << std::endl;
-    std::cout << "n_preamble_detections_s1 " << n_preamble_detections_s1 << std::endl;
-    std::cout << "n_correct_detections_s1 " << n_correct_detections_s1 << std::endl;
-    std::cout << "n_wrong_detections_s1 " << n_wrong_detections_s1 << std::endl;
-    std::cout << std::endl;
+    fout.close();
 
 
     end = std::chrono::system_clock::now();

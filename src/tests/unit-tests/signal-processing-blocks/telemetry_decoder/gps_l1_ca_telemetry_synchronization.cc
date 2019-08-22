@@ -43,7 +43,7 @@
 
 #define vector_size 6000		// 20 sub-frames with 300 bits
 #define preamble_offset 200		// Random data before preamble
-#define Nw 1					// Number of Monte-Carlo realizations
+#define Nw 3					// Number of Monte-Carlo realizations
 
 
 class GpsL1CATelemetrySynchronizationTest : public ::testing::Test
@@ -185,10 +185,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     std::chrono::duration<double> elapsed_seconds(0);
     start = std::chrono::system_clock::now();
     
-    preamble_samples();
-    
-	
-	// file pointer 
+    // file pointer 
 	std::fstream fout; 
   
 	// opens an existing csv file or creates a new file. 
@@ -196,13 +193,22 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 	
 	fout << "stddev" << ", "
 			<< "n_preambles" << ", " 
-			<< "n_preamble_detections_s0, n_correct_detections_s0, n_wrong_detections_s0" 
+			<< "n_preamble_detections_s0, n_correct_detections_s0, n_wrong_detections_s0, " 
 			<< "n_preamble_detections_s1, n_correct_detections_s1, n_wrong_detections_s1"
 			<< "\n";
 	
     
     for (int32_t n = 0; n < Nw; n++)
-    {
+    {	
+        initial_vector.clear();
+        synchro_vector.clear();
+        
+        d_sample_counter = 0ULL;
+        d_preamble_index = 0ULL;
+
+        d_stat = 0;
+    	
+    	preamble_samples();
 		make_vector();
 		fill_gnss_synchro();
 	
@@ -337,27 +343,14 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 							break;
 						}
 					}
+			
 			}
 		
 		
 		fout << stddev << ", "
 				<< n_preambles << ", " 
-				<< n_preamble_detections_s0 << ", " << n_correct_detections_s0 << ", " << n_wrong_detections_s0 
-				<< n_preamble_detections_s1 << ", " << n_correct_detections_s1 << ", " << n_wrong_detections_s1
-				<< "\n";
-		
-		
-	    std::cout << std::endl;
-	    std::cout << "n_preambles " << n_preambles << std::endl;
-	    std::cout << std::endl;
-	    std::cout << "n_preamble_detections_s0 " << n_preamble_detections_s0 << std::endl;
-	    std::cout << "n_correct_detections_s0 " << n_correct_detections_s0 << std::endl;
-	    std::cout << "n_wrong_detections_s0 " << n_wrong_detections_s0 << std::endl;
-	    std::cout << std::endl;
-	    std::cout << "n_preamble_detections_s1 " << n_preamble_detections_s1 << std::endl;
-	    std::cout << "n_correct_detections_s1 " << n_correct_detections_s1 << std::endl;
-	    std::cout << "n_wrong_detections_s1 " << n_wrong_detections_s1 << std::endl;
-	    std::cout << std::endl;
+				<< n_preamble_detections_s0 << ", " << n_correct_detections_s0 << ", " << n_wrong_detections_s0 << ", "
+				<< n_preamble_detections_s1 << ", " << n_correct_detections_s1 << ", " << n_wrong_detections_s1 << "\n";
     }
 	
 

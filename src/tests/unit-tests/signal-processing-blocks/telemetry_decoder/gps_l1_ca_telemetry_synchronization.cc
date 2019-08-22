@@ -58,8 +58,7 @@ public:
 	uint32_t d_required_symbols = GPS_SUBFRAME_BITS;
 	// preamble bits to sampled symbols
 	uint32_t d_frame_length_symbols = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
-	uint32_t d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
-	
+		
 	std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
 	
 	bool flag_PLL_180_deg_phase_locked;
@@ -70,7 +69,6 @@ public:
 	uint64_t d_preamble_index = 0ULL;
 	
 	uint32_t d_stat = 0;
-	bool d_flag_preamble = false;
 
 };
 
@@ -205,9 +203,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     {    	
     	d_symbol_history.push_back(synchro_vector[i]);
     	d_sample_counter++;
-    	
-    	d_flag_preamble = false;
-    	    	
+    	    	    	
     	// ******* frame sync ******************
 		switch (d_stat)
 		{

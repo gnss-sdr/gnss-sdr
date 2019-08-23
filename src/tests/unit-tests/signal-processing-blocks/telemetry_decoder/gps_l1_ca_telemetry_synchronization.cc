@@ -40,7 +40,7 @@
 
 #define vector_size 6000   		// 20 sub-frames with 300 bits
 #define preamble_offset 200 	// Random data before preamble
-#define Nw 1000000				// Number of Monte-Carlo realizations
+#define Nw 100				// Number of Monte-Carlo realizations
 
 /*!
  * \ The fixture for testing class GpsL1CATelemetrySynchronizationTest.
@@ -222,7 +222,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
             int32_t n_correct_detections_s1 = 0;   // Number of correct detected preambles in state 1
             int32_t n_wrong_detections_s1 = 0;     // Number of wrong detected preambles in state 1
             int32_t n_preambles = 0;               // Number of total preambles (missed and detected)
-            int32_t final_synchronization = 0;     // 1 if final synchronization is achieved
+            int32_t final_synchronization = 0;     // 0 if no final synchronization is achieved, 1 if correct, 2 if wrong
 
 
             for (int32_t i = 0; i < vector_size; i++)
@@ -337,10 +337,13 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                     {
                                         // std::cout << "Preamble received. " << "d_sample_counter= " << d_sample_counter << std::endl;
                                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+                                        
+                                        if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
+                                        	final_synchronization = 1;
+                                        else
+                                        	final_synchronization = 2;
                                     }
-
-                                final_synchronization = 1;
-
+                                
                                 break;
                             }
                         }
@@ -387,7 +390,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
     std::fstream fout;
 
     // opens an existing csv (std::ios::app) file or creates a new file (std::ios::out).
-    fout.open("../../test_results/synchronization_HC_test_1.csv", std::ios::out);
+    fout.open("../../test_results/synchronization_HC_test_2.csv", std::ios::out);
 
     fout << "stddev"
          << ", "
@@ -425,7 +428,12 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
             int32_t n_wrong_detections_s1 = 0;     // Number of wrong detected preambles in state 1
             int32_t n_preambles = 0;               // Number of total preambles (missed and detected)
             int32_t final_synchronization = 0;     // 1 if final synchronization is achieved
-
+            
+            // Adds noise with standard deviation from 0.05 to 0.5
+            /*
+            if (n % (Nw / 10) == 0)
+                stddev = stddev + 0.05;
+            */
 
             for (int32_t i = 0; i < vector_size; i++)
                 {
@@ -529,6 +537,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
                                     {
                                         // std::cout << "Preamble received. " << "d_sample_counter= " << d_sample_counter << std::endl;
                                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+                                        
+                                        if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
+                                        	final_synchronization = 1;
+                                        else
+                                        	final_synchronization = 2;
                                     }
 
                                 final_synchronization = 1;
@@ -546,10 +559,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
                  << n_preamble_detections_s1 << ", " << n_correct_detections_s1 << ", " << n_wrong_detections_s1 << ", "
                  << final_synchronization << "\n";
 
-            // Adds noise with standard deviation from 0 to 0.45
-            if (n % (Nw / 10) == 0)
-                stddev = stddev + 0.05;
-                        
+           
             // d_sample_counter >= d_preamble_index
             ASSERT_GE(d_sample_counter, d_preamble_index);
         }

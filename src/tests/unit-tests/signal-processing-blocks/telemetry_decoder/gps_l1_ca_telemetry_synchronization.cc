@@ -427,7 +427,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
             int32_t n_correct_detections_s1 = 0;   // Number of correct detected preambles in state 1
             int32_t n_wrong_detections_s1 = 0;     // Number of wrong detected preambles in state 1
             int32_t n_preambles = 0;               // Number of total preambles (missed and detected)
-            int32_t final_synchronization = 0;     // 1 if final synchronization is achieved
+            int32_t final_synchronization = 0;     // 0 if no final synchronization is achieved, 1 if correct, 2 if wrong
             
             // Adds noise with standard deviation from 0.05 to 0.5
             /*

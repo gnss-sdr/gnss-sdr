@@ -2,7 +2,7 @@
  * \file gps_l1_ca_telemetry_synchronization.cc
  * \brief  This class implements a telemetry decoder synchronization test for GPS_L1_CA_Telemetry_Decoder with SC
  * \note Code added as part of GSoC 2019 program
- * \author Lucas Ventura, 2015. lucas.ventura.r(at)gmail.com
+ * \author Lucas Ventura, 2019. lucas.ventura.r(at)gmail.com
  *
  *
  * -------------------------------------------------------------------------

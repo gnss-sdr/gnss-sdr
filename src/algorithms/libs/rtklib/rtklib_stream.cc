@@ -131,14 +131,13 @@ serial_t *openserial(const char *path, int mode, char *msg)
         }
     if (i >= 11)
         {
-            sprintf(msg, "bitrate error (%d)", brate);
+            std::snprintf(msg, MAXSTRMSG, "bitrate error (%d)", brate);
             tracet(1, "openserial: %s path=%s\n", msg, path);
             free(serial);
             return nullptr;
         }
     parity = static_cast<char>(toupper(static_cast<int>(parity)));
 
-    // sprintf(dev, "/dev/%s", port); This line triggers a warning. Replaced by:
     std::string s_aux = "/dev/" + std::string(port);
     s_aux.resize(128, '\0');
     int n = s_aux.length();
@@ -166,7 +165,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
 
     if ((serial->dev = open(dev, rw | O_NOCTTY | O_NONBLOCK)) < 0)
         {
-            sprintf(msg, "device open error (%d)", errno);
+            std::snprintf(msg, MAXSTRMSG, "device open error (%d)", errno);
             tracet(1, "openserial: %s dev=%s\n", msg, dev);
             free(serial);
             return nullptr;
@@ -284,19 +283,19 @@ int openfile_(file_t *file, gtime_t time, char *msg)
 
     if (!(file->fp = fopen(file->openpath, rw)))
         {
-            sprintf(msg, "file open error: %s", file->openpath);
+            std::snprintf(msg, MAXSTRMSG, "file open error");
             tracet(1, "openfile: %s\n", msg);
             return 0;
         }
     tracet(4, "openfile_: open file %s (%s)\n", file->openpath, rw);
 
-    sprintf(tagpath, "%s.tag", file->openpath);
+    std::snprintf(tagpath, MAXSTRPATH + 4, "%s.tag", file->openpath);
 
     if (file->timetag)
         { /* output/sync time-tag */
             if (!(file->fp_tag = fopen(tagpath, rw)))
                 {
-                    sprintf(msg, "tag open error: %s", tagpath);
+                    std::snprintf(msg, MAXSTRMSG, "tag open error");
                     tracet(1, "openfile: %s\n", msg);
                     fclose(file->fp);
                     return 0;
@@ -319,7 +318,7 @@ int openfile_(file_t *file, gtime_t time, char *msg)
                 }
             else
                 {
-                    sprintf(tagh, "TIMETAG RTKLIB %s", VER_RTKLIB);
+                    std::snprintf(tagh, TIMETAGH_LEN + 1, "TIMETAG RTKLIB %s", VER_RTKLIB);
                     memcpy(tagh + TIMETAGH_LEN - 4, &file->tick_f, sizeof(file->tick_f));
                     fwrite(&tagh, 1, TIMETAGH_LEN, file->fp_tag);
                     fwrite(&file->time, 1, sizeof(file->time), file->fp_tag);
@@ -571,7 +570,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                                 {
                                     trace(1, "fseek error");
                                 }
-                            sprintf(msg, "end");
+                            std::snprintf(msg, MAXSTRPATH, "end");
                             break;
                         }
                     if (file->repmode || file->speed > 0.0)
@@ -586,7 +585,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                             tick_master = tick;
                         }
 
-                    sprintf(msg, "T%+.1fs", static_cast<int>(tick) < 0 ? 0.0 : static_cast<int>(tick) / 1000.0);
+                    std::snprintf(msg, MAXSTRPATH, "T%+.1fs", static_cast<int>(tick) < 0 ? 0.0 : static_cast<int>(tick) / 1000.0);
 
                     if (static_cast<int>(fpos - file->fpos) >= nmax)
                         {
@@ -615,7 +614,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
             file->fpos += nr;
             if (nr <= 0)
                 {
-                    sprintf(msg, "end");
+                    std::snprintf(msg, MAXSTRPATH, "end");
                 }
         }
     tracet(5, "readfile: fp=%p \n nr=%d fpos=%u\n", file->fp, nr, file->fpos);
@@ -829,7 +828,7 @@ int setsock(socket_t sock, char *msg)
     if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&tv), sizeof(tv)) == -1 ||
         setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char *>(&tv), sizeof(tv)) == -1)
         {
-            sprintf(msg, "sockopt error: notimeo");
+            std::snprintf(msg, MAXSTRMSG, "sockopt error: notimeo");
             tracet(1, "setsock: setsockopt error 1 sock=%d err=%d\n", sock, errsock());
             closesocket(sock);
             return 0;
@@ -838,12 +837,12 @@ int setsock(socket_t sock, char *msg)
         setsockopt(sock, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char *>(&bs), sizeof(bs)) == -1)
         {
             tracet(1, "setsock: setsockopt error 2 sock=%d err=%d bs=%d\n", sock, errsock(), bs);
-            sprintf(msg, "sockopt error: bufsiz");
+            std::snprintf(msg, MAXSTRMSG, "sockopt error: bufsiz");
         }
     if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&mode), sizeof(mode)) == -1)
         {
             tracet(1, "setsock: setsockopt error 3 sock=%d err=%d\n", sock, errsock());
-            sprintf(msg, "sockopt error: nodelay");
+            std::snprintf(msg, MAXSTRMSG, "sockopt error: nodelay");
         }
     return 1;
 }
@@ -940,7 +939,7 @@ int gentcp(tcp_t *tcp, int type, char *msg)
     /* generate socket */
     if ((tcp->sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         {
-            sprintf(msg, "socket error (%d)", errsock());
+            std::snprintf(msg, MAXSTRMSG, "socket error (%d)", errsock());
             tracet(1, "gentcp: socket error err=%d\n", errsock());
             tcp->state = -1;
             return 0;
@@ -963,7 +962,7 @@ int gentcp(tcp_t *tcp, int type, char *msg)
 #endif
             if (bind(tcp->sock, reinterpret_cast<struct sockaddr *>(&tcp->addr), sizeof(tcp->addr)) == -1)
                 {
-                    sprintf(msg, "bind error (%d) : %d", errsock(), tcp->port);
+                    std::snprintf(msg, MAXSTRMSG, "bind error (%d) : %d", errsock(), tcp->port);
                     tracet(1, "gentcp: bind error port=%d err=%d\n", tcp->port, errsock());
                     closesocket(tcp->sock);
                     tcp->state = -1;
@@ -975,7 +974,7 @@ int gentcp(tcp_t *tcp, int type, char *msg)
         { /* client socket */
             if (!(hp = gethostbyname(tcp->saddr)))
                 {
-                    sprintf(msg, "address error (%s)", tcp->saddr);
+                    std::snprintf(msg, MAXSTRMSG, "address error (%s)", tcp->saddr);
                     tracet(1, "gentcp: gethostbyname error addr=%s err=%d\n", tcp->saddr, errsock());
                     closesocket(tcp->sock);
                     tcp->state = 0;
@@ -1019,7 +1018,7 @@ tcpsvr_t *opentcpsvr(const char *path, char *msg)
     decodetcppath(path, tcpsvr->svr.saddr, port, nullptr, nullptr, nullptr, nullptr);
     if (sscanf(port, "%d", &tcpsvr->svr.port) < 1)
         {
-            sprintf(msg, "port error: %s", port);
+            std::snprintf(msg, MAXSTRMSG, "port error: %s", port);
             tracet(1, "opentcpsvr: port error port=%s\n", port);
             free(tcpsvr);
             return nullptr;
@@ -1096,17 +1095,17 @@ void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
     if (n == 0)
         {
             tcpsvr->svr.state = 1;
-            sprintf(msg, "waiting...");
+            std::snprintf(msg, MAXSTRMSG, "waiting...");
             return;
         }
     tcpsvr->svr.state = 2;
     if (n == 1)
         {
-            sprintf(msg, "%s", saddr);
+            std::snprintf(msg, MAXSTRMSG, "%s", saddr);
         }
     else
         {
-            sprintf(msg, "%d clients", n);
+            std::snprintf(msg, MAXSTRMSG, "%d clients", n);
         }
 }
 
@@ -1139,7 +1138,7 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
     if ((sock = accept_nb(tcpsvr->svr.sock, reinterpret_cast<struct sockaddr *>(&addr), &len)) == -1)
         {
             err = errsock();
-            sprintf(msg, "accept error (%d)", err);
+            std::snprintf(msg, MAXSTRMSG, "accept error (%d)", err);
             tracet(1, "accsock: accept error sock=%d err=%d\n", tcpsvr->svr.sock, err);
             closesocket(tcpsvr->svr.sock);
             tcpsvr->svr.state = 0;
@@ -1161,7 +1160,7 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
             std::strncpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr), 256);
             tcpsvr->cli[i].saddr[255] = '\0';
         }
-    sprintf(msg, "%s", tcpsvr->cli[i].saddr);
+    std::snprintf(msg, MAXSTRMSG, "%s", tcpsvr->cli[i].saddr);
     tracet(2, "accsock: connected sock=%d addr=%s\n", tcpsvr->cli[i].sock, tcpsvr->cli[i].saddr);
     tcpsvr->cli[i].state = 2;
     tcpsvr->cli[i].tact = tickget();
@@ -1203,7 +1202,7 @@ int readtcpsvr(tcpsvr_t *tcpsvr, unsigned char *buff, int n, char *msg)
         {
             err = errsock();
             tracet(1, "readtcpsvr: recv error sock=%d err=%d\n", tcpsvr->cli[0].sock, err);
-            sprintf(msg, "recv error (%d)", err);
+            std::snprintf(msg, MAXSTRMSG, "recv error (%d)", err);
             discontcp(&tcpsvr->cli[0], ticonnect);
             updatetcpsvr(tcpsvr, msg);
             return 0;
@@ -1242,7 +1241,7 @@ int writetcpsvr(tcpsvr_t *tcpsvr, unsigned char *buff, int n, char *msg)
                 {
                     err = errsock();
                     tracet(1, "writetcpsvr: send error i=%d sock=%d err=%d\n", i, tcpsvr->cli[i].sock, err);
-                    sprintf(msg, "send error (%d)", err);
+                    std::snprintf(msg, MAXSTRMSG, "send error (%d)", err);
                     discontcp(&tcpsvr->cli[i], ticonnect);
                     updatetcpsvr(tcpsvr, msg);
                     return 0;
@@ -1283,7 +1282,7 @@ int consock(tcpcli_t *tcpcli, char *msg)
              sizeof(tcpcli->svr.addr))) == -1)
         {
             err = errsock();
-            sprintf(msg, "connect error (%d)", err);
+            std::snprintf(msg, MAXSTRMSG, "connect error (%d)", err);
             tracet(1, "consock: connect error sock=%d err=%d\n", tcpcli->svr.sock, err);
             closesocket(tcpcli->svr.sock);
             tcpcli->svr.state = 0;
@@ -1291,10 +1290,10 @@ int consock(tcpcli_t *tcpcli, char *msg)
         }
     if (!stat)
         { /* not connect */
-            sprintf(msg, "connecting...");
+            std::snprintf(msg, MAXSTRMSG, "connecting...");
             return 0;
         }
-    sprintf(msg, "%s", tcpcli->svr.saddr);
+    std::snprintf(msg, MAXSTRMSG, "%s", tcpcli->svr.saddr);
     tracet(2, "consock: connected sock=%d addr=%s\n", tcpcli->svr.sock, tcpcli->svr.saddr);
     tcpcli->svr.state = 2;
     tcpcli->svr.tact = tickget();
@@ -1319,7 +1318,7 @@ tcpcli_t *opentcpcli(const char *path, char *msg)
     decodetcppath(path, tcpcli->svr.saddr, port, nullptr, nullptr, nullptr, nullptr);
     if (sscanf(port, "%d", &tcpcli->svr.port) < 1)
         {
-            sprintf(msg, "port error: %s", port);
+            std::snprintf(msg, MAXSTRMSG, "port error: %s", port);
             tracet(1, "opentcp: port error port=%s\n", port);
             free(tcpcli);
             return nullptr;
@@ -1369,7 +1368,7 @@ int waittcpcli(tcpcli_t *tcpcli, char *msg)
             if (tcpcli->toinact > 0 &&
                 static_cast<int>(tickget() - tcpcli->svr.tact) > tcpcli->toinact)
                 {
-                    sprintf(msg, "timeout");
+                    std::snprintf(msg, MAXSTRMSG, "timeout");
                     tracet(2, "waittcpcli: inactive timeout sock=%d\n", tcpcli->svr.sock);
                     discontcp(&tcpcli->svr, tcpcli->tirecon);
                     return 0;
@@ -1396,7 +1395,7 @@ int readtcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
         {
             err = errsock();
             tracet(1, "readtcpcli: recv error sock=%d err=%d\n", tcpcli->svr.sock, err);
-            sprintf(msg, "recv error (%d)", err);
+            std::snprintf(msg, MAXSTRMSG, "recv error (%d)", err);
             discontcp(&tcpcli->svr, tcpcli->tirecon);
             return 0;
         }
@@ -1426,7 +1425,7 @@ int writetcpcli(tcpcli_t *tcpcli, unsigned char *buff, int n, char *msg)
         {
             err = errsock();
             tracet(1, "writetcp: send error sock=%d err=%d\n", tcpcli->svr.sock, err);
-            sprintf(msg, "send error (%d)", err);
+            std::snprintf(msg, MAXSTRMSG, "send error (%d)", err);
             discontcp(&tcpcli->svr, tcpcli->tirecon);
             return 0;
         }
@@ -1488,10 +1487,10 @@ int reqntrip_s(ntrip_t *ntrip, char *msg)
 
     tracet(3, "reqntrip_s: state=%d\n", ntrip->state);
 
-    p += snprintf(p, 256 + NTRIP_MAXSTR, "SOURCE %s %s\r\n", ntrip->passwd, ntrip->mntpnt);
-    p += sprintf(p, "Source-Agent: NTRIP %s\r\n", NTRIP_AGENT);
-    p += sprintf(p, "STR: %s\r\n", ntrip->str);
-    p += sprintf(p, "\r\n");
+    p += std::snprintf(p, 256 + NTRIP_MAXSTR, "SOURCE %s %s\r\n", ntrip->passwd, ntrip->mntpnt);
+    p += std::snprintf(p, NTRIP_MAXSTR, "Source-Agent: NTRIP %s\r\n", NTRIP_AGENT);
+    p += std::snprintf(p, NTRIP_MAXSTR, "STR: %s\r\n", ntrip->str);
+    p += std::snprintf(p, NTRIP_MAXSTR, "\r\n");
 
     if (writetcpcli(ntrip->tcp, reinterpret_cast<unsigned char *>(buff), p - buff, msg) != p - buff)
         {
@@ -1514,22 +1513,22 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
 
     tracet(3, "reqntrip_c: state=%d\n", ntrip->state);
 
-    p += sprintf(p, "GET %s/%s HTTP/1.0\r\n", ntrip->url, ntrip->mntpnt);
-    p += sprintf(p, "User-Agent: NTRIP %s\r\n", NTRIP_AGENT);
+    p += std::snprintf(p, NTRIP_MAXSTR, "GET %s/%s HTTP/1.0\r\n", ntrip->url, ntrip->mntpnt);
+    p += std::snprintf(p, NTRIP_MAXSTR, "User-Agent: NTRIP %s\r\n", NTRIP_AGENT);
 
     if (!*ntrip->user)
         {
-            p += sprintf(p, "Accept: */*\r\n");
-            p += sprintf(p, "Connection: close\r\n");
+            p += std::snprintf(p, NTRIP_MAXSTR, "Accept: */*\r\n");
+            p += std::snprintf(p, NTRIP_MAXSTR, "Connection: close\r\n");
         }
     else
         {
-            sprintf(user, "%s:%s", ntrip->user, ntrip->passwd);
-            p += sprintf(p, "Authorization: Basic ");
+            std::snprintf(user, sizeof(user), "%s:%s", ntrip->user, ntrip->passwd);
+            p += std::snprintf(p, NTRIP_MAXSTR, "Authorization: Basic ");
             p += encbase64(p, reinterpret_cast<unsigned char *>(user), strlen(user));
-            p += sprintf(p, "\r\n");
+            p += std::snprintf(p, NTRIP_MAXSTR, "\r\n");
         }
-    p += sprintf(p, "\r\n");
+    p += std::snprintf(p, NTRIP_MAXSTR, "\r\n");
 
     if (writetcpcli(ntrip->tcp, reinterpret_cast<unsigned char *>(buff), p - buff, msg) != p - buff)
         {
@@ -1565,7 +1564,7 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
                     *q++ = *p++;
                 }
             ntrip->state = 2;
-            sprintf(msg, "%s/%s", ntrip->tcp->svr.saddr, ntrip->mntpnt);
+            std::snprintf(msg, MAXSTRMSG, "%s/%s", ntrip->tcp->svr.saddr, ntrip->mntpnt);
             tracet(2, "rspntrip_s: response ok nb=%d\n", ntrip->nb);
             return 1;
         }
@@ -1589,7 +1588,7 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
         }
     else if (ntrip->nb >= NTRIP_MAXRSP)
         { /* buffer overflow */
-            sprintf(msg, "response overflow");
+            std::snprintf(msg, MAXSTRMSG, "response overflow");
             tracet(1, "rspntrip_s: response overflow nb=%d\n", ntrip->nb);
             ntrip->nb = 0;
             ntrip->buff[0] = '\0';
@@ -1622,7 +1621,7 @@ int rspntrip_c(ntrip_t *ntrip, char *msg)
                     *q++ = *p++;
                 }
             ntrip->state = 2;
-            sprintf(msg, "%s/%s", ntrip->tcp->svr.saddr, ntrip->mntpnt);
+            std::snprintf(msg, MAXSTRMSG, "%s/%s", ntrip->tcp->svr.saddr, ntrip->mntpnt);
             tracet(2, "rspntrip_c: response ok nb=%d\n", ntrip->nb);
             return 1;
         }
@@ -1631,11 +1630,11 @@ int rspntrip_c(ntrip_t *ntrip, char *msg)
             if (!*ntrip->mntpnt)
                 { /* source table request */
                     ntrip->state = 2;
-                    sprintf(msg, "source table received");
+                    std::snprintf(msg, MAXSTRMSG, "source table received");
                     tracet(2, "rspntrip_c: receive source table nb=%d\n", ntrip->nb);
                     return 1;
                 }
-            sprintf(msg, "no mountp. reconnect...");
+            std::snprintf(msg, MAXSTRMSG, "no mountp. reconnect...");
             tracet(2, "rspntrip_c: no mount point nb=%d\n", ntrip->nb);
             ntrip->nb = 0;
             ntrip->buff[0] = '\0';
@@ -1661,7 +1660,7 @@ int rspntrip_c(ntrip_t *ntrip, char *msg)
         }
     else if (ntrip->nb >= NTRIP_MAXRSP)
         { /* buffer overflow */
-            sprintf(msg, "response overflow");
+            std::snprintf(msg, MAXSTRMSG, "response overflow");
             tracet(1, "rspntrip_s: response overflow nb=%d\n", ntrip->nb);
             ntrip->nb = 0;
             ntrip->buff[0] = '\0';
@@ -1750,14 +1749,13 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     /* use default port if no port specified */
     if (!*port)
         {
-            sprintf(port, "%d", type ? NTRIP_CLI_PORT : NTRIP_SVR_PORT);
+            std::snprintf(port, sizeof(port), "%d", type ? NTRIP_CLI_PORT : NTRIP_SVR_PORT);
         }
-    sprintf(tpath, "%s:%s", addr, port);
+    std::snprintf(tpath, MAXSTRPATH, "%s:%s", addr, port);
 
     /* ntrip access via proxy server */
     if (*proxyaddr)
         {
-            // sprintf(ntrip->url, "http://%s", tpath); This line triggers a warning. Replaced by:
             std::string s_aux = "http://" + std::string(tpath);
             int n = s_aux.length();
             if (n < 256)
@@ -1978,7 +1976,6 @@ void *ftpthread(void *arg)
         {
             p = remote;
         }
-    // sprintf(local, "%s%c%s", localdir, FILEPATHSEP, p);  This line triggers a warning. Replaced by:
     std::string s_aux = std::string(localdir) + std::to_string(FILEPATHSEP) + std::string(p);
     int n = s_aux.length();
     if (n < 1024)
@@ -1989,7 +1986,6 @@ void *ftpthread(void *arg)
                 }
         }
 
-    // sprintf(errfile, "%s.err", local);  This line triggers a warning. Replaced by:
     std::string s_aux2 = std::string(local) + ".err";
     n = s_aux2.length();
     if (n < 1024)
@@ -2022,14 +2018,12 @@ void *ftpthread(void *arg)
     if (*proxyaddr)
         {
             proto = ftp->proto ? const_cast<char *>("http") : const_cast<char *>("ftp");
-            sprintf(env, "set %s_proxy=http://%s & ", proto, proxyaddr);
+            std::snprintf(env, sizeof(env), "set %s_proxy=http://%s & ", proto, proxyaddr);
             proxyopt = const_cast<char *>("--proxy=on ");
         }
     /* download command (ref [2]) */
     if (ftp->proto == 0)
         { /* ftp */
-            // sprintf(opt, "--ftp-user=%s --ftp-password=%s --glob=off --passive-ftp %s-t 1 -T %d -O \"%s\"",
-            //    ftp->user, ftp->passwd, proxyopt, FTP_TIMEOUT, local); This line triggers a warning. Replaced by:
             std::string s_aux = "--ftp-user=" + std::string(ftp->user) + " --ftp-password=" + std::string(ftp->passwd) +
                                 " --glob=off --passive-ftp " + std::string(proxyopt) + "s-t 1 -T " + std::to_string(FTP_TIMEOUT) +
                                 " -O \"" + std::string(local) + "\"";
@@ -2042,8 +2036,6 @@ void *ftpthread(void *arg)
                         }
                 }
 
-            // sprintf(cmd, "%s%s %s \"ftp://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,
-            //    remote, errfile); This line triggers a warning. Replaced by:
             std::string s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
                                  "\"ftp://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
             k = s_aux2.length();
@@ -2054,7 +2046,6 @@ void *ftpthread(void *arg)
         }
     else
         { /* http */
-            // sprintf(opt, "%s-t 1 -T %d -O \"%s\"", proxyopt, FTP_TIMEOUT, local); This line triggers a warning. Replaced by:
             std::string s_aux = std::string(proxyopt) + " -t 1 -T " + std::to_string(FTP_TIMEOUT) + " -O \"" + std::string(local) + "\"";
             int l = s_aux.length();
             for (int i = 0; (i < l) && (i < 1024); i++)
@@ -2062,8 +2053,6 @@ void *ftpthread(void *arg)
                     opt[i] = s_aux[i];
                 }
 
-            // sprintf(cmd, "%s%s %s \"http://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,
-            //    remote, errfile); This line triggers a warning. Replaced by:
             std::string s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
                                  "\"http://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
             l = s_aux2.length();
@@ -2186,7 +2175,10 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
     if (ftp->state <= 0)
         { /* ftp/http not executed? */
             ftp->state = 1;
-            sprintf(msg, "%s://%s", ftp->proto ? "http" : "ftp", ftp->addr);
+            if (std::snprintf(msg, sizeof(ftp->addr), "%s://%s", ftp->proto ? "http" : "ftp", ftp->addr) < 0)
+                {
+                    tracet(1, "readftp: ftp address truncation\n");
+                }
 
             if (pthread_create(&ftp->thread, nullptr, ftpthread, ftp))
                 {
@@ -2203,7 +2195,10 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
 
     if (ftp->state == 3)
         { /* ftp error */
-            sprintf(msg, "%s error (%d)", ftp->proto ? "http" : "ftp", ftp->error);
+            if (std::snprintf(msg, sizeof(ftp->addr), "%s error (%d)", ftp->proto ? "http" : "ftp", ftp->error) < 0)
+                {
+                    tracet(1, "readftp: ftp address truncation\n");
+                }
 
             /* set next retry time */
             ftp->tnext = nextdltime(ftp->topts, 0);
@@ -2217,7 +2212,7 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
         {
             *p++ = *q++;
         }
-    p += sprintf(reinterpret_cast<char *>(p), "\r\n");
+    p += std::snprintf(reinterpret_cast<char *>(p), sizeof("\r\n") + 1, "\r\n");
 
     /* set next download time */
     ftp->tnext = nextdltime(ftp->topts, 1);

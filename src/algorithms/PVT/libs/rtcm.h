@@ -593,7 +593,7 @@ private:
         inline void encode_header()
         {
             char header[header_length + 1] = "";
-            std::sprintf(header, "GS%4d", static_cast<int>(body_length_));
+            std::snprintf(header, header_length, "GS%4d", static_cast<int>(body_length_));
             std::memcpy(data_, header, header_length);
         }
 

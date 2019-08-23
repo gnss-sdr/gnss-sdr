@@ -476,34 +476,34 @@ int satid2no(const char *id)
 void satno2id(int sat, char *id)
 {
     int prn;
+    char id_aux[16];
     switch (satsys(sat, &prn))
         {
         case SYS_GPS:
-            sprintf(id, "G%02d", prn - MINPRNGPS + 1);
+            std::snprintf(id, sizeof(id_aux), "G%02d", prn - MINPRNGPS + 1);
             return;
         case SYS_GLO:
-            sprintf(id, "R%02d", prn - MINPRNGLO + 1);
+            snprintf(id, sizeof(id_aux), "R%02d", prn - MINPRNGLO + 1);
             return;
         case SYS_GAL:
-            sprintf(id, "E%02d", prn - MINPRNGAL + 1);
+            std::snprintf(id, sizeof(id_aux), "E%02d", prn - MINPRNGAL + 1);
             return;
         case SYS_QZS:
-            sprintf(id, "J%02d", prn - MINPRNQZS + 1);
+            std::snprintf(id, sizeof(id_aux), "J%02d", prn - MINPRNQZS + 1);
             return;
         case SYS_BDS:
-            sprintf(id, "C%02d", prn - MINPRNBDS + 1);
+            std::snprintf(id, sizeof(id_aux), "C%02d", prn - MINPRNBDS + 1);
             return;
         case SYS_IRN:
-            sprintf(id, "I%02d", prn - MINPRNIRN + 1);
+            std::snprintf(id, sizeof(id_aux), "I%02d", prn - MINPRNIRN + 1);
             return;
         case SYS_LEO:
-            sprintf(id, "L%02d", prn - MINPRNLEO + 1);
+            std::snprintf(id, sizeof(id_aux), "L%02d", prn - MINPRNLEO + 1);
             return;
         case SYS_SBS:
-            sprintf(id, "%03d", prn);
+            std::snprintf(id, sizeof(id_aux), "%03d", prn);
             return;
         }
-    std::strncpy(id, "", 1);
 }
 
 
@@ -1448,7 +1448,7 @@ void matsprint(const double A[], int n, int m, int p, int q, std::string &buffer
             for (j = 0; j < m; j++)
                 {
                     char buf_[256];
-                    sprintf(buf_, " %*.*f", p, q, A[i + j * n]);
+                    std::snprintf(buf_, sizeof(buf_), " %*.*f", p, q, A[i + j * n]);
                     std::string s(buf_);
                     buffer += s;
                 }
@@ -2073,7 +2073,7 @@ void time2str(gtime_t t, char *s, int n)
             t.sec = 0.0;
         };
     time2epoch(t, ep);
-    sprintf(s, "%04.0f/%02.0f/%02.0f %02.0f:%02.0f:%0*.*f", ep[0], ep[1], ep[2],
+    std::snprintf(s, MAXSTATMSG, "%04.0f/%02.0f/%02.0f %02.0f:%02.0f:%0*.*f", ep[0], ep[1], ep[2],
         ep[3], ep[4], n <= 0 ? 2 : n + 3, n <= 0 ? 0 : n, ep[5]);
 }
 
@@ -4147,7 +4147,7 @@ int repstr(char *str, const char *pat, const char *rep)
                 }
             strncpy(r, p, q - p);
             r += q - p;
-            r += sprintf(r, "%s", rep);
+            r += std::snprintf(r, sizeof(buff), "%s", rep);
         }
     if (p <= str)
         {
@@ -4227,35 +4227,35 @@ int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
             ep0[0] = ep[0];
             dow = static_cast<int>(floor(time2gpst(time, &week) / 86400.0));
             doy = static_cast<int>(floor(timediff(time, epoch2time(ep0)) / 86400.0)) + 1;
-            sprintf(rep, "%02d", (static_cast<int>(ep[3]) / 3) * 3);
+            std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[3]) / 3) * 3);
             stat |= repstr(rpath, "%ha", rep);
-            sprintf(rep, "%02d", (static_cast<int>(ep[3]) / 6) * 6);
+            std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[3]) / 6) * 6);
             stat |= repstr(rpath, "%hb", rep);
-            sprintf(rep, "%02d", (static_cast<int>(ep[3]) / 12) * 12);
+            std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[3]) / 12) * 12);
             stat |= repstr(rpath, "%hc", rep);
-            sprintf(rep, "%04.0f", ep[0]);
+            std::snprintf(rep, sizeof(rep), "%04.0f", ep[0]);
             stat |= repstr(rpath, "%Y", rep);
-            sprintf(rep, "%02.0f", fmod(ep[0], 100.0));
+            std::snprintf(rep, sizeof(rep), "%02.0f", fmod(ep[0], 100.0));
             stat |= repstr(rpath, "%y", rep);
-            sprintf(rep, "%02.0f", ep[1]);
+            std::snprintf(rep, sizeof(rep), "%02.0f", ep[1]);
             stat |= repstr(rpath, "%m", rep);
-            sprintf(rep, "%02.0f", ep[2]);
+            std::snprintf(rep, sizeof(rep), "%02.0f", ep[2]);
             stat |= repstr(rpath, "%d", rep);
-            sprintf(rep, "%02.0f", ep[3]);
+            std::snprintf(rep, sizeof(rep), "%02.0f", ep[3]);
             stat |= repstr(rpath, "%h", rep);
-            sprintf(rep, "%02.0f", ep[4]);
+            std::snprintf(rep, sizeof(rep), "%02.0f", ep[4]);
             stat |= repstr(rpath, "%M", rep);
-            sprintf(rep, "%02.0f", floor(ep[5]));
+            std::snprintf(rep, sizeof(rep), "%02.0f", floor(ep[5]));
             stat |= repstr(rpath, "%S", rep);
-            sprintf(rep, "%03d", doy);
+            std::snprintf(rep, sizeof(rep), "%03d", doy);
             stat |= repstr(rpath, "%n", rep);
-            sprintf(rep, "%04d", week);
+            std::snprintf(rep, sizeof(rep), "%04d", week);
             stat |= repstr(rpath, "%W", rep);
-            sprintf(rep, "%d", dow);
+            std::snprintf(rep, sizeof(rep), "%d", dow);
             stat |= repstr(rpath, "%D", rep);
-            sprintf(rep, "%c", 'a' + static_cast<int>(ep[3]));
+            std::snprintf(rep, sizeof(rep), "%c", 'a' + static_cast<int>(ep[3]));
             stat |= repstr(rpath, "%H", rep);
-            sprintf(rep, "%02d", (static_cast<int>(ep[4]) / 15) * 15);
+            std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[4]) / 15) * 15);
             stat |= repstr(rpath, "%t", rep);
         }
     else if (strstr(rpath, "%ha") || strstr(rpath, "%hb") || strstr(rpath, "%hc") ||
@@ -5114,7 +5114,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         {
             std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile] = '\0';
-            sprintf(cmd, R"(gzip -f -d -c "%s" > "%s")", tmpfile, uncfile);
+            std::snprintf(cmd, sizeof(cmd), R"(gzip -f -d -c "%s" > "%s")", tmpfile, uncfile);
 
             if (execcmd(cmd))
                 {
@@ -5144,8 +5144,6 @@ int rtk_uncompress(const char *file, char *uncfile)
                     dir = fname;
                     fname = p + 1;
                 }
-            // sprintf(cmd, "tar -C \"%s\" -xf \"%s\"", dir, tmpfile);
-            // NOTE: This sprintf triggers a format overflow warning. Replaced by:
             std::ostringstream temp;
             std::string s_aux1(dir);
             std::string s_aux2(tmpfile);
@@ -5185,7 +5183,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         {
             std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile + 3] = *(p + 3) == 'D' ? 'O' : 'o';
-            sprintf(cmd, R"(crx2rnx < "%s" > "%s")", tmpfile, uncfile);
+            std::snprintf(cmd, sizeof(cmd), R"(crx2rnx < "%s" > "%s")", tmpfile, uncfile);
 
             if (execcmd(cmd))
                 {
@@ -5256,8 +5254,8 @@ int expath(const char *path, char *paths[], int nmax)
                 {
                     continue;
                 }
-            sprintf(s1, "^%s$", d->d_name);
-            sprintf(s2, "^%s$", file);
+            std::snprintf(s1, sizeof(s1), "^%s$", d->d_name);
+            std::snprintf(s2, sizeof(s2), "^%s$", file);
             for (p = s1; *p; p++)
                 {
                     *p = static_cast<char>(tolower(static_cast<int>(*p)));
@@ -5280,7 +5278,7 @@ int expath(const char *path, char *paths[], int nmax)
                 }
             if (p && n < nmax)
                 {
-                    sprintf(paths[n++], "%s%s", dir, d->d_name);
+                    std::snprintf(paths[n++], MAXSTRPATH, "%s%s", dir, d->d_name);
                 }
         }
     closedir(dp);

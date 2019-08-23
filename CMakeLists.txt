@@ -2352,20 +2352,27 @@ endif()
 ################################################################################
 # Set compiler flags
 ################################################################################
+set(CXX_WARNING_FLAGS -Wall -Wextra)
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     # Add warning flags
     # For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-    set(cxx_warning_flags -Wall -Wextra)
     if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
-        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${cxx_warning_flags}>")
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${CXX_WARNING_FLAGS}>")
     else()
-        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${cxx_warning_flags}>")
+        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${CXX_WARNING_FLAGS}>")
     endif()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0")
         add_compile_options(-Wno-missing-field-initializers)
     endif()
     if(CMAKE_CROSSCOMPILING)
         add_compile_options(-Wno-psabi)
+    endif()
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${CXX_WARNING_FLAGS}>")
+    else()
+        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${CXX_WARNING_FLAGS}>")
     endif()
 endif()
 

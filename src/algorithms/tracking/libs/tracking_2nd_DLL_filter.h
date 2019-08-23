@@ -52,7 +52,7 @@ public:
     void set_pdi(float pdi_code);                 //!< Set Summation interval for code [s]
     void initialize();                            //!< Start tracking with acquisition information
     float get_code_nco(float DLL_discriminator);  //!< Numerically controlled oscillator
-    Tracking_2nd_DLL_filter(float pdi_code);
+    explicit Tracking_2nd_DLL_filter(float pdi_code);
     Tracking_2nd_DLL_filter();
     ~Tracking_2nd_DLL_filter() = default;
 

@@ -70,7 +70,7 @@ class GlonassL2CaPcpsAcquisitionTest_msg_rx : public gr::block
 private:
     friend GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GlonassL2CaPcpsAcquisitionTest_msg_rx(concurrent_queue<int>& queue);
+    explicit GlonassL2CaPcpsAcquisitionTest_msg_rx(concurrent_queue<int>& queue);
     concurrent_queue<int>& channel_internal_queue;
 
 public:

@@ -108,7 +108,7 @@ public:
 private:
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
-    dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
+    explicit dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();

@@ -57,7 +57,7 @@ class InMemoryConfiguration;
 class FileConfiguration : public ConfigurationInterface
 {
 public:
-    FileConfiguration(std::string filename);
+    explicit FileConfiguration(std::string filename);
     FileConfiguration();
     //! Virtual destructor
     ~FileConfiguration();

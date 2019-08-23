@@ -57,7 +57,7 @@ public:
 class option_list
 {
 public:
-    option_list(std::string program_name);
+    explicit option_list(std::string program_name);
 
     void add(const option_t &opt);
 

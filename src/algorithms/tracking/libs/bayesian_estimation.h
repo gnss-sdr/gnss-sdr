@@ -69,7 +69,7 @@ class Bayesian_estimator
 {
 public:
     Bayesian_estimator();
-    Bayesian_estimator(int ny);
+    explicit Bayesian_estimator(int ny);
     Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
     ~Bayesian_estimator() = default;
 

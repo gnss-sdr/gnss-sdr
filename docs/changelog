@@ -11,19 +11,24 @@
 ### Improvements in Portability:
 
 - The CMake scripts now find dependencies in Debian's riscv64 architecture.
+- Enable AVX2 kernels of the volk_gnsssdr library when using the Clang compiler.
+- Added a CMake toolchain for building volk_gnsssdr in a Raspberry Pi.
 
 
 ### Improvements in Reliability:
 
 - Decoding of navigation messages no longer rely on implementation defined behavior for shifting left a signed integer.
-- Removed usage of functions with insecure API (e.g., strcpy).
+- Removed usage of functions with insecure API (e.g., strcpy, sprintf).
 - Added clang-tidy checks clang-analyzer-security.*, clang-analyzer-optin.portability.UnixAPI clang-tidy checks. Fixed raised warnings.
+- Fixed cpplint.py runtime/printf and runtime/explicit errors.
+- All constructors callable with one argument are marked with the keyword explicit. See MISRA C++:2008, 12-1-3 - All constructors that are callable with a single argument of fundamental type shall be declared explicit.
 
 
 ### Improvements in Usability:
 
 - Improved DLL-PLL binary dump MATLAB/Octave plot script. Old versions removed.
 - Simplified RTKLIB error log.
+- Added a Python 3 plotting script to show relative performance of generic volk_gnsssdr kernels wrt SIMD fastest versions.
 
 
 

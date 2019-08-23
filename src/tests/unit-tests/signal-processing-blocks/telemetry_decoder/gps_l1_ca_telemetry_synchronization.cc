@@ -1,7 +1,7 @@
 /*!
- * \file gps_l1_ca_telemetry_decoder_lucas_test.cc
- * \brief  This class implements a telemetry decoder test for GPS_L1_CA_Telemetry_Decoder
- *  implementation based on some input parameters.
+ * \file gps_l1_ca_telemetry_synchronization.cc
+ * \brief  This class implements a telemetry decoder synchronization test for GPS_L1_CA_Telemetry_Decoder with SC
+ * \note Code added as part of GSoC 2019 program
  * \author Lucas Ventura, 2015. lucas.ventura.r(at)gmail.com
  *
  *
@@ -45,18 +45,26 @@
 #define preamble_offset 200		// Random data before preamble
 #define Nw 1000000				// Number of Monte-Carlo realizations
 
-
+/*!
+ * \ The fixture for testing class GpsL1CATelemetrySynchronizationTest.
+ * 
+ */
 class GpsL1CATelemetrySynchronizationTest : public ::testing::Test
 {
 public:
+	// Simulates frames (with the SW) from the navigation message before the noise is added
     std::vector<int> initial_vector;
+    // initial_vector with noise
     std::vector<double> synchro_vector;
 
+    // Initializes d_preamble_samples with the SW
     void preamble_samples();
+    // Fills initial_vector with the preamble and random data
     void make_vector();
+    // Fills synchro_vector (initial_vector + noise)
     void fill_gnss_synchro();
 
-    // gps_l1_ca_telemetry_decoder_gs.h
+    // Initializate like in gps_l1_ca_telemetry_decoder_gs
     int32_t d_bits_per_preamble = GPS_CA_PREAMBLE_LENGTH_BITS;
     int32_t d_samples_per_preamble = d_bits_per_preamble;
     int32_t d_preamble_period_symbols = GPS_SUBFRAME_BITS;
@@ -80,7 +88,10 @@ public:
     double stddev = 0.0;
 };
 
-
+/*!
+ * \ Initializes d_preamble_samples with the SW
+ *
+ */
 void GpsL1CATelemetrySynchronizationTest::preamble_samples()
 {
     int32_t n = 0;
@@ -178,17 +189,23 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, Check)
 }*/
 
 
-// TEST ValidationOfResults
+/*!
+ * \ Simulates the synchronization in gps_l1_ca_telemetry_decoder_gs and saves metrics
+ *
+ * Computes the number of total preambles (missed and detected)
+ * Calculates the number of detected, correct and wrong, preambles in the different states
+ * Saves probabilities in a file "../../test_results/synchronization_SC_test_1.csv"
+ */
 TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     start = std::chrono::system_clock::now();
     
-    // file pointer 
+    // file pointer
 	std::fstream fout; 
   
-	// opens an existing csv (std::ios::app) file or creates a new file. 
+	// opens an existing csv (std::ios::app) file or creates a new file (std::ios::out). 
 	fout.open("../../test_results/synchronization_SC_test_1.csv", std::ios::out);
 	
 	fout << "stddev" << ", "
@@ -201,9 +218,6 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
     
     for (int32_t n = 0; n < Nw; n++)
     {	
-    	if(n % (Nw/10) == 0)
-    		stddev = stddev + 0.05;
-    	
         initial_vector.clear();
         synchro_vector.clear();
         
@@ -351,16 +365,20 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, ValidationOfResults)
 			}
 		
 		
+		// Store results in file
 		fout << stddev << ", "
 				<< n_preambles << ", " 
 				<< n_preamble_detections_s0 << ", " << n_correct_detections_s0 << ", " << n_wrong_detections_s0 << ", "
 				<< n_preamble_detections_s1 << ", " << n_correct_detections_s1 << ", " << n_wrong_detections_s1 << ", "
 				<< final_synchronization << "\n";
+		
+    	// Adds noise with standard deviation from 0 to 0.45
+    	if(n % (Nw/10) == 0)
+    		stddev = stddev + 0.05;
     }
 	
-
+    // Close file
     fout.close();
-
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;

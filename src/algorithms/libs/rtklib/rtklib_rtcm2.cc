@@ -644,7 +644,7 @@ int decode_rtcm2(rtcm_t *rtcm)
 
     if (rtcm->outtype)
         {
-            sprintf(rtcm->msgtype, "RTCM %2d (%4d) zcnt=%7.1f staid=%3d seqno=%d",
+            std::snprintf(rtcm->msgtype, sizeof(rtcm->msgtype), "RTCM %2d (%4d) zcnt=%7.1f staid=%3d seqno=%d",
                 type, rtcm->len, zcnt, staid, seqno);
         }
     if (type == 3 || type == 22 || type == 23 || type == 24)

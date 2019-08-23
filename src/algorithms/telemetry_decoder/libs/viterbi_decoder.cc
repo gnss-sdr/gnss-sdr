@@ -31,8 +31,8 @@
 
 #include "viterbi_decoder.h"
 #include <glog/logging.h>
-#include <cstring>  // for memset
-#include <ostream>  // for operator<<, basic_ostream, char_traits, endl
+#include <algorithm>  // for fill_n
+#include <ostream>    // for operator<<, basic_ostream, char_traits, endl
 
 // logging
 #define EVENT 2   // logs important events which don't occur every block
@@ -434,7 +434,6 @@ int Viterbi_Decoder::nsc_enc_bit(int state_out_p[], int input, int state_in,
  length:  The highest bit position in the symbol
 
  This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()  */
-
 int Viterbi_Decoder::parity_counter(int symbol, int length)
 {
     int counter;
@@ -453,14 +452,13 @@ Viterbi_Decoder::Prev::Prev(int states, int t)
 {
     this->t = t;
     num_states = states;
-    state = new int[states];
-    bit = new int[states];
-    metric = new float[states];
-    refcount = new int;
-    *refcount = 1;
-    memset(state, 0, sizeof(int) * num_states);
-    memset(bit, 0, sizeof(int) * num_states);
-    memset(metric, 0, sizeof(float) * num_states);
+    state.reserve(num_states);
+    bit.reserve(num_states);
+    metric.reserve(num_states);
+    refcount = 1;
+    std::fill_n(state.begin(), num_states, 0);
+    std::fill_n(bit.begin(), num_states, 0);
+    std::fill_n(metric.begin(), num_states, 0.0F);
 }
 
 
@@ -468,7 +466,7 @@ Viterbi_Decoder::Prev::Prev(int states, int t)
 Viterbi_Decoder::Prev::Prev(const Prev& prev)
 {
     refcount = prev.refcount;
-    (*refcount)++;
+    refcount++;
     t = prev.t;
     state = prev.state;
     num_states = prev.num_states;
@@ -477,7 +475,7 @@ Viterbi_Decoder::Prev::Prev(const Prev& prev)
     VLOG(LMORE) << "Prev("
                 << "?"
                 << ", " << t << ")"
-                << " copy, new refcount = " << *refcount;
+                << " copy, new refcount = " << refcount;
 }
 
 
@@ -491,21 +489,14 @@ Viterbi_Decoder::Prev& Viterbi_Decoder::Prev::operator=(const Prev& other)
         }
 
     // handle old resources
-    if (*refcount == 1)
-        {  // if they are not used anymore -> unallocate them
-            delete[] state;
-            delete[] bit;
-            delete[] metric;
-            delete refcount;
-        }
-    else
+    if (refcount != 1)
         {  // this object is not anymore using them
-            (*refcount)--;
+            refcount--;
         }
 
     // increase ref counter for this resource set
     refcount = other.refcount;
-    (*refcount)++;
+    refcount++;
 
     // take over resources
     t = other.t;
@@ -516,28 +507,20 @@ Viterbi_Decoder::Prev& Viterbi_Decoder::Prev::operator=(const Prev& other)
     VLOG(LMORE) << "Prev("
                 << "?"
                 << ", " << t << ")"
-                << " assignment, new refcount = " << *refcount;
+                << " assignment, new refcount = " << refcount;
     return *this;
 }
 
 
 Viterbi_Decoder::Prev::~Prev()
 {
-    if (*refcount == 1)
+    if (refcount != 1)
         {
-            delete[] state;
-            delete[] bit;
-            delete[] metric;
-            delete refcount;
-            // std::cout << "~Prev(" << "?" << ", " << t << ")" << " destructor with delete" << std::endl;
-        }
-    else
-        {
-            (*refcount)--;
+            refcount--;
             VLOG(LMORE) << "~Prev("
                         << "?"
                         << ", " << t << ")"
-                        << " destructor after copy, new refcount = " << *refcount;
+                        << " destructor after copy, new refcount = " << refcount;
         }
 }
 

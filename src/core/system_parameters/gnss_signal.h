@@ -45,7 +45,7 @@ class Gnss_Signal
 {
 public:
     Gnss_Signal();
-    Gnss_Signal(const std::string& signal_);
+    explicit Gnss_Signal(const std::string& signal_);
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
     ~Gnss_Signal() = default;
     std::string get_signal_str() const;    //!< Get the satellite signal {"1C" for GPS L1 C/A, "2S" for GPS L2C (M), "L5" for GPS L5, "1G" for GLONASS L1 C/A, "1B" for Galileo E1B, "5X" for Galileo E5a.

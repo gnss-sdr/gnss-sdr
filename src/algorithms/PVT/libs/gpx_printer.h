@@ -48,7 +48,7 @@ class Rtklib_Solver;
 class Gpx_Printer
 {
 public:
-    Gpx_Printer(const std::string& base_path = ".");
+    explicit Gpx_Printer(const std::string& base_path = ".");
     ~Gpx_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);

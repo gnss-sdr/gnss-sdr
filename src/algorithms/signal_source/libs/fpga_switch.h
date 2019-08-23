@@ -49,7 +49,7 @@ public:
     /*!
 	 * \brief Constructor
 	 */
-    Fpga_Switch(const std::string& device_name);
+    explicit Fpga_Switch(const std::string& device_name);
 
     /*!
      * \brief Destructor

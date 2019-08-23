@@ -50,7 +50,7 @@ class ChannelFsm
 {
 public:
     ChannelFsm();
-    ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition);
+    explicit ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition);
 
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);

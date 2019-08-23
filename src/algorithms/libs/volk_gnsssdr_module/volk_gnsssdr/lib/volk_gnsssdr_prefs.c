@@ -16,6 +16,7 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +30,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_prefs.h>
 
 
-void volk_gnsssdr_get_config_path(char *path)
+void volk_gnsssdr_get_config_path(char *path, bool read)
 {
     if (!path) return;
     const char *suffix = "/.volk_gnsssdr/volk_gnsssdr_config";
@@ -42,7 +43,10 @@ void volk_gnsssdr_get_config_path(char *path)
         {
             strncpy(path, home, 512);
             strcat(path, suffix2);
-            return;
+            if (!read || (access(path, F_OK) != -1))
+                {
+                    return;
+                }
         }
 
     // check for user-local config file
@@ -51,7 +55,7 @@ void volk_gnsssdr_get_config_path(char *path)
         {
             strncpy(path, home, 512);
             strcat(path, suffix);
-            if (access(path, F_OK) != -1)
+            if (!read || (access(path, F_OK) != -1))
                 {
                     return;
                 }
@@ -63,7 +67,7 @@ void volk_gnsssdr_get_config_path(char *path)
         {
             strncpy(path, home, 512);
             strcat(path, suffix);
-            if (access(path, F_OK) != -1)
+            if (!read || (access(path, F_OK) != -1))
                 {
                     return;
                 }
@@ -99,7 +103,7 @@ size_t volk_gnsssdr_load_preferences(volk_gnsssdr_arch_pref_t **prefs_res)
     volk_gnsssdr_arch_pref_t *prefs = NULL;
 
     // get the config path
-    volk_gnsssdr_get_config_path(path);
+    volk_gnsssdr_get_config_path(path, true);
     if (!path[0]) return n_arch_prefs;  //no prefs found
     config_file = fopen(path, "r");
     if (!config_file) return n_arch_prefs;  //no prefs found

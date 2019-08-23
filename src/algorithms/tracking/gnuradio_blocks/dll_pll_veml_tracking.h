@@ -77,7 +77,7 @@ public:
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
-    dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
+    explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();

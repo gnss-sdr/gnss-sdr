@@ -73,7 +73,7 @@ class GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx : public gr::block
 private:
     friend GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
+    explicit GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
 public:

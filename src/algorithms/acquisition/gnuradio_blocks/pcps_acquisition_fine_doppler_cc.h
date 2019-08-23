@@ -194,7 +194,7 @@ public:
 private:
     friend pcps_acquisition_fine_doppler_cc_sptr
     pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
-    pcps_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
+    explicit pcps_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
 
     int compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
     int estimate_Doppler();

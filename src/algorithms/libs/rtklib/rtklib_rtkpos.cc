@@ -524,7 +524,7 @@ void errmsg(rtk_t *rtk, const char *format, ...)
     int n;
     va_list ap;
     time2str(rtk->sol.time, tstr, 2);
-    n = sprintf(buff, "%s: ", tstr + 11);
+    n = std::snprintf(buff, sizeof(buff), "%s: ", tstr + 11);
     va_start(ap, format);
     n += vsprintf(buff + n, format, ap);
     va_end(ap);

@@ -89,7 +89,7 @@ public:
     /*!
      * \brief Default constructor. Creates GNSS Navigation and Observables RINEX files and their headers
      */
-    Rinex_Printer(int version = 0, const std::string& base_path = ".");
+    explicit Rinex_Printer(int version = 0, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor. Closes GNSS Navigation and Observables RINEX files

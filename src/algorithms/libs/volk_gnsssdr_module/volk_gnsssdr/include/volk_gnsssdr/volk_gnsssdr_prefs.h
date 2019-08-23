@@ -26,6 +26,7 @@
 #define INCLUDED_VOLK_GNSSSDR_PREFS_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 __VOLK_DECL_BEGIN
@@ -38,10 +39,11 @@ typedef struct volk_gnsssdr_arch_pref
 } volk_gnsssdr_arch_pref_t;
 
 ////////////////////////////////////////////////////////////////////////
-// get path to volk_gnsssdr_config profiling info;
+// get path to volk_gnsssdr_config profiling info; second arguments specifies
+// if config file should be tested on existence for reading.
 // returns \0 in the argument on failure.
 ////////////////////////////////////////////////////////////////////////
-VOLK_API void volk_gnsssdr_get_config_path(char *);
+VOLK_API void volk_gnsssdr_get_config_path(char *, bool);
 
 ////////////////////////////////////////////////////////////////////////
 // load prefs into global prefs struct

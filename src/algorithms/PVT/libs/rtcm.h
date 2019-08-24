@@ -44,6 +44,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <pmt/pmt.h>
+#include <algorithm>  // for min
 #include <bitset>
 #include <cstddef>  // for size_t
 #include <cstdint>
@@ -593,7 +594,7 @@ private:
         inline void encode_header()
         {
             char header[header_length + 1] = "";
-            std::snprintf(header, header_length, "GS%4d", static_cast<int>(body_length_));
+            std::snprintf(header, header_length + 1, "GS%4d", std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)));
             std::memcpy(data_, header, header_length);
         }
 

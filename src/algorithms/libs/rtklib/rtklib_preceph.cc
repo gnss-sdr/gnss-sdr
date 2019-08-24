@@ -420,7 +420,7 @@ void readsp3(const char *file, nav_t *nav, int opt)
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
+            if (!(efiles[i] = static_cast<char *>(malloc(MAXSTRPATH + 255))))
                 {
                     for (i--; i >= 0; i--)
                         {
@@ -601,7 +601,7 @@ int readdcb(const char *file, nav_t *nav, const sta_t *sta)
         }
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
+            if (!(efiles[i] = static_cast<char *>(malloc(MAXSTRPATH + 255))))
                 {
                     for (i--; i >= 0; i--)
                         {

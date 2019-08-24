@@ -782,7 +782,7 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
+            if (!(efiles[i] = static_cast<char *>(malloc(MAXSTRPATH + 255))))
                 {
                     for (i--; i >= 0; i--)
                         {

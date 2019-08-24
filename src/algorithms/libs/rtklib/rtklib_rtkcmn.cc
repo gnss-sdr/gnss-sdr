@@ -5278,7 +5278,7 @@ int expath(const char *path, char *paths[], int nmax)
                 }
             if (p && n < nmax)
                 {
-                    std::snprintf(paths[n++], MAXSTRPATH, "%s%s", dir, d->d_name);
+                    std::snprintf(paths[n++], MAXSTRPATH + 255, "%s%s", dir, d->d_name);
                 }
         }
     closedir(dp);

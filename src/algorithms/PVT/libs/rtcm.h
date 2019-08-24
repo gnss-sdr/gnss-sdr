@@ -594,7 +594,11 @@ private:
         inline void encode_header()
         {
             char header[header_length + 1] = "";
-            std::snprintf(header, header_length + 1, "GS%4d", std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)));
+            int num_chars = std::snprintf(header, header_length + 1, "GS%4d", std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)));
+            if ((num_chars <= 0) or (num_chars > header_length))
+                {
+                    // avoid Wformat-truncation warning
+                }
             std::memcpy(data_, header, header_length);
         }
 

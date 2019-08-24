@@ -153,7 +153,7 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             std::array<char, 80> buf1{};
             tstruct = *gmtime(&UTC_time);
-            strftime(buf1.data(), sizeof(buf1), "%d/%m/%Y %H:%M:%S", &tstruct);
+            strftime(buf1.data(), buf1.size(), "%d/%m/%Y %H:%M:%S", &tstruct);
             std::string str_time = std::string(buf1.data());
             str_stream << "- Receiver UTC Time: " << str_time << std::endl;
             str_stream << std::setprecision(9);

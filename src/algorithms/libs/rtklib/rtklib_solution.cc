@@ -55,6 +55,7 @@
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
 #include <cctype>
+#include <cmath>
 #include <cstring>
 
 
@@ -1326,7 +1327,7 @@ int decode_solstat(char *buff, solstat_t *stat)
     stat->resp = static_cast<float>(resp);
     stat->resc = static_cast<float>(resc);
     stat->flag = static_cast<unsigned char>((vsat << 5) + (slip << 3) + fix);
-    stat->snr = static_cast<unsigned char>(snr * 4.0 + 0.5);
+    stat->snr = static_cast<unsigned char>(std::lround(snr * 4.0));
     stat->lock = static_cast<uint16_t>(lock);
     stat->outc = static_cast<uint16_t>(outc);
     stat->slipc = static_cast<uint16_t>(slipc);

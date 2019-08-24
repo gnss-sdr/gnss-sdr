@@ -192,7 +192,7 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     d_num_doppler_bins = 0;
     num_dwells = 0;
 
-    Acquisition_Dump_Reader(basename,
+    *this = Acquisition_Dump_Reader(basename,
         sat_,
         doppler_max_,
         doppler_step_,

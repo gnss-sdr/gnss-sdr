@@ -31,6 +31,7 @@
 
 #include "tracking_loop_filter.h"
 #include <gtest/gtest.h>
+#include <cstddef>
 
 TEST(TrackingLoopFilterTest, FirstOrderLoop)
 {
@@ -87,7 +88,7 @@ TEST(TrackingLoopFilterTest, FirstOrderLoopWithLastIntegrator)
     theFilter.initialize(0.0);
 
     float result = 0.0;
-    for (unsigned int i = 0; i < sample_data.size(); ++i)
+    for (size_t i = 0; i < sample_data.size(); ++i)
         {
             result = theFilter.apply(sample_data[i]);
             EXPECT_NEAR(result, expected_out[i], 1e-4);
@@ -118,7 +119,7 @@ TEST(TrackingLoopFilterTest, SecondOrderLoop)
     theFilter.initialize(0.0);
 
     float result = 0.0;
-    for (unsigned int i = 0; i < sample_data.size(); ++i)
+    for (size_t i = 0; i < sample_data.size(); ++i)
         {
             result = theFilter.apply(sample_data[i]);
             EXPECT_NEAR(result, expected_out[i], 1e-4);
@@ -149,7 +150,7 @@ TEST(TrackingLoopFilterTest, SecondOrderLoopWithLastIntegrator)
     theFilter.initialize(0.0);
 
     float result = 0.0;
-    for (unsigned int i = 0; i < sample_data.size(); ++i)
+    for (size_t i = 0; i < sample_data.size(); ++i)
         {
             result = theFilter.apply(sample_data[i]);
             EXPECT_NEAR(result, expected_out[i], 1e-4);
@@ -180,7 +181,7 @@ TEST(TrackingLoopFilterTest, ThirdOrderLoop)
     theFilter.initialize(0.0);
 
     float result = 0.0;
-    for (unsigned int i = 0; i < sample_data.size(); ++i)
+    for (size_t i = 0; i < sample_data.size(); ++i)
         {
             result = theFilter.apply(sample_data[i]);
             EXPECT_NEAR(result, expected_out[i], 1e-4);
@@ -211,7 +212,7 @@ TEST(TrackingLoopFilterTest, ThirdOrderLoopWithLastIntegrator)
     theFilter.initialize(0.0);
 
     float result = 0.0;
-    for (unsigned int i = 0; i < sample_data.size(); ++i)
+    for (size_t i = 0; i < sample_data.size(); ++i)
         {
             result = theFilter.apply(sample_data[i]);
             EXPECT_NEAR(result, expected_out[i], 1e-4);

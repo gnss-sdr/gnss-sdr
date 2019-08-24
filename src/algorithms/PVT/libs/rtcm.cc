@@ -41,7 +41,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <algorithm>  // for std::reverse
 #include <chrono>     // std::chrono::seconds
-#include <cmath>      // for std::fmod
+#include <cmath>      // for std::fmod, std::lround
 #include <cstdlib>    // for strtol
 #include <iostream>   // for cout
 #include <sstream>    // for std::stringstream
@@ -201,8 +201,8 @@ std::string Rtcm::bin_to_binary_data(const std::string& s) const
             k++;
         }
 
-    uint32_t start = std::max(remainder, 0);
-    for (uint32_t i = start; i < s.length() - 1; i = i + 8)
+    std::size_t start = std::max(remainder, 0);
+    for (std::size_t i = start; i < s.length() - 1; i = i + 8)
         {
             s_aux.assign(s, i, 4);
             std::bitset<4> bs(s_aux);
@@ -250,8 +250,8 @@ std::string Rtcm::bin_to_hex(const std::string& s) const
             ss << std::hex << n;
         }
 
-    uint32_t start = std::max(remainder, 0);
-    for (uint32_t i = start; i < s.length() - 1; i = i + 4)
+    std::size_t start = std::max(remainder, 0);
+    for (std::size_t i = start; i < s.length() - 1; i = i + 4)
         {
             s_aux.assign(s, i, 4);
             std::bitset<4> bs(s_aux);
@@ -269,7 +269,7 @@ std::string Rtcm::hex_to_bin(const std::string& s) const
     std::stringstream ss;
     ss << s;
     std::string s_lower = boost::to_upper_copy(ss.str());
-    for (uint32_t i = 0; i < s.length(); i++)
+    for (size_t i = 0; i < s.length(); i++)
         {
             uint64_t n;
             std::istringstream(s_lower.substr(i, 1)) >> std::hex >> n;
@@ -5312,7 +5312,7 @@ int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            int_ms = static_cast<uint32_t>(std::floor(rough_range_s / meters_to_miliseconds / TWO_N10) + 0.5) >> 10;
+            int_ms = static_cast<uint32_t>(std::lround(rough_range_s / meters_to_miliseconds / TWO_N10)) >> 10;
         }
 
     DF397 = std::bitset<8>(int_ms);
@@ -5331,7 +5331,7 @@ int32_t Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            rr_mod_ms = static_cast<uint32_t>(std::floor(rough_range_m / meters_to_miliseconds / TWO_N10) + 0.5) & 0x3FFU;
+            rr_mod_ms = static_cast<uint32_t>(std::lround(rough_range_m / meters_to_miliseconds / TWO_N10)) & 0x3FFU;
         }
     DF398 = std::bitset<10>(rr_mod_ms);
     return 0;

@@ -115,7 +115,7 @@ void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest
     const int32_t _codeLength = 511;
 
     // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     // --- Find time constants -------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);             // Sampling period in sec

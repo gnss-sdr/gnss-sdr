@@ -1484,13 +1484,15 @@ int reqntrip_s(ntrip_t *ntrip, char *msg)
 {
     char buff[256 + NTRIP_MAXSTR];
     char *p = buff;
+    char *s;
+    s = p;
 
     tracet(3, "reqntrip_s: state=%d\n", ntrip->state);
 
     p += std::snprintf(p, 256 + NTRIP_MAXSTR, "SOURCE %s %s\r\n", ntrip->passwd, ntrip->mntpnt);
-    p += std::snprintf(p, NTRIP_MAXSTR, "Source-Agent: NTRIP %s\r\n", NTRIP_AGENT);
-    p += std::snprintf(p, NTRIP_MAXSTR, "STR: %s\r\n", ntrip->str);
-    p += std::snprintf(p, NTRIP_MAXSTR, "\r\n");
+    p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "Source-Agent: NTRIP %s\r\n", NTRIP_AGENT);
+    p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "STR: %s\r\n", ntrip->str);
+    p += std::snprintf(p, sizeof("\r\n") + 1, "\r\n");
 
     if (writetcpcli(ntrip->tcp, reinterpret_cast<unsigned char *>(buff), p - buff, msg) != p - buff)
         {
@@ -1510,25 +1512,27 @@ int reqntrip_c(ntrip_t *ntrip, char *msg)
     char buff[1024];
     char user[512];
     char *p = buff;
+    char *s;
+    s = p;
 
     tracet(3, "reqntrip_c: state=%d\n", ntrip->state);
 
     p += std::snprintf(p, NTRIP_MAXSTR, "GET %s/%s HTTP/1.0\r\n", ntrip->url, ntrip->mntpnt);
-    p += std::snprintf(p, NTRIP_MAXSTR, "User-Agent: NTRIP %s\r\n", NTRIP_AGENT);
+    p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "User-Agent: NTRIP %s\r\n", NTRIP_AGENT);
 
     if (!*ntrip->user)
         {
-            p += std::snprintf(p, NTRIP_MAXSTR, "Accept: */*\r\n");
-            p += std::snprintf(p, NTRIP_MAXSTR, "Connection: close\r\n");
+            p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "Accept: */*\r\n");
+            p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "Connection: close\r\n");
         }
     else
         {
             std::snprintf(user, sizeof(user), "%s:%s", ntrip->user, ntrip->passwd);
-            p += std::snprintf(p, NTRIP_MAXSTR, "Authorization: Basic ");
+            p += std::snprintf(p, NTRIP_MAXSTR - (p - s), "Authorization: Basic ");
             p += encbase64(p, reinterpret_cast<unsigned char *>(user), strlen(user));
-            p += std::snprintf(p, NTRIP_MAXSTR, "\r\n");
+            p += std::snprintf(p, sizeof("\r\n") + 1, "\r\n");
         }
-    p += std::snprintf(p, NTRIP_MAXSTR, "\r\n");
+    p += std::snprintf(p, sizeof("\r\n") + 1, "\r\n");
 
     if (writetcpcli(ntrip->tcp, reinterpret_cast<unsigned char *>(buff), p - buff, msg) != p - buff)
         {

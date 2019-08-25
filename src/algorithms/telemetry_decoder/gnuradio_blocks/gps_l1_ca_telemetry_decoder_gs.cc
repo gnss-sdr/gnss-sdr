@@ -379,9 +379,9 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     }
                 detection = 0;
                 if (std::string(_correlation) == "SC")  // Soft correlation
-                    detection = _Lambda(corr_value, 0, 0);
+                    detection = _Lambda(corr_value1, 0, 0);
                 else if (std::string(_correlation) == "SLRT")  // Simplified-LRT
-                    detection = _Lambda(corr_value, corr_value2, 0);
+                    detection = _Lambda(corr_value1, corr_value2, 0);
                 else  // Hard correlation
                     detection = _Lambda(corr_value, 0, d_samples_per_preamble);
                 if (detection)

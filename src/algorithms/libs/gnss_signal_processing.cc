@@ -34,6 +34,7 @@
 #include "gnss_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include <gnuradio/fxpt_nco.h>
+#include <cstddef>  // for size_t
 
 
 auto auxCeil2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
@@ -168,7 +169,7 @@ void resampler(const gsl::span<float> _from, gsl::span<float> _dest, float _fs_i
     // --- Find time constants -------------------------------------------------
     const float _t_in = 1 / _fs_in;    // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
-    for (uint32_t i = 0; i < _dest.size() - 1; i++)
+    for (size_t i = 0; i < _dest.size() - 1; i++)
         {
             // === Digitizing ==================================================
             // --- compute index array to read sampled values ------------------
@@ -191,7 +192,7 @@ void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::comple
     // --- Find time constants -------------------------------------------------
     const float _t_in = 1 / _fs_in;    // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
-    for (uint32_t i = 0; i < _dest.size() - 1; i++)
+    for (size_t i = 0; i < _dest.size() - 1; i++)
         {
             // === Digitizing ==================================================
             // --- compute index array to read sampled values ------------------

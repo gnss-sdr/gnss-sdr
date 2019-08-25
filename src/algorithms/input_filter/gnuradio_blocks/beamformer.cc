@@ -31,6 +31,7 @@
 
 #include "beamformer.h"
 #include <gnuradio/io_signature.h>
+#include <cstddef>
 
 
 beamformer_sptr make_beamformer_sptr()
@@ -67,7 +68,7 @@ int beamformer::work(int noutput_items, gr_vector_const_void_star &input_items,
     for (int n = 0; n < noutput_items; n++)
         {
             sum = gr_complex(0, 0);
-            for (unsigned int i = 0; i < weight_vector.size(); i++)
+            for (size_t i = 0; i < weight_vector.size(); i++)
                 {
                     sum = sum + (reinterpret_cast<const gr_complex *>(input_items[i]))[n] * weight_vector[i];
                 }

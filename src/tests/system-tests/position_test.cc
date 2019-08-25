@@ -369,7 +369,7 @@ int PositionSystemTest::run_receiver()
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    while (fgets(buffer.data(), sizeof(buffer), fp) != nullptr)
+    while (fgets(buffer.data(), buffer.size(), fp) != nullptr)
         {
             std::string aux = std::string(buffer.data());
             EXPECT_EQ(aux.empty(), false);

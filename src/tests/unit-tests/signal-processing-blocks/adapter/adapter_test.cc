@@ -73,10 +73,10 @@ DataTypeAdapter::DataTypeAdapter()
     std::array<int8_t, 6> input_bytes{2, 23, -1, 127, -127, 0};
     std::array<int16_t, 8> input_shorts{2, 23, -1, 127, -127, 0, 255, 255};
 
-    const std::vector<int8_t> input_data_bytes_(input_bytes.data(), input_bytes.data() + sizeof(input_bytes) / sizeof(int8_t));
+    const std::vector<int8_t> input_data_bytes_(input_bytes.data(), input_bytes.data() + input_bytes.size() / sizeof(int8_t));
     input_data_bytes = input_data_bytes_;
 
-    const std::vector<int16_t> input_data_shorts_(input_shorts.data(), input_shorts.data() + sizeof(input_shorts) / sizeof(int16_t));
+    const std::vector<int16_t> input_data_shorts_(input_shorts.data(), input_shorts.data() + input_shorts.size() / sizeof(int16_t));
     input_data_shorts = input_data_shorts_;
 }
 

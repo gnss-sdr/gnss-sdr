@@ -155,7 +155,7 @@ void GNSSFlowgraph::connect()
         }
 
     // Signal Source > Signal conditioner >
-    for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
+    for (size_t i = 0; i < sig_conditioner_.size(); i++)
         {
             if (configuration_->property(sig_conditioner_.at(i)->role() + ".enable_FPGA", false) == false)
                 {
@@ -984,7 +984,7 @@ void GNSSFlowgraph::disconnect()
         }
 
     // Signal Source > Signal conditioner >
-    for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
+    for (size_t i = 0; i < sig_conditioner_.size(); i++)
         {
             try
                 {

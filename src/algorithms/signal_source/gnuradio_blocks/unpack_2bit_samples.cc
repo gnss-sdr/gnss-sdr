@@ -164,7 +164,7 @@ int unpack_2bit_samples::work(int noutput_items,
         {
             if (swap_endian_bytes_)
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];
@@ -177,7 +177,7 @@ int unpack_2bit_samples::work(int noutput_items,
                 }
             else
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];
@@ -193,7 +193,7 @@ int unpack_2bit_samples::work(int noutput_items,
         {
             if (swap_endian_bytes_)
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];
@@ -206,7 +206,7 @@ int unpack_2bit_samples::work(int noutput_items,
                 }
             else
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];

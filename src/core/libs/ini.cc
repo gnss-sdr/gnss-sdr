@@ -99,7 +99,7 @@ static char* find_char_or_comment(char* s, char c)
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */
 static char* strncpy0(char* dest, const char* src, size_t size)
 {
-    for (unsigned int i = 0; i < size - 1; i++)
+    for (size_t i = 0; i < size - 1; i++)
         {
             dest[i] = src[i];
         }
@@ -169,7 +169,7 @@ int ini_parse(const char* filename,
                     if (*end == ']')
                         {
                             *end = '\0';
-                            strncpy0(section.data(), start + 1, sizeof(section));
+                            strncpy0(section.data(), start + 1, section.size());
                             prev_name[MAX_NAME - 1] = '\0';
                         }
                     else if (!error)
@@ -195,7 +195,7 @@ int ini_parse(const char* filename,
                             rstrip(value);
 
                             /* Valid name=value pair found, call handler */
-                            strncpy0(prev_name.data(), name, sizeof(prev_name));
+                            strncpy0(prev_name.data(), name, prev_name.size());
                             if (!handler(user, section.data(), name, value) && !error)
                                 {
                                     error = lineno;

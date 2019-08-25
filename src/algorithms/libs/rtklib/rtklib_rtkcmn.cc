@@ -1588,7 +1588,7 @@ void time2epoch(gtime_t t, double *ep)
     ep[1] = mon % 12 + 1;
     ep[2] = day + 1;
     ep[3] = static_cast<int>(sec / 3600);
-    ep[4] = sec % static_cast<int>(3600 / 60);
+    ep[4] = static_cast<int>(sec % 3600 / 60);
     ep[5] = sec % 60 + t.sec;
 }
 

@@ -175,7 +175,7 @@ void GpsL1CATelemetrySynchronizationTest::fill_gnss_synchro()
  * Calculates the number of detected, correct and wrong, preambles in the different states
  * Saves probabilities in a file "../../test_results/synchronization_SC_test_x.csv"
  */
-TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
+TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
@@ -380,7 +380,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
  * Calculates the number of detected, correct and wrong, preambles in the different states
  * Saves probabilities in a file "../../test_results/synchronization_HC_test_x.csv"
  */
-TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
+TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);

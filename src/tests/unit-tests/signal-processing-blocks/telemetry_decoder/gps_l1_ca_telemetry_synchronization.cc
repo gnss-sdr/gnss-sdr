@@ -38,9 +38,10 @@
 #include <random>
 #include <string>
 
-#define vector_size 6000   		// 20 sub-frames with 300 bits
-#define preamble_offset 200 	// Random data before preamble
-#define Nw 100				// Number of Monte-Carlo realizations
+#define vector_size 6000     // 20 sub-frames with 300 bits
+#define preamble_offset 200  // Random data before preamble
+#define Nw 100               // Number of Monte-Carlo realizations
+
 
 /*!
  * \ The fixture for testing class GpsL1CATelemetrySynchronizationTest.
@@ -210,7 +211,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
             preamble_samples();
             make_vector();
             fill_gnss_synchro();
-            
+
             ASSERT_EQ(d_preamble_samples.size(), GPS_CA_PREAMBLE_LENGTH_BITS);
             ASSERT_EQ(initial_vector.size(), vector_size);
             ASSERT_EQ(synchro_vector.size(), vector_size);
@@ -307,7 +308,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
                                                 // std::cout << "Preamble confirmation " << d_preamble_index << std::endl;
 
                                                 n_preambles = (d_preamble_index - preamble_offset) / d_preamble_period_symbols + 1;
-                                                
+
                                                 if (corr_value < 0)
                                                     {
                                                         flag_PLL_180_deg_phase_locked = true;
@@ -337,13 +338,13 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
                                     {
                                         // std::cout << "Preamble received. " << "d_sample_counter= " << d_sample_counter << std::endl;
                                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                                        
+
                                         if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
-                                        	final_synchronization = 1;
+                                            final_synchronization = 1;
                                         else
-                                        	final_synchronization = 2;
+                                            final_synchronization = 2;
                                     }
-                                
+
                                 break;
                             }
                         }
@@ -360,7 +361,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
             // Adds noise with standard deviation from 0 to 0.45
             if (n % (Nw / 10) == 0)
                 stddev = stddev + 0.05;
-            
+
             // d_sample_counter >= d_preamble_index
             ASSERT_GE(d_sample_counter, d_preamble_index);
         }
@@ -415,7 +416,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
             preamble_samples();
             make_vector();
             fill_gnss_synchro();
-            
+
             ASSERT_EQ(d_preamble_samples.size(), GPS_CA_PREAMBLE_LENGTH_BITS);
             ASSERT_EQ(initial_vector.size(), vector_size);
             ASSERT_EQ(synchro_vector.size(), vector_size);
@@ -428,7 +429,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
             int32_t n_wrong_detections_s1 = 0;     // Number of wrong detected preambles in state 1
             int32_t n_preambles = 0;               // Number of total preambles (missed and detected)
             int32_t final_synchronization = 0;     // 0 if no final synchronization is achieved, 1 if correct, 2 if wrong
-            
+
             // Adds noise with standard deviation from 0.05 to 0.5
             /*
             if (n % (Nw / 10) == 0)
@@ -451,11 +452,8 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
                                     {
                                         // ******* preamble correlation ********
-                                        for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                                            {
-                                        		corr_value1 += d_symbol_history[i] * d_preamble_samples[i];
-                                        		corr_value2 += abs(d_symbol_history[i]);
-                                            }
+                                        corr_value1 += d_symbol_history[i] * d_preamble_samples[i];
+                                        corr_value2 += abs(d_symbol_history[i]);
                                     }
 
                                 if (abs(corr_value1) - corr_value2 == 0)
@@ -486,8 +484,8 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                         // ******* preamble correlation ********
                                         for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
                                             {
-												corr_value1 += d_symbol_history[i] * d_preamble_samples[i];
-												corr_value2 += abs(d_symbol_history[i]);
+                                                corr_value1 += d_symbol_history[i] * d_preamble_samples[i];
+                                                corr_value2 += abs(d_symbol_history[i]);
                                             }
                                     }
                                 if (abs(corr_value1) - corr_value2 == 0)
@@ -507,7 +505,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                                 // std::cout << "Preamble confirmation " << d_preamble_index << std::endl;
 
                                                 n_preambles = (d_preamble_index - preamble_offset) / d_preamble_period_symbols + 1;
-                                                
+
                                                 if (abs(corr_value1) - corr_value2 < 0)
                                                     {
                                                         flag_PLL_180_deg_phase_locked = true;
@@ -537,11 +535,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                     {
                                         // std::cout << "Preamble received. " << "d_sample_counter= " << d_sample_counter << std::endl;
                                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                                        
+
                                         if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
-                                        	final_synchronization = 1;
+                                            final_synchronization = 1;
                                         else
-                                        	final_synchronization = 2;
+                                            final_synchronization = 2;
                                     }
 
                                 final_synchronization = 1;
@@ -549,10 +547,10 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                 break;
                             }
                         }
-                    
+
                     // If it reaches the end without synchronization, updates n_preambles
-                    if(d_sample_counter == vector_size - 1 && d_stat != 2)
-                    	n_preambles = (d_sample_counter - preamble_offset) / d_preamble_period_symbols + 1;
+                    if (d_sample_counter == vector_size - 1 && d_stat != 2)
+                        n_preambles = (d_sample_counter - preamble_offset) / d_preamble_period_symbols + 1;
                 }
 
 
@@ -563,11 +561,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                  << n_preamble_detections_s1 << ", " << n_correct_detections_s1 << ", " << n_wrong_detections_s1 << ", "
                  << final_synchronization << "\n";
 
-           
+
             // d_sample_counter >= d_preamble_index
             ASSERT_GE(d_sample_counter, d_preamble_index);
         }
-    
+
     // Close file
     fout.close();
 

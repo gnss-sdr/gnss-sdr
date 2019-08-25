@@ -549,6 +549,10 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
                                 break;
                             }
                         }
+                    
+                    // If it reaches the end without synchronization, updates n_preambles
+                    if(d_sample_counter == vector_size - 1 && d_stat != 2)
+                    	n_preambles = (d_sample_counter - preamble_offset) / d_preamble_period_symbols + 1;
                 }
 
 

@@ -40,7 +40,7 @@
 
 #define vector_size 6000     // 20 sub-frames with 300 bits
 #define preamble_offset 200  // Random data before preamble
-#define Nw 100               // Number of Monte-Carlo realizations
+#define Nw 1000              // Number of Monte-Carlo realizations
 
 
 /*!
@@ -170,11 +170,11 @@ void GpsL1CATelemetrySynchronizationTest::fill_gnss_synchro()
 }
 
 /*!
- * \ Simulates the synchronization in gps_l1_ca_telemetry_decoder_gs and saves metrics (SC)
+ * \ Simulates the synchronization in gps_l1_ca_telemetry_decoder_gs and saves metrics (HC)
  *
  * Computes the number of total preambles (missed and detected)
  * Calculates the number of detected, correct and wrong, preambles in the different states
- * Saves probabilities in a file "../../test_results/synchronization_SC_test_x.csv"
+ * Saves probabilities in a file "../../test_results/synchronization_HC_test_x.csv"
  */
 TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
 {
@@ -186,7 +186,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
     std::fstream fout;
 
     // opens an existing csv (std::ios::app) file or creates a new file (std::ios::out).
-    fout.open("../../test_results/synchronization_SC_test_2.csv", std::ios::out);
+    fout.open("../../test_results/synchronization_HC_test_3.csv", std::ios::out);
 
     fout << "stddev"
          << ", "
@@ -359,9 +359,10 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
                  << final_synchronization << "\n";
 
             // Adds noise with standard deviation from 0 to 0.45
+            /*
             if (n % (Nw / 10) == 0)
                 stddev = stddev + 0.05;
-
+			*/
             // d_sample_counter >= d_preamble_index
             ASSERT_GE(d_sample_counter, d_preamble_index);
         }
@@ -375,11 +376,11 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
 }
 
 /*!
- * \ Simulates the synchronization in gps_l1_ca_telemetry_decoder_gs and saves metrics (HC)
+ * \ Simulates the synchronization in gps_l1_ca_telemetry_decoder_gs and saves metrics (SLRT)
  *
  * Computes the number of total preambles (missed and detected)
  * Calculates the number of detected, correct and wrong, preambles in the different states
- * Saves probabilities in a file "../../test_results/synchronization_HC_test_x.csv"
+ * Saves probabilities in a file "../../test_results/synchronization_SLRT_test_x.csv"
  */
 TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
 {
@@ -391,7 +392,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
     std::fstream fout;
 
     // opens an existing csv (std::ios::app) file or creates a new file (std::ios::out).
-    fout.open("../../test_results/synchronization_HC_test_2.csv", std::ios::out);
+    fout.open("../../test_results/synchronization_SLRT_test_3.csv", std::ios::out);
 
     fout << "stddev"
          << ", "

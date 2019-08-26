@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -138,9 +138,6 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-FirFilter::~FirFilter() = default;
 
 
 void FirFilter::connect(gr::top_block_sptr top_block)
@@ -392,6 +389,6 @@ void FirFilter::init()
     taps_.reserve(taps_d.size());
     for (double& it : taps_d)
         {
-            taps_.push_back(float(it));
+            taps_.push_back(static_cast<float>(it));
         }
 }

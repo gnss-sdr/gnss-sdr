@@ -31,51 +31,52 @@
  */
 
 #include "beidou_b1i_signal_processing.h"
+#include <array>
+#include <bitset>
+#include <string>
 
 auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 2046;
-    bool G1[_code_length];
-    bool G2[_code_length];
-    bool G1_register[11] = {false, true, false, true, false, true, false, true, false, true, false};
-    bool G2_register[11] = {false, true, false, true, false, true, false, true, false, true, false};
-    bool feedback1, feedback2;
+    std::bitset<_code_length> G1{};
+    std::bitset<_code_length> G2{};
+
+    std::bitset<11> G1_register(std::string("01010101010"));
+    std::bitset<11> G2_register(std::string("01010101010"));
+
+    bool feedback1;
+    bool feedback2;
     bool aux;
-    uint32_t lcv, lcv2;
+    uint32_t lcv;
+    uint32_t lcv2;
     uint32_t delay;
     int32_t prn_idx;
-    /* G2 Delays as defined in GPS-ISD-200D */
-    const int32_t delays[33] = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
+
+    const std::array<int32_t, 33> delays = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
         1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,
         705};
-    const int32_t phase1[37] = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
-    const int32_t phase2[37] = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
+    const std::array<int32_t, 37> phase1 = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
+    const std::array<int32_t, 37> phase2 = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
 
     // compute delay array index for given PRN number
     prn_idx = _prn - 1;
 
-    /* A simple error check */
+    // A simple error check
     if ((prn_idx < 0) || (prn_idx > 32))
         {
             return;
         }
 
-    /*for (lcv = 0; lcv < 11; lcv++)
-        {
-            G1_register[lcv] = 1;
-            G2_register[lcv] = 1;
-        }*/
-
-    /* Generate G1 & G2 Register */
+    // Generate G1 & G2 Register
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
-            G2[lcv] = G2_register[-(phase1[prn_idx] - 11)] ^ G2_register[-(phase2[prn_idx] - 11)];
+            G2[lcv] = G2_register[-(phase1[prn_idx] - 11)] xor G2_register[-(phase2[prn_idx] - 11)];
 
-            feedback1 = (G1_register[0] + G1_register[1] + G1_register[2] + G1_register[3] + G1_register[4] + G1_register[10]) & 0x1;
-            feedback2 = (G2_register[0] + G2_register[2] + G2_register[3] + G2_register[6] + G2_register[7] + G2_register[8] + G2_register[9] + G2_register[10]) & 0x1;
+            feedback1 = G1_register[0] xor G1_register[1] xor G1_register[2] xor G1_register[3] xor G1_register[4] xor G1_register[10];
+            feedback2 = G2_register[0] xor G2_register[2] xor G2_register[3] xor G2_register[6] xor G2_register[7] xor G2_register[8] xor G2_register[9] xor G2_register[10];
 
             for (lcv2 = 0; lcv2 < 10; lcv2++)
                 {
@@ -87,15 +88,15 @@ void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _c
             G2_register[10] = feedback2;
         }
 
-    /* Set the delay */
+    // Set the delay
     delay = _code_length - delays[prn_idx] * 0;  //**********************************
     delay += _chip_shift;
     delay %= _code_length;
 
-    /* Generate PRN from G1 and G2 Registers */
+    // Generate PRN from G1 and G2 Registers
     for (lcv = 0; lcv < _code_length; lcv++)
         {
-            aux = G1[(lcv + _chip_shift) % _code_length] ^ G2[delay];
+            aux = G1[(lcv + _chip_shift) % _code_length] xor G2[delay];
             if (aux == true)
                 {
                     _dest[lcv] = 1;
@@ -106,7 +107,6 @@ void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _c
                 }
 
             delay++;
-            //std::cout  << _dest[lcv] << " ";
             delay %= _code_length;
         }
 }
@@ -114,10 +114,10 @@ void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _c
 
 void beidou_b1i_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    uint32_t _code_length = 2046;
-    int32_t b1i_code_int[_code_length];
+    const uint32_t _code_length = 2046;
+    std::array<int32_t, _code_length> b1i_code_int{};
 
-    beidou_b1i_code_gen_int(gsl::span<int32_t>(b1i_code_int, _code_length), _prn, _chip_shift);
+    beidou_b1i_code_gen_int(gsl::span<int32_t>(b1i_code_int.data(), _code_length), _prn, _chip_shift);
 
     for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
@@ -128,10 +128,10 @@ void beidou_b1i_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _c
 
 void beidou_b1i_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    uint32_t _code_length = 2046;
-    int32_t b1i_code_int[_code_length];
+    const uint32_t _code_length = 2046;
+    std::array<int32_t, _code_length> b1i_code_int{};
 
-    beidou_b1i_code_gen_int(gsl::span<int32_t>(b1i_code_int, _code_length), _prn, _chip_shift);
+    beidou_b1i_code_gen_int(gsl::span<int32_t>(b1i_code_int.data(), _code_length), _prn, _chip_shift);
 
     for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
@@ -146,46 +146,47 @@ void beidou_b1i_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _
 void beidou_b1i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
-    std::complex<float> _code[2046];
-    int32_t _samplesPerCode, _codeValueIndex;
+    std::array<std::complex<float>, 2046> _code{};
+    int32_t _samplesPerCode;
+    int32_t _codeValueIndex;
     float _ts;
     float _tc;
     float aux;
-    const int32_t _codeFreqBasis = 2046000;  //Hz
+    const int32_t _codeFreqBasis = 2046000;  // Hz
     const int32_t _codeLength = 2046;
 
-    //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    // --- Find number of samples per spreading code ---------------------------
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
-    //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
-    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate C/A code 1 sample per chip
+    // --- Find time constants -------------------------------------------------
+    _ts = 1.0 / static_cast<float>(_fs);             // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
+
+    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  // generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
-            //=== Digitizing =======================================================
+            // === Digitizing ==================================================
 
-            //--- Make index array to read C/A code values -------------------------
+            // --- Make index array to read C/A code values --------------------
             // The length of the index array depends on the sampling frequency -
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             aux = (_ts * (i + 1)) / _tc;
             _codeValueIndex = auxCeil(aux) - 1;
 
-            //--- Make the digitized version of the C/A code -----------------------
+            // --- Make the digitized version of the C/A code ------------------
             // The "upsampled" code is made by selecting values form the CA code
             // chip array (caCode) for the time instances of each sample.
             if (i == _samplesPerCode - 1)
                 {
-                    //--- Correct the last index (due to number rounding issues) -----------
+                    // --- Correct the last index (due to number rounding issues) -----------
                     _dest[i] = _code[_codeLength - 1];
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex];  //repeat the chip -> upsample
+                    _dest[i] = _code[_codeValueIndex];  // repeat the chip -> upsample
                 }
         }
 }

@@ -53,6 +53,7 @@ find_library(
           /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
+          /usr/lib/i386-linux-gnu
           /usr/lib/alpha-linux-gnu
           /usr/lib/aarch64-linux-gnu
           /usr/lib/arm-linux-gnueabi
@@ -74,6 +75,7 @@ find_library(
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/sh4-linux-gnu
+          /usr/lib/riscv64-linux-gnu
           /Library/Frameworks/iio.framework/
           ${LIBIIO_ROOT}/lib
           $ENV{LIBIIO_ROOT}/lib

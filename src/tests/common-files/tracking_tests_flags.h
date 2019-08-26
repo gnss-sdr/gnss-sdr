@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,6 +33,7 @@
 
 #include <gflags/gflags.h>
 #include <limits>
+#include <string>
 
 
 DEFINE_string(trk_test_implementation, std::string("GPS_L1_CA_DLL_PLL_Tracking"), "Tracking block implementation under test, defaults to GPS_L1_CA_DLL_PLL_Tracking");
@@ -77,14 +78,14 @@ DEFINE_int32(plot_detail_level, 0, "Specify the desired plot detail (0,1,2): 0 -
 
 DEFINE_double(skip_trk_transitory_s, 1.0, "Skip the initial tracking output signal to avoid transitory results [s]");
 
-//Emulated acquisition configuration
+// Emulated acquisition configuration
 
-//Tracking configuration
+// Tracking configuration
 DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
 DEFINE_int32(smoother_length, 10, "Set the moving average size for the carrier phase and code phase in case of high dynamics");
 DEFINE_bool(high_dyn, false, "Activates the code resampler and NCO generator for high dynamics");
 
-//Test output configuration
+// Test output configuration
 DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
 
 

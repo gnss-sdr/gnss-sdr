@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,6 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "concurrent_queue.h"
 #include "freq_xlating_fir_filter.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "gnss_block_factory.h"
@@ -41,9 +42,9 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <cstdlib>
 #include <utility>
@@ -167,7 +168,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1G.doppler_max", "5000");
     config->set_property("Acquisition_1G.doppler_step", "500");
     config->set_property("Acquisition_1G.repeat_satellite", "false");
-    //config->set_property("Acquisition_1G.pfa", "0.0");
+    // config->set_property("Acquisition_1G.pfa", "0.0");
 }
 
 
@@ -184,7 +185,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
     int nsamples = 62314;
     std::chrono::time_point<std::chrono::system_clock> begin, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     top_block = gr::make_top_block("Acquisition test");
     init();

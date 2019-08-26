@@ -25,7 +25,6 @@ extern "C"
         GANSSClockModel_PR_NOTHING, /* No components present */
         GANSSClockModel_PR_standardClockModelList,
         /* Extensions may appear below */
-
     } GANSSClockModel_PR;
 
     /* GANSSClockModel */

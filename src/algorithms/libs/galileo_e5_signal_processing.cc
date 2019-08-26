@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,13 +36,14 @@
 #include "gnss_signal_processing.h"
 #include <gnuradio/gr_complex.h>
 #include <memory>
+#include <utility>
 
 
 void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest, int32_t _prn, const std::array<char, 3>& _Signal)
 {
     uint32_t prn = _prn - 1;
     uint32_t index = 0;
-    int32_t a[4];
+    std::array<int32_t, 4> a{};
     if ((_prn < 1) || (_prn > 50))
         {
             return;
@@ -52,51 +53,51 @@ void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest,
             for (size_t i = 0; i < GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1; i++)
                 {
                     hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(i));
-                    _dest[index] = std::complex<float>(0.0, float(a[0]));
-                    _dest[index + 1] = std::complex<float>(0.0, float(a[1]));
-                    _dest[index + 2] = std::complex<float>(0.0, float(a[2]));
-                    _dest[index + 3] = std::complex<float>(0.0, float(a[3]));
+                    _dest[index] = std::complex<float>(0.0, static_cast<float>(a[0]));
+                    _dest[index + 1] = std::complex<float>(0.0, static_cast<float>(a[1]));
+                    _dest[index + 2] = std::complex<float>(0.0, static_cast<float>(a[2]));
+                    _dest[index + 3] = std::complex<float>(0.0, static_cast<float>(a[3]));
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
             hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1));
-            _dest[index] = std::complex<float>(float(0.0), a[0]);
-            _dest[index + 1] = std::complex<float>(float(0.0), a[1]);
+            _dest[index] = std::complex<float>(0.0, static_cast<float>(a[0]));
+            _dest[index + 1] = std::complex<float>(0.0, static_cast<float>(a[1]));
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'I')
         {
             for (size_t i = 0; i < GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1; i++)
                 {
                     hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(i));
-                    _dest[index] = std::complex<float>(float(a[0]), 0.0);
-                    _dest[index + 1] = std::complex<float>(float(a[1]), 0.0);
-                    _dest[index + 2] = std::complex<float>(float(a[2]), 0.0);
-                    _dest[index + 3] = std::complex<float>(float(a[3]), 0.0);
+                    _dest[index] = std::complex<float>(static_cast<float>(a[0]), 0.0);
+                    _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), 0.0);
+                    _dest[index + 2] = std::complex<float>(static_cast<float>(a[2]), 0.0);
+                    _dest[index + 3] = std::complex<float>(static_cast<float>(a[3]), 0.0);
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
             hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1));
-            _dest[index] = std::complex<float>(float(a[0]), 0.0);
-            _dest[index + 1] = std::complex<float>(float(a[1]), 0.0);
+            _dest[index] = std::complex<float>(static_cast<float>(a[0]), 0.0);
+            _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), 0.0);
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'X')
         {
-            int32_t b[4];
+            std::array<int32_t, 4> b{};
             for (size_t i = 0; i < GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1; i++)
                 {
                     hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(i));
                     hex_to_binary_converter(b, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(i));
-                    _dest[index] = std::complex<float>(float(a[0]), float(b[0]));
-                    _dest[index + 1] = std::complex<float>(float(a[1]), float(b[1]));
-                    _dest[index + 2] = std::complex<float>(float(a[2]), float(b[2]));
-                    _dest[index + 3] = std::complex<float>(float(a[3]), float(b[3]));
+                    _dest[index] = std::complex<float>(static_cast<float>(a[0]), static_cast<float>(b[0]));
+                    _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), static_cast<float>(b[1]));
+                    _dest[index + 2] = std::complex<float>(static_cast<float>(a[2]), static_cast<float>(b[2]));
+                    _dest[index + 3] = std::complex<float>(static_cast<float>(a[3]), static_cast<float>(b[3]));
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
             hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1));
             hex_to_binary_converter(b, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1));
-            _dest[index] = std::complex<float>(float(a[0]), float(b[0]));
-            _dest[index + 1] = std::complex<float>(float(a[1]), float(b[1]));
+            _dest[index] = std::complex<float>(static_cast<float>(a[0]), static_cast<float>(b[0]));
+            _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), static_cast<float>(b[1]));
         }
 }
 

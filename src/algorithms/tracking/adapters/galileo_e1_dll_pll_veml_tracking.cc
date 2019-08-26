@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,7 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-
+#include <array>
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     ConfigurationInterface* configuration, const std::string& role,
@@ -49,7 +49,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 {
     Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
     std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -159,15 +159,15 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     int vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     trk_param.system = 'E';
-    char sig_[3] = "1B";
-    std::memcpy(trk_param.signal, sig_, 3);
+    std::array<char, 3> sig_{'1', 'B', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
     trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
     trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
     trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);
     trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
     trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -192,11 +192,9 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 }
 
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking() = default;
-
-
 void GalileoE1DllPllVemlTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
 
 
@@ -227,7 +225,7 @@ void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -236,7 +234,7 @@ void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

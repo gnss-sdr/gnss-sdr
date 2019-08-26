@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,6 +33,7 @@
 
 #include <gflags/gflags.h>
 #include <limits>
+#include <string>
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
 DEFINE_bool(plot_position_test, false, "Plots results of with gnuplot");

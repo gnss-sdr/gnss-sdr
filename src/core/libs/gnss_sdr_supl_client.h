@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -64,7 +64,7 @@ class Gnss_Sdr_Supl_Client
 {
 public:
     Gnss_Sdr_Supl_Client();
-    ~Gnss_Sdr_Supl_Client();
+    ~Gnss_Sdr_Supl_Client() = default;
 
     // SUPL SERVER INFO
     std::string server_name;

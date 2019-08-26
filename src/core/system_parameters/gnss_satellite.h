@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -62,10 +62,10 @@ public:
     friend bool operator==(const Gnss_Satellite& /*sat1*/, const Gnss_Satellite& /*sat2*/);  //!< operator== for comparison
     friend std::ostream& operator<<(std::ostream& /*out*/, const Gnss_Satellite& /*sat*/);   //!< operator<< for pretty printing
 
-    Gnss_Satellite(Gnss_Satellite&& other);             //!< Copy constructor
-    Gnss_Satellite& operator=(const Gnss_Satellite&);   //!< Copy assignment operator
-    Gnss_Satellite(const Gnss_Satellite& other);        //!< Move constructor
-    Gnss_Satellite& operator=(Gnss_Satellite&& other);  //!< Move assignment operator
+    Gnss_Satellite(Gnss_Satellite&& other) noexcept;             //!< Copy constructor
+    Gnss_Satellite& operator=(const Gnss_Satellite&);            //!< Copy assignment operator
+    Gnss_Satellite(const Gnss_Satellite& other) noexcept;        //!< Move constructor
+    Gnss_Satellite& operator=(Gnss_Satellite&& other) noexcept;  //!< Move assignment operator
 
 private:
     uint32_t PRN{};

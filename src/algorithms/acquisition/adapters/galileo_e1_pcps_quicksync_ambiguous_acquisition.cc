@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -66,7 +66,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
         }
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 8);
 
-    /*--- Find number of samples per spreading code (4 ms)  -----------------*/
+    /* --- Find number of samples per spreading code (4 ms)  -----------------*/
     code_length_ = round(
         fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
 
@@ -76,9 +76,9 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     This may be a bug, but acquisition also work by variying the folding factor at va-
     lues different that the expressed in the paper. In adition, it is important to point
     out that by making the folding factor smaller we were able to get QuickSync work with
-    Galileo. Future work should be directed to test this asumption statistically.*/
+    Galileo. Future work should be directed to test this assumption statistically.*/
 
-    //folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
+    // folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", 2);
 
     if (sampled_ms_ % (folding_factor_ * 4) != 0)
@@ -155,9 +155,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GalileoE1PcpsQuickSyncAmbiguousAcquisition::~GalileoE1PcpsQuickSyncAmbiguousAcquisition() = default;
 
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::stop_acquisition()
@@ -237,7 +234,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::mag()
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
 
 
@@ -248,17 +244,19 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_local_code()
             bool cboc = configuration_->property(
                 "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-            std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
-            std::array<char, 3> Signal_;
-            std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
+            std::vector<std::complex<float>> code(code_length_);
+            std::array<char, 3> Signal_{};
+            Signal_[0] = gnss_synchro_->Signal[0];
+            Signal_[1] = gnss_synchro_->Signal[1];
+            Signal_[2] = '\0';
 
-            galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), Signal_,
+            galileo_e1_code_gen_complex_sampled(code, Signal_,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
             gsl::span<gr_complex> code_span(code_.data(), vector_length_);
             for (unsigned int i = 0; i < (sampled_ms_ / (folding_factor_ * 4)); i++)
                 {
-                    std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+                    std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
                 }
 
             acquisition_cc_->set_local_code(code_.data());

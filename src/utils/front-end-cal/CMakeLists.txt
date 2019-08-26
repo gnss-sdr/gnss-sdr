@@ -27,10 +27,6 @@ target_link_libraries(front_end_cal_lib
     PUBLIC
         Armadillo::armadillo
         Threads::Threads
-        Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        signal_source_adapters
-        signal_source_gr_blocks
-        signal_source_libs
         acquisition_adapters
         gnss_sdr_flags
         channel_libs
@@ -68,11 +64,11 @@ endif()
 
 target_link_libraries(front-end-cal
     PUBLIC
-        Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
         core_libs
         core_receiver
         front_end_cal_lib
         gnss_sdr_flags
+        Boost::boost
     PRIVATE
         Gflags::gflags
         Glog::glog

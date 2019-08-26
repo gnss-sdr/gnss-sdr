@@ -34,7 +34,7 @@
 #include <glog/logging.h>
 
 BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(
-    ConfigurationInterface *configuration, const std::string& role,
+    ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams)
     : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -56,9 +56,6 @@ BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-BeidouB3iTelemetryDecoder::~BeidouB3iTelemetryDecoder() = default;
 
 
 void BeidouB3iTelemetryDecoder::set_satellite(const Gnss_Satellite &satellite)

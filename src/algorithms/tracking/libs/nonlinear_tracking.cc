@@ -72,10 +72,6 @@ GaussianFilter::GaussianFilter(const arma::vec& x_pred_0, const arma::mat& P_x_p
     P_x_est = P_x_pred_out;
 }
 
-
-GaussianFilter::~GaussianFilter() = default;
-
-
 void GaussianFilter::initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0)
 {
     x_pred_out = x_pred_0;

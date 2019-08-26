@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,9 +51,9 @@ public:
     void set_pdi(float pdi_carr);      //!< Set Summation interval for code [s]
     void initialize();
     float get_carrier_nco(float PLL_discriminator);
-    Tracking_2nd_PLL_filter(float pdi_carr);
+    explicit Tracking_2nd_PLL_filter(float pdi_carr);
     Tracking_2nd_PLL_filter();
-    ~Tracking_2nd_PLL_filter();
+    ~Tracking_2nd_PLL_filter() = default;
 
 private:
     // PLL filter parameters

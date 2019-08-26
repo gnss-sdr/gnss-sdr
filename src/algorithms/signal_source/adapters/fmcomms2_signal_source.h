@@ -7,7 +7,7 @@
  * This class represent a fmcomms2 signal source. It use the gr_iio block
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,7 +41,9 @@
 #else
 #include <iio/fmcomms2_source.h>
 #endif
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
+#include <pmt/pmt.h>
+#include <memory>
 #include <string>
 
 class ConfigurationInterface;
@@ -51,7 +53,7 @@ class Fmcomms2SignalSource : public GNSSBlockInterface
 public:
     Fmcomms2SignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     virtual ~Fmcomms2SignalSource();
 
@@ -82,11 +84,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;     //device direction
-    unsigned long freq_;  //frequency of local oscilator
+    std::string uri_;     // device direction
+    unsigned long freq_;  // frequency of local oscilator
     unsigned long sample_rate_;
     unsigned long bandwidth_;
-    unsigned long buffer_size_;  //reception buffer
+    unsigned long buffer_size_;  // reception buffer
     bool rx1_en_;
     bool rx2_en_;
     bool quadrature_;
@@ -101,7 +103,7 @@ private:
     std::string filter_file_;
     bool filter_auto_;
 
-    //DDS configuration for LO generation for external mixer
+    // DDS configuration for LO generation for external mixer
     bool enable_dds_lo_;
     unsigned long freq_rf_tx_hz_;
     unsigned long freq_dds_tx_hz_;
@@ -122,7 +124,7 @@ private:
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif /*GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_*/
+#endif /* GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_ */

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -63,9 +63,6 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     flag_h = false;
     flag_days = false;
 }
-
-
-gnss_sdr_sample_counter::~gnss_sdr_sample_counter() = default;
 
 
 gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size)

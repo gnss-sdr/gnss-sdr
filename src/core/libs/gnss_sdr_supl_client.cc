@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -55,9 +55,6 @@ Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
     server_port = 0;
     request = 0;
 }
-
-
-Gnss_Sdr_Supl_Client::~Gnss_Sdr_Supl_Client() = default;
 
 
 void Gnss_Sdr_Supl_Client::print_assistance()
@@ -313,11 +310,11 @@ void Gnss_Sdr_Supl_Client::read_supl_data()
                     gps_eph_iterator->second.i_satellite_PRN = e->prn;
                     // SV navigation model
                     gps_eph_iterator->second.i_code_on_L2 = e->bits;
-                    gps_eph_iterator->second.i_SV_accuracy = e->ura;  //User Range Accuracy (URA)
+                    gps_eph_iterator->second.i_SV_accuracy = e->ura;  // User Range Accuracy (URA)
                     gps_eph_iterator->second.i_SV_health = e->health;
                     gps_eph_iterator->second.d_IODC = static_cast<double>(e->IODC);
-                    //miss P flag (1 bit)
-                    //miss SF1 Reserved (87 bits)
+                    // miss P flag (1 bit)
+                    // miss SF1 Reserved (87 bits)
                     gps_eph_iterator->second.d_TGD = static_cast<double>(e->tgd) * T_GD_LSB;
                     gps_eph_iterator->second.d_Toc = static_cast<double>(e->toc) * T_OC_LSB;
                     gps_eph_iterator->second.d_A_f0 = static_cast<double>(e->AF0) * A_F0_LSB;
@@ -331,7 +328,7 @@ void Gnss_Sdr_Supl_Client::read_supl_data()
                     gps_eph_iterator->second.d_Cus = static_cast<double>(e->Cus) * C_US_LSB;
                     gps_eph_iterator->second.d_sqrt_A = static_cast<double>(e->A_sqrt) * SQRT_A_LSB;
                     gps_eph_iterator->second.d_Toe = static_cast<double>(e->toe) * T_OE_LSB;
-                    //miss fit interval flag (1 bit)
+                    // miss fit interval flag (1 bit)
                     gps_eph_iterator->second.i_AODO = e->AODA * AODO_LSB;
                     gps_eph_iterator->second.d_Cic = static_cast<double>(e->Cic) * C_IC_LSB;
                     gps_eph_iterator->second.d_OMEGA0 = static_cast<double>(e->OMEGA_0) * OMEGA_0_LSB;

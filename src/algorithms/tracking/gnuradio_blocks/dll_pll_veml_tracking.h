@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,7 +45,8 @@
 #include <pmt/pmt.h>              // for pmt_t
 #include <cstdint>                // for int32_t
 #include <fstream>                // for string, ofstream
-#include <utility>                // for pair
+#include <string>
+#include <utility>  // for pair
 #include <vector>
 
 class Gnss_Synchro;
@@ -76,7 +77,7 @@ public:
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
-    dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
+    explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -111,7 +112,6 @@ private:
     std::string *d_data_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_preambles_symbols;
     int32_t d_preamble_length_symbols;
 
     // dll filter buffer
@@ -128,7 +128,7 @@ private:
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
     Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
+    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  // for data channel
 
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
@@ -163,7 +163,7 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
-    
+
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;

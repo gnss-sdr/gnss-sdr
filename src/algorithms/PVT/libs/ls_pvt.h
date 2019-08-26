@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,7 +42,7 @@
 class Ls_Pvt : public Pvt_Solution
 {
 public:
-    Ls_Pvt();
+    Ls_Pvt() = default;
 
     /*!
      * \brief Computes the initial position solution based on the Bancroft algorithm

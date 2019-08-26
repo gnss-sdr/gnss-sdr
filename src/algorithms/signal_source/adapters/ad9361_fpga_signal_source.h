@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,11 +32,13 @@
 #ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 class ConfigurationInterface;
@@ -46,7 +48,7 @@ class Ad9361FpgaSignalSource : public GNSSBlockInterface
 public:
     Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     ~Ad9361FpgaSignalSource();
 
@@ -112,7 +114,7 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 
     std::shared_ptr<Fpga_Switch> switch_fpga;
 };

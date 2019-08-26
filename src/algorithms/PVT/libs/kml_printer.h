@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,9 +33,9 @@
 #ifndef GNSS_SDR_KML_PRINTER_H_
 #define GNSS_SDR_KML_PRINTER_H_
 
-#include <fstream>   // for ofstream
-#include <memory>    // for shared_ptr
-
+#include <fstream>  // for ofstream
+#include <memory>   // for shared_ptr
+#include <string>
 
 class Rtklib_Solver;
 
@@ -47,7 +47,7 @@ class Rtklib_Solver;
 class Kml_Printer
 {
 public:
-    Kml_Printer(const std::string& base_path = std::string("."));
+    explicit Kml_Printer(const std::string& base_path = std::string("."));
     ~Kml_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);

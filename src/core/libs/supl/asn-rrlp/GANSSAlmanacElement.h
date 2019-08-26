@@ -25,7 +25,6 @@ extern "C"
         GANSSAlmanacElement_PR_NOTHING, /* No components present */
         GANSSAlmanacElement_PR_keplerianAlmanacSet,
         /* Extensions may appear below */
-
     } GANSSAlmanacElement_PR;
 
     /* GANSSAlmanacElement */

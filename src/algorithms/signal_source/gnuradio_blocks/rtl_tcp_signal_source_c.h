@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -47,6 +47,7 @@
 #include <gnuradio/sync_block.h>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 class rtl_tcp_signal_source_c;
 
@@ -110,7 +111,7 @@ private:
     size_t unread_;
 
     // lookup for scaling data
-    boost::array<float, 0xff> lookup_;
+    boost::array<float, 0xff> lookup_{};
 
     // async read callback
     void handle_read(const boost::system::error_code &ec,

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -130,7 +130,7 @@ public:
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     // clock terms
-    //double d_master_clock;  // GPS transmission time
+    // double d_master_clock;  // GPS transmission time
     double d_satClkCorr;  // GPS clock error
     double d_dtr;         // relativistic clock correction term
     double d_satClkDrift;

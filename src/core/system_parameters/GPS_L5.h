@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -64,8 +64,8 @@ const double GPS_L5Q_PERIOD = 0.001;              //!< GPS L5 code period [secon
 
 const int32_t GPS_L5_HISTORY_DEEP = 5;
 
-//optimum parameters
-const uint32_t GPS_L5_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+// optimum parameters
+const uint32_t GPS_L5_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 const int32_t GPS_L5I_INIT_REG[210] =
     {266, 365, 804, 1138,

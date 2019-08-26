@@ -31,7 +31,6 @@ extern "C"
         Velocity_PR_horveluncert,
         Velocity_PR_horandveruncert,
         /* Extensions may appear below */
-
     } Velocity_PR;
 
     /* Velocity */

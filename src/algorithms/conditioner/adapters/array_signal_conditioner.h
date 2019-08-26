@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -55,8 +55,8 @@ public:
         std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
         std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
 
-    //! Virtual destructor
-    virtual ~ArraySignalConditioner();
+    //! Destructor
+    ~ArraySignalConditioner() = default;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;

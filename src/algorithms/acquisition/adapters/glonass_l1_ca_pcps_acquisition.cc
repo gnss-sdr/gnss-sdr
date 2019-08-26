@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -78,13 +78,13 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     acq_parameters.sampled_ms = sampled_ms_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters.max_dwells = max_dwells_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
-    //--- Find number of samples per spreading code -------------------------
+    // --- Find number of samples per spreading code -------------------------
     code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
@@ -136,9 +136,6 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GlonassL1CaPcpsAcquisition::~GlonassL1CaPcpsAcquisition() = default;
 
 
 void GlonassL1CaPcpsAcquisition::stop_acquisition()
@@ -205,14 +202,14 @@ void GlonassL1CaPcpsAcquisition::init()
 
 void GlonassL1CaPcpsAcquisition::set_local_code()
 {
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+    std::vector<std::complex<float>> code(code_length_);
 
-    glonass_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(code, code_length_), /* gnss_synchro_->PRN,*/ fs_in_, 0);
+    glonass_l1_ca_code_gen_complex_sampled(code, fs_in_, 0);
 
     gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());
@@ -233,7 +230,7 @@ void GlonassL1CaPcpsAcquisition::set_state(int state)
 
 float GlonassL1CaPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     /*
     for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)

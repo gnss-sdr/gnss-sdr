@@ -5,7 +5,7 @@
  *         Antonio Ramos  (antonio.ramosdet(at)gmail.com)
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,7 +32,7 @@
 #include <boost/math/distributions/chi_squared.hpp>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <cmath>
+#include <algorithm>
 
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_,

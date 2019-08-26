@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,16 +34,13 @@
 #include "rtklib_solver.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <cstdio>     // for remove
 #include <cstdlib>    // for mkstemp
-#include <cstring>    // for strncpy
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <sstream>
-#include <string>
 #include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
-#include <sys/types.h>  //for mode_t
+#include <sys/types.h>  // for mode_t
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>
@@ -366,7 +363,8 @@ Kml_Printer::~Kml_Printer()
         }
     if (!positions_printed)
         {
-            if (remove(kml_filename.c_str()) != 0)
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(kml_filename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary KML file";
                 }

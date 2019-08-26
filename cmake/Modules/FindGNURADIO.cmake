@@ -58,7 +58,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     message(STATUS "Checking for GNU Radio Module: ${EXTVAR}")
 
     # check for .pc hints
-    pkg_check_modules(PC_GNURADIO_${EXTVAR} ${PCNAME})
+    pkg_check_modules(PC_GNURADIO_${EXTVAR} QUIET ${PCNAME})
 
     if(NOT PC_GNURADIO_${EXTVAR}_FOUND)
         set(PC_GNURADIO_${EXTVAR}_LIBRARIES ${LIBFILE})
@@ -117,6 +117,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/lib/sparc64-linux-gnu
                   /usr/lib/x86_64-linux-gnux32
                   /usr/lib/alpha-linux-gnu
+                  /usr/lib/riscv64-linux-gnu
                   /usr/lib64
                   /usr/lib
                   ${GNURADIO_INSTALL_PREFIX}/lib

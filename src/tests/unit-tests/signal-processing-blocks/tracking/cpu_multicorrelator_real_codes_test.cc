@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -67,11 +67,12 @@ void run_correlator_cpu_real_codes(Cpu_Multicorrelator_Real_Codes* correlator,
 
 TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     int max_threads = FLAGS_cpu_multicorrelator_real_codes_max_threads_test;
     std::vector<std::thread> thread_pool;
-    Cpu_Multicorrelator_Real_Codes* correlator_pool[max_threads];
+    std::vector<Cpu_Multicorrelator_Real_Codes*> correlator_pool(max_threads);
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
     double execution_times[3];
 
@@ -80,10 +81,10 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     gr_complex* d_correlator_outs;
 
     int d_n_correlator_taps = 3;
-    int d_vector_length = correlation_sizes[2];  //max correlation size to allocate all the necessary memory
+    int d_vector_length = correlation_sizes[2];  // max correlation size to allocate all the necessary memory
     float* d_local_code_shift_chips;
 
-    //allocate host memory
+    // allocate host memory
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = static_cast<float*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
     in_cpu = static_cast<gr_complex*>(volk_gnsssdr_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
@@ -102,9 +103,9 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    //--- Perform initializations ------------------------------
+    // --- Perform initializations ------------------------------
 
-    //local code resampler on GPU
+    // local code resampler on GPU
     // generate local reference (1 sample per chip)
     gps_l1_ca_code_gen_float(gsl::span<float>(d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(float)), 1, 0);
     // generate inut signal
@@ -136,10 +137,10 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                 {
                     std::cout << "Running " << current_max_threads << " concurrent correlators" << std::endl;
                     start = std::chrono::system_clock::now();
-                    //create the concurrent correlator threads
+                    // create the concurrent correlator threads
                     for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
                         {
-                            thread_pool.push_back(std::thread(run_correlator_cpu_real_codes,
+                            thread_pool.emplace_back(std::thread(run_correlator_cpu_real_codes,
                                 correlator_pool[current_thread],
                                 d_rem_carrier_phase_rad,
                                 d_carrier_phase_step_rad,
@@ -148,7 +149,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                                 d_rem_code_phase_chips,
                                 correlation_sizes[correlation_sizes_idx]));
                         }
-                    //wait the threads to finish they work and destroy the thread objects
+                    // wait the threads to finish they work and destroy the thread objects
                     for (auto& t : thread_pool)
                         {
                             t.join();

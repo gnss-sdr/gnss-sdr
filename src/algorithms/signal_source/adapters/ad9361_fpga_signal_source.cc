@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,7 +48,7 @@
 
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -95,7 +95,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
         rf_gain_rx1_,
         rf_gain_rx2_);
 
-    //LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
+    // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
     if (enable_dds_lo_ == true)
         {
             config_ad9361_lo_local(bandwidth_,
@@ -126,9 +126,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
 Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 {
     /* cleanup and exit */
-    //std::cout<<"* AD9361 Disabling streaming channels\n";
-    //if (rx0_i) { iio_channel_disable(rx0_i); }
-    //if (rx0_q) { iio_channel_disable(rx0_q); }
+    // std::cout<<"* AD9361 Disabling streaming channels\n";
+    // if (rx0_i) { iio_channel_disable(rx0_i); }
+    // if (rx0_q) { iio_channel_disable(rx0_q); }
 
     if (enable_dds_lo_)
         {
@@ -143,7 +143,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
         }
 
     // std::cout<<"* AD9361 Destroying context\n";
-    //if (ctx) { iio_context_destroy(ctx); }
+    // if (ctx) { iio_context_destroy(ctx); }
 }
 
 

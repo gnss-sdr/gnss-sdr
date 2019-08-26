@@ -70,7 +70,7 @@ int input_rtcm3(rtcm_t *rtcm, unsigned char data);
 int input_rtcm2f(rtcm_t *rtcm, FILE *fp);
 int input_rtcm3f(rtcm_t *rtcm, FILE *fp);
 int gen_rtcm2(rtcm_t *rtcm, int type, int sync);
-//int gen_rtcm3(rtcm_t *rtcm, int type, int sync);
+// int gen_rtcm3(rtcm_t *rtcm, int type, int sync);
 
 
-#endif
+#endif  // GNSS_SDR_RTKLIB_RTCM_H_

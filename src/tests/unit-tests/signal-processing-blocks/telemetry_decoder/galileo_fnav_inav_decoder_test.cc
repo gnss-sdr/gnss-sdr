@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -119,7 +119,7 @@ public:
                 if (INAV_decoder.flag_CRC_test == true)
                     {
                         std::cout << "Galileo E1 INAV PAGE CRC correct \n";
-                        //std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+                        // std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
                         crc_ok = true;
                     }
                 flag_even_word_arrived = 0;

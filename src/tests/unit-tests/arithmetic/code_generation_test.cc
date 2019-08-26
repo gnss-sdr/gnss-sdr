@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,14 +31,9 @@
 
 #include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
+#include <gsl/gsl>
 #include <chrono>
 #include <complex>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 
 TEST(CodeGenerationTest, CodeGenGPSL1Test)
@@ -71,7 +66,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
     double _fs = 8000000.0;
-    const signed int _codeFreqBasis = 1023000;  //Hz
+    const signed int _codeFreqBasis = 1023000;  // Hz
     const signed int _codeLength = 1023;
     int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
     auto* _dest = new std::complex<float>[_samplesPerCode];
@@ -99,7 +94,7 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 {
     double _fs = 8000000.0;
     double _f = 4000.0;
-    const signed int _codeFreqBasis = 1023000;  //Hz
+    const signed int _codeFreqBasis = 1023000;  // Hz
     const signed int _codeLength = 1023;
     int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
     auto* _dest = new std::complex<float>[_samplesPerCode];

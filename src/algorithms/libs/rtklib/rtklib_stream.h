@@ -113,7 +113,7 @@ void syncfile(file_t *file1, file_t *file2);
 void decodetcppath(const char *path, char *addr, char *port, char *user,
     char *passwd, char *mntpnt, char *str);
 
-int errsock(void);
+int errsock();
 
 int setsock(socket_t sock, char *msg);
 
@@ -196,7 +196,7 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg);
 
 int stateftp(ftp_t *ftp);
 
-void strinitcom(void);
+void strinitcom();
 
 void strinit(stream_t *stream);
 

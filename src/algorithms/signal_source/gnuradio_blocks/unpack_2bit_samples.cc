@@ -5,7 +5,7 @@
  * \author Cillian O'Driscoll cillian.odriscoll (at) gmail.com
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -133,9 +133,6 @@ unpack_2bit_samples::unpack_2bit_samples(bool big_endian_bytes,
 }
 
 
-unpack_2bit_samples::~unpack_2bit_samples() = default;
-
-
 int unpack_2bit_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
@@ -167,7 +164,7 @@ int unpack_2bit_samples::work(int noutput_items,
         {
             if (swap_endian_bytes_)
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];
@@ -180,7 +177,7 @@ int unpack_2bit_samples::work(int noutput_items,
                 }
             else
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];
@@ -196,7 +193,7 @@ int unpack_2bit_samples::work(int noutput_items,
         {
             if (swap_endian_bytes_)
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];
@@ -209,7 +206,7 @@ int unpack_2bit_samples::work(int noutput_items,
                 }
             else
                 {
-                    for (unsigned int i = 0; i < ninput_bytes; ++i)
+                    for (size_t i = 0; i < ninput_bytes; ++i)
                         {
                             // Read packed input sample (1 byte = 4 samples)
                             raw_byte.byte = in[i];

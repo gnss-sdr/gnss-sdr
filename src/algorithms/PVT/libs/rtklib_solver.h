@@ -22,8 +22,8 @@
  *
  * -------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
- * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2019, Javier Arribas
+ * Copyright (C) 2017-2019, Carles Fernandez
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,18 +126,17 @@ public:
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
-    int count_valid_position;
-
 private:
     rtk_t rtk_{};
+    Monitor_Pvt monitor_pvt{};
+    std::array<obsd_t, MAXOBS> obs_data{};
+    std::array<double, 4> dop_{};
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    bool save_matfile();
+    int d_nchannels;  // Number of available channels for positioning
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
-    int d_nchannels;  // Number of available channels for positioning
-    std::array<double, 4> dop_{};
-    Monitor_Pvt monitor_pvt{};
+    bool save_matfile();
 };
 
 #endif

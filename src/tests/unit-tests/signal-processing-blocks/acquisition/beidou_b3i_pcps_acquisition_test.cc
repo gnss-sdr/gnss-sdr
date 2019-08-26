@@ -2,12 +2,12 @@
  * \file beidou_b3i_pcps_acquisition_test.cc
  * \brief  This class implements an acquisition test for
  * BeidouB3iPcpsAcquisition class based on some input parameters.
-  * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
+ * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,7 @@
 #include "Beidou_B3I.h"
 #include "acquisition_dump_reader.h"
 #include "beidou_b3i_pcps_acquisition.h"
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -46,9 +47,9 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
 
@@ -183,7 +184,7 @@ void BeidouB3iPcpsAcquisitionTest::init()
 
 void BeidouB3iPcpsAcquisitionTest::plot_grid()
 {
-    //load the measured values
+    // load the measured values
     std::string basename = "./tmp-acq-bds-b3i/acquisition_C_B3";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
@@ -197,7 +198,7 @@ void BeidouB3iPcpsAcquisitionTest::plot_grid()
 
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;
-    std::vector<std::vector<float> > *mag = &acq_dump.mag;
+    std::vector<std::vector<float>> *mag = &acq_dump.mag;
 
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())
@@ -228,7 +229,7 @@ void BeidouB3iPcpsAcquisitionTest::plot_grid()
                     g1.set_title("BeiDou B3I signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
-                    //g1.cmd("set view 60, 105, 1, 1");
+                    // g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("BDS_B3I_acq_grid");
@@ -260,7 +261,7 @@ TEST_F(BeidouB3iPcpsAcquisitionTest, ConnectAndRun)
     int nsamples = 50000;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     top_block = gr::make_top_block("Acquisition test");
     init();

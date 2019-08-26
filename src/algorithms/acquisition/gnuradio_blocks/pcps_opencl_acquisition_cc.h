@@ -25,7 +25,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -61,6 +61,7 @@
 #include "opencl/cl.hpp"
 #include <cstdint>
 #include <fstream>
+#include <memory>  // for weak_ptr
 #include <string>
 #include <vector>
 
@@ -241,16 +242,16 @@ private:
     uint32_t d_fft_size_pow2;
     int* d_max_doppler_indexs;
     uint64_t d_sample_counter;
-    gr_complex** d_grid_doppler_wipeoffs;
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
-    gr_complex* d_fft_codes;
+    std::vector<gr_complex> d_fft_codes;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;
     float d_mag;
-    float* d_magnitude;
+    std::vector<float> d_magnitude;
     float d_input_power;
     float d_test_statistics;
     bool d_bit_transition_flag;
@@ -261,8 +262,8 @@ private:
     bool d_dump;
     uint32_t d_channel;
     std::string d_dump_filename;
-    gr_complex* d_zero_vector;
-    gr_complex** d_in_buffer;
+    std::vector<gr_complex> d_zero_vector;
+    std::vector<std::vector<gr_complex>> d_in_buffer;
     std::vector<uint64_t> d_sample_counter_buffer;
     uint32_t d_in_dwell_count;
     std::weak_ptr<ChannelFsm> d_channel_fsm;

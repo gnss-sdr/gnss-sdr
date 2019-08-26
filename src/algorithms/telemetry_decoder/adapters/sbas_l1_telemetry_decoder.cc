@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -59,9 +59,6 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder() = default;
 
 
 void SbasL1TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -46,12 +46,13 @@
 #include "signal_generator_flags.h"
 #include "spirent_motion_csv_dump_reader.h"
 #include "test_flags.h"
-#include "tracking_tests_flags.h"  //acquisition resampler
+#include "tracking_tests_flags.h"  // acquisition resampler
 #include <armadillo>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <fstream>
@@ -122,7 +123,7 @@ int PositionSystemTest::configure_generator()
         }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
     return 0;
 }
 
@@ -289,8 +290,8 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
-            //config->set_property("Tracking_1C.high_dyn", "true");
-            //config->set_property("Tracking_1C.smoother_length", "200");
+            // config->set_property("Tracking_1C.high_dyn", "true");
+            // config->set_property("Tracking_1C.smoother_length", "200");
 
             // Set Telemetry
             config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -361,16 +362,16 @@ int PositionSystemTest::run_receiver()
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     FILE* fp;
     std::string argum2 = std::string("/bin/ls *kml | tail -1");
-    char buffer[1035];
+    std::array<char, 1035> buffer{};
     fp = popen(&argum2[0], "r");
     if (fp == nullptr)
         {
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    while (fgets(buffer, sizeof(buffer), fp) != nullptr)
+    while (fgets(buffer.data(), buffer.size(), fp) != nullptr)
         {
-            std::string aux = std::string(buffer);
+            std::string aux = std::string(buffer.data());
             EXPECT_EQ(aux.empty(), false);
             PositionSystemTest::generated_kml_file = aux.erase(aux.length() - 1, 1);
         }
@@ -392,12 +393,12 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
-                    size_t dims[2] = {1, x->size()};
-                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    std::array<size_t, 2> dims{1, x->size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
 
-                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &y[0], 0);
+                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &y[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
                 }
@@ -415,6 +416,7 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
         }
 }
 
+
 bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename)
 {
     try
@@ -427,8 +429,8 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
-                    size_t dims[2] = {1, x->size()};
-                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    std::array<size_t, 2> dims{1, x->size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
                 }
@@ -446,17 +448,18 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
         }
 }
 
+
 void PositionSystemTest::check_results()
 {
-    arma::mat R_eb_e;    //ECEF position (x,y,z) estimation in the Earth frame (Nx3)
-    arma::mat R_eb_enu;  //ENU position (N,E,U) estimation in UTM (Nx3)
-    arma::mat V_eb_e;    //ECEF velocity (x,y,z) estimation in the Earth frame (Nx3)
-    arma::mat LLH;       //Geodetic coordinates (latitude, longitude, height) estimation in WGS84 datum
+    arma::mat R_eb_e;    // ECEF position (x,y,z) estimation in the Earth frame (Nx3)
+    arma::mat R_eb_enu;  // ENU position (N,E,U) estimation in UTM (Nx3)
+    arma::mat V_eb_e;    // ECEF velocity (x,y,z) estimation in the Earth frame (Nx3)
+    arma::mat LLH;       // Geodetic coordinates (latitude, longitude, height) estimation in WGS84 datum
     arma::vec receiver_time_s;
 
-    arma::mat ref_R_eb_e;  //ECEF position (x,y,z) reference in the Earth frame (Nx3)
-    arma::mat ref_V_eb_e;  //ECEF velocity (x,y,z) reference in the Earth frame (Nx3)
-    arma::mat ref_LLH;     //Geodetic coordinates (latitude, longitude, height) reference in WGS84 datum
+    arma::mat ref_R_eb_e;  // ECEF position (x,y,z) reference in the Earth frame (Nx3)
+    arma::mat ref_V_eb_e;  // ECEF velocity (x,y,z) reference in the Earth frame (Nx3)
+    arma::mat ref_LLH;     // Geodetic coordinates (latitude, longitude, height) reference in WGS84 datum
     arma::vec ref_time_s;
 
     std::istringstream iss2(FLAGS_static_position);
@@ -602,7 +605,7 @@ void PositionSystemTest::check_results()
         }
     else
         {
-            //dynamic position
+            // dynamic position
             Spirent_Motion_Csv_Dump_Reader ref_reader;
             ref_reader.open_obs_file(FLAGS_ref_motion_filename);
             int64_t n_epochs = ref_reader.num_epochs();
@@ -625,7 +628,7 @@ void PositionSystemTest::check_results()
                     ref_LLH(2, current_epoch) = ref_reader.Height;
                     current_epoch++;
                 }
-            //interpolation of reference data to receiver epochs timestamps
+            // interpolation of reference data to receiver epochs timestamps
             arma::mat ref_interp_R_eb_e = arma::zeros(3, R_eb_e.n_cols);
             arma::mat ref_interp_V_eb_e = arma::zeros(3, V_eb_e.n_cols);
             arma::mat ref_interp_LLH = arma::zeros(3, LLH.n_cols);
@@ -640,7 +643,7 @@ void PositionSystemTest::check_results()
                     ref_interp_LLH.row(n) = tmp_vector.t();
                 }
 
-            //compute error vectors
+            // compute error vectors
             arma::mat error_R_eb_e = arma::zeros(3, R_eb_e.n_cols);
             arma::mat error_V_eb_e = arma::zeros(3, V_eb_e.n_cols);
             arma::mat error_LLH = arma::zeros(3, LLH.n_cols);
@@ -655,9 +658,9 @@ void PositionSystemTest::check_results()
                     error_module_V_eb_e(n) = arma::norm(error_V_eb_e.col(n));
                 }
 
-            //Error statistics
+            // Error statistics
             arma::vec tmp_vec;
-            //RMSE, Mean, Variance and peaks
+            // RMSE, Mean, Variance and peaks
             tmp_vec = arma::square(error_module_R_eb_e);
             double rmse_R_eb_e = sqrt(arma::mean(tmp_vec));
             double error_mean_R_eb_e = arma::mean(error_module_R_eb_e);
@@ -672,7 +675,7 @@ void PositionSystemTest::check_results()
             double max_error_V_eb_e = arma::max(error_module_V_eb_e);
             double min_error_V_eb_e = arma::min(error_module_V_eb_e);
 
-            //report
+            // report
             std::cout << "----- Position and Velocity 3D ECEF error statistics -----" << std::endl;
             if (!FLAGS_config_file_ptest.empty())
                 {
@@ -710,7 +713,7 @@ void PositionSystemTest::check_results()
                                 }
                             g1.set_title("3D ECEF error coordinates");
                             g1.set_grid();
-                            //conversion between arma::vec and std:vector
+                            // conversion between arma::vec and std:vector
                             arma::rowvec arma_vec_error_x = error_R_eb_e.row(0);
                             arma::rowvec arma_vec_error_y = error_R_eb_e.row(1);
                             arma::rowvec arma_vec_error_z = error_R_eb_e.row(2);
@@ -744,7 +747,7 @@ void PositionSystemTest::check_results()
                             g3.set_grid();
                             g3.set_xlabel("Receiver epoch time from first valid PVT [s]");
                             g3.set_ylabel("3D Position error [m]");
-                            //conversion between arma::vec and std:vector
+                            // conversion between arma::vec and std:vector
                             std::vector<double> error_vec(error_module_R_eb_e.colptr(0), error_module_R_eb_e.colptr(0) + error_module_R_eb_e.n_rows);
                             g3.cmd("set key box opaque");
                             g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
@@ -775,7 +778,7 @@ void PositionSystemTest::check_results()
                             g4.set_grid();
                             g4.set_xlabel("Receiver epoch time from first valid PVT [s]");
                             g4.set_ylabel("3D Velocity error [m/s]");
-                            //conversion between arma::vec and std:vector
+                            // conversion between arma::vec and std:vector
                             std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
                             g4.cmd("set key box opaque");
                             g4.plot_xy(time_vector_from_start_s, error_vec2, "Velocity 3D error");
@@ -795,10 +798,10 @@ void PositionSystemTest::check_results()
                         }
                 }
 
-            //ERROR CHECK
-            //todo: reduce the error tolerance or enable the option to pass the error tolerance by parameter
-            EXPECT_LT(rmse_R_eb_e, FLAGS_dynamic_3D_position_RMSE);  //3D RMS positioning error less than 10 meters
-            EXPECT_LT(rmse_V_eb_e, FLAGS_dynamic_3D_velocity_RMSE);  //3D RMS speed error less than 5 meters/s (18 km/h)
+            // ERROR CHECK
+            // todo: reduce the error tolerance or enable the option to pass the error tolerance by parameter
+            EXPECT_LT(rmse_R_eb_e, FLAGS_dynamic_3D_position_RMSE);  // 3D RMS positioning error less than 10 meters
+            EXPECT_LT(rmse_V_eb_e, FLAGS_dynamic_3D_velocity_RMSE);  // 3D RMS speed error less than 5 meters/s (18 km/h)
         }
 }
 
@@ -871,7 +874,6 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                     g1.cmd("set xrange [-" + std::to_string(range) + ":" + std::to_string(range) + "]");
                     g1.cmd("set yrange [-" + std::to_string(range) + ":" + std::to_string(range) + "]");
 
-
                     g1.plot_xy(east, north, "2D Position Fixes");
                     g1.set_style("lines").plot_circle(mean_east, mean_north, two_drms, "2DRMS");
                     g1.set_style("lines").plot_circle(mean_east, mean_north, two_drms / 2.0, "DRMS");
@@ -911,7 +913,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
 
                     g2.cmd("set style fill transparent solid 0.30 border\n set parametric\n set urange [0:2.0*pi]\n set vrange [-pi/2:pi/2]\n r = " +
                            std::to_string(ninty_sas) +
-                           "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90\%-SAS\" lt rgb \"gray\"\n");
+                           "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90%-SAS\" lt rgb \"gray\"\n");
                     g2.plot_xyz(east, north, up, "3D Position Fixes");
                     if (FLAGS_config_file_ptest.empty())
                         {
@@ -930,6 +932,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                 }
         }
 }
+
 
 TEST_F(PositionSystemTest /*unused*/, Position_system_test /*unused*/)
 {

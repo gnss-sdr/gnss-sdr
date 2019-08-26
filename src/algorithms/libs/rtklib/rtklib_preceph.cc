@@ -99,7 +99,12 @@ int code2sys(char code)
 int readsp3h(FILE *fp, gtime_t *time, char *type, int *sats,
     double *bfact, char *tsys)
 {
-    int i, j, k = 0, ns = 0, sys, prn;
+    int i;
+    int j;
+    int k = 0;
+    int ns = 0;
+    int sys;
+    int prn;
     char buff[1024];
 
     trace(3, "readsp3h:\n");
@@ -179,8 +184,18 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, co
 {
     peph_t peph;
     gtime_t time;
-    double val, std, base;
-    int i, j, sat, sys, prn, n = ns * (type == 'P' ? 1 : 2), pred_o, pred_c, v;
+    double val;
+    double std;
+    double base;
+    int i;
+    int j;
+    int sat;
+    int sys;
+    int prn;
+    int n = ns * (type == 'P' ? 1 : 2);
+    int pred_o;
+    int pred_c;
+    int v;
     char buff[1024];
 
     trace(3, "readsp3b: type=%c ns=%d index=%d opt=%d\n", type, ns, index, opt);
@@ -309,7 +324,8 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, co
 /* compare precise ephemeris -------------------------------------------------*/
 int cmppeph(const void *p1, const void *p2)
 {
-    auto *q1 = (peph_t *)p1, *q2 = (peph_t *)p2;
+    auto *q1 = static_cast<const peph_t *>(p1);
+    auto *q2 = static_cast<const peph_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     return tt < -1e-9 ? -1 : (tt > 1e-9 ? 1 : q1->index - q2->index);
 }
@@ -318,7 +334,10 @@ int cmppeph(const void *p1, const void *p2)
 /* combine precise ephemeris -------------------------------------------------*/
 void combpeph(nav_t *nav, int opt)
 {
-    int i, j, k, m;
+    int i;
+    int j;
+    int k;
+    int m;
 
     trace(3, "combpeph: ne=%d\n", nav->ne);
 
@@ -387,14 +406,21 @@ void readsp3(const char *file, nav_t *nav, int opt)
     FILE *fp;
     gtime_t time = {0, 0};
     double bfact[2] = {};
-    int i, j, n, ns, sats[MAXSAT] = {};
-    char *efiles[MAXEXFILE], *ext, type = ' ', tsys[4] = "";
+    int i;
+    int j;
+    int n;
+    int ns;
+    int sats[MAXSAT] = {};
+    char *efiles[MAXEXFILE];
+    char *ext;
+    char type = ' ';
+    char tsys[4] = "";
 
     trace(3, "readpephs: file=%s\n", file);
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
+            if (!(efiles[i] = static_cast<char *>(malloc(MAXSTRPATH + 255))))
                 {
                     for (i--; i >= 0; i--)
                         {
@@ -455,8 +481,9 @@ void readsp3(const char *file, nav_t *nav, int opt)
  *-----------------------------------------------------------------------------*/
 int readsap(const char *file, gtime_t time, nav_t *nav)
 {
-    pcvs_t pcvs = {0, 0, (pcv_t *){nullptr}};
-    pcv_t pcv0 = {0, {}, {}, {0, 0}, {0, 0}, {{}, {}}, {{}, {}}}, *pcv;
+    pcvs_t pcvs{};
+    pcv_t pcv0{};
+    pcv_t *pcv;
     int i;
 
     trace(3, "readsap : file=%s time=%s\n", file, time_str(time, 0));
@@ -481,8 +508,13 @@ int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
 {
     FILE *fp;
     double cbias;
-    char buff[256], str1[32], str2[32] = "";
-    int i, j, sat, type = 0;
+    char buff[256];
+    char str1[32];
+    char str2[32] = "";
+    int i;
+    int j;
+    int sat;
+    int type = 0;
 
     trace(3, "readdcbf: file=%s\n", file);
 
@@ -546,14 +578,16 @@ int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
  * read differential code bias (dcb) parameters
  * args   : char   *file       I   dcb parameters file (wild-card * expanded)
  *          nav_t  *nav        IO  navigation data
- *          sta_t  *sta        I   station info data to inport receiver dcb
+ *          sta_t  *sta        I   station info data to import receiver dcb
  *                                 (NULL: no use)
  * return : status (1:ok,0:error)
  * notes  : currently only p1-c1 bias of code *.dcb file
  *-----------------------------------------------------------------------------*/
 int readdcb(const char *file, nav_t *nav, const sta_t *sta)
 {
-    int i, j, n;
+    int i;
+    int j;
+    int n;
     char *efiles[MAXEXFILE] = {};
 
     trace(3, "readdcb : file=%s\n", file);
@@ -567,7 +601,7 @@ int readdcb(const char *file, nav_t *nav, const sta_t *sta)
         }
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
+            if (!(efiles[i] = static_cast<char *>(malloc(MAXSTRPATH + 255))))
                 {
                     for (i--; i >= 0; i--)
                         {
@@ -591,156 +625,11 @@ int readdcb(const char *file, nav_t *nav, const sta_t *sta)
 }
 
 
-/* add satellite fcb ---------------------------------------------------------*/
-int addfcb(nav_t *nav, gtime_t ts, gtime_t te, int sat,
-    const double *bias, const double *std)
-{
-    fcbd_t *nav_fcb;
-    int i, j;
-
-    if (nav->nf > 0 && fabs(timediff(ts, nav->fcb[nav->nf - 1].ts)) <= 1e-3)
-        {
-            for (i = 0; i < 3; i++)
-                {
-                    nav->fcb[nav->nf - 1].bias[sat - 1][i] = bias[i];
-                    nav->fcb[nav->nf - 1].std[sat - 1][i] = std[i];
-                }
-            return 1;
-        }
-    if (nav->nf >= nav->nfmax)
-        {
-            nav->nfmax = nav->nfmax <= 0 ? 2048 : nav->nfmax * 2;
-            if (!(nav_fcb = static_cast<fcbd_t *>(realloc(nav->fcb, sizeof(fcbd_t) * nav->nfmax))))
-                {
-                    free(nav->fcb);
-                    nav->nf = nav->nfmax = 0;
-                    return 0;
-                }
-            nav->fcb = nav_fcb;
-        }
-    for (i = 0; i < MAXSAT; i++)
-        {
-            for (j = 0; j < 3; j++)
-                {
-                    nav->fcb[nav->nf].bias[i][j] = nav->fcb[nav->nf].std[i][j] = 0.0;
-                }
-        }
-    for (i = 0; i < 3; i++)
-        {
-            nav->fcb[nav->nf].bias[sat - 1][i] = bias[i];
-            nav->fcb[nav->nf].std[sat - 1][i] = std[i];
-        }
-    nav->fcb[nav->nf].ts = ts;
-    nav->fcb[nav->nf++].te = te;
-    return 1;
-}
-
-
-/* read satellite fcb file ---------------------------------------------------*/
-int readfcbf(const char *file, nav_t *nav)
-{
-    FILE *fp;
-    gtime_t ts, te;
-    double ep1[6], ep2[6], bias[3] = {}, std[3] = {};
-    char buff[1024], str[32], *p;
-    int sat;
-
-    trace(3, "readfcbf: file=%s\n", file);
-
-    if (!(fp = fopen(file, "re")))
-        {
-            trace(2, "fcb parameters file open error: %s\n", file);
-            return 0;
-        }
-    while (fgets(buff, sizeof(buff), fp))
-        {
-            if ((p = strchr(buff, '#')))
-                {
-                    *p = '\0';
-                }
-            if (sscanf(buff,
-                    "%lf/%lf/%lf %lf:%lf:%lf %lf/%lf/%lf %lf:%lf:%lf %s"
-                    "%lf %lf %lf %lf %lf %lf",
-                    ep1, ep1 + 1, ep1 + 2, ep1 + 3, ep1 + 4, ep1 + 5,
-                    ep2, ep2 + 1, ep2 + 2, ep2 + 3, ep2 + 4, ep2 + 5, str, bias, std, bias + 1, std + 1,
-                    bias + 2, std + 2) < 17)
-                {
-                    continue;
-                }
-            if (!(sat = satid2no(str)))
-                {
-                    continue;
-                }
-            ts = epoch2time(ep1);
-            te = epoch2time(ep2);
-            if (!addfcb(nav, ts, te, sat, bias, std))
-                {
-                    fclose(fp);
-                    return 0;
-                }
-        }
-    fclose(fp);
-    return 1;
-}
-
-
-/* compare satellite fcb -----------------------------------------------------*/
-int cmpfcb(const void *p1, const void *p2)
-{
-    auto *q1 = (fcbd_t *)p1, *q2 = (fcbd_t *)p2;
-    double tt = timediff(q1->ts, q2->ts);
-    return tt < -1e-3 ? -1 : (tt > 1e-3 ? 1 : 0);
-}
-
-
-/* read satellite fcb data -----------------------------------------------------
- * read satellite fractional cycle bias (dcb) parameters
- * args   : char   *file       I   fcb parameters file (wild-card * expanded)
- *          nav_t  *nav        IO  navigation data
- * return : status (1:ok,0:error)
- * notes  : fcb data appended to navigation data
- *-----------------------------------------------------------------------------*/
-int readfcb(const char *file, nav_t *nav)
-{
-    char *efiles[MAXEXFILE] = {};
-    int i, n;
-
-    trace(3, "readfcb : file=%s\n", file);
-
-    for (i = 0; i < MAXEXFILE; i++)
-        {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
-                {
-                    for (i--; i >= 0; i--)
-                        {
-                            free(efiles[i]);
-                        }
-                    return 0;
-                }
-        }
-    n = expath(file, efiles, MAXEXFILE);
-
-    for (i = 0; i < n; i++)
-        {
-            readfcbf(efiles[i], nav);
-        }
-    for (i = 0; i < MAXEXFILE; i++)
-        {
-            free(efiles[i]);
-        }
-
-    if (nav->nf > 1)
-        {
-            qsort(nav->fcb, nav->nf, sizeof(fcbd_t), cmpfcb);
-        }
-    return 1;
-}
-
-
 /* polynomial interpolation by Neville's algorithm ---------------------------*/
 double interppol(const double *x, double *y, int n)
 {
-    int i, j;
+    int i;
+    int j;
 
     for (j = 1; j < n; j++)
         {
@@ -757,8 +646,18 @@ double interppol(const double *x, double *y, int n)
 int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
     double *dts, double *vare, double *varc)
 {
-    double t[NMAX + 1], p[3][NMAX + 1], c[2], *pos, std = 0.0, s[3], sinl, cosl;
-    int i, j, k, index;
+    double t[NMAX + 1];
+    double p[3][NMAX + 1];
+    double c[2];
+    double *pos;
+    double std = 0.0;
+    double s[3];
+    double sinl;
+    double cosl;
+    int i;
+    int j;
+    int k;
+    int index;
 
     trace(4, "pephpos : time=%s sat=%2d\n", time_str(time, 3), sat);
 
@@ -886,8 +785,13 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
 int pephclk(gtime_t time, int sat, const nav_t *nav, double *dts,
     double *varc)
 {
-    double t[2], c[2], std;
-    int i, j, k, index;
+    double t[2];
+    double c[2];
+    double std;
+    int i;
+    int j;
+    int k;
+    int index;
 
     trace(4, "pephclk : time=%s sat=%2d\n", time_str(time, 3), sat);
 
@@ -970,9 +874,22 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
 {
     const double *lam = nav->lam[sat - 1];
     const pcv_t *pcv = nav->pcvs + sat - 1;
-    double ex[3], ey[3], ez[3], es[3], r[3], rsun[3], gmst, erpv[5] = {};
-    double gamma, C1, C2, dant1, dant2;
-    int i, j = 0, k = 1;
+    double ex[3];
+    double ey[3];
+    double ez[3];
+    double es[3];
+    double r[3];
+    double rsun[3];
+    double gmst;
+    double erpv[5] = {};
+    double gamma;
+    double C1;
+    double C2;
+    double dant1;
+    double dant2;
+    int i;
+    int j = 0;
+    int k = 1;
 
     trace(4, "satantoff: time=%s sat=%2d\n", time_str(time, 3), sat);
 
@@ -1048,7 +965,14 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
 int peph2pos(gtime_t time, int sat, const nav_t *nav, int opt,
     double *rs, double *dts, double *var)
 {
-    double rss[3], rst[3], dtss[1], dtst[1], dant[3] = {}, vare = 0.0, varc = 0.0, tt = 1e-3;
+    double rss[3];
+    double rst[3];
+    double dtss[1];
+    double dtst[1];
+    double dant[3] = {};
+    double vare = 0.0;
+    double varc = 0.0;
+    double tt = 1e-3;
     int i;
 
     trace(4, "peph2pos: time=%s sat=%2d opt=%d\n", time_str(time, 3), sat, opt);

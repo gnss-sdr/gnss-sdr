@@ -1,12 +1,12 @@
 /*!
  * \file bayesian_estimation_test.cc
- * \brief  This file implements feasability test for the BCE library.
+ * \brief  This file implements feasibility test for the BCE library.
  * \author Gerald LaMountain, 2018. gerald(at)ece.neu.edu
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

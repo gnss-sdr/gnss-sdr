@@ -28,7 +28,6 @@ extern "C"
         SatStatus_PR_oldSatelliteAndModel,
         SatStatus_PR_newNaviModelUC,
         /* Extensions may appear below */
-
     } SatStatus_PR;
 
     /* SatStatus */

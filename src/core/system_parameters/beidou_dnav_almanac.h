@@ -70,7 +70,7 @@ public:
         ar& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
         ar& BOOST_SERIALIZATION_NVP(d_Delta_i);
         ar& BOOST_SERIALIZATION_NVP(d_Toa);
-        //ar& BOOST_SERIALIZATION_NVP(i_WNa);
+        // ar& BOOST_SERIALIZATION_NVP(i_WNa);
         ar& BOOST_SERIALIZATION_NVP(d_M_0);
         ar& BOOST_SERIALIZATION_NVP(d_e_eccentricity);
         ar& BOOST_SERIALIZATION_NVP(d_sqrt_A);
@@ -78,7 +78,7 @@ public:
         ar& BOOST_SERIALIZATION_NVP(d_OMEGA);
         ar& BOOST_SERIALIZATION_NVP(d_OMEGA_DOT);
         ar& BOOST_SERIALIZATION_NVP(i_SV_health);
-        //ar& BOOST_SERIALIZATION_NVP(i_AS_status);
+        // ar& BOOST_SERIALIZATION_NVP(i_AS_status);
         ar& BOOST_SERIALIZATION_NVP(d_A_f0);
         ar& BOOST_SERIALIZATION_NVP(d_A_f1);
     }

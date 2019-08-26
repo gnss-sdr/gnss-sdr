@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -58,7 +58,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
@@ -66,7 +66,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10;  //rise alarm if 20 consecutive subframes have no valid CRC
+    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10;  // rise alarm if 20 consecutive subframes have no valid CRC
 
     // initialize internal vars
     d_dump = dump;
@@ -165,7 +165,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  //bad telemetry
+                    int message = 1;  // bad telemetry
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
                 }
@@ -182,7 +182,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (uint32_t i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS; i++)
                 {
-                    raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1u);
+                    raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1U);
                 }
 
             d_CNAV_Message.decode_page(raw_bits);
@@ -217,7 +217,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             // \code
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
 
-            //check TOW update consistency
+            // check TOW update consistency
             uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
             if (last_d_TOW_at_current_symbol_ms != 0 and abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > GPS_L5I_SYMBOL_PERIOD_MS)

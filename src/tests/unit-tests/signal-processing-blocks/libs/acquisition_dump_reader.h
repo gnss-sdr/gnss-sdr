@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,7 +51,12 @@ public:
         int channel = 0,
         int execution = 1);
 
-    ~Acquisition_Dump_Reader();
+    ~Acquisition_Dump_Reader() = default;
+
+    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept;             //!< Copy constructor
+    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader&);            //!< Copy assignment operator
+    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept;        //!< Move constructor
+    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept;  //!< Move assignment operator
 
     bool read_binary_acq();
 

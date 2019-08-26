@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -82,8 +82,8 @@ public:
     double d_A_f1;  //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
 
-    double d_URA0;  //!<NED Accuracy Index
-    double d_URA1;  //!<NED Accuracy Change Index
+    double d_URA0;  //!< NED Accuracy Index
+    double d_URA1;  //!< NED Accuracy Change Index
     double d_URA2;  //!< NED Accuracy Change Rate Index
 
     // Group Delay Differential Parameters

@@ -149,7 +149,7 @@ if(OPENSSL_FOUND)
     add_definitions(-DUSE_OPENSSL_FALLBACK=1)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     add_definitions(-DOPENCL_BLOCKS_TEST=1)
 endif()
 
@@ -194,12 +194,6 @@ endif()
 # GPSTk and optional generator
 ################################################################################
 
-find_package(GPSTK)
-set_package_properties(GPSTK PROPERTIES
-    PURPOSE "Used in some Extra Tests."
-    TYPE OPTIONAL
-)
-
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)
         set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
@@ -241,11 +235,18 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
     endif()
 
-    ################################################################################
-    # Local installation of GPSTk http://www.gpstk.org/
-    ################################################################################
+    ############################################################################
+    # Local installation of GPSTk https://github.com/SGL-UT/GPSTk
+    ############################################################################
+    find_package(GPSTK)
+    set_package_properties(GPSTK PROPERTIES
+        PURPOSE "Used in some Extra Tests."
+        TYPE REQUIRED
+    )
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-        message(STATUS " GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
+        set_package_properties(GPSTK PROPERTIES
+            PURPOSE "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+        )
         if("${TOOLCHAIN_ARG}" STREQUAL "")
             set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=-Wno-deprecated")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
@@ -277,7 +278,6 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
         set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
         add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
-        set(OWN_GPSTK True)
         add_library(Gpstk::gpstk SHARED IMPORTED)
         add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
         file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS})
@@ -543,7 +543,7 @@ endfunction()
 
 if(ENABLE_SYSTEM_TESTING)
     set(HOST_SYSTEM "Unknown")
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
         set(HOST_SYSTEM "GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
         string(REPLACE "\n" "" HOST_SYSTEM "${HOST_SYSTEM}")
         string(REPLACE "\"" "" HOST_SYSTEM "${HOST_SYSTEM}")
@@ -744,6 +744,16 @@ add_executable(matio_test
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/arithmetic/matio_test.cc
 )
 
+if(${FILESYSTEM_FOUND})
+    target_compile_definitions(matio_test PRIVATE -DHAS_STD_FILESYSTEM=1)
+    if(${find_experimental})
+        target_compile_definitions(matio_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(matio_test PRIVATE std::filesystem)
+else()
+    target_link_libraries(matio_test PRIVATE Boost::filesystem Boost::system)
+endif()
+
 target_link_libraries(matio_test
     PUBLIC
         Gflags::gflags
@@ -861,7 +871,6 @@ endif()
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(control_thread_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_message_factory_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_thread_test.cc
     )
     if(${FILESYSTEM_FOUND})

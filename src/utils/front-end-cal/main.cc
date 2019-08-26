@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -60,9 +60,8 @@
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/gr_complex.h>    // for gr_complex
-#include <gnuradio/io_signature.h>  // for io_signature
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/runtime_types.h>  // for block_sptr
 #include <gnuradio/top_block.h>
 #include <pmt/pmt.h>        // for pmt_t, to_long
@@ -122,7 +121,6 @@ private:
 
 public:
     int rx_message;
-    ~FrontEndCal_msg_rx() override;  //!< Default destructor
 };
 
 
@@ -156,24 +154,21 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 }
 
 
-FrontEndCal_msg_rx::~FrontEndCal_msg_rx() = default;
-
-
 void wait_message()
 {
     while (!stop)
         {
             int message;
             channel_internal_queue.wait_and_pop(message);
-            //std::cout<<"Acq message rx="<<message<<std::endl;
+            // std::cout<<"Acq message rx="<<message<<std::endl;
             switch (message)
                 {
                 case 1:  // Positive acq
                     gnss_sync_vector.push_back(*gnss_synchro);
-                    //acquisition->reset();
+                    // acquisition->reset();
                     break;
                 case 2:  // negative acq
-                    //acquisition->reset();
+                    // acquisition->reset();
                     break;
                 case 3:
                     stop = true;
@@ -189,9 +184,9 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     std::shared_ptr<GNSSBlockInterface> source;
@@ -270,7 +265,7 @@ int main(int argc, char** argv)
 {
     const std::string intro_help(
         std::string("\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n") +
-        "Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)\n" +
+        "Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)\n" +
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License\n \n");
 
@@ -368,7 +363,6 @@ int main(int argc, char** argv)
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     configuration->set_property("Acquisition.max_dwells", "10");
 
-    GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);
@@ -405,14 +399,15 @@ int main(int argc, char** argv)
     // Get visible GPS satellites (positive acquisitions with Doppler measurements)
     // Compute Doppler estimations
 
-    //todo: Fix the front-end cal to support new channel internal message system (no more external queues)
+    // todo: Fix the front-end cal to support new channel internal message system (no more external queues)
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> cn0_measurements_map;
 
     std::thread ch_thread;
 
     // record startup time
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds{};
     start = std::chrono::system_clock::now();
 
@@ -561,7 +556,9 @@ int main(int argc, char** argv)
                     std::cout << "  " << it.first << "   " << it.second << "   " << doppler_estimated_hz << std::endl;
                     // 7. Compute front-end IF and sampling frequency estimation
                     // Compare with the measurements and compute clock drift using FE model
-                    double estimated_fs_Hz, estimated_f_if_Hz, f_osc_err_ppm;
+                    double estimated_fs_Hz;
+                    double estimated_f_if_Hz;
+                    double f_osc_err_ppm;
                     front_end_cal.GPS_L1_front_end_model_E4000(doppler_estimated_hz, it.second, fs_in_, &estimated_fs_Hz, &estimated_f_if_Hz, &f_osc_err_ppm);
 
                     f_if_estimation_Hz_map.insert(std::pair<int, double>(it.first, estimated_f_if_Hz));
@@ -576,7 +573,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << "Exception caught while reading ephemeris" << std::endl;
                 }
-            catch (int ex)
+            catch (const std::exception& ex)
                 {
                     std::cout << "  " << it.first << "   " << it.second << "  (Eph not found)" << std::endl;
                 }
@@ -625,7 +622,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << "Exception caught while reading ephemeris" << std::endl;
                 }
-            catch (int ex)
+            catch (const std::exception& ex)
                 {
                     std::cout << "  " << it.first << "   " << it.second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
                 }

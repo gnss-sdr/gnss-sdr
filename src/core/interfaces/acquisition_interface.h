@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,6 +40,7 @@
 
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
+#include <memory>
 
 template <typename Data>
 class Concurrent_Queue;
@@ -62,6 +63,10 @@ public:
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
+    virtual void set_doppler_center(int doppler_center __attribute__((unused)))
+    {
+        return;
+    }
     virtual void init() = 0;
     virtual void set_local_code() = 0;
     virtual void set_state(int state) = 0;

@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,10 +42,9 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <deque>
 #include <fstream>
 #include <map>
 #include <string>
@@ -125,9 +124,9 @@ private:
     gr_complex* d_ca_code;
     lv_16sc_t* d_ca_code_16sc;
     float* d_local_code_shift_chips;
-    //gr_complex* d_correlator_outs;
+    // gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
-    //cpu_multicorrelator multicorrelator_cpu;
+    // cpu_multicorrelator multicorrelator_cpu;
     Cpu_Multicorrelator_16sc multicorrelator_cpu_16sc;
 
     // remaining code phase and carrier phase between tracking loops
@@ -173,10 +172,10 @@ private:
     std::deque<lv_16sc_t> d_P_history;
     std::deque<lv_16sc_t> d_L_history;
 
-    //Integration period in samples
+    // Integration period in samples
     int32_t d_correlation_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
@@ -202,4 +201,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  //GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#endif  // GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H

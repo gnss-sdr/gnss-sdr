@@ -93,6 +93,7 @@ endif()
 target_link_libraries(tracking_gr_blocks
     PUBLIC
         Boost::boost
+        Armadillo::armadillo
         Gnuradio::blocks
         Matio::matio
         Volkgnsssdr::volkgnsssdr
@@ -109,6 +110,12 @@ if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
     target_include_directories(tracking_gr_blocks
         PUBLIC
             ${CUDA_INCLUDE_DIRS}
+    )
+endif()
+
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(tracking_gr_blocks
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
     )
 endif()
 

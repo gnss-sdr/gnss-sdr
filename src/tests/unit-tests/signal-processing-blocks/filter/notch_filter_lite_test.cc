@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,6 +39,7 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+#include "concurrent_queue.h"
 #include "file_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -46,7 +47,6 @@
 #include "in_memory_configuration.h"
 #include "notch_filter_lite.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
 
 
@@ -57,7 +57,7 @@ class NotchFilterLiteTest : public ::testing::Test
 protected:
     NotchFilterLiteTest()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_notch_filter_lite_test_nsamples;
@@ -66,7 +66,7 @@ protected:
 
     void init();
     void configure_gr_complex_gr_complex();
-    boost::shared_ptr<gr::msg_queue> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;
@@ -105,7 +105,8 @@ TEST_F(NotchFilterLiteTest, InstantiateGrComplexGrComplex)
 TEST_F(NotchFilterLiteTest, ConnectAndRun)
 {
     int fs_in = 4000000;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Notch filter lite test");
     init();
@@ -135,7 +136,8 @@ TEST_F(NotchFilterLiteTest, ConnectAndRun)
 
 TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Notch filter lite test");
     init();

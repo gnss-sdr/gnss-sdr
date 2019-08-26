@@ -25,7 +25,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -57,8 +57,10 @@
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
 #include <fstream>
+#include <memory>  // for weak_ptr
 #include <string>
 #include <utility>
+#include <vector>
 
 
 class pcps_tong_acquisition_cc;
@@ -220,17 +222,17 @@ private:
     uint32_t d_tong_max_dwells;
     uint32_t d_fft_size;
     uint64_t d_sample_counter;
-    gr_complex** d_grid_doppler_wipeoffs;
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
-    gr_complex* d_fft_codes;
-    float** d_grid_data;
+    std::vector<gr_complex> d_fft_codes;
+    std::vector<std::vector<float>> d_grid_data;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;
     float d_mag;
-    float* d_magnitude;
+    std::vector<float> d_magnitude;
     float d_input_power;
     float d_test_statistics;
     std::ofstream d_dump_file;

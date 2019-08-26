@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,7 @@ TEST(FileConfigurationTest, OverridedProperties)
 {
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "data/config_file_sample.txt";
-    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(filename);
+    // std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(filename);
     std::unique_ptr<ConfigurationInterface> configuration(new FileConfiguration(filename));
     std::string default_value = "default_value";
     std::string value = configuration->property("NotThere", default_value);

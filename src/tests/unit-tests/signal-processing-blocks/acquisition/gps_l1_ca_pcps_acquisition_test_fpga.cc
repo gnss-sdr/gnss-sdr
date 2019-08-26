@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,6 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -41,7 +42,6 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/throttle.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -77,9 +77,9 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     // we want for the test
     usleep(ONE_SECOND);
 
-    char *buffer_float;                         // temporary buffer to convert from binary char to float and from float to char
-    signed char *buffer_DMA;                    // temporary buffer to store the samples to be sent to the DMA
-    buffer_float = (char *)malloc(FLOAT_SIZE);  // allocate space for the temporary buffer
+    char *buffer_float;                                           // temporary buffer to convert from binary char to float and from float to char
+    signed char *buffer_DMA;                                      // temporary buffer to store the samples to be sent to the DMA
+    buffer_float = reinterpret_cast<char *>(malloc(FLOAT_SIZE));  // allocate space for the temporary buffer
     if (!buffer_float)
         {
             std::cerr << "Memory error!" << std::endl;
@@ -102,7 +102,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     // first step: check for the maximum value of the received signal
     float max = 0;
     float *pointer_float;
-    pointer_float = (float *)&buffer_float[0];
+    pointer_float = reinterpret_cast<float *>(&buffer_float[0]);
     for (int k = 0; k < file_length; k = k + FLOAT_SIZE)
         {
             size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
@@ -173,7 +173,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
                             buffer_DMA[t] = static_cast<signed char>((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1) / max));
                         }
 
-                    //send_acquisition_gps_input_samples(buffer_DMA, transfer_size, dma_descr);
+                    // send_acquisition_gps_input_samples(buffer_DMA, transfer_size, dma_descr);
                     assert(transfer_size == write(dma_descr, &buffer_DMA[0], transfer_size));
                 }
         }
@@ -351,8 +351,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     std::string file = "./GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
 
     // uncomment the next two lines to load the file from the signal samples subdirectory
-    //std::string path = std::string(TEST_PATH);
-    //std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+    // std::string path = std::string(TEST_PATH);
+    // std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
 
     const char *file_name = file.c_str();
 

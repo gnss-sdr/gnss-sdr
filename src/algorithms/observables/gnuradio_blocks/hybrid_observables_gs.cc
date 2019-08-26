@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,6 +38,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
+#include <array>
 #include <cmath>      // for round
 #include <cstdlib>    // for size_t, llabs
 #include <exception>  // for exception
@@ -46,6 +47,8 @@
 #include <utility>    // for move
 
 #if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
@@ -54,41 +57,18 @@ namespace fs = std::experimental::filesystem;
 namespace fs = std::filesystem;
 #endif
 #else
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
 namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
 #endif
 
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
     return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
-}
-
-void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg)
-{
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-    try
-        {
-            if (pmt::any_ref(msg).type() == typeid(double))
-                {
-                    double new_rx_clock_offset_s;
-                    new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
-                    T_rx_offset_ms = new_rx_clock_offset_s * 1000.0;
-                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(T_rx_offset_ms));
-                    T_rx_remnant_to_20ms = (T_rx_TOW_ms % 20);
-                    //d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
-                    for (uint32_t n = 0; n < d_nchannels_out; n++)
-                        {
-                            d_gnss_synchro_history->clear(n);
-                        }
-
-                    LOG(INFO) << "Corrected new RX Time offset: " << T_rx_offset_ms << "[ms]";
-                }
-        }
-    catch (boost::bad_any_cast &e)
-        {
-            LOG(WARNING) << "msg_handler_pvt_to_observables Bad any cast!";
-        }
 }
 
 
@@ -104,13 +84,15 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
     this->set_msg_handler(pmt::mp("pvt_to_observables"), boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
 
+    // Send Channel status to gnss_flowgraph
+    this->message_port_register_out(pmt::mp("status"));
+
     d_dump = dump;
     d_dump_mat = dump_mat and d_dump;
     d_dump_filename = std::move(dump_filename);
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
-    T_rx_offset_ms = 0;
-    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(500, d_nchannels_out);
+    d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -157,10 +139,9 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
                 }
         }
     T_rx_TOW_ms = 0U;
-    T_rx_remnant_to_20ms = 0;
-    T_rx_step_ms = 20;  //read from config at the adapter GNSS-SDR.observable_interval_ms!!
+    T_rx_step_ms = 20;  // read from config at the adapter GNSS-SDR.observable_interval_ms!!
     T_rx_TOW_set = false;
-
+    T_status_report_timer_ms = 0;
     // rework
     d_Rx_clock_buffer.set_capacity(10);  // 10*20 ms = 200 ms of data in buffer
     d_Rx_clock_buffer.clear();           // Clear all the elements in the buffer
@@ -169,9 +150,9 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
 
 hybrid_observables_gs::~hybrid_observables_gs()
 {
-    delete d_gnss_synchro_history;
     if (d_dump_file.is_open())
         {
+            auto pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -179,6 +160,15 @@ hybrid_observables_gs::~hybrid_observables_gs()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            std::cerr << "Problem removing temporary file " << d_dump_filename << '\n';
+                        }
+                    d_dump_mat = false;
                 }
         }
     if (d_dump_mat)
@@ -191,6 +181,32 @@ hybrid_observables_gs::~hybrid_observables_gs()
                 {
                     LOG(WARNING) << "Error saving the .mat file: " << ex.what();
                 }
+        }
+}
+
+
+void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    try
+        {
+            if (pmt::any_ref(msg).type() == typeid(double))
+                {
+                    double new_rx_clock_offset_s;
+                    new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
+                    T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
+                    // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
+                    for (uint32_t n = 0; n < d_nchannels_out; n++)
+                        {
+                            d_gnss_synchro_history->clear(n);
+                        }
+
+                    LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
+                }
+        }
+    catch (boost::bad_any_cast &e)
+        {
+            LOG(WARNING) << "msg_handler_pvt_to_observables Bad any cast!";
         }
 }
 
@@ -297,32 +313,32 @@ int32_t hybrid_observables_gs::save_matfile()
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
-            size_t dims[2] = {static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
-            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux.data(), MAT_F_DONT_COPY_DATA);
+            std::array<size_t, 2> dims{static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), RX_time_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, TOW_at_current_symbol_s_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), TOW_at_current_symbol_s_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_Doppler_hz_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Carrier_Doppler_hz_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_phase_cycles_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Carrier_phase_cycles_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Pseudorange_m_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Pseudorange_m_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, PRN_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), PRN_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Flag_valid_pseudorange_aux.data(), MAT_F_DONT_COPY_DATA);
+            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), Flag_valid_pseudorange_aux.data(), MAT_F_DONT_COPY_DATA);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
         }
@@ -419,8 +435,6 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             //           << d_gnss_synchro_history->at(ch, t2_idx).RX_time - d_gnss_synchro_history->at(ch, t1_idx).RX_time
                             //           << " trx - t1: "
                             //           << T_rx_s - d_gnss_synchro_history->at(ch, t1_idx).RX_time;
-
-                            //
                             // std::cout << "Rx samplestamp: " << T_rx_s << " Channel " << ch << " interp buff idx " << nearest_element
                             //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->at(ch, nearest_element).fs) << " s)\n";
                             return true;
@@ -455,7 +469,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
     std::vector<Gnss_Synchro>::const_iterator it;
     if (!T_rx_TOW_set)
         {
-            //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
+            // int32_t TOW_ref = std::numeric_limits<uint32_t>::max();
             uint32_t TOW_ref = 0U;
             for (it = data.cbegin(); it != data.cend(); it++)
                 {
@@ -468,8 +482,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                                 }
                         }
                 }
-            T_rx_TOW_ms = TOW_ref - (TOW_ref % 20);
-            T_rx_remnant_to_20ms = 0;
+            T_rx_TOW_ms = TOW_ref;
         }
     else
         {
@@ -488,7 +501,7 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
     // std::cout.precision(17);
     // std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
-    double current_T_rx_TOW_ms = (static_cast<double>(T_rx_TOW_ms - T_rx_remnant_to_20ms));
+    auto current_T_rx_TOW_ms = static_cast<double>(T_rx_TOW_ms);
     double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
     for (it = data.begin(); it != data.end(); it++)
         {
@@ -561,9 +574,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
-
-                    uint32_t T_rx_remnant_to_20ms_samples = T_rx_remnant_to_20ms * in[d_nchannels_in - 1][0].fs / 1000;
-                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() - T_rx_remnant_to_20ms_samples))
+                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front()))
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();
@@ -601,6 +612,20 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     out[n][0] = epoch_data.at(n);
                 }
+
+            // report channel status every second
+            T_status_report_timer_ms += T_rx_step_ms;
+            if (T_status_report_timer_ms >= 1000)
+                {
+                    for (uint32_t n = 0; n < d_nchannels_out; n++)
+                        {
+                            std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data.at(n));
+                            // publish valid gnss_synchro to the gnss_flowgraph channel status monitor
+                            this->message_port_pub(pmt::mp("status"), pmt::make_any(gnss_synchro_sptr));
+                        }
+                    T_status_report_timer_ms = 0;
+                }
+
             if (d_dump)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file
@@ -631,7 +656,13 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             d_dump = false;
                         }
                 }
-            return 1;
+
+            if (n_valid > 0)
+                {
+                    // LOG(INFO) << "OBS: diff time: " << out[0][0].RX_time * 1000.0 - old_time_debug;
+                    // old_time_debug = out[0][0].RX_time * 1000.0;
+                    return 1;
+                }
         }
     return 0;
 }

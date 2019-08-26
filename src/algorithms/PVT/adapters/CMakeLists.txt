@@ -44,7 +44,7 @@ target_include_directories(pvt_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-if(Boost_VERSION LESS 105800)
+if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
     target_compile_definitions(pvt_adapters PRIVATE -DOLD_BOOST=1)
 endif()
 

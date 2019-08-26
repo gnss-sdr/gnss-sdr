@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,13 +37,12 @@
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <glog/logging.h>
-#include <cstring>  // for memcpy
 #include <utility>  // for std::move
 
 
 Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-    std::string role, std::string implementation, gr::msg_queue::sptr queue)
+    std::string role, std::string implementation, std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue)
 {
     acq_ = std::move(acq);
     trk_ = std::move(trk);
@@ -117,9 +116,6 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 
     channel_msg_rx = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
 }
-
-
-Channel::~Channel() = default;
 
 
 void Channel::connect(gr::top_block_sptr top_block)
@@ -209,9 +205,9 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     std::lock_guard<std::mutex> lk(mx);
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
-    const char* str = str_aux.c_str();                              // get a C style null terminated string
-    std::memcpy(static_cast<void*>(gnss_synchro_.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-    gnss_synchro_.Signal[2] = 0;                                    // make sure that string length is only two characters
+    gnss_synchro_.Signal[0] = str_aux[0];
+    gnss_synchro_.Signal[1] = str_aux[1];
+    gnss_synchro_.Signal[2] = '\0';  // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
     acq_->set_local_code();
@@ -233,6 +229,12 @@ void Channel::stop_channel()
             return;
         }
     DLOG(INFO) << "Channel stop_channel()";
+}
+
+
+void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz)
+{
+    acq_->set_doppler_center(static_cast<int>(Carrier_Doppler_hz));
 }
 
 

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,7 +40,9 @@
 #else
 #include <iio/pluto_source.h>
 #endif
-#include <gnuradio/msg_queue.h>
+#include "concurrent_queue.h"
+#include <pmt/pmt.h>
+#include <memory>
 #include <string>
 
 
@@ -53,9 +55,9 @@ class PlutosdrSignalSource : public GNSSBlockInterface
 public:
     PlutosdrSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~PlutosdrSignalSource();
+    ~PlutosdrSignalSource() = default;
 
     std::string role() override
     {
@@ -109,7 +111,7 @@ private:
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif /*GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H_*/

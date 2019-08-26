@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,6 +42,7 @@
 #include "gnss_block_interface.h"
 #include "gps_almanac.h"
 #include "gps_ephemeris.h"
+#include <map>
 
 /*!
  * \brief This class represents an interface to a PVT block.

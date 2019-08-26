@@ -72,27 +72,29 @@ const double EXTERR_CLK = 1e-3; /* extrapolation error for clock (m/s) */
 const double EXTERR_EPH = 5e-7; /* extrapolation error for ephem (m/s^2) */
 
 int code2sys(char code);
+
 int readsp3h(FILE *fp, gtime_t *time, char *type, int *sats,
     double *bfact, char *tsys);
+
 int addpeph(nav_t *nav, peph_t *peph);
+
 void readsp3b(FILE *fp, char type, int *sats, int ns, const double *bfact,
     char *tsys, int index, int opt, nav_t *nav);
+
 int cmppeph(const void *p1, const void *p2);
+
 void combpeph(nav_t *nav, int opt);
+
 void readsp3(const char *file, nav_t *nav, int opt);
+
 int readsap(const char *file, gtime_t time, nav_t *nav);
+
 int readdcbf(const char *file, nav_t *nav, const sta_t *sta);
+
 int readdcb(const char *file, nav_t *nav, const sta_t *sta);
-int addfcb(nav_t *nav, gtime_t ts, gtime_t te, int sat,
-    const double *bias, const double *std);
-int readfcbf(const char *file, nav_t *nav);
-int readdcb(const char *file, nav_t *nav, const sta_t *sta);
-int addfcb(nav_t *nav, gtime_t ts, gtime_t te, int sat,
-    const double *bias, const double *std);
-int readfcbf(const char *file, nav_t *nav);
-int cmpfcb(const void *p1, const void *p2);
-int readfcb(const char *file, nav_t *nav);
+
 double interppol(const double *x, double *y, int n);
+
 int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
     double *dts, double *vare, double *varc);
 
@@ -101,6 +103,7 @@ int pephclk(gtime_t time, int sat, const nav_t *nav, double *dts,
 
 void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
     double *dant);
+
 int peph2pos(gtime_t time, int sat, const nav_t *nav, int opt,
     double *rs, double *dts, double *var);
 

@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -205,8 +205,8 @@ private:
     int64_t read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
 
     std::string omega0_1;
-    //std::string omega0_2;
-    //bool omega_flag;
+    // std::string omega0_2;
+    // bool omega_flag;
 };
 
 #endif /* GNSS_SDR_GALILEO_FNAV_MESSAGE_H_ */

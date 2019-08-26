@@ -42,7 +42,7 @@
  * \author Cillian O'Driscoll cillian.odriscoll (at) gmail . com
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -70,6 +70,7 @@
 
 #include <gnuradio/sync_interpolator.h>
 #include <cstdint>
+#include <vector>
 
 class unpack_2bit_samples;
 
@@ -89,7 +90,7 @@ unpack_2bit_samples_sptr make_unpack_2bit_samples(
 class unpack_2bit_samples : public gr::sync_interpolator
 {
 public:
-    ~unpack_2bit_samples();
+    ~unpack_2bit_samples() = default;
 
     unpack_2bit_samples(bool big_endian_bytes,
         size_t item_size,

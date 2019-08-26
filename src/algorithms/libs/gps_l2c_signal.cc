@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,23 +32,24 @@
 
 #include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
+#include <array>
 #include <cmath>
 #include <memory>
 
 
-int32_t gps_l2c_m_shift(int32_t x)
+uint32_t gps_l2c_m_shift(uint32_t x)
 {
-    return static_cast<int32_t>((x >> 1) ^ ((x & 1) * 0445112474));
+    return static_cast<uint32_t>((x >> 1U) xor ((x & 1U) * 0445112474U));
 }
 
 
 void gps_l2c_m_code(gsl::span<int32_t> _dest, uint32_t _prn)
 {
-    int32_t x;
+    uint32_t x;
     x = GPS_L2C_M_INIT_REG[_prn - 1];
     for (int32_t n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
         {
-            _dest[n] = static_cast<int8_t>(x & 1);
+            _dest[n] = static_cast<int8_t>(x & 1U);
             x = gps_l2c_m_shift(x);
         }
 }
@@ -56,32 +57,30 @@ void gps_l2c_m_code(gsl::span<int32_t> _dest, uint32_t _prn)
 
 void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn)
 {
-    std::unique_ptr<int32_t> _code{new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS]};
-    gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
+    std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(_code_span, _prn);
+            gps_l2c_m_code(_code, _prn);
         }
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[i], 0.0);
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
         }
 }
 
 
 void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
 {
-    std::unique_ptr<int32_t> _code{new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS]};
-    gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
+    std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(_code_span, _prn);
+            gps_l2c_m_code(_code, _prn);
         }
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code_span[i]);
+            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code[i]);
         }
 }
 
@@ -91,41 +90,41 @@ void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn)
  */
 void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
-    std::unique_ptr<int32_t> _code{new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS]};
-    gsl::span<int32_t> _code_span(_code, GPS_L2_M_CODE_LENGTH_CHIPS);
+    std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)
         {
-            gps_l2c_m_code(_code_span, _prn);
+            gps_l2c_m_code(_code, _prn);
         }
 
-    int32_t _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode;
+    int32_t _codeValueIndex;
     float _ts;
     float _tc;
     const int32_t _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;
 
-    //--- Find number of samples per spreading code ----------------------------
+    // --- Find number of samples per spreading code ---------------------------
     _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
 
-    //--- Find time constants --------------------------------------------------
+    // --- Find time constants -------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_HZ);  // C/A chip period in sec
+    _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_HZ);  // L2C chip period in sec
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
-            //=== Digitizing =======================================================
+            // === Digitizing ==================================================
 
-            //--- Make index array to read L2C code values -------------------------
+            // --- Make index array to read L2C code values --------------------
             _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
 
-            //--- Make the digitized version of the L2C code -----------------------
+            // --- Make the digitized version of the L2C code ------------------
             if (i == _samplesPerCode - 1)
                 {
-                    //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeLength - 1], 0);
+                    // --- Correct the last index (due to number rounding issues) -----------
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code_span[_codeValueIndex], 0);  //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  // repeat the chip -> upsample
                 }
         }
 }

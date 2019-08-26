@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,6 +33,7 @@
 
 #include "GPS_L1_CA.h"
 #include "acquisition_dump_reader.h"
+#include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -46,7 +47,6 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -179,13 +179,13 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.repeat_satellite", "false");
-    //config->set_property("Acquisition_1C.pfa", "0.0");
+    // config->set_property("Acquisition_1C.pfa", "0.0");
 }
 
 
 void GpsL1CaPcpsAcquisitionTest::plot_grid()
 {
-    //load the measured values
+    // load the measured values
     std::string basename = "./tmp-acq-gps1/acquisition_G_1C";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
@@ -199,7 +199,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
 
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;
-    std::vector<std::vector<float> > *mag = &acq_dump.mag;
+    std::vector<std::vector<float>> *mag = &acq_dump.mag;
 
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())
@@ -230,7 +230,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
                     g1.set_title("GPS L1 C/A signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
-                    //g1.cmd("set view 60, 105, 1, 1");
+                    // g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("GPS_L1_acq_grid");
@@ -260,9 +260,10 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4000;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     top_block = gr::make_top_block("Acquisition test");
     init();
@@ -291,7 +292,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0.0);
     top_block = gr::make_top_block("Acquisition test");
 

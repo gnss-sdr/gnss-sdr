@@ -25,7 +25,7 @@
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -89,7 +89,7 @@ public:
     /*!
      * \brief Default constructor. Creates GNSS Navigation and Observables RINEX files and their headers
      */
-    Rinex_Printer(int version = 0, const std::string& base_path = ".");
+    explicit Rinex_Printer(int version = 0, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor. Closes GNSS Navigation and Observables RINEX files
@@ -142,14 +142,37 @@ public:
     /*!
      *  \brief Generates the Mixed (GPS L1 C/A/GLONASS L1, L2) Navigation Data header
      */
-     void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac);
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac);
 
     /*!
      *  \brief Generates the Mixed (GPS L2C C/A/GLONASS L1, L2) Navigation Data header
      */
     void rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_iono, const Gps_CNAV_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac);
 
+    /*!
+     *  \brief Generates the BDS B1I or B3I Navigation Data header
+     */
     void rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& iono, const Beidou_Dnav_Utc_Model& utc_model);
+
+    /*!
+     *  \brief Generates the Mixed GPS L1,L5 + BDS B1I, B3I Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Gps_Ephemeris& eph, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+
+    /*!
+     *  \brief Generates the Mixed GPS L2C + BDS B1I, B3I Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_cnav_iono, const Gps_CNAV_Utc_Model& gps_cnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+
+    /*!
+     *  \brief Generates the Mixed GLONASS L1,L2 + BDS B1I, B3I Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glo_gnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
+
+    /*!
+     *  \brief Generates the Mixed (Galileo/BDS B1I, B3I) Navigation Data header
+     */
+    void rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model);
 
     /*!
      *  \brief Generates the GPS Observation data header
@@ -380,7 +403,7 @@ public:
     /*!
      *  \brief Writes raw SBAS messages into the RINEX file
      */
-    //void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
+    // void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
 
     void update_nav_header(std::fstream& out, const Gps_Utc_Model& utc_model, const Gps_Iono& gps_iono, const Gps_Ephemeris& eph);
 
@@ -752,8 +775,8 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
     int expAdd = 0;
     std::string exp;
     int64_t iexp;
-    //If checkSwitch is false, always redo the exponential. Otherwise,
-    //set it to false.
+    // If checkSwitch is false, always redo the exponential. Otherwise,
+    // set it to false.
     bool redoexp = !checkSwitch;
 
     // Check for decimal place within specified boundaries
@@ -829,7 +852,7 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
             aStr.insert(static_cast<std::string::size_type>(0), 1, ' ');
         }
 
-    //If checkSwitch is false, add on one leading zero to the string
+    // If checkSwitch is false, add on one leading zero to the string
     if (!checkSwitch)
         {
             aStr.insert(static_cast<std::string::size_type>(1), 1, '0');

@@ -32,7 +32,7 @@
 */
 
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.10"
+#define GNSS_SDR_VERSION "0.0.11"
 #endif
 
 #ifndef GOOGLE_STRIP_LOG
@@ -43,7 +43,7 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "gps_acq_assist.h"
-#include <boost/exception/diagnostic_information.hpp>  // for diagnostic_informatio
+#include <boost/exception/diagnostic_information.hpp>  // for diagnostic_information
 #include <boost/exception/exception.hpp>               // for exception
 #include <boost/thread/exceptions.hpp>                 // for thread_resource_error
 #include <gflags/gflags.h>                             // for ShutDownCommandLineFlags
@@ -144,7 +144,8 @@ int main(int argc, char** argv)
                 }
         }
 
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     start = std::chrono::system_clock::now();
     int return_code = 0;
     try

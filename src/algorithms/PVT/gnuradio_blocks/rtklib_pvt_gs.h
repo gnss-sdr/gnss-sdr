@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -139,6 +139,30 @@ private:
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
+    enum StringValue
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G,
+        evBDS_B1,
+        evBDS_B2,
+        evBDS_B3
+    };
+
+    std::map<std::string, StringValue> mapStringValues_;
+
+    void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
+        double rx_clock_offset_s);
+
+    std::map<int, Gnss_Synchro> interpolate_observables(std::map<int, Gnss_Synchro>& observables_map_t0,
+        std::map<int, Gnss_Synchro>& observables_map_t1,
+        double rx_time_s);
+
     bool d_dump;
     bool d_dump_mat;
     bool b_rinex_output_enabled;
@@ -169,6 +193,7 @@ private:
 
     int32_t d_output_rate_ms;
     int32_t d_display_rate_ms;
+    int32_t d_report_rate_ms;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
@@ -183,10 +208,14 @@ private:
     bool d_kml_output_enabled;
     bool d_nmea_output_file_enabled;
 
-    std::shared_ptr<Rtklib_Solver> d_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
 
+    int32_t max_obs_block_rx_clock_offset_ms;
+    bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     std::map<int, Gnss_Synchro> gnss_observables_map;
-    bool observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b);
+    std::map<int, Gnss_Synchro> gnss_observables_map_t0;
+    std::map<int, Gnss_Synchro> gnss_observables_map_t1;
 
     uint32_t type_of_rx;
 

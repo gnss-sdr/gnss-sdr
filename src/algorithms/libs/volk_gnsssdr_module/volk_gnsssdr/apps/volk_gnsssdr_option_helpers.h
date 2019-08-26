@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -57,7 +57,7 @@ public:
 class option_list
 {
 public:
-    option_list(std::string program_name);
+    explicit option_list(std::string program_name);
 
     void add(const option_t &opt);
 
@@ -71,4 +71,4 @@ private:
 };
 
 
-#endif  //VOLK_GNSSSDR_OPTION_HELPERS_H
+#endif  // VOLK_GNSSSDR_OPTION_HELPERS_H

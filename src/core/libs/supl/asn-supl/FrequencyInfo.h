@@ -28,7 +28,6 @@ extern "C"
         fmodeSpecificInfo_PR_fdd,
         fmodeSpecificInfo_PR_tdd,
         /* Extensions may appear below */
-
     } fmodeSpecificInfo_PR;
 
     /* FrequencyInfo */

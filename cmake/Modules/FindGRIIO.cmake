@@ -66,6 +66,7 @@ find_library(IIO_LIBRARIES
           /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
+          /usr/lib/i386-linux-gnu
           /usr/lib/alpha-linux-gnu
           /usr/lib/aarch64-linux-gnu
           /usr/lib/arm-linux-gnueabi
@@ -83,6 +84,7 @@ find_library(IIO_LIBRARIES
           /usr/lib/powerpc-linux-gnuspe
           /usr/lib/powerpc64-linux-gnu
           /usr/lib/powerpc64le-linux-gnu
+          /usr/lib/riscv64-linux-gnu
           /usr/lib/s390x-linux-gnu
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32

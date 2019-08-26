@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -53,7 +53,7 @@ class Tcp_Communication
 {
 public:
     Tcp_Communication();
-    ~Tcp_Communication();
+    ~Tcp_Communication() = default;
 
     int listen_tcp_connection(size_t d_port_, size_t d_port_ch0_);
     void send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, Tcp_Packet_Data *tcp_data_);

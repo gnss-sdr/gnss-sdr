@@ -79,9 +79,7 @@ set_package_properties(GPSTK PROPERTIES
     URL "http://www.gpstk.org"
 )
 
-mark_as_advanced(GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
-
-if(GPSTK_FOUND AND NOT TARGET Gpstk::gpstk)
+if(GPSTK_FOUND AND NOT ENABLE_OWN_GPSTK AND NOT TARGET Gpstk::gpstk)
     add_library(Gpstk::gpstk SHARED IMPORTED)
     set_target_properties(Gpstk::gpstk PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
@@ -90,3 +88,5 @@ if(GPSTK_FOUND AND NOT TARGET Gpstk::gpstk)
         INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
     )
 endif()
+
+mark_as_advanced(GPSTK_LIBRARY GPSTK_INCLUDE_DIR)

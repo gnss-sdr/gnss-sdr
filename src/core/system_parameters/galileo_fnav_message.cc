@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -377,12 +377,12 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_w_2_5 *= FNAV_W_5_LSB;
             FNAV_deltai_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_DELTAI_2_5_BIT));
             FNAV_deltai_2_5 *= FNAV_DELTAI_5_LSB;
-            //TODO check this
+            // TODO check this
             // Omega0_2 must be decoded when the two pieces are joined
             omega0_1 = data.substr(210, 4);
-            //omega_flag=true;
+            // omega_flag=true;
             //
-            //FNAV_Omega012_2_5=static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega012_2_5_bit);
+            // FNAV_Omega012_2_5=static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega012_2_5_bit);
             flag_almanac_1 = true;
             break;
         case 6:  // Almanac (SVID2(2/2) and SVID3)
@@ -439,7 +439,7 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV
         {
             for (int j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  // shift left
+                    value <<= 1U;  // shift left
                     if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1;  // insert the bit
@@ -624,8 +624,8 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model()
     utc_model.Delta_tLSF_6 = FNAV_deltatlsf_4;
     utc_model.flag_utc_model = flag_utc_model;
     // GST
-    //utc_model.WN_5 = WN_5; //Week number
-    //utc_model.TOW_5 = WN_5; //Time of Week
+    // utc_model.WN_5 = WN_5; //Week number
+    // utc_model.TOW_5 = WN_5; //Time of Week
     return utc_model;
 }
 

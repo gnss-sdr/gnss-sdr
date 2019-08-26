@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -74,7 +74,12 @@ target_link_libraries(signal_source_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
-        core_receiver
+        core_libs
+)
+
+target_include_directories(signal_source_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)

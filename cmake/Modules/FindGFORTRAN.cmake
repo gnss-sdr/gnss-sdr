@@ -164,22 +164,34 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/sparc64-linux-gnu
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/alpha-linux-gnu
-        /usr/lib/gcc/x86_64-linux-gnu/8     # libgfortran8
+        /usr/lib/gcc/x86_64-linux-gnu/8     # libgfortran-8
         /usr/lib/gcc/aarch64-linux-gnu/8
+        /usr/lib/gcc/arm-linux-gnueabi/8
         /usr/lib/gcc/arm-linux-gnueabihf/8
+        /usr/lib/gcc/hppa-linux-gnu/8
+        /usr/lib/gcc/m68k-linux-gnu/8
+        /usr/lib/gcc/mips-linux-gnu/8
+        /usr/lib/gcc/mips64el-linux-gnuabi64/8
+        /usr/lib/gcc/mipsel-linux-gnu/8
         /usr/lib/gcc/i686-linux-gnu/8
+        /usr/lib/gcc/powerpc-linux-gnuspe/8
+        /usr/lib/gcc/powerpc64-linux-gnu/8
         /usr/lib/gcc/powerpc64le-linux-gnu/8
         /usr/lib/gcc/s390x-linux-gnu/8
         /usr/lib/gcc/alpha-linux-gnu/8
+        /usr/lib/gcc/riscv64-linux-gnu/8
+        /usr/lib/gcc/sh4-linux-gnu/8
+        /usr/lib/gcc/sparc64-linux-gnu/8
+        /usr/lib/gcc/x86_64-linux-gnux32/8
+        /usr/lib/gcc/alpha-linux-gnu/9    # libgfortran-9
         /usr/lib/gcc/x86_64-linux-gnu/9
         /usr/lib/gcc/aarch64-linux-gnu/9
         /usr/lib/gcc/arm-linux-gnueabi/9
         /usr/lib/gcc/arm-linux-gnueabihf/9
         /usr/lib/gcc/i686-linux-gnu/9
         /usr/lib/gcc/powerpc64le-linux-gnu/9
-        /usr/lib/gcc/powerpc64-linux-gnu/9/
+        /usr/lib/gcc/powerpc64-linux-gnu/9
         /usr/lib/gcc/s390x-linux-gnu/9
-        /usr/lib/gcc/alpha-linux-gnu/9
         /usr/lib/gcc/hppa-linux-gnu/9
         /usr/lib/gcc/m68k-linux-gnu/9
         /usr/lib/gcc/mips-linux-gnu/9

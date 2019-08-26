@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,6 +31,7 @@
  */
 
 
+#include "concurrent_queue.h"
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
@@ -45,7 +46,6 @@
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <chrono>
 #include <thread>
@@ -68,7 +68,7 @@ class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx : public gr::block
 private:
     friend GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
+    explicit GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
 public:
@@ -118,7 +118,7 @@ class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test : public ::testing::Test
 protected:
     GpsL1CaPcpsOpenClAcquisitionGSoC2013Test()
     {
-        queue = gr::msg_queue::make(0);
+        queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         top_block = gr::make_top_block("Acquisition test");
         item_size = sizeof(gr_complex);
         stop = false;
@@ -140,7 +140,7 @@ protected:
     void stop_queue();
 
     Concurrent_Queue<int> channel_internal_queue;
-    gr::msg_queue::sptr queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GpsL1CaPcpsOpenClAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;

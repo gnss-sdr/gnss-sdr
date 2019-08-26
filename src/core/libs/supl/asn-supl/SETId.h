@@ -33,7 +33,6 @@ extern "C"
         SETId_PR_nai,
         SETId_PR_iPAddress,
         /* Extensions may appear below */
-
     } SETId_PR;
 
     /* SETId */

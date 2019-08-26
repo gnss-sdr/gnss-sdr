@@ -13,7 +13,8 @@ asn_enc_rval_t
 xer_encode(asn_TYPE_descriptor_t *td, void *sptr,
 	enum xer_encoder_flags_e xer_flags,
 		asn_app_consume_bytes_f *cb, void *app_key) {
-	asn_enc_rval_t er, tmper;
+	asn_enc_rval_t er;
+	asn_enc_rval_t tmper;
 	const char *mname;
 	size_t mlen;
 	int xcan = (xer_flags & XER_F_CANONICAL) ? 1 : 2;

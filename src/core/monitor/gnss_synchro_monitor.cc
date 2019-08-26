@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -67,9 +67,6 @@ gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
 
     count = 0;
 }
-
-
-gnss_synchro_monitor::~gnss_synchro_monitor() = default;
 
 
 int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& input_items,

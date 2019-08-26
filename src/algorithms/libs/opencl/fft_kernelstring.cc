@@ -66,7 +66,7 @@ static string
 num2str(int num)
 {
     char temp[200];
-    sprintf(temp, "%d", num);
+    snprintf(temp, sizeof(temp), "%d", num);
     return string(temp);
 }
 
@@ -620,7 +620,7 @@ insertTwiddleKernel(string &kernelString, int Nr, int numIter, int Nprev, int le
             for (k = 1; k < Nr; k++)
                 {
                     int ind = z * Nr + k;
-                    //float fac =  (float) (2.0 * M_PI * (double) k / (double) len);
+                    // float fac =  (float) (2.0 * M_PI * (double) k / (double) len);
                     kernelString += string("    ang = dir * ( 2.0f * M_PI * ") + num2str(k) + string(".0f / ") + num2str(len) + string(".0f )") + string(" * angf;\n");
                     kernelString += string("    w = (float2)(native_cos(ang), native_sin(ang));\n");
                     kernelString += string("    a[") + num2str(ind) + string("] = complexMul(a[") + num2str(ind) + string("], w);\n");
@@ -814,7 +814,7 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
     (*kInfo)->in_place_possible = 1;
     (*kInfo)->next = nullptr;
     (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
-    strcpy((*kInfo)->kernel_name, kernelName.c_str());
+    snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
 
     unsigned int numWorkItemsPerXForm = n / radixArray[0];
     unsigned int numWorkItemsPerWG = numWorkItemsPerXForm <= 64 ? 64 : numWorkItemsPerXForm;
@@ -1035,7 +1035,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                 (*kInfo)->in_place_possible = 0;
             (*kInfo)->next = nullptr;
             (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
-            strcpy((*kInfo)->kernel_name, kernelName.c_str());
+            snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
 
             insertVariables(localString, R1);
 

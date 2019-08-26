@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,7 +51,7 @@ public:
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~IbyteToCbyte();
+    ~IbyteToCbyte() = default;
 
     inline std::string role() override
     {

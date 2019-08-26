@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,7 @@
 #ifndef GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H_
 
+#include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "unpack_byte_2bit_cpx_samples.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -41,8 +42,9 @@
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 
@@ -59,9 +61,9 @@ public:
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue);
+        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~TwoBitCpxFileSignalSource();
+    ~TwoBitCpxFileSignalSource() = default;
     inline std::string role() override
     {
         return role_;
@@ -127,7 +129,7 @@ private:
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     size_t item_size_;
     // Throttle control
     bool enable_throttle_control_;

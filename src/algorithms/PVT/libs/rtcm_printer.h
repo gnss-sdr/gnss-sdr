@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,6 +38,7 @@
 #include <fstream>  // for std::ofstream
 #include <map>      // for std::map
 #include <memory>   // std::shared_ptr
+#include <string>
 
 class Galileo_Ephemeris;
 class Glonass_Gnav_Ephemeris;
@@ -163,7 +164,7 @@ private:
     uint16_t port;
     uint16_t station_id;
     int32_t rtcm_dev_descriptor;                            // RTCM serial device descriptor (i.e. COM port)
-    int32_t init_serial(const std::string& serial_device);  //serial port control
+    int32_t init_serial(const std::string& serial_device);  // serial port control
     void close_serial();
     std::shared_ptr<Rtcm> rtcm;
     bool Print_Message(const std::string& message);

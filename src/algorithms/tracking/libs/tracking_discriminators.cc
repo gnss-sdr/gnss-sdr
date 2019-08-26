@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,7 +44,7 @@ double phase_unwrap(double phase_rad)
         {
             return phase_rad - PI;
         }
-    else if (phase_rad <= -HALF_PI)
+    if (phase_rad <= -HALF_PI)
         {
             return phase_rad + PI;
         }
@@ -64,7 +64,8 @@ double phase_unwrap(double phase_rad)
  */
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
-    double cross, dot;
+    double cross;
+    double dot;
     dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
     cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
     return atan2(cross, dot) / (t2 - t1);

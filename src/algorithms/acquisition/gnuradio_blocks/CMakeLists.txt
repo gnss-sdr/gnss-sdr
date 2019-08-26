@@ -44,7 +44,7 @@ if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
 endif()
 
-if(OPENCL_FOUND)
+if(ENABLE_OPENCL)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
 endif()
@@ -69,12 +69,13 @@ endif()
 target_link_libraries(acquisition_gr_blocks
     PUBLIC
         algorithms_libs
+        acquisition_libs
+        channel_libs
+        core_system_parameters
+        Armadillo::armadillo
         Gnuradio::runtime
         Gnuradio::fft
         Volk::volk
-        channel_libs
-        acquisition_libs
-        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -90,7 +91,13 @@ target_include_directories(acquisition_gr_blocks
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
-if(OPENCL_FOUND)
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
+if(ENABLE_OPENCL)
     target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
     target_include_directories(acquisition_gr_blocks
         PUBLIC

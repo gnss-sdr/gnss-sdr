@@ -17,7 +17,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,6 +41,7 @@
  */
 
 
+#include "concurrent_queue.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -52,8 +53,8 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
 #ifdef GR_GREATER_38
@@ -75,7 +76,7 @@ class GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx : public gr::block
 private:
     friend GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx(Concurrent_Queue<int>& queue);
+    explicit GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
 public:
@@ -140,7 +141,7 @@ protected:
     void stop_queue();
 
     Concurrent_Queue<int> channel_internal_queue;
-    gr::msg_queue::sptr queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -217,7 +218,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     int nsamples = 4 * fs_in;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     init();
@@ -248,7 +249,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    queue = gr::msg_queue::make(0);
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     init();
@@ -282,7 +283,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);
-        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        // std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         std::string file = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
         const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,7 +35,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <cmath>
 #include <limits>
-
+#include <vector>
 
 MmseResamplerConditioner::MmseResamplerConditioner(
     ConfigurationInterface* configuration, const std::string& role,
@@ -43,7 +43,8 @@ MmseResamplerConditioner::MmseResamplerConditioner(
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_conditioner.dat";
-    double fs_in_deprecated, fs_in;
+    double fs_in_deprecated;
+    double fs_in;
     fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);
@@ -63,8 +64,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
         {
             item_size_ = sizeof(gr_complex);
 
-
-            //create a FIR low pass filter
+            // create a FIR low pass filter
             std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                 sample_freq_in_,
                 sample_freq_out_ / 2.1,
@@ -103,9 +103,6 @@ MmseResamplerConditioner::MmseResamplerConditioner(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-MmseResamplerConditioner::~MmseResamplerConditioner() = default;
 
 
 void MmseResamplerConditioner::connect(gr::top_block_sptr top_block)

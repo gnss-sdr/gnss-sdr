@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,9 +48,6 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     observables_ = hybrid_observables_gs_make(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
     DLOG(INFO) << "Observables block ID (" << observables_->unique_id() << ")";
 }
-
-
-HybridObservables::~HybridObservables() = default;
 
 
 void HybridObservables::connect(gr::top_block_sptr top_block)

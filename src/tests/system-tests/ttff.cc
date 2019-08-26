@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -293,7 +293,6 @@ void receive_msg()
                         }
                 }
         }
-    return;
 }
 
 
@@ -450,7 +449,8 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
 
             // record startup time
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
-            std::chrono::time_point<std::chrono::system_clock> start, end;
+            std::chrono::time_point<std::chrono::system_clock> start;
+            std::chrono::time_point<std::chrono::system_clock> end;
             start = std::chrono::system_clock::now();
             // start receiver
             try
@@ -499,7 +499,7 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
         {
             print_TTFF_report(TTFF_v, config2);
         }
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));  //let the USRP some time to rest before the next test
+    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));  // let the USRP some time to rest before the next test
 }
 
 
@@ -533,7 +533,8 @@ TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
                 }
             // record startup time
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
-            std::chrono::time_point<std::chrono::system_clock> start, end;
+            std::chrono::time_point<std::chrono::system_clock> start;
+            std::chrono::time_point<std::chrono::system_clock> end;
             start = std::chrono::system_clock::now();
 
             // start receiver

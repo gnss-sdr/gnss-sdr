@@ -4,7 +4,7 @@
  * prefs into global prefs struct
  * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *
- * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -26,22 +26,24 @@
 #define INCLUDED_VOLK_GNSSSDR_PREFS_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 __VOLK_DECL_BEGIN
 
 typedef struct volk_gnsssdr_arch_pref
 {
-    char name[128];    //name of the kernel
-    char impl_a[128];  //best aligned impl
-    char impl_u[128];  //best unaligned impl
+    char name[128];    // name of the kernel
+    char impl_a[128];  // best aligned impl
+    char impl_u[128];  // best unaligned impl
 } volk_gnsssdr_arch_pref_t;
 
 ////////////////////////////////////////////////////////////////////////
-// get path to volk_gnsssdr_config profiling info;
+// get path to volk_gnsssdr_config profiling info; second arguments specifies
+// if config file should be tested on existence for reading.
 // returns \0 in the argument on failure.
 ////////////////////////////////////////////////////////////////////////
-VOLK_API void volk_gnsssdr_get_config_path(char *);
+VOLK_API void volk_gnsssdr_get_config_path(char *, bool);
 
 ////////////////////////////////////////////////////////////////////////
 // load prefs into global prefs struct

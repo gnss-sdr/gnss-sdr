@@ -107,7 +107,7 @@ asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
 /*
  * The main reason why ASN.1 is still alive is that too much time and effort
  * is necessary for learning it more or less adequately, thus creating a gut
- * necessity to demonstrate that aquired skill everywhere afterwards.
+ * necessity to demonstrate that acquired skill everywhere afterwards.
  * No, I am not going to explain what the following stuff is.
  */
 struct _stack_el {
@@ -141,7 +141,7 @@ OS__add_stack_el(struct _stack *st) {
 		nel = (struct _stack_el *)CALLOC(1, sizeof(struct _stack_el));
 		if(nel == NULL)
 			return NULL;
-	
+
 		if(st->tail) {
 			/* Increase a subcontainment depth */
 			nel->cont_level = st->tail->cont_level + 1;
@@ -242,7 +242,9 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 		ber_tlv_tag_t tlv_tag;
 		ber_tlv_len_t tlv_len;
 		ber_tlv_tag_t expected_tag;
-		ssize_t tl, ll, tlvl;
+		ssize_t tl;
+		ssize_t ll;
+		ssize_t tlvl;
 				/* This one works even if (sel->left == -1) */
 		ssize_t Left = ((!sel||(size_t)sel->left >= size)
 					?(ssize_t)size:sel->left);
@@ -728,7 +730,7 @@ OCTET_STRING__handle_control_chars(void *struct_ptr, const void *chunk_buf, size
 			return 0;
 		}
 	}
-	
+
 	return -1;	/* No, it's not */
 }
 
@@ -738,7 +740,8 @@ OCTET_STRING_encode_xer_utf8(asn_TYPE_descriptor_t *td, void *sptr,
 		asn_app_consume_bytes_f *cb, void *app_key) {
 	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
 	asn_enc_rval_t er;
-	uint8_t *buf, *end;
+	uint8_t *buf;
+	uint8_t *end;
 	uint8_t *ss;	/* Sequence start */
 	ssize_t encoded_len = 0;
 
@@ -1571,7 +1574,7 @@ OCTET_STRING_encode_uper(asn_TYPE_descriptor_t *td,
 		csiz->lower_bound, csiz->upper_bound,
 		csiz->effective_bits, ct_extensible ? " EXT" : "");
 
-	/* Figure out wheter size lies within PER visible constraint */
+	/* Figure out whether size lies within PER visible constraint */
 
 	if(csiz->effective_bits >= 0) {
 		if((int)sizeinunits < csiz->lower_bound
@@ -1802,4 +1805,3 @@ OCTET_STRING_new_fromBuf(asn_TYPE_descriptor_t *td, const char *str, int len) {
 
 	return st;
 }
-

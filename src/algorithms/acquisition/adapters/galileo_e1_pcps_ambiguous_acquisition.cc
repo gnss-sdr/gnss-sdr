@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -75,9 +75,9 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
         }
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters_.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
-    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
+    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  // will be true in future versions
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters_.max_dwells = max_dwells_;
     dump_ = configuration_->property(role + ".dump", false);
@@ -154,6 +154,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
@@ -165,9 +166,6 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition() = default;
 
 
 void GalileoE1PcpsAmbiguousAcquisition::stop_acquisition()
@@ -215,6 +213,14 @@ void GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_st
 }
 
 
+void GalileoE1PcpsAmbiguousAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
+
+
 void GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -232,7 +238,6 @@ signed int GalileoE1PcpsAmbiguousAcquisition::mag()
 void GalileoE1PcpsAmbiguousAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
@@ -241,36 +246,37 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     bool cboc = configuration_->property(
         "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
-    gsl::span<std::complex<float>> code_span(code.get(), code_length_);
+    std::vector<std::complex<float>> code(code_length_);
 
     if (acquire_pilot_ == true)
         {
-            //set local signal generator to Galileo E1 pilot component (1C)
+            // set local signal generator to Galileo E1 pilot component (1C)
             std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(code_span, pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(code_span, pilot_signal,
+                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }
     else
         {
-            std::array<char, 3> Signal_;
-            std::memcpy(Signal_.data(), gnss_synchro_->Signal, 3);
+            std::array<char, 3> Signal_{};
+            Signal_[0] = gnss_synchro_->Signal[0];
+            Signal_[1] = gnss_synchro_->Signal[1];
+            Signal_[2] = '\0';
             if (acq_parameters_.use_automatic_resampler)
                 {
-                    galileo_e1_code_gen_complex_sampled(code_span, Signal_,
+                    galileo_e1_code_gen_complex_sampled(code, Signal_,
                         cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
                 }
             else
                 {
-                    galileo_e1_code_gen_complex_sampled(code_span, Signal_,
+                    galileo_e1_code_gen_complex_sampled(code, Signal_,
                         cboc, gnss_synchro_->PRN, fs_in_, 0, false);
                 }
         }
@@ -278,7 +284,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     gsl::span<gr_complex> code__span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
         {
-            std::copy_n(code.get(), code_length_, code__span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code__span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());
@@ -310,7 +316,7 @@ float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    auto lambda = double(vector_length_);
+    auto lambda = static_cast<double>(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
     auto threshold = static_cast<float>(quantile(mydist, val));
 
@@ -390,6 +396,7 @@ gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

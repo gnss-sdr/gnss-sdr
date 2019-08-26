@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -53,9 +53,6 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
     d_channel_fsm = std::move(channel_fsm);
     d_repeat = repeat;
 }
-
-
-channel_msg_receiver_cc::~channel_msg_receiver_cc() = default;
 
 
 void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)

@@ -46,13 +46,6 @@
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
-#define NUM_PRNs 32
-#define QUANT_BITS_LOCAL_CODE 16
-#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
-#define SHL_CODE_BITS 65536              // shift left by 10 bits
-
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     ConfigurationInterface* configuration,
     const std::string& role,
@@ -85,9 +78,8 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     unsigned int code_length = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float)code_length));
+    float nbits = ceilf(log2f(static_cast<float>(code_length)));
     unsigned int nsamples_total = pow(2, nbits);
-    unsigned int vector_length = nsamples_total;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
@@ -109,11 +101,14 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
-    int32_t tmp, tmp2, local_code, fft_data;
+    int32_t tmp;
+    int32_t tmp2;
+    int32_t local_code;
+    int32_t fft_data;
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.data(), nsamples_total), PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(code, PRN, fs_in_);
             // fill in zero padding
             for (unsigned int s = code_length; s < nsamples_total; s++)
                 {
@@ -161,10 +156,16 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     // temporary buffers that we can release
     volk_gnsssdr_free(fft_codes_padded);
+
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
-
-
-GpsL2MPcpsAcquisitionFpga::~GpsL2MPcpsAcquisitionFpga() = default;
 
 
 void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
@@ -215,7 +216,6 @@ signed int GpsL2MPcpsAcquisitionFpga::mag()
 void GpsL2MPcpsAcquisitionFpga::init()
 {
     acquisition_fpga_->init();
-    //set_local_code();
 }
 
 

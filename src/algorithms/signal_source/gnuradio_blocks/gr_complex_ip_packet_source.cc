@@ -6,7 +6,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,6 +32,7 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
+#include <array>
 #include <cstdint>
 #include <utility>
 
@@ -161,10 +162,7 @@ bool Gr_Complex_Ip_Packet_Source::start()
             d_pcap_thread = new boost::thread(boost::bind(&Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread, this, descr));
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -184,14 +182,14 @@ bool Gr_Complex_Ip_Packet_Source::stop()
 
 bool Gr_Complex_Ip_Packet_Source::open()
 {
-    char errbuf[PCAP_ERRBUF_SIZE];
+    std::array<char, PCAP_ERRBUF_SIZE> errbuf{};
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     // open device for reading
-    descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf);
+    descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf.data());
     if (descr == nullptr)
         {
             std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
-            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf) << std::endl;
+            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf.data()) << std::endl;
             return false;
         }
     // bind UDP port to avoid automatic reply with ICMP port unreachable packets from kernel
@@ -259,10 +257,10 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
             uh = reinterpret_cast<const gr_udp_header *>(reinterpret_cast<const u_char *>(ih) + ip_len);
 
             // convert from network byte order to host byte order
-            //u_short sport;
+            // u_short sport;
             u_short dport;
             dport = ntohs(uh->dport);
-            //sport = ntohs(uh->sport);
+            // sport = ntohs(uh->sport);
             if (dport == d_udp_port)
                 {
                     // print ip addresses and udp ports
@@ -321,7 +319,7 @@ void Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread(pcap_t *pcap_handle)
 }
 
 
-void Gr_Complex_Ip_Packet_Source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
+void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &output_items, int num_samples_readed)
 {
     int8_t real;
     int8_t imag;

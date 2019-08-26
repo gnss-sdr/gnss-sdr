@@ -23,7 +23,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
-cmake_minimum_required(VERSION 2.8.12...3.14.5)
+cmake_minimum_required(VERSION 2.8.12...3.15)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -69,7 +69,7 @@ option(ENABLE_OPENCL "Enable building of processing blocks implemented with Open
 
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
 
-option(ENABLE_FPGA "Enable building of processing blocks implemented with FPGA" OFF)
+option(ENABLE_FPGA "Enable building of processing blocks implementing FPGA offloading" OFF)
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -82,8 +82,11 @@ option(ENABLE_OWN_ARMADILLO "Download and build Armadillo locally" OFF)
 
 option(ENABLE_LOG "Enable logging" ON)
 
+option(ENABLE_ARMA_NO_DEBUG OFF)
+
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
+    set(ENABLE_ARMA_NO_DEBUG ON)
 endif()
 
 # Testing
@@ -138,7 +141,7 @@ if(NOT ${THIS_IS_A_RELEASE})
                 OUTPUT_VARIABLE GIT_BRANCH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-        endif(NOT GIT_BRANCH)
+        endif()
         # was this info set in the CMake commandline?
         if(NOT GIT_COMMIT_HASH)
             # Get the latest abbreviated commit hash of the working branch
@@ -148,16 +151,16 @@ if(NOT ${THIS_IS_A_RELEASE})
                 OUTPUT_VARIABLE GIT_COMMIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-        endif(NOT GIT_COMMIT_HASH)
+        endif()
     endif()
 endif()
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 10)
+    set(VERSION_INFO_MINOR_VERSION 11)
 else()
-    set(VERSION_INFO_MINOR_VERSION 10.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 11.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -185,7 +188,7 @@ if(NOT CMAKE_PREFIX_PATH)
 endif()
 
 # Detect Linux Distribution
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
     set(OperatingSystem "Linux")
     set(OS_IS_LINUX TRUE)
     if(ARCH_64BITS)
@@ -397,13 +400,13 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.500.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.600.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
-set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.16")
+set(GNSSSDR_GPSTK_LOCAL_VERSION "2.12")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.8.0")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.9.1")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2") # Fix for CentOS 7
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
@@ -682,15 +685,15 @@ set_package_properties(Boost PROPERTIES
     TYPE REQUIRED
 )
 
-if(CMAKE_VERSION VERSION_GREATER 3.14)
-    set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
-    )
-else()
-    set_package_properties(Boost PROPERTIES
-        DESCRIPTION "Portable C++ source libraries (found: v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})"
-    )
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
+if(POLICY CMP0093)
+    cmake_policy(SET CMP0093 NEW)  # FindBoost reports Boost_VERSION in x.y.z format.
+endif()
+set_package_properties(Boost PROPERTIES
+    DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
+)
 
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::boost)
@@ -756,12 +759,12 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
                 INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES}
                 IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES}
             )
-         endif()
+        endif()
     endif()
 endif()
 
 # Fix for Boost Asio < 1.70 when using Clang in macOS
-if(${Boost_VERSION} VERSION_LESS 107000)
+if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
     # Check if we have std::string_view
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
@@ -875,13 +878,9 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
     endif()
 
-    set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
-        endif()
-        if(NOT DEFINED ENV{PROTECT_PASSWORDS})
-            set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
         endif()
     endif()
 
@@ -920,11 +919,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         )
     else()
@@ -932,11 +931,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
@@ -1468,6 +1467,7 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
         /usr/lib/powerpc64-linux-gnu
         /usr/lib/powerpc64le-linux-gnu
         /usr/lib/s390x-linux-gnu
+        /usr/lib/riscv64-linux-gnu
         /usr/lib/sparc64-linux-gnu
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/sh4-linux-gnu
@@ -2056,13 +2056,15 @@ set_package_properties(OPENCL PROPERTIES
     PURPOSE "Used in some processing block implementations."
     TYPE OPTIONAL
 )
+if(NOT OPENCL_FOUND)
+    set(ENABLE_OPENCL OFF)
+endif()
 if(ENABLE_OPENCL)
-    find_package(OPENCL)
     if(DEFINED ENV{DISABLE_OPENCL})
         set(DISABLE_OPENCL TRUE)
     endif()
     if(DISABLE_OPENCL)
-        set(OPENCL_FOUND FALSE)
+        set(ENABLE_OPENCL OFF)
     else()
         if(OPENCL_FOUND)
             message(STATUS "OpenCL has been found and will be used by some processing blocks")
@@ -2070,7 +2072,7 @@ if(ENABLE_OPENCL)
         endif()
     endif()
     if(ENABLE_GENERIC_ARCH)
-        set(OPENCL_FOUND FALSE)
+        set(ENABLE_OPENCL OFF)
         message(STATUS "ENABLE_GENERIC_ARCH is set to ON so the use of OpenCL has been disabled.")
     endif()
     if(NOT OPENCL_FOUND)
@@ -2150,11 +2152,11 @@ endif()
 # FPGA (OPTIONAL)
 ################################################################################
 if(ENABLE_FPGA)
-    message(STATUS "FPGA Acceleration will be enabled.")
+    message(STATUS "FPGA offloading will be enabled.")
     message(STATUS " You can disable it with 'cmake -DENABLE_FPGA=OFF ..'")
 else()
-    message(STATUS "Fpga Acceleration will be not enabled.")
-    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for GPU-based acceleration using the FPGA.")
+    message(STATUS "FPGA offloading will be not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for FPGA offloading.")
 endif()
 
 
@@ -2350,20 +2352,27 @@ endif()
 ################################################################################
 # Set compiler flags
 ################################################################################
+set(CXX_WARNING_FLAGS -Wall -Wextra)
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     # Add warning flags
     # For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-    set(cxx_warning_flags -Wall -Wextra)
     if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
-        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${cxx_warning_flags}>")
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${CXX_WARNING_FLAGS}>")
     else()
-        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${cxx_warning_flags}>")
+        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${CXX_WARNING_FLAGS}>")
     endif()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0")
         add_compile_options(-Wno-missing-field-initializers)
     endif()
     if(CMAKE_CROSSCOMPILING)
         add_compile_options(-Wno-psabi)
+    endif()
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${CXX_WARNING_FLAGS}>")
+    else()
+        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${CXX_WARNING_FLAGS}>")
     endif()
 endif()
 
@@ -2461,7 +2470,8 @@ add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with
 add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
 add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
 add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
-add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA off-loading.")
+add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA offloading.")
+add_feature_info(ENABLE_ARMA_NO_DEBUG ENABLE_ARMA_NO_DEBUG "Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.")
 add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")

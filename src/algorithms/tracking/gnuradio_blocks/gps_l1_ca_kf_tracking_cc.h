@@ -14,7 +14,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,6 +39,10 @@
 
 #ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
 
 #include "bayesian_estimation.h"
 #include "cpu_multicorrelator_real_codes.h"
@@ -166,7 +170,7 @@ private:
     // Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
-    double d_acq_carrier_doppler_step_hz;
+    double d_acq_carrier_doppler_step_hz{};
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator
@@ -184,7 +188,7 @@ private:
     double d_carrier_dopplerrate_hz2;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
-    double d_carr_phase_error_rad;
+    double d_carr_phase_error_rad{};
     double d_carr_phase_sigma2;
     double d_code_phase_samples;
     double code_error_chips;

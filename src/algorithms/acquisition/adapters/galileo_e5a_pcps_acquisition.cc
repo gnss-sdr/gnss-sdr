@@ -5,7 +5,7 @@
  * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -85,7 +85,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters_.blocking = blocking_;
 
-
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
     if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
         {
@@ -152,6 +151,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
@@ -163,9 +163,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GalileoE5aPcpsAcquisition::~GalileoE5aPcpsAcquisition() = default;
 
 
 void GalileoE5aPcpsAcquisition::stop_acquisition()
@@ -212,6 +209,14 @@ void GalileoE5aPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
+void GalileoE5aPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
+
+
 void GalileoE5aPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -233,8 +238,8 @@ void GalileoE5aPcpsAcquisition::init()
 
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
-    std::array<char, 3> signal_;
+    std::vector<std::complex<float>> code(code_length_);
+    std::array<char, 3> signal_{};
     signal_[0] = '5';
     signal_[2] = '\0';
 
@@ -253,16 +258,16 @@ void GalileoE5aPcpsAcquisition::set_local_code()
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code.get(), code_length_), signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
         }
     else
         {
-            galileo_e5_a_code_gen_complex_sampled(gsl::span<gr_complex>(code.get(), code_length_), signal_, gnss_synchro_->PRN, fs_in_, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
         }
     gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());
@@ -286,7 +291,7 @@ float GalileoE5aPcpsAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    auto lambda = double(vector_length_);
+    auto lambda = static_cast<double>(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
     auto threshold = static_cast<float>(quantile(mydist, val));
 
@@ -344,6 +349,7 @@ gr::basic_block_sptr GalileoE5aPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void GalileoE5aPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

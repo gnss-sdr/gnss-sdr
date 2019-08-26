@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -133,8 +134,8 @@ int EXPORT supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu)
 
 int EXPORT supl_ulp_recv(supl_ctx_t *ctx, supl_ulp_t *pdu)
 {
-    int err;
-    int n;
+    int64_t err;
+    int64_t n;
     asn_dec_rval_t rval;
     ULP_PDU_t *length;
 
@@ -306,7 +307,8 @@ void EXPORT supl_close(supl_ctx_t *ctx)
 static int server_connect(char *server)
 {
     int fd = -1;
-    struct addrinfo *ailist, *aip;
+    struct addrinfo *ailist;
+    struct addrinfo *aip;
     struct addrinfo hint;
     int err;
 
@@ -326,11 +328,16 @@ static int server_connect(char *server)
                 }
             if (connect(fd, aip->ai_addr, aip->ai_addrlen) != 0)
                 {
+                    freeaddrinfo(aip);
+                    if (close(fd) != 0)
+                        {
+                            // avoid warning
+                        }
                     return -1;
                 }
             break;
         }
-
+    freeaddrinfo(aip);
     return fd;
 }
 
@@ -461,7 +468,7 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu)
     ulp->message.choice.msSUPLPOSINIT.sETCapabilities.posProtocol.rrlp = 1;
 
     //GNSS-SDR mod
-    // Use ctx->p.request to swith between a pre-defined set of assistence data request
+    // Use ctx->p.request to switch between a pre-defined set of assistance data request
     // reason: Some SUPL servers do not respond to Acquisition assistance depending on the status of other assistance flags
 
     switch (ctx->p.request)
@@ -672,7 +679,8 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
             loc = &hdr->refLocation->threeDLocation;
             if (loc->size == 14 && loc->buf[0] == 0x90)
                 {
-                    double lat, lon;
+                    double lat;
+                    double lon;
                     long l;
 
                     /* from 3GPP TS 23.032 V4.0.0 (2001-04) */
@@ -893,7 +901,7 @@ int EXPORT supl_ctx_free(supl_ctx_t *ctx)
 
 static int supl_more_rrlp(PDU_t *rrlp)
 {
-    long value;
+    int64_t value;
 
     return (rrlp->component.present == RRLP_Component_PR_assistanceData &&
             rrlp->component.choice.assistanceData.moreAssDataToBeSent &&

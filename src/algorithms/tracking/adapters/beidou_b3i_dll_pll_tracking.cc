@@ -41,6 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
+#include <array>
 
 using google::LogMessage;
 
@@ -50,7 +51,7 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
 {
     Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
     std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -154,15 +155,15 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     trk_param.very_early_late_space_chips = 0.0;
     trk_param.very_early_late_space_narrow_chips = 0.0;
     trk_param.system = 'C';
-    char sig_[3] = "B3";
-    std::memcpy(trk_param.signal, sig_, 3);
+    std::array<char, 3> sig_{'B', '3', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
     trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
     trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
     trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);
     trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
     trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -184,9 +185,6 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-BeidouB3iDllPllTracking::~BeidouB3iDllPllTracking() = default;
 
 
 void BeidouB3iDllPllTracking::start_tracking()
@@ -222,7 +220,7 @@ void BeidouB3iDllPllTracking::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -231,7 +229,7 @@ void BeidouB3iDllPllTracking::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

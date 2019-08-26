@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,9 +50,6 @@ gnss_sdr_time_counter::gnss_sdr_time_counter() : gr::block("time_counter",
     flag_h = false;
     flag_days = false;
 }
-
-
-gnss_sdr_time_counter::~gnss_sdr_time_counter() = default;
 
 
 gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter()

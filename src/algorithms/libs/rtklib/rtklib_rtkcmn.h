@@ -79,6 +79,7 @@
 #define GNSS_SDR_RTKLIB_RTKCMN_H_
 
 #include "rtklib.h"
+#include <string>
 
 
 /* coordinate rotation matrix ------------------------------------------------*/
@@ -174,7 +175,7 @@ double time2bdt(gtime_t t, int *week);
 gtime_t timeadd(gtime_t t, double sec);
 double timediff(gtime_t t1, gtime_t t2);
 double timediffweekcrossover(gtime_t t1, gtime_t t2);
-gtime_t timeget(void);
+gtime_t timeget();
 void timeset(gtime_t t);
 int read_leaps_text(FILE *fp);
 int read_leaps_usno(FILE *fp);
@@ -189,7 +190,7 @@ void time2str(gtime_t t, char *s, int n);
 char *time_str(gtime_t t, int n);
 double time2doy(gtime_t t);
 int adjgpsweek(int week);
-unsigned int tickget(void);
+unsigned int tickget();
 void sleepms(int ms);
 void deg2dms(double deg, double *dms, int ndec);
 void deg2dms(double deg, double *dms);
@@ -232,19 +233,19 @@ void freeobs(obs_t *obs);
 void freenav(nav_t *nav, int opt);
 
 void traceopen(const char *file);
-void traceclose(void);
+void traceclose();
 void tracelevel(int level);
-void traceswap(void);
+void traceswap();
 void trace(int level, const char *format, ...);
 void tracet(int level, const char *format, ...);
 void tracemat(int level, const double *A, int n, int m, int p, int q);
 void traceobs(int level, const obsd_t *obs, int n);
-//void tracenav(int level, const nav_t *nav);
-//void tracegnav(int level, const nav_t *nav);
-//void tracehnav(int level, const nav_t *nav);
-//void tracepeph(int level, const nav_t *nav);
-//void tracepclk(int level, const nav_t *nav);
-//void traceb  (int level, const unsigned char *p, int n);
+// void tracenav(int level, const nav_t *nav);
+// void tracegnav(int level, const nav_t *nav);
+// void tracehnav(int level, const nav_t *nav);
+// void tracepeph(int level, const nav_t *nav);
+// void tracepclk(int level, const nav_t *nav);
+// void traceb  (int level, const unsigned char *p, int n);
 
 int execcmd(const char *cmd);
 void createdir(const char *path);
@@ -257,7 +258,6 @@ double satwavelen(int sat, int frq, const nav_t *nav);
 double geodist(const double *rs, const double *rr, double *e);
 double satazel(const double *pos, const double *e, double *azel);
 
-//#define SQRT(x)     ((x)<0.0?0.0:sqrt(x))
 void dops(int ns, const double *azel, double elmin, double *dop);
 double ionmodel(gtime_t t, const double *ion, const double *pos,
     const double *azel);

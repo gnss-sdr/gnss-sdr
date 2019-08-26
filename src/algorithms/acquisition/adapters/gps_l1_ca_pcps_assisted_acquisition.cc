@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -67,7 +67,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     max_dwells_ = configuration->property(role + ".max_dwells", 1);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    //--- Find number of samples per spreading code -------------------------
+    // --- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     code_ = std::make_shared<std::complex<float>>(vector_length_);
@@ -99,9 +99,6 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GpsL1CaPcpsAssistedAcquisition::~GpsL1CaPcpsAssistedAcquisition() = default;
 
 
 void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
@@ -146,14 +143,15 @@ signed int GpsL1CaPcpsAssistedAcquisition::mag()
 void GpsL1CaPcpsAssistedAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
 }
+
 
 void GpsL1CaPcpsAssistedAcquisition::set_local_code()
 {
-    gps_l1_ca_code_gen_complex_sampled(gsl::span<gr_complex>(code_.get(), vector_length_), gnss_synchro_->PRN, fs_in_, 0);
+    gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
     acquisition_cc_->set_local_code(code_.get());
 }
+
 
 void GpsL1CaPcpsAssistedAcquisition::reset()
 {
@@ -166,7 +164,7 @@ void GpsL1CaPcpsAssistedAcquisition::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -175,7 +173,7 @@ void GpsL1CaPcpsAssistedAcquisition::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

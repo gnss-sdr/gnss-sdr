@@ -54,7 +54,7 @@
 #include "rtklib_rtcm.h"
 #include "rtklib_rtkcmn.h"
 
-//extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync);
+// extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync);
 
 
 /* initialize rtcm control -----------------------------------------------------
@@ -73,7 +73,8 @@ int init_rtcm(rtcm_t *rtcm)
     geph_t geph0 = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
     ssr_t ssr0 = {{{0, 0.0}}, {0.0}, {0}, 0, 0, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, {0.0}, {0.0}, {0.0}, 0.0, 0.0, '0'};
-    int i, j;
+    int i;
+    int j;
 
     trace(3, "init_rtcm:\n");
 
@@ -369,7 +370,9 @@ int input_rtcm3(rtcm_t *rtcm, unsigned char data)
  *-----------------------------------------------------------------------------*/
 int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
 {
-    int i, data = 0, ret;
+    int i;
+    int data = 0;
+    int ret;
 
     trace(4, "input_rtcm2f: data=%02x\n", data);
 
@@ -397,7 +400,9 @@ int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
  *-----------------------------------------------------------------------------*/
 int input_rtcm3f(rtcm_t *rtcm, FILE *fp)
 {
-    int i, data = 0, ret;
+    int i;
+    int data = 0;
+    int ret;
 
     trace(4, "input_rtcm3f: data=%02x\n", data);
 
@@ -435,15 +440,15 @@ int gen_rtcm2(rtcm_t *rtcm, int type, int sync)
 }
 
 
-///* generate rtcm 3 message -----------------------------------------------------
+// /* generate rtcm 3 message -----------------------------------------------------
 // * generate rtcm 3 message
 // * args   : rtcm_t *rtcm   IO rtcm control struct
 // *          int    type    I  message type
 // *          int    sync    I  sync flag (1:another message follows)
 // * return : status (1:ok,0:error)
 // *-----------------------------------------------------------------------------*/
-//int gen_rtcm3(rtcm_t *rtcm, int type, int sync)
-//{
+// int gen_rtcm3(rtcm_t *rtcm, int type, int sync)
+// {
 //    unsigned int crc;
 //    int i = 0;
 //
@@ -482,4 +487,4 @@ int gen_rtcm2(rtcm_t *rtcm, int type, int sync)
 //    rtcm->nbyte = rtcm->len+3;
 //
 //    return 1;
-//}
+// }

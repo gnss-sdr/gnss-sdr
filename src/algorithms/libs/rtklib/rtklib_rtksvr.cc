@@ -64,7 +64,7 @@
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)
 {
-    unsigned char buff[1024];
+    unsigned char buff[MAXSOLMSG];
     int n;
     n = outsolheads(buff, solopt);
     strwrite(stream, buff, n);
@@ -88,8 +88,9 @@ void saveoutbuf(rtksvr_t *svr, unsigned char *buff, int n, int index)
 void writesol(rtksvr_t *svr, int index)
 {
     solopt_t solopt = SOLOPT_DEFAULT;
-    unsigned char buff[1024];
-    int i, n;
+    unsigned char buff[MAXSOLMSG];
+    int i;
+    int n;
 
     tracet(4, "writesol: index=%d\n", index);
 
@@ -128,7 +129,8 @@ void writesol(rtksvr_t *svr, int index)
 /* update navigation data ----------------------------------------------------*/
 void updatenav(nav_t *nav)
 {
-    int i, j;
+    int i;
+    int j;
     for (i = 0; i < MAXSAT; i++)
         {
             for (j = 0; j < NFREQ; j++)
@@ -142,7 +144,10 @@ void updatenav(nav_t *nav)
 /* update glonass frequency channel number in raw data struct ----------------*/
 void updatefcn(rtksvr_t *svr)
 {
-    int i, j, sat, frq;
+    int i;
+    int j;
+    int sat;
+    int frq;
 
     for (i = 0; i < MAXPRNGLO; i++)
         {
@@ -178,11 +183,22 @@ void updatefcn(rtksvr_t *svr)
 void updatesvr(rtksvr_t *svr, int ret, obs_t *obs, nav_t *nav, int sat,
     sbsmsg_t *sbsmsg, int index, int iobs)
 {
-    eph_t *eph1, *eph2, *eph3;
-    geph_t *geph1, *geph2, *geph3;
+    eph_t *eph1;
+    eph_t *eph2;
+    eph_t *eph3;
+    geph_t *geph1;
+    geph_t *geph2;
+    geph_t *geph3;
     // gtime_t tof;
-    double pos[3], del[3] = {0}, dr[3];
-    int i, n = 0, prn, sbssat = svr->rtk.opt.sbassatsel, sys, iode;
+    double pos[3];
+    double del[3] = {0};
+    double dr[3];
+    int i;
+    int n = 0;
+    int prn;
+    int sbssat = svr->rtk.opt.sbassatsel;
+    int sys;
+    int iode;
 
     tracet(4, "updatesvr: ret=%d sat=%2d index=%d\n", ret, sat, index);
 
@@ -383,7 +399,10 @@ int decoderaw(rtksvr_t *svr, int index)
     obs_t *obs;
     nav_t *nav;
     sbsmsg_t *sbsmsg = nullptr;
-    int i, ret = 0, sat, fobs = 0;
+    int i;
+    int ret = 0;
+    int sat;
+    int fobs = 0;
 
     tracet(4, "decoderaw: index=%d\n", index);
 
@@ -409,7 +428,7 @@ int decoderaw(rtksvr_t *svr, int index)
             else
                 {
                     // Disabled !!
-                    //ret = input_raw(svr->raw+index, svr->format[index], svr->buff[index][i]);
+                    // ret = input_raw(svr->raw+index, svr->format[index], svr->buff[index][i]);
                     obs = &svr->raw[index].obs;
                     nav = &svr->raw[index].nav;
                     sat = svr->raw[index].ephsat;
@@ -452,33 +471,7 @@ int decoderaw(rtksvr_t *svr, int index)
 /* decode download file ------------------------------------------------------*/
 void decodefile(rtksvr_t *svr, int index)
 {
-    int i = 0;
-    char glo_fcn[MAXPRNGLO + 1];
-
-    // Allocate space for GLONASS frequency channels depending on availability
-    for (i = 0; i < MAXPRNGLO + 1; i++)
-        {
-            glo_fcn[i] = '0';
-        }
-    pcv_t pcvt0[MAXSAT] = {{0, {'0'}, {'0'}, {0, 0.0}, {0, 0.0}, {{0.0}, {0.0}}, {{0.0}, {0.0}}}};
-    sbsfcorr_t sbsfcorr0 = {{0, 0.0}, 0.0, 0.0, 0.0, 0, 0, 0};
-    sbslcorr_t sbslcorr0 = {{0, 0.0}, 0, {0.0}, {0.0}, 0.0, 0.0};
-    sbssat_t sbssat0 = {0, 0, 0, {{0, sbsfcorr0, sbslcorr0}}};
-    sbsigp_t sbsigp0[MAXNIGP] = {{{0, 0.0}, 0, 0, 0, 0.0}};
-    sbsion_t sbsion0[MAXBAND + 1] = {{0, 0, {*sbsigp0}}};
-    dgps_t dgps0[MAXSAT] = {{{0, 0.0}, 0.0, 0.0, 0, 0.0}};
-    ssr_t ssr0[MAXSAT] = {{{{0, 0.0}}, {0.0}, {0}, 0, 0, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, {0.0}, {0.0}, {0.0}, 0.0, 0.0, '0'}};
-    lexeph_t lexeph0[MAXSAT] = {{{0, 0.0}, {0, 0.0}, 0, 0, 0, {0.0}, {0.0}, {0.0}, {0.0}, 0.0, 0.0, 0.0, {0.0}}};
-    stec_t stec0[MAXSTA] = {{{0, 0.0}, 0, 0.0, 0.0, {0.0}, 0}};
-    trop_t trop0[MAXSTA] = {{{0, 0.0}, {0.0}, {0.0}}};
-    pppcorr_t pppcorr0 = {0, {{0}, {0}}, {{0.0}, {0.0}}, {0}, {0}, {0}, {0}, {stec0}, {trop0}};
-
-    nav_t nav = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        {0, 0, (erpd_t *){nullptr}}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0},
-        {0.0}, {0.0}, {0.0}, {0.0}, 0, {{0.0}, {0.0}}, {{0.0}, {0.0}}, {{{0.0}}, {{0.0}}, {{0.0}}},
-        {0.0}, {0.0}, {*glo_fcn}, {*pcvt0}, sbssat0, {*sbsion0}, {*dgps0}, {*ssr0}, {*lexeph0},
-        {{0, 0.0}, 0.0, {0.0}, {{0.0}, {0.0}}}, pppcorr0};
-
+    nav_t nav{};
     char file[1024];
     int nb;
 
@@ -501,7 +494,6 @@ void decodefile(rtksvr_t *svr, int index)
 
     if (svr->format[index] == STRFMT_SP3)
         { /* precise ephemeris */
-
             /* read sp3 precise ephemeris */
             readsp3(file, &nav, 0);
             if (nav.ne <= 0)
@@ -519,13 +511,13 @@ void decodefile(rtksvr_t *svr, int index)
             svr->nav.ne = svr->nav.nemax = nav.ne;
             svr->nav.peph = nav.peph;
             svr->ftime[index] = utc2gpst(timeget());
-            strcpy(svr->files[index], file);
+            std::strncpy(svr->files[index], file, MAXSTRPATH);
 
             rtksvrunlock(svr);
         }
     else if (svr->format[index] == STRFMT_RNXCLK)
-        { /* precise clock */
-
+        {
+            /* precise clock */
             /* read rinex clock */  // Disabled!!
             if (true /*readrnxc(file, &nav)<=0 */)
                 {
@@ -542,7 +534,7 @@ void decodefile(rtksvr_t *svr, int index)
             svr->nav.nc = svr->nav.ncmax = nav.nc;
             svr->nav.pclk = nav.pclk;
             svr->ftime[index] = utc2gpst(timeget());
-            strcpy(svr->files[index], file);
+            std::strncpy(svr->files[index], file, MAXSTRPATH);
 
             rtksvrunlock(svr);
         }
@@ -556,9 +548,16 @@ void *rtksvrthread(void *arg)
     obs_t obs;
     obsd_t data[MAXOBS * 2];
     double tt;
-    unsigned int tick, ticknmea;
-    unsigned char *p, *q;
-    int i, j, n, fobs[3] = {0}, cycle, cputime;
+    unsigned int tick;
+    unsigned int ticknmea;
+    unsigned char *p;
+    unsigned char *q;
+    int i;
+    int j;
+    int n;
+    int fobs[3] = {0};
+    int cycle;
+    int cputime;
 
     tracet(3, "rtksvrthread:\n");
 
@@ -679,7 +678,7 @@ void *rtksvrthread(void *arg)
             svr->buff[i] = nullptr;
             free(svr->pbuf[i]);
             svr->pbuf[i] = nullptr;
-            //free_raw (svr->raw +i);
+            // free_raw (svr->raw +i);
             free_rtcm(svr->rtcm + i);
         }
     for (i = 0; i < 2; i++)
@@ -708,7 +707,8 @@ int rtksvrinit(rtksvr_t *svr)
     geph_t geph0 = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
     seph_t seph0 = {0, {0, 0.0}, {0, 0.0}, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, 0.0};
-    int i, j;
+    int i;
+    int j;
 
     tracet(3, "rtksvrinit:\n");
 
@@ -833,7 +833,8 @@ int rtksvrinit(rtksvr_t *svr)
  *-----------------------------------------------------------------------------*/
 void rtksvrfree(rtksvr_t *svr)
 {
-    int i, j;
+    int i;
+    int j;
 
     free(svr->nav.eph);
     free(svr->nav.geph);
@@ -904,8 +905,11 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
     const double *nmeapos, prcopt_t *prcopt,
     solopt_t *solopt, stream_t *moni)
 {
-    gtime_t time, time0 = {0, 0.0};
-    int i, j, rw;
+    gtime_t time;
+    gtime_t time0 = {0, 0.0};
+    int i;
+    int j;
+    int rw;
 
     tracet(3, "rtksvrstart: cycle=%d buffsize=%d navsel=%d nmeacycle=%d nmeareq=%d\n",
         cycle, buffsize, navsel, nmeacycle, nmeareq);
@@ -954,17 +958,19 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
                 }
 
             /* initialize receiver raw and rtcm control */
-            //init_raw (svr->raw +i);
+            // init_raw (svr->raw +i);
             init_rtcm(svr->rtcm + i);
 
             /* set receiver and rtcm option */
             if (strlen(rcvopts[i]) < 256)
                 {
-                    strcpy(svr->raw[i].opt, rcvopts[i]);
+                    std::strncpy(svr->raw[i].opt, rcvopts[i], 256);
+                    svr->raw[i].opt[255] = '\0';
                 }
             if (strlen(rcvopts[i]) < 256)
                 {
-                    strcpy(svr->rtcm[i].opt, rcvopts[i]);
+                    std::strncpy(svr->rtcm[i].opt, rcvopts[i], 256);
+                    svr->rtcm[i].opt[255] = '\0';
                 }
 
             /* connect dgps corrections */
@@ -1181,7 +1187,9 @@ void rtksvrclosestr(rtksvr_t *svr, int index)
 int rtksvrostat(rtksvr_t *svr, int rcv, gtime_t *time, int *sat,
     double *az, double *el, int **snr, int *vsat)
 {
-    int i, j, ns;
+    int i;
+    int j;
+    int ns;
 
     tracet(4, "rtksvrostat: rcv=%d\n", rcv);
 
@@ -1228,7 +1236,8 @@ int rtksvrostat(rtksvr_t *svr, int rcv, gtime_t *time, int *sat,
 void rtksvrsstat(rtksvr_t *svr, int *sstat, char *msg)
 {
     int i;
-    char s[MAXSTRMSG], *p = msg;
+    char s[MAXSTRMSG];
+    char *p = msg;
 
     tracet(4, "rtksvrsstat:\n");
 
@@ -1238,7 +1247,7 @@ void rtksvrsstat(rtksvr_t *svr, int *sstat, char *msg)
             sstat[i] = strstat(svr->stream + i, s);
             if (*s)
                 {
-                    p += sprintf(p, "(%d) %s ", i + 1, s);
+                    p += std::snprintf(p, MAXSTRMSG, "(%d) %s ", i + 1, s);
                 }
         }
     rtksvrunlock(svr);

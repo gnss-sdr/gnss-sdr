@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,6 +35,9 @@
 #include "monitor_pvt.h"
 #include "serdes_monitor_pvt.h"
 #include <boost/asio.hpp>
+#include <memory>
+#include <string>
+#include <vector>
 
 #if BOOST_GREATER_1_65
 using b_io_context = boost::asio::io_context;
@@ -45,15 +48,14 @@ using b_io_context = boost::asio::io_service;
 class Monitor_Pvt_Udp_Sink
 {
 public:
-    Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t &port, bool protobuf_enabled);
-    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
+    Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled);
+    bool write_monitor_pvt(const std::shared_ptr<Monitor_Pvt>& monitor_pvt);
 
 private:
     b_io_context io_context;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    Monitor_Pvt monitor_pvt{};
     Serdes_Monitor_Pvt serdes;
     bool use_protobuf;
 };

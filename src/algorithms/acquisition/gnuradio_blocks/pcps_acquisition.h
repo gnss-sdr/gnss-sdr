@@ -26,7 +26,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -52,14 +52,20 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H_
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "acq_conf.h"
 #include "channel_fsm.h"
 #include <armadillo>
+#include <glog/logging.h>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>     // for gr_complex
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <gnuradio/types.h>          // for gr_vector_const_void_star
+#include <gsl/gsl>                   // for Guidelines Support Library
 #include <volk/volk_complex.h>       // for lv_16sc_t
 #include <complex>
 #include <cstdint>
@@ -67,12 +73,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if HAS_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 class Gnss_Synchro;
 class pcps_acquisition;
@@ -90,7 +90,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public gr::block
 {
 public:
-    ~pcps_acquisition();
+    ~pcps_acquisition() = default;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -188,6 +188,21 @@ public:
         d_doppler_step = doppler_step;
     }
 
+    /*!
+     * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
+     * \param doppler_center - Frequency center of the search grid [Hz].
+     */
+    inline void set_doppler_center(int32_t doppler_center)
+    {
+        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+        if (doppler_center != d_doppler_center)
+            {
+                DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
+                d_doppler_center = doppler_center;
+                update_grid_doppler_wipeoffs();
+            }
+    }
+
     void set_resampler_latency(uint32_t latency_samples);
 
     /*!
@@ -199,7 +214,7 @@ public:
 
 private:
     friend pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
-    pcps_acquisition(const Acq_Conf& conf_);
+    explicit pcps_acquisition(const Acq_Conf& conf_);
     bool d_active;
     bool d_worker_active;
     bool d_cshort;
@@ -211,6 +226,8 @@ private:
     uint32_t d_channel;
     uint32_t d_samplesPerChip;
     uint32_t d_doppler_step;
+    int32_t d_doppler_center;
+    int32_t d_doppler_bias;
     uint32_t d_num_noncoherent_integrations_counter;
     uint32_t d_fft_size;
     uint32_t d_consumed_samples;
@@ -220,7 +237,6 @@ private:
     uint32_t d_buffer_count;
     uint64_t d_sample_counter;
     int64_t d_dump_number;
-    int64_t d_old_freq;
     float d_threshold;
     float d_mag;
     float d_input_power;

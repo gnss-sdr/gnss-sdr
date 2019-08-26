@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,7 +41,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-
+#include <array>
 
 GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     ConfigurationInterface* configuration, const std::string& role,
@@ -49,7 +49,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
 {
     Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
     std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -138,15 +138,15 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.pll_bw_narrow_hz = 0.0;
     trk_param.dll_bw_narrow_hz = 0.0;
     trk_param.system = 'G';
-    char sig_[3] = "2S";
-    std::memcpy(trk_param.signal, sig_, 3);
+    std::array<char, 3> sig_{'2', 'S', '\0'};
+    std::memcpy(trk_param.signal, sig_.data(), 3);
     trk_param.cn0_samples = configuration->property(role + ".cn0_samples", trk_param.cn0_samples);
     trk_param.cn0_min = configuration->property(role + ".cn0_min", trk_param.cn0_min);
     trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);
     trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
     trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
 
-    //################# MAKE TRACKING GNURadio object ###################
+    // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
@@ -170,12 +170,11 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
 }
 
 
-GpsL2MDllPllTracking::~GpsL2MDllPllTracking() = default;
-
-
 void GpsL2MDllPllTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
+
 
 void GpsL2MDllPllTracking::start_tracking()
 {
@@ -204,7 +203,7 @@ void GpsL2MDllPllTracking::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -213,7 +212,7 @@ void GpsL2MDllPllTracking::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

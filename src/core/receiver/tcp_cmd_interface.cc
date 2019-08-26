@@ -6,7 +6,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,7 +30,7 @@
  */
 
 #include "tcp_cmd_interface.h"
-#include "control_message_factory.h"
+#include "command_event.h"
 #include "pvt_interface.h"
 #include <boost/asio.hpp>
 #include <cmath>      // for isnan
@@ -50,14 +50,11 @@ TcpCmdInterface::TcpCmdInterface()
     register_functions();
     keep_running_ = true;
     control_queue_ = nullptr;
-    rx_latitude_ = 0;
-    rx_longitude_ = 0;
-    rx_altitude_ = 0;
+    rx_latitude_ = 0.0;
+    rx_longitude_ = 0.0;
+    rx_altitude_ = 0.0;
     receiver_utc_time_ = 0;
 }
-
-
-TcpCmdInterface::~TcpCmdInterface() = default;
 
 
 void TcpCmdInterface::register_functions()
@@ -84,26 +81,25 @@ time_t TcpCmdInterface::get_utc_time()
 }
 
 
-arma::vec TcpCmdInterface::get_LLH()
+std::array<float, 3> TcpCmdInterface::get_LLH() const
 {
-    return arma::vec{rx_latitude_, rx_longitude_, rx_altitude_};
+    return std::array<float, 3>{rx_latitude_, rx_longitude_, rx_altitude_};
 }
 
 
 std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (control_queue_ != nullptr)
         {
-            control_queue_->handle(cmf->GetQueueMessage(200, 1));  //send the restart message (who=200,what=1)
+            command_event_sptr new_evnt = command_event_make(200, 1);  // send the restart message (who=200,what=1)
+            control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
     else
         {
             response = "ERROR\n";
         }
-
     return response;
 }
 
@@ -111,10 +107,10 @@ std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine _
 std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (control_queue_ != nullptr)
         {
-            control_queue_->handle(cmf->GetQueueMessage(300, 10));  //send the standby message (who=300,what=10)
+            command_event_sptr new_evnt = command_event_make(300, 10);  // send the standby message (who=300,what=10)
+            control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
     else
@@ -128,7 +124,7 @@ std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine
 std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::stringstream str_stream;
-    //todo: implement the receiver status report
+    // todo: implement the receiver status report
 
     //    str_stream << "-------------------------------------------------------\n";
     //    str_stream << "ch | sys | sig | mode | Tlm | Eph | Doppler | CN0 |\n";
@@ -141,7 +137,11 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
     //        }
     //    str_stream << "--------------------------------------------------------\n";
 
-    double longitude_deg, latitude_deg, height_m, ground_speed_kmh, course_over_ground_deg;
+    double longitude_deg;
+    double latitude_deg;
+    double height_m;
+    double ground_speed_kmh;
+    double course_over_ground_deg;
     time_t UTC_time;
     if (PVT_sptr_->get_latest_PVT(&longitude_deg,
             &latitude_deg,
@@ -151,10 +151,10 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             &UTC_time) == true)
         {
             struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
-            char buf1[80];
+            std::array<char, 80> buf1{};
             tstruct = *gmtime(&UTC_time);
-            strftime(buf1, sizeof(buf1), "%d/%m/%Y %H:%M:%S", &tstruct);
-            std::string str_time = std::string(buf1);
+            strftime(buf1.data(), buf1.size(), "%d/%m/%Y %H:%M:%S", &tstruct);
+            std::string str_time = std::string(buf1.data());
             str_stream << "- Receiver UTC Time: " << str_time << std::endl;
             str_stream << std::setprecision(9);
             str_stream << "- Receiver Position WGS84 [Lat, Long, H]: "
@@ -192,9 +192,9 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
-            rx_latitude_ = std::stod(commandLine.at(3).c_str());
-            rx_longitude_ = std::stod(commandLine.at(4).c_str());
-            rx_altitude_ = std::stod(commandLine.at(5).c_str());
+            rx_latitude_ = std::stof(commandLine.at(3).c_str());
+            rx_longitude_ = std::stof(commandLine.at(4).c_str());
+            rx_altitude_ = std::stof(commandLine.at(5).c_str());
 
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {
@@ -202,10 +202,10 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
                 }
             else
                 {
-                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                     if (control_queue_ != nullptr)
                         {
-                            control_queue_->handle(cmf->GetQueueMessage(300, 12));  //send the standby message (who=300,what=12)
+                            command_event_sptr new_evnt = command_event_make(300, 12);  // send the standby message (who=300,what=12)
+                            control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }
                     else
@@ -249,10 +249,10 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
                 }
             else
                 {
-                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                     if (control_queue_ != nullptr)
                         {
-                            control_queue_->handle(cmf->GetQueueMessage(300, 13));  // send the warmstart message (who=300,what=13)
+                            command_event_sptr new_evnt = command_event_make(300, 13);  // send the warmstart message (who=300,what=13)
+                            control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }
                     else
@@ -272,16 +272,17 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
 std::string TcpCmdInterface::coldstart(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (control_queue_ != nullptr)
         {
-            control_queue_->handle(cmf->GetQueueMessage(300, 11));  // send the coldstart message (who=300,what=11)
+            command_event_sptr new_evnt = command_event_make(300, 11);  // send the coldstart message (who=300,what=11)
+            control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
     else
         {
             response = "ERROR\n";
         }
+
     return response;
 }
 
@@ -289,13 +290,13 @@ std::string TcpCmdInterface::coldstart(const std::vector<std::string> &commandLi
 std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::string response;
-    //todo: implement the set satellite command
+    // todo: implement the set satellite command
     response = "Not implemented\n";
     return response;
 }
 
 
-void TcpCmdInterface::set_msg_queue(gr::msg_queue::sptr control_queue)
+void TcpCmdInterface::set_msg_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue)
 {
     control_queue_ = std::move(control_queue);
 }

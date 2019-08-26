@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,10 +45,10 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
-                                              in_streams_(in_streams),
-                                              out_streams_(out_streams),
-                                              queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
+                                                           in_streams_(in_streams),
+                                                           out_streams_(out_streams),
+                                                           queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -87,7 +87,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
         {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
             unpack_byte_ = make_unpack_byte_2bit_cpx_samples();
-            inter_shorts_to_cpx_ = gr::blocks::interleaved_short_to_complex::make(false, true);  //I/Q swap enabled
+            inter_shorts_to_cpx_ = gr::blocks::interleaved_short_to_complex::make(false, true);  // I/Q swap enabled
         }
     catch (const std::exception& e)
         {
@@ -143,7 +143,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
                 {
                     int sample_packet_factor = 2;  // 1 byte -> 2 samples
                     samples_ = floor(static_cast<double>(size) / static_cast<double>(item_size())) * sample_packet_factor;
-                    samples_ = samples_ - ceil(0.002 * static_cast<double>(sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
+                    samples_ = samples_ - ceil(0.002 * static_cast<double>(sampling_frequency_));  // process all the samples available in the file excluding the last 2 ms
                 }
         }
 
@@ -158,7 +158,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
 
     if (dump_)
         {
-            //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            // sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
             sink_ = gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
@@ -184,9 +184,6 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-TwoBitCpxFileSignalSource::~TwoBitCpxFileSignalSource() = default;
 
 
 void TwoBitCpxFileSignalSource::connect(gr::top_block_sptr top_block)
@@ -310,7 +307,7 @@ void TwoBitCpxFileSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr TwoBitCpxFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
-    //return gr_block_sptr();
+    // return gr_block_sptr();
     return gr::blocks::file_source::sptr();
 }
 

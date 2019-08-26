@@ -577,7 +577,7 @@ typedef struct
 
 typedef struct
 {                          /* SBAS message type */
-    int week, tow;         /* receiption time */
+    int week, tow;         /* reception time */
     int prn;               /* SBAS satellite PRN number */
     unsigned char msg[29]; /* SBAS message (226bit) padded by 0 */
 } sbsmsg_t;
@@ -912,7 +912,7 @@ typedef struct
     unsigned char buff[1200];                    /* message buffer */
     unsigned int word;                           /* word buffer for rtcm 2 */
     unsigned int nmsg2[100];                     /* message count of RTCM 2 (1-99:1-99,0:other) */
-    unsigned int nmsg3[400];                     /* message count of RTCM 3 (1-299:1001-1299,300-399:2000-2099,0:ohter) */
+    unsigned int nmsg3[400];                     /* message count of RTCM 3 (1-299:1001-1299,300-399:2000-2099,0:other) */
     char opt[256];                               /* RTCM dependent options */
 } rtcm_t;
 
@@ -1323,9 +1323,9 @@ const int STRFMT_SP3 = 16;    /* stream format: SP3 */
 const int STRFMT_RNXCLK = 17; /* stream format: RINEX CLK */
 const int STRFMT_SBAS = 18;   /* stream format: SBAS messages */
 const int STRFMT_NMEA = 19;   /* stream format: NMEA 0183 */
-//const solopt_t solopt_default;   /* default solution output options */
+// const solopt_t solopt_default;   /* default solution output options */
 
 const int MAXSTRRTK = 8; /* max number of stream in RTK server */
 
 
-#endif
+#endif  // GNSS_SDR_RTKLIB_H_

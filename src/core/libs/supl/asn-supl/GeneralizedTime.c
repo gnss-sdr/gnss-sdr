@@ -210,7 +210,8 @@ GeneralizedTime_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 	asn_app_consume_bytes_f *cb, void *app_key) {
 	GeneralizedTime_t *st = (GeneralizedTime_t *)sptr;
 	asn_enc_rval_t erval;
-	int fv, fd;	/* seconds fraction value and number of digits */
+	int fv;
+	int fd;	/* seconds fraction value and number of digits */
 	struct tm tm;
 	time_t tloc;
 
@@ -244,7 +245,8 @@ GeneralizedTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 	if(flags & XER_F_CANONICAL) {
 		GeneralizedTime_t *gt;
 		asn_enc_rval_t rv;
-		int fv, fd;		/* fractional parts */
+		int fv;
+		int fd;		/* fractional parts */
 		struct tm tm;
 
 		errno = EPERM;
@@ -304,7 +306,8 @@ asn_GT2time(const GeneralizedTime_t *st, struct tm *ret_tm, int as_gmt) {
 time_t
 asn_GT2time_prec(const GeneralizedTime_t *st, int *frac_value, int frac_digits, struct tm *ret_tm, int as_gmt) {
 	time_t tloc;
-	int fv, fd = 0;
+	int fv;
+	int fd = 0;
 
 	if(frac_value)
 		tloc = asn_GT2time_frac(st, &fv, &fd, ret_tm, as_gmt);

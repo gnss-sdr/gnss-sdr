@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2015-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -216,4 +216,3 @@ function(VOLK_ADD_TEST test_name executable_name)
   endif()
 
 endfunction()
-

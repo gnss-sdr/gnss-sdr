@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,7 +44,7 @@
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -206,7 +206,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                 {
                     int64_t bytes_to_skip = samples_to_skip * item_size_;
                     int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
-                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  //process all the samples available in the file excluding at least the last 1 ms
+                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  // process all the samples available in the file excluding at least the last 1 ms
                 }
         }
 
@@ -253,9 +253,6 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-FileSignalSource::~FileSignalSource() = default;
 
 
 void FileSignalSource::connect(gr::top_block_sptr top_block)

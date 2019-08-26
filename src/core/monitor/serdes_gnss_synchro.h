@@ -35,8 +35,9 @@
 #include "gnss_synchro.h"
 #include "gnss_synchro.pb.h"  // file created by Protocol Buffers at compile time
 #include <array>
+#include <string>
+#include <utility>
 #include <vector>
-
 
 /*!
  * \brief This class implements serialization and deserialization of

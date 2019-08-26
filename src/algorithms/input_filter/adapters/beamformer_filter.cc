@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -75,9 +75,6 @@ BeamformerFilter::BeamformerFilter(
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-BeamformerFilter::~BeamformerFilter() = default;
 
 
 void BeamformerFilter::connect(gr::top_block_sptr top_block)

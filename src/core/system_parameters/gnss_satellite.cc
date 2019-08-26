@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -91,7 +91,7 @@ bool operator==(const Gnss_Satellite& sat1, const Gnss_Satellite& sat2)
 
 
 // Copy constructor
-Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other)
+Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other) noexcept
 {
     *this = other;
 }
@@ -113,20 +113,20 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
 
 
 // Move constructor
-Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other)
+Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other) noexcept
 {
-    *this = std::move(other);
+    *this = other;
 }
 
 
 // Move assignment operator
-Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other)
+Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 {
     if (this != &other)
         {
-            this->system = std::move(other.get_system());
+            this->system = other.get_system();
             this->PRN = other.get_PRN();
-            this->block = std::move(other.get_block());
+            this->block = other.get_block();
             this->rf_link = other.get_rf_link();
         }
     return *this;
@@ -283,7 +283,6 @@ void Gnss_Satellite::set_rf_link(int32_t rf_link_)
 {
     // Set satellite's rf link. Identifies the GLONASS Frequency Channel
     rf_link = rf_link_;
-    return;
 }
 
 
@@ -655,94 +654,94 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
             switch (PRN_)
                 {
                 case 1:
-                    block_ = std::string("Compass-G1");  //!<GEO 140.0°E; launched 2010/01/16
+                    block_ = std::string("Compass-G1");  // GEO 140.0°E; launched 2010/01/16
                     break;
                 case 2:
-                    block_ = std::string("Compass-G6");  //!<GEO 80°E; launched 2012/10/25
+                    block_ = std::string("Compass-G6");  // GEO 80°E; launched 2012/10/25
                     break;
                 case 3:
-                    block_ = std::string("Compass-G7");  //!<GEO 110.5°E; launched 2016/06/12
+                    block_ = std::string("Compass-G7");  // GEO 110.5°E; launched 2016/06/12
                     break;
                 case 4:
-                    block_ = std::string("Compass-G4");  //!<GEO 160.0°E; launched 2010/10/31
+                    block_ = std::string("Compass-G4");  // GEO 160.0°E; launched 2010/10/31
                     break;
                 case 5:
-                    block_ = std::string("Compass-G5");  //!<GEO 58.75°E; launched 2012/02/24
+                    block_ = std::string("Compass-G5");  // GEO 58.75°E; launched 2012/02/24
                     break;
                 case 6:
-                    block_ = std::string("Compass-IGS01");  //!<55° inclination IGSO 118°E; launched 2010/07/31
+                    block_ = std::string("Compass-IGS01");  // 55° inclination IGSO 118°E; launched 2010/07/31
                     break;
                 case 7:
-                    block_ = std::string("Compass-IGS02");  //!<55° inclination IGSO 118°E; launched 2010/12/17
+                    block_ = std::string("Compass-IGS02");  // 55° inclination IGSO 118°E; launched 2010/12/17
                     break;
                 case 8:
-                    block_ = std::string("Compass-IGS03");  //!<55° inclination IGSO 118°E; launched 2011/04/09
+                    block_ = std::string("Compass-IGS03");  // 55° inclination IGSO 118°E; launched 2011/04/09
                     break;
                 case 9:
-                    block_ = std::string("Compass-IGS04");  //!<55° inclination IGSO 95°E; launched 2011/07/27
+                    block_ = std::string("Compass-IGS04");  // 55° inclination IGSO 95°E; launched 2011/07/27
                     break;
                 case 10:
-                    block_ = std::string("Compass-IGS05");  //!<55° inclination IGSO 118°E; launched 2011/12/01
+                    block_ = std::string("Compass-IGS05");  // 55° inclination IGSO 118°E; launched 2011/12/01
                     break;
                 case 11:
-                    block_ = std::string("Compass-M3");  //!<Slot A07; launched 2012/04/29
+                    block_ = std::string("Compass-M3");  // Slot A07; launched 2012/04/29
                     break;
                 case 12:
-                    block_ = std::string("Compass-M4");  //!<Slot A08; launched 2012/04/29
+                    block_ = std::string("Compass-M4");  // Slot A08; launched 2012/04/29
                     break;
                 case 19:
-                    block_ = std::string("BEIDOU-3 M1");  //!<Slot B-7; launched 2017/11/05
+                    block_ = std::string("BEIDOU-3 M1");  // Slot B-7; launched 2017/11/05
                     break;
                 case 20:
-                    block_ = std::string("BEIDOU-3 M2");  //!<Slot B-5; launched 2017/11/05
+                    block_ = std::string("BEIDOU-3 M2");  // Slot B-5; launched 2017/11/05
                     break;
                 case 21:
-                    block_ = std::string("BEIDOU 3M5");  //!<Slot B-?; launched 2018/02/12
+                    block_ = std::string("BEIDOU 3M5");  // Slot B-?; launched 2018/02/12
                     break;
                 case 22:
-                    block_ = std::string("BEIDOU 3M6");  //!<Slot B-6; launched 2018/02/12
+                    block_ = std::string("BEIDOU 3M6");  // Slot B-6; launched 2018/02/12
                     break;
                 case 23:
-                    block_ = std::string("BEIDOU 3M9");  //!<Slot C-7; launched 2018/07/29
+                    block_ = std::string("BEIDOU 3M9");  // Slot C-7; launched 2018/07/29
                     break;
                 case 24:
-                    block_ = std::string("BEIDOU 3M10");  //!<Slot C-1; launched 2018/07/29
+                    block_ = std::string("BEIDOU 3M10");  // Slot C-1; launched 2018/07/29
                     break;
                 case 25:
-                    block_ = std::string("BEIDOU 3M12");  //!<Slot C-8; launched 2018/08/24
+                    block_ = std::string("BEIDOU 3M12");  // Slot C-8; launched 2018/08/24
                     break;
                 case 26:
-                    block_ = std::string("BEIDOU 3M11");  //!<Slot C-2; launched 2018/08/24
+                    block_ = std::string("BEIDOU 3M11");  // Slot C-2; launched 2018/08/24
                     break;
                 case 27:
-                    block_ = std::string("BEIDOU 3M3");  //!<Slot A-?; launched 2018/01/11
+                    block_ = std::string("BEIDOU 3M3");  // Slot A-?; launched 2018/01/11
                     break;
                 case 28:
-                    block_ = std::string("BEIDOU 3M4");  //!<Slot A-?; launched 2018/01/11
+                    block_ = std::string("BEIDOU 3M4");  // Slot A-?; launched 2018/01/11
                     break;
                 case 29:
-                    block_ = std::string("BEIDOU 3M7");  //!<Slot A-?; launched 2018/03/29
+                    block_ = std::string("BEIDOU 3M7");  // Slot A-?; launched 2018/03/29
                     break;
                 case 30:
-                    block_ = std::string("BEIDOU 3M8");  //!<Slot A-?; launched 2018/03/29
+                    block_ = std::string("BEIDOU 3M8");  // Slot A-?; launched 2018/03/29
                     break;
                 case 32:
-                    block_ = std::string("BEIDOU 3M13");  //!<Slot B-1?; launched 2018/09/19
+                    block_ = std::string("BEIDOU 3M13");  // Slot B-1?; launched 2018/09/19
                     break;
                 case 33:
-                    block_ = std::string("BEIDOU 3M14");  //!<Slot B-3; launched 2018/09/19
+                    block_ = std::string("BEIDOU 3M14");  // Slot B-3; launched 2018/09/19
                     break;
                 case 34:
-                    block_ = std::string("BEIDOU 3M15");  //!<Slot B-3; launched 2018/10/15
+                    block_ = std::string("BEIDOU 3M15");  // Slot B-3; launched 2018/10/15
                     break;
                 case 35:
-                    block_ = std::string("BEIDOU 3M16");  //!<Slot B-3; launched 2018/10/15
+                    block_ = std::string("BEIDOU 3M16");  // Slot B-3; launched 2018/10/15
                     break;
                 case 36:
-                    block_ = std::string("BEIDOU 3M17");  //!<Slot B-3; launched 2018/11/18
+                    block_ = std::string("BEIDOU 3M17");  // Slot B-3; launched 2018/11/18
                     break;
                 case 37:
-                    block_ = std::string("BEIDOU 3M18");  //!<Slot B-3; launched 2018/11/18
+                    block_ = std::string("BEIDOU 3M18");  // Slot B-3; launched 2018/11/18
                     break;
                 default:
                     block_ = std::string("Unknown(Simulated)");

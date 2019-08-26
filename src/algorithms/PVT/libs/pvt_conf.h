@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -72,6 +72,8 @@ public:
     bool kml_output_enabled;
     bool xml_output_enabled;
     bool rtcm_output_file_enabled;
+
+    int32_t max_obs_block_rx_clock_offset_ms;
 
     std::string output_path;
     std::string rinex_output_path;

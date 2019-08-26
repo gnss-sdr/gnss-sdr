@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -73,7 +73,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     acq_parameters_.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
     acq_parameters_.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters_.max_dwells = max_dwells_;
@@ -151,6 +151,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
+    doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 
     num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
@@ -163,9 +164,6 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 }
-
-
-GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition() = default;
 
 
 void GpsL2MPcpsAcquisition::stop_acquisition()
@@ -214,6 +212,14 @@ void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
+void GpsL2MPcpsAcquisition::set_doppler_center(int doppler_center)
+{
+    doppler_center_ = doppler_center;
+
+    acquisition_->set_doppler_center(doppler_center_);
+}
+
+
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -231,27 +237,26 @@ signed int GpsL2MPcpsAcquisition::mag()
 void GpsL2MPcpsAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    std::unique_ptr<std::complex<float>> code{new std::complex<float>[code_length_]};
+    std::vector<std::complex<float>> code(code_length_);
 
     if (acq_parameters_.use_automatic_resampler)
         {
-            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), gnss_synchro_->PRN, acq_parameters_.resampled_fs);
+            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs);
         }
     else
         {
-            gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>>(code.get(), code_length_), gnss_synchro_->PRN, fs_in_);
+            gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
         }
 
     gsl::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
-            std::copy_n(code.get(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
+            std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());
         }
 
     acquisition_->set_local_code(code_.data());
@@ -272,7 +277,7 @@ void GpsL2MPcpsAcquisition::set_state(int state)
 
 float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
+    // Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
@@ -282,7 +287,7 @@ float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1.0 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    auto lambda = double(vector_length_);
+    auto lambda = static_cast<double>(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
     auto threshold = static_cast<float>(quantile(mydist, val));
 

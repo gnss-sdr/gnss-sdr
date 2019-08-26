@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,7 +48,7 @@ class Pvt_Solution;
 class GeoJSON_Printer
 {
 public:
-    GeoJSON_Printer(const std::string& base_path = ".");
+    explicit GeoJSON_Printer(const std::string& base_path = ".");
     ~GeoJSON_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);

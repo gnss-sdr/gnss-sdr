@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -317,10 +317,10 @@ TEST(RinexPrinterTest, GlonassObsLog)
     gs4.System = *sys.c_str();
 
     std::string sig = "1C";
-    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs4.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;
     gs2.PRN = 8;
@@ -680,16 +680,16 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
     gs8.System = *sys.c_str();
 
     std::string sig = "1C";
-    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs4.Signal), sig.c_str(), 3);
 
     sig = "1G";
-    std::memcpy((void*)gs5.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs6.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs7.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs8.Signal, sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs5.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs6.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs7.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs8.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;
     gs2.PRN = 8;

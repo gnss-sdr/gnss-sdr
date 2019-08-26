@@ -5,7 +5,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,6 +31,7 @@
 
 #include "beamformer.h"
 #include <gnuradio/io_signature.h>
+#include <cstddef>
 
 
 beamformer_sptr make_beamformer_sptr()
@@ -62,12 +63,12 @@ int beamformer::work(int noutput_items, gr_vector_const_void_star &input_items,
     //  gr_complex *ch8 = (gr_complex *) input_items[7];
 
     // NON-VOLK beamforming operation
-    //TODO: Implement VOLK SIMD-accelerated beamformer!
+    // TODO: Implement VOLK SIMD-accelerated beamformer!
     gr_complex sum;
     for (int n = 0; n < noutput_items; n++)
         {
             sum = gr_complex(0, 0);
-            for (unsigned int i = 0; i < weight_vector.size(); i++)
+            for (size_t i = 0; i < weight_vector.size(); i++)
                 {
                     sum = sum + (reinterpret_cast<const gr_complex *>(input_items[i]))[n] * weight_vector[i];
                 }

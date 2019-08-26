@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -74,7 +74,7 @@ private:
     std::string nmea_devname;
     int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
     std::shared_ptr<Rtklib_Solver> d_PVT_data;
-    int init_serial(const std::string& serial_device);  //serial port control
+    int init_serial(const std::string& serial_device);  // serial port control
     void close_serial();
     std::string get_GPGGA();  // fix data
     std::string get_GPGSV();  // satellite data

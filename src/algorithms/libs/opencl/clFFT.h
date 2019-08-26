@@ -68,7 +68,6 @@ extern "C"
     {
         clFFT_Forward = -1,
         clFFT_Inverse = 1
-
     } clFFT_Direction;
 
     // XForm dimension
@@ -77,7 +76,6 @@ extern "C"
         clFFT_1D = 0,
         clFFT_2D = 1,
         clFFT_3D = 3
-
     } clFFT_Dimension;
 
     // XForm Data type

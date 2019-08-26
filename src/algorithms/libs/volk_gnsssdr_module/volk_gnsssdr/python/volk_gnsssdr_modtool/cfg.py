@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import sys
 import os
+import exceptions
 import re
 
 from six.moves import configparser, input

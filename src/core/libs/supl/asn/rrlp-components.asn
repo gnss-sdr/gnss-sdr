@@ -36,7 +36,7 @@ MsrPosition-Req ::= SEQUENCE {
 	extensionContainer		ExtensionContainer		OPTIONAL,
 	...,
 	-- Release 98 extension element
-rel98-MsrPosition-Req-extension			Rel98-MsrPosition-Req-Extension			OPTIONAL,	
+rel98-MsrPosition-Req-extension			Rel98-MsrPosition-Req-Extension			OPTIONAL,
 	-- Release 5 extension element
 rel5-MsrPosition-Req-extension			Rel5-MsrPosition-Req-Extension			OPTIONAL
 	-- Release 7 extension element
@@ -44,7 +44,7 @@ rel5-MsrPosition-Req-extension			Rel5-MsrPosition-Req-Extension			OPTIONAL
 }
 
 
--- add this defintion to RRLP-Components module
+-- add this definition to RRLP-Components module
 
 -- Measurement Position response component
 MsrPosition-Rsp ::= SEQUENCE {
@@ -55,9 +55,9 @@ MsrPosition-Rsp ::= SEQUENCE {
 	gps-MeasureInfo			GPS-MeasureInfo			OPTIONAL,
 	locationError			LocationError			OPTIONAL,
 	extensionContainer		ExtensionContainer		OPTIONAL,
-	...,	
+	...,
 	-- Release extension here
-	rel-98-MsrPosition-Rsp-Extension		
+	rel-98-MsrPosition-Rsp-Extension
 							Rel-98-MsrPosition-Rsp-Extension		OPTIONAL,
 	rel-5-MsrPosition-Rsp-Extension
 							Rel-5-MsrPosition-Rsp-Extension		OPTIONAL
@@ -68,14 +68,14 @@ MsrPosition-Rsp ::= SEQUENCE {
 }
 
 
--- add this defintion to RRLP-Components module
+-- add this definition to RRLP-Components module
 
 -- Assistance Data component
 AssistanceData ::= SEQUENCE {
 	referenceAssistData	ReferenceAssistData			OPTIONAL,
 	msrAssistData			MsrAssistData			OPTIONAL,
 	systemInfoAssistData	SystemInfoAssistData	OPTIONAL,
-	gps-AssistData			GPS-AssistData			OPTIONAL,	
+	gps-AssistData			GPS-AssistData			OPTIONAL,
 	moreAssDataToBeSent		MoreAssDataToBeSent		OPTIONAL,	-- If not present, interpret as only
 																-- Assistance Data component used to
 																-- deliver entire set of assistance
@@ -85,15 +85,15 @@ AssistanceData ::= SEQUENCE {
 	-- Release extension here
 	rel98-AssistanceData-Extension	Rel98-AssistanceData-Extension	OPTIONAL,
 	rel5-AssistanceData-Extension	Rel5-AssistanceData-Extension	OPTIONAL
--- rel7-AssistanceData-Extension Rel7-AssistanceData-Extension OPTIONAL	
+-- rel7-AssistanceData-Extension Rel7-AssistanceData-Extension OPTIONAL
 }
 
 
--- add this defintion to RRLP-Components module
+-- add this definition to RRLP-Components module
 
 -- Protocol Error component
 ProtocolError ::= SEQUENCE {
-	errorCause				ErrorCodes,	
+	errorCause				ErrorCodes,
 	extensionContainer		ExtensionContainer		OPTIONAL,
 	...,
 	-- Release extensions here
@@ -101,15 +101,15 @@ ProtocolError ::= SEQUENCE {
 }
 
 
--- add these defintions to RRLP-Components module
+-- add these definitions to RRLP-Components module
 -- Position instructions
 PositionInstruct ::= SEQUENCE {
 	-- Method type
-	methodType				MethodType,	
+	methodType				MethodType,
 	positionMethod			PositionMethod,
-	measureResponseTime		MeasureResponseTime,		
-	useMultipleSets			UseMultipleSets,		
-	environmentCharacter	EnvironmentCharacter	OPTIONAL	
+	measureResponseTime		MeasureResponseTime,
+	useMultipleSets			UseMultipleSets,
+	environmentCharacter	EnvironmentCharacter	OPTIONAL
 }
 
 --
@@ -250,7 +250,7 @@ ReferenceWGS84 ::= SEQUENCE {
 	relativeAlt		RelativeAlt		OPTIONAL	-- relative altitude
 }
 
--- Fine RTD value between this BTS and the reference BTS	
+-- Fine RTD value between this BTS and the reference BTS
 FineRTD ::= INTEGER (0..255)
 
 -- Relative north/east distance
@@ -264,7 +264,7 @@ RelativeAlt ::= INTEGER (-4000..4000)
 -- Multiple sets
 MultipleSets ::= SEQUENCE {
 	-- number of reference sets
-	nbrOfSets			INTEGER (2..3),		
+	nbrOfSets			INTEGER (2..3),
 
 	-- This field actually tells the number of reference BTSs
 	nbrOfReferenceBTSs	INTEGER (1..3),
@@ -274,7 +274,7 @@ MultipleSets ::= SEQUENCE {
 	referenceRelation		ReferenceRelation		OPTIONAL
 }
 
--- Relation between refence BTSs and sets
+-- Relation between reference BTSs and sets
 ReferenceRelation ::= ENUMERATED {
 	secondBTSThirdSet (0),	-- 1st BTS related to 1st and 2nd sets
 	secondBTSSecondSet (1),	-- 1st BTS related to 1st and 3rd sets
@@ -369,7 +369,7 @@ OTD-FirstSetMsrs ::= OTD-MeasurementWithID
 
 -- Neighbour info in OTD measurements 0-10 times in TD measurement info
 OTD-MsrsOfOtherSets ::= CHOICE {
-	identityNotPresent	OTD-Measurement,	
+	identityNotPresent	OTD-Measurement,
 	identityPresent		OTD-MeasurementWithID
 }
 
@@ -441,7 +441,7 @@ GPS-MeasureInfo ::= SEQUENCE {
 	-- Measurement info elements
 	-- user has to make sure that in this element is number of elements
 	-- defined in reference BTS identity
-	gpsMsrSetList	SeqOfGPS-MsrSetElement	
+	gpsMsrSetList	SeqOfGPS-MsrSetElement
 }
 SeqOfGPS-MsrSetElement ::= SEQUENCE (SIZE(1..3)) OF GPS-MsrSetElement
 
@@ -472,7 +472,7 @@ GPS-MsrElement ::= SEQUENCE {
 											-- the receiver shall consider a value of 1024 to be
 											-- invalid data
 	mpathIndic		MpathIndic,					-- multipath indicator
-	pseuRangeRMSErr	INTEGER (0..63)				-- index		
+	pseuRangeRMSErr	INTEGER (0..63)				-- index
 }
 
 -- Multipath indicator
@@ -491,7 +491,7 @@ LocationError ::= SEQUENCE {
 }
 
 LocErrorReason ::= ENUMERATED {
-	unDefined (0),	
+	unDefined (0),
 	notEnoughBTSs (1),
 	notEnoughSats (2),
 	eotdLocCalAssDataMissing (3),
@@ -503,7 +503,7 @@ LocErrorReason ::= ENUMERATED {
 	refBTSForGPSNotServingBTS (9),
 	refBTSForEOTDNotServingBTS (10),
 	...,
-	notEnoughGANSSSats (11),	
+	notEnoughGANSSSats (11),
  ganssAssDataMissing (12),
 	refBTSForGANSSNotServingBTS (13)
 }
@@ -539,11 +539,11 @@ maxGANSSAssistanceData	INTEGER ::= 40
 -- Protocol Error Causes
 ErrorCodes ::= ENUMERATED {
 	unDefined (0),
-missingComponet (1),			
-incorrectData (2),			
-missingIEorComponentElement (3),		
-messageTooShort (4),			
-unknowReferenceNumber (5),		
+missingComponet (1),
+incorrectData (2),
+missingIEorComponentElement (3),
+messageTooShort (4),
+unknowReferenceNumber (5),
 ...
 }
 
@@ -655,7 +655,7 @@ DGPSCorrections ::= SEQUENCE {
 	gpsTOW		INTEGER (0..604799),	-- DGPS reference time
 	status		INTEGER (0..7),
 	-- N_SAT can be read from number of elements of satList
-	satList		SeqOfSatElement 	
+	satList		SeqOfSatElement
 }
 SeqOfSatElement ::= SEQUENCE (SIZE (1..16)) OF SatElement
 
@@ -666,20 +666,20 @@ SatElement ::= SEQUENCE {
 --- Sequence number for ephemeris
 	iode 			INTEGER (0..239),
 	-- User Differential Range Error
-	udre			INTEGER (0..3),		
+	udre			INTEGER (0..3),
 
 	-- Pseudo Range Correction, range is
 	-- -655.04 - +655.04,
-	pseudoRangeCor	INTEGER (-2047..2047), 	
+	pseudoRangeCor	INTEGER (-2047..2047),
 
 	-- Pseudo Range Rate Correction, range is
 	-- -4.064 - +4.064,
 	rangeRateCor	INTEGER (-127..127),
 
--- Delta Pseudo Range Correction 2 	
+-- Delta Pseudo Range Correction 2
 	deltaPseudoRangeCor2 	INTEGER (-127..127),	-- This IE shall be ignored by the receiver and
 													-- set to zero by the sender
-	-- Delta Pseudo Range Correction 2	
+	-- Delta Pseudo Range Correction 2
 	deltaRangeRateCor2		INTEGER (-7..7),		-- This IE shall be ignored by the receiver and
 													-- set to zero by the sender
 	-- Delta Pseudo Range Correction 3
@@ -693,14 +693,14 @@ SatElement ::= SEQUENCE {
 SatelliteID ::= INTEGER (0..63)	-- identifies satellite
 -- Navigation Model IE
 NavigationModel ::= SEQUENCE {
-	navModelList	SeqOfNavModelElement	
+	navModelList	SeqOfNavModelElement
 }
 
 -- navigation model satellite list
 SeqOfNavModelElement ::= SEQUENCE (SIZE(1..16)) OF NavModelElement
 
 NavModelElement ::= SEQUENCE {
-	satelliteID		SatelliteID,			
+	satelliteID		SatelliteID,
 	satStatus		SatStatus		-- satellite status
 }
 
@@ -790,7 +790,7 @@ Almanac ::= SEQUENCE {
 
 	-- navigation model satellite list.
 	-- The size of almanacList is actually Nums_Sats_Total field
-	almanacList		SeqOfAlmanacElement		
+	almanacList		SeqOfAlmanacElement
 }
 SeqOfAlmanacElement ::= SEQUENCE (SIZE(1..64)) OF AlmanacElement
 
@@ -818,7 +818,7 @@ AcquisAssist ::= SEQUENCE {
 
 	-- Acquisition assistance list
 	-- The size of Number of Satellites is actually Number of Satellites field
-	acquisList		SeqOfAcquisElement		
+	acquisList		SeqOfAcquisElement
 }
 SeqOfAcquisElement ::= SEQUENCE (SIZE(1..16)) OF AcquisElement
 
@@ -829,13 +829,13 @@ TimeRelation ::= SEQUENCE {
 	gsmTime		GSMTime		OPTIONAL
 }
 
--- data occuring per number of satellites
+-- data occurring per number of satellites
 AcquisElement ::= SEQUENCE {
 	svid					SatelliteID,
 
 	-- Doppler 0th order term,
 	-- -5120.0 - 5117.5 Hz (= -2048 - 2047 with 2.5 Hz resolution)
-	doppler0				INTEGER (-2048..2047),	
+	doppler0				INTEGER (-2048..2047),
 	addionalDoppler			AddionalDopplerFields	OPTIONAL,
 	codePhase				INTEGER (0..1022),	-- Code Phase
 	intCodePhase			INTEGER (0..19),	-- Integer Code Phase
@@ -869,15 +869,15 @@ SeqOf-BadSatelliteSet ::= SEQUENCE (SIZE(1..16)) OF SatelliteID
 -- Release 98 Extensions here
 Rel98-MsrPosition-Req-Extension ::= SEQUENCE {
 	rel98-Ext-ExpOTD			Rel98-Ext-ExpOTD		OPTIONAL,	-- ExpectedOTD extension
-	..., 
- gpsTimeAssistanceMeasurementRequest NULL OPTIONAL, 
+	...,
+ gpsTimeAssistanceMeasurementRequest NULL OPTIONAL,
  gpsReferenceTimeUncertainty GPSReferenceTimeUncertainty OPTIONAL
 
 -- Further R98 extensions here
 }
 Rel98-AssistanceData-Extension ::= SEQUENCE {
 	rel98-Ext-ExpOTD			Rel98-Ext-ExpOTD		OPTIONAL,	-- ExpectedOTD extension
-	..., 
+	...,
  gpsTimeAssistanceMeasurementRequest NULL OPTIONAL,
  gpsReferenceTimeUncertainty GPSReferenceTimeUncertainty OPTIONAL
 
@@ -939,7 +939,7 @@ AssistBTSData-R98-ExpOTD ::= SEQUENCE {
 ExpectedOTD ::= INTEGER (0..1250)
 -- The ExpectedOTD value 1250 shall not be encoded by the transmitting entity and
 -- shall be treated by the receiving entity as 0.
--- Uncertainty of Exptected OTD in bits
+-- Uncertainty of Expected OTD in bits
 ExpOTDUncertainty ::= INTEGER(0..7)
 
 -- Release 98 extensions
@@ -959,8 +959,8 @@ Rel-98-MsrPosition-Rsp-Extension ::= SEQUENCE {
 	rel-98-Ext-MeasureInfo	SEQUENCE {
 		otd-MeasureInfo-R98-Ext	OTD-MeasureInfo-R98-Ext		OPTIONAL
 	},
-	..., 
- timeAssistanceMeasurements GPSTimeAssistanceMeasurements OPTIONAL 
+	...,
+ timeAssistanceMeasurements GPSTimeAssistanceMeasurements OPTIONAL
  -- Further R98 extensions here
 }
 
@@ -1049,7 +1049,7 @@ velocityRequested		 NULL		 OPTIONAL,
  ganssTODGSMTimeAssociationMeasurementRequest NULL OPTIONAL,
 requiredResponseTime	RequiredResponseTime	OPTIONAL,
 	...
-	-- Further Release 7 extentions here
+	-- Further Release 7 extensions here
 }
 
 -- additional satellite systems may be added in future versions of the protocol
@@ -1113,7 +1113,7 @@ GANSSTOD ::= INTEGER (0 .. 86399)
 -- GANSS TOD uncertainty
 GANSSTODUncertainty ::= INTEGER (0 .. 127) -- Coding according to Annex
 
--- GANSS TOD-GSM Time association 
+-- GANSS TOD-GSM Time association
 GANSSTOD-GSMTimeAssociation ::= SEQUENCE {
 	bcchCarrier		BCCHCarrier,	-- BCCH carrier
 	bsic			BSIC,			-- BSIC
@@ -1140,7 +1140,7 @@ GANSSIonosphericModel ::= SEQUENCE {
  ...
 }
 
--- GANSS ionosphere model. Coding according to Annex 
+-- GANSS ionosphere model. Coding according to Annex
 GANSSIonosphereModel ::= SEQUENCE {
  ai0 INTEGER (0 .. 4095),
  ai1 INTEGER (0 .. 4095),
@@ -1169,7 +1169,7 @@ GANSSTimeModelElement ::= SEQUENCE {
 	tA1		 TA1 OPTIONAL,
 	tA2		 TA2 OPTIONAL,
  gnssTOID INTEGER (0 .. 7),
- weekNumber INTEGER (0 .. 8191) OPTIONAL 
+ weekNumber INTEGER (0 .. 8191) OPTIONAL
 }
 
 -- GANSS time model parameter A0
@@ -1210,11 +1210,11 @@ DGANSSSgnElement ::= SEQUENCE {
 	iod 			INTEGER (0 .. 1023),
 
 	-- User Differential Range Error
-	udre			INTEGER (0..3),		
+	udre			INTEGER (0..3),
 
 	-- Pseudo Range Correction, range is
 	-- -655.04 - +655.04,
-	pseudoRangeCor	INTEGER (-2047..2047), 	
+	pseudoRangeCor	INTEGER (-2047..2047),
 
 	-- Pseudo Range Rate Correction, range is
 	-- -4.064 - +4.064,
@@ -1226,7 +1226,7 @@ SVID ::= INTEGER (0 .. 63)	-- Coding according to Annex
 -- GANSS Navigation Model IE
 GANSSNavModel ::= SEQUENCE {
  nonBroadcastIndFlag INTEGER (0 .. 1),
- toeMSB INTEGER (0 .. 31) OPTIONAL, -- 5 MSB of toe and toc 
+ toeMSB INTEGER (0 .. 31) OPTIONAL, -- 5 MSB of toe and toc
  eMSB INTEGER (0 .. 127) OPTIONAL,
  sqrtAMBS INTEGER (0 .. 63) OPTIONAL,
 	ganssSatelliteList SeqOfGANSSSatelliteElement
@@ -1238,14 +1238,14 @@ GANSSSatelliteElement ::= SEQUENCE {
 	svID SVID,
  svHealth INTEGER (-7 .. 13), -- Coding according to Annex
  iod INTEGER (0 .. 1023), -- Coding according to Annex
- ganssClockModel GANSSClockModel, 
- ganssOrbitModel GANSSOrbitModel, 
+ ganssClockModel GANSSClockModel,
+ ganssOrbitModel GANSSOrbitModel,
  ...
 }
 
 -- GANSS orbit model for the GNSS satellite according to the choice
 GANSSOrbitModel ::= CHOICE {
-	keplerianSet	 NavModel-KeplerianSet,	
+	keplerianSet	 NavModel-KeplerianSet,
  ...
 }
 
@@ -1271,7 +1271,7 @@ NavModel-KeplerianSet ::= SEQUENCE {
 
 -- GANSS clock model for the GNSS satellite according to the choice
 GANSSClockModel ::= CHOICE {
-	standardClockModelList	 SeqOfStandardClockModelElement,	
+	standardClockModelList	 SeqOfStandardClockModelElement,
  ...
 }
 
@@ -1279,13 +1279,13 @@ SeqOfStandardClockModelElement ::= SEQUENCE (SIZE(1..2)) OF StandardClockModelEl
 
 StandardClockModelElement ::= SEQUENCE {
  stanClockTocLSB INTEGER (0 .. 511), -- 9LSB of time of clock
- stanClockAF2 INTEGER (-2048 .. 2047), 
- stanClockAF1 INTEGER (-131072 .. 131071), 
+ stanClockAF2 INTEGER (-2048 .. 2047),
+ stanClockAF1 INTEGER (-131072 .. 131071),
  stanClockAF0 INTEGER (-134217728 .. 134217727),
  stanClockTgd INTEGER (-512 .. 511) OPTIONAL,
  stanModelID INTEGER (0 .. 1) OPTIONAL,
  ...
-} 
+}
 
 -- GANSS Real-Time Integrity IE
 GANSSRealTimeIntegrity ::= SEQUENCE {
@@ -1316,7 +1316,7 @@ SeqOf-GANSSDataBits ::= SEQUENCE (SIZE(1 .. 1024)) OF GANSSDataBit
 GANSSDataBit ::= INTEGER(0 .. 1)
 
 -- GANSS Reference Measurement Assistance IE
--- Code and Doppler assistance from the network. 
+-- Code and Doppler assistance from the network.
 GANSSRefMeasurementAssist ::= SEQUENCE {
  ganssSignalID INTEGER (0 .. 3) OPTIONAL, -- Coding according to Annex
  ganssRefMeasAssitList SeqOfGANSSRefMeasurementElement
@@ -1357,9 +1357,9 @@ SVIDMASK ::= BIT STRING (SIZE (1..36))
 
 SeqOfGANSSAlmanacElement ::= SEQUENCE (SIZE(1 .. 36)) OF GANSSAlmanacElement
 
--- GANSS Almanac Model 
+-- GANSS Almanac Model
 GANSSAlmanacElement ::= CHOICE {
-	keplerianAlmanacSet	 Almanac-KeplerianSet,	
+	keplerianAlmanacSet	 Almanac-KeplerianSet,
  ...
 }
 
@@ -1389,7 +1389,7 @@ GANSSUTCModel ::= SEQUENCE {
 	ganssUtcDeltaTlsf	INTEGER (-128..127)
 }
 
---Required Measurement Request Response Time, range is 1 to 128 seconds. 
+--Required Measurement Request Response Time, range is 1 to 128 seconds.
 RequiredResponseTime ::= INTEGER  (1..128)
 
 Rel-7-MsrPosition-Rsp-Extension ::= SEQUENCE {
@@ -1405,7 +1405,7 @@ Rel-7-MsrPosition-Rsp-Extension ::= SEQUENCE {
 -- Further Release 7 extensions here
 }
 
--- GANSS Location Information contains location estimate, time stamp with uncertainty 
+-- GANSS Location Information contains location estimate, time stamp with uncertainty
 -- and optionally Reference Frame field
 GANSSLocationInfo ::= SEQUENCE {
  referenceFrame ReferenceFrame OPTIONAL, -- Reference Frame Number
@@ -1415,7 +1415,7 @@ GANSSLocationInfo ::= SEQUENCE {
  ganssTimeID INTEGER (0 .. 3) OPTIONAL, -- Coding according to Annex
 	fixType			 FixType,
  posData PositionData,
- stationaryIndication INTEGER(0 .. 1) OPTIONAL, -- ‘0’ if moving or motion not known 
+ stationaryIndication INTEGER(0 .. 1) OPTIONAL, -- ‘0’ if moving or motion not known
 	-- Possible shapes carried in posEstimate are
 	-- ellipsoid point,
 	-- ellipsoid point with uncertainty circle
@@ -1442,7 +1442,7 @@ ReferenceFrame ::= SEQUENCE {
 
 
 
--- GANSS Measurement Information 
+-- GANSS Measurement Information
 GANSSMeasureInfo ::= SEQUENCE {
 	-- Measurement info elements
 	-- user has to make sure that in this element is number of elements
@@ -1456,22 +1456,22 @@ GANSS-MsrSetElement ::= SEQUENCE {
  referenceFrame ReferenceFrame OPTIONAL, -- Reference Frame Number
  ganssTODm GANSSTODm OPTIONAL, -- GANSS TOD modulo
  deltaGNASSTOD INTEGER (0 .. 127) OPTIONAL,
-	ganssTODUncertainty GANSSTODUncertainty OPTIONAL, -- Coding accoring to Annex
+	ganssTODUncertainty GANSSTODUncertainty OPTIONAL, -- Coding according to Annex
 
  --N_SGN_TYPE can be read from number of elements of SeqOfGANSS-SgnTypeElement
  ganss-SgnTypeList SeqOfGANSS-SgnTypeElement
 }
 
--- Measurements can be returned up to 6 different signal types 
+-- Measurements can be returned up to 6 different signal types
 SeqOfGANSS-SgnTypeElement ::= SEQUENCE (SIZE(1..6)) OF GANSS-SgnTypeElement
 
 GANSS-SgnTypeElement ::= SEQUENCE {
-	ganssSignalID		INTEGER (0 .. 15), -- Coding accroding to Annex
+	ganssSignalID		INTEGER (0 .. 15), -- Coding according to Annex
  --N_SGN can be read from number of elements of SeqOfGANSS-SgnElement
  ganss-SgnList SeqOfGANSS-SgnElement
 }
 
--- Measurements can be returned up to 16 per signal types 
+-- Measurements can be returned up to 16 per signal types
 SeqOfGANSS-SgnElement ::= SEQUENCE (SIZE(1..16)) OF GANSS-SgnElement
 
 
@@ -1482,7 +1482,7 @@ GANSS-SgnElement ::= SEQUENCE {
  carrierQualityInd INTEGER (0 .. 3) OPTIONAL, -- Coding according to Annex
  codePhase INTEGER (0 .. 2097151),
  integerCodePhase INTEGER (0 .. 63) OPTIONAL,
- codePhaseRMSError INTEGER (0..63), -- Coding accoring to Annex
+ codePhaseRMSError INTEGER (0..63), -- Coding according to Annex
  doppler INTEGER (-32768 .. 32767) OPTIONAL,
  adr INTEGER (0 .. 33554431) OPTIONAL
 }

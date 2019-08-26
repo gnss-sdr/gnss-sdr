@@ -45,13 +45,10 @@
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
 #include <iostream>
-
-
-#define NUM_PRNs 32
-
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -59,7 +56,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 {
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -98,20 +95,20 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.pll_bw_narrow_hz = 0.0;
     trk_param_fpga.dll_bw_narrow_hz = 0.0;
     trk_param_fpga.system = 'G';
-    char sig_[3] = "2S";
-    std::memcpy(trk_param_fpga.signal, sig_, 3);
-    int cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
-    trk_param_fpga.cn0_samples = cn0_samples;
-    int cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
-    trk_param_fpga.cn0_min = cn0_min;
-    int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
-    trk_param_fpga.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
-    if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
-    trk_param_fpga.carrier_lock_th = carrier_lock_th;
+    std::array<char, 3> sig_{'2', 'S', '\0'};
+    std::memcpy(trk_param_fpga.signal, sig_.data(), 3);
+    trk_param_fpga.cn0_samples = configuration->property(role + ".cn0_samples", trk_param_fpga.cn0_samples);
+    trk_param_fpga.cn0_min = configuration->property(role + ".cn0_min", trk_param_fpga.cn0_min);
+    trk_param_fpga.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param_fpga.max_code_lock_fail);
+    trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
+    trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
+
+    //    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
+    //    if (FLAGS_max_lock_fail != 50)
+    //        {
+    //            max_lock_fail = FLAGS_max_lock_fail;
+    //        }
+    //    trk_param_fpga.max_lock_fail = max_lock_fail;
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";
@@ -119,14 +116,12 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.device_name = device_name;
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
-    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
-    trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     auto* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    //################# PRE-COMPUTE ALL THE CODES #################
+    // ################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
+    for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l2c_m_code_gen_float(gsl::span<float>(ca_codes_f, static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS)), PRN);
             for (unsigned int s = 0; s < 2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)
@@ -141,11 +136,20 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.code_length_chips = GPS_L2_M_CODE_LENGTH_CHIPS;
     trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
-    //################# MAKE TRACKING GNU Radio object ###################
+    // ################# MAKE TRACKING GNU Radio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
 
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
+
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
@@ -163,6 +167,7 @@ void GpsL2MDllPllTrackingFpga::start_tracking()
 
 void GpsL2MDllPllTrackingFpga::stop_tracking()
 {
+    tracking_fpga_sc->stop_tracking();
 }
 
 

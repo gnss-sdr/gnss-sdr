@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -69,7 +69,6 @@ public:
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
 
 private:
-    int count_valid_position;
     bool d_flag_dump_enabled;
     std::string d_dump_filename;
     std::ofstream d_dump_file;

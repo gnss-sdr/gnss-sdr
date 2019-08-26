@@ -43,6 +43,10 @@
 #ifndef GNSS_SDR_NONLINEAR_TRACKING_H_
 #define GNSS_SDR_NONLINEAR_TRACKING_H_
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
 #include "tracking_models.h"
@@ -52,9 +56,9 @@ class GaussianFilter
 public:
     // Constructors and destructors
     GaussianFilter();
-    GaussianFilter(int nx);
+    explicit GaussianFilter(int nx);
     GaussianFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
-    ~GaussianFilter();
+    ~GaussianFilter() = default;
 
     // Reinitialization function
     void initialize(const arma::mat& x_pred_0, const arma::mat& P_x_pred_0);

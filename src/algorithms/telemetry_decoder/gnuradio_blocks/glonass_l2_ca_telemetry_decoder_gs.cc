@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,8 +39,7 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cmath>            // for floor, round
-#include <cstdlib>          // for abs, malloc
-#include <cstring>          // for memcpy
+#include <cstdlib>          // for abs
 #include <exception>        // for exception
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
@@ -60,7 +59,7 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     bool dump) : gr::block("glonass_l2_ca_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
@@ -70,19 +69,8 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L2 CA TELEMETRY DECODING";
-    // Define the number of sampes per symbol. Notice that GLONASS has 2 rates,
-    // one for the navigation data and the other for the preamble information
-    d_samples_per_symbol = (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS) / GLONASS_L2_CA_SYMBOL_RATE_BPS;
-
-    // Set the preamble information
-    uint16_t preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
-    // Since preamble rate is different than navigation data rate we use a constant
-    d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
-
-    memcpy(static_cast<uint16_t *>(this->d_preambles_bits), static_cast<uint16_t *>(preambles_bits), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(uint16_t));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
     int32_t n = 0;
     for (uint16_t d_preambles_bit : d_preambles_bits)
         {
@@ -104,9 +92,7 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     d_sample_counter = 0ULL;
     d_stat = 0;
     d_preamble_index = 0ULL;
-
     d_flag_frame_sync = false;
-
     d_flag_parity = false;
     d_TOW_at_current_symbol = 0;
     Flag_valid_word = false;
@@ -121,7 +107,6 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
 
 glonass_l2_ca_telemetry_decoder_gs::~glonass_l2_ca_telemetry_decoder_gs()
 {
-    delete d_preambles_symbols;
     if (d_dump_file.is_open() == true)
         {
             try
@@ -351,7 +336,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
                     int32_t string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
-                    double string_symbols[GLONASS_GNAV_DATA_SYMBOLS] = {0};
+                    std::array<double, GLONASS_GNAV_DATA_SYMBOLS> string_symbols{};
 
                     // ******* SYMBOL TO BIT *******
                     for (int32_t i = 0; i < string_length; i++)
@@ -367,7 +352,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         }
 
                     // call the decoder
-                    decode_string(string_symbols, string_length);
+                    decode_string(string_symbols.data(), string_length);
                     if (d_nav.flag_CRC_test == true)
                         {
                             d_CRC_error_counter = 0;

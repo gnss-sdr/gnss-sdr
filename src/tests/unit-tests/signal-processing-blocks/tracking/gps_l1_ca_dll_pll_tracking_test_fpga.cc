@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -83,7 +83,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
             return;
         }
 
-    buffer_DMA = (char *)malloc(DMA_TRACK_TRANSFER_SIZE);
+    buffer_DMA = reinterpret_cast<char *>(malloc(DMA_TRACK_TRANSFER_SIZE));
     if (!buffer_DMA)
         {
             std::cerr << "Memory error!" << std::endl;
@@ -152,7 +152,7 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
 
     usleep(FIVE_SECONDS);  // wait for some time to give time to the other thread to program the device
 
-    //send_tracking_gps_input_samples(dma_descr, rx_signal_file, file_length);
+    // send_tracking_gps_input_samples(dma_descr, rx_signal_file, file_length);
     send_tracking_gps_input_samples(rx_signal_file, file_length, top_block);
 
     fclose(rx_signal_file);
@@ -176,7 +176,7 @@ private:
 
 public:
     int rx_message;
-    ~GpsL1CADllPllTrackingTestFpga_msg_rx();  //!< Default destructor
+    ~GpsL1CADllPllTrackingTestFpga_msg_rx() override;  //!< Default destructor
 };
 
 
@@ -209,8 +209,8 @@ GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : g
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
         boost::bind(
-                              &GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events,
-                              this, _1));
+            &GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events,
+            this, _1));
     rx_message = 0;
 }
 
@@ -252,7 +252,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CADllPllTrackingTestFpga() = default;
+    ~GpsL1CADllPllTrackingTestFpga() override = default;
 
     void configure_receiver();
 
@@ -280,7 +280,7 @@ int GpsL1CADllPllTrackingTestFpga::configure_generator()
         }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
     return 0;
 }
 
@@ -374,7 +374,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     arma::vec &true_time_s, arma::vec &true_value, arma::vec &meas_time_s,
     arma::vec &meas_value)
 {
-    //1. True value interpolation to match the measurement times
+    // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
     arma::uvec true_time_s_valid = find(true_time_s > 0);
     true_time_s = true_time_s(true_time_s_valid);
@@ -452,9 +452,10 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     configure_generator();
 
     // DO not generate signal raw signal samples and observations RINEX file by default
-    //generate_signal();
+    // generate_signal();
 
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
     std::chrono::duration<double> elapsed_seconds(0);
 
     configure_receiver();
@@ -476,7 +477,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Tracking test");
-    //std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga> (config.get(), "Tracking_1C", 1, 1);
+    // std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga> (config.get(), "Tracking_1C", 1, 1);
     std::shared_ptr<GpsL1CaDllPllTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
@@ -541,7 +542,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         {
             start = std::chrono::system_clock::now();
             top_block->run();  // Start threads and wait
-            //tracking->reset();// unlock the channel
+            // tracking->reset();  // unlock the channel
             end = std::chrono::system_clock::now();
             elapsed_seconds = end - start;
         })

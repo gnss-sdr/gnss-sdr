@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -78,23 +78,23 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
     gr_complex* d_correlator_outs;
 
     int d_n_correlator_taps = 3;
-    int d_vector_length = correlation_sizes[2];  //max correlation size to allocate all the necessary memory
+    int d_vector_length = correlation_sizes[2];  // max correlation size to allocate all the necessary memory
     float* d_local_code_shift_chips;
     // Set GPU flags
     cudaSetDeviceFlags(cudaDeviceMapHost);
-    //allocate host memory
-    //pinned memory mode - use special function to get OS-pinned memory
+    // allocate host memory
+    // pinned memory mode - use special function to get OS-pinned memory
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    cudaHostAlloc((void**)&d_ca_code, (static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&d_ca_code), (static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped | cudaHostAllocWriteCombined);
     // Get space for the resampled early / prompt / late local replicas
-    cudaHostAlloc((void**)&d_local_code_shift_chips, d_n_correlator_taps * sizeof(float), cudaHostAllocMapped | cudaHostAllocWriteCombined);
-    cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&d_local_code_shift_chips), d_n_correlator_taps * sizeof(float), cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&in_gpu), 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped | cudaHostAllocWriteCombined);
     // correlator outputs (scalar)
-    cudaHostAlloc((void**)&d_correlator_outs, sizeof(gr_complex) * d_n_correlator_taps, cudaHostAllocMapped | cudaHostAllocWriteCombined);
+    cudaHostAlloc(reinterpret_cast<void**>(&d_correlator_outs), sizeof(gr_complex) * d_n_correlator_taps, cudaHostAllocMapped | cudaHostAllocWriteCombined);
 
-    //--- Perform initializations ------------------------------
-    //local code resampler on GPU
+    // --- Perform initializations ------------------------------
+    // local code resampler on GPU
     // generate local reference (1 sample per chip)
     gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS)), 1, 0);
     // generate inut signal
@@ -125,10 +125,10 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
                 {
                     std::cout << "Running " << current_max_threads << " concurrent correlators" << std::endl;
                     start = std::chrono::system_clock::now();
-                    //create the concurrent correlator threads
+                    // create the concurrent correlator threads
                     for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
                         {
-                            //cudaProfilerStart();
+                            // cudaProfilerStart();
                             thread_pool.push_back(std::thread(run_correlator_gpu,
                                 correlator_pool[current_thread],
                                 d_rem_carrier_phase_rad,
@@ -137,9 +137,9 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
                                 d_rem_code_phase_chips,
                                 correlation_sizes[correlation_sizes_idx],
                                 d_n_correlator_taps));
-                            //cudaProfilerStop();
+                            // cudaProfilerStop();
                         }
-                    //wait the threads to finish they work and destroy the thread objects
+                    // wait the threads to finish they work and destroy the thread objects
                     for (auto& t : thread_pool)
                         {
                             t.join();

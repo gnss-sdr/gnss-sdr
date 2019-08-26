@@ -1,12 +1,11 @@
 /*!
  * \file gps_l2c_telemetry_decoder_gs.cc
- * \brief Implementation of a NAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
+ * \brief Implementation of a NAV message demodulator block
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -60,7 +59,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    //prevent telemetry symbols accumulation in output buffers
+    // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
@@ -68,8 +67,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
-    d_max_symbols_without_valid_frame = GPS_L2_CNAV_DATA_PAGE_BITS * GPS_L2_SYMBOLS_PER_BIT * 5;  //rise alarm if 5 consecutive subframes have no valid CRC
-
+    d_max_symbols_without_valid_frame = GPS_L2_CNAV_DATA_PAGE_BITS * GPS_L2_SYMBOLS_PER_BIT * 5;  // rise alarm if 5 consecutive subframes have no valid CRC
 
     // initialize internal vars
     d_dump = dump;
@@ -80,7 +78,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
     d_flag_valid_word = false;
     d_TOW_at_current_symbol = 0;
     d_TOW_at_Preamble = 0;
-    d_state = 0;  //initial state
+    d_state = 0;  // initial state
     d_crc_error_count = 0;
 
     // initialize the CNAV frame decoder (libswiftcnav)
@@ -172,7 +170,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  //bad telemetry
+                    int message = 1;  // bad telemetry
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
                 }
@@ -227,7 +225,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // \code
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
-            //d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
+            // d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
         }
     else

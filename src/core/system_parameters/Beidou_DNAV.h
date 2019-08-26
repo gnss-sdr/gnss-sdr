@@ -33,23 +33,31 @@
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
-const double BEIDOU_DNAV_C_M_S = 299792458.0;         //!< The speed of light, [m/s]
-const double BEIDOU_DNAV_C_M_MS = 299792.4580;        //!< The speed of light, [m/ms]
-const double BEIDOU_DNAV_PI = 3.1415926535898;        //!< Pi
-const double BEIDOU_DNAV_TWO_PI = 6.283185307179586;  //!< 2Pi
+const double BEIDOU_DNAV_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
+const double BEIDOU_DNAV_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
+const double BEIDOU_DNAV_PI = 3.1415926535898;            //!< BeiDou DNAV Pi
+const double BEIDOU_DNAV_TWO_PI = 6.2831853071796;        //!< BeiDou DNAV 2Pi
+const double BEIDOU_DNAV_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
+const double BEIDOU_DNAV_GM = 3.986004418e14;             //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] as defined in CGCS2000
+const double BEIDOU_DNAV_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)] F=-2(GM)^.5/C^2
+
 const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
 const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
-const double BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
-const double BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
-const double BEIDOU_DNAV_DATA_BITS = 300;
-const double BEIDOU_DNAV_WORDS_SUBFRAME = 10;
-const double BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
-const double BEIDOU_D1NAV_SYMBOL_RATE_SPS = 50;
-const double BEIDOU_D2NAV_SYMBOL_RATE_SPS = 500;
+const int32_t BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
+const uint32_t BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
+const int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
+const uint32_t BEIDOU_DNAV_WORDS_SUBFRAME = 10;
+const uint32_t BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
 const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
+
+// Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
+const int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
+// Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch
+const int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
 // GENERAL
@@ -90,7 +98,7 @@ const double D1_CIS_LSB = TWO_N31;
 const double D1_IDOT_LSB = PI_TWO_N43;
 const double D1_OMEGA0_LSB = PI_TWO_N31;
 const double D1_OMEGA_LSB = PI_TWO_N31;
-//ALM
+// ALM
 const double D1_SQRT_A_ALMANAC_LSB = TWO_N11;
 const double D1_A1_ALMANAC_LSB = TWO_N38;
 const double D1_A0_ALMANAC_LSB = TWO_N20;
@@ -131,7 +139,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_A0({{226, 7}, {241, 17}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1({{258, 5}, {271, 17}});
 const std::vector<std::pair<int32_t, int32_t> > D1_AODE({{288, 5}});
 
-//SUBFRAME 2
+// SUBFRAME 2
 const std::vector<std::pair<int32_t, int32_t> > D1_DELTA_N({{43, 10}, {61, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_CUC({{67, 16}, {91, 2}});
 const std::vector<std::pair<int32_t, int32_t> > D1_M0({{93, 20}, {121, 12}});
@@ -142,7 +150,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_CRS({{225, 8}, {241, 10}});
 const std::vector<std::pair<int32_t, int32_t> > D1_SQRT_A({{251, 12}, {271, 20}});
 const std::vector<std::pair<int32_t, int32_t> > D1_TOE_SF2({{291, 2}});
 
-//SUBFRAME 3
+// SUBFRAME 3
 const std::vector<std::pair<int32_t, int32_t> > D1_TOE_SF3({{43, 10}, {61, 5}});
 const std::vector<std::pair<int32_t, int32_t> > D1_I0({{66, 17}, {91, 15}});
 const std::vector<std::pair<int32_t, int32_t> > D1_CIC({{106, 7}, {121, 11}});
@@ -152,7 +160,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_IDOT({{190, 13}, {211, 1}});
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA0({{212, 21}, {241, 11}});
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA({{252, 11}, {271, 21}});
 
-//SUBFRAME 4 AND PAGES 1 THROUGH 6 IN SUBFRAME 5
+// SUBFRAME 4 AND PAGES 1 THROUGH 6 IN SUBFRAME 5
 const std::vector<std::pair<int32_t, int32_t> > D1_SQRT_A_ALMANAC({{51, 2}, {61, 22}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1_ALMANAC({{91, 11}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A0_ALMANAC({{102, 11}});
@@ -164,7 +172,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA_DOT_ALMANAC({{202, 1}, 
 const std::vector<std::pair<int32_t, int32_t> > D1_OMEGA_ALMANAC({{227, 6}, {241, 18}});
 const std::vector<std::pair<int32_t, int32_t> > D1_M0_ALMANAC({{259, 4}, {271, 20}});
 
-//SUBFRAME 5 PAGE 7
+// SUBFRAME 5 PAGE 7
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA1({{51, 2}, {61, 7}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA2({{68, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA3({{77, 6}, {91, 3}});
@@ -185,7 +193,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_HEA17({{251, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA18({{260, 3}, {271, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA19({{277, 9}});
 
-//SUBFRAME 5 PAGE 8
+// SUBFRAME 5 PAGE 8
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA20({{51, 2}, {61, 7}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA21({{68, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_HEA22({{77, 6}, {91, 3}});
@@ -200,7 +208,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_HEA30({{181, 9}});
 const std::vector<std::pair<int32_t, int32_t> > D1_WNA({{190, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_TOA2({{198, 5}, {211, 3}});
 
-//SUBFRAME 5 PAGE 9
+// SUBFRAME 5 PAGE 9
 const std::vector<std::pair<int32_t, int32_t> > D1_A0GPS({{97, 14}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1GPS({{111, 2}, {121, 14}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A0GAL({{135, 8}, {151, 6}});
@@ -208,7 +216,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_A1GAL({{157, 16}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A0GLO({{181, 14}});
 const std::vector<std::pair<int32_t, int32_t> > D1_A1GLO({{195, 8}, {211, 8}});
 
-//SUBFRAME 5 PAGE 10
+// SUBFRAME 5 PAGE 10
 const std::vector<std::pair<int32_t, int32_t> > D1_DELTA_T_LS({{51, 2}, {61, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_DELTA_T_LSF({{67, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_WN_LSF({{75, 8}});

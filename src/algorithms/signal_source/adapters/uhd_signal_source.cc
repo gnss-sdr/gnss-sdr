@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,7 +42,7 @@
 
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -60,7 +60,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         {
             dev_addr["addr"] = device_address_;
         }
-    //filter the device by serial number if required (useful for USB devices)
+    // filter the device by serial number if required (useful for USB devices)
     std::string device_serial = configuration->property(role + ".device_serial", empty);
     if (empty != device_serial)  // if not empty
         {
@@ -101,7 +101,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
                 }
         }
     // 1. Make the uhd driver instance
-    //uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
+    // uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
 
     // single source
     // param: device_addr the address to identify the hardware
@@ -182,12 +182,12 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             std::cout << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i) << std::endl;
             LOG(INFO) << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i);
 
-            //5.  Set the bandpass filter on the RF frontend
+            // 5.  Set the bandpass filter on the RF frontend
             std::cout << boost::format("Setting RF bandpass filter bandwidth to: %f [Hz]...") % IF_bandwidth_hz_.at(i) << std::endl;
             uhd_source_->set_bandwidth(IF_bandwidth_hz_.at(i), i);
 
-            //set the antenna (optional)
-            //uhd_source_->set_antenna(ant);
+            // set the antenna (optional)
+            // uhd_source_->set_antenna(ant);
 
             // We should wait? #include <boost/thread.hpp>
             // boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -206,17 +206,16 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
                         {
                             std::cout << "UNLOCKED!" << std::endl;
                         }
-                    //UHD_ASSERT_THROW(lo_locked.to_bool());
+                    // UHD_ASSERT_THROW(lo_locked.to_bool());
                 }
         }
-
 
     for (int i = 0; i < RF_channels_; i++)
         {
             if (samples_.at(i) != 0ULL)
                 {
                     LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
-                    valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
+                    valve_.emplace_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 
@@ -236,9 +235,6 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-
-UhdSignalSource::~UhdSignalSource() = default;
 
 
 void UhdSignalSource::connect(gr::top_block_sptr top_block)
@@ -294,7 +290,7 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr UhdSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
-    //return gr_basic_block_sptr();
+    // return gr_basic_block_sptr();
     return gr::uhd::usrp_source::sptr();
 }
 
@@ -307,7 +303,7 @@ gr::basic_block_sptr UhdSignalSource::get_right_block()
 
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
-    //TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
+    // TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
     if (samples_.at(RF_channel) != 0ULL)
         {
             return valve_.at(RF_channel);

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,8 +43,8 @@
 class StringConverter
 {
 public:
-    StringConverter();
-    virtual ~StringConverter();
+    StringConverter() = default;
+    ~StringConverter() = default;
 
     bool convert(const std::string& value, bool default_value);
     int64_t convert(const std::string& value, int64_t default_value);

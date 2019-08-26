@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,7 @@
 
 #include "direct_resampler_conditioner_cs.h"
 #include <gnuradio/io_signature.h>
+#include <algorithm>  // for min
 
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
@@ -69,9 +70,6 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
     set_output_multiple(1);
 }
-
-
-direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs() = default;
 
 
 void direct_resampler_conditioner_cs::forecast(int noutput_items,

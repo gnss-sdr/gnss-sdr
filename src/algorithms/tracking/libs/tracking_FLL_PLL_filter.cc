@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,9 +48,6 @@ Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter()
     d_pll_b3 = 0.0;
     d_pll_w0p = 0.0;
 }
-
-
-Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter() = default;
 
 
 void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int order)

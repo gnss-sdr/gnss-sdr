@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,7 @@
 #include "MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
 #include "gnss_satellite.h"
 #include <glog/logging.h>
+#include <cstddef>  // for size_t
 #include <map>
 #include <ostream>  // for operator<<
 
@@ -95,7 +96,7 @@ void Glonass_Gnav_Navigation_Message::reset()
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system("GLONASS");
-    //TODO SHould number of channels be hardcoded?
+    // TODO SHould number of channels be hardcoded?
     for (uint32_t i = 1; i < 14; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
@@ -111,7 +112,7 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
 
 bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits)
 {
-    int32_t sum_bits = 0;
+    uint32_t sum_bits = 0;
     int32_t sum_hamming = 0;
     int32_t C1 = 0;
     int32_t C2 = 0;
@@ -121,12 +122,12 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
     int32_t C6 = 0;
     int32_t C7 = 0;
     int32_t C_Sigma = 0;
-    std::vector<int32_t> string_bits(GLONASS_GNAV_STRING_BITS);
+    std::vector<uint32_t> string_bits(GLONASS_GNAV_STRING_BITS);
 
     // Populate data and hamming code vectors
-    for (int32_t i = 0; i < static_cast<int32_t>(GLONASS_GNAV_STRING_BITS); i++)
+    for (size_t i = 0; i < string_bits.size(); i++)
         {
-            string_bits[i] = static_cast<int32_t>(bits[i]);
+            string_bits[i] = static_cast<uint32_t>(bits[i]);
         }
 
     // Compute C1 term
@@ -239,7 +240,7 @@ uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<G
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  // shift left
+                    value <<= 1ULL;  // shift left
                     if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
                         {
                             value += 1ULL;  // insert the bit
@@ -715,7 +716,7 @@ Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(uint32_t satel
 }
 
 
-bool Glonass_Gnav_Navigation_Message::have_new_ephemeris()  //Check if we have a new ephemeris stored in the galileo navigation class
+bool Glonass_Gnav_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
     bool new_eph = false;
     // We need to make sure we have received the ephemeris info plus the time info

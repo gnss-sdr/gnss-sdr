@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 void read_results(std::vector<volk_gnsssdr_test_results_t> *results)
 {
     char path[1024];
-    volk_gnsssdr_get_config_path(path);
+    volk_gnsssdr_get_config_path(path, true);
 
     read_results(results, std::string(path));
 }
@@ -255,7 +255,7 @@ void read_results(std::vector<volk_gnsssdr_test_results_t> *results, std::string
 void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool update_result)
 {
     char path[1024];
-    volk_gnsssdr_get_config_path(path);
+    volk_gnsssdr_get_config_path(path, false);
 
     write_results(results, update_result, std::string(path));
 }
@@ -267,15 +267,24 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
     // do not overwrite volk_gnsssdr_config when using a regex.
     if (!fs::exists(config_path.parent_path()))
         {
-            std::cout << "Creating " << config_path.parent_path() << " ..." << std::endl;
             try
                 {
-                    fs::create_directories(config_path.parent_path());
+                    std::cout << "Creating " << config_path.parent_path() << " ..." << std::endl;
+                    try
+                        {
+                            fs::create_directories(config_path.parent_path());
+                        }
+                    catch (const fs::filesystem_error &e)
+                        {
+                            std::cerr << "ERROR: Could not create folder " << config_path.parent_path() << std::endl;
+                            std::cerr << "Reason: " << e.what() << std::endl;
+                            return;
+                        }
                 }
-            catch (const fs::filesystem_error &e)
+            catch (...)
                 {
-                    std::cerr << "ERROR: Could not create folder " << config_path.parent_path() << std::endl;
-                    std::cerr << "Reason: " << e.what() << std::endl;
+                    // Catch exception when using std::experimental
+                    std::cerr << "ERROR: Could not create folder" << std::endl;
                     return;
                 }
         }
@@ -286,7 +295,7 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
             std::cout << "Updating " << path << " ..." << std::endl;
             config.open(path.c_str(), std::ofstream::app);
             if (!config.is_open())
-                {  //either we don't have write access or we don't have the dir yet
+                {  // either we don't have write access or we don't have the dir yet
                     std::cout << "Error opening file " << path << std::endl;
                 }
         }
@@ -295,7 +304,7 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
             std::cout << "Writing " << path << " ..." << std::endl;
             config.open(path.c_str());
             if (!config.is_open())
-                {  //either we don't have write access or we don't have the dir yet
+                {  // either we don't have write access or we don't have the dir yet
                     std::cout << "Error opening file " << path << std::endl;
                 }
 

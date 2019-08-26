@@ -72,8 +72,8 @@ for channelNr = channelList
     end
     
     %----- Discrete-Time Scatter Plot ---------------------------------
-    plot(handles(1, 1), trackResults(channelNr).I_P,...
-        trackResults(channelNr).Q_P, ...
+    plot(handles(1, 1), trackResults(channelNr).data_I,...
+        trackResults(channelNr).data_Q, ...
         '.');
     
     grid  (handles(1, 1));
@@ -84,7 +84,7 @@ for channelNr = channelList
     
     %----- Nav bits ---------------------------------------------------
     plot  (handles(1, 2), timeAxis, ...
-        trackResults(channelNr).I_P);
+        trackResults(channelNr).data_I);
     
     grid  (handles(1, 2));
     title (handles(1, 2), 'Bits of the navigation message');

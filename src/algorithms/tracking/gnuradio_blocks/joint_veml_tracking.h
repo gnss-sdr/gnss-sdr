@@ -37,6 +37,7 @@
 #include "tracking_Gaussian_filter.h"
 
 #include "cpu_multicorrelator_real_codes.h"
+#include "cpu_autocorrelator_real_codes.h"
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
@@ -89,59 +90,88 @@ public:
         using namespace std::complex_literals;
 
         // Allocate memory for correlator outputs
-        gr_complex *correlator_outs;
-        correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+        d_correlator_outs = static_cast<float *>(volk_gnsssdr_malloc(3 * sizeof(float), volk_gnsssdr_get_alignment()));
+        d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(3 * sizeof(float), volk_gnsssdr_get_alignment()));
 
-        // Do correlation
-        // arma::mat input = arma::real(cx_input);
-        do_correlation( correlator_outs, input(2), input(1) );
+        // Setup local code for correlation
+        d_local_code_shift_chips[0] = -d_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+        d_local_code_shift_chips[1] = 0.0;
+        d_local_code_shift_chips[2] = d_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+
+        // Setup correlator
+        multicorrelator_cpu.init( 2 * d_vector_length, 3);
+        multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
+
+        // Perform correlation
+        perform_correlation(input(2), input(1) );
         
-        uint32_t offset = 0;
-        if (d_n_correlator_taps == 5) { offset++; }
-        gr_complex R_Early = correlator_outs[offset];
-        gr_complex R_Prompt = correlator_outs[offset+1];
-        gr_complex R_Late = correlator_outs[offset+2];
+        gr_complex R_Early = std::complex<float>(d_correlator_outs[0], 0.0);
+        gr_complex R_Prompt = std::complex<float>(d_correlator_outs[1], 0.0);
+        gr_complex R_Late = std::complex<float>(d_correlator_outs[2], 0.0);
 
-        arma::cx_mat output = arma::zeros<arma::cx_mat>(3,1);
+        arma::mat output = arma::zeros<arma::mat>(6,1);
         gr_complex Y_Gain = static_cast<gr_complex>( input(0) * std::exp( 1i * input(2) ) );
-        output(0, 0) = Y_Gain * R_Early;
-        output(1, 0) = Y_Gain * R_Prompt;
-        output(2, 0) = Y_Gain * R_Late;
+        output(0, 0) = std::real( std::pow(Y_Gain * R_Early, 2) );
+        output(2, 0) = std::real( std::pow(Y_Gain * R_Prompt, 2) );
+        output(4, 0) = std::real( std::pow(Y_Gain * R_Late, 2) );
+        output(1, 0) = std::imag( std::pow(Y_Gain * R_Early, 2) );
+        output(3, 0) = std::imag( std::pow(Y_Gain * R_Prompt, 2) );
+        output(5, 0) = std::imag( std::pow(Y_Gain * R_Late, 2) );
 
+        free(d_correlator_outs);
+        free(d_local_code_shift_chips);
+        multicorrelator_cpu.free();
         return output;
     };
 
-    void setup_correlator( Cpu_Multicorrelator_Real_Codes* multicorrelator, const gr_complex* input_buffer, const int32_t n_correlator_taps)
+    void set_local_code_and_input_parameters(
+            const float* local_code_in,
+            const gr_complex* input_buffer,
+            const uint32_t vector_length,
+            const uint32_t samples_per_chip,
+            const uint32_t code_length_chips,
+            const float code_phase_step,
+            const float code_phase_rate_step,
+            const float carrier_step,
+            const float carrier_rate_step,
+            const float early_late_space_chips)
     {
-
-        // Correlator and input buffer pointers
-        d_multicorrelator_cpu = multicorrelator;
+        // Set Input Buffers
         d_input_buffer = input_buffer;
-        d_n_correlator_taps = n_correlator_taps;
+        d_tracking_code = local_code_in;
+        d_vector_length = vector_length;
 
-    };
-   
-    void set_correlation_params( const double carrier_step, const double carrier_rate_step, const uint32_t samples_per_chip, const double code_phase_step, const double code_phase_rate_step)
-    {
-        // Correlation parameters
-        d_carrier_phase_step_rad = carrier_step;
-        d_carrier_phase_rate_step_rad = carrier_rate_step;
+
+        // Set Code Parameters
         d_code_samples_per_chip = samples_per_chip;
+        d_code_length_chips = code_length_chips;
         d_code_phase_step_chips = code_phase_step;
         d_code_phase_rate_step_chips = code_phase_rate_step;
+
+        // Set Carrier Parameters
+        d_carrier_phase_step_rad = carrier_step;
+        d_carrier_phase_rate_step_rad = carrier_rate_step;
+
+        // Set Correlator Parameters
+        d_early_late_space_chips = early_late_space_chips;
+    }
+
+    // Destructor
+    ~JointCarrierMeasurementModel() {
+        free(d_correlator_outs);
+        free(d_local_code_shift_chips);
+        multicorrelator_cpu.free();
     };
 
 private:
 
-    void do_correlation(gr_complex* correlator_outs, double rem_carr_phase_rad, double rem_code_phase_chips)
+    void perform_correlation(double rem_carr_phase_rad, double rem_code_phase_chips)
     {
-        // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
-        // perform carrier wipe-off and compute Early, Prompt and Late correlation
-        d_multicorrelator_cpu->Carrier_wipeoff_multicorrelator_resampler(
-            correlator_outs,
-            d_input_buffer,
+        // Compute Early, Prompt and Late correlation
+        multicorrelator_cpu.set_output_vector(d_correlator_outs);
+        multicorrelator_cpu.Local_code_multi_autocorrelator_resampler(
             rem_carr_phase_rad,
-            d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
+            d_carrier_phase_step_rad,
             static_cast<float>(rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
             static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
             static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -149,16 +179,24 @@ private:
 
     };
     
-    Cpu_Multicorrelator_Real_Codes* d_multicorrelator_cpu;
-    const gr_complex *d_input_buffer;
+    Cpu_Autocorrelator_Real_Codes multicorrelator_cpu; // Multicorrelator_cpu
+    float *d_correlator_outs;
+    float *d_local_code_shift_chips;
 
-    int32_t d_n_correlator_taps;
-    double d_carrier_phase_step_rad;
-    double d_carrier_phase_rate_step_rad;
+    const gr_complex *d_input_buffer;
+    const float *d_tracking_code;
+    uint32_t d_vector_length;
+
     uint32_t d_code_samples_per_chip;
-    double d_code_phase_step_chips;
-    double d_code_phase_rate_step_chips;
-    double d_vector_length;
+    uint32_t d_code_length_chips;
+    float d_code_phase_step_chips;
+    float d_code_phase_rate_step_chips;
+
+    float d_carrier_phase_step_rad;
+    float d_carrier_phase_rate_step_rad;
+
+    float d_early_late_space_chips;
+
 };
 
 
@@ -188,7 +226,11 @@ public:
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
     JointCarrierTransitionModel<arma::vec> d_carrier_evolution_model;
-    JointCarrierMeasurementModel<arma::cx_vec> d_correlator_output_model;
+    JointCarrierMeasurementModel<arma::vec> d_correlator_output_model;
+    arma::vec state_init;
+    arma::mat state_cov_init;
+    arma::mat ncov_process;
+    arma::mat ncov_measurement;
 
 private:
     friend joint_veml_tracking_sptr joint_veml_make_tracking(const Dll_Pll_Conf &conf_);
@@ -285,9 +327,7 @@ private:
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
-    TrackingNonlinearFilter<CubatureFilter, arma::vec, arma::cx_vec> d_carrier_loop_ckf;
-    Tracking_loop_filter d_code_loop_filter;
-    Tracking_FLL_PLL_filter d_carrier_loop_filter;
+    TrackingNonlinearFilter<CubatureFilter, arma::vec, arma::vec> d_carrier_code_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
@@ -334,7 +374,7 @@ private:
     bool d_dump_mat;
 
     friend class JointCarrierTransitionModel<arma::vec>;
-    friend class JointCarrierMeasurementModel<arma::cx_vec>;
+    friend class JointCarrierMeasurementModel<arma::vec>;
 };
 
 #endif  // GNSS_SDR_JOINT_VEML_TRACKING_H

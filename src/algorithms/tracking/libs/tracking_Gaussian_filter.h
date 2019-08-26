@@ -56,19 +56,17 @@
 class TrackingGaussianFilter
 {
 public:
-    void set_ncov_process(float ev_1, float ev_2, float ev_3);
-    void set_ncov_measurement(float ev_1, float ev_2);
-    void set_params(float ev_1, float ev_2, float pdi_carr);
-    void set_state(float x_1, float x_2, float x_3);
-    void set_state(float x_1, float x_2, float x_3, float x_4);
-    void set_state_cov(float P_x_1, float P_x_2, float P_x_3);
-    void set_state_cov(float P_x_1, float P_x_2, float P_x_3, float P_x_4);
+    void set_ncov_process(arma::mat ncov);
+    void set_ncov_measurement(arma::mat ncov);
+    void set_state(arma::vec state);
+    void set_state_cov(arma::mat state_cov);
+    void set_params(arma::vec state, arma::mat state_cov, arma::mat p_ncov, arma::mat m_ncov);
 
 protected:
-    arma::vec state;     /* state vector */
-    arma::mat state_cov;    /* state error covariance matrix */
-    arma::mat ncov_process;     /* model error covariance matrix */
-    arma::mat ncov_measurement; /* measurement error covariance matrix */
+    arma::vec d_state;     /* state vector */
+    arma::mat d_state_cov;    /* state error covariance matrix */
+    arma::mat d_ncov_process;     /* model error covariance matrix */
+    arma::mat d_ncov_measurement; /* measurement error covariance matrix */
 };
 
 template <class NonlinearFilter, class OutputType1, class OutputType2>
@@ -106,39 +104,18 @@ arma::vec TrackingNonlinearFilter<NonlinearFilter,OutputType1,OutputType2>::get_
     arma::mat state_cov_pred;
 
     // State Update
-# if 0
-    std::cout << "state:";
-    state.print();
-    std::cout << std::endl;
-    std::cout << "state_cov:";
-    state_cov.print();
-    std::cout << std::endl;
-    std::cout << "ncov_process:";
-    ncov_process.print();
-    std::cout << std::endl;
-
-    std::cout << "BEGIN PREDICT" << std::endl;
-#endif
-    GaussFilt.predict_sequential(state, state_cov, func_transition, ncov_process);
+    GaussFilt.predict_sequential(d_state, d_state_cov, func_transition, d_ncov_process);
     state_pred = GaussFilt.get_x_pred();
     state_cov_pred = GaussFilt.get_P_x_pred();
 
     // Measurement Update
     OutputType2 measurement = meas_in;
-    /*
-    measurement(0) = Prompt.real();
-    measurement(1) = Prompt.imag();
-
-    innovation(0) = measurement(0) - std::sqrt(d_carrier_power_snv) * cos(state_pred(0));
-    innovation(1) = measurement(1) - std::sqrt(d_carrier_power_snv) * sin(state_pred(0));
-    */
-
-    GaussFilt.update_sequential(measurement, state_pred, state_cov_pred, func_measurement, ncov_measurement);
-    state = GaussFilt.get_x_pred();
-    state_cov = GaussFilt.get_P_x_pred();
+    GaussFilt.update_sequential(measurement, state_pred, state_cov_pred, func_measurement, d_ncov_measurement);
+    d_state = GaussFilt.get_x_pred();
+    d_state_cov = GaussFilt.get_P_x_pred();
 
     // Return the new carrier estimation
-    return state;
+    return d_state;
 }
 
 #endif

@@ -57,32 +57,39 @@ class MixedCarrierTransitionModel : public ModelFunction<arma::vec>
 public:
     arma::vec operator()(const arma::vec& input) override { 
         /* 
-         * output(0) - Carrier Phase
-         * output(1) - Carrier Doppler
-         * output(2) - Carrier Doppler Rate
-         * output(3) - Correlator Output Amplitude
+         * input/output(0) - Carrier Phase
+         * input/output(1) - Carrier Doppler
+         * input/output(2) - Carrier Doppler Rate
+         * input/output(3) - Squared Correlator Output Amplitude
          */
         arma::vec output = arma::zeros(4,1);
         output(0, 0) = input(0) + PI_2*pdi*input(1) + 0.5*PI_2*std::pow(pdi, 2)*input(2);
         output(1, 0) = input(1) + pdi*input(2);
         output(2, 0) = input(2);
         output(3, 0) = input(3);
-
         return output;
     };
     void set_code_period(const float carrier_pdi) { pdi = carrier_pdi; };
-
 private:
     float pdi;
 };
-
-class MixedCarrierMeasurementModel : public ModelFunction<arma::cx_vec>
+class MixedCarrierMeasurementModel : public ModelFunction<arma::vec>
 {
 public:
-    arma::cx_vec operator()(const arma::vec& input) override {
+    arma::vec operator()(const arma::vec& input) override {
+        /* 
+         * input(0) - Carrier Phase
+         * input(1) - Carrier Doppler
+         * input(2) - Carrier Doppler Rate
+         * input(3) - Squared Correlator Output Amplitude
+         *
+         * output(0) - Real component of squared Prompt
+         * output(1) - Imag component of squared Prompt
+         */
         using namespace std::complex_literals;
-        arma::cx_vec output = arma::zeros<arma::cx_vec>(1,1);
-        output(0) = static_cast<double>(input(3)) * std::exp( -1i * static_cast<double>(input(0)) );
+        arma::vec output = arma::zeros<arma::vec>(2,1);
+        output(0) = static_cast<double>(input(3)) * std::cos( 2.0 * static_cast<double>(input(0)) );
+        output(1) = static_cast<double>(input(3)) * (-1) * std::sin( 2.0 * static_cast<double>(input(0)) );
         return output;
     };
 private:
@@ -116,6 +123,10 @@ public:
 
     MixedCarrierTransitionModel d_carrier_evolution_model;
     MixedCarrierMeasurementModel d_correlator_output_model;
+    arma::vec state_init;
+    arma::mat state_cov_init;
+    arma::mat ncov_process;
+    arma::mat ncov_measurement;
 
 private:
     friend mixed_veml_tracking_sptr mixed_veml_make_tracking(const Dll_Pll_Conf &conf_);
@@ -212,9 +223,8 @@ private:
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
-    TrackingNonlinearFilter<CubatureFilter, arma::vec, arma::cx_vec> d_carrier_loop_ckf;
     Tracking_loop_filter d_code_loop_filter;
-    Tracking_FLL_PLL_filter d_carrier_loop_filter;
+    TrackingNonlinearFilter<CubatureFilter, arma::vec, arma::vec> d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;

@@ -349,12 +349,22 @@ joint_veml_tracking::joint_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block(
     K_blk_samples = 0.0;
 
     // Initialize tracking  ==========================================
-    d_code_loop_filter = Tracking_loop_filter(d_code_period, trk_parameters.dll_bw_hz, trk_parameters.dll_filter_order, false);
-    d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
-    d_carrier_loop_ckf.set_params(1.0, 1.0, static_cast<float>(d_code_period));
-    // d_carrier_evolution_model.set_code_period(static_cast<float>(d_code_period));
-    // d_correlator_output_model.set_signal_power(1.0);
-    d_carrier_loop_ckf.set_model(&d_carrier_evolution_model, &d_correlator_output_model);
+    state_init = arma::zeros<arma::vec>(5);
+    state_cov_init.eye(5,5);
+    arma::vec q_process = arma::ones<arma::vec>(5);
+    q_process(0) = std::pow( static_cast<float>(d_code_period), 6 );
+    q_process(1) = std::pow( static_cast<float>(d_code_period), 4 );
+    q_process(2) = std::pow( static_cast<float>(d_code_period), 2 );
+    q_process(3) = std::pow( static_cast<float>(d_code_period), 2 );
+    q_process(4) = std::pow( static_cast<float>(d_code_period), 2 );
+    ncov_process.eye(5,5);
+    ncov_process.diag() = q_process ;
+    ncov_measurement.eye(6,6);
+
+    d_carrier_code_filter.set_params( state_init, state_cov_init, ncov_process, ncov_measurement );
+    d_carrier_evolution_model.set_samp_length( static_cast<float>(d_code_period) );
+    d_carrier_evolution_model.set_chip_length( static_cast<float>(d_signal_carrier_freq), static_cast<float>(d_code_period) );
+    d_carrier_code_filter.set_model(&d_carrier_evolution_model, &d_correlator_output_model);
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
@@ -748,17 +758,20 @@ void joint_veml_tracking::start_tracking()
 
     d_current_correlation_time_s = d_code_period;
 
-    // Initialize tracking  ==========================================
-    d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
-    d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_hz);
-    d_code_loop_filter.set_update_interval(d_code_period);
-    // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
-    d_code_loop_filter.initialize();                                                 // initialize the code filter
-    // Carrier Gaussian filter initialization
-    d_carrier_loop_ckf.set_params(1.0, 1.0, static_cast<float>(d_code_period));
-    d_carrier_loop_ckf.set_state(0.0, static_cast<float>(d_acq_carrier_doppler_hz), 0.0);
-    d_carrier_loop_ckf.set_state_cov(1.1, 22500.0, 15.0);
+    // Gaussian filter initialization
+    state_init = arma::zeros<arma::vec>( arma::size(state_init) );
+    state_init(0) = 0.0;
+    state_init(1) = static_cast<float>(d_acq_carrier_doppler_hz);
+    state_init(2) = 0.0;
+    state_init(3) = 1.0;
+    state_init(4) = 1.0;
+    state_cov_init = arma::zeros<arma::mat>( arma::size(state_cov_init) );
+    state_cov_init(0, 0) = 1.1;
+    state_cov_init(1, 1) = 1.1;
+    state_cov_init(2, 2) = 1.1;
+    state_cov_init(3, 3) = 1.1;
+    state_cov_init(4, 4) = 1.1;
+    d_carrier_code_filter.set_params(state_init, state_cov_init, ncov_process, ncov_measurement);
 
     // DEBUG OUTPUT
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
@@ -955,59 +968,36 @@ void joint_veml_tracking::do_correlation_step(const gr_complex *input_samples)
 
 void joint_veml_tracking::run_dll_pll(const gr_complex *input_samples)
 {
-    // ################## PLL ##########################################################
-    // PLL discriminator
-    if (d_cloop)
-        {
-            // Costas loop discriminator, insensitive to 180 deg phase transitions
-            d_carr_phase_error_hz = pll_cloop_two_quadrant_atan(d_P_accu) / PI_2;
+    // ################## CKF ##########################################################
+    // Setup model parameters
+    d_correlator_output_model.set_local_code_and_input_parameters(d_tracking_code,
+            input_samples, 
+            static_cast<uint32_t>(trk_parameters.vector_length),
+            static_cast<uint32_t>(d_code_samples_per_chip),
+            static_cast<uint32_t>(d_code_length_chips),
+            static_cast<float>(d_code_phase_step_chips),
+            static_cast<float>(d_code_phase_rate_step_chips),
+            static_cast<float>(d_carrier_phase_step_rad),
+            static_cast<float>(d_carrier_phase_rate_step_rad),
+            static_cast<float>(trk_parameters.early_late_space_chips) );
+    d_carrier_evolution_model.set_samp_length( static_cast<float>(d_code_period) );
+    d_carrier_evolution_model.set_chip_length( static_cast<float>(d_signal_carrier_freq), 
+            static_cast<float>(d_code_period) );
 
-            // Carrier discriminator filter
-            d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(0, d_carr_phase_error_hz, d_current_correlation_time_s);
-        }
-    else
-        {
-            // Secondary code acquired. No symbols transition should be present in the signal
-            d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / PI_2;
+    // Carrier correlator output filter
+    arma::vec correlator_vec = arma::zeros<arma::vec>(6,1);
+    correlator_vec(0, 0) = std::pow(d_Early->real(), 2) - std::pow(d_Early->imag(), 2);
+    correlator_vec(2, 0) = std::pow(d_Prompt->real(), 2) - std::pow(d_Prompt->imag(), 2);
+    correlator_vec(4, 0) = std::pow(d_Late->real(), 2) - std::pow(d_Late->imag(), 2);
+    correlator_vec(1, 0) = 2.0 * d_Early->real() * d_Early->imag();
+    correlator_vec(3, 0) = 2.0 * d_Prompt->real() * d_Prompt->imag();
+    correlator_vec(5, 0) = 2.0 * d_Late->real() * d_Late->imag();
+    arma::vec carrier_nco = d_carrier_code_filter.get_carrier_nco(correlator_vec);
 
-            // ################## CKF ##########################################################
-            // Set filter parameters
-            // TODO: Update the params for the first two, add to block builder
-            d_carrier_evolution_model.set_samp_length(0.1);
-            d_carrier_evolution_model.set_chip_length(0.1,0.1);
-            d_correlator_output_model.setup_correlator(&multicorrelator_cpu, input_samples, d_n_correlator_taps);
-            d_correlator_output_model.set_correlation_params(d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad, d_code_samples_per_chip, d_code_phase_step_chips, d_code_phase_rate_step_chips);
-
-            // Carrier correlator output filter
-            arma::cx_vec correlator_vec = arma::zeros<arma::cx_vec>(3,1);
-            correlator_vec(0, 0) = *d_Early;
-            correlator_vec(1, 0) = *d_Prompt;
-            correlator_vec(2, 0) = *d_Late;
-            arma::vec carrier_nco = d_carrier_loop_ckf.get_carrier_nco(correlator_vec);
-
-            // New filter estimation
-            d_code_error_filt_chips = carrier_nco(1);
-            d_carr_error_filt_hz = carrier_nco(2);
-        }
-
-    // New carrier Doppler frequency estimation
-    d_carrier_doppler_hz = d_carr_error_filt_hz;
-
-    // ################## DLL ##########################################################
-    // DLL discriminator
-    if (d_veml)
-        {
-            d_code_error_chips = dll_nc_vemlp_normalized(d_VE_accu, d_E_accu, d_L_accu, d_VL_accu);  // [chips/Ti]
-        }
-    else
-        {
-            d_code_error_chips = dll_nc_e_minus_l_normalized(d_E_accu, d_L_accu);  // [chips/Ti]
-        }
-    if (d_cloop)
-        {
-            // Code discriminator filter
-            d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
-        }
+    // New filter estimation
+    d_code_error_filt_chips = carrier_nco(1);
+    d_carr_error_filt_hz = carrier_nco(2);
+    d_carrier_doppler_hz = carrier_nco(3);
 
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
@@ -1026,9 +1016,8 @@ void joint_veml_tracking::run_dll_pll(const gr_complex *input_samples)
                                 {
                                     float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                                     LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
-                                    d_carrier_loop_filter.initialize(d_carrier_doppler_hz - carrier_doppler_error_hz);
-                                    d_carrier_loop_ckf.set_state(0.0, static_cast<float>(d_carrier_doppler_hz - carrier_doppler_error_hz), 0.0);
-                                    d_carrier_loop_ckf.set_state_cov(1.1, 22500.0, 15.0);
+                                    // d_carrier_code_filter.set_state(0.0, static_cast<float>(d_carrier_doppler_hz - carrier_doppler_error_hz), 0.0);
+                                    // d_carrier_code_filter.set_state_cov(1.1, 22500.0, 15.0);
                                     d_corrected_doppler = true;
                                 }
                             d_dll_filt_history.clear();
@@ -1753,10 +1742,7 @@ int joint_veml_tracking::general_work(int noutput_items __attribute__((unused)),
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                         // Set narrow taps delay values [chips]
-                                        d_code_loop_filter.set_update_interval(d_current_correlation_time_s);
-                                        d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_narrow_hz);
-                                        d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_narrow_hz, trk_parameters.pll_filter_order);
-                                        d_carrier_loop_ckf.set_params(1.0, 1.0, static_cast<float>(d_code_period));
+                                        // d_carrier_evolution_model.set_code_period(static_cast<float>(d_code_period));
                                         if (d_veml)
                                             {
                                                 d_local_code_shift_chips[0] = -trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);

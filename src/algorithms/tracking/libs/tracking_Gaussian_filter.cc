@@ -39,57 +39,30 @@
 
 #include "tracking_Gaussian_filter.h"
 
-void TrackingGaussianFilter::set_ncov_measurement(float ev_1, float ev_2)
+void TrackingGaussianFilter::set_ncov_measurement(arma::mat ncov)
 {
-    ncov_measurement = arma::zeros(2, 2);
-    ncov_measurement(0, 0) = ev_1;
-    ncov_measurement(1, 1) = ev_2;
+    d_ncov_measurement = ncov;
 }
 
-void TrackingGaussianFilter::set_ncov_process(float ev_1, float ev_2, float ev_3)
+void TrackingGaussianFilter::set_ncov_process(arma::mat ncov)
 {
-    ncov_process = arma::zeros(3, 3);
-    ncov_process(0, 0) = ev_1;
-    ncov_process(1, 1) = ev_2;
-    ncov_process(2, 2) = ev_3;
+    d_ncov_process = ncov;
 }
 
-void TrackingGaussianFilter::set_params(float ev_1, float ev_2, float pdi_carr)
+void TrackingGaussianFilter::set_state(arma::vec state)
 {
-    set_ncov_measurement(ev_1, ev_2);
-    set_ncov_process(std::pow(pdi_carr, 6), std::pow(pdi_carr, 4), std::pow(pdi_carr, 2));
+    d_state = state;
 }
 
-void TrackingGaussianFilter::set_state(float x_1, float x_2, float x_3)
+void TrackingGaussianFilter::set_state_cov(arma::mat state_cov)
 {
-    state = arma::zeros(3,1);
-    state(0) = x_1;
-    state(1) = x_2;
-    state(2) = x_3;
+    d_state_cov = state_cov;
 }
 
-void TrackingGaussianFilter::set_state_cov(float P_x_1, float P_x_2, float P_x_3)
+void TrackingGaussianFilter::set_params(arma::vec state, arma::mat state_cov, arma::mat p_ncov, arma::mat m_ncov)
 {
-    state_cov = arma::zeros(3,3);
-    state_cov(0, 0) = P_x_1;
-    state_cov(1, 1) = P_x_2;
-    state_cov(2, 2) = P_x_3;
-}
-
-void TrackingGaussianFilter::set_state(float x_1, float x_2, float x_3, float x_4)
-{
-    state = arma::zeros(4,1);
-    state(0) = x_1;
-    state(1) = x_2;
-    state(2) = x_3;
-    state(4) = x_4;
-}
-
-void TrackingGaussianFilter::set_state_cov(float P_x_1, float P_x_2, float P_x_3, float P_x_4)
-{
-    state_cov = arma::zeros(4,4);
-    state_cov(0, 0) = P_x_1;
-    state_cov(1, 1) = P_x_2;
-    state_cov(2, 2) = P_x_3;
-    state_cov(3, 3) = P_x_4;
+    set_ncov_process(p_ncov);
+    set_ncov_measurement(m_ncov);
+    set_state(state);
+    set_state_cov(state_cov);
 }

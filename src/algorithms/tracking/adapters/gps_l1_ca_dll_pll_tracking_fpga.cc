@@ -174,7 +174,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    uint32_t device_base = configuration->property(role + ".device_base", 3);
+    int32_t device_base = configuration->property(role + ".device_base", 3);
     trk_param_fpga.device_base = device_base;
 
     // ################# PRE-COMPUTE ALL THE CODES #################

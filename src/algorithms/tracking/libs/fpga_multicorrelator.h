@@ -53,7 +53,7 @@ public:
 	 */
     Fpga_Multicorrelator_8sc(int32_t n_correlators,
         std::string device_name,
-        uint32_t device_base,
+        int32_t device_base,
         int32_t *ca_codes,
         int32_t *data_codes,
         uint32_t code_length_chips,
@@ -236,7 +236,7 @@ private:
 
     // driver
     std::string d_device_name;
-    uint32_t d_device_base;
+    int32_t d_device_base;
 
     // PRN codes
     int32_t *d_ca_codes;

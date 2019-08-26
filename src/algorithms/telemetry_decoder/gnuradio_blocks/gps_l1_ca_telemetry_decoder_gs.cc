@@ -384,10 +384,14 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     detection = _Lambda(corr_value1, corr_value2, 0);
                 else  // Hard correlation
 <<<<<<< HEAD
+<<<<<<< HEAD
                     detection = _Lambda(corr_value, 0, d_samples_per_preamble);
 =======
                     detection = _Lambda(corr_value, d_samples_per_preamble, d_samples_per_preamble);
 >>>>>>> The Hard correlation is updated
+=======
+                    detection = _Lambda(corr_value, 0, d_samples_per_preamble);
+>>>>>>> fb97d49d7c25a2be7b43661087248d131e48b070
                 if (detection)
                     {
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp

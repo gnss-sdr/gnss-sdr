@@ -48,6 +48,14 @@
 #define _rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))  // Used in the parity check algorithm
 #endif
 
+// Define Hard Correlation (HC), Soft correlation (SC) or Simplified-LRT (SLRT)
+#ifndef _correlation
+#define _correlation "HC"  // Hard Correlation
+#endif
+
+// Values depending on correlation
+#define _Lambda(value1, value2, threshold) (abs(value1) - value2 >= threshold)
+
 
 gps_l1_ca_telemetry_decoder_gs_sptr
 gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
@@ -135,15 +143,7 @@ gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 
 bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
 {
-    uint32_t d1;
-    uint32_t d2;
-    uint32_t d3;
-    uint32_t d4;
-    uint32_t d5;
-    uint32_t d6;
-    uint32_t d7;
-    uint32_t t;
-    uint32_t parity;
+    uint32_t d1, d2, d3, d4, d5, d6, d7, t, parity;
     // XOR as many bits in parallel as possible.  The magic constants pick
     //   up bits which are to be XOR'ed together to implement the GPS parity
     //   check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
@@ -348,6 +348,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     d_sent_tlm_failed_msg = true;
                 }
         }
+    // 1 if correlation is greater than threshold, 0 otherwise
+    int32_t detection = 0;
 
     // ******* frame sync ******************
     switch (d_stat)
@@ -356,6 +358,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             {
                 // correlate with preamble
                 int32_t corr_value = 0;
+                int32_t corr_value1 = 0;
+                int32_t corr_value2 = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
                     {
                         // ******* preamble correlation ********
@@ -369,9 +373,18 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                     {
                                         corr_value += d_preamble_samples[i];
                                     }
+                                corr_value1 += d_symbol_history[i] * d_preamble_samples[i];
+                                corr_value2 += abs(d_symbol_history[i]);
                             }
                     }
-                if (abs(corr_value) >= d_samples_per_preamble)
+                detection = 0;
+                if (std::string(_correlation) == "SC")  // Soft correlation
+                    detection = _Lambda(corr_value1, 0, 0);
+                else if (std::string(_correlation) == "SLRT")  // Simplified-LRT
+                    detection = _Lambda(corr_value1, corr_value2, 0);
+                else  // Hard correlation
+                    detection = _Lambda(corr_value, 0, d_samples_per_preamble);
+                if (detection)
                     {
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
@@ -385,6 +398,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             {
                 // correlate with preamble
                 int32_t corr_value = 0;
+                int32_t corr_value1 = 0;
+                int32_t corr_value2 = 0;
                 int32_t preamble_diff = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
                     {
@@ -399,9 +414,18 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                     {
                                         corr_value += d_preamble_samples[i];
                                     }
+                                corr_value1 += d_symbol_history[i] * d_preamble_samples[i];
+                                corr_value2 += abs(d_symbol_history[i]);
                             }
                     }
-                if (abs(corr_value) >= d_samples_per_preamble)
+                detection = 0;
+                if (std::string(_correlation) == "SC")  // Soft correlation
+                    detection = _Lambda(corr_value, 0, 0);
+                else if (std::string(_correlation) == "SLRT")  // Simplified-LRT
+                    detection = _Lambda(corr_value, corr_value2, 0);
+                else  // Hard correlation
+                    detection = _Lambda(corr_value, d_samples_per_preamble, 0);
+                if (detection)
                     {
                         // check preamble separation
                         preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);

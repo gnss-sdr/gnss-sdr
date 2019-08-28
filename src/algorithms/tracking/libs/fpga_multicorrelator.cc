@@ -61,7 +61,7 @@ const float PHASE_CARR_MAX_DIV_PI = 683565275.5764316;  // 2^(31)/pi
 const float TWO_PI = 6.283185307179586;
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
-    std::string device_name, uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
+    std::string device_name, int32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
     uint32_t code_samples_per_chip)
 
 {

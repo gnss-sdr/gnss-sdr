@@ -924,13 +924,13 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
                 }
             else  // we are in the same week than the leap second event
                 {
-                    if ((beidoutime_corrected - secondOfLeapSecondEvent) < (2 / 3) * 24 * 60 * 60)
+                    if ((beidoutime_corrected - secondOfLeapSecondEvent) < (static_cast<double>(2) / static_cast<double>(3)) * 24 * 60 * 60)
                         {
                             t_utc_daytime = fmod(beidoutime_corrected - Delta_t_UTC, 86400);
                         }
                     else
                         {
-                            if ((beidoutime_corrected - secondOfLeapSecondEvent) < (5 / 4) * 24 * 60 * 60)
+                            if ((beidoutime_corrected - secondOfLeapSecondEvent) < (static_cast<double>(5) / static_cast<double>(4)) * 24 * 60 * 60)
                                 {
                                     int32_t W = fmod(beidoutime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
                                     t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);

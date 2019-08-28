@@ -34,6 +34,7 @@
 #include "MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
 #include "gnss_satellite.h"
 #include <glog/logging.h>
+#include <cstddef>  // for size_t
 #include <map>
 #include <ostream>  // for operator<<
 
@@ -124,7 +125,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
     std::vector<uint32_t> string_bits(GLONASS_GNAV_STRING_BITS);
 
     // Populate data and hamming code vectors
-    for (uint32_t i = 0; i < string_bits.size(); i++)
+    for (size_t i = 0; i < string_bits.size(); i++)
         {
             string_bits[i] = static_cast<uint32_t>(bits[i]);
         }

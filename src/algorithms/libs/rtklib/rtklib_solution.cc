@@ -55,6 +55,7 @@
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
 #include <cctype>
+#include <cmath>
 #include <cstring>
 
 
@@ -1326,7 +1327,7 @@ int decode_solstat(char *buff, solstat_t *stat)
     stat->resp = static_cast<float>(resp);
     stat->resc = static_cast<float>(resc);
     stat->flag = static_cast<unsigned char>((vsat << 5) + (slip << 3) + fix);
-    stat->snr = static_cast<unsigned char>(snr * 4.0 + 0.5);
+    stat->snr = static_cast<unsigned char>(std::lround(snr * 4.0));
     stat->lock = static_cast<uint16_t>(lock);
     stat->outc = static_cast<uint16_t>(outc);
     stat->slipc = static_cast<uint16_t>(slipc);
@@ -1411,7 +1412,7 @@ int readsolstatt(char *files[], int nfile, gtime_t ts, gtime_t te,
 
     for (i = 0; i < nfile; i++)
         {
-            sprintf(path, "%s.stat", files[i]);
+            std::snprintf(path, sizeof(path), "%s.stat", files[i]);
             if (!(fp = fopen(path, "re")))
                 {
                     trace(1, "readsolstatt: file open error %s\n", path);
@@ -1447,7 +1448,7 @@ int outecef(unsigned char *buff, const char *s, const sol_t *sol,
 
     trace(3, "outecef:\n");
 
-    p += snprintf(p, 255, "%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+    p += std::snprintf(p, MAXSOLBUF, "%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
         s, sep, sol->rr[0], sep, sol->rr[1], sep, sol->rr[2], sep, sol->stat, sep,
         sol->ns, sep, SQRT_SOL(sol->qr[0]), sep, SQRT_SOL(sol->qr[1]), sep, SQRT_SOL(sol->qr[2]),
         sep, sqvar(sol->qr[3]), sep, sqvar(sol->qr[4]), sep, sqvar(sol->qr[5]),
@@ -1467,6 +1468,8 @@ int outpos(unsigned char *buff, const char *s, const sol_t *sol,
     double Q[9];
     const char *sep = opt2sep(opt);
     char *p = reinterpret_cast<char *>(buff);
+    char *start;
+    start = p;
 
     trace(3, "outpos  :\n");
 
@@ -1481,15 +1484,15 @@ int outpos(unsigned char *buff, const char *s, const sol_t *sol,
         {
             deg2dms(pos[0] * R2D, dms1);
             deg2dms(pos[1] * R2D, dms2);
-            p += sprintf(p, "%s%s%4.0f%s%02.0f%s%08.5f%s%4.0f%s%02.0f%s%08.5f", s, sep,
+            p += std::snprintf(p, MAXSOLMSG - (p - start), "%s%s%4.0f%s%02.0f%s%08.5f%s%4.0f%s%02.0f%s%08.5f", s, sep,
                 dms1[0], sep, dms1[1], sep, dms1[2], sep, dms2[0], sep, dms2[1], sep,
                 dms2[2]);
         }
     else
         {
-            p += sprintf(p, "%s%s%14.9f%s%14.9f", s, sep, pos[0] * R2D, sep, pos[1] * R2D);
+            p += std::snprintf(p, MAXSOLMSG - (p - start), "%s%s%14.9f%s%14.9f", s, sep, pos[0] * R2D, sep, pos[1] * R2D);
         }
-    p += sprintf(p, "%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+    p += std::snprintf(p, MAXSOLMSG - (p - start), "%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
         sep, pos[2], sep, sol->stat, sep, sol->ns, sep, SQRT_SOL(Q[4]), sep,
         SQRT_SOL(Q[0]), sep, SQRT_SOL(Q[8]), sep, sqvar(Q[1]), sep, sqvar(Q[2]),
         sep, sqvar(Q[5]), sep, sol->age, sep, sol->ratio);
@@ -1520,7 +1523,7 @@ int outenu(unsigned char *buff, const char *s, const sol_t *sol,
     soltocov(sol, P);
     covenu(pos, P, Q);
     ecef2enu(pos, rr, enu);
-    p += sprintf(p, "%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+    p += std::snprintf(p, MAXSOLMSG, "%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
         s, sep, enu[0], sep, enu[1], sep, enu[2], sep, sol->stat, sep, sol->ns, sep,
         SQRT_SOL(Q[0]), sep, SQRT_SOL(Q[4]), sep, SQRT_SOL(Q[8]), sep, sqvar(Q[1]),
         sep, sqvar(Q[5]), sep, sqvar(Q[2]), sep, sol->age, sep, sol->ratio);
@@ -1545,17 +1548,18 @@ int outnmea_rmc(unsigned char *buff, const sol_t *sol)
     char *q;
     char sum;
     char *emag = const_cast<char *>("E");
+    const int MSG_TAIL = 6;
 
     trace(3, "outnmea_rmc:\n");
 
     if (sol->stat <= SOLQ_NONE)
         {
-            p += sprintf(p, "$GPRMC,,,,,,,,,,,,");
+            p += std::snprintf(p, MAXSOLBUF - MSG_TAIL, "$GPRMC,,,,,,,,,,,,");
             for (q = reinterpret_cast<char *>(buff) + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q;
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
             return p - reinterpret_cast<char *>(buff);
         }
     time = gpst2utc(sol->time);
@@ -1583,7 +1587,7 @@ int outnmea_rmc(unsigned char *buff, const sol_t *sol)
         }
     deg2dms(fabs(pos[0]) * R2D, dms1);
     deg2dms(fabs(pos[1]) * R2D, dms2);
-    p += sprintf(p, "$GPRMC,%02.0f%02.0f%05.2f,A,%02.0f%010.7f,%s,%03.0f%010.7f,%s,%4.2f,%4.2f,%02.0f%02.0f%02d,%.1f,%s,%s",
+    p += std::snprintf(p, MAXSOLBUF - MSG_TAIL, "$GPRMC,%02.0f%02.0f%05.2f,A,%02.0f%010.7f,%s,%03.0f%010.7f,%s,%4.2f,%4.2f,%02.0f%02.0f%02d,%.1f,%s,%s",
         ep[3], ep[4], ep[5], dms1[0], dms1[1] + dms1[2] / 60.0, pos[0] >= 0 ? "N" : "S",
         dms2[0], dms2[1] + dms2[2] / 60.0, pos[1] >= 0 ? "E" : "W", vel / KNOT2M, dir,
         ep[2], ep[1], static_cast<int>(ep[0]) % 100, amag, emag,
@@ -1592,7 +1596,7 @@ int outnmea_rmc(unsigned char *buff, const sol_t *sol)
         {
             sum ^= *q; /* check-sum */
         }
-    p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+    p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
     return p - reinterpret_cast<char *>(buff);
 }
 
@@ -1611,17 +1615,18 @@ int outnmea_gga(unsigned char *buff, const sol_t *sol)
     char *p = reinterpret_cast<char *>(buff);
     char *q;
     char sum;
+    const int MSG_TAIL = 6;
 
     trace(3, "outnmea_gga:\n");
 
     if (sol->stat <= SOLQ_NONE)
         {
-            p += sprintf(p, "$GPGGA,,,,,,,,,,,,,,");
+            p += std::snprintf(p, MAXSOLBUF - MSG_TAIL, "$GPGGA,,,,,,,,,,,,,,");
             for (q = reinterpret_cast<char *>(buff) + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q;
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
             return p - reinterpret_cast<char *>(buff);
         }
     for (solq = 0; solq < 8; solq++)
@@ -1646,7 +1651,7 @@ int outnmea_gga(unsigned char *buff, const sol_t *sol)
     h = 0;  // geoidh(pos);
     deg2dms(fabs(pos[0]) * R2D, dms1);
     deg2dms(fabs(pos[1]) * R2D, dms2);
-    p += sprintf(p, "$GPGGA,%02.0f%02.0f%05.2f,%02.0f%010.7f,%s,%03.0f%010.7f,%s,%d,%02d,%.1f,%.3f,M,%.3f,M,%.1f,",
+    p += std::snprintf(p, MAXSOLBUF - MSG_TAIL, "$GPGGA,%02.0f%02.0f%05.2f,%02.0f%010.7f,%s,%03.0f%010.7f,%s,%d,%02d,%.1f,%.3f,M,%.3f,M,%.1f,",
         ep[3], ep[4], ep[5], dms1[0], dms1[1] + dms1[2] / 60.0, pos[0] >= 0 ? "N" : "S",
         dms2[0], dms2[1] + dms2[2] / 60.0, pos[1] >= 0 ? "E" : "W", solq,
         sol->ns, dop, pos[2] - h, h, sol->age);
@@ -1654,7 +1659,7 @@ int outnmea_gga(unsigned char *buff, const sol_t *sol)
         {
             sum ^= *q; /* check-sum */
         }
-    p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+    p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
     return p - reinterpret_cast<char *>(buff);
 }
 
@@ -1674,17 +1679,20 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
     char *q;
     char *s;
     char sum;
+    const int MSG_TAIL = 6;
+    const int COMMA_LENGTH = 2;
+    const int MAX_LENGTH_INT = 10;
 
     trace(3, "outnmea_gsa:\n");
 
     if (sol->stat <= SOLQ_NONE)
         {
-            p += sprintf(p, "$GPGSA,A,1,,,,,,,,,,,,,,,");
+            p += std::snprintf(p, MAXSOLBUF - MSG_TAIL, "$GPGSA,A,1,,,,,,,,,,,,,,,");
             for (q = reinterpret_cast<char *>(buff) + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q;
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
             return p - reinterpret_cast<char *>(buff);
         }
 
@@ -1713,25 +1721,25 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
     if (nsat > 0)
         {
             s = p;
-            p += sprintf(p, "$GPGSA,A,%d", sol->stat <= 0 ? 1 : 3);
+            p += std::snprintf(p, MAXSOLBUF, "$GPGSA,A,%d", sol->stat <= 0 ? 1 : 3);
             for (i = 0; i < 12; i++)
                 {
                     if (i < nsat)
                         {
-                            p += sprintf(p, ",%02d", prn[i]);
+                            p += std::snprintf(p, MAX_LENGTH_INT + 2, ",%02d", prn[i]);
                         }
                     else
                         {
-                            p += sprintf(p, ",");
+                            p += std::snprintf(p, COMMA_LENGTH, ",");
                         }
                 }
             dops(nsat, azel, 0.0, dop);
-            p += sprintf(p, ",%3.1f,%3.1f,%3.1f,1", dop[1], dop[2], dop[3]);
+            p += std::snprintf(p, MAXSOLBUF - (p - s), ",%3.1f,%3.1f,%3.1f,1", dop[1], dop[2], dop[3]);
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
     /* GLGSA: glonass */
     for (sat = 1, nsat = 0; sat <= MAXSAT && nsat < 12; sat++)
@@ -1753,25 +1761,26 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
     if (nsat > 0)
         {
             s = p;
-            p += sprintf(p, "$GLGSA,A,%d", sol->stat <= 0 ? 1 : 3);
+            const int GLGSA_LENGTH = 11;
+            p += std::snprintf(p, GLGSA_LENGTH, "$GLGSA,A,%d", sol->stat <= 0 ? 1 : 3);
             for (i = 0; i < 12; i++)
                 {
                     if (i < nsat)
                         {
-                            p += sprintf(p, ",%02d", prn[i] + 64);
+                            p += std::snprintf(p, MAX_LENGTH_INT + 2, ",%02d", prn[i] + 64);
                         }
                     else
                         {
-                            p += sprintf(p, ",");
+                            p += std::snprintf(p, COMMA_LENGTH, ",");
                         }
                 }
             dops(nsat, azel, 0.0, dop);
-            p += sprintf(p, ",%3.1f,%3.1f,%3.1f,2", dop[1], dop[2], dop[3]);
+            p += std::snprintf(p, MAXSOLBUF - (p - s), ",%3.1f,%3.1f,%3.1f,2", dop[1], dop[2], dop[3]);
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
     /* GAGSA: galileo */
     for (sat = 1, nsat = 0; sat <= MAXSAT && nsat < 12; sat++)
@@ -1793,25 +1802,25 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
     if (nsat > 0)
         {
             s = p;
-            p += sprintf(p, "$GAGSA,A,%d", sol->stat <= 0 ? 1 : 3);
+            p += std::snprintf(p, MAXSOLBUF, "$GAGSA,A,%d", sol->stat <= 0 ? 1 : 3);
             for (i = 0; i < 12; i++)
                 {
                     if (i < nsat)
                         {
-                            p += sprintf(p, ",%02d", prn[i]);
+                            p += std::snprintf(p, MAX_LENGTH_INT + 2, ",%02d", prn[i]);
                         }
                     else
                         {
-                            p += sprintf(p, ",");
+                            p += std::snprintf(p, COMMA_LENGTH, ",");
                         }
                 }
             dops(nsat, azel, 0.0, dop);
-            p += sprintf(p, ",%3.1f,%3.1f,%3.1f,3", dop[1], dop[2], dop[3]);
+            p += std::snprintf(p, MAXSOLBUF - (p - s), ",%3.1f,%3.1f,%3.1f,3", dop[1], dop[2], dop[3]);
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
     return p - reinterpret_cast<char *>(buff);
 }
@@ -1837,17 +1846,18 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     char *q;
     char *s;
     char sum;
+    const int MSG_TAIL = 6;
 
     trace(3, "outnmea_gsv:\n");
 
     if (sol->stat <= SOLQ_NONE)
         {
-            p += sprintf(p, "$GPGSV,1,1,0,,,,,,,,,,,,,,,,");
+            p += std::snprintf(p, MAXSOLBUF, "$GPGSV,1,1,0,,,,,,,,,,,,,,,,");
             for (q = reinterpret_cast<char *>(buff) + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q;
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
             return p - reinterpret_cast<char *>(buff);
         }
     /* GPGSV: gps/sbas */
@@ -1868,7 +1878,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     for (i = k = 0; i < nmsg; i++)
         {
             s = p;
-            p += sprintf(p, "$GPGSV,%d,%d,%02d", nmsg, i + 1, n);
+            p += std::snprintf(p, MAXSOLBUF, "$GPGSV,%d,%d,%02d", nmsg, i + 1, n);
 
             for (j = 0; j < 4; j++, k++)
                 {
@@ -1885,19 +1895,19 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
                             snr = ssat[sats[k] - 1].snr[0] * 0.25;
-                            p += sprintf(p, ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
                         {
-                            p += sprintf(p, ",,,,");
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
                         }
                 }
-            p += sprintf(p, ",1"); /* L1C/A */
+            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1"); /* L1C/A */
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
     /* GLGSV: glonass */
     for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
@@ -1916,7 +1926,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     for (i = k = 0; i < nmsg; i++)
         {
             s = p;
-            p += sprintf(p, "$GLGSV,%d,%d,%02d", nmsg, i + 1, n);
+            p += std::snprintf(p, MAXSOLBUF, "$GLGSV,%d,%d,%02d", nmsg, i + 1, n);
 
             for (j = 0; j < 4; j++, k++)
                 {
@@ -1931,19 +1941,19 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
                             snr = ssat[sats[k] - 1].snr[0] * 0.25;
-                            p += sprintf(p, ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
                         {
-                            p += sprintf(p, ",,,,");
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
                         }
                 }
-            p += sprintf(p, ",1"); /* L1C/A */
+            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1"); /* L1C/A */
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
     /* GAGSV: galileo */
     for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
@@ -1962,7 +1972,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     for (i = k = 0; i < nmsg; i++)
         {
             s = p;
-            p += sprintf(p, "$GAGSV,%d,%d,%02d", nmsg, i + 1, n);
+            p += std::snprintf(p, MAXSOLBUF, "$GAGSV,%d,%d,%02d", nmsg, i + 1, n);
 
             for (j = 0; j < 4; j++, k++)
                 {
@@ -1976,19 +1986,19 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                                 }
                             el = ssat[sats[k] - 1].azel[1] * R2D;
                             snr = ssat[sats[k] - 1].snr[0] * 0.25;
-                            p += sprintf(p, ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
                         }
                     else
                         {
-                            p += sprintf(p, ",,,,");
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
                         }
                 }
-            p += sprintf(p, ",7"); /* L1BC */
+            p += std::snprintf(p, MAXSOLBUF - (s - p), ",7"); /* L1BC */
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */
                 }
-            p += sprintf(p, "*%02X%c%c", sum, 0x0D, 0x0A);
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
     return p - reinterpret_cast<char *>(buff);
 }
@@ -2018,58 +2028,60 @@ int outprcopts(unsigned char *buff, const prcopt_t *opt)
     const char *s9[] = {"off", "on", "auto calib", "external calib", ""};
     int i;
     char *p = reinterpret_cast<char *>(buff);
+    char *s;
+    s = p;
 
     trace(3, "outprcopts:\n");
 
-    p += sprintf(p, "%s pos mode  : %s\n", COMMENTH, s1[opt->mode]);
+    p += std::snprintf(p, MAXSOLMSG, "%s pos mode  : %s\n", COMMENTH, s1[opt->mode]);
 
     if (PMODE_DGPS <= opt->mode && opt->mode <= PMODE_FIXED)
         {
-            p += sprintf(p, "%s freqs     : %s\n", COMMENTH, s2[opt->nf - 1]);
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s freqs     : %s\n", COMMENTH, s2[opt->nf - 1]);
         }
     if (opt->mode > PMODE_SINGLE)
         {
-            p += sprintf(p, "%s solution  : %s\n", COMMENTH, s3[opt->soltype]);
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s solution  : %s\n", COMMENTH, s3[opt->soltype]);
         }
-    p += sprintf(p, "%s elev mask : %.1f deg\n", COMMENTH, opt->elmin * R2D);
+    p += std::snprintf(p, MAXSOLMSG - (p - s), "%s elev mask : %.1f deg\n", COMMENTH, opt->elmin * R2D);
     if (opt->mode > PMODE_SINGLE)
         {
-            p += sprintf(p, "%s dynamics  : %s\n", COMMENTH, opt->dynamics ? "on" : "off");
-            p += sprintf(p, "%s tidecorr  : %s\n", COMMENTH, opt->tidecorr ? "on" : "off");
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s dynamics  : %s\n", COMMENTH, opt->dynamics ? "on" : "off");
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s tidecorr  : %s\n", COMMENTH, opt->tidecorr ? "on" : "off");
         }
     if (opt->mode <= PMODE_FIXED)
         {
-            p += sprintf(p, "%s ionos opt : %s\n", COMMENTH, s4[opt->ionoopt]);
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s ionos opt : %s\n", COMMENTH, s4[opt->ionoopt]);
         }
-    p += sprintf(p, "%s tropo opt : %s\n", COMMENTH, s5[opt->tropopt]);
-    p += sprintf(p, "%s ephemeris : %s\n", COMMENTH, s6[opt->sateph]);
+    p += std::snprintf(p, MAXSOLMSG - (p - s), "%s tropo opt : %s\n", COMMENTH, s5[opt->tropopt]);
+    p += std::snprintf(p, MAXSOLMSG - (p - s), "%s ephemeris : %s\n", COMMENTH, s6[opt->sateph]);
     if (opt->navsys != SYS_GPS)
         {
-            p += sprintf(p, "%s navi sys  :", COMMENTH);
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s navi sys  :", COMMENTH);
             for (i = 0; sys[i]; i++)
                 {
                     if (opt->navsys & sys[i])
                         {
-                            p += sprintf(p, " %s", s7[i]);
+                            p += std::snprintf(p, MAXSOLMSG - (p - s), " %s", s7[i]);
                         }
                 }
-            p += sprintf(p, "\n");
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "\n");
         }
     if (PMODE_KINEMA <= opt->mode && opt->mode <= PMODE_FIXED)
         {
-            p += sprintf(p, "%s amb res   : %s\n", COMMENTH, s8[opt->modear]);
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s amb res   : %s\n", COMMENTH, s8[opt->modear]);
             if (opt->navsys & SYS_GLO)
                 {
-                    p += sprintf(p, "%s amb glo   : %s\n", COMMENTH, s9[opt->glomodear]);
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "%s amb glo   : %s\n", COMMENTH, s9[opt->glomodear]);
                 }
             if (opt->thresar[0] > 0.0)
                 {
-                    p += sprintf(p, "%s val thres : %.1f\n", COMMENTH, opt->thresar[0]);
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "%s val thres : %.1f\n", COMMENTH, opt->thresar[0]);
                 }
         }
     if (opt->mode == PMODE_MOVEB && opt->baseline[0] > 0.0)
         {
-            p += sprintf(p, "%s baseline  : %.4f %.4f m\n", COMMENTH,
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s baseline  : %.4f %.4f m\n", COMMENTH,
                 opt->baseline[0], opt->baseline[1]);
         }
     for (i = 0; i < 2; i++)
@@ -2078,7 +2090,7 @@ int outprcopts(unsigned char *buff, const prcopt_t *opt)
                 {
                     continue;
                 }
-            p += sprintf(p, "%s antenna%d  : %-21s (%7.4f %7.4f %7.4f)\n", COMMENTH,
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%s antenna%d  : %-21s (%7.4f %7.4f %7.4f)\n", COMMENTH,
                 i + 1, opt->anttype[i], opt->antdel[i][0], opt->antdel[i][1],
                 opt->antdel[i][2]);
         }
@@ -2100,6 +2112,8 @@ int outsolheads(unsigned char *buff, const solopt_t *opt)
     const char *sep = opt2sep(opt);
     char *p = reinterpret_cast<char *>(buff);
     int timeu = opt->timeu < 0 ? 0 : (opt->timeu > 20 ? 20 : opt->timeu);
+    char *s;
+    s = p;
 
     trace(3, "outsolheads:\n");
 
@@ -2110,35 +2124,35 @@ int outsolheads(unsigned char *buff, const solopt_t *opt)
 
     if (opt->outhead)
         {
-            p += sprintf(p, "%s (", COMMENTH);
+            p += std::snprintf(p, MAXSOLMSG, "%s (", COMMENTH);
             if (opt->posf == SOLF_XYZ)
                 {
-                    p += sprintf(p, "x/y/z-ecef=WGS84");
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "x/y/z-ecef=WGS84");
                 }
             else if (opt->posf == SOLF_ENU)
                 {
-                    p += sprintf(p, "e/n/u-baseline=WGS84");
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "e/n/u-baseline=WGS84");
                 }
             else
                 {
-                    p += sprintf(p, "lat/lon/height=%s/%s", s1[opt->datum], s2[opt->height]);
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "lat/lon/height=%s/%s", s1[opt->datum], s2[opt->height]);
                 }
-            p += sprintf(p, ",Q=1:fix,2:float,3:sbas,4:dgps,5:single,6:ppp,ns=# of satellites)\n");
+            p += std::snprintf(p, MAXSOLMSG - (p - s), ",Q=1:fix,2:float,3:sbas,4:dgps,5:single,6:ppp,ns=# of satellites)\n");
         }
-    p += sprintf(p, "%s  %-*s%s", COMMENTH, (opt->timef ? 16 : 8) + timeu + 1, s3[opt->times], sep);
+    p += std::snprintf(p, MAXSOLMSG - (p - s), "%s  %-*s%s", COMMENTH, (opt->timef ? 16 : 8) + timeu + 1, s3[opt->times], sep);
 
     if (opt->posf == SOLF_LLH)
         { /* lat/lon/hgt */
             if (opt->degf)
                 {
-                    p += sprintf(p, "%16s%s%16s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "%16s%s%16s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                         "latitude(d'\")", sep, "longitude(d'\")", sep, "height(m)", sep,
                         "Q", sep, "ns", sep, "sdn(m)", sep, "sde(m)", sep, "sdu(m)", sep,
                         "sdne(m)", sep, "sdeu(m)", sep, "sdue(m)", sep, "age(s)", sep, "ratio");
                 }
             else
                 {
-                    p += sprintf(p, "%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+                    p += std::snprintf(p, MAXSOLMSG - (p - s), "%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                         "latitude(deg)", sep, "longitude(deg)", sep, "height(m)", sep,
                         "Q", sep, "ns", sep, "sdn(m)", sep, "sde(m)", sep, "sdu(m)", sep,
                         "sdne(m)", sep, "sdeu(m)", sep, "sdun(m)", sep, "age(s)", sep, "ratio");
@@ -2146,14 +2160,14 @@ int outsolheads(unsigned char *buff, const solopt_t *opt)
         }
     else if (opt->posf == SOLF_XYZ)
         { /* x/y/z-ecef */
-            p += sprintf(p, "%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                 "x-ecef(m)", sep, "y-ecef(m)", sep, "z-ecef(m)", sep, "Q", sep, "ns", sep,
                 "sdx(m)", sep, "sdy(m)", sep, "sdz(m)", sep, "sdxy(m)", sep,
                 "sdyz(m)", sep, "sdzx(m)", sep, "age(s)", sep, "ratio");
         }
     else if (opt->posf == SOLF_ENU)
         { /* e/n/u-baseline */
-            p += sprintf(p, "%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+            p += std::snprintf(p, MAXSOLMSG - (p - s), "%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                 "e-baseline(m)", sep, "n-baseline(m)", sep, "u-baseline(m)", sep,
                 "Q", sep, "ns", sep, "sde(m)", sep, "sdn(m)", sep, "sdu(m)", sep,
                 "sden(m)", sep, "sdnu(m)", sep, "sdue(m)", sep, "age(s)", sep, "ratio");
@@ -2223,7 +2237,7 @@ int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
                     week++;
                     gpst = 0.0;
                 }
-            snprintf(s, 255, "%4d%s%*.*f", week, sep, 6 + (timeu <= 0 ? 0 : timeu + 1), timeu, gpst);
+            std::snprintf(s, sizeof(s), "%4d%s%*.*f", week, sep, 6 + (timeu <= 0 ? 0 : timeu + 1), timeu, gpst);
         }
     switch (opt->posf)
         {

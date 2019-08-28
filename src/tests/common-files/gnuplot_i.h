@@ -79,7 +79,7 @@ DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive
 class GnuplotException : public std::runtime_error
 {
 public:
-    GnuplotException(const std::string &msg) : std::runtime_error(msg) {}
+    explicit GnuplotException(const std::string &msg) : std::runtime_error(msg) {}
 };
 
 
@@ -189,7 +189,7 @@ public:
     // -------------------------------------------------------------------------
 
     //! set a style during construction
-    Gnuplot(const std::string &style = "points");
+    explicit Gnuplot(const std::string &style = "points");
 
     // plot a single std::vector at one go
     Gnuplot(const std::vector<double> &x,

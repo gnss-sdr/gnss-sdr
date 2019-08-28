@@ -268,10 +268,10 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
                     g += r.step;
                 }
         }
-    for (unsigned stage = 1; stage <= gains.size(); stage++)
+    for (size_t stage = 1; stage <= gains.size(); stage++)
         {
             int stage_gain = static_cast<int>(gains[stage] * 10);
-            unsigned param = (stage << 16) | (stage_gain & 0xffff);
+            size_t param = (stage << 16) | (stage_gain & 0xffff);
             boost::system::error_code ec = rtl_tcp_command(RTL_TCP_SET_IF_GAIN, param, socket_);
             if (ec)
                 {

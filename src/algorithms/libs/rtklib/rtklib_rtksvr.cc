@@ -64,7 +64,7 @@
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)
 {
-    unsigned char buff[1024];
+    unsigned char buff[MAXSOLMSG];
     int n;
     n = outsolheads(buff, solopt);
     strwrite(stream, buff, n);
@@ -88,7 +88,7 @@ void saveoutbuf(rtksvr_t *svr, unsigned char *buff, int n, int index)
 void writesol(rtksvr_t *svr, int index)
 {
     solopt_t solopt = SOLOPT_DEFAULT;
-    unsigned char buff[1024];
+    unsigned char buff[MAXSOLMSG];
     int i;
     int n;
 
@@ -1247,7 +1247,7 @@ void rtksvrsstat(rtksvr_t *svr, int *sstat, char *msg)
             sstat[i] = strstat(svr->stream + i, s);
             if (*s)
                 {
-                    p += sprintf(p, "(%d) %s ", i + 1, s);
+                    p += std::snprintf(p, MAXSTRMSG, "(%d) %s ", i + 1, s);
                 }
         }
     rtksvrunlock(svr);

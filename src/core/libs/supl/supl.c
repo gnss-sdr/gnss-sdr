@@ -134,8 +134,8 @@ int EXPORT supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu)
 
 int EXPORT supl_ulp_recv(supl_ctx_t *ctx, supl_ulp_t *pdu)
 {
-    int err;
-    int n;
+    int64_t err;
+    int64_t n;
     asn_dec_rval_t rval;
     ULP_PDU_t *length;
 

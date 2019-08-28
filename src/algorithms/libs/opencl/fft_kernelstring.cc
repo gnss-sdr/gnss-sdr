@@ -66,7 +66,7 @@ static string
 num2str(int num)
 {
     char temp[200];
-    sprintf(temp, "%d", num);
+    snprintf(temp, sizeof(temp), "%d", num);
     return string(temp);
 }
 
@@ -814,7 +814,7 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
     (*kInfo)->in_place_possible = 1;
     (*kInfo)->next = nullptr;
     (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
-    strcpy((*kInfo)->kernel_name, kernelName.c_str());
+    snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
 
     unsigned int numWorkItemsPerXForm = n / radixArray[0];
     unsigned int numWorkItemsPerWG = numWorkItemsPerXForm <= 64 ? 64 : numWorkItemsPerXForm;
@@ -1035,7 +1035,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                 (*kInfo)->in_place_possible = 0;
             (*kInfo)->next = nullptr;
             (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
-            strcpy((*kInfo)->kernel_name, kernelName.c_str());
+            snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
 
             insertVariables(localString, R1);
 

@@ -127,6 +127,8 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
 
     bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
     trk_param.enable_fll_pull_in = enable_fll_pull_in;
+    bool enable_fll_steady_state = configuration->property(role + ".enable_fll_steady_state", false);
+    trk_param.enable_fll_steady_state = enable_fll_steady_state;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param.fll_bw_hz = fll_bw_hz;
     trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
@@ -169,6 +171,12 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     trk_param.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param.max_code_lock_fail);
     trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
     trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
+
+    //tracking lock tests smoother parameters
+    trk_param.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param.cn0_smoother_samples);
+    trk_param.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param.cn0_smoother_alpha);
+    trk_param.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param.carrier_lock_test_smoother_samples);
+    trk_param.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param.carrier_lock_test_smoother_alpha);
 
     // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

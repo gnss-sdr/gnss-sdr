@@ -192,7 +192,7 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     d_num_doppler_bins = 0;
     num_dwells = 0;
 
-    Acquisition_Dump_Reader(basename,
+    *this = Acquisition_Dump_Reader(basename,
         sat_,
         doppler_max_,
         doppler_step_,
@@ -242,5 +242,38 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
         }
 }
 
+// Copy constructor
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept
+{
+    *this = other;
+}
 
-Acquisition_Dump_Reader::~Acquisition_Dump_Reader() = default;
+
+// Copy assignment operator
+Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Dump_Reader& rhs)
+{
+    // Only do assignment if RHS is a different object from this.
+    if (this != &rhs)
+        {
+            *this = rhs;
+        }
+    return *this;
+}
+
+
+// Move constructor
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept
+{
+    *this = other;
+}
+
+
+// Move assignment operator
+Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(Acquisition_Dump_Reader&& other) noexcept
+{
+    if (this != &other)
+        {
+            *this = other;
+        }
+    return *this;
+}

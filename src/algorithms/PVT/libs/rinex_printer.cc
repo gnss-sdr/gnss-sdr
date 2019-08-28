@@ -439,7 +439,7 @@ std::string Rinex_Printer::getLocalTime()
     line += std::string(12, ' ');
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -2398,7 +2398,7 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out)
     line += Rinex_Printer::leftJustify("GNSS-SDR", 20);
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -4842,7 +4842,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -5168,7 +5168,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -5523,7 +5523,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -5832,7 +5832,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6155,7 +6155,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6412,7 +6412,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6663,7 +6663,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6944,7 +6944,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7290,7 +7290,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7608,7 +7608,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7875,7 +7875,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -8157,7 +8157,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
     line.clear();
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), sizeof(c_username) - 1);
+    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();

@@ -317,7 +317,7 @@ int decode_head1001(rtcm_t *rtcm, int *sync)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d %s nsat=%2d sync=%d", staid,
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d %s nsat=%2d sync=%d", staid,
                 time_str(rtcm->time, 2), nsat, *sync);
         }
     return nsat;
@@ -583,7 +583,7 @@ int decode_type1005(rtcm_t *rtcm)
                     re[j] = rr[j] * 0.0001;
                 }
             ecef2pos(re, pos);
-            sprintf(msg, " staid=%4d pos=%.8f %.8f %.3f", staid, pos[0] * R2D, pos[1] * R2D,
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d pos=%.8f %.8f %.3f", staid, pos[0] * R2D, pos[1] * R2D,
                 pos[2]);
         }
     /* test station id */
@@ -644,7 +644,7 @@ int decode_type1006(rtcm_t *rtcm)
                     re[j] = rr[j] * 0.0001;
                 }
             ecef2pos(re, pos);
-            sprintf(msg, " staid=%4d pos=%.8f %.8f %.3f anth=%.3f", staid, pos[0] * R2D,
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d pos=%.8f %.8f %.3f anth=%.3f", staid, pos[0] * R2D,
                 pos[1] * R2D, pos[2], anth);
         }
     /* test station id */
@@ -697,7 +697,7 @@ int decode_type1007(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d", staid);
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d", staid);
         }
     /* test station id */
     if (!test_staid(rtcm, staid))
@@ -754,7 +754,7 @@ int decode_type1008(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d", staid);
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d", staid);
         }
     /* test station id */
     if (!test_staid(rtcm, staid))
@@ -813,7 +813,7 @@ int decode_head1009(rtcm_t *rtcm, int *sync)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d %s nsat=%2d sync=%d", staid,
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d %s nsat=%2d sync=%d", staid,
                 time_str(rtcm->time, 2), nsat, *sync);
         }
     return nsat;
@@ -1127,7 +1127,7 @@ int decode_type1019(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%2d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
                 prn, eph.iode, eph.iodc, week, eph.toes, toc, eph.svh);
         }
     if (!(sat = satno(sys, prn)))
@@ -1228,7 +1228,7 @@ int decode_type1020(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%2d tk=%02.0f:%02.0f:%02.0f frq=%2d bn=%d tb=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d tk=%02.0f:%02.0f:%02.0f frq=%2d bn=%d tb=%d",
                 prn, tk_h, tk_m, tk_s, geph.frq, bn, tb);
         }
     geph.sat = sat;
@@ -1371,7 +1371,7 @@ int decode_type1029(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d text=%s", staid, rtcm->msg);
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d text=%s", staid, rtcm->msg);
         }
     return 0;
 }
@@ -1469,7 +1469,7 @@ int decode_type1033(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d", staid);
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d", staid);
         }
     /* test station id */
     if (!test_staid(rtcm, staid))
@@ -1619,7 +1619,7 @@ int decode_type1044(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%3d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%3d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
                 prn, eph.iode, eph.iodc, week, eph.toes, toc, eph.svh);
         }
     if (!(sat = satno(sys, prn)))
@@ -1732,7 +1732,7 @@ int decode_type1045(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%2d iode=%3d week=%d toe=%6.0f toc=%6.0f hs=%d dvs=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d week=%d toe=%6.0f toc=%6.0f hs=%d dvs=%d",
                 prn, eph.iode, week, eph.toes, toc, e5a_hs, e5a_dvs);
         }
     if (!(sat = satno(sys, prn)))
@@ -1846,7 +1846,7 @@ int decode_type1046(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%2d iode=%3d week=%d toe=%6.0f toc=%6.0f hs=%d dvs=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d week=%d toe=%6.0f toc=%6.0f hs=%d dvs=%d",
                 prn, eph.iode, week, eph.toes, toc, e5a_hs, e5a_dvs);
         }
     if (!(sat = satno(sys, prn)))
@@ -1963,7 +1963,7 @@ int decode_type1047(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%2d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
                 prn, eph.iode, eph.iodc, week, eph.toes, toc, eph.svh);
         }
     if (!(sat = satno(sys, prn)))
@@ -2077,7 +2077,7 @@ int decode_type63(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " prn=%2d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d iodc=%3d week=%d toe=%6.0f toc=%6.0f svh=%02X",
                 prn, eph.iode, eph.iodc, week, eph.toes, toc, eph.svh);
         }
     if (!(sat = satno(sys, prn)))
@@ -2162,7 +2162,7 @@ int decode_ssr1_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " %s nsat=%2d iod=%2d udi=%2d sync=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " %s nsat=%2d iod=%2d udi=%2d sync=%d",
                 time_str(rtcm->time, 2), nsat, *iod, udi, *sync);
         }
     *hsize = i;
@@ -2224,7 +2224,7 @@ int decode_ssr2_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " %s nsat=%2d iod=%2d udi=%2d sync=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " %s nsat=%2d iod=%2d udi=%2d sync=%d",
                 time_str(rtcm->time, 2), nsat, *iod, udi, *sync);
         }
     *hsize = i;
@@ -2290,7 +2290,7 @@ int decode_ssr7_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " %s nsat=%2d iod=%2d udi=%2d sync=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " %s nsat=%2d iod=%2d udi=%2d sync=%d",
                 time_str(rtcm->time, 2), nsat, *iod, udi, *sync);
         }
     *hsize = i;
@@ -3167,14 +3167,14 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                 {
                     if (q)
                         {
-                            q += sprintf(q, "L%s%s", sig[i], i < h->nsig - 1 ? ", " : "");
+                            q += std::snprintf(q, sizeof(rtcm->msmtype[0]), "L%s%s", sig[i], i < h->nsig - 1 ? ", " : "");
                         }
                 }
             else
                 {
                     if (q)
                         {
-                            q += sprintf(q, "(%d)%s", h->sigs[i], i < h->nsig - 1 ? ", " : "");
+                            q += std::snprintf(q, sizeof(rtcm->msmtype[0]), "(%d)%s", h->sigs[i], i < h->nsig - 1 ? ", " : "");
                         }
 
                     trace(2, "rtcm3 %d: unknown signal id=%2d\n", type, h->sigs[i]);
@@ -3372,7 +3372,7 @@ int decode_msm_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            sprintf(msg, " staid=%4d %s nsat=%2d nsig=%2d iod=%2d ncell=%2d sync=%d",
+            std::snprintf(msg, sizeof(rtcm->msgtype), " staid=%4d %s nsat=%2d nsig=%2d iod=%2d ncell=%2d sync=%d",
                 staid, time_str(rtcm->time, 2), h->nsat, h->nsig, *iod, ncell, *sync);
         }
     return ncell;
@@ -3893,7 +3893,7 @@ int decode_rtcm3(rtcm_t *rtcm)
 
     if (rtcm->outtype)
         {
-            sprintf(rtcm->msgtype, "RTCM %4d (%4d):", type, rtcm->len);
+            std::snprintf(rtcm->msgtype, sizeof(rtcm->msgtype), "RTCM %4d (%4d):", type, rtcm->len);
         }
     /* real-time input option */
     if (strstr(rtcm->opt, "-RT_INP"))

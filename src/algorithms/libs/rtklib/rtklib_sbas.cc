@@ -61,6 +61,7 @@
 
 #include "rtklib_sbas.h"
 #include "rtklib_rtkcmn.h"
+#include <cmath>  // for lround
 #include <cstring>
 
 /* extract field from line ---------------------------------------------------*/
@@ -727,7 +728,7 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
                     sbs->msgs = sbs_msgs;
                 }
             sbs->msgs[sbs->n].week = week;
-            sbs->msgs[sbs->n].tow = static_cast<int>(tow + 0.5);
+            sbs->msgs[sbs->n].tow = static_cast<int>(std::lround(tow));
             sbs->msgs[sbs->n].prn = prn;
             for (i = 0; i < 29; i++)
                 {
@@ -782,7 +783,7 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
+            if (!(efiles[i] = static_cast<char *>(malloc(MAXSTRPATH + 255))))
                 {
                     for (i--; i >= 0; i--)
                         {

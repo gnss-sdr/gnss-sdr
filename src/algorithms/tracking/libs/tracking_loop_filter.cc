@@ -35,6 +35,7 @@
 #include "tracking_loop_filter.h"
 #include <glog/logging.h>
 #include <cmath>
+#include <cstddef>
 
 const int MAX_LOOP_ORDER = 3;
 const int MAX_LOOP_HISTORY_LENGTH = 4;
@@ -74,7 +75,7 @@ float Tracking_loop_filter::apply(float current_input)
     float result = 0.0;
 
     // Handle the old outputs first:
-    for (unsigned int ii = 0; ii < d_output_coefficients.size(); ++ii)
+    for (size_t ii = 0; ii < d_output_coefficients.size(); ++ii)
         {
             result += d_output_coefficients[ii] * d_outputs[(d_current_index + ii) % MAX_LOOP_HISTORY_LENGTH];
         }
@@ -94,7 +95,7 @@ float Tracking_loop_filter::apply(float current_input)
 
     d_inputs[d_current_index] = current_input;
 
-    for (unsigned int ii = 0; ii < d_input_coefficients.size(); ++ii)
+    for (size_t ii = 0; ii < d_input_coefficients.size(); ++ii)
         {
             result += d_input_coefficients[ii] * d_inputs[(d_current_index + ii) % MAX_LOOP_HISTORY_LENGTH];
         }

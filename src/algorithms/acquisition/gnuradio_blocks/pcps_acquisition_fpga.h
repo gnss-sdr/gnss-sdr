@@ -203,7 +203,7 @@ public:
 
 private:
     friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
-    pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
+    explicit pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
     bool d_active;
     bool d_make_2_steps;
     uint32_t d_doppler_index;

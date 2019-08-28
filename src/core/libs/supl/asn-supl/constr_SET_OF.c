@@ -324,7 +324,7 @@ SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
 	size_t max_encoded_len = 1;
 	asn_enc_rval_t erval;
 	int ret;
-	int edx;
+	ssize_t edx;
 
 	ASN_DEBUG("Estimating size for SET OF %s", td->name);
 
@@ -919,7 +919,7 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			if(nelems < 0) _ASN_DECODE_STARVED;
 		}
 
-		for(i = 0; i < nelems; i++) {
+		for(ssize_t k = 0; k < nelems; k++) {
 			void *ptr = 0;
 			ASN_DEBUG("SET OF %s decoding", elm->type->name);
 			rv = elm->type->uper_decoder(opt_codec_ctx, elm->type,

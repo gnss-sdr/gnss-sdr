@@ -214,7 +214,7 @@ public:
 
 private:
     friend pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
-    pcps_acquisition(const Acq_Conf& conf_);
+    explicit pcps_acquisition(const Acq_Conf& conf_);
     bool d_active;
     bool d_worker_active;
     bool d_cshort;

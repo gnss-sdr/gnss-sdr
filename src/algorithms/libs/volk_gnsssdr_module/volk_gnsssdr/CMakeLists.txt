@@ -339,6 +339,7 @@ install(FILES
     ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_typedefs.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_malloc.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sine_table.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/constants.h
     DESTINATION include/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )

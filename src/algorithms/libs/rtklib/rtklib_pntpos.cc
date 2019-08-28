@@ -595,7 +595,7 @@ int valsol(const double *azel, const int *vsat, int n,
     vv = dot(v, v, nv);
     if (nv > nx && vv > CHISQR[nv - nx - 1])
         {
-            sprintf(msg, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
+            std::snprintf(msg, MAXSOLBUF, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
             return 0;
         }
     /* large gdop check */
@@ -612,7 +612,7 @@ int valsol(const double *azel, const int *vsat, int n,
     dops(ns, azels, opt->elmin, dop);
     if (dop[0] <= 0.0 || dop[0] > opt->maxgdop)
         {
-            sprintf(msg, "gdop error nv=%d gdop=%.1f", nv, dop[0]);
+            std::snprintf(msg, MAXSOLBUF, "gdop error nv=%d gdop=%.1f", nv, dop[0]);
             return 0;
         }
     return 1;
@@ -639,6 +639,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     int stat;
     int nv;
     int ns;
+    char msg_aux[128];
 
     trace(3, "estpos  : n=%d\n", n);
 
@@ -658,7 +659,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
 
             if (nv < NX)
                 {
-                    sprintf(msg, "lack of valid sats ns=%d", nv);
+                    std::snprintf(msg_aux, sizeof(msg_aux), "lack of valid sats ns=%d", nv);
                     break;
                 }
             /* weight by variance */
@@ -674,7 +675,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
             /* least square estimation */
             if ((info = lsq(H, v, NX, nv, dx, Q)))
                 {
-                    sprintf(msg, "lsq error info=%d", info);
+                    std::snprintf(msg_aux, sizeof(msg_aux), "lsq error info=%d", info);
                     break;
                 }
             for (j = 0; j < NX; j++)
@@ -712,18 +713,19 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     free(v);
                     free(H);
                     free(var);
-
+                    msg = msg_aux;
                     return stat;
                 }
         }
     if (i >= MAXITR)
         {
-            sprintf(msg, "iteration divergent i=%d", i);
+            std::snprintf(msg_aux, sizeof(msg_aux), "iteration divergent i=%d", i);
         }
 
     free(v);
     free(H);
     free(var);
+    msg = msg_aux;
 
     return 0;
 }

@@ -85,7 +85,7 @@ If you are using Arch Linux:
 
 ~~~~~~
 $ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
-       gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
+       blas lapack gflags google-glog openssl pugixml \
        python-mako python-six libmatio libpcap gtest protobuf
 ~~~~~~
 

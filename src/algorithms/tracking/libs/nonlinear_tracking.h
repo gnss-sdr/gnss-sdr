@@ -64,7 +64,7 @@ class CubatureFilter
 public:
     // Constructors and destructors
     CubatureFilter();
-    CubatureFilter(int nx);
+    explicit CubatureFilter(int nx);
     CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
     ~CubatureFilter() = default;
 
@@ -93,7 +93,7 @@ class UnscentedFilter
 public:
     // Constructors and destructors
     UnscentedFilter();
-    UnscentedFilter(int nx);
+    explicit UnscentedFilter(int nx);
     UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0);
     ~UnscentedFilter() = default;
 

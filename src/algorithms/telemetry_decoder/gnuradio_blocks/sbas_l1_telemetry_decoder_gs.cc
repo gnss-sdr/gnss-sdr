@@ -138,7 +138,7 @@ bool sbas_l1_telemetry_decoder_gs::Sample_Aligner::get_symbols(const std::vector
     VLOG(FLOW) << "get_symbols(): "
                << "d_past_sample=" << d_past_sample << "\tsamples size=" << samples.size();
 
-    for (uint32_t i_sym = 0; i_sym < samples.size() / sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL; i_sym++)
+    for (size_t i_sym = 0; i_sym < samples.size() / sbas_l1_telemetry_decoder_gs::D_SAMPLES_PER_SYMBOL; i_sym++)
         {
             // get the next samples
             for (int32_t i = 0; i < d_n_smpls_in_history; i++)

@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 void read_results(std::vector<volk_gnsssdr_test_results_t> *results)
 {
     char path[1024];
-    volk_gnsssdr_get_config_path(path);
+    volk_gnsssdr_get_config_path(path, true);
 
     read_results(results, std::string(path));
 }
@@ -255,7 +255,7 @@ void read_results(std::vector<volk_gnsssdr_test_results_t> *results, std::string
 void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool update_result)
 {
     char path[1024];
-    volk_gnsssdr_get_config_path(path);
+    volk_gnsssdr_get_config_path(path, false);
 
     write_results(results, update_result, std::string(path));
 }

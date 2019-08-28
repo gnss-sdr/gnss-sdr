@@ -79,10 +79,10 @@ private:
 
     private:
         int t;
-        int* state;
-        int* bit;
-        float* metric;
-        int* refcount;
+        std::vector<int> state;
+        std::vector<int> bit;
+        std::vector<float> metric;
+        int refcount;
     };
 
     // code properties

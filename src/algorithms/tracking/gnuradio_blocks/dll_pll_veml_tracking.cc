@@ -445,16 +445,18 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
     d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_cn0_smoother = Exponential_Smoother();
+    d_cn0_smoother.set_alpha(trk_parameters.cn0_smoother_alpha);
+
     if (d_code_period > 0.0)
         {
-            d_cn0_smoother.set_samples_for_initialization(200 / static_cast<int>(d_code_period * 1000.0));
+            d_cn0_smoother.set_samples_for_initialization(trk_parameters.cn0_smoother_samples / static_cast<int>(d_code_period * 1000.0));
         }
 
     d_carrier_lock_test_smoother = Exponential_Smoother();
-    d_carrier_lock_test_smoother.set_alpha(0.002);
+    d_carrier_lock_test_smoother.set_alpha(trk_parameters.carrier_lock_test_smoother_alpha);
     d_carrier_lock_test_smoother.set_min_value(-1.0);
     d_carrier_lock_test_smoother.set_offset(0.0);
-    d_carrier_lock_test_smoother.set_samples_for_initialization(25);
+    d_carrier_lock_test_smoother.set_samples_for_initialization(trk_parameters.carrier_lock_test_smoother_samples);
 
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;

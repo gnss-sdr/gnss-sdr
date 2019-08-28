@@ -126,6 +126,8 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
 
     bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
     trk_param_fpga.enable_fll_pull_in = enable_fll_pull_in;
+    bool enable_fll_steady_state = configuration->property(role + ".enable_fll_steady_state", false);
+    trk_param_fpga.enable_fll_steady_state = enable_fll_steady_state;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param_fpga.fll_bw_hz = fll_bw_hz;
     float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
@@ -174,7 +176,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    uint32_t device_base = configuration->property(role + ".device_base", 3);
+    int32_t device_base = configuration->property(role + ".device_base", 3);
     trk_param_fpga.device_base = device_base;
 
     // ################# PRE-COMPUTE ALL THE CODES #################
@@ -213,6 +215,13 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
                         }
                 }
         }
+
+    //tracking lock tests smoother parameters
+    trk_param.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param.cn0_smoother_samples);
+    trk_param.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param.cn0_smoother_alpha);
+    trk_param.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param.carrier_lock_test_smoother_samples);
+    trk_param.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param.carrier_lock_test_smoother_alpha);
+
 
     // ################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);

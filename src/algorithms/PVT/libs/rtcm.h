@@ -44,6 +44,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <pmt/pmt.h>
+#include <algorithm>  // for min
 #include <bitset>
 #include <cstddef>  // for size_t
 #include <cstdint>
@@ -97,7 +98,7 @@ using b_io_context = boost::asio::io_service;
 class Rtcm
 {
 public:
-    Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+    explicit Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
     ~Rtcm();
 
     /*!
@@ -593,7 +594,7 @@ private:
         inline void encode_header()
         {
             char header[header_length + 1] = "";
-            std::sprintf(header, "GS%4d", static_cast<int>(body_length_));
+            std::snprintf(header, header_length + 1, "GS%4d", std::max(std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)), 0));
             std::memcpy(data_, header, header_length);
         }
 

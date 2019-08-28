@@ -130,6 +130,8 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
     bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
     trk_param_fpga.enable_fll_pull_in = enable_fll_pull_in;
+    bool enable_fll_steady_state = configuration->property(role + ".enable_fll_steady_state", false);
+    trk_param_fpga.enable_fll_steady_state = enable_fll_steady_state;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param_fpga.fll_bw_hz = fll_bw_hz;
     float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);

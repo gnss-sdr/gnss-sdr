@@ -286,6 +286,13 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                 }
         }
 
+    //tracking lock tests smoother parameters
+    trk_param.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param.cn0_smoother_samples);
+    trk_param.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param.cn0_smoother_alpha);
+    trk_param.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param.carrier_lock_test_smoother_samples);
+    trk_param.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param.carrier_lock_test_smoother_alpha);
+
+    // ################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";

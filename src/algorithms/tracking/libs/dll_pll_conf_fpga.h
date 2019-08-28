@@ -73,6 +73,12 @@ public:
     int32_t cn0_min;
     int32_t max_code_lock_fail;
     int32_t max_carrier_lock_fail;
+
+    int32_t cn0_smoother_samples;
+    float cn0_smoother_alpha;
+    int32_t carrier_lock_test_smoother_samples;
+    float carrier_lock_test_smoother_alpha;
+
     // int32_t max_lock_fail;
     uint32_t smoother_length;
     double carrier_lock_th;

@@ -263,10 +263,10 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
         }
 
     //tracking lock tests smoother parameters
-    trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param.cn0_smoother_samples);
-    trk_param_fpga.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param.cn0_smoother_alpha);
-    trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param.carrier_lock_test_smoother_samples);
-    trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param.carrier_lock_test_smoother_alpha);
+    trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);
+    trk_param_fpga.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param_fpga.cn0_smoother_alpha);
+    trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param_fpga.carrier_lock_test_smoother_samples);
+    trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param_fpga.carrier_lock_test_smoother_alpha);
 
 
     // ################# MAKE TRACKING GNURadio object ###################

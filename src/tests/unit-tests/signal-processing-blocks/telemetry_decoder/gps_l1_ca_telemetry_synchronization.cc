@@ -174,7 +174,7 @@ void GpsL1CATelemetrySynchronizationTest::fill_gnss_synchro()
  *
  * Computes the number of total preambles (missed and detected)
  * Calculates the number of detected, correct and wrong, preambles in the different states
- * Saves probabilities in a file "../../test_results/synchronization_HC_test_x.csv"
+ * Saves probabilities in a file "synchronization_HC_test_x.csv"
  */
 TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
 {
@@ -186,7 +186,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
     std::fstream fout;
 
     // opens an existing csv (std::ios::app) file or creates a new file (std::ios::out).
-    fout.open("../../test_results/synchronization_HC_test_3.csv", std::ios::out);
+    fout.open("synchronization_HC_test_3.csv", std::ios::out);
 
     fout << "stddev"
          << ", "
@@ -380,7 +380,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, HardCorrelator)
  *
  * Computes the number of total preambles (missed and detected)
  * Calculates the number of detected, correct and wrong, preambles in the different states
- * Saves probabilities in a file "../../test_results/synchronization_SLRT_test_x.csv"
+ * Saves probabilities in a file "synchronization_SLRT_test_x.csv"
  */
 TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
 {
@@ -392,7 +392,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
     std::fstream fout;
 
     // opens an existing csv (std::ios::app) file or creates a new file (std::ios::out).
-    fout.open("../../test_results/synchronization_SLRT_test_3.csv", std::ios::out);
+    fout.open("synchronization_SLRT_test_3.csv", std::ios::out);
 
     fout << "stddev"
          << ", "

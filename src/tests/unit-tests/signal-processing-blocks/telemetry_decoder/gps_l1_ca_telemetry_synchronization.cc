@@ -41,6 +41,7 @@
 #define vector_size 6000     // 20 sub-frames with 300 bits
 #define preamble_offset 200  // Random data before preamble
 #define Nw 1000              // Number of Monte-Carlo realizations
+#define threshold 0	     // Threshold for SLRT
 
 
 /*!
@@ -457,7 +458,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                         corr_value2 += abs(d_symbol_history[i]);
                                     }
 
-                                if (abs(corr_value1) - corr_value2 == 0)
+                                if (abs(corr_value1) - corr_value2 >= threshold)
                                     {
                                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                         // std::cout << "Preamble detection for GPS L1 satellite " << d_preamble_index << std::endl;
@@ -489,7 +490,7 @@ TEST_F(GpsL1CATelemetrySynchronizationTest, SoftCorrelator)
                                                 corr_value2 += abs(d_symbol_history[i]);
                                             }
                                     }
-                                if (abs(corr_value1) - corr_value2 == 0)
+                                if (abs(corr_value1) - corr_value2 >= threshold)
                                     {
                                         if ((d_sample_counter - preamble_offset) % d_preamble_period_symbols == 0)
                                             n_correct_detections_s1++;

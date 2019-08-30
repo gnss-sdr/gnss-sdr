@@ -1222,6 +1222,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                         }
                     else
                         {
+                    		channels_[current_channel]->set_signal(channels_[current_channel]->get_signal());
                             start_acquisition = true;
                         }
 
@@ -1345,6 +1346,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     channels_state_[who] = 1;
                     acq_channels_count_++;
                     DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
+                    channels_[who]->set_signal(channels_[who]->get_signal());
 #ifndef ENABLE_FPGA
                     channels_[who]->start_acquisition();
 #else

@@ -398,22 +398,22 @@ void GNSSFlowgraph::connect()
                                     switch (mapStringValues_[channels_.at(i)->implementation()])
                                         {
                                         case evGPS_1C:
-                                            acq_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                                            acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                                             break;
                                         case evGPS_2S:
-                                            acq_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                                            acq_fs = GPS_L2C_OPT_ACQ_FS_SPS;
                                             break;
                                         case evGPS_L5:
-                                            acq_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                                            acq_fs = GPS_L5_OPT_ACQ_FS_SPS;
                                             break;
                                         case evSBAS_1C:
-                                            acq_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                                            acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                                             break;
                                         case evGAL_1B:
-                                            acq_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
+                                            acq_fs = GALILEO_E1_OPT_ACQ_FS_SPS;
                                             break;
                                         case evGAL_5X:
-                                            acq_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
+                                            acq_fs = GALILEO_E5A_OPT_ACQ_FS_SPS;
                                             break;
                                         case evGLO_1G:
                                             acq_fs = fs;
@@ -1222,7 +1222,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                         }
                     else
                         {
-                    		channels_[current_channel]->set_signal(channels_[current_channel]->get_signal());
+                            channels_[current_channel]->set_signal(channels_[current_channel]->get_signal());
                             start_acquisition = true;
                         }
 

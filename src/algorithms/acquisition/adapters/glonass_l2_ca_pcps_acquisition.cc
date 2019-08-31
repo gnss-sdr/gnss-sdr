@@ -61,7 +61,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
-    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GLONASS_L2_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GLONASS_L2_CA_CHIP_PERIOD_S * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
@@ -84,7 +84,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     // --- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -107,7 +107,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     acq_parameters.sampled_ms = sampled_ms_;
     acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.ms_per_code = 1;
-    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GLONASS_L2_CA_CODE_PERIOD * 1000.0);
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GLONASS_L2_CA_CODE_PERIOD_S * 1000.0);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

@@ -51,21 +51,21 @@ const double GPS_L5_F = -4.442807633e-10;               //!< Constant, [s/(m)^(1
 // carrier and code frequencies
 const double GPS_L5_FREQ_HZ = FREQ5;  //!< L5 [Hz]
 
-const double GPS_L5I_CODE_RATE_HZ = 10.23e6;      //!< GPS L5i code rate [chips/s]
+const double GPS_L5I_CODE_RATE_CPS = 10.23e6;     //!< GPS L5i code rate [chips/s]
 const int32_t GPS_L5I_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5i  code length [chips]
-const double GPS_L5I_PERIOD = 0.001;              //!< GPS L5 code period [seconds]
+const double GPS_L5I_PERIOD_S = 0.001;            //!< GPS L5 code period [seconds]
 const int32_t GPS_L5I_PERIOD_MS = 1;              //!< GPS L5 code period [ms]
-const double GPS_L5I_SYMBOL_PERIOD = 0.01;        //!< GPS L5 symbol period [seconds]
+const double GPS_L5I_SYMBOL_PERIOD_S = 0.01;      //!< GPS L5 symbol period [seconds]
 const int32_t GPS_L5I_SYMBOL_PERIOD_MS = 10;      //!< GPS L5 symbol period [ms]
 
-const double GPS_L5Q_CODE_RATE_HZ = 10.23e6;      //!< GPS L5i code rate [chips/s]
+const double GPS_L5Q_CODE_RATE_CPS = 10.23e6;     //!< GPS L5i code rate [chips/s]
 const int32_t GPS_L5Q_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5i code length [chips]
-const double GPS_L5Q_PERIOD = 0.001;              //!< GPS L5 code period [seconds]
+const double GPS_L5Q_PERIOD_S = 0.001;            //!< GPS L5 code period [seconds]
 
 const int32_t GPS_L5_HISTORY_DEEP = 5;
 
 // optimum parameters
-const uint32_t GPS_L5_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+const uint32_t GPS_L5_OPT_ACQ_FS_SPS = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 const int32_t GPS_L5I_INIT_REG[210] =
     {266, 365, 804, 1138,

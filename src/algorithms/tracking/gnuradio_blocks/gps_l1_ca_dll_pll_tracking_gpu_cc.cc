@@ -122,7 +122,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     multicorrelator_gpu->set_input_output_vectors(d_correlator_outs, in_gpu);
 
     // define initial code frequency basis of NCO
-    d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = GPS_L1_CA_CODE_RATE_CPS;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
@@ -186,7 +186,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     double T_chip_mod_seconds;
     double T_prn_mod_seconds;
     double T_prn_mod_samples;
-    d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_CPS;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1 / d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
@@ -194,7 +194,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
 
     d_correlation_length_samples = round(T_prn_mod_samples);
 
-    double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+    double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_CPS;
     double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
     double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
@@ -380,7 +380,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             // PLL to DLL assistance [Secs/Ti]
             d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz * CURRENT_INTEGRATION_TIME_S) / GPS_L1_FREQ_HZ;
             // code Doppler frequency update
-            d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
+            d_code_freq_chips = GPS_L1_CA_CODE_RATE_CPS + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_CPS) / GPS_L1_FREQ_HZ);
 
             // ################## DLL ##########################################################
             // DLL discriminator
@@ -436,7 +436,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD_S);
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
                     // Loss of lock detection

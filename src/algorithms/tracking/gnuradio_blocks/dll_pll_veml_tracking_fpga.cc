@@ -133,8 +133,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             if (signal_type == "1C")
                 {
                     d_signal_carrier_freq = GPS_L1_FREQ_HZ;
-                    d_code_period = GPS_L1_CA_CODE_PERIOD;
-                    d_code_chip_rate = GPS_L1_CA_CODE_RATE_HZ;
+                    d_code_period = GPS_L1_CA_CODE_PERIOD_S;
+                    d_code_chip_rate = GPS_L1_CA_CODE_RATE_CPS;
                     d_correlation_length_ms = 1;
                     // GPS L1 C/A does not have pilot component nor secondary code
                     d_secondary = false;
@@ -148,8 +148,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             else if (signal_type == "2S")
                 {
                     d_signal_carrier_freq = GPS_L2_FREQ_HZ;
-                    d_code_period = GPS_L2_M_PERIOD;
-                    d_code_chip_rate = GPS_L2_M_CODE_RATE_HZ;
+                    d_code_period = GPS_L2_M_PERIOD_S;
+                    d_code_chip_rate = GPS_L2_M_CODE_RATE_CPS;
                     // GPS L2C has 1 trk symbol (20 ms) per tlm bit, no symbol integration required
                     d_symbols_per_bit = GPS_L2_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 20;
@@ -160,8 +160,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             else if (signal_type == "L5")
                 {
                     d_signal_carrier_freq = GPS_L5_FREQ_HZ;
-                    d_code_period = GPS_L5I_PERIOD;
-                    d_code_chip_rate = GPS_L5I_CODE_RATE_HZ;
+                    d_code_period = GPS_L5I_PERIOD_S;
+                    d_code_chip_rate = GPS_L5I_CODE_RATE_CPS;
                     // symbol integration: 10 trk symbols (10 ms) = 1 tlm bit
                     d_symbols_per_bit = GPS_L5_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 1;
@@ -210,8 +210,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             if (signal_type == "1B")
                 {
                     d_signal_carrier_freq = GALILEO_E1_FREQ_HZ;
-                    d_code_period = GALILEO_E1_CODE_PERIOD;
-                    d_code_chip_rate = GALILEO_E1_CODE_CHIP_RATE_HZ;
+                    d_code_period = GALILEO_E1_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E1_CODE_CHIP_RATE_CPS;
                     // Galileo E1b has 1 trk symbol (4 ms) per tlm bit, no symbol integration required
                     d_symbols_per_bit = 1;
                     d_correlation_length_ms = 4;
@@ -233,8 +233,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             else if (signal_type == "5X")
                 {
                     d_signal_carrier_freq = GALILEO_E5A_FREQ_HZ;
-                    d_code_period = GALILEO_E5A_CODE_PERIOD;
-                    d_code_chip_rate = GALILEO_E5A_CODE_CHIP_RATE_HZ;
+                    d_code_period = GALILEO_E5A_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E5A_CODE_CHIP_RATE_CPS;
                     d_symbols_per_bit = 20;
                     d_correlation_length_ms = 1;
                     d_secondary = true;

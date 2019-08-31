@@ -106,10 +106,10 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
         }
     if (acq_parameters_.use_automatic_resampler)
         {
-            if (acq_parameters_.fs_in > GPS_L5_OPT_ACQ_FS_HZ)
+            if (acq_parameters_.fs_in > GPS_L5_OPT_ACQ_FS_SPS)
                 {
-                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / GPS_L5_OPT_ACQ_FS_HZ);
-                    uint32_t decimation = acq_parameters_.fs_in / GPS_L5_OPT_ACQ_FS_HZ;
+                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / GPS_L5_OPT_ACQ_FS_SPS);
+                    uint32_t decimation = acq_parameters_.fs_in / GPS_L5_OPT_ACQ_FS_SPS;
                     while (acq_parameters_.fs_in % decimation > 0)
                         {
                             decimation--;
@@ -119,20 +119,20 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
                 }
 
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_CPS) * static_cast<float>(acq_parameters_.resampled_fs)));
         }
     else
         {
             acq_parameters_.resampled_fs = fs_in_;
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_CPS) * static_cast<float>(acq_parameters_.fs_in)));
         }
 
-    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L5I_PERIOD * 1000.0);
+    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L5I_PERIOD_S * 1000.0);
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
     code_ = std::vector<std::complex<float>>(vector_length_);
     acquisition_ = pcps_make_acquisition(acq_parameters_);

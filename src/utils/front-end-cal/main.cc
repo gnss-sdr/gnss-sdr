@@ -215,7 +215,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
 
     //--- Find number of samples per spreading code ---
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
-    int samples_per_code = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    int samples_per_code = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples = samples_per_code * 50;
 
     int skip_samples = fs_in_ * 5;  // skip 5 seconds

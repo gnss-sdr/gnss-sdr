@@ -76,7 +76,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     trk_param_fpga.early_late_space_narrow_chips = 0.0;
-    int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     trk_param_fpga.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
     if (symbols_extended_correlator != 1)

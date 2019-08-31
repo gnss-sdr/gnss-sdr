@@ -81,7 +81,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
 
     //--- Find number of samples per spreading code (4 ms)  -----------------
     code_length_ = round(
-        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 

@@ -75,7 +75,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     acq_parameters.doppler_max = doppler_max_;
 
     acq_parameters.sampled_ms = 20;
-    unsigned int code_length = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    unsigned int code_length = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_CPS / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f(static_cast<float>(code_length)));
@@ -90,7 +90,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     acq_parameters.downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
-    acq_parameters.excludelimit = static_cast<uint32_t>(std::round(static_cast<double>(fs_in_) / GPS_L2_M_CODE_RATE_HZ));
+    acq_parameters.excludelimit = static_cast<uint32_t>(std::round(static_cast<double>(fs_in_) / GPS_L2_M_CODE_RATE_CPS));
 
     // compute all the GPS L2C PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)

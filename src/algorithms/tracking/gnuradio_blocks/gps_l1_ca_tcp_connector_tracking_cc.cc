@@ -131,7 +131,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // --- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_hz = GPS_L1_CA_CODE_RATE_CPS;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
@@ -197,7 +197,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     float T_chip_mod_seconds;
     float T_prn_mod_seconds;
     float T_prn_mod_samples;
-    d_code_freq_hz = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_hz = radial_velocity * GPS_L1_CA_CODE_RATE_CPS;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_hz) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1 / d_code_freq_hz;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
@@ -205,7 +205,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
 
     d_next_prn_length_samples = std::round(T_prn_mod_samples);
 
-    float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+    float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_CPS;
     float T_prn_true_samples = T_prn_true_seconds * static_cast<float>(d_fs_in);
     float T_prn_diff_seconds;
     T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
@@ -407,7 +407,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             // Modify carrier freq based on NCO command
             d_carrier_doppler_hz = tcp_data.proc_pack_carrier_doppler_hz;
             // Modify code freq based on NCO command
-            code_nco = 1 / (1 / GPS_L1_CA_CODE_RATE_HZ - code_error / GPS_L1_CA_CODE_LENGTH_CHIPS);
+            code_nco = 1 / (1 / GPS_L1_CA_CODE_RATE_CPS - code_error / GPS_L1_CA_CODE_LENGTH_CHIPS);
             d_code_freq_hz = code_nco;
 
             // Update the phasestep based on code freq (variable) and
@@ -425,7 +425,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples;  // -code_error*(double)d_fs_in;
 
             // Update the current PRN delay (code phase in samples)
-            double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+            double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_CPS;
             double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
             d_code_phase_samples = d_code_phase_samples + T_prn_samples - T_prn_true_samples;
             if (d_code_phase_samples < 0)
@@ -450,7 +450,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD_S);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
 
                     // ###### TRACKING UNLOCK NOTIFICATION #####

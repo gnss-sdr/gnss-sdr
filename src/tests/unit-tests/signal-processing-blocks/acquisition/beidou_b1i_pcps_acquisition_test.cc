@@ -189,7 +189,7 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
     std::string basename = "./tmp-acq-bds-b1i/acquisition_C_B1";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    auto samples_per_code = static_cast<unsigned int>(round(25000000 / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));  // !!
+    auto samples_per_code = static_cast<unsigned int>(round(25000000 / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));  // !!
     Acquisition_Dump_Reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
     if (!acq_dump.read_binary_acq())

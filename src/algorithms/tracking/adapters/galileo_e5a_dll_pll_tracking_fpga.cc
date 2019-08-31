@@ -130,7 +130,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
-    int32_t vector_length = std::round(fs_in / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS));
+    int32_t vector_length = std::round(fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     int32_t extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);

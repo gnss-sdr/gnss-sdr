@@ -146,7 +146,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // --- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_chips = GALILEO_E1_CODE_CHIP_RATE_HZ;
+    d_code_freq_chips = GALILEO_E1_CODE_CHIP_RATE_CPS;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
@@ -196,7 +196,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
         Signal_,
         false,
         d_acquisition_gnss_synchro->PRN,
-        2 * GALILEO_E1_CODE_CHIP_RATE_HZ,
+        2 * GALILEO_E1_CODE_CHIP_RATE_CPS,
         0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(2 * GALILEO_E1_B_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
@@ -373,11 +373,11 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             // New carrier Doppler frequency estimation
             d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
             // New code Doppler frequency estimation
-            d_code_freq_chips = GALILEO_E1_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * GALILEO_E1_CODE_CHIP_RATE_HZ) / GALILEO_E1_FREQ_HZ);
+            d_code_freq_chips = GALILEO_E1_CODE_CHIP_RATE_CPS + ((d_carrier_doppler_hz * GALILEO_E1_CODE_CHIP_RATE_CPS) / GALILEO_E1_FREQ_HZ);
             // carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad -= GPS_TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD;
+            d_acc_carrier_phase_rad -= GPS_TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD_S;
             // remnant carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD;
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD_S;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################
@@ -385,7 +385,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             code_error_filt_chips = tcp_data.proc_pack_code_error;
             // Code phase accumulator
             float code_error_filt_secs;
-            code_error_filt_secs = (GALILEO_E1_CODE_PERIOD * code_error_filt_chips) / GALILEO_E1_CODE_CHIP_RATE_HZ;  // [seconds]
+            code_error_filt_secs = (GALILEO_E1_CODE_PERIOD_S * code_error_filt_chips) / GALILEO_E1_CODE_CHIP_RATE_CPS;  // [seconds]
             d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
@@ -414,7 +414,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     d_cn0_estimation_counter = 0;
 
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GALILEO_E1_CODE_PERIOD);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GALILEO_E1_CODE_PERIOD_S);
 
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);

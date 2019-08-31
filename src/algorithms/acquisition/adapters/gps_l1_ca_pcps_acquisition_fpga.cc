@@ -76,7 +76,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.doppler_max = doppler_max_;
     uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms;
-    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0));
@@ -88,7 +88,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
-    acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(fs_in)));
+    acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(fs_in)));
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)

@@ -146,7 +146,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     // --- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = GPS_L1_CA_CODE_RATE_CPS;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
@@ -195,7 +195,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     double CN_lin = pow(10, CN_dB_Hz / 10.0);
 
     double sigma2_phase_detector_cycles2;
-    sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD));
+    sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
 
     // covariances (static)
     double sigma2_carrier_phase = GPS_TWO_PI / 4;
@@ -210,12 +210,12 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     kf_R(0, 0) = sigma2_phase_detector_cycles2;
 
     kf_Q = arma::zeros(2, 2);
-    kf_Q(0, 0) = pow(GPS_L1_CA_CODE_PERIOD, 4);
-    kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD;
+    kf_Q(0, 0) = pow(GPS_L1_CA_CODE_PERIOD_S, 4);
+    kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD_S;
 
     kf_F = arma::zeros(2, 2);
     kf_F(0, 0) = 1.0;
-    kf_F(0, 1) = GPS_TWO_PI * GPS_L1_CA_CODE_PERIOD;
+    kf_F(0, 1) = GPS_TWO_PI * GPS_L1_CA_CODE_PERIOD_S;
     kf_F(1, 0) = 0.0;
     kf_F(1, 1) = 1.0;
 
@@ -233,13 +233,13 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
             kf_P_x_ini(2, 2) = sigma2_doppler_rate;
 
             kf_Q = arma::zeros(3, 3);
-            kf_Q(0, 0) = pow(GPS_L1_CA_CODE_PERIOD, 4);
-            kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD;
-            kf_Q(2, 2) = GPS_L1_CA_CODE_PERIOD;
+            kf_Q(0, 0) = pow(GPS_L1_CA_CODE_PERIOD_S, 4);
+            kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD_S;
+            kf_Q(2, 2) = GPS_L1_CA_CODE_PERIOD_S;
 
             kf_F = arma::resize(kf_F, 3, 3);
-            kf_F(0, 2) = 0.5 * GPS_TWO_PI * pow(GPS_L1_CA_CODE_PERIOD, 2);
-            kf_F(1, 2) = GPS_L1_CA_CODE_PERIOD;
+            kf_F(0, 2) = 0.5 * GPS_TWO_PI * pow(GPS_L1_CA_CODE_PERIOD_S, 2);
+            kf_F(1, 2) = GPS_L1_CA_CODE_PERIOD_S;
             kf_F(2, 0) = 0.0;
             kf_F(2, 1) = 0.0;
             kf_F(2, 2) = 1.0;
@@ -293,7 +293,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     double T_chip_mod_seconds;
     double T_prn_mod_seconds;
     double T_prn_mod_samples;
-    d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_CPS;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1 / d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
@@ -301,7 +301,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 
     d_current_prn_length_samples = round(T_prn_mod_samples);
 
-    double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+    double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_CPS;
     double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
     double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
@@ -713,7 +713,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             // Kalman estimation (measurement update)
             double sigma2_phase_detector_cycles2;
             double CN_lin = pow(10, d_CN0_SNV_dB_Hz / 10.0);
-            sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD));
+            sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
 
             kf_y(0) = d_carr_phase_error_rad;  // measurement vector
             kf_R(0, 0) = sigma2_phase_detector_cycles2;
@@ -754,7 +754,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
 
             // ################## DLL ##########################################################
             // New code Doppler frequency estimation based on carrier frequency estimation
-            d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
+            d_code_freq_chips = GPS_L1_CA_CODE_RATE_CPS + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_CPS) / GPS_L1_FREQ_HZ);
             // DLL discriminator
             code_error_chips = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2]);  // [chips/Ti] early and late
             // Code discriminator filter
@@ -794,7 +794,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD_S);
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
                     // Loss of lock detection

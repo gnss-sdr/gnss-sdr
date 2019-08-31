@@ -134,7 +134,7 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     trk_param.fll_bw_hz = fll_bw_hz;
     trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
-    int vector_length = std::round(static_cast<double>(fs_in) / (BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS));
+    int vector_length = std::round(static_cast<double>(fs_in) / (BEIDOU_B3I_CODE_RATE_CPS / BEIDOU_B3I_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);

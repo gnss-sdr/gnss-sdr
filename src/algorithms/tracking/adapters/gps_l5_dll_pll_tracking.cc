@@ -134,7 +134,7 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
     trk_param.fll_bw_hz = fll_bw_hz;
     trk_param.pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param.pull_in_time_s);
 
-    int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
+    int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
     trk_param.vector_length = vector_length;
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);

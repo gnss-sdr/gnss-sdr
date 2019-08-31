@@ -88,32 +88,32 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             if (signal1[0].at(0) == '5')
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)) * GALILEO_E1_C_SECONDARY_CODE_LENGTH;
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)) * GALILEO_E1_C_SECONDARY_CODE_LENGTH;
                 }
         }
     else if (std::find(system.begin(), system.end(), "G") != system.end())
         {
-            vector_length = round(static_cast<float>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+            vector_length = round(static_cast<float>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
         }
     else if (std::find(system.begin(), system.end(), "R") != system.end())
         {
             if (signal1[0].at(0) == '1')
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L1_CA_CODE_RATE_CPS / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
                 }
         }
 
     else if (std::find(system.begin(), system.end(), "B") != system.end())
         {
-            vector_length = round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+            vector_length = round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS));
         }
 
 

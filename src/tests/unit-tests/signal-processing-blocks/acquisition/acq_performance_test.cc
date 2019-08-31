@@ -29,6 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
 #include "acquisition_dump_reader.h"
 #include "display.h"
 #include "file_configuration.h"
@@ -900,10 +901,10 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                             acq_dump.read_binary_acq();
                                             if (acq_dump.positive_acq)
                                                 {
-                                                    // std::cout << "Meas acq_delay_samples: " << acq_dump.acq_delay_samples << " chips: " << acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD / GPS_L1_CA_CODE_LENGTH_CHIPS) << std::endl;
+                                                    // std::cout << "Meas acq_delay_samples: " << acq_dump.acq_delay_samples << " chips: " << acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S / GPS_L1_CA_CODE_LENGTH_CHIPS) << std::endl;
                                                     meas_timestamp_s(execution - 1) = acq_dump.sample_counter / baseband_sampling_freq;
                                                     meas_doppler(execution - 1) = acq_dump.acq_doppler_hz;
-                                                    meas_acq_delay_chips(execution - 1) = acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD / GPS_L1_CA_CODE_LENGTH_CHIPS);
+                                                    meas_acq_delay_chips(execution - 1) = acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S / GPS_L1_CA_CODE_LENGTH_CHIPS);
                                                     positive_acq(execution - 1) = acq_dump.positive_acq;
                                                 }
                                             else
@@ -956,7 +957,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                             interp1(true_timestamp_s, true_prn_delay_chips, meas_timestamp_s, true_interpolated_prn_delay_chips);
 
                                             arma::vec doppler_estimation_error = true_interpolated_doppler - meas_doppler;
-                                            arma::vec delay_estimation_error = true_interpolated_prn_delay_chips - (meas_acq_delay_chips - ((1.0 / baseband_sampling_freq) / GPS_L1_CA_CHIP_PERIOD));  // compensate 1 sample delay
+                                            arma::vec delay_estimation_error = true_interpolated_prn_delay_chips - (meas_acq_delay_chips - ((1.0 / baseband_sampling_freq) / GPS_L1_CA_CHIP_PERIOD_S));  // compensate 1 sample delay
 
                                             // Cut measurements without reference
                                             for (int i = 0; i < num_executions; i++)

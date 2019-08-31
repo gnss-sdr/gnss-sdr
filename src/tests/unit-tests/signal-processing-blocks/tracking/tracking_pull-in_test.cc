@@ -514,22 +514,22 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             switch (mapStringValues_[signal])
                 {
                 case evGPS_1C:
-                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                     break;
                 case evGPS_2S:
-                    opt_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L2C_OPT_ACQ_FS_SPS;
                     break;
                 case evGPS_L5:
-                    opt_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L5_OPT_ACQ_FS_SPS;
                     break;
                 case evSBAS_1C:
-                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                     break;
                 case evGAL_1B:
-                    opt_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E1_OPT_ACQ_FS_SPS;
                     break;
                 case evGAL_5X:
-                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_SPS;
                     break;
                 case evGLO_1G:
                     opt_fs = baseband_sampling_freq;
@@ -779,7 +779,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
             std::cout << "True Initial Doppler " << true_obs_data.doppler_l1_hz << " [Hz], true Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << "[Chips]" << std::endl;
             true_acq_doppler_hz = true_obs_data.doppler_l1_hz;
-            true_acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD;
+            true_acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD_S;
             acq_samplestamp_samples = 0;
         }
     else
@@ -811,7 +811,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             // simulate a Doppler error in acquisition
                             gnss_synchro.Acq_doppler_hz = true_acq_doppler_hz + acq_doppler_error_hz_values.at(current_acq_doppler_error_idx);
                             // simulate Code Delay error in acquisition
-                            gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_HZ) * static_cast<double>(baseband_sampling_freq);
+                            gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_CPS) * static_cast<double>(baseband_sampling_freq);
 
                             // create flowgraph
                             top_block = gr::make_top_block("Tracking test");

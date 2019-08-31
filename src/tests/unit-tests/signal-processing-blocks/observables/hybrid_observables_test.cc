@@ -65,6 +65,7 @@
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include <armadillo>
+#include <boost/lexical_cast.hpp>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -481,22 +482,22 @@ bool HybridObservablesTest::acquire_signal()
             switch (mapStringValues_[signal])
                 {
                 case evGPS_1C:
-                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                     break;
                 case evGPS_2S:
-                    opt_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L2C_OPT_ACQ_FS_SPS;
                     break;
                 case evGPS_L5:
-                    opt_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L5_OPT_ACQ_FS_SPS;
                     break;
                 case evSBAS_1C:
-                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
                     break;
                 case evGAL_1B:
-                    opt_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E1_OPT_ACQ_FS_SPS;
                     break;
                 case evGAL_5X:
-                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_SPS;
                     break;
                 case evGLO_1G:
                     opt_fs = baseband_sampling_freq;
@@ -1732,7 +1733,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
                     std::cout << "Initial Doppler [Hz]=" << true_reader_vec.back()->doppler_l1_hz << " Initial code delay [Chips]="
                               << true_reader_vec.back()->prn_delay_chips << std::endl;
-                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
+                    n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
                     n.Acq_doppler_hz = true_reader_vec.back()->doppler_l1_hz;
                     n.Acq_samplestamp_samples = 0;
                 }

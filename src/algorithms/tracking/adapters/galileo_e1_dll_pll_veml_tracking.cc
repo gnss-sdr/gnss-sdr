@@ -160,7 +160,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
     trk_param.track_pilot = track_pilot;
     trk_param.extend_correlation_symbols = extend_correlation_symbols;
-    int vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    int vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     trk_param.system = 'E';
     std::array<char, 3> sig_{'1', 'B', '\0'};

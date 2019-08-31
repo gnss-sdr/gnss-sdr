@@ -137,7 +137,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     trk_param_fpga.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    int32_t vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    int32_t vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     int32_t symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
     if (symbols_extended_correlator < 1)

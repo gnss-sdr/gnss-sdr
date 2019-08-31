@@ -220,11 +220,11 @@ void gps_l5i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
     const int32_t _codeLength = GPS_L5I_CODE_LENGTH_CHIPS;
 
     // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
 
     // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(GPS_L5I_CODE_RATE_HZ);  // L5I primary chip period in sec
+    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(GPS_L5I_CODE_RATE_CPS);  // L5I primary chip period in sec
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
@@ -295,11 +295,11 @@ void gps_l5q_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
     const int32_t _codeLength = GPS_L5Q_CODE_LENGTH_CHIPS;
 
     // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5Q_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5Q_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
 
     // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(GPS_L5Q_CODE_RATE_HZ);  // L5Q chip period in sec
+    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(GPS_L5Q_CODE_RATE_CPS);  // L5Q chip period in sec
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {

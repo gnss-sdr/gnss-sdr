@@ -290,7 +290,7 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
         }
 
     // -- - Find 1 chip wide code phase exclude range around the peak
-    uint32_t samplesPerChip = ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(this->d_fs_in));
+    uint32_t samplesPerChip = ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(this->d_fs_in));
     int32_t excludeRangeIndex1 = index_time - samplesPerChip;
     int32_t excludeRangeIndex2 = index_time + samplesPerChip;
 

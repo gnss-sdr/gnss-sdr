@@ -135,8 +135,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             if (signal_type == "1C")
                 {
                     d_signal_carrier_freq = GPS_L1_FREQ_HZ;
-                    d_code_period = GPS_L1_CA_CODE_PERIOD;
-                    d_code_chip_rate = GPS_L1_CA_CODE_RATE_HZ;
+                    d_code_period = GPS_L1_CA_CODE_PERIOD_S;
+                    d_code_chip_rate = GPS_L1_CA_CODE_RATE_CPS;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_code_length_chips = static_cast<uint32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS);
@@ -152,8 +152,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             else if (signal_type == "2S")
                 {
                     d_signal_carrier_freq = GPS_L2_FREQ_HZ;
-                    d_code_period = GPS_L2_M_PERIOD;
-                    d_code_chip_rate = GPS_L2_M_CODE_RATE_HZ;
+                    d_code_period = GPS_L2_M_PERIOD_S;
+                    d_code_chip_rate = GPS_L2_M_CODE_RATE_CPS;
                     d_code_length_chips = static_cast<uint32_t>(GPS_L2_M_CODE_LENGTH_CHIPS);
                     // GPS L2C has 1 trk symbol (20 ms) per tlm bit, no symbol integration required
                     d_symbols_per_bit = GPS_L2_SAMPLES_PER_SYMBOL;
@@ -166,8 +166,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             else if (signal_type == "L5")
                 {
                     d_signal_carrier_freq = GPS_L5_FREQ_HZ;
-                    d_code_period = GPS_L5I_PERIOD;
-                    d_code_chip_rate = GPS_L5I_CODE_RATE_HZ;
+                    d_code_period = GPS_L5I_PERIOD_S;
+                    d_code_chip_rate = GPS_L5I_CODE_RATE_CPS;
                     // symbol integration: 10 trk symbols (10 ms) = 1 tlm bit
                     d_symbols_per_bit = GPS_L5_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 1;
@@ -213,8 +213,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             if (signal_type == "1B")
                 {
                     d_signal_carrier_freq = GALILEO_E1_FREQ_HZ;
-                    d_code_period = GALILEO_E1_CODE_PERIOD;
-                    d_code_chip_rate = GALILEO_E1_CODE_CHIP_RATE_HZ;
+                    d_code_period = GALILEO_E1_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E1_CODE_CHIP_RATE_CPS;
                     d_code_length_chips = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
                     // Galileo E1b has 1 trk symbol (4 ms) per tlm bit, no symbol integration required
                     d_symbols_per_bit = 1;
@@ -238,8 +238,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             else if (signal_type == "5X")
                 {
                     d_signal_carrier_freq = GALILEO_E5A_FREQ_HZ;
-                    d_code_period = GALILEO_E5A_CODE_PERIOD;
-                    d_code_chip_rate = GALILEO_E5A_CODE_CHIP_RATE_HZ;
+                    d_code_period = GALILEO_E5A_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E5A_CODE_CHIP_RATE_CPS;
                     d_symbols_per_bit = 20;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
@@ -282,8 +282,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                 {
                     // GEO Satellites use different secondary code
                     d_signal_carrier_freq = BEIDOU_B1I_FREQ_HZ;
-                    d_code_period = BEIDOU_B1I_CODE_PERIOD;
-                    d_code_chip_rate = BEIDOU_B1I_CODE_RATE_HZ;
+                    d_code_period = BEIDOU_B1I_CODE_PERIOD_S;
+                    d_code_chip_rate = BEIDOU_B1I_CODE_RATE_CPS;
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
                     d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -300,8 +300,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                 {
                     // GEO Satellites use different secondary code
                     d_signal_carrier_freq = BEIDOU_B3I_FREQ_HZ;
-                    d_code_period = BEIDOU_B3I_CODE_PERIOD;
-                    d_code_chip_rate = BEIDOU_B3I_CODE_RATE_HZ;
+                    d_code_period = BEIDOU_B3I_CODE_PERIOD_S;
+                    d_code_chip_rate = BEIDOU_B3I_CODE_RATE_CPS;
                     d_code_length_chips = static_cast<uint32_t>(BEIDOU_B3I_CODE_LENGTH_CHIPS);
                     d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;

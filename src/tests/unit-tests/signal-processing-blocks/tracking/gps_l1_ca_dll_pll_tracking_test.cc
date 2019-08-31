@@ -588,7 +588,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
                             std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
                             acq_doppler_hz = true_obs_data.doppler_l1_hz;
-                            acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD;
+                            acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD_S;
                             // restart the epoch counter
                             true_obs_data.restart();
                         }
@@ -754,7 +754,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error, rmse);
                                             for (double code_phase_error_chip : code_phase_error_chips)
                                                 {
-                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD * code_phase_error_chip * GPS_C_M_S);
+                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD_S * code_phase_error_chip * GPS_C_M_S);
                                                 }
                                             mean_code_phase_error.push_back(mean_error);
                                             std_dev_code_phase_error.push_back(std_dev_error);

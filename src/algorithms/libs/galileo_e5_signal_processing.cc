@@ -108,7 +108,7 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
     uint32_t _samplesPerCode;
     uint32_t delay;
     const uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
-    const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_HZ;
+    const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_CPS;
 
     std::unique_ptr<std::complex<float>> _code{new std::complex<float>[_codeLength]};
     gsl::span<std::complex<float>> _code_span(_code, _codeLength);

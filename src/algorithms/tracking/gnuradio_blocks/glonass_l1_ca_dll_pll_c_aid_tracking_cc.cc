@@ -162,7 +162,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
 
     // --- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_CPS;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
@@ -238,7 +238,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     double T_chip_mod_seconds;
     double T_prn_mod_seconds;
     double T_prn_mod_samples;
-    d_code_freq_chips = radial_velocity * GLONASS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = radial_velocity * GLONASS_L1_CA_CODE_RATE_CPS;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1.0 / d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
@@ -246,7 +246,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
 
     d_correlation_length_samples = round(T_prn_mod_samples);
 
-    double T_prn_true_seconds = GLONASS_L1_CA_CODE_LENGTH_CHIPS / GLONASS_L1_CA_CODE_RATE_HZ;
+    double T_prn_true_seconds = GLONASS_L1_CA_CODE_LENGTH_CHIPS / GLONASS_L1_CA_CODE_RATE_CPS;
     double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
     double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
@@ -650,7 +650,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                                               << " dll_bw = " << d_dll_bw_hz << " [Hz], dll_narrow_bw = " << d_dll_bw_narrow_hz << " [Hz]" << std::endl;
                                 }
                             // UPDATE INTEGRATION TIME
-                            CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L1_CA_CODE_PERIOD;
+                            CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L1_CA_CODE_PERIOD_S;
                             d_code_loop_filter.set_pdi(CURRENT_INTEGRATION_TIME_S);
                             enable_dll_pll = true;
                         }
@@ -712,7 +712,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     // PLL to DLL assistance [Secs/Ti]
                     d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz * CURRENT_INTEGRATION_TIME_S) / d_glonass_freq_ch;
                     // code Doppler frequency update
-                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz - d_carrier_doppler_old_hz) * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
+                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_CPS + (((d_carrier_doppler_hz - d_carrier_doppler_old_hz) * GLONASS_L1_CA_CODE_RATE_CPS) / d_glonass_freq_ch);
 
                     // ################## DLL ##########################################################
                     // DLL discriminator
@@ -762,7 +762,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                         {
                             d_cn0_estimation_counter = 0;
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD_S);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES);
                             // Loss of lock detection

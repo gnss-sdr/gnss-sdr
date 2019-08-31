@@ -165,7 +165,7 @@ void GpsL2MPcpsAcquisitionTest::init()
     gnss_synchro.Signal[2] = 0;                                                // make sure that string length is only two characters
     gnss_synchro.PRN = 7;
 
-    nsamples = round(static_cast<double>(sampling_frequency_hz) * GPS_L2_M_PERIOD) * 2;
+    nsamples = round(static_cast<double>(sampling_frequency_hz) * GPS_L2_M_PERIOD_S) * 2;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_frequency_hz));
     config->set_property("Acquisition_2S.implementation", "GPS_L2_M_PCPS_Acquisition");
     config->set_property("Acquisition_2S.item_type", "gr_complex");
@@ -193,7 +193,7 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
     std::string basename = "./tmp-acq-gps2/acquisition_test_G_2S";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    auto samples_per_code = static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
+    auto samples_per_code = static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_CPS / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     Acquisition_Dump_Reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
     if (!acq_dump.read_binary_acq())
         {

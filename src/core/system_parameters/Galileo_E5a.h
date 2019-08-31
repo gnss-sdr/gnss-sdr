@@ -41,13 +41,13 @@
 
 // Carrier and code frequencies
 const double GALILEO_E5A_FREQ_HZ = FREQ5;                 //!< Galileo E5a carrier frequency [Hz]
-const double GALILEO_E5A_CODE_CHIP_RATE_HZ = 1.023e7;     //!< Galileo E5a code rate [chips/s]
-const double GALILEO_E5A_I_TIERED_CODE_PERIOD = 0.020;    //!< Galileo E5a-I tiered code period [s]
-const double GALILEO_E5A_Q_TIERED_CODE_PERIOD = 0.100;    //!< Galileo E5a-Q tiered code period [s]
+const double GALILEO_E5A_CODE_CHIP_RATE_CPS = 1.023e7;    //!< Galileo E5a code rate [chips/s]
+const double GALILEO_E5A_I_TIERED_CODE_PERIOD_S = 0.020;  //!< Galileo E5a-I tiered code period [s]
+const double GALILEO_E5A_Q_TIERED_CODE_PERIOD_S = 0.100;  //!< Galileo E5a-Q tiered code period [s]
 const int32_t GALILEO_E5A_CODE_LENGTH_CHIPS = 10230;      //!< Galileo E5a primary code length [chips]
 const int32_t GALILEO_E5A_I_SECONDARY_CODE_LENGTH = 20;   //!< Galileo E5a-I secondary code length [chips]
 const int32_t GALILEO_E5A_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5a-Q secondary code length [chips]
-const double GALILEO_E5A_CODE_PERIOD = 0.001;             //!< Galileo E1 primary code period [s]
+const double GALILEO_E5A_CODE_PERIOD_S = 0.001;           //!< Galileo E1 primary code period [s]
 const int32_t GALILEO_E5A_CODE_PERIOD_MS = 1;             //!< Galileo E1 primary code period [ms]
 const int32_t GALILEO_E5A_SYMBOL_RATE_BPS = 50;           //!< Galileo E5a symbol rate [bits/second]
 const int32_t GALILEO_E5A_NUMBER_OF_CODES = 50;
@@ -58,7 +58,7 @@ const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
 const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
 
 // optimum parameters
-const uint32_t GALILEO_E5A_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+const uint32_t GALILEO_E5A_OPT_ACQ_FS_SPS = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // F/NAV message structure
 

@@ -38,9 +38,9 @@
 
 // carrier and code frequencies
 const double BEIDOU_B1I_FREQ_HZ = 1.561098e9;        //!< B1I [Hz]
-const double BEIDOU_B1I_CODE_RATE_HZ = 2.046e6;      //!< Beidou B1I code rate [chips/s]
+const double BEIDOU_B1I_CODE_RATE_CPS = 2.046e6;     //!< Beidou B1I code rate [chips/s]
 const double BEIDOU_B1I_CODE_LENGTH_CHIPS = 2046.0;  //!< Beidou B1I code length [chips]
-const double BEIDOU_B1I_CODE_PERIOD = 0.001;         //!< Beidou B1I code period [seconds]
+const double BEIDOU_B1I_CODE_PERIOD_S = 0.001;       //!< Beidou B1I code period [seconds]
 const uint32_t BEIDOU_B1I_CODE_PERIOD_MS = 1;        //!< Beidou B1I code period [ms]
 const int32_t BEIDOU_B1I_SECONDARY_CODE_LENGTH = 20;
 const std::string BEIDOU_B1I_SECONDARY_CODE_STR = "00000100110101001110";

@@ -59,7 +59,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
-    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -78,7 +78,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
 
     //--- Find number of samples per spreading code -------------------------
-    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
     acq_parameters.samples_per_ms = vector_length_;
     code_ = std::vector<std::complex<float>>(vector_length_);
 

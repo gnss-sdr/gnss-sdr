@@ -673,7 +673,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 else
                                     {
                                         // this page has no timing information
-                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD_S;
                                     }
                             }
                         break;

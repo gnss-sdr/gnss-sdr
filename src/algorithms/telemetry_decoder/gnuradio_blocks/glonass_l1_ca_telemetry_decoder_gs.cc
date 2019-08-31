@@ -389,7 +389,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_CODE_PERIOD;
+            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_CODE_PERIOD_S;
         }
 
     // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)

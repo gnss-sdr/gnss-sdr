@@ -162,7 +162,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
     // This function is based on the GNU software GPS for MATLAB in Kay Borre's book
     std::string _galileo_signal = _Signal.data();
     uint32_t _samplesPerCode;
-    const int32_t _codeFreqBasis = GALILEO_E1_CODE_CHIP_RATE_HZ;  // Hz
+    const int32_t _codeFreqBasis = GALILEO_E1_CODE_CHIP_RATE_CPS;  // Hz
     std::vector<int32_t> primary_code_E1_chips(static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS));
     _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / GALILEO_E1_B_CODE_LENGTH_CHIPS));
     const int32_t _samplesPerChip = (_cboc == true) ? 12 : 2;
@@ -237,7 +237,7 @@ void galileo_e1_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, c
     bool _secondary_flag)
 {
     std::string _galileo_signal = _Signal.data();
-    const int32_t _codeFreqBasis = GALILEO_E1_CODE_CHIP_RATE_HZ;  // Hz
+    const int32_t _codeFreqBasis = GALILEO_E1_CODE_CHIP_RATE_CPS;  // Hz
     auto _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) /
                                                  (static_cast<double>(_codeFreqBasis) / GALILEO_E1_B_CODE_LENGTH_CHIPS));
 

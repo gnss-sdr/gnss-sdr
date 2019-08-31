@@ -52,15 +52,15 @@ const double F = -4.442807633e-10;                       //!< Constant, [s/(m)^(
 
 // carrier and code frequencies
 const double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
-const double GPS_L1_CA_CODE_RATE_HZ = 1.023e6;      //!< GPS L1 C/A code rate [chips/s]
+const double GPS_L1_CA_CODE_RATE_CPS = 1.023e6;     //!< GPS L1 C/A code rate [chips/s]
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length [chips]
-const double GPS_L1_CA_CODE_PERIOD = 0.001;         //!< GPS L1 C/A code period [seconds]
+const double GPS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GPS L1 C/A code period [seconds]
 const uint32_t GPS_L1_CA_CODE_PERIOD_MS = 1U;       //!< GPS L1 C/A code period [ms]
 const uint32_t GPS_L1_CA_BIT_PERIOD_MS = 20U;       //!< GPS L1 C/A bit period [ms]
-const double GPS_L1_CA_CHIP_PERIOD = 9.7752e-07;    //!< GPS L1 C/A chip period [seconds]
+const double GPS_L1_CA_CHIP_PERIOD_S = 9.7752e-07;  //!< GPS L1 C/A chip period [seconds]
 
 // optimum parameters
-const uint32_t GPS_L1_CA_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+const uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms

@@ -82,7 +82,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
             acq_pilot_ = false;
         }
 
-    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / GALILEO_E5A_CODE_CHIP_RATE_CPS * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
 
     // The FPGA can only use FFT lengths that are a power of two.
@@ -96,7 +96,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
-    acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GALILEO_E5A_CODE_CHIP_RATE_HZ) * static_cast<float>(fs_in)));
+    acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GALILEO_E5A_CODE_CHIP_RATE_CPS) * static_cast<float>(fs_in)));
 
     // compute all the GALILEO E5 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)

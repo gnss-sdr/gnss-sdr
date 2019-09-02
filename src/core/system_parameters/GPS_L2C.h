@@ -55,11 +55,11 @@ const double GPS_L2_FREQ_HZ = FREQ2;  //!< L2 [Hz]
 
 const double GPS_L2_M_CODE_RATE_CPS = 0.5115e6;    //!< GPS L2 M code rate [chips/s]
 const int32_t GPS_L2_M_CODE_LENGTH_CHIPS = 10230;  //!< GPS L2 M code length [chips]
-const double GPS_L2_M_PERIOD_S = 0.02;               //!< GPS L2 M code period [seconds]
+const double GPS_L2_M_PERIOD_S = 0.02;             //!< GPS L2 M code period [seconds]
 
 const double GPS_L2_L_CODE_RATE_CPS = 0.5115e6;     //!< GPS L2 L code rate [chips/s]
 const int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;  //!< GPS L2 L code length [chips]
-const double GPS_L2_L_PERIOD_S = 1.5;                 //!< GPS L2 L code period [seconds]
+const double GPS_L2_L_PERIOD_S = 1.5;               //!< GPS L2 L code period [seconds]
 
 const int32_t GPS_L2C_HISTORY_DEEP = 5;
 

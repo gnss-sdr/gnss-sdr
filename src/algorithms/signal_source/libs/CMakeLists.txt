@@ -87,6 +87,7 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
         PUBLIC
             Gnuradio::iio
         PRIVATE
+            Gnuradio::analog
             Iio::iio
     )
 endif()

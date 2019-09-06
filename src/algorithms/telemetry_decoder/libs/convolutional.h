@@ -42,7 +42,6 @@
 #define GNSS_SDR_CONVOLUTIONAL_H_
 
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <algorithm>
 #include <vector>
 
 /* define constants used throughout the library */
@@ -248,11 +247,17 @@ inline void Viterbi(int output_u_int[],
             /* normalize */
             volk_gnsssdr_32f_index_max_32u(&max_index, next_section.data(), states);
             max_val = next_section[max_index];
-            prev_section = next_section;
-            std::transform(prev_section.begin(), prev_section.end(), prev_section.begin(),
-                [&max_val](const auto& prev_ele) { return (prev_ele - max_val); });
 
-            std::fill(next_section.begin(), next_section.end(), -MAXLOG);
+            // In modern C++ (not supported by old GCC versions):
+            // prev_section = next_section;
+            // std::transform(prev_section.begin(), prev_section.end(), prev_section.begin(),
+            //   [&max_val](const auto& prev_ele) { return (prev_ele - max_val); });
+            // std::fill(next_section.begin(), next_section.end(), -MAXLOG);
+            for (state = 0; state < states; state++)
+                {
+                    prev_section[state] = next_section[state] - max_val;
+                    next_section[state] = -MAXLOG;
+                }
         }
 
     /* trace-back operation */

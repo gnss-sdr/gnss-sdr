@@ -457,14 +457,13 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_local_time_str = std::string(" ") + time_zone_abrv + " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
         }
 
-
     d_waiting_obs_block_rx_clock_offset_correction_msg = false;
 
     d_enable_rx_clock_correction = conf_.enable_rx_clock_correction;
 
     if (d_enable_rx_clock_correction == true)
         {
-            //setup two PVT solvers: internal solver for rx clock and user solver
+            // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
             d_user_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
             d_user_pvt_solver->set_averaging_depth(1);
@@ -477,7 +476,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
     else
         {
-            //only one solver, customized by the user options
+            // only one solver, customized by the user options
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
             d_internal_pvt_solver->set_averaging_depth(1);
             d_user_pvt_solver = d_internal_pvt_solver;
@@ -2186,57 +2185,57 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
 
                                     /*
-                                             *   TYPE  |  RECEIVER
-                                             *     0   |  Unknown
-                                             *     1   |  GPS L1 C/A
-                                             *     2   |  GPS L2C
-                                             *     3   |  GPS L5
-                                             *     4   |  Galileo E1B
-                                             *     5   |  Galileo E5a
-                                             *     6   |  Galileo E5b
-                                             *     7   |  GPS L1 C/A + GPS L2C
-                                             *     8   |  GPS L1 C/A + GPS L5
-                                             *     9   |  GPS L1 C/A + Galileo E1B
-                                             *    10   |  GPS L1 C/A + Galileo E5a
-                                             *    11   |  GPS L1 C/A + Galileo E5b
-                                             *    12   |  Galileo E1B + GPS L2C
-                                             *    13   |  Galileo E5a + GPS L5
-                                             *    14   |  Galileo E1B + Galileo E5a
-                                             *    15   |  Galileo E1B + Galileo E5b
-                                             *    16   |  GPS L2C + GPS L5
-                                             *    17   |  GPS L2C + Galileo E5a
-                                             *    18   |  GPS L2C + Galileo E5b
-                                             *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
-                                             *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
-                                             *    23   |  GLONASS L1 C/A
-                                             *    24   |  GLONASS L2 C/A
-                                             *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
-                                             *    26   |  GPS L1 C/A + GLONASS L1 C/A
-                                             *    27   |  Galileo E1B + GLONASS L1 C/A
-                                             *    28   |  GPS L2C + GLONASS L1 C/A
-                                             *    29   |  GPS L1 C/A + GLONASS L2 C/A
-                                             *    30   |  Galileo E1B + GLONASS L2 C/A
-                                             *    31   |  GPS L2C + GLONASS L2 C/A
-                                             *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
-                                             *    500   |  BeiDou B1I
-                                             *    501   |  BeiDou B1I + GPS L1 C/A
-                                             *    502   |  BeiDou B1I + Galileo E1B
-                                             *    503   |  BeiDou B1I + GLONASS L1 C/A
-                                             *    504   |  BeiDou B1I + GPS L1 C/A + Galileo E1B
-                                             *    505   |  BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
-                                             *    506   |  BeiDou B1I + Beidou B3I
-                                             *    600   |  BeiDou B3I
-                                             *    601   |  BeiDou B3I + GPS L2C
-                                             *    602   |  BeiDou B3I + GLONASS L2 C/A
-                                             *    603   |  BeiDou B3I + GPS L2C + GLONASS L2 C/A
-                                             *    604   |  BeiDou B3I + GPS L1 C/A
-                                             *    605   |  BeiDou B3I + Galileo E1B
-                                             *    606   |  BeiDou B3I + GLONASS L1 C/A
-                                             *    607   |  BeiDou B3I + GPS L1 C/A + Galileo E1B
-                                             *    608   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + BeiDou B1I
-                                             *    609   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A
-                                             *    610   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A + BeiDou B1I
-                                             */
+                                     *   TYPE  |  RECEIVER
+                                     *     0   |  Unknown
+                                     *     1   |  GPS L1 C/A
+                                     *     2   |  GPS L2C
+                                     *     3   |  GPS L5
+                                     *     4   |  Galileo E1B
+                                     *     5   |  Galileo E5a
+                                     *     6   |  Galileo E5b
+                                     *     7   |  GPS L1 C/A + GPS L2C
+                                     *     8   |  GPS L1 C/A + GPS L5
+                                     *     9   |  GPS L1 C/A + Galileo E1B
+                                     *    10   |  GPS L1 C/A + Galileo E5a
+                                     *    11   |  GPS L1 C/A + Galileo E5b
+                                     *    12   |  Galileo E1B + GPS L2C
+                                     *    13   |  Galileo E5a + GPS L5
+                                     *    14   |  Galileo E1B + Galileo E5a
+                                     *    15   |  Galileo E1B + Galileo E5b
+                                     *    16   |  GPS L2C + GPS L5
+                                     *    17   |  GPS L2C + Galileo E5a
+                                     *    18   |  GPS L2C + Galileo E5b
+                                     *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
+                                     *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
+                                     *    23   |  GLONASS L1 C/A
+                                     *    24   |  GLONASS L2 C/A
+                                     *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
+                                     *    26   |  GPS L1 C/A + GLONASS L1 C/A
+                                     *    27   |  Galileo E1B + GLONASS L1 C/A
+                                     *    28   |  GPS L2C + GLONASS L1 C/A
+                                     *    29   |  GPS L1 C/A + GLONASS L2 C/A
+                                     *    30   |  Galileo E1B + GLONASS L2 C/A
+                                     *    31   |  GPS L2C + GLONASS L2 C/A
+                                     *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
+                                     *    500   |  BeiDou B1I
+                                     *    501   |  BeiDou B1I + GPS L1 C/A
+                                     *    502   |  BeiDou B1I + Galileo E1B
+                                     *    503   |  BeiDou B1I + GLONASS L1 C/A
+                                     *    504   |  BeiDou B1I + GPS L1 C/A + Galileo E1B
+                                     *    505   |  BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+                                     *    506   |  BeiDou B1I + Beidou B3I
+                                     *    600   |  BeiDou B3I
+                                     *    601   |  BeiDou B3I + GPS L2C
+                                     *    602   |  BeiDou B3I + GLONASS L2 C/A
+                                     *    603   |  BeiDou B3I + GPS L2C + GLONASS L2 C/A
+                                     *    604   |  BeiDou B3I + GPS L1 C/A
+                                     *    605   |  BeiDou B3I + Galileo E1B
+                                     *    606   |  BeiDou B3I + GLONASS L1 C/A
+                                     *    607   |  BeiDou B3I + GPS L1 C/A + Galileo E1B
+                                     *    608   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + BeiDou B1I
+                                     *    609   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A
+                                     *    610   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A + BeiDou B1I
+                                     */
 
                                     // ####################### RINEX FILES #################
                                     if (b_rinex_output_enabled)

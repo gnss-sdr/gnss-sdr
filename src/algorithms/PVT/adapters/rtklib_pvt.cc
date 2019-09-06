@@ -769,8 +769,9 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     // Show time in local zone
     pvt_output_parameters.show_local_time_zone = configuration->property(role + ".show_local_time_zone", false);
 
-    //enable or disable rx clock corection in observables
+    // Enable or disable rx clock corection in observables
     pvt_output_parameters.enable_rx_clock_correction = configuration->property(role + ".enable_rx_clock_correction", true);
+
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

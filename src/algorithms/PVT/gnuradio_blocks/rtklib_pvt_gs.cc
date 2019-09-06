@@ -2038,7 +2038,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     else
                                         {
-                                            flag_compute_pvt_output = false;
+                                            d_rx_time = gnss_observables_map.begin()->second.RX_time;
+                                            current_RX_time_ms = static_cast<uint32_t>(d_rx_time * 1000.0);
+                                            if (current_RX_time_ms % d_output_rate_ms == 0)
+                                                {
+                                                    flag_compute_pvt_output = true;
+                                                    // std::cout.precision(17);
+                                                    // std::cout << "current_RX_time: " << current_RX_time << " map time: " << gnss_observables_map.begin()->second.RX_time << std::endl;
+                                                }
                                             flag_pvt_valid = true;
                                         }
                                 }

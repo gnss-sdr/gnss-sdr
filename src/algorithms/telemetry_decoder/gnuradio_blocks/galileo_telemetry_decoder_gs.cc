@@ -207,14 +207,14 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 }
 
 
-void galileo_telemetry_decoder_gs::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
+void galileo_telemetry_decoder_gs::viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits)
 {
     Viterbi(page_part_bits, out0.data(), state0.data(), out1.data(), state1.data(),
         page_part_symbols, KK, nn, DataLength);
 }
 
 
-void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
+void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, const float *in, float *out)
 {
     for (int32_t r = 0; r < rows; r++)
         {
@@ -226,10 +226,10 @@ void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, con
 }
 
 
-void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, int32_t frame_length)
+void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    std::vector<double> page_part_symbols_deint(frame_length);
+    std::vector<float> page_part_symbols_deint(frame_length);
     deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint.data());
 
     // 2. Viterbi decoder
@@ -318,10 +318,10 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, i
 }
 
 
-void galileo_telemetry_decoder_gs::decode_FNAV_word(double *page_symbols, int32_t frame_length)
+void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    std::vector<double> page_symbols_deint(frame_length);
+    std::vector<float> page_symbols_deint(frame_length);
     deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint.data());
 
     // 2. Viterbi decoder

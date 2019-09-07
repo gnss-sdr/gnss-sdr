@@ -1,11 +1,13 @@
 /*!
  * \file convolutional.h
  * \brief General functions used to implement convolutional encoding.
- * \author Matthew C. Valenti
+ * \author Matthew C. Valenti, 2006-2008.
+ * \author C. Fernandez-Prades, 2019.
  *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2006-2008  Matthew C. Valenti
+ * Copyright (C) 2019 C. Fernandez-Prades
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -18,8 +20,6 @@
  * (at your option) any later version.
  *
  * This file is a derived work of the original file, which had this note:
- *
- * Last updated on May 22, 2008
  *
  * The functions in this file are part of the Iterative Solutions
  * Coded Modulation Library. The Iterative Solutions Coded Modulation
@@ -41,7 +41,8 @@
 #ifndef GNSS_SDR_CONVOLUTIONAL_H_
 #define GNSS_SDR_CONVOLUTIONAL_H_
 
-#include <cstdlib>  // for calloc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <vector>
 
 /* define constants used throughout the library */
 const float MAXLOG = 1e7; /* Define infinity */
@@ -57,7 +58,7 @@ const float MAXLOG = 1e7; /* Define infinity */
  *
  * This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()
  */
-inline static int parity_counter(int symbol, int length)
+inline int parity_counter(int symbol, int length)
 {
     int counter;
     int temp_parity = 0;
@@ -85,7 +86,7 @@ inline static int parity_counter(int symbol, int length)
  *
  * This function is used by nsc_transit()
  */
-inline static int nsc_enc_bit(int state_out_p[],
+inline int nsc_enc_bit(int state_out_p[],
     int input,
     int state_in,
     const int g[],
@@ -115,7 +116,7 @@ inline static int nsc_enc_bit(int state_out_p[],
 /*!
  * \brief Function that creates the transit and output vectors
  */
-inline static void nsc_transit(int output_p[],
+inline void nsc_transit(int output_p[],
     int trans_p[],
     int input,
     int g[],
@@ -144,7 +145,7 @@ inline static void nsc_transit(int output_p[],
  *  \param[in] nn            The length of the received vector
  *
  */
-inline static float Gamma(const float rec_array[],
+inline float Gamma(const float rec_array[],
     int symbol,
     int nn)
 {
@@ -176,24 +177,20 @@ inline static float Gamma(const float rec_array[],
  * \param[out] output_u_int[]    Hard decisions on the data bits
  *
  */
-inline static void Viterbi(int output_u_int[],
+inline void Viterbi(int output_u_int[],
     const int out0[],
     const int state0[],
     const int out1[],
     const int state1[],
-    const double input_c[],
+    const float input_c[],
     int KK,
     int nn,
     int LL)
 {
     int i, t, state, mm, states;
     int number_symbols;
+    uint32_t max_index;
     float metric;
-    float *prev_section, *next_section;
-    int *prev_bit;
-    int *prev_state;
-    float *metric_c;  /* Set of all possible branch metrics */
-    float *rec_array; /* Received values for one trellis section */
     float max_val;
 
     /* some derived constants */
@@ -201,34 +198,24 @@ inline static void Viterbi(int output_u_int[],
     states = 1 << mm;         /* 2^mm */
     number_symbols = 1 << nn; /* 2^nn */
 
-    /* dynamically allocate memory */
-    prev_section = static_cast<float *>(calloc(states, sizeof(float)));
-    next_section = static_cast<float *>(calloc(states, sizeof(float)));
-    prev_bit = static_cast<int *>(calloc(states * (LL + mm), sizeof(int)));
-    prev_state = static_cast<int *>(calloc(states * (LL + mm), sizeof(int)));
-    rec_array = static_cast<float *>(calloc(nn, sizeof(float)));
-    metric_c = static_cast<float *>(calloc(number_symbols, sizeof(float)));
+    std::vector<float> prev_section(states, -MAXLOG);
+    std::vector<float> next_section(states, -MAXLOG);
+    std::vector<int> prev_bit(states * (LL + mm), 0);
+    std::vector<int> prev_state(states * (LL + mm), 0);
+    std::vector<float> rec_array(nn);
+    std::vector<float> metric_c(number_symbols);
 
-    /* initialize trellis */
-    for (state = 0; state < states; state++)
-        {
-            prev_section[state] = -MAXLOG;
-            next_section[state] = -MAXLOG;
-        }
-    prev_section[0] = 0; /* start in all-zeros state */
+    prev_section[0] = 0.0; /* start in all-zeros state */
 
     /* go through trellis */
     for (t = 0; t < LL + mm; t++)
         {
-            for (i = 0; i < nn; i++)
-                {
-                    rec_array[i] = static_cast<float>(input_c[nn * t + i]);
-                }
+            rec_array.assign(input_c + nn * t, input_c + nn * t + (nn - 1));
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)
                 {
-                    metric_c[i] = Gamma(rec_array, i, nn);
+                    metric_c[i] = Gamma(rec_array.data(), i, nn);
                 }
 
             /* step through all states */
@@ -258,14 +245,9 @@ inline static void Viterbi(int output_u_int[],
                 }
 
             /* normalize */
-            max_val = 0;
-            for (state = 0; state < states; state++)
-                {
-                    if (next_section[state] > max_val)
-                        {
-                            max_val = next_section[state];
-                        }
-                }
+            volk_gnsssdr_32f_index_max_32u(&max_index, next_section.data(), states);
+            max_val = next_section[max_index];
+
             for (state = 0; state < states; state++)
                 {
                     prev_section[state] = next_section[state] - max_val;
@@ -287,14 +269,6 @@ inline static void Viterbi(int output_u_int[],
             output_u_int[t] = prev_bit[t * states + state];
             state = prev_state[t * states + state];
         }
-
-    /* free the dynamically allocated memory */
-    free(prev_section);
-    free(next_section);
-    free(prev_bit);
-    free(prev_state);
-    free(rec_array);
-    free(metric_c);
 }
 
 

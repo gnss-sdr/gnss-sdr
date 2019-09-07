@@ -166,12 +166,11 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     trk_param.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param.max_carrier_lock_fail);
     trk_param.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param.carrier_lock_th);
 
-    //tracking lock tests smoother parameters
+    // tracking lock tests smoother parameters
     trk_param.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param.cn0_smoother_samples);
     trk_param.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param.cn0_smoother_alpha);
     trk_param.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param.carrier_lock_test_smoother_samples);
     trk_param.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param.carrier_lock_test_smoother_alpha);
-
 
     // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

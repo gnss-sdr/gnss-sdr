@@ -772,8 +772,8 @@ if(CMAKE_VERSION VERSION_LESS 3.15)
             )
         else()
             add_library(Boost::headers INTERFACE IMPORTED)
-            set_target_properties(Boost::filesystem PROPERTIES
-                Boost::headers ${Boost_INCLUDE_DIR}
+            set_target_properties(Boost::headers PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
             )
         endif()
     endif()

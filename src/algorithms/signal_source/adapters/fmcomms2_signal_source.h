@@ -127,4 +127,4 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif /* GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_ */
+#endif  // GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H_

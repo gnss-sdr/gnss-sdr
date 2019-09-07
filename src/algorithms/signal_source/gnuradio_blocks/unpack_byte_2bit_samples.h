@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H
-#define GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H
+#ifndef GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H_
+#define GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H_
 
 #include <gnuradio/sync_interpolator.h>
 
@@ -56,4 +56,4 @@ private:
     friend unpack_byte_2bit_samples_sptr make_unpack_byte_2bit_samples_sptr();
 };
 
-#endif
+#endif  // GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H_

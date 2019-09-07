@@ -119,4 +119,4 @@ private:
     std::shared_ptr<Fpga_Switch> switch_fpga;
 };
 
-#endif /*GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_*/
+#endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_

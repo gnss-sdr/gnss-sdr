@@ -104,7 +104,7 @@ target_link_libraries(acquisition_adapters
         Gnuradio::blocks
         Volk::volk
     PRIVATE
-        Boost::boost
+        Boost::headers
         Gflags::gflags
         Glog::glog
         Gnuradio::fft

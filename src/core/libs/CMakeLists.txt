@@ -62,7 +62,7 @@ add_library(core_libs ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 
 target_link_libraries(core_libs
     PUBLIC
-        Boost::boost
+        Boost::headers
         Gnuradio::runtime
         core_libs_supl
         core_system_parameters

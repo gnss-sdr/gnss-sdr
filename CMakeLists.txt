@@ -762,6 +762,11 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
         endif()
     endif()
 endif()
+if(CMAKE_VERSION VERSION_LESS 3.15)
+    if(NOT TARGET Boost::headers)
+        add_library(Boost::headers ALIAS Boost::boost)
+    endif()
+endif()
 
 # Fix for Boost Asio < 1.70 when using Clang in macOS
 if(Boost_VERSION_STRING VERSION_LESS 1.70.0)

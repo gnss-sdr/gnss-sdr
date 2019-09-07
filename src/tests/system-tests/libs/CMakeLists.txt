@@ -37,7 +37,7 @@ target_link_libraries(system_testing_lib
         Armadillo::armadillo
         Gflags::gflags
     PRIVATE
-        Boost::boost
+        Boost::headers
         Matio::matio
 )
 

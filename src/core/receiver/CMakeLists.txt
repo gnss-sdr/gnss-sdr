@@ -148,7 +148,7 @@ target_link_libraries(core_receiver
         telemetry_decoder_adapters
         obs_adapters
         pvt_adapters
-        Boost::boost
+        Boost::headers
         Gflags::gflags
         Glog::glog
         Armadillo::armadillo

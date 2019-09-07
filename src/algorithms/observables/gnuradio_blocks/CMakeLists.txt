@@ -45,7 +45,7 @@ target_include_directories(obs_gr_blocks
 
 target_link_libraries(obs_gr_blocks
     PUBLIC
-        Boost::boost
+        Boost::headers
         Gnuradio::blocks
     PRIVATE
         algorithms_libs

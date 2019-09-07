@@ -34,7 +34,7 @@ target_link_libraries(front_end_cal_lib
         core_receiver
         core_libs
     PRIVATE
-        Boost::boost
+        Boost::headers
         Gflags::gflags
         Glog::glog
         Gnuradio::blocks
@@ -68,7 +68,7 @@ target_link_libraries(front-end-cal
         core_receiver
         front_end_cal_lib
         gnss_sdr_flags
-        Boost::boost
+        Boost::headers
     PRIVATE
         Gflags::gflags
         Glog::glog

@@ -35,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
-#define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
+#ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H_
+#define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H_
 
 #include "rtl_tcp_dongle_info.h"
 #include <boost/array.hpp>
@@ -128,4 +128,4 @@ private:
     }
 };
 
-#endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
+#endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H_

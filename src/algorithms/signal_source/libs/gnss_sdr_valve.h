@@ -92,4 +92,4 @@ private:
     bool d_open_valve;
 };
 
-#endif /*GNSS_SDR_GNSS_SDR_VALVE_H_*/
+#endif  // GNSS_SDR_GNSS_SDR_VALVE_H_

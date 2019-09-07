@@ -135,4 +135,4 @@ private:
     bool enable_throttle_control_;
 };
 
-#endif /*GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H_*/
+#endif  // GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H_

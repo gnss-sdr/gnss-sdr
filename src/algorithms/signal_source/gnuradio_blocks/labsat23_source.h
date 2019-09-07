@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_LABSAT23_SOURCE_H
-#define GNSS_SDR_LABSAT23_SOURCE_H
+#ifndef GNSS_SDR_LABSAT23_SOURCE_H_
+#define GNSS_SDR_LABSAT23_SOURCE_H_
 
 #include "concurrent_queue.h"
 #include <gnuradio/block.h>
@@ -87,4 +87,4 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> d_queue;
 };
 
-#endif
+#endif  // GNSS_SDR_LABSAT23_SOURCE_H_

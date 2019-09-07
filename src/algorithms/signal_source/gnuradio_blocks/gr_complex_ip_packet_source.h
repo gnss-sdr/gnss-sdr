@@ -30,8 +30,8 @@
  */
 
 
-#ifndef GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H
-#define GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H
+#ifndef GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H_
+#define GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H_
 
 #include <boost/thread.hpp>
 #include <gnuradio/sync_block.h>
@@ -109,4 +109,4 @@ private:
     bool open();
 };
 
-#endif /* GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H */
+#endif  //  GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H_

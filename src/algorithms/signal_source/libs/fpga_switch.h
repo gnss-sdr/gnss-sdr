@@ -74,4 +74,4 @@ private:
     void close_device(void);
 };
 
-#endif /* GNSS_SDR_FPGA_SWITCH_H_ */
+#endif  // GNSS_SDR_FPGA_SWITCH_H_

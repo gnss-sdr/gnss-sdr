@@ -137,4 +137,4 @@ private:
     size_t item_size_;
 };
 
-#endif /*GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_*/
+#endif  // GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_

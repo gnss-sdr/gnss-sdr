@@ -128,4 +128,4 @@ private:
     bool enable_throttle_control_;
 };
 
-#endif /*GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H_*/
+#endif  // GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H_

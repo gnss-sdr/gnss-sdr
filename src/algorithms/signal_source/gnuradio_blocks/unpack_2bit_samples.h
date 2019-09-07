@@ -65,8 +65,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_UNPACK_2BIT_SAMPLES_H
-#define GNSS_SDR_UNPACK_2BIT_SAMPLES_H
+#ifndef GNSS_SDR_UNPACK_2BIT_SAMPLES_H_
+#define GNSS_SDR_UNPACK_2BIT_SAMPLES_H_
 
 #include <gnuradio/sync_interpolator.h>
 #include <cstdint>
@@ -117,4 +117,4 @@ private:
     std::vector<int8_t> work_buffer_;
 };
 
-#endif
+#endif  // GNSS_SDR_UNPACK_2BIT_SAMPLES_H_

@@ -764,7 +764,18 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
 endif()
 if(CMAKE_VERSION VERSION_LESS 3.15)
     if(NOT TARGET Boost::headers)
-        add_library(Boost::headers ALIAS Boost::boost)
+        if(CMAKE_VERSION VERSION_LESS 3.0)
+            add_library(Boost::boost SHARED IMPORTED) # Trick for CMake 2.8.12
+            set_target_properties(Boost::boost PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+                IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
+            )
+        else()
+            add_library(Boost::headers INTERFACE IMPORTED)
+            set_target_properties(Boost::filesystem PROPERTIES
+                Boost::headers ${Boost_INCLUDE_DIR}
+            )
+        endif()
     endif()
 endif()
 

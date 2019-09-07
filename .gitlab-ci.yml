@@ -141,9 +141,11 @@ c++20:
     - zypper -n install cmake git gcc-c++ gcc-fortran ninja boost-devel libboost_atomic-devel libboost_filesystem-devel libboost_system-devel libboost_date_time-devel libboost_thread-devel libboost_regex-devel libboost_serialization-devel libboost_program_options-devel libboost_math-devel libboost_numpy-devel libboost_chrono-devel libboost_python3-devel libboost_test-devel libboost_headers-devel libboost_test-devel libboost_random-devel libboost_numpy3-devel libboost_graph-devel python3-PyYAML python3 python3-qt5 python3-lxml log4cpp-devel libpcap-devel libtool automake hdf5-devel libopenssl-devel python3-Mako python3-six protobuf-devel gmp-devel python3-gmpy fftw3-devel python3-pyFFTW llvm-clang blas-devel lapack-devel
     - mkdir gnuradio && cd gnuradio
     - git clone --recursive https://github.com/gnuradio/gnuradio
-    - cd gnuradio && mkdir build && cd build
+    - cd gnuradio
+    - sed -i '43d' gnuradio-runtime/include/gnuradio/basic_block.h && sed -i '41d' gnuradio-runtime/include/gnuradio/basic_block.h
+    - mkdir build && cd build
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
-    - cmake -DENABLE_GR_AUDIO=OFF -DENABLE_GR_CHANNELS=OFF -DENABLE_GR_COMEDI=OFF -DENABLE_GR_DIGITAL=OFF -DENABLE_DOXYGEN=OFF -DENABLE_GR_DTV=OFF -DENABLE_GR_FEC=OFF -DENABLE_GR_TRELLIS=OFF -DENABLE_GR_VIDEO_SDL=OFF -DENABLE_GR_VOCODER=OFF -DENABLE_GR_WAVELET=OFF -DENABLE_GR_ZEROMQ=OFF -DENABLE_GR_ANALOG=ON -DENABLE_GR_FFT=ON -DENABLE_GR_FILTER=ON -DENABLE_GRC=OFF ..
+    - cmake -DENABLE_GR_AUDIO=OFF -DENABLE_GR_CHANNELS=OFF -DENABLE_GR_DIGITAL=OFF -DENABLE_DOXYGEN=OFF -DENABLE_GR_DTV=OFF -DENABLE_GR_FEC=OFF -DENABLE_GR_TRELLIS=OFF -DENABLE_GR_VIDEO_SDL=OFF -DENABLE_GR_VOCODER=OFF -DENABLE_GR_WAVELET=OFF -DENABLE_GR_ZEROMQ=OFF -DENABLE_GR_ANALOG=ON -DENABLE_GR_FFT=ON -DENABLE_GR_FILTER=ON -DENABLE_GRC=OFF ..
     - make -j$(($NPROC+1))
     - make install
     - cd ../../../build

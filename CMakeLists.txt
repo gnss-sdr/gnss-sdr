@@ -2216,6 +2216,21 @@ set_package_properties(GRIIO PROPERTIES
     PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
     TYPE OPTIONAL
 )
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+    if(NOT GRIIO_FOUND)
+        message(STATUS "gnuradio-iio not found, its installation is required.")
+        message(STATUS "Please build and install the following projects:")
+        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
+        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
+        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
+        if(ENABLE_PACKAGING)
+            set(ENABLE_PLUTOSDR OFF)
+            set(ENABLE_FMCOMMS2 OFF)
+        else()
+            message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with -DENABLE_PLUTOSDR=ON or -DENABLE_FMCOMMS2=ON.")
+        endif()
+    endif()
+endif()
 
 
 #####################################################################
@@ -2228,6 +2243,21 @@ set_package_properties(LIBIIO PROPERTIES
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
+    if(NOT LIBIIO_FOUND)
+        message(STATUS "libiio not found, its installation is required.")
+        message(STATUS "Please build and install the following projects:")
+        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
+        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
+        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
+        if(ENABLE_PACKAGING)
+            set(ENABLE_AD9361 OFF)
+            set(ENABLE_FMCOMMS2 OFF)
+        else()
+            message(FATAL_ERROR "libiio is required for building gnss-sdr with -DENABLE_AD9361=ON.")
+        endif()
+    endif()
+endif()
 
 
 ##############################################

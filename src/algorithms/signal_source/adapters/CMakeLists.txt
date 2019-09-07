@@ -25,30 +25,6 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
 endif()
 
 
-if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-    if(NOT GRIIO_FOUND)
-        message(STATUS "gnuradio-iio not found, its installation is required.")
-        message(STATUS "Please build and install the following projects:")
-        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
-        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
-        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-        message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with -DENABLE_PLUTOSDR=ON or -DENABLE_FMCOMMS2=ON.")
-    endif()
-endif()
-
-
-if(ENABLE_AD9361)
-    if(NOT LIBIIO_FOUND)
-        message(STATUS "libiio not found, its installation is required.")
-        message(STATUS "Please build and install the following projects:")
-        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
-        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
-        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-        message(FATAL_ERROR "libiio is required for building gnss-sdr with -DENABLE_AD9361=ON.")
-    endif()
-endif()
-
-
 if(ENABLE_PLUTOSDR)
     ##############################################
     # ADALM-PLUTO (Analog Devices Inc.)
@@ -234,9 +210,6 @@ if(ENABLE_ARRAY AND GRDBFCTTC_FOUND)
     )
 endif()
 
-target_compile_definitions(signal_source_adapters
-    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
-)
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     if(GR_IIO_INCLUDE_HAS_GNURADIO)
@@ -255,6 +228,11 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-set_property(TARGET signal_source_adapters APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+target_compile_definitions(signal_source_adapters
+    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
+
+set_property(TARGET signal_source_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

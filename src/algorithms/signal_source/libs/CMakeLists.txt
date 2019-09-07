@@ -16,29 +16,10 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-    if(NOT GRIIO_FOUND)
-        message(STATUS "gnuradio-iio not found, its installation is required.")
-        message(STATUS "Please build and install the following projects:")
-        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
-        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
-        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-        message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled")
-    endif()
-endif()
 
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
-    if(NOT LIBIIO_FOUND)
-        message(STATUS "libiio not found, its installation is required.")
-        message(STATUS "Please build and install the following projects:")
-        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
-        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
-        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-        message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled")
-    else()
-        set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
-        set(OPT_SIGNAL_SOURCE_LIB_HEADERS ad9361_manager.h)
-    endif()
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ad9361_manager.h)
 endif()
 
 if(ENABLE_FPGA OR ENABLE_AD9361)

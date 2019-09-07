@@ -1,11 +1,13 @@
 /*!
  * \file convolutional.h
  * \brief General functions used to implement convolutional encoding.
- * \author Matthew C. Valenti
+ * \author Matthew C. Valenti, 2006-2008.
+ * \author C. Fernandez-Prades, 2019.
  *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2006-2008  Matthew C. Valenti
+ * Copyright (C) 2019 C. Fernandez-Prades
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -18,8 +20,6 @@
  * (at your option) any later version.
  *
  * This file is a derived work of the original file, which had this note:
- *
- * Last updated on May 22, 2008
  *
  * The functions in this file are part of the Iterative Solutions
  * Coded Modulation Library. The Iterative Solutions Coded Modulation
@@ -248,11 +248,6 @@ inline void Viterbi(int output_u_int[],
             volk_gnsssdr_32f_index_max_32u(&max_index, next_section.data(), states);
             max_val = next_section[max_index];
 
-            // In modern C++ (not supported by old GCC versions):
-            // prev_section = next_section;
-            // std::transform(prev_section.begin(), prev_section.end(), prev_section.begin(),
-            //   [&max_val](const auto& prev_ele) { return (prev_ele - max_val); });
-            // std::fill(next_section.begin(), next_section.end(), -MAXLOG);
             for (state = 0; state < states; state++)
                 {
                     prev_section[state] = next_section[state] - max_val;

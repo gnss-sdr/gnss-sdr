@@ -40,7 +40,7 @@ target_link_libraries(channel_libs
         Gnuradio::pmt
     PRIVATE
         core_libs
-        Boost::boost
+        Boost::headers
         Gflags::gflags
         Glog::glog
 )

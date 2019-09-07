@@ -39,6 +39,8 @@ add_library(telemetry_decoder_libs
 )
 
 target_link_libraries(telemetry_decoder_libs
+    PUBLIC
+        Volkgnsssdr::volkgnsssdr
     PRIVATE
         Gflags::gflags
         Glog::glog

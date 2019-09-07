@@ -102,6 +102,10 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param_fpga.max_code_lock_fail);
     trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
     trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
+    trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);
+    trk_param_fpga.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param_fpga.cn0_smoother_alpha);
+    trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param_fpga.carrier_lock_test_smoother_samples);
+    trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param_fpga.carrier_lock_test_smoother_alpha);
 
     //    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
     //    if (FLAGS_max_lock_fail != 50)

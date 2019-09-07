@@ -213,6 +213,7 @@ private:
 
     int32_t max_obs_block_rx_clock_offset_ms;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
+    bool d_enable_rx_clock_correction;
     std::map<int, Gnss_Synchro> gnss_observables_map;
     std::map<int, Gnss_Synchro> gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> gnss_observables_map_t1;

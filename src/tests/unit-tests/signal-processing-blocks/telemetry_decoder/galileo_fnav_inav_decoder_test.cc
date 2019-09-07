@@ -54,14 +54,14 @@ public:
     const int32_t KK = 7;  // Constraint Length
     int32_t mm = KK - 1;
     int32_t flag_even_word_arrived;
-    void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits, int32_t _datalength)
+    void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits, int32_t _datalength)
     {
         Viterbi(page_part_bits, out0, state0, out1, state1,
             page_part_symbols, KK, nn, _datalength);
     }
 
 
-    void deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
+    void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out)
     {
         for (int32_t r = 0; r < rows; r++)
             {
@@ -73,10 +73,10 @@ public:
     }
 
 
-    bool decode_INAV_word(double *page_part_symbols, int32_t frame_length)
+    bool decode_INAV_word(float *page_part_symbols, int32_t frame_length)
     {
         // 1. De-interleave
-        auto *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
+        auto *page_part_symbols_deint = static_cast<float *>(volk_gnsssdr_malloc(frame_length * sizeof(float), volk_gnsssdr_get_alignment()));
         deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
 
         // 2. Viterbi decoder
@@ -134,10 +134,10 @@ public:
         return crc_ok;
     }
 
-    bool decode_FNAV_word(double *page_symbols, int32_t frame_length)
+    bool decode_FNAV_word(float *page_symbols, int32_t frame_length)
     {
         // 1. De-interleave
-        auto *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
+        auto *page_symbols_deint = static_cast<float *>(volk_gnsssdr_malloc(frame_length * sizeof(float), volk_gnsssdr_get_alignment()));
         deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
         // 2. Viterbi decoder
@@ -215,7 +215,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     start = std::chrono::system_clock::now();
     int repetitions = 10;
     // FNAV FULLY ENCODED FRAME
-    double FNAV_frame[488] = {-1, 1, -1, -1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    float FNAV_frame[488] = {-1, 1, -1, -1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         1, -1, -1, 1, -1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1,
         -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, -1, 1, -1,
         -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1,
@@ -240,7 +240,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
 
 
     // INAV FULLY ENCODED FRAME
-    double INAV_frame_even[240] = {-1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    float INAV_frame_even[240] = {-1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, 1,
         -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, -1,
@@ -256,7 +256,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
         -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1};
 
-    double INAV_frame_odd[240] = {1, -1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    float INAV_frame_odd[240] = {1, -1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, 1,
         1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1,
         -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1,

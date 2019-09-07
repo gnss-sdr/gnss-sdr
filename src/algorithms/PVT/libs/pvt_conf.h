@@ -89,6 +89,7 @@ public:
     std::string udp_addresses;
     int udp_port;
 
+    bool enable_rx_clock_correction;
     bool show_local_time_zone;
 
     Pvt_Conf();

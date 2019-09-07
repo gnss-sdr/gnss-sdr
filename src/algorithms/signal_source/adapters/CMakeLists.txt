@@ -170,7 +170,7 @@ target_include_directories(signal_source_adapters
 
 target_link_libraries(signal_source_adapters
     PUBLIC
-        Boost::boost
+        Boost::headers
         Gnuradio::runtime
         Gnuradio::blocks
         signal_source_gr_blocks

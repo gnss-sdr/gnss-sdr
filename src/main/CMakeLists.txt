@@ -32,7 +32,7 @@ endif()
 target_link_libraries(gnss-sdr
     PUBLIC
         core_receiver
-        Boost::boost
+        Boost::headers
         Boost::thread
         Gflags::gflags
         Glog::glog

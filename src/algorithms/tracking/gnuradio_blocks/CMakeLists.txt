@@ -88,7 +88,7 @@ endif()
 
 target_link_libraries(tracking_gr_blocks
     PUBLIC
-        Boost::boost
+        Boost::headers
         Armadillo::armadillo
         Gnuradio::blocks
         Matio::matio

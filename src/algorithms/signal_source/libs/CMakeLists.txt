@@ -69,7 +69,7 @@ add_library(signal_source_libs ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_
 
 target_link_libraries(signal_source_libs
     PUBLIC
-        Boost::boost
+        Boost::headers
         Gnuradio::runtime
     PRIVATE
         Gflags::gflags

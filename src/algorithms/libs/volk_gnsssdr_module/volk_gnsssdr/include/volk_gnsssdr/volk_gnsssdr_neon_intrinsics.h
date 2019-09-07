@@ -53,15 +53,17 @@ static inline float32x4_t vsqrtq_f32(float32x4_t q_x)
     return vmulq_f32(q_x, q_step_2);
 }
 
+
 /* Magnitude squared for float32x4x2_t */
 static inline float32x4_t _vmagnitudesquaredq_f32(float32x4x2_t cmplxValue)
 {
     float32x4_t iValue, qValue, result;
-    iValue = vmulq_f32(cmplxValue.val[0], cmplxValue.val[0]); // Square the values
-    qValue = vmulq_f32(cmplxValue.val[1], cmplxValue.val[1]); // Square the values
-    result = vaddq_f32(iValue, qValue); // Add the I2 and Q2 values
+    iValue = vmulq_f32(cmplxValue.val[0], cmplxValue.val[0]);  // Square the values
+    qValue = vmulq_f32(cmplxValue.val[1], cmplxValue.val[1]);  // Square the values
+    result = vaddq_f32(iValue, qValue);                        // Add the I2 and Q2 values
     return result;
 }
+
 
 /* Inverse square root for float32x4_t */
 static inline float32x4_t _vinvsqrtq_f32(float32x4_t x)
@@ -72,6 +74,7 @@ static inline float32x4_t _vinvsqrtq_f32(float32x4_t x)
 
     return sqrt_reciprocal;
 }
+
 
 /* Complex multiplication for float32x4x2_t */
 static inline float32x4x2_t _vmultiply_complexq_f32(float32x4x2_t a_val, float32x4x2_t b_val)

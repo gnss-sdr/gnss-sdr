@@ -81,12 +81,12 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
-    void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
+    void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
 
-    void deinterleaver(int32_t rows, int32_t cols, const double *in, double *out);
+    void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
 
-    void decode_INAV_word(double *page_part_symbols, int32_t frame_length);
-    void decode_FNAV_word(double *page_symbols, int32_t frame_length);
+    void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
+    void decode_FNAV_word(float *page_symbols, int32_t frame_length);
 
     int d_frame_type;
     int32_t d_bits_per_preamble;
@@ -96,7 +96,7 @@ private:
     uint32_t d_PRN_code_period_ms;
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;
-    std::vector<double> d_page_part_symbols;
+    std::vector<float> d_page_part_symbols;
 
     boost::circular_buffer<float> d_symbol_history;
 

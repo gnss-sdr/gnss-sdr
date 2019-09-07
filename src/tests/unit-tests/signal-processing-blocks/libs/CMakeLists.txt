@@ -43,7 +43,7 @@ target_link_libraries(signal_processing_testing_lib
         Gflags::gflags
         Gnuradio::runtime
     PRIVATE
-        Boost::boost
+        Boost::headers
         Matio::matio
         Glog::glog
 )

@@ -255,12 +255,11 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.extend_fpga_integration_periods = 1;  // (number of FPGA integrations that are combined in the SW)
     trk_param_fpga.fpga_integration_period = 1;          // (number of symbols that are effectively integrated in the FPGA)
 
-    //tracking lock tests smoother parameters
+    // tracking lock tests smoother parameters
     trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);
     trk_param_fpga.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param_fpga.cn0_smoother_alpha);
     trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param_fpga.carrier_lock_test_smoother_samples);
     trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param_fpga.carrier_lock_test_smoother_alpha);
-
 
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);

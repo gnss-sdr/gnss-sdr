@@ -100,7 +100,7 @@ target_include_directories(algorithms_libs
 target_link_libraries(algorithms_libs
     PUBLIC
         Armadillo::armadillo
-        Boost::boost
+        Boost::headers
         Gflags::gflags
         Gnuradio::runtime
         Gnuradio::blocks

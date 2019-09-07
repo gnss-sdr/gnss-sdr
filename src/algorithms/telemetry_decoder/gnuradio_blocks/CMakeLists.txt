@@ -56,7 +56,7 @@ target_link_libraries(telemetry_decoder_gr_blocks
         telemetry_decoder_libs
         core_system_parameters
         Gnuradio::runtime
-        Boost::boost
+        Boost::headers
     PRIVATE
         Gflags::gflags
         Glog::glog

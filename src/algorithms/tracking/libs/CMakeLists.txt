@@ -88,7 +88,7 @@ add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 target_link_libraries(tracking_libs
     PUBLIC
         Armadillo::armadillo
-        Boost::boost
+        Boost::headers
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
         core_system_parameters

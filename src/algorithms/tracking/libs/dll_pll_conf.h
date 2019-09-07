@@ -40,7 +40,6 @@ class Dll_Pll_Conf
 {
 public:
     /* DLL/PLL tracking configuration */
-
     int fll_filter_order;
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
@@ -48,7 +47,6 @@ public:
     unsigned int bit_synchronization_time_limit_s;
     int pll_filter_order;
     int dll_filter_order;
-
     double fs_in;
     uint32_t vector_length;
     bool dump;
@@ -72,7 +70,6 @@ public:
     float cn0_smoother_alpha;
     int32_t carrier_lock_test_smoother_samples;
     float carrier_lock_test_smoother_alpha;
-    //int32_t carrier_lock_det_mav_samples;
     int32_t cn0_min;
     int32_t max_code_lock_fail;
     int32_t max_carrier_lock_fail;

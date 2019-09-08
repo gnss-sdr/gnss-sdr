@@ -696,6 +696,7 @@ set_package_properties(Boost PROPERTIES
     DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
 )
 
+# Define targets if CMake < 3.5
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::date_time)
         add_library(Boost::date_time SHARED IMPORTED)
@@ -756,6 +757,8 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
         endif()
     endif()
 endif()
+
+# Define Boost::headers target if CMake < 3.15
 if(CMAKE_VERSION VERSION_LESS 3.15)
     if(NOT TARGET Boost::headers)
         if(CMAKE_VERSION VERSION_LESS 3.0)
@@ -770,6 +773,60 @@ if(CMAKE_VERSION VERSION_LESS 3.15)
                 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
             )
         endif()
+    endif()
+endif()
+
+# Provide package descriptions if Boost >= 1.71.00
+if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
+    set_package_properties(boost_headers PROPERTIES
+        URL "https://www.boost.org/"
+        DESCRIPTION "Header files of Boost libraries"
+        PURPOSE "Used widely across the source code."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_atomic PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/atomic.html"
+        DESCRIPTION "Provides atomic data types and operations on those types"
+        PURPOSE "Required by Boost Thread."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_chrono PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/chrono.html"
+        DESCRIPTION "Useful time utilities"
+        PURPOSE "Required by Boost Thread."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_date_time PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/date_time.html"
+        DESCRIPTION "A set of date-time libraries"
+        PURPOSE "Required by Boost Thread."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_serialization PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/libs/serialization/doc/index.html"
+        DESCRIPTION "Reversible deconstruction of C++ data structures to sequences of bytes"
+        PURPOSE "Used for serializing data."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_system PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html"
+        DESCRIPTION "Extensible error reporting library"
+        PURPOSE "Used for error reporting."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_thread PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/thread.html"
+        DESCRIPTION "Portable C++ multi-threading"
+        PURPOSE "Used by GNU Radio multi-threading system."
+        TYPE REQUIRED
+    )
+    if(NOT ${FILESYSTEM_FOUND})
+        set_package_properties(boost_filesystem PROPERTIES
+            URL "https://www.boost.org/doc/libs/release/libs/filesystem/doc/index.htm"
+            DESCRIPTION "Portable facilities to manipulate paths and files"
+            PURPOSE "Used for output file handling."
+            TYPE REQUIRED
+        )
     endif()
 endif()
 
@@ -1008,7 +1065,7 @@ endif()
 ################################################################################
 # gflags - https://github.com/gflags/gflags
 ################################################################################
-set(LOCAL_GFLAGS false)
+set(LOCAL_GFLAGS FALSE)
 find_package(GFLAGS)
 set_package_properties(GFLAGS PROPERTIES
     PURPOSE "Used for commandline flags management."
@@ -1069,7 +1126,7 @@ if(NOT GFLAGS_FOUND)
         )
     endif()
 
-    set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
+    set(LOCAL_GFLAGS TRUE CACHE STRING "GFlags downloaded and built automatically" FORCE)
     set_package_properties(GFLAGS PROPERTIES
         PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
@@ -1242,7 +1299,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
         )
     endif()
 
-    set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
+    set(LOCAL_GLOG TRUE CACHE STRING "Glog downloaded and built automatically" FORCE)
 
     set_package_properties(GLOG PROPERTIES
         PURPOSE "Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built when doing 'make'."
@@ -1334,21 +1391,25 @@ if(ARMADILLO_FOUND)
         DESCRIPTION "C++ library for linear algebra and scientific computing (found: v${ARMADILLO_VERSION_STRING})"
     )
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
-        set(ARMADILLO_FOUND false)
-        set(ENABLE_OWN_ARMADILLO true)
+        set(ARMADILLO_FOUND FALSE)
+        set(ENABLE_OWN_ARMADILLO ON)
+        message(STATUS " Armadillo > v${GNSSSDR_ARMADILLO_MIN_VERSION} has not been found.")
     else()
-        add_library(Armadillo::armadillo SHARED IMPORTED)
-        set_target_properties(Armadillo::armadillo PROPERTIES
-            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
-            INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
-            INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
-        )
+        if(NOT ENABLE_OWN_ARMADILLO)
+            add_library(Armadillo::armadillo SHARED IMPORTED)
+            set_target_properties(Armadillo::armadillo PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
+                INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
+            )
+        endif()
     endif()
+else()
+    message(STATUS " Armadillo has not been found.")
 endif()
 
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
-    message(STATUS " Armadillo has not been found.")
     message(STATUS " Armadillo ${GNSSSDR_ARMADILLO_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
@@ -1413,7 +1474,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         set(GFORTRAN "")
     endif()
     set(ARMADILLO_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
+    set(LOCAL_ARMADILLO TRUE CACHE STRING "Armadillo downloaded and built automatically" FORCE)
     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
     add_library(Armadillo::armadillo STATIC IMPORTED)
@@ -1652,7 +1713,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
                 )
             endif()
-            set(MATIO_LOCAL true)
+            set(MATIO_LOCAL TRUE)
             if(NOT TARGET Matio::matio)
                 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/include)
                 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/lib)

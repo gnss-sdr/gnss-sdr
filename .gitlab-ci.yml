@@ -145,7 +145,7 @@ c++20:
     - sed -i '43d' gnuradio-runtime/include/gnuradio/basic_block.h && sed -i '41d' gnuradio-runtime/include/gnuradio/basic_block.h
     - mkdir build && cd build
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
-    - cmake -DENABLE_GR_AUDIO=OFF -DENABLE_GR_CHANNELS=OFF -DENABLE_GR_DIGITAL=OFF -DENABLE_DOXYGEN=OFF -DENABLE_GR_DTV=OFF -DENABLE_GR_FEC=OFF -DENABLE_GR_TRELLIS=OFF -DENABLE_GR_VIDEO_SDL=OFF -DENABLE_GR_VOCODER=OFF -DENABLE_GR_WAVELET=OFF -DENABLE_GR_ZEROMQ=OFF -DENABLE_GR_ANALOG=ON -DENABLE_GR_FFT=ON -DENABLE_GR_FILTER=ON -DENABLE_GRC=OFF ..
+    - cmake -DENABLE_DEFAULT=OFF -DENABLE_GNURADIO_RUNTIME=ON -DENABLE_VOLK=ON -DENABLE_GR_BLOCKS=ON -DENABLE_GR_ANALOG=ON -DENABLE_GR_FFT=ON -DENABLE_GR_FILTER=ON ..
     - make -j$(($NPROC+1))
     - make install
     - cd ../../../build

@@ -1008,7 +1008,7 @@ endif()
 ################################################################################
 # gflags - https://github.com/gflags/gflags
 ################################################################################
-set(LOCAL_GFLAGS false)
+set(LOCAL_GFLAGS FALSE)
 find_package(GFLAGS)
 set_package_properties(GFLAGS PROPERTIES
     PURPOSE "Used for commandline flags management."
@@ -1069,7 +1069,7 @@ if(NOT GFLAGS_FOUND)
         )
     endif()
 
-    set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
+    set(LOCAL_GFLAGS TRUE CACHE STRING "GFlags downloaded and built automatically" FORCE)
     set_package_properties(GFLAGS PROPERTIES
         PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
@@ -1242,7 +1242,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
         )
     endif()
 
-    set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
+    set(LOCAL_GLOG TRUE CACHE STRING "Glog downloaded and built automatically" FORCE)
 
     set_package_properties(GLOG PROPERTIES
         PURPOSE "Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built when doing 'make'."
@@ -1334,21 +1334,25 @@ if(ARMADILLO_FOUND)
         DESCRIPTION "C++ library for linear algebra and scientific computing (found: v${ARMADILLO_VERSION_STRING})"
     )
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
-        set(ARMADILLO_FOUND false)
-        set(ENABLE_OWN_ARMADILLO true)
+        set(ARMADILLO_FOUND FALSE)
+        set(ENABLE_OWN_ARMADILLO ON)
+        message(STATUS " Armadillo > v${GNSSSDR_ARMADILLO_MIN_VERSION} has not been found.")
     else()
-        add_library(Armadillo::armadillo SHARED IMPORTED)
-        set_target_properties(Armadillo::armadillo PROPERTIES
-            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
-            INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
-            INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
-        )
+        if(NOT ENABLE_OWN_ARMADILLO)
+            add_library(Armadillo::armadillo SHARED IMPORTED)
+            set_target_properties(Armadillo::armadillo PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
+                INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
+            )
+        endif()
     endif()
+else()
+    message(STATUS " Armadillo has not been found.")
 endif()
 
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
-    message(STATUS " Armadillo has not been found.")
     message(STATUS " Armadillo ${GNSSSDR_ARMADILLO_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
@@ -1413,7 +1417,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         set(GFORTRAN "")
     endif()
     set(ARMADILLO_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
+    set(LOCAL_ARMADILLO TRUE CACHE STRING "Armadillo downloaded and built automatically" FORCE)
     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
     add_library(Armadillo::armadillo STATIC IMPORTED)
@@ -1652,7 +1656,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
                 )
             endif()
-            set(MATIO_LOCAL true)
+            set(MATIO_LOCAL TRUE)
             if(NOT TARGET Matio::matio)
                 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/include)
                 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/lib)

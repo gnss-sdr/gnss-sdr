@@ -696,6 +696,7 @@ set_package_properties(Boost PROPERTIES
     DESCRIPTION "Portable C++ source libraries (found: v${Boost_VERSION_STRING})"
 )
 
+# Define targets if CMake < 3.5
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::date_time)
         add_library(Boost::date_time SHARED IMPORTED)
@@ -756,6 +757,8 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
         endif()
     endif()
 endif()
+
+# Define Boost::headers target if CMake < 3.15
 if(CMAKE_VERSION VERSION_LESS 3.15)
     if(NOT TARGET Boost::headers)
         if(CMAKE_VERSION VERSION_LESS 3.0)
@@ -770,6 +773,60 @@ if(CMAKE_VERSION VERSION_LESS 3.15)
                 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
             )
         endif()
+    endif()
+endif()
+
+# Provide package descriptions if Boost >= 1.71.00
+if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
+    set_package_properties(boost_headers PROPERTIES
+        URL "https://www.boost.org/"
+        DESCRIPTION "Header files of Boost libraries"
+        PURPOSE "Used widely across the source code."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_atomic PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/atomic.html"
+        DESCRIPTION "Provides atomic data types and operations on those types"
+        PURPOSE "Required by Boost Thread."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_chrono PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/chrono.html"
+        DESCRIPTION "Useful time utilities"
+        PURPOSE "Required by Boost Thread."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_date_time PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/date_time.html"
+        DESCRIPTION "A set of date-time libraries"
+        PURPOSE "Required by Boost Thread."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_serialization PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/libs/serialization/doc/index.html"
+        DESCRIPTION "Reversible deconstruction of C++ data structures to sequences of bytes"
+        PURPOSE "Used for serializing data."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_system PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html"
+        DESCRIPTION "Extensible error reporting library"
+        PURPOSE "Used for error reporting."
+        TYPE REQUIRED
+    )
+    set_package_properties(boost_thread PROPERTIES
+        URL "https://www.boost.org/doc/libs/release/doc/html/thread.html"
+        DESCRIPTION "Portable C++ multi-threading"
+        PURPOSE "Used by GNU Radio multi-threading system."
+        TYPE REQUIRED
+    )
+    if(NOT ${FILESYSTEM_FOUND})
+        set_package_properties(boost_filesystem PROPERTIES
+            URL "https://www.boost.org/doc/libs/release/libs/filesystem/doc/index.htm"
+            DESCRIPTION "Portable facilities to manipulate paths and files"
+            PURPOSE "Used for output file handling."
+            TYPE REQUIRED
+        )
     endif()
 endif()
 

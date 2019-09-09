@@ -87,7 +87,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
-            if (GPS_CA_PREAMBLE.at(i) == '1')
+            if (GPS_CA_PREAMBLE[i] == '1')
                 {
                     d_preamble_samples[n] = 1;
                     n++;

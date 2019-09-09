@@ -44,7 +44,8 @@ public:
     Gnss_circular_deque();                                                        //!< Default constructor
     Gnss_circular_deque(const unsigned int max_size, const unsigned int nchann);  //!< nchann = number of channels; max_size = channel capacity
     unsigned int size(const unsigned int ch);                                     //!< Returns the number of available elements in a channel
-    T& at(const unsigned int ch, const unsigned int pos);                         //!< Returns a reference to an element
+    T& at(const unsigned int ch, const unsigned int pos);                         //!< Returns a reference to an element with bount checking
+    T& get(const unsigned int ch, const unsigned int pos);                        //!< Returns a reference to an element without bound checking
     T& front(const unsigned int ch);                                              //!< Returns a reference to the first element in the deque
     T& back(const unsigned int ch);                                               //!< Returns a reference to the last element in the deque
     void push_back(const unsigned int ch, const T& new_data);                     //!< Inserts an element at the end of the deque
@@ -97,6 +98,13 @@ template <class T>
 T& Gnss_circular_deque<T>::at(const unsigned int ch, const unsigned int pos)
 {
     return d_data.at(ch).at(pos);
+}
+
+
+template <class T>
+T& Gnss_circular_deque<T>::get(const unsigned int ch, const unsigned int pos)
+{
+    return d_data[ch][pos];
 }
 
 

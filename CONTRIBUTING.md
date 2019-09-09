@@ -147,6 +147,12 @@ accepted:
  dependencies, they must be available as packages in [Debian OldStable](https://wiki.debian.org/DebianOldStable).
  * Write tests.
  * Follow our [coding style guide](https://gnss-sdr.org/coding-style/).
+ Specifically, please make sure that you have applied
+ [clang-format](https://clang.llvm.org/docs/ClangFormat.html) and
+ [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) to your changes before
+ you do your pull request. Please check the
+ [final recommendations](https://gnss-sdr.org/coding-style/#final-recommendations)
+ for guidelines on how to apply those tools.
  * Write a descriptive and detailed summary. Please consider that
 reviewing pull requests is hard, so include as much information as
 possible to make your pull request's intent clear.

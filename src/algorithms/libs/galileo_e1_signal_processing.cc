@@ -212,7 +212,7 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
                 {
                     for (unsigned k = 0; k < _samplesPerCode; k++)
                         {
-                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1_span_aux[k] * (GALILEO_E1_C_SECONDARY_CODE.at(i) == '0' ? 1.0F : -1.0F);
+                            _signal_E1C_secondary_span[i * _samplesPerCode + k] = _signal_E1_span_aux[k] * (GALILEO_E1_C_SECONDARY_CODE[i] == '0' ? 1.0F : -1.0F);
                         }
                 }
 

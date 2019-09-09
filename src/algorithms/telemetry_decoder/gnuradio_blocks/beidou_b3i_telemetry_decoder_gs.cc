@@ -81,7 +81,7 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
     // Setting samples of preamble code
     for (int32_t i = 0; i < d_symbols_per_preamble; i++)
         {
-            if (BEIDOU_DNAV_PREAMBLE.at(i) == '1')
+            if (BEIDOU_DNAV_PREAMBLE[i] == '1')
                 {
                     d_preamble_samples[i] = 1;
                 }
@@ -318,7 +318,7 @@ void beidou_b3i_telemetry_decoder_gs::set_satellite(
             // Setting samples of preamble code
             for (int32_t i = 0; i < d_symbols_per_preamble; i++)
                 {
-                    if (BEIDOU_DNAV_PREAMBLE.at(i) == '1')
+                    if (BEIDOU_DNAV_PREAMBLE[i] == '1')
                         {
                             d_preamble_samples[i] = 1;
                         }
@@ -342,7 +342,7 @@ void beidou_b3i_telemetry_decoder_gs::set_satellite(
             // Setting samples of preamble code
             for (int32_t i = 0; i < d_symbols_per_preamble; i++)
                 {
-                    if (BEIDOU_DNAV_PREAMBLE.at(i) == '1')
+                    if (BEIDOU_DNAV_PREAMBLE[i] == '1')
                         {
                             d_preamble_samples[i] = 1;
                         }
@@ -466,14 +466,14 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                                 {
                                     for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                         {
-                                            d_subframe_symbols[i] = d_symbol_history.at(i);
+                                            d_subframe_symbols[i] = d_symbol_history[i];
                                         }
                                 }
                             else  // 180 deg. inverted carrier phase PLL lock
                                 {
                                     for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                         {
-                                            d_subframe_symbols[i] = -d_symbol_history.at(i);
+                                            d_subframe_symbols[i] = -d_symbol_history[i];
                                         }
                                 }
 
@@ -526,14 +526,14 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                         {
                             for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
-                                    d_subframe_symbols[i] = d_symbol_history.at(i);
+                                    d_subframe_symbols[i] = d_symbol_history[i];
                                 }
                         }
                     else  // 180 deg. inverted carrier phase PLL lock
                         {
                             for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
-                                    d_subframe_symbols[i] = -d_symbol_history.at(i);
+                                    d_subframe_symbols[i] = -d_symbol_history[i];
                                 }
                         }
 

@@ -135,7 +135,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 {
                 case 1:  // INAV
                     {
-                        if (GALILEO_INAV_PREAMBLE.at(i) == '1')
+                        if (GALILEO_INAV_PREAMBLE[i] == '1')
                             {
                                 d_preamble_samples[i] = 1;
                             }
@@ -147,7 +147,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                     }
                 case 2:  // FNAV for E5a-I
                     {
-                        if (GALILEO_FNAV_PREAMBLE.at(i) == '1')
+                        if (GALILEO_FNAV_PREAMBLE[i] == '1')
                             {
                                 d_preamble_samples[i] = 1;
                             }
@@ -571,14 +571,14 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                d_page_part_symbols[i] = d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
+                                                d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
                                             }
                                     }
                                 else  // 180 deg. inverted carrier phase PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                d_page_part_symbols[i] = -d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
+                                                d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
                                             }
                                     }
                                 decode_INAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
@@ -592,7 +592,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                             {
                                                 for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                                     {
-                                                        d_page_part_symbols[i] = d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
+                                                        d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
                                                     }
                                             }
                                     }
@@ -602,7 +602,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                             {
                                                 for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                                     {
-                                                        d_page_part_symbols[i] = -d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
+                                                        d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
                                                     }
                                             }
                                     }

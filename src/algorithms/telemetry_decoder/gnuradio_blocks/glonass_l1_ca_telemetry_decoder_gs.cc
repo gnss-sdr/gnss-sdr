@@ -343,11 +343,11 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         {
                             if (corr_value > 0)
                                 {
-                                    string_symbols[i] = d_symbol_history.at(i + d_symbols_per_preamble).Prompt_I;  // because last symbol of the preamble is just received now!
+                                    string_symbols[i] = d_symbol_history[i + d_symbols_per_preamble].Prompt_I;  // because last symbol of the preamble is just received now!
                                 }
                             else
                                 {
-                                    string_symbols[i] = -d_symbol_history.at(i + d_symbols_per_preamble).Prompt_I;  // because last symbol of the preamble is just received now!
+                                    string_symbols[i] = -d_symbol_history[i + d_symbols_per_preamble].Prompt_I;  // because last symbol of the preamble is just received now!
                                 }
                         }
 

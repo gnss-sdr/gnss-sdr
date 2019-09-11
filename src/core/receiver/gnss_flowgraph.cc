@@ -1440,7 +1440,7 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 }
 
 
-void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> configuration)
+void GNSSFlowgraph::set_configuration(const std::shared_ptr<ConfigurationInterface>& configuration)
 {
     if (running_)
         {

@@ -87,7 +87,7 @@ namespace errorlib = boost::system;
 #endif
 
 
-Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
+Rtklib_Solver::Rtklib_Solver(int nchannels, const std::string &dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;

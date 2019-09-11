@@ -60,7 +60,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
@@ -91,7 +91,7 @@ private:
     glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
@@ -102,7 +102,7 @@ private:
     glonass_l1_ca_dll_pll_c_aid_tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
@@ -170,7 +170,7 @@ private:
     int32_t d_extend_correlation_ms;
     bool d_enable_extended_integration;
     bool d_preamble_synchronized;
-    void msg_handler_preamble_index(pmt::pmt_t msg);
+    void msg_handler_preamble_index(const pmt::pmt_t& msg);
 
     // Integration period in samples
     int32_t d_correlation_length_samples;

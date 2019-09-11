@@ -44,7 +44,7 @@ Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
 }
 
 
-void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void Acquisition_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
 {
     try
         {

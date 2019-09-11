@@ -58,7 +58,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
 glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
@@ -89,7 +89,7 @@ private:
     glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
@@ -100,7 +100,7 @@ private:
     glonass_l2_ca_dll_pll_c_aid_tracking_sc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
@@ -165,7 +165,7 @@ private:
     bool d_preamble_synchronized;
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;
-    void msg_handler_preamble_index(pmt::pmt_t msg);
+    void msg_handler_preamble_index(const pmt::pmt_t& msg);
 
     // symbol history to detect bit transition
     std::deque<lv_16sc_t> d_E_history;

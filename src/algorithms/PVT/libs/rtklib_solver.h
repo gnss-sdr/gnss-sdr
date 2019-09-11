@@ -89,7 +89,7 @@
 class Rtklib_Solver : public Pvt_Solution
 {
 public:
-    Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
+    Rtklib_Solver(int nchannels, const std::string& dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);

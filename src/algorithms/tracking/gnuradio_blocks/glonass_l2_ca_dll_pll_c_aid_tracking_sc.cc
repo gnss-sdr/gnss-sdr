@@ -61,7 +61,7 @@ glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
@@ -84,7 +84,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_sc::forecast(int noutput_items,
 }
 
 
-void glonass_l2_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pmt_t msg)
+void glonass_l2_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(const pmt::pmt_t &msg)
 {
     // pmt::print(msg);
     DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel << ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
@@ -101,7 +101,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::glonass_l2_ca_dll_pll_c_aid_tracking_sc
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,

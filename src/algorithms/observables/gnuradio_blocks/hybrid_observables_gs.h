@@ -57,7 +57,7 @@ hybrid_observables_gs_sptr hybrid_observables_gs_make(
     unsigned int nchannels_out,
     bool dump,
     bool dump_mat,
-    std::string dump_filename);
+    const std::string& dump_filename);
 
 /*!
  * \brief This class implements a block that computes observables
@@ -76,14 +76,14 @@ private:
         uint32_t nchannels_out,
         bool dump,
         bool dump_mat,
-        std::string dump_filename);
+        const std::string& dump_filename);
 
     hybrid_observables_gs(
         uint32_t nchannels_in,
         uint32_t nchannels_out,
         bool dump,
         bool dump_mat,
-        std::string dump_filename);
+        const std::string& dump_filename);
 
     bool T_rx_TOW_set;  // rx time follow GPST
     bool d_dump;

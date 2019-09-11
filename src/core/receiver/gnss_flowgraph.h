@@ -128,7 +128,7 @@ public:
     /*!
      * \brief Set flow graph configuratiob
      */
-    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
+    void set_configuration(const std::shared_ptr<ConfigurationInterface>& configuration);
 
     bool connected() const
     {

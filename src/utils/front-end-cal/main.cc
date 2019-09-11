@@ -116,7 +116,7 @@ class FrontEndCal_msg_rx : public gr::block
 {
 private:
     friend FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_events(const pmt::pmt_t& msg);
     FrontEndCal_msg_rx();
 
 public:
@@ -130,7 +130,7 @@ FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make()
 }
 
 
-void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void FrontEndCal_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
 {
     try
         {

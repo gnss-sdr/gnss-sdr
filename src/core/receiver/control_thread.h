@@ -77,7 +77,7 @@ public:
      *
      * \param[in] configuration Pointer to a ConfigurationInterface
      */
-    explicit ControlThread(std::shared_ptr<ConfigurationInterface> configuration);
+    explicit ControlThread(const std::shared_ptr<ConfigurationInterface> &configuration);
 
     /*!
      * \brief Destructor

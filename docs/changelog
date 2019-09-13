@@ -11,6 +11,11 @@
 - New PVT parameter enable_rx_clock_correction parameter allows to enable or disable the application of the Time solution correction to the computation of Observables.
 
 
+### Improvements in Interoperability:
+
+ - Added triple-band configurations RINEX outputs.
+
+
 ### Improvements in Maintainability:
 
 - New CMake option ENABLE_ARMA_NO_DEBUG defines the macro ARMA_NO_DEBUG, which disables all run-time checks, such as bounds checking, in the Armadillo library. This will result in faster code. This option is disabled by default during development, but automatically set to ON if the option ENABLE_PACKAGING is set to ON.
@@ -37,6 +42,7 @@
 
 ### Improvements in Usability:
 
+- A new parameter allows to process raw sample files containing signals dated before year 2009.
 - Improved DLL-PLL binary dump MATLAB/Octave plot script. Old versions removed.
 - Simplified RTKLIB error log.
 - Added a Python 3 plotting script to show relative performance of generic volk_gnsssdr kernels wrt SIMD fastest versions.

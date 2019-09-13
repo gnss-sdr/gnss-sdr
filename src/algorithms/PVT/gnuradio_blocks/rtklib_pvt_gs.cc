@@ -347,6 +347,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     if (b_rinex_output_enabled)
         {
             rp = std::make_shared<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path);
+            rp->set_custom_year(conf_.custom_year);
         }
     else
         {

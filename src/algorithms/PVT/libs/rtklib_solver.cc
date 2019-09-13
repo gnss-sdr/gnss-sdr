@@ -496,13 +496,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                        eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second, d_custom_year);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             galileo_ephemeris_iter->second.WN_5,
-                                            0);
+                                            0,
+                                            d_custom_year);
                                         valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -526,7 +527,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             galileo_ephemeris_iter->second.WN_5,
-                                                            2);  // Band 3 (L5/E5)
+                                                            2,  // Band 3 (L5/E5)
+                                                            d_custom_year);
                                                         found_E1_obs = true;
                                                         break;
                                                     }
@@ -535,7 +537,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // insert Galileo E5 obs as new obs and also insert its ephemeris
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second, d_custom_year);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
@@ -544,7 +546,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     galileo_ephemeris_iter->second.WN_5,
-                                                    2);  // Band 3 (L5/E5)
+                                                    2,  // Band 3 (L5/E5)
+                                                    d_custom_year);
                                                 valid_obs++;
                                             }
                                     }
@@ -566,13 +569,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second);
+                                        eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second, d_custom_year);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             gps_ephemeris_iter->second.i_GPS_week,
-                                            0);
+                                            0,
+                                            d_custom_year);
                                         valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -611,7 +615,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // 3. If not found, insert the GPS L2 ephemeris and the observation
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second, d_custom_year);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
@@ -620,7 +624,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
-                                                    1);  // Band 2 (L2)
+                                                    1,  // Band 2 (L2)
+                                                    d_custom_year);
                                                 valid_obs++;
                                             }
                                     }
@@ -645,11 +650,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         if (eph_data[i].sat == static_cast<int>(gnss_observables_iter->second.PRN))
                                                             {
-                                                                eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                                                                eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second, d_custom_year);
                                                                 obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i],
                                                                     gnss_observables_iter->second,
                                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
-                                                                    2);  // Band 3 (L5)
+                                                                    2,  // Band 3 (L5)
+                                                                    d_custom_year);
                                                                 break;
                                                             }
                                                     }
@@ -658,7 +664,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // 3. If not found, insert the GPS L5 ephemeris and the observation
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                                                eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second, d_custom_year);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
@@ -667,7 +673,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
-                                                    2);  // Band 3 (L5)
+                                                    2,  // Band 3 (L5)
+                                                    d_custom_year);
                                                 valid_obs++;
                                             }
                                     }
@@ -695,7 +702,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             glonass_gnav_ephemeris_iter->second.d_WN,
-                                            0);  // Band 0 (L1)
+                                            0,  // Band 0 (L1)
+                                            d_custom_year);
                                         glo_valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -718,7 +726,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         obs_data[i + valid_obs] = insert_obs_to_rtklib(obs_data[i + valid_obs],
                                                             gnss_observables_iter->second,
                                                             glonass_gnav_ephemeris_iter->second.d_WN,
-                                                            1);  // Band 1 (L2)
+                                                            1,  // Band 1 (L2)
+                                                            d_custom_year);
                                                         found_L1_obs = true;
                                                         break;
                                                     }
@@ -733,7 +742,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     glonass_gnav_ephemeris_iter->second.d_WN,
-                                                    1);  // Band 1 (L2)
+                                                    1,  // Band 1 (L2)
+                                                    d_custom_year);
                                                 glo_valid_obs++;
                                             }
                                     }
@@ -761,7 +771,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                            0);
+                                            0,
+                                            d_custom_year);
                                         valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -783,7 +794,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                            2);  // Band 3 (L2/G2/B3)
+                                                            2,  // Band 3 (L2/G2/B3)
+                                                            d_custom_year);
                                                         found_B1I_obs = true;
                                                         break;
                                                     }
@@ -801,7 +813,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
-                                                    2);  // Band 2 (L2/G2)
+                                                    2,  // Band 2 (L2/G2)
+                                                    d_custom_year);
                                                 valid_obs++;
                                             }
                                     }
@@ -1025,7 +1038,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // TOW
                     monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
                     // WEEK
-                    monitor_pvt.week = adjgpsweek(nav_data.eph[0].week);
+                    monitor_pvt.week = adjgpsweek(nav_data.eph[0].week, d_custom_year);
                     // PVT GPS time
                     monitor_pvt.RX_time = gnss_observables_map.begin()->second.RX_time;
                     // User clock offset [s]
@@ -1083,7 +1096,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_uint32 = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
-                                    tmp_uint32 = adjgpsweek(nav_data.eph[0].week);
+                                    tmp_uint32 = adjgpsweek(nav_data.eph[0].week, d_custom_year);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.begin()->second.RX_time;

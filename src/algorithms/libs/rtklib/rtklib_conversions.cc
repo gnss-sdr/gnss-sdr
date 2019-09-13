@@ -45,7 +45,7 @@
 #include <cstdint>
 #include <string>
 
-obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band)
+obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, int custom_year)
 {
     // Get signal type info to adjust code type based on constellation
     std::string sig_ = gnss_synchro.Signal;
@@ -118,7 +118,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
     //           rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     //       }
     //
-    rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+    rtklib_obs.time = gpst2time(adjgpsweek(week, custom_year), gnss_synchro.RX_time);
     // account for the TOW crossover transitory in the first 18 seconds where the week is not yet updated!
     if (gnss_synchro.RX_time < 18.0)
         {
@@ -158,19 +158,19 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
 
     // Time expressed in GPS Time but using RTKLib format
     glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_b, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
-    adj_week = adjgpsweek(static_cast<int>(week));
+    adj_week = adjgpsweek(static_cast<int>(week), 0);
     rtklib_sat.toe = gpst2time(adj_week, sec);
 
     // Time expressed in GPS Time but using RTKLib format
     glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_k, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
-    adj_week = adjgpsweek(static_cast<int>(week));
+    adj_week = adjgpsweek(static_cast<int>(week), 0);
     rtklib_sat.tof = gpst2time(adj_week, sec);
 
     return rtklib_sat;
 }
 
 
-eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
+eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph, int custom_year)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
@@ -188,7 +188,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
     rtklib_sat.Adot = 0;  // only in CNAV;
     rtklib_sat.ndot = 0;  // only in CNAV;
 
-    rtklib_sat.week = adjgpsweek(gal_eph.WN_5); /* week of tow */
+    rtklib_sat.week = adjgpsweek(gal_eph.WN_5, custom_year); /* week of tow */
     rtklib_sat.cic = gal_eph.C_ic_4;
     rtklib_sat.cis = gal_eph.C_is_4;
     rtklib_sat.cuc = gal_eph.C_uc_3;
@@ -229,7 +229,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
 }
 
 
-eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
+eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph, int custom_year)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
@@ -246,7 +246,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
     rtklib_sat.Adot = 0;  // only in CNAV;
     rtklib_sat.ndot = 0;  // only in CNAV;
 
-    rtklib_sat.week = adjgpsweek(gps_eph.i_GPS_week); /* week of tow */
+    rtklib_sat.week = adjgpsweek(gps_eph.i_GPS_week, custom_year); /* week of tow */
     rtklib_sat.cic = gps_eph.d_Cic;
     rtklib_sat.cis = gps_eph.d_Cis;
     rtklib_sat.cuc = gps_eph.d_Cuc;
@@ -356,7 +356,7 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 }
 
 
-eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
+eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph, int custom_year)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
@@ -377,7 +377,7 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.Adot = gps_cnav_eph.d_A_DOT;        // only in CNAV;
     rtklib_sat.ndot = gps_cnav_eph.d_DELTA_DOT_N;  // only in CNAV;
 
-    rtklib_sat.week = adjgpsweek(gps_cnav_eph.i_GPS_week); /* week of tow */
+    rtklib_sat.week = adjgpsweek(gps_cnav_eph.i_GPS_week, custom_year); /* week of tow */
     rtklib_sat.cic = gps_cnav_eph.d_Cic;
     rtklib_sat.cis = gps_cnav_eph.d_Cis;
     rtklib_sat.cuc = gps_cnav_eph.d_Cuc;

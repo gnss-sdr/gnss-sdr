@@ -88,6 +88,7 @@ namespace errorlib = boost::system;
 
 Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
 {
+    custom_year_ = 0;
     std::string base_rinex_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(base_rinex_path);
@@ -11780,13 +11781,24 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     // idea: resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
     const double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000));
-    if (nav_msg.i_GPS_week < 512)
+    // Handle week rollover
+    if (custom_year_ == 0 or custom_year_ >= 2009)
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            // Handle week rollover (valid from 2009 to 2029)
+            if (nav_msg.i_GPS_week < 512)
+                {
+                    boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+                    return p_time;
+                }
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             return p_time;
         }
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-    return p_time;
+    else
+        {
+            //assume receiver operating in between 1999 to 2008
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            return p_time;
+        }
 }
 
 
@@ -11815,15 +11827,25 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
         {
             t += boost::posix_time::seconds(604800);
         }
-    // Handle week rollover (valid from 2009 to 2029)
-    if (eph.i_GPS_week < 512)
+
+    // Handle week rollover
+    if (custom_year_ == 0 or custom_year_ >= 2009)
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            // Handle week rollover (valid from 2009 to 2029)
+            if (eph.i_GPS_week < 512)
+                {
+                    boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+                    return p_time;
+                }
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             return p_time;
         }
-
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-    return p_time;
+    else
+        {
+            //assume receiver operating in between 1999 to 2008
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            return p_time;
+        }
 }
 
 
@@ -11931,6 +11953,11 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const d
         }
 
     return leap_second;
+}
+
+void Rinex_Printer::set_custom_year(int custom_year)
+{
+    custom_year_ = custom_year;
 }
 
 

@@ -448,9 +448,12 @@ public:
     std::string navBdsfilename;
     std::string navMixfilename;
 
+    void set_custom_year(int custom_year);
+
 private:
     int version;                  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
     int numberTypesObservations;  // Number of available types of observable in the system. Should be public?
+    int custom_year_;
     /*
      * Generation of RINEX signal strength indicators
      */

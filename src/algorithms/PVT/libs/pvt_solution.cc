@@ -53,6 +53,7 @@ Pvt_Solution::Pvt_Solution()
     d_valid_observations = 0;
     d_rx_pos = arma::zeros(3, 1);
     d_rx_dt_s = 0.0;
+    d_custom_year = 0;  //disabled by default
 }
 
 
@@ -430,4 +431,9 @@ int Pvt_Solution::get_num_valid_observations() const
 void Pvt_Solution::set_num_valid_observations(int num)
 {
     d_valid_observations = num;
+}
+
+void Pvt_Solution::set_custom_year(int custom_year)
+{
+    d_custom_year = custom_year;
 }

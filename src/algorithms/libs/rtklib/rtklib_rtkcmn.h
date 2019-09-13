@@ -189,7 +189,7 @@ double utc2gmst(gtime_t t, double ut1_utc);
 void time2str(gtime_t t, char *s, int n);
 char *time_str(gtime_t t, int n);
 double time2doy(gtime_t t);
-int adjgpsweek(int week);
+int adjgpsweek(int week, int custom_year);
 unsigned int tickget();
 void sleepms(int ms);
 void deg2dms(double deg, double *dms, int ndec);

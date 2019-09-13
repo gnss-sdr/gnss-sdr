@@ -82,12 +82,12 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
             // create I, Q -> gr_complex type conversion blocks
             for (int n = 0; n < (n_channels_ * 2); n++)
                 {
-                    char_to_float.push_back(gr::blocks::char_to_float::make());
+                    char_to_float.emplace_back(gr::blocks::char_to_float::make());
                 }
 
             for (int n = 0; n < n_channels_; n++)
                 {
-                    float_to_complex_.push_back(gr::blocks::float_to_complex::make());
+                    float_to_complex_.emplace_back(gr::blocks::float_to_complex::make());
                     null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
                 }
 

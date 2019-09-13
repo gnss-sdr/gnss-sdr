@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ACQUISITION_MSG_RX_H
-#define GNSS_SDR_ACQUISITION_MSG_RX_H
+#ifndef GNSS_SDR_ACQUISITION_MSG_RX_H_
+#define GNSS_SDR_ACQUISITION_MSG_RX_H_
 
 #include <gnuradio/block.h>
 #include <gnuradio/top_block.h>
@@ -49,7 +49,7 @@ class Acquisition_msg_rx : public gr::block
 {
 private:
     friend Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_events(const pmt::pmt_t& msg);
     Acquisition_msg_rx();
 
 public:
@@ -59,4 +59,4 @@ public:
 };
 
 
-#endif
+#endif  // GNSS_SDR_ACQUISITION_MSG_RX_H_

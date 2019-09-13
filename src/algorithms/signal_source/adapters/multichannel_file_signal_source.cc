@@ -43,7 +43,7 @@
 
 MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";

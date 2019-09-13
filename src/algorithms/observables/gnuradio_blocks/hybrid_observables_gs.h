@@ -31,8 +31,8 @@
  */
 
 
-#ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H
-#define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
+#ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H_
+#define GNSS_SDR_HYBRID_OBSERVABLES_GS_H_
 
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <boost/shared_ptr.hpp>       // for boost::shared_ptr
@@ -57,7 +57,7 @@ hybrid_observables_gs_sptr hybrid_observables_gs_make(
     unsigned int nchannels_out,
     bool dump,
     bool dump_mat,
-    std::string dump_filename);
+    const std::string& dump_filename);
 
 /*!
  * \brief This class implements a block that computes observables
@@ -76,14 +76,14 @@ private:
         uint32_t nchannels_out,
         bool dump,
         bool dump_mat,
-        std::string dump_filename);
+        const std::string& dump_filename);
 
     hybrid_observables_gs(
         uint32_t nchannels_in,
         uint32_t nchannels_out,
         bool dump,
         bool dump_mat,
-        std::string dump_filename);
+        const std::string& dump_filename);
 
     bool T_rx_TOW_set;  // rx time follow GPST
     bool d_dump;
@@ -105,4 +105,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif
+#endif  // GNSS_SDR_HYBRID_OBSERVABLES_GS_H_

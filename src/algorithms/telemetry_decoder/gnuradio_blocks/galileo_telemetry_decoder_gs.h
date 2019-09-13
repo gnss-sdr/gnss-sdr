@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
+#ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H_
+#define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H_
 
 
 #include "galileo_fnav_message.h"
@@ -144,4 +144,4 @@ private:
     int32_t DataLength;
 };
 
-#endif
+#endif  // GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H_

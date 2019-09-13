@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
-#define GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
+#ifndef GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H_
+#define GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H_
 
 #include <cstdint>
 #include <fstream>
@@ -94,4 +94,4 @@ private:
     bool parse_vector(std::vector<double> &vec);
 };
 
-#endif  // GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
+#endif  // GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H_

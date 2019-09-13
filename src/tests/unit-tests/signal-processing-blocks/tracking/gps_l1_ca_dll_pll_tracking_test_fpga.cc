@@ -133,7 +133,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
 
 
 // thread that sends the samples to the FPGA
-void sending_thread(gr::top_block_sptr top_block, const char *file_name)
+void sending_thread(const gr::top_block_sptr& top_block, const char *file_name)
 {
     // file descriptor
     FILE *rx_signal_file;  // file descriptor
@@ -171,7 +171,7 @@ class GpsL1CADllPllTrackingTestFpga_msg_rx : public gr::block
 {
 private:
     friend GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_make();
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_events(const pmt::pmt_t& msg);
     GpsL1CADllPllTrackingTestFpga_msg_rx();
 
 public:
@@ -187,7 +187,7 @@ GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_m
 }
 
 
-void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
 {
     try
         {

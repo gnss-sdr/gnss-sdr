@@ -33,14 +33,10 @@
 #ifndef GNSS_SDR_AD9361_MANAGER_H_
 #define GNSS_SDR_AD9361_MANAGER_H_
 
+#include <iio.h>
 #include <cstdint>
 #include <string>
 
-#ifdef __APPLE__
-#include <iio/iio.h>
-#else
-#include <iio.h>
-#endif
 
 /* RX is input, TX is output */
 enum iodev

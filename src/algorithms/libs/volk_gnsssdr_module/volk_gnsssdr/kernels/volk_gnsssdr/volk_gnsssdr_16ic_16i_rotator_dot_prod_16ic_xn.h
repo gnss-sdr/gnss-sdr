@@ -334,7 +334,6 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc
 #endif /* LV_HAVE_SSE3 */
 
 
-
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 

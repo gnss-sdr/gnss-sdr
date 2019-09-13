@@ -37,8 +37,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
-#define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H_
+#define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H_
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
@@ -65,7 +65,7 @@ gps_l1_ca_kf_make_tracking_cc(uint32_t order,
     int64_t if_freq,
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float dll_bw_hz,
     float early_late_space_chips,
     bool bce_run,
@@ -98,7 +98,7 @@ private:
         int64_t if_freq,
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float dll_bw_hz,
         float early_late_space_chips,
         bool bce_run,
@@ -111,7 +111,7 @@ private:
         int64_t if_freq,
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float dll_bw_hz,
         float early_late_space_chips,
         bool bce_run,
@@ -223,4 +223,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H_

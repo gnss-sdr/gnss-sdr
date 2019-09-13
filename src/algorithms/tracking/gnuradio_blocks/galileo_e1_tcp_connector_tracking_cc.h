@@ -36,8 +36,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
-#define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
+#ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H_
+#define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H_
 
 #include "cpu_multicorrelator.h"
 #include "gnss_synchro.h"
@@ -185,4 +185,4 @@ private:
     std::string sys;
 };
 
-#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
+#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H_

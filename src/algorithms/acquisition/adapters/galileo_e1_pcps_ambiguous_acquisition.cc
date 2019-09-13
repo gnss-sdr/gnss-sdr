@@ -107,14 +107,14 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
                     acq_parameters_.resampler_ratio = decimation;
                     acq_parameters_.resampled_fs = acq_parameters_.fs_in / static_cast<int>(acq_parameters_.resampler_ratio);
                 }
-            //--- Find number of samples per spreading code (4 ms)  -----------------
+            // -- Find number of samples per spreading code (4 ms)  -----------------
             code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
             acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_CPS) * static_cast<float>(acq_parameters_.resampled_fs)));
         }
     else
         {
-            //--- Find number of samples per spreading code (4 ms)  -----------------
+            // -- Find number of samples per spreading code (4 ms)  -----------------
             code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
             acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_CPS) * static_cast<float>(acq_parameters_.fs_in)));

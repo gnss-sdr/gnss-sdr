@@ -80,7 +80,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename",
         default_dump_filename);
 
-    //--- Find number of samples per spreading code -------------------------
+    // -- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;

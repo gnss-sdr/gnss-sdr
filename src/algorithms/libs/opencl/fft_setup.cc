@@ -220,7 +220,7 @@ int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsi
 
 #define ERR_MACRO(err)                               \
     {                                                \
-        if (err != CL_SUCCESS)                       \
+        if ((err) != CL_SUCCESS)                     \
             {                                        \
                 if (error_code)                      \
                     *error_code = err;               \
@@ -381,7 +381,8 @@ void clFFT_DestroyPlan(clFFT_Plan plan)
 
 void clFFT_DumpPlan(clFFT_Plan Plan, FILE *file)
 {
-    size_t gDim, lDim;
+    size_t gDim;
+    size_t lDim;
     FILE *out;
     if (!file)
         out = stdout;

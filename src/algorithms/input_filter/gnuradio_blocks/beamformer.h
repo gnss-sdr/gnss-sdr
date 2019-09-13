@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEAMFORMER_H
-#define GNSS_SDR_BEAMFORMER_H
+#ifndef GNSS_SDR_BEAMFORMER_H_
+#define GNSS_SDR_BEAMFORMER_H_
 
 #include <gnuradio/sync_block.h>
 #include <vector>
@@ -58,4 +58,4 @@ private:
     std::vector<gr_complex> weight_vector = std::vector<gr_complex>(GNSS_SDR_BEAMFORMER_CHANNELS, gr_complex(1.0, 0.0));
 };
 
-#endif
+#endif  // GNSS_SDR_BEAMFORMER_H_

@@ -57,4 +57,4 @@ private:
     interleaved_byte_to_complex_byte();
 };
 
-#endif
+#endif  // GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H_

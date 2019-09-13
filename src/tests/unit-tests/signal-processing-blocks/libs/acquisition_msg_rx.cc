@@ -44,11 +44,11 @@ Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
 }
 
 
-void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void Acquisition_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
 {
     try
         {
-            int64_t message = pmt::to_long(std::move(msg));
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             top_block->stop();  // stop the flowgraph
         }

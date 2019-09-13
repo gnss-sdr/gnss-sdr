@@ -100,7 +100,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    //--- Perform initializations ------------------------------
+    // -- Perform initializations ------------------------------
 
     // local code resampler on GPU
     // generate local reference (1 sample per chip)

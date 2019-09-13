@@ -46,7 +46,7 @@ TEST(BayesianEstimationPositivityTest, BayesianPositivityTest)
     arma::mat bayes_Psi = arma::ones(1, 1);
     arma::vec input = arma::zeros(1, 1);
 
-    //--- Perform initializations ------------------------------
+    // -- Perform initializations ------------------------------
 
     std::random_device r;
     std::default_random_engine e1(r());

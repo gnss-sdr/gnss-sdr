@@ -72,7 +72,7 @@ Pvt_Conf::Pvt_Conf()
     xml_output_path = std::string(".");
     rtcm_output_file_path = std::string(".");
 
-    enable_rx_clock_correction=true;
+    enable_rx_clock_correction = true;
     monitor_enabled = false;
     protobuf_enabled = true;
     udp_port = 0;

@@ -105,9 +105,9 @@ ControlThread::ControlThread()
 }
 
 
-ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
+ControlThread::ControlThread(const std::shared_ptr<ConfigurationInterface> &configuration)
 {
-    configuration_ = std::move(configuration);
+    configuration_ = configuration;
     delete_configuration_ = false;
     restart_ = false;
     init();

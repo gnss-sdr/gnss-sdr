@@ -66,9 +66,9 @@ namespace errorlib = boost::system;
 #endif
 
 
-hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
+hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, const std::string &dump_filename)
 {
-    return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
+    return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, dump_filename));
 }
 
 
@@ -76,9 +76,9 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     uint32_t nchannels_out,
     bool dump,
     bool dump_mat,
-    std::string dump_filename) : gr::block("hybrid_observables_gs",
-                                     gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
-                                     gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
+    const std::string &dump_filename) : gr::block("hybrid_observables_gs",
+                                            gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
+                                            gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
     // PVT input message port
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
@@ -89,7 +89,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
 
     d_dump = dump;
     d_dump_mat = dump_mat and d_dump;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
     d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);

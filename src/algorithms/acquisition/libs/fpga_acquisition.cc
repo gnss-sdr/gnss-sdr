@@ -211,7 +211,7 @@ void Fpga_Acquisition::configure_acquisition()
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
-    d_map_base[7] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
+    d_map_base[7] = static_cast<int32_t>(std::log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
     d_map_base[12] = d_excludelimit;
 }
 

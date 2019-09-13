@@ -35,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
-#define GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
+#ifndef GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_H_
+#define GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_H_
 
 #include "dll_pll_veml_tracking.h"
 #include "tracking_interface.h"
@@ -105,4 +105,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
+#endif  // GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_H_

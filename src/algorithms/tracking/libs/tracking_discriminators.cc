@@ -53,6 +53,8 @@ double phase_unwrap(double phase_rad)
             return phase_rad;
         }
 }
+
+
 /*
  * FLL four quadrant arctan discriminator:
  * \f{equation}
@@ -64,12 +66,13 @@ double phase_unwrap(double phase_rad)
  */
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
-    double cross;
-    double dot;
+    float cross;
+    float dot;
     dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
     cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
-    return atan2(cross, dot) / (t2 - t1);
+    return std::atan2(cross, dot) / (t2 - t1);
 }
+
 
 /*
  * FLL differential arctan discriminator:
@@ -80,13 +83,14 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
  */
 double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
-    double diff_atan = atan(prompt_s2.imag() / prompt_s2.real()) - atan(prompt_s1.imag() / prompt_s1.real());
+    double diff_atan = std::atan(prompt_s2.imag() / prompt_s2.real()) - std::atan(prompt_s1.imag() / prompt_s1.real());
     if (std::isnan(diff_atan))
         {
             diff_atan = 0;
         }
     return phase_unwrap(diff_atan) / (t2 - t1);
 }
+
 
 /*
  * PLL four quadrant arctan discriminator:

@@ -82,4 +82,4 @@ private:
     int error_{};
 };
 
-#endif /*GNSS_SDR_FILE_CONFIGURATION_H_*/
+#endif  // GNSS_SDR_FILE_CONFIGURATION_H_

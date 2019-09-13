@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTKLIB_PVT_GS_H
-#define GNSS_SDR_RTKLIB_PVT_GS_H
+#ifndef GNSS_SDR_RTKLIB_PVT_GS_H_
+#define GNSS_SDR_RTKLIB_PVT_GS_H_
 
 #include "gnss_synchro.h"
 #include "rtklib.h"
@@ -252,4 +252,4 @@ private:
     boost::posix_time::time_duration d_utc_diff_time;
 };
 
-#endif
+#endif  // GNSS_SDR_RTKLIB_PVT_GS_H_

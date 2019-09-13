@@ -45,8 +45,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef __INIREADER_H__
-#define __INIREADER_H__
+#ifndef GNSS_SDR_INIREADER_H_
+#define GNSS_SDR_INIREADER_H_
 
 #include <cstdint>
 #include <map>
@@ -80,4 +80,4 @@ private:
         const char* value);
 };
 
-#endif  // __INIREADER_H__
+#endif  // GNSS_SDR_INIREADER_H_

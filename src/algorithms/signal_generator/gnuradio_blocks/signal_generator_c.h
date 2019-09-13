@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
-#define GNSS_SDR_SIGNAL_GENERATOR_C_H
+#ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H_
+#define GNSS_SDR_SIGNAL_GENERATOR_C_H_
 
 #include "gnss_signal.h"
 #include <gnuradio/block.h>
@@ -60,8 +60,8 @@ using signal_generator_c_sptr = boost::shared_ptr<signal_generator_c>;
 * interface for creating new instances.
 */
 signal_generator_c_sptr signal_make_generator_c(
-    std::vector<std::string> signal1,
-    std::vector<std::string> system,
+    const std::vector<std::string> &signal1,
+    const std::vector<std::string> &system,
     const std::vector<unsigned int> &PRN,
     const std::vector<float> &CN0_dB,
     const std::vector<float> &doppler_Hz,
@@ -92,8 +92,8 @@ public:
 
 private:
     friend signal_generator_c_sptr signal_make_generator_c(
-        std::vector<std::string> signal1,
-        std::vector<std::string> system,
+        const std::vector<std::string> &signal1,
+        const std::vector<std::string> &system,
         const std::vector<unsigned int> &PRN,
         const std::vector<float> &CN0_dB,
         const std::vector<float> &doppler_Hz,
@@ -154,4 +154,4 @@ private:
     std::normal_distribution<float> normal_dist;
 };
 
-#endif /* GNSS_SDR_SIGNAL_GENERATOR_C_H */
+#endif /* GNSS_SDR_SIGNAL_GENERATOR_C_H_ */

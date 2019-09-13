@@ -102,7 +102,7 @@ void Tcp_Communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
             std::cin >> controlc;
         }
-    }
+}
 
 
 void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, Tcp_Packet_Data* tcp_data_)
@@ -136,7 +136,7 @@ void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
             std::cin >> controlc;
         }
-    }
+}
 
 
 void Tcp_Communication::close_tcp_connection(size_t d_port_)

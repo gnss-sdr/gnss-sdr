@@ -74,4 +74,4 @@ private:
     std::unique_ptr<StringConverter> converter_;
 };
 
-#endif /*GNSS_SDR_IN_MEMORY_CONFIGURATION_H_*/
+#endif  // GNSS_SDR_IN_MEMORY_CONFIGURATION_H_

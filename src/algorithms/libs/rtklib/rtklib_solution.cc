@@ -62,7 +62,7 @@
 /* constants and macros ------------------------------------------------------*/
 
 #define SQR_SOL(x) ((x) < 0.0 ? -(x) * (x) : (x) * (x))
-#define SQRT_SOL(x) ((x) < 0.0 ? 0.0 : sqrt(x))
+#define SQRT_SOL(x) ((x) < 0.0 ? 0.0 : std::sqrt(x))
 
 const int MAXFIELD = 64; /* max number of fields in a record */
 

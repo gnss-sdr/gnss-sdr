@@ -53,7 +53,7 @@ IncludeCategories:
     Priority:        1
   - Regex:           '^.*(boost|gflags|glog|gnsssdr|gnuradio|gpstk|gsl|gtest|pmt|uhd|volk)/'
     Priority:        2
-  - Regex:           '^.*(armadillo|matio|pugixml)'
+  - Regex:           '^.*(armadillo|iio|matio|pugixml)'
     Priority:        2
   - Regex:           '.*'
     Priority:        3

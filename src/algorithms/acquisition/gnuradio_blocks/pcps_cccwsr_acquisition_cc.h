@@ -61,7 +61,7 @@ pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    std::string dump_filename);
+    const std::string& dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -179,12 +179,12 @@ private:
     pcps_cccwsr_make_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
         uint32_t doppler_max, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
-        bool dump, std::string dump_filename);
+        bool dump, const std::string& dump_filename);
 
     pcps_cccwsr_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
         uint32_t doppler_max, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
-        bool dump, std::string dump_filename);
+        bool dump, const std::string& dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);

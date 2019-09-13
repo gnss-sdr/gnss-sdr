@@ -189,7 +189,6 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
 #endif /* LV_HAVE_SSSE3 */
 
 
-
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8ic_magnitude_squared_8i_a_orc_impl(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points);

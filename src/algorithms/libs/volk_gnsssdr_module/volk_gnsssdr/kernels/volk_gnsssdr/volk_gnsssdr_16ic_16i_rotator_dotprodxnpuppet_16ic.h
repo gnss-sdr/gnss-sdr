@@ -131,7 +131,6 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dotprodxnpuppet_16ic_a_sse3(lv_
 #endif  // SSE3
 
 
-
 #ifdef LV_HAVE_SSE3
 static inline void volk_gnsssdr_16ic_16i_rotator_dotprodxnpuppet_16ic_u_sse3(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
@@ -192,7 +191,6 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dotprodxnpuppet_16ic_a_avx2(lv_
 }
 
 #endif  // AVX2
-
 
 
 #ifdef LV_HAVE_AVX2

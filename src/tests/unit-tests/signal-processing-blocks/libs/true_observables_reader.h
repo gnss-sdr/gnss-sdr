@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TRUE_OBSERVABLES_READER_H
-#define GNSS_SDR_TRUE_OBSERVABLES_READER_H
+#ifndef GNSS_SDR_TRUE_OBSERVABLES_READER_H_
+#define GNSS_SDR_TRUE_OBSERVABLES_READER_H_
 
 #include <cstdint>
 #include <fstream>
@@ -58,4 +58,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif  // GNSS_SDR_TRUE_OBSERVABLES_READER_H
+#endif  // GNSS_SDR_TRUE_OBSERVABLES_READER_H_

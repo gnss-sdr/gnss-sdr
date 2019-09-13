@@ -118,7 +118,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
                     acq_parameters_.resampled_fs = acq_parameters_.fs_in / static_cast<int>(acq_parameters_.resampler_ratio);
                 }
 
-            //--- Find number of samples per spreading code -------------------------
+            // -- Find number of samples per spreading code -------------------------
             code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
             acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_CPS) * static_cast<float>(acq_parameters_.resampled_fs)));
@@ -126,7 +126,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     else
         {
             acq_parameters_.resampled_fs = fs_in_;
-            //--- Find number of samples per spreading code -------------------------
+            // -- Find number of samples per spreading code -------------------------
             code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
             acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_CPS) * static_cast<float>(acq_parameters_.fs_in)));

@@ -52,6 +52,7 @@
  */
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2);
 
+
 /*
  * FLL differential arctan discriminator:
  * \f{equation}
@@ -61,10 +62,11 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
  */
 double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2);
 
+
 /*! \brief Phase unwrapping function, input is [rad]
- *
  */
 double phase_unwrap(double phase_rad);
+
 
 /*! \brief PLL four quadrant arctan discriminator
  *

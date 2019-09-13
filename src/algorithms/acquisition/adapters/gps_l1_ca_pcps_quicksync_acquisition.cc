@@ -65,7 +65,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
         }
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
-    //--- Find number of samples per spreading code -------------------------
+    // -- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     /* Calculate the folding factor value based on the calculations */

@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H
-#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H_
+#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H_
 
 #include "cpu_multicorrelator_16sc.h"
 #include "glonass_l2_signal_processing.h"
@@ -58,7 +58,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
 glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
@@ -89,7 +89,7 @@ private:
     glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
@@ -100,7 +100,7 @@ private:
     glonass_l2_ca_dll_pll_c_aid_tracking_sc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
@@ -165,7 +165,7 @@ private:
     bool d_preamble_synchronized;
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;
-    void msg_handler_preamble_index(pmt::pmt_t msg);
+    void msg_handler_preamble_index(const pmt::pmt_t& msg);
 
     // symbol history to detect bit transition
     std::deque<lv_16sc_t> d_E_history;
@@ -201,4 +201,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#endif  // GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H_

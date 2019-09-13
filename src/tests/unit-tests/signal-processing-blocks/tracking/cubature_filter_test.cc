@@ -91,7 +91,7 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
     ModelFunction* transition_function;
     ModelFunction* measurement_function;
 
-    //--- Perform initializations ------------------------------
+    // -- Perform initializations ------------------------------
 
     std::random_device r;
     std::default_random_engine e1(r());

@@ -77,7 +77,7 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
     uint32_t tong_max_val,
     uint32_t tong_max_dwells,
     bool dump,
-    std::string dump_filename);
+    const std::string& dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -195,13 +195,13 @@ private:
         int64_t fs_in, int32_t samples_per_ms,
         int32_t samples_per_code, uint32_t tong_init_val,
         uint32_t tong_max_val, uint32_t tong_max_dwells,
-        bool dump, std::string dump_filename);
+        bool dump, const std::string& dump_filename);
 
     pcps_tong_acquisition_cc(uint32_t sampled_ms, uint32_t doppler_max,
         int64_t fs_in, int32_t samples_per_ms,
         int32_t samples_per_code, uint32_t tong_init_val,
         uint32_t tong_max_val, uint32_t tong_max_dwells,
-        bool dump, std::string dump_filename);
+        bool dump, const std::string& dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);

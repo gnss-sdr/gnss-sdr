@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CONCURRENT_QUEUE_H
-#define GNSS_SDR_CONCURRENT_QUEUE_H
+#ifndef GNSS_SDR_CONCURRENT_QUEUE_H_
+#define GNSS_SDR_CONCURRENT_QUEUE_H_
 
 #include <chrono>
 #include <condition_variable>
@@ -107,4 +107,5 @@ private:
     mutable std::mutex the_mutex;
     std::condition_variable the_condition_variable;
 };
-#endif
+
+#endif  // GNSS_SDR_CONCURRENT_QUEUE_H_

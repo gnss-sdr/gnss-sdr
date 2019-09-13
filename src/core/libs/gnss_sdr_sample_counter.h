@@ -82,4 +82,4 @@ private:
     bool flag_enable_send_msg;
 };
 
-#endif /*GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_*/
+#endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_

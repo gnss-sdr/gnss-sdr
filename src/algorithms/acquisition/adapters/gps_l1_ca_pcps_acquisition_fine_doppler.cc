@@ -77,7 +77,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 
     acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
 
-    //--- Find number of samples per spreading code -------------------------
+    // -- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
     acq_parameters.samples_per_ms = vector_length_;
     code_ = std::vector<std::complex<float>>(vector_length_);

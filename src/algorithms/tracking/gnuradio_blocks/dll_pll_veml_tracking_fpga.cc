@@ -54,7 +54,7 @@
 #include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
-#include <cmath>      // for fmod, round, floor
+#include <cmath>      // for fmod, round, floor, fabs
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
@@ -746,7 +746,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
                     if (d_dll_filt_history.full())
                         {
                             float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0) / static_cast<float>(d_dll_filt_history.capacity());
-                            if (fabs(avg_code_error_chips_s) > 1.0)
+                            if (std::fabs(avg_code_error_chips_s) > 1.0)
                                 {
                                     float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                                     LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);

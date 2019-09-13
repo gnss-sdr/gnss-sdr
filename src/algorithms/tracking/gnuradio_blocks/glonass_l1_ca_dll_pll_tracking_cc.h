@@ -36,8 +36,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H
-#define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H
+#ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H_
+#define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H_
 
 #include "cpu_multicorrelator.h"
 #include "gnss_synchro.h"
@@ -57,7 +57,7 @@ glonass_l1_ca_dll_pll_tracking_cc_sptr
 glonass_l1_ca_dll_pll_make_tracking_cc(
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips);
@@ -85,7 +85,7 @@ private:
     glonass_l1_ca_dll_pll_make_tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips);
@@ -93,7 +93,7 @@ private:
     Glonass_L1_Ca_Dll_Pll_Tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips);
@@ -168,4 +168,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H
+#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H_

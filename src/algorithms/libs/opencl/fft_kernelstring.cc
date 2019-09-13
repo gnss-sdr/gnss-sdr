@@ -243,7 +243,8 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
 {
     int log2NumWorkItemsPerXForm = (int)log2(numWorkItemsPerXForm);
     int groupSize = numWorkItemsPerXForm * numXFormsPerWG;
-    int i, j;
+    int i;
+    int j;
     int lMemSize = 0;
 
     if (numXFormsPerWG > 1)
@@ -446,7 +447,10 @@ static int
 insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr, int numWorkItemsPerXForm, int numXFormsPerWG, int mem_coalesce_width, clFFT_DataFormat dataFormat)
 {
     int groupSize = numWorkItemsPerXForm * numXFormsPerWG;
-    int i, j, k, ind;
+    int i;
+    int j;
+    int k;
+    int ind;
     int lMemSize = 0;
     int numIter = maxRadix / Nr;
     string indent = string("");
@@ -597,7 +601,8 @@ insertfftKernel(string &kernelString, int Nr, int numIter)
 static void
 insertTwiddleKernel(string &kernelString, int Nr, int numIter, int Nprev, int len, int numWorkItemsPerXForm)
 {
-    int z, k;
+    int z;
+    int k;
     int logNPrev = (int)log2(Nprev);
 
     for (z = 0; z < numIter; z++)
@@ -662,7 +667,8 @@ getPadding(int numWorkItemsPerXForm, int Nprev, int numWorkItemsReq, int numXFor
 static void
 insertLocalStores(string &kernelString, int numIter, int Nr, int numWorkItemsPerXForm, int numWorkItemsReq, int offset, string &comp)
 {
-    int z, k;
+    int z;
+    int k;
 
     for (z = 0; z < numIter; z++)
         {
@@ -787,8 +793,10 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
         }
     assert(tmpLen == n && "product of radices choosen doesnt match the length of signal\n");
 
-    int offset, midPad;
-    string localString(""), kernelName("");
+    int offset;
+    int midPad;
+    string localString("");
+    string kernelName("");
 
     clFFT_DataFormat dataFormat = plan->format;
     string *kernelString = plan->kernel_string;
@@ -938,11 +946,16 @@ void getGlobalRadixInfo(int n, int *radix, int *R1, int *R2, int *numRadices)
 static void
 createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir dir, int vertBS)
 {
-    int i, j, k, t;
+    int i;
+    int j;
+    int k;
+    int t;
     int radixArr[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int R1Arr[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int R2Arr[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int radix, R1, R2;
+    int radix;
+    int R1;
+    int R2;
     int numRadices;
 
     int maxThreadsPerBlock = plan->max_work_item_per_workgroup;
@@ -955,7 +968,8 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
 
     int numPasses = numRadices;
 
-    string localString(""), kernelName("");
+    string localString("");
+    string kernelName("");
     string *kernelString = plan->kernel_string;
     cl_fft_kernel_info **kInfo = &plan->kernel_info;
     int kCount = 0;

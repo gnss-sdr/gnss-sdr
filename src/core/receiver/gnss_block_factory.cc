@@ -315,7 +315,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const std::shared_p
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     // "appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
     // can find their specific configurations when they read the config
@@ -373,7 +373,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "1C", std::move(queue)));
+        "Channel", "1C", queue));
 
     return channel_;
 }
@@ -383,7 +383,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
@@ -437,7 +437,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "2S", std::move(queue)));
+        "Channel", "2S", queue));
 
     return channel_;
 }
@@ -447,7 +447,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -504,7 +504,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "1B", std::move(queue)));
+        "Channel", "1B", queue));
 
     return channel_;
 }
@@ -514,7 +514,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -571,7 +571,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "5X", std::move(queue)));
+        "Channel", "5X", queue));
 
     return channel_;
 }
@@ -581,7 +581,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -639,7 +639,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "1G", std::move(queue)));
+        "Channel", "1G", queue));
 
     return channel_;
 }
@@ -649,7 +649,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -707,7 +707,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "2G", std::move(queue)));
+        "Channel", "2G", queue));
 
     return channel_;
 }
@@ -717,7 +717,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -774,7 +774,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "L5", std::move(queue)));
+        "Channel", "L5", queue));
 
     return channel_;
 }
@@ -784,7 +784,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -841,7 +841,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "B1", std::move(queue)));
+        "Channel", "B1", queue));
 
     return channel_;
 }
@@ -851,7 +851,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -908,7 +908,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "B3", std::move(queue)));
+        "Channel", "B3", queue));
 
     return channel_;
 }

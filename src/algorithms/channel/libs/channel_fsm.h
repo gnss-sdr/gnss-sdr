@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CHANNEL_FSM_H
-#define GNSS_SDR_CHANNEL_FSM_H
+#ifndef GNSS_SDR_CHANNEL_FSM_H_
+#define GNSS_SDR_CHANNEL_FSM_H_
 
 #include "acquisition_interface.h"
 #include "concurrent_queue.h"
@@ -83,4 +83,4 @@ private:
     std::mutex mx;
 };
 
-#endif  // GNSS_SDR_CHANNEL_FSM_H
+#endif  // GNSS_SDR_CHANNEL_FSM_H_

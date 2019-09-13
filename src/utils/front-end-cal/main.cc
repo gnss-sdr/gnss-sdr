@@ -134,7 +134,7 @@ void FrontEndCal_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
 {
     try
         {
-            int64_t message = pmt::to_long(std::move(msg));
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -213,7 +213,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
-    //--- Find number of samples per spreading code ---
+    // -- Find number of samples per spreading code ---
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     int samples_per_code = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples = samples_per_code * 50;

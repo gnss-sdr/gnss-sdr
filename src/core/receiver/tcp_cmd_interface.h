@@ -90,4 +90,4 @@ private:
     std::shared_ptr<PvtInterface> PVT_sptr_;
 };
 
-#endif /* GNSS_SDR_TCP_CMD_INTERFACE_H_ */
+#endif  // GNSS_SDR_TCP_CMD_INTERFACE_H_

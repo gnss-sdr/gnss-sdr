@@ -275,4 +275,4 @@ private:
     bool read_gal_almanac_from_gsa(const std::string& file_name);
 };
 
-#endif
+#endif  // GNSS_SDR_SUPL_CLIENT_H_

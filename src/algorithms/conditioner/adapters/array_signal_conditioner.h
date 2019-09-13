@@ -81,4 +81,4 @@ private:
     bool connected_;
 };
 
-#endif /*GNSS_SDR_SIGNAL_CONDITIONER_H_*/
+#endif  // GNSS_SDR_SIGNAL_CONDITIONER_H_

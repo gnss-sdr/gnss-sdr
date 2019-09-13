@@ -57,4 +57,4 @@ public:
     double convert(const std::string& value, double default_value);
 };
 
-#endif /*GNSS_SDR_STRING_CONVERTER_H_*/
+#endif  // GNSS_SDR_STRING_CONVERTER_H_

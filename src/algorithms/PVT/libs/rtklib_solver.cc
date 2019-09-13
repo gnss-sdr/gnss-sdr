@@ -91,7 +91,7 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, const std::string &dump_filename, bo
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
     this->set_averaging_flag(false);

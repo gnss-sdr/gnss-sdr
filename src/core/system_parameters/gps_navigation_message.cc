@@ -417,7 +417,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                 }
             break;
 
-        case 5:  //--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
+        case 5:  // -- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
             int32_t SV_data_ID_5;
             int32_t SV_page_5;
             d_TOW_SF5 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));

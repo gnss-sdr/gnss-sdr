@@ -94,10 +94,10 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
 
-    //--- DLL variables --------------------------------------------------------
+    // -- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
 
-    //--- TCP CONNECTOR variables --------------------------------------------------------
+    // -- TCP CONNECTOR variables --------------------------------------------------------
     d_port_ch0 = port_ch0;
     d_port = 0;
     d_listen_connection = true;

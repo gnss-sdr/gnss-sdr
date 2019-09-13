@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ACQUISITION_MSG_RX_H
-#define GNSS_SDR_ACQUISITION_MSG_RX_H
+#ifndef GNSS_SDR_ACQUISITION_MSG_RX_H_
+#define GNSS_SDR_ACQUISITION_MSG_RX_H_
 
 #include <gnuradio/block.h>
 #include <gnuradio/top_block.h>
@@ -59,4 +59,4 @@ public:
 };
 
 
-#endif
+#endif  // GNSS_SDR_ACQUISITION_MSG_RX_H_

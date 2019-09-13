@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H
-#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H_
+#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H_
 
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
@@ -199,4 +199,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H_

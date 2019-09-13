@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
+#ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H_
+#define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H_
 
 #include "gnss_satellite.h"
 #include <boost/crc.hpp>         // for crc_optimal
@@ -169,4 +169,4 @@ private:
     } d_crc_verifier;
 };
 
-#endif
+#endif  // GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H_

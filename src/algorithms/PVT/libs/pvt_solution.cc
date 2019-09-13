@@ -70,16 +70,16 @@ arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec
      *       X_sat_rot   - rotated satellite's coordinates (ECEF)
      */
 
-    //--- Find rotation angle --------------------------------------------------
+    // -- Find rotation angle --------------------------------------------------
     double omegatau;
     omegatau = OMEGA_EARTH_DOT * traveltime;
 
-    //--- Build a rotation matrix ----------------------------------------------
+    // -- Build a rotation matrix ----------------------------------------------
     arma::mat R3 = {{cos(omegatau), sin(omegatau), 0.0},
         {-sin(omegatau), cos(omegatau), 0.0},
         {0.0, 0.0, 1.0}};
 
-    //--- Do the rotation ------------------------------------------------------
+    // -- Do the rotation ------------------------------------------------------
     arma::vec X_sat_rot;
     X_sat_rot = R3 * X_sat;
     return X_sat_rot;

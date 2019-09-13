@@ -139,4 +139,4 @@ private:
     bool save_matfile();
 };
 
-#endif
+#endif  // GNSS_SDR_RTKLIB_SOLVER_H_

@@ -209,4 +209,4 @@ private:
 #endif
 };
 
-#endif /* GNSS_SDR_CONTROL_THREAD_H_ */
+#endif  // GNSS_SDR_CONTROL_THREAD_H_

@@ -46,11 +46,11 @@ galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
     int64_t fs_in,
     int32_t samples_per_ms,
     int32_t samples_per_code,
-    bool dump, std::string dump_filename)
+    bool dump, const std::string &dump_filename)
 {
     return galileo_pcps_8ms_acquisition_cc_sptr(
         new galileo_pcps_8ms_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
-            samples_per_code, dump, std::move(dump_filename)));
+            samples_per_code, dump, dump_filename));
 }
 
 
@@ -62,9 +62,9 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    std::string dump_filename) : gr::block("galileo_pcps_8ms_acquisition_cc",
-                                     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-                                     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+    const std::string &dump_filename) : gr::block("galileo_pcps_8ms_acquisition_cc",
+                                            gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
+                                            gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -94,7 +94,7 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     d_doppler_resolution = 0;
     d_threshold = 0;

@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
-#define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
+#ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H_
+#define GNSS_SDR_DLL_PLL_VEML_TRACKING_H_
 
 #include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
@@ -216,4 +216,4 @@ private:
     bool d_dump_mat;
 };
 
-#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H
+#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H_

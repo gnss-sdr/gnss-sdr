@@ -224,7 +224,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                             // --- Correct satellite position (do to earth rotation) -------
                             Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i));  // armadillo
 
-                            //--- Find DOA and range of satellites
+                            // -- Find DOA and range of satellites
                             double* azim = nullptr;
                             double* elev = nullptr;
                             double* dist = nullptr;
@@ -254,7 +254,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                     // --- Apply the corrections ----------------------------------------
                     omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop);  // Armadillo
 
-                    //--- Construct the A matrix ---------------------------------------
+                    // -- Construct the A matrix ---------------------------------------
                     // Armadillo
                     A(i, 0) = (-(Rot_X(0) - pos(0))) / obs(i);
                     A(i, 1) = (-(Rot_X(1) - pos(1))) / obs(i);
@@ -262,10 +262,10 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                     A(i, 3) = 1.0;
                 }
 
-            //--- Find position update ---------------------------------------------
+            // -- Find position update ---------------------------------------------
             x = arma::solve(w * A, w * omc);  // Armadillo
 
-            //--- Apply position update --------------------------------------------
+            // -- Apply position update --------------------------------------------
             pos = pos + x;
             if (arma::norm(x, 2) < 1e-4)
                 {

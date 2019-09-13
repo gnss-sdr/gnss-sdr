@@ -155,17 +155,17 @@ void GNSSFlowgraph::connect()
         }
 
     // Signal Source > Signal conditioner >
-    for (size_t i = 0; i < sig_conditioner_.size(); i++)
+    for (auto& sig : sig_conditioner_)
         {
-            if (configuration_->property(sig_conditioner_.at(i)->role() + ".enable_FPGA", false) == false)
+            if (configuration_->property(sig->role() + ".enable_FPGA", false) == false)
                 {
                     try
                         {
-                            sig_conditioner_.at(i)->connect(top_block_);
+                            sig->connect(top_block_);
                         }
                     catch (const std::exception& e)
                         {
-                            LOG(INFO) << "Can't connect signal conditioner block " << i << " internally";
+                            LOG(INFO) << "Can't connect signal conditioner block internally";
                             LOG(ERROR) << e.what();
                             top_block_->disconnect_all();
                             return;
@@ -984,15 +984,15 @@ void GNSSFlowgraph::disconnect()
         }
 
     // Signal Source > Signal conditioner >
-    for (size_t i = 0; i < sig_conditioner_.size(); i++)
+    for (auto& sig : sig_conditioner_)
         {
             try
                 {
-                    sig_conditioner_.at(i)->disconnect(top_block_);
+                    sig->disconnect(top_block_);
                 }
             catch (const std::exception& e)
                 {
-                    LOG(INFO) << "Can't disconnect signal conditioner block " << i << " internally: " << e.what();
+                    LOG(INFO) << "Can't disconnect signal conditioner block internally: " << e.what();
                     top_block_->disconnect_all();
                     return;
                 }
@@ -1451,7 +1451,7 @@ void GNSSFlowgraph::set_configuration(const std::shared_ptr<ConfigurationInterfa
         {
             LOG(WARNING) << "Unable to update configuration while flowgraph connected";
         }
-    configuration_ = std::move(configuration);
+    configuration_ = configuration;
 }
 
 

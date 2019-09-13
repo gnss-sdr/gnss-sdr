@@ -61,12 +61,12 @@ const float PHASE_CARR_MAX_DIV_PI = 683565275.5764316;  // 2^(31)/pi
 const float TWO_PI = 6.283185307179586;
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
-    std::string device_name, int32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
+    const std::string &device_name, int32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
     uint32_t code_samples_per_chip)
 
 {
     d_n_correlators = n_correlators;
-    d_device_name = std::move(device_name);
+    d_device_name = device_name;
     d_device_base = device_base;
     d_track_pilot = track_pilot;
     d_device_descriptor = 0;
@@ -329,7 +329,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
 
     for (uint32_t i = 0; i < d_n_correlators; i++)
         {
-            dec_part = floor(d_shifts_chips[i] - d_rem_code_phase_chips);
+            dec_part = std::floor(d_shifts_chips[i] - d_rem_code_phase_chips);
 
             if (dec_part < 0)
                 {
@@ -344,11 +344,11 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
                     frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
                 }
 
-            d_initial_interp_counter[i] = static_cast<uint32_t>(floor(max_code_resampler_counter * frac_part));
+            d_initial_interp_counter[i] = static_cast<uint32_t>(std::floor(max_code_resampler_counter * frac_part));
         }
     if (d_track_pilot)
         {
-            dec_part = floor(d_prompt_data_shift[0] - d_rem_code_phase_chips);
+            dec_part = std::floor(d_prompt_data_shift[0] - d_rem_code_phase_chips);
 
             if (dec_part < 0)
                 {
@@ -361,7 +361,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
                 {
                     frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
                 }
-            d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(floor(max_code_resampler_counter * frac_part));
+            d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(std::floor(max_code_resampler_counter * frac_part));
         }
 }
 
@@ -522,7 +522,7 @@ void Fpga_Multicorrelator_8sc::initialize_secondary_code(uint32_t secondary_code
 
 void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr)
 {
-    uint32_t num_words = ceil(static_cast<float>(secondary_code_length) / secondary_code_word_size);
+    uint32_t num_words = std::ceil(static_cast<float>(secondary_code_length) / secondary_code_word_size);
     uint32_t last_word_size = secondary_code_length % secondary_code_word_size;
 
     if (last_word_size == 0)

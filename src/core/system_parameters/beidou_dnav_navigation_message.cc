@@ -731,7 +731,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
     // Decode all 5 sub-frames
     switch (subframe_ID)
         {
-        //--- Decode the sub-frame id ------------------------------------------
+        // -- Decode the sub-frame id ------------------------------------------
         case 1:
 
             switch (page_ID)
@@ -881,7 +881,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
 
             break;
 
-        case 2:  //--- It is subframe 2 -------------------
+        case 2:  // -- It is subframe 2 -------------------
 
             break;
 
@@ -893,7 +893,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
 
             break;
 
-        case 5:  //--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
+        case 5:  // -- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
 
             break;
 

@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H
-#define GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H
+#ifndef GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H_
+#define GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H_
 
 #include "channel_fsm.h"
 #include <gnuradio/block.h>
@@ -58,4 +58,4 @@ private:
     void msg_handler_events(pmt::pmt_t msg);
 };
 
-#endif
+#endif  // GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H_

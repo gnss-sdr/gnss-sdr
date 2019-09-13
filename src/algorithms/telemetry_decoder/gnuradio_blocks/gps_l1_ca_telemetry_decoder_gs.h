@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H
+#ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H_
+#define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H_
 
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
@@ -117,4 +117,4 @@ private:
     std::ofstream d_dump_file;
 };
 
-#endif
+#endif  // GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H_

@@ -36,15 +36,11 @@
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
+#include <iio.h>
 #include <exception>
 #include <iostream>  // for cout, endl
 #include <utility>
 
-#ifdef __APPLE__
-#include <iio/iio.h>
-#else
-#include <iio.h>
-#endif
 
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,

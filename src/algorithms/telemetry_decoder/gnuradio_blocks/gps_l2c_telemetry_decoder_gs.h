@@ -27,8 +27,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
+#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H_
+#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H_
 
 
 #include "gnss_satellite.h"
@@ -102,4 +102,4 @@ private:
 };
 
 
-#endif
+#endif  // GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H_

@@ -74,7 +74,7 @@ gps_l1_ca_kf_make_tracking_cc(
     int32_t bce_kappa)
 {
     return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order, if_freq,
-        fs_in, vector_length, dump, std::move(dump_filename), dll_bw_hz, early_late_space_chips,
+        fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips,
         bce_run, bce_ptrans, bce_strans, bce_nu, bce_kappa));
 }
 
@@ -115,7 +115,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     d_current_prn_length_samples = static_cast<int>(d_vector_length);
 

@@ -104,11 +104,11 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_dump_filename = dump_filename;
 
     // Initialize tracking  ==========================================
-    //--- DLL variables --------------------------------------------------------
+    // -- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips;            // Define early-late offset (in chips)
     d_very_early_late_spc_chips = very_early_late_space_chips;  // Define very-early-late offset (in chips)
 
-    //--- TCP CONNECTOR variables --------------------------------------------------------
+    // -- TCP CONNECTOR variables --------------------------------------------------------
     d_port_ch0 = port_ch0;
     d_port = 0;
     d_listen_connection = true;

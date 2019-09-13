@@ -66,4 +66,4 @@ private:
     friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 };
 
-#endif /*GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_*/
+#endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_

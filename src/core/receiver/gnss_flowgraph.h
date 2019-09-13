@@ -242,4 +242,4 @@ private:
     std::vector<std::string> split_string(const std::string& s, char delim);
 };
 
-#endif /* GNSS_SDR_GNSS_FLOWGRAPH_H_ */
+#endif  // GNSS_SDR_GNSS_FLOWGRAPH_H_

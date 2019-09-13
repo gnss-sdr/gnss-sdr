@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_MULTICORRELATOR_8SC_H_
-#define GNSS_SDR_FPGA_MULTICORRELATOR_8SC_H_
+#ifndef GNSS_SDR_FPGA_MULTICORRELATOR_H_
+#define GNSS_SDR_FPGA_MULTICORRELATOR_H_
 
 #include <gnuradio/block.h>
 #include <cstdint>
@@ -52,7 +52,7 @@ public:
 	 * \brief Constructor
 	 */
     Fpga_Multicorrelator_8sc(int32_t n_correlators,
-        std::string device_name,
+        const std::string &device_name,
         int32_t device_base,
         int32_t *ca_codes,
         int32_t *data_codes,

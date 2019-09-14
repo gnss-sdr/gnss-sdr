@@ -1082,6 +1082,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                         case 8:  // L1+L5
                                             rp->log_rinex_nav(rp->navFile, new_eph);
                                             break;
+                                        case 9:  // GPS L1 C/A + Galileo E1B
+                                            rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
+                                        case 10:  // GPS L1 C/A + Galileo E5a
+                                            rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
                                         case 11:  // GPS L1 C/A + Galileo E5b
                                             rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
                                             break;
@@ -1283,22 +1289,34 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     new_gal_eph[galileo_eph->i_satellite_PRN] = *galileo_eph;
                                     switch (type_of_rx)
                                         {
+                                        case 4:  // Galileo E1B only
+                                            rp->log_rinex_nav(rp->navGalFile, new_gal_eph);
+                                            break;
+                                        case 5:  // Galileo E5a only
+                                            rp->log_rinex_nav(rp->navGalFile, new_gal_eph);
+                                            break;
                                         case 6:  // Galileo E5b only
                                             rp->log_rinex_nav(rp->navGalFile, new_gal_eph);
                                             break;
-                                        case 11:  //  GPS L1 C/A + Galileo E5b
+                                        case 9:  // GPS L1 C/A + Galileo E1B
                                             rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
                                             break;
-                                        case 13:  //  L5+E5a
+                                        case 10:  // GPS L1 C/A + Galileo E5a
+                                            rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
+                                        case 11:  // GPS L1 C/A + Galileo E5b
+                                            rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
+                                        case 13:  // L5+E5a
                                             rp->log_rinex_nav(rp->navFile, new_cnav_eph, new_gal_eph);
                                             break;
-                                        case 15:  //  Galileo E1B + Galileo E5b
+                                        case 15:  // Galileo E1B + Galileo E5b
                                             rp->log_rinex_nav(rp->navGalFile, new_gal_eph);
                                             break;
-                                        case 27:  //  Galileo E1B + GLONASS L1 C/A
+                                        case 27:  // Galileo E1B + GLONASS L1 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_gal_eph, new_glo_eph);
                                             break;
-                                        case 30:  //  Galileo E1B + GLONASS L2 C/A
+                                        case 30:  // Galileo E1B + GLONASS L2 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_gal_eph, new_glo_eph);
                                             break;
                                         case 32:  // L1+E1+L5+E5a

@@ -1308,7 +1308,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                             rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
                                             break;
                                         case 13:  // L5+E5a
-                                            rp->log_rinex_nav(rp->navFile, new_cnav_eph, new_gal_eph);
+                                            rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_gal_eph);
                                             break;
                                         case 15:  // Galileo E1B + Galileo E5b
                                             rp->log_rinex_nav(rp->navGalFile, new_gal_eph);
@@ -2402,7 +2402,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     std::string gps_signal("L5");
                                                                     rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gps_signal, gal_signal);
                                                                     rp->rinex_nav_header(rp->navMixFile, d_user_pvt_solver->gps_cnav_iono, d_user_pvt_solver->gps_cnav_utc_model, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
-                                                                    rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->gps_cnav_ephemeris_map, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_user_pvt_solver->gps_cnav_ephemeris_map, d_user_pvt_solver->galileo_ephemeris_map);
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;

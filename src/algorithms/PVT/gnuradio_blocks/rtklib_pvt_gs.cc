@@ -1197,7 +1197,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                             rp->log_rinex_nav(rp->navFile, new_cnav_eph);
                                             break;
                                         case 13:  //  L5+E5a
-                                            rp->log_rinex_nav(rp->navFile, new_cnav_eph, new_gal_eph);
+                                            rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_gal_eph);
                                             break;
                                         case 28:  //  GPS L2C + GLONASS L1 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_glo_eph);
@@ -1449,6 +1449,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     new_glo_eph[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
                                     switch (type_of_rx)
                                         {
+                                        case 23:  // GLONASS L1 C/A
+                                            rp->log_rinex_nav(rp->navGloFile, new_glo_eph);
+                                            break;
+                                        case 24:  // GLONASS L2 C/A
+                                            rp->log_rinex_nav(rp->navGloFile, new_glo_eph);
+                                            break;
                                         case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
                                             rp->log_rinex_nav(rp->navGloFile, new_glo_eph);
                                             break;
@@ -1555,6 +1561,9 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     switch (type_of_rx)
                                         {
                                         case 500:  // BDS B1I only
+                                            rp->log_rinex_nav(rp->navFile, new_bds_eph);
+                                            break;
+                                        case 600:  // BDS B3I only
                                             rp->log_rinex_nav(rp->navFile, new_bds_eph);
                                             break;
                                         default:
@@ -2638,6 +2647,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 {
                                                                     rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
                                                                     rp->rinex_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                    rp->log_rinex_nav(rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
 
@@ -3006,6 +3016,18 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
                                                                             rp->log_rinex_obs(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "B1");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_user_pvt_solver->beidou_dnav_utc_model.d_A0_UTC != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_user_pvt_solver->beidou_dnav_utc_model);
+                                                                            rp->update_nav_header(rp->navFile, d_user_pvt_solver->beidou_dnav_utc_model, d_user_pvt_solver->beidou_dnav_iono);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
+                                                                case 600:  // BDS B3I only
+                                                                    if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "B3");
                                                                         }
                                                                     if (!b_rinex_header_updated and (d_user_pvt_solver->beidou_dnav_utc_model.d_A0_UTC != 0))
                                                                         {

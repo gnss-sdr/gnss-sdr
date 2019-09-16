@@ -122,12 +122,16 @@ float cn0_mm_estimator(const gr_complex* Prompt_buffer, int length, float coh_in
     m_2 /= n;
     m_4 /= n;
     aux = std::sqrt(2.0 * m_2 * m_2 - m_4);
-    SNR_aux = aux / (m_2 - aux);
-    SNR_dB_Hz = 10.0 * std::log10(SNR_aux) - 10.0 * std::log10(coh_integration_time_s);
-    if (std::isnan(SNR_dB_Hz))
+    if (std::isnan(aux))
         {
-            SNR_dB_Hz = Psig / (m_2 - Psig);
+            SNR_aux = Psig / (m_2 - Psig);
         }
+    else
+        {
+            SNR_aux = aux / (m_2 - aux);
+        }
+    SNR_dB_Hz = 10.0 * std::log10(SNR_aux) - 10.0 * std::log10(coh_integration_time_s);
+
     return SNR_dB_Hz;
 }
 

@@ -849,7 +849,7 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
     d_Prompt_buffer[d_cn0_estimation_counter % trk_parameters.cn0_samples] = d_P_accu;
     d_cn0_estimation_counter++;
     // Code lock indicator
-    float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    float d_CN0_SNV_dB_Hz_raw = cn0_mm_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer.data(), 1));

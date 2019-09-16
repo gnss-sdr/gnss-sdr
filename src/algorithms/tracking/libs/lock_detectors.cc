@@ -86,6 +86,53 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
 
 
 /*
+ * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Moments Method:
+ * \f{equation}
+ *  \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\sqrt{2*\hat{M}_2^2 - \hat{M}_4 }}{\hat{M}_2-\sqrt{2*\hat{M}_2^2 - \hat{M}_4 }},
+ * \f}
+ *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
+ * \f$ \hat{M}_2=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2 \f$, \f$\hat{M}_4 = \frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^4 \f$, \f$|\cdot|\f$ is the absolute value,
+ * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
+ * \f{equation}
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
+ * \f}
+ * where \f$T_{int}\f$ is the coherent integration time, in seconds.
+ *
+ */
+float cn0_mm_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
+{
+    float SNR_aux = 0.0;
+    float SNR_dB_Hz = 0.0;
+    float Psig = 0.0;
+    float m_2 = 0.0;
+    float m_4 = 0.0;
+    float aux;
+    auto n = static_cast<float>(length);
+    for (int i = 0; i < length; i++)
+        {
+            Psig += std::abs(Prompt_buffer[i].real());
+            aux = Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
+            m_2 += aux;
+            m_4 += (aux * aux);
+        }
+    Psig /= n;
+    Psig = Psig * Psig;
+    m_2 /= n;
+    m_4 /= n;
+    aux = std::sqrt(2.0 * m_2 * m_2 - m_4);
+    SNR_aux = aux / (m_2 - aux);
+    SNR_dB_Hz = 10.0 * std::log10(SNR_aux) - 10.0 * std::log10(coh_integration_time_s);
+    if (std::isnan(SNR_dB_Hz))
+        {
+            SNR_dB_Hz = Psig / (m_2 - Psig);
+        }
+    return SNR_dB_Hz;
+}
+
+
+/*
  * The estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
  *     \cos(2\phi)=\frac{NBD}{NBP},

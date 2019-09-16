@@ -90,6 +90,7 @@ private:
     std::string p3;
     std::string p4;
     std::string p5;
+    std::string p6;
 
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
 
@@ -124,6 +125,14 @@ int PositionSystemTest::configure_generator()
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
+    if (FLAGS_CN0_dBHz > 100.0)
+        {
+            p6 = std::string("-CN0_dBHz=45");
+        }
+    else
+        {
+            p6 = std::string("-CN0_dBHz=") + std::to_string(FLAGS_CN0_dBHz);
+        }
     return 0;
 }
 
@@ -133,7 +142,7 @@ int PositionSystemTest::generate_signal()
     pid_t wait_result;
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], nullptr};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
@@ -193,9 +202,9 @@ int PositionSystemTest::configure_receiver()
             const float pll_bw_hz = 35.0;
             const float dll_bw_hz = 1.5;
             const float early_late_space_chips = 0.5;
-            const float pll_bw_narrow_hz = 1.0;
-            const float dll_bw_narrow_hz = 0.1;
-            const int extend_correlation_ms = 1;
+            const float pll_bw_narrow_hz = 15.0;
+            const float dll_bw_narrow_hz = 1.5;
+            const int extend_correlation_symbols = FLAGS_extend_correlation_symbols;  // defaults to 1
 
             const int display_rate_ms = 500;
             const int output_rate_ms = 100;
@@ -289,7 +298,7 @@ int PositionSystemTest::configure_receiver()
 
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
-            config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
+            config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
             // config->set_property("Tracking_1C.high_dyn", "true");
             // config->set_property("Tracking_1C.smoother_length", "200");
 

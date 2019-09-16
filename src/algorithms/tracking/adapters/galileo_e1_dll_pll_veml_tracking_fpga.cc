@@ -52,7 +52,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12500000);
     int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
@@ -130,7 +130,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.enable_fll_steady_state = enable_fll_steady_state;
     float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
     trk_param_fpga.fll_bw_hz = fll_bw_hz;
-    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
+    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", trk_param_fpga.pull_in_time_s);
     trk_param_fpga.pull_in_time_s = pull_in_time_s;
 
     int32_t extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
@@ -170,6 +170,12 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.max_code_lock_fail = configuration->property(role + ".max_lock_fail", trk_param_fpga.max_code_lock_fail);
     trk_param_fpga.max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", trk_param_fpga.max_carrier_lock_fail);
     trk_param_fpga.carrier_lock_th = configuration->property(role + ".carrier_lock_th", trk_param_fpga.carrier_lock_th);
+
+    // tracking lock tests smoother parameters
+    trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);
+    trk_param_fpga.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param_fpga.cn0_smoother_alpha);
+    trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param_fpga.carrier_lock_test_smoother_samples);
+    trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param_fpga.carrier_lock_test_smoother_alpha);
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";
@@ -254,12 +260,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.extended_correlation_in_fpga = false;
     trk_param_fpga.extend_fpga_integration_periods = 1;  // (number of FPGA integrations that are combined in the SW)
     trk_param_fpga.fpga_integration_period = 1;          // (number of symbols that are effectively integrated in the FPGA)
-
-    // tracking lock tests smoother parameters
-    trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);
-    trk_param_fpga.cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", trk_param_fpga.cn0_smoother_alpha);
-    trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param_fpga.carrier_lock_test_smoother_samples);
-    trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param_fpga.carrier_lock_test_smoother_alpha);
 
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);

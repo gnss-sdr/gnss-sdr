@@ -130,7 +130,7 @@ public:
     int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
 
 protected:
-    int d_custom_year;  //custom year to guess the correct week rollover in post processing mode
+    int d_custom_year;  // custom year to guess the correct week rollover in post processing mode
 private:
     double d_rx_dt_s;  // RX time offset [s]
 

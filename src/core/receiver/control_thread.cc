@@ -116,7 +116,7 @@ ControlThread::ControlThread(const std::shared_ptr<ConfigurationInterface> &conf
 
 void ControlThread::init()
 {
-    //OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
+    // OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
     custom_year_ = configuration_->property("GNSS-SDR.custom_year", 0);
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();

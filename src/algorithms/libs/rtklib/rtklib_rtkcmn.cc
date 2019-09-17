@@ -2128,6 +2128,11 @@ int adjgpsweek(int week, int custom_year)
     //            w = week + 1024;  //add weeks from 6-january-1980 to week rollover in 21 august 1999
     //        }
     int w;
+    if (week>1023)
+    {
+      return week;
+    }
+
     if (custom_year == 0)
         {
             (void)time2gpst(utc2gpst(timeget()), &w);

@@ -10086,7 +10086,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
+void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band)
 {
     if (eph_cnav.d_i_0)
         {
@@ -10255,8 +10255,19 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                 }
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_mmap.equal_range(*it);
+            bool have_l2 = false;
             for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
+                    std::string sig_(iter->second.Signal);
+                    if (sig_ == "2S")
+                        {
+                            have_l2 = true;
+                        }
+                    if (triple_band and sig_ == "L5" and have_l2 == false)
+                        {
+                            lineObs += std::string(62, ' ');
+                        }
+
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
                     // Loss of lock indicator (LLI)
@@ -11123,7 +11134,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
+void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band)
 {
     if (galileo_eph.e_1)
         {
@@ -11323,8 +11334,19 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                 }
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_gps_map.equal_range(*it);
+            bool have_l2 = false;
             for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
+                    std::string sig_(iter->second.Signal);
+                    if (sig_ == "2S")
+                        {
+                            have_l2 = true;
+                        }
+                    if (triple_band and sig_ == "L5" and have_l2 == false)
+                        {
+                            lineObs += std::string(62, ' ');
+                        }
+
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
                     // Loss of lock indicator (LLI)
@@ -11795,7 +11817,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
         }
     else
         {
-            //assume receiver operating in between 1999 to 2008
+            // assume receiver operating in between 1999 to 2008
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             return p_time;
         }
@@ -11842,7 +11864,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
         }
     else
         {
-            //assume receiver operating in between 1999 to 2008
+            // assume receiver operating in between 1999 to 2008
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             return p_time;
         }

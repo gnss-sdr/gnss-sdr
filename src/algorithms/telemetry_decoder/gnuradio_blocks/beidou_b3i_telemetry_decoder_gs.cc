@@ -151,11 +151,14 @@ void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits,
             reg[1] *= bit;
         }
 
-    err = errind[reg[0] + reg[1] * 2 + reg[2] * 4 + reg[3] * 8];
-
+    for (int i = 0; i < 4; ++i)
+        {
+            reg[i] = (reg[i] + 1) / 2;
+        }
+    err = reg[0] + reg[1] * 2 + reg[2] * 4 + reg[3] * 8;
     if (err > 0 and err < 16)
         {
-            decbits[err - 1] *= -1;
+            decbits[errind[err - 1]] *= -1;
         }
 }
 

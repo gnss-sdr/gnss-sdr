@@ -1,8 +1,13 @@
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Accuracy:
+
+- Improved accuracy of the CN0 estimator.
+
+
 ### Improvements in Efficiency:
 
-- Improved implementation of the Viterbi decoder for Galileo navigation messages.
+- Faster implementation of the Viterbi decoder for Galileo navigation messages.
 
 
 ### Improvements in Flexibility:
@@ -13,7 +18,9 @@
 
 ### Improvements in Interoperability:
 
- - Added triple-band configurations RINEX outputs.
+- Fixed PVT solution in receivers processing L1 plus L2C and/or L5 signals.
+- Added RINEX files generation for triple-band configurations (L1 + L2C + L5 and L1 + E1 + L2C + L5 + E5a).
+- Fixed a bug in the decoding of BeiDou navigation messages.
 
 
 ### Improvements in Maintainability:
@@ -42,7 +49,7 @@
 
 ### Improvements in Usability:
 
-- A new parameter allows to process raw sample files containing signals dated before year 2009.
+- A new parameter allows to process raw sample files containing GPS L1 C/A signals dated before July 14, 2009. If GNSS-SDR.
 - Improved DLL-PLL binary dump MATLAB/Octave plot script. Old versions removed.
 - Simplified RTKLIB error log.
 - Added a Python 3 plotting script to show relative performance of generic volk_gnsssdr kernels wrt SIMD fastest versions.

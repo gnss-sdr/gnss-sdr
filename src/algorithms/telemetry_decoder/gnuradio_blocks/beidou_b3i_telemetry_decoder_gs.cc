@@ -133,7 +133,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits,
 {
     int32_t bit;
     int32_t err;
-    std::array<int32_t, 4> reg{1, 1, 1, 1};
+    std::array<int32_t, 4> reg{-1, -1, -1, -1};
     const std::array<int32_t, 15> errind{14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
 
     for (uint32_t i = 0; i < 15; i++)
@@ -151,11 +151,13 @@ void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits,
             reg[1] *= bit;
         }
 
-    for (int i = 0; i < 4; ++i)
+    for (uint32_t i = 0; i < 4; ++i)
         {
             reg[i] = (reg[i] + 1) / 2;
         }
+
     err = reg[0] + reg[1] * 2 + reg[2] * 4 + reg[3] * 8;
+
     if (err > 0 and err < 16)
         {
             decbits[errind[err - 1]] *= -1;

@@ -171,7 +171,7 @@ private:
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
-    int custom_year_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
+    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
     bool stop_;
     bool restart_;
     bool delete_configuration_;

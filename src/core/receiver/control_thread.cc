@@ -117,7 +117,7 @@ ControlThread::ControlThread(const std::shared_ptr<ConfigurationInterface> &conf
 void ControlThread::init()
 {
     // OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
-    custom_year_ = configuration_->property("GNSS-SDR.custom_year", 0);
+    pre_2009_file_ = configuration_->property("GNSS-SDR.pre_2009_file", false);
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     cmd_interface_.set_msg_queue(control_queue_);  // set also the queue pointer for the telecommand thread
@@ -944,7 +944,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (auto &it : gps_eph_map)
         {
-            eph_t rtklib_eph = eph_to_rtklib(it.second, custom_year_);
+            eph_t rtklib_eph = eph_to_rtklib(it.second, pre_2009_file_);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;
@@ -969,7 +969,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
     for (auto &it : gal_eph_map)
         {
-            eph_t rtklib_eph = eph_to_rtklib(it.second, custom_year_);
+            eph_t rtklib_eph = eph_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;

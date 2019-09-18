@@ -91,7 +91,7 @@ public:
 
     bool enable_rx_clock_correction;
     bool show_local_time_zone;
-    int custom_year;
+    bool pre_2009_file;
 
     Pvt_Conf();
 };

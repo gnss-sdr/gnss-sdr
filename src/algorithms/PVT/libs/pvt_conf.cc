@@ -76,6 +76,6 @@ Pvt_Conf::Pvt_Conf()
     monitor_enabled = false;
     protobuf_enabled = true;
     udp_port = 0;
-    custom_year = 0;
+    pre_2009_file = false;
     show_local_time_zone = false;
 }

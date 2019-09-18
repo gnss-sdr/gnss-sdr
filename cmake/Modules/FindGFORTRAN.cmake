@@ -183,6 +183,8 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/sh4-linux-gnu/8
         /usr/lib/gcc/sparc64-linux-gnu/8
         /usr/lib/gcc/x86_64-linux-gnux32/8
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/8
+        /usr/lib/gcc/i686-kfreebsd-gnu/8
         /usr/lib/gcc/alpha-linux-gnu/9    # libgfortran-9
         /usr/lib/gcc/x86_64-linux-gnu/9
         /usr/lib/gcc/aarch64-linux-gnu/9
@@ -201,6 +203,8 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/sh4-linux-gnu/9
         /usr/lib/gcc/sparc64-linux-gnu/9
         /usr/lib/gcc/x86_64-linux-gnux32/9
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/9
+        /usr/lib/gcc/i686-kfreebsd-gnu/9
         ${GFORTRAN_ROOT}/lib
         $ENV{GFORTRAN_ROOT}/lib
 )

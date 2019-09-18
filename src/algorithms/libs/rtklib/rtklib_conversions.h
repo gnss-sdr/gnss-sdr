@@ -43,9 +43,9 @@ class Gps_Almanac;
 class Gps_CNAV_Ephemeris;
 class Gps_Ephemeris;
 
-eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph, int custom_year);
-eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph, int custom_year);
-eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph, int custom_year);
+eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph);
+eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph, bool pre_2009_file);
+eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
 alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
@@ -58,6 +58,6 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
  */
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model);
 
-obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, int custom_year);
+obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, bool pre_2009_file = false);
 
 #endif /* GNSS_SDR_RTKLIB_CONVERSIONS_H_ */

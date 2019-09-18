@@ -347,7 +347,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     if (b_rinex_output_enabled)
         {
             rp = std::make_shared<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path);
-            rp->set_custom_year(conf_.custom_year);
+            rp->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
@@ -468,21 +468,21 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // user PVT solver
             d_user_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
             d_user_pvt_solver->set_averaging_depth(1);
-            d_user_pvt_solver->set_custom_year(conf_.custom_year);
+            d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, false, false, internal_rtk);
             d_internal_pvt_solver->set_averaging_depth(1);
-            d_internal_pvt_solver->set_custom_year(conf_.custom_year);
+            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
             d_internal_pvt_solver->set_averaging_depth(1);
-            d_internal_pvt_solver->set_custom_year(conf_.custom_year);
+            d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
 

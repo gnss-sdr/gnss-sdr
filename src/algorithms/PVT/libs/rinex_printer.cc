@@ -88,7 +88,7 @@ namespace errorlib = boost::system;
 
 Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
 {
-    custom_year_ = 0;
+    pre_2009_file_ = false;
     std::string base_rinex_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(base_rinex_path);
@@ -728,7 +728,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
 
-    if (custom_year_ == 0 or custom_year_ >= 2009)
+    if (pre_2009_file_ == false)
         {
             if (eph.i_GPS_week < 512)
                 {
@@ -1503,7 +1503,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
-            if (custom_year_ == 0 or custom_year_ >= 2009)
+            if (pre_2009_file_ == false)
                 {
                     if (eph.i_GPS_week < 512)
                         {
@@ -1549,7 +1549,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
-            if (custom_year_ == 0 or custom_year_ >= 2009)
+            if (pre_2009_file_ == false)
                 {
                     if (eph.i_GPS_week < 512)
                         {
@@ -1733,7 +1733,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-    if (custom_year_ == 0 or custom_year_ >= 2009)
+    if (pre_2009_file_ == false)
         {
             if (eph.i_GPS_week < 512)
                 {
@@ -2775,7 +2775,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
                                     line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
-                                    if (custom_year_ == 0 or custom_year_ >= 2009)
+                                    if (pre_2009_file_ == false)
                                         {
                                             if (eph.i_GPS_week < 512)
                                                 {
@@ -2844,7 +2844,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
                                     line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
-                                    if (custom_year_ == 0 or custom_year_ >= 2009)
+                                    if (pre_2009_file_ == false)
                                         {
                                             if (eph.i_GPS_week < 512)
                                                 {
@@ -3191,7 +3191,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-                            if (custom_year_ == 0 or custom_year_ >= 2009)
+                            if (pre_2009_file_ == false)
                                 {
                                     if (eph.i_GPS_week < 512)
                                         {
@@ -3313,7 +3313,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-                            if (custom_year_ == 0 or custom_year_ >= 2009)
+                            if (pre_2009_file_ == false)
                                 {
                                     if (eph.i_GPS_week < 512)
                                         {
@@ -3936,7 +3936,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
             line += std::string(1, ' ');
             double GPS_week_continuous_number;
-            if (custom_year_ == 0 or custom_year_ >= 2009)
+            if (pre_2009_file_ == false)
                 {
                     if (gps_ephemeris_iter->second.i_GPS_week < 512)
                         {
@@ -11896,7 +11896,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     const double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000));
     // Handle week rollover
-    if (custom_year_ == 0 or custom_year_ >= 2009)
+    if (pre_2009_file_ == false)
         {
             // Handle week rollover (valid from 2009 to 2029)
             if (nav_msg.i_GPS_week < 512)
@@ -11943,7 +11943,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
         }
 
     // Handle week rollover
-    if (custom_year_ == 0 or custom_year_ >= 2009)
+    if (pre_2009_file_ == false)
         {
             // Handle week rollover (valid from 2009 to 2029)
             if (eph.i_GPS_week < 512)
@@ -12069,9 +12069,9 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const d
     return leap_second;
 }
 
-void Rinex_Printer::set_custom_year(int custom_year)
+void Rinex_Printer::set_pre_2009_file(bool pre_2009_file)
 {
-    custom_year_ = custom_year;
+    pre_2009_file_ = pre_2009_file;
 }
 
 

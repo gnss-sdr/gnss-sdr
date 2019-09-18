@@ -192,7 +192,7 @@ int decode_type3(rtcm_t *rtcm)
 
 
 /* decode type 14: gps time of week ------------------------------------------*/
-int decode_type14(rtcm_t *rtcm, int custom_year)
+int decode_type14(rtcm_t *rtcm, bool pre_2009_file)
 {
     double zcnt;
     int i = 48;
@@ -216,7 +216,7 @@ int decode_type14(rtcm_t *rtcm, int custom_year)
             trace(2, "rtcm2 14 length error: len=%d\n", rtcm->len);
             return -1;
         }
-    week = adjgpsweek(week, custom_year);
+    week = adjgpsweek(week, pre_2009_file);
     rtcm->time = gpst2time(week, hour * 3600.0 + zcnt * 0.6);
     rtcm->nav.leaps = leaps;
     return 6;
@@ -244,7 +244,7 @@ int decode_type16(rtcm_t *rtcm)
 
 
 /* decode type 17: gps ephemerides -------------------------------------------*/
-int decode_type17(rtcm_t *rtcm, int custom_year)
+int decode_type17(rtcm_t *rtcm, bool pre_2009_file)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -329,7 +329,7 @@ int decode_type17(rtcm_t *rtcm, int custom_year)
         }
     sat = satno(SYS_GPS, prn);
     eph.sat = sat;
-    eph.week = adjgpsweek(week, custom_year);
+    eph.week = adjgpsweek(week, pre_2009_file);
     eph.toe = gpst2time(eph.week, eph.toes);
     eph.toc = gpst2time(eph.week, toc);
     eph.ttr = rtcm->time;

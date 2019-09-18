@@ -68,8 +68,8 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     pvt_output_parameters.dump_mat = configuration->property(role + ".dump_mat", true);
 
-    // OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
-    pvt_output_parameters.custom_year = configuration->property("GNSS-SDR.custom_year", 0);
+    // Flag to postprocess old gnss records (older than 2009) and avoid wrong week rollover
+    pvt_output_parameters.pre_2009_file = configuration->property("GNSS-SDR.pre_2009_file", false);
 
     // output rate
     pvt_output_parameters.output_rate_ms = bc::lcm(20, configuration->property(role + ".output_rate_ms", 500));

@@ -102,6 +102,8 @@ find_library(MATIO_LIBRARY
       /usr/lib/sh4-linux-gnu
       /usr/lib/sparc64-linux-gnu
       /usr/lib/x86_64-linux-gnux32
+      /usr/lib/x86_64-kfreebsd-gnu
+      /usr/lib/i386-kfreebsd-gnu
     DOC "The MATIO library"
 )
 

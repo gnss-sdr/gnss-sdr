@@ -40,15 +40,15 @@ find_path(PUGIXML_INCLUDE_DIR
     PATHS ${PUGIXML_HOME}/include
           /usr/include
           /usr/local/include
-          /usr/local/include/pugixml-1.9
           /usr/local/include/pugixml-${PC_PUGIXML_VERSION}
+          /usr/local/include/pugixml-1.9
           /opt/local/include
           ${PUGIXML_ROOT}/include
           $ENV{PUGIXML_ROOT}/include
-          ${PUGIXML_ROOT}/include/pugixml-1.9
-          $ENV{PUGIXML_ROOT}/include/pugixml-1.9
           ${PUGIXML_ROOT}/include/pugixml-${PC_PUGIXML_VERSION}
           $ENV{PUGIXML_ROOT}/include/pugixml-${PC_PUGIXML_VERSION}
+          ${PUGIXML_ROOT}/include/pugixml-1.9
+          $ENV{PUGIXML_ROOT}/include/pugixml-1.9
           ${PC_PUGIXML_INCLUDEDIR}
 )
 
@@ -75,9 +75,11 @@ find_library(PUGIXML_LIBRARY
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/riscv64-linux-gnu
+          /usr/lib/x86_64-kfreebsd-gnu
+          /usr/lib/i386-kfreebsd-gnu
           /usr/local/lib
-          /usr/local/lib/pugixml-1.9
           /usr/local/lib/pugixml-${PC_PUGIXML_VERSION}
+          /usr/local/lib/pugixml-1.9
           /opt/local/lib
           /usr/lib
           /usr/lib64
@@ -86,14 +88,14 @@ find_library(PUGIXML_LIBRARY
           $ENV{PUGIXML_ROOT}/lib
           ${PUGIXML_ROOT}/lib64
           $ENV{PUGIXML_ROOT}/lib64
-          ${PUGIXML_ROOT}/lib/pugixml-1.9
-          $ENV{PUGIXML_ROOT}/lib/pugixml-1.9
-          ${PUGIXML_ROOT}/lib64/pugixml-1.9
-          $ENV{PUGIXML_ROOT}/lib64/pugixml-1.9
           ${PUGIXML_ROOT}/lib/pugixml-${PC_PUGIXML_VERSION}
           $ENV{PUGIXML_ROOT}/lib/pugixml-${PC_PUGIXML_VERSION}
           ${PUGIXML_ROOT}/lib64/pugixml-${PC_PUGIXML_VERSION}
           $ENV{PUGIXML_ROOT}/lib64/pugixml-${PC_PUGIXML_VERSION}
+          ${PUGIXML_ROOT}/lib/pugixml-1.9
+          $ENV{PUGIXML_ROOT}/lib/pugixml-1.9
+          ${PUGIXML_ROOT}/lib64/pugixml-1.9
+          $ENV{PUGIXML_ROOT}/lib64/pugixml-1.9
           ${PC_PUGIXML_LIBDIR}
 )
 

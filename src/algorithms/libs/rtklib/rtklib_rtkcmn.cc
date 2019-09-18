@@ -2114,7 +2114,7 @@ double time2doy(gtime_t t)
  * args   : int   week       I   not-adjusted gps week number
  * return : adjusted gps week number
  *-----------------------------------------------------------------------------*/
-int adjgpsweek(int week, int custom_year)
+int adjgpsweek(int week, bool pre_2009_file)
 {
     //    int w;
     //    if (week < 512)
@@ -2133,7 +2133,7 @@ int adjgpsweek(int week, int custom_year)
             return week;
         }
 
-    if (custom_year == 0)
+    if (pre_2009_file == false)
         {
             (void)time2gpst(utc2gpst(timeget()), &w);
             if (w < 1560)
@@ -2144,18 +2144,7 @@ int adjgpsweek(int week, int custom_year)
         }
     else
         {
-            if (custom_year >= 2019)
-                {
-                    w = week + 2048;  // add weeks from 6-january-1980 to week rollover in 6 april 2019
-                }
-            else if (custom_year < 2019 and custom_year >= 1999)
-                {
-                    w = week + 1024;  // add weeks from 6-january-1980 to week rollover in 21 august 1999
-                }
-            else
-                {
-                    w = week;  // no rollover
-                }
+            w = week + 1024;  // add weeks from 6-january-1980 to week rollover in 21 august 1999
             return w;
         }
 }

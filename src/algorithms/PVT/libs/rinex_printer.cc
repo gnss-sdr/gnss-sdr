@@ -727,15 +727,30 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-    if (eph.i_GPS_week < 512)
+
+    if (custom_year_ == 0 or custom_year_ >= 2009)
         {
-            if (gps_utc_model.i_WN_T == 0)
+            if (eph.i_GPS_week < 512)
                 {
-                    line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 5);  // valid from 2019 to 2029
+                    if (gps_utc_model.i_WN_T == 0)
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 5);  // valid from 2019 to 2029
+                        }
+                    else
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                        }
                 }
             else
                 {
-                    line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                    if (gps_utc_model.i_WN_T == 0)
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 1024), 5);  // valid from 2009 to 2019
+                        }
+                    else
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                        }
                 }
         }
     else
@@ -1488,15 +1503,29 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
-            if (eph.i_GPS_week < 512)
+            if (custom_year_ == 0 or custom_year_ >= 2009)
                 {
-                    if (utc_model.i_WN_T == 0)
+                    if (eph.i_GPS_week < 512)
                         {
-                            line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 9);  // valid from 2019 to 2029
+                            if (utc_model.i_WN_T == 0)
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 9);  // valid from 2019 to 2029
+                                }
+                            else
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 9);  // valid from 2019 to 2029
+                                }
                         }
                     else
                         {
-                            line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 9);  // valid from 2019 to 2029
+                            if (utc_model.i_WN_T == 0)
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 1024), 9);  // valid from 2019 to 2029
+                                }
+                            else
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
+                                }
                         }
                 }
             else
@@ -1520,15 +1549,29 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
-            if (eph.i_GPS_week < 512)
+            if (custom_year_ == 0 or custom_year_ >= 2009)
                 {
-                    if (utc_model.i_WN_T == 0)
+                    if (eph.i_GPS_week < 512)
                         {
-                            line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 5);  // valid from 2019 to 2029
+                            if (utc_model.i_WN_T == 0)
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 5);  // valid from 2019 to 2029
+                                }
+                            else
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                }
                         }
                     else
                         {
-                            line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                            if (utc_model.i_WN_T == 0)
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 1024), 5);  // valid from 2009 to 2019
+                                }
+                            else
+                                {
+                                    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                }
                         }
                 }
             else
@@ -1690,15 +1733,29 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-    if (eph.i_GPS_week < 512)
+    if (custom_year_ == 0 or custom_year_ >= 2009)
         {
-            if (gps_utc_model.i_WN_T == 0)
+            if (eph.i_GPS_week < 512)
                 {
-                    line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 5);  // valid from 2019 to 2029
+                    if (gps_utc_model.i_WN_T == 0)
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 2048), 5);  // valid from 2019 to 2029
+                        }
+                    else
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                        }
                 }
             else
                 {
-                    line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                    if (gps_utc_model.i_WN_T == 0)
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(eph.i_GPS_week + 1024), 5);  // valid from 2009 to 2019
+                        }
+                    else
+                        {
+                            line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                        }
                 }
         }
     else
@@ -2718,13 +2775,20 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
                                     line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
-                                    if (eph.i_GPS_week < 512)
+                                    if (custom_year_ == 0 or custom_year_ >= 2009)
                                         {
-                                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 9);  // valid from 2019 to 2029
+                                            if (eph.i_GPS_week < 512)
+                                                {
+                                                    line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 9);  // valid from 2019 to 2029
+                                                }
+                                            else
+                                                {
+                                                    line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
+                                                }
                                         }
                                     else
                                         {
-                                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 9);  // valid from 2009 to 2019
+                                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256), 9);
                                         }
                                     line_aux += std::string(1, ' ');
                                     line_aux += Rinex_Printer::leftJustify("DELTA-UTC: A0,A1,T,W", 20);
@@ -2780,13 +2844,20 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
                                     line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
-                                    if (eph.i_GPS_week < 512)
+                                    if (custom_year_ == 0 or custom_year_ >= 2009)
                                         {
-                                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                            if (eph.i_GPS_week < 512)
+                                                {
+                                                    line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                                }
+                                            else
+                                                {
+                                                    line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                                }
                                         }
                                     else
                                         {
-                                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 1999 to 2008
                                         }
                                     line_aux += std::string(10, ' ');
                                     line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
@@ -3120,13 +3191,20 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-                            if (eph.i_GPS_week < 512)
+                            if (custom_year_ == 0 or custom_year_ >= 2009)
                                 {
-                                    line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                    if (eph.i_GPS_week < 512)
+                                        {
+                                            line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                        }
+                                    else
+                                        {
+                                            line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                        }
                                 }
                             else
                                 {
-                                    line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                    line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 1999 to 2008
                                 }
                             line_aux += std::string(10, ' ');
                             line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
@@ -3235,13 +3313,20 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-                            if (eph.i_GPS_week < 512)
+                            if (custom_year_ == 0 or custom_year_ >= 2009)
                                 {
-                                    line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                    if (eph.i_GPS_week < 512)
+                                        {
+                                            line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 2048), 5);  // valid from 2019 to 2029
+                                        }
+                                    else
+                                        {
+                                            line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                        }
                                 }
                             else
                                 {
-                                    line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256 + 1024), 5);  // valid from 2009 to 2019
+                                    line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.i_WN_T + (eph.i_GPS_week / 256) * 256), 5);
                                 }
                             line_aux += std::string(10, ' ');
                             line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
@@ -3851,13 +3936,20 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
             line += std::string(1, ' ');
             double GPS_week_continuous_number;
-            if (gps_ephemeris_iter->second.i_GPS_week < 512)
+            if (custom_year_ == 0 or custom_year_ >= 2009)
                 {
-                    GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 2048);  // valid until 2029
+                    if (gps_ephemeris_iter->second.i_GPS_week < 512)
+                        {
+                            GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 2048);  // valid until 2029
+                        }
+                    else
+                        {
+                            GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
+                        }
                 }
             else
                 {
-                    GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
+                    GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);
                 }
             // This week goes with Toe. This is different from the GPS week in the original satellite message!
             if (gps_ephemeris_iter->second.d_Toe < 7200.0)

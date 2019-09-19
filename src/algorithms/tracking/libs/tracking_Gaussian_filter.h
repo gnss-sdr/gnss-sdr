@@ -40,11 +40,11 @@
 #ifndef GNSS_SDR_TRACKING_GAUSSIAN_FILTER_H_
 #define GNSS_SDR_TRACKING_GAUSSIAN_FILTER_H_
 
+#include "MATH_CONSTANTS.h"
+#include "nonlinear_tracking.h"
+#include "tracking_models.h"
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
-#include "tracking_models.h"
-#include "nonlinear_tracking.h"
-#include "MATH_CONSTANTS.h"
 
 /*!
  * \brief This class implements a standard Gaussian filter for carrier tracking.
@@ -63,8 +63,8 @@ public:
     void set_params(arma::vec state, arma::mat state_cov, arma::mat p_ncov, arma::mat m_ncov);
 
 protected:
-    arma::vec d_state;     /* state vector */
-    arma::mat d_state_cov;    /* state error covariance matrix */
+    arma::vec d_state;            /* state vector */
+    arma::mat d_state_cov;        /* state error covariance matrix */
     arma::mat d_ncov_process;     /* model error covariance matrix */
     arma::mat d_ncov_measurement; /* measurement error covariance matrix */
 };
@@ -74,10 +74,11 @@ class TrackingNonlinearFilter : public TrackingGaussianFilter
 {
 public:
     arma::vec get_carrier_nco(const OutputType2 meas_in);
-    
+
     void set_transition_model(ModelFunction<OutputType1>* ft) { func_transition = ft; };
     void set_measurement_model(ModelFunction<OutputType2>* fm) { func_measurement = fm; };
-    void set_model(ModelFunction<OutputType1>* ft, ModelFunction<OutputType2>* fm) {
+    void set_model(ModelFunction<OutputType1>* ft, ModelFunction<OutputType2>* fm)
+    {
         set_transition_model(ft);
         set_measurement_model(fm);
     };
@@ -87,7 +88,6 @@ private:
     ModelFunction<OutputType2>* func_measurement;
 
     NonlinearFilter GaussFilt;
-
 };
 
 /* Template definitions */
@@ -98,7 +98,7 @@ private:
  * The output is in [Hz/s].
  */
 template <class NonlinearFilter, class OutputType1, class OutputType2>
-arma::vec TrackingNonlinearFilter<NonlinearFilter,OutputType1,OutputType2>::get_carrier_nco(const OutputType2 meas_in)
+arma::vec TrackingNonlinearFilter<NonlinearFilter, OutputType1, OutputType2>::get_carrier_nco(const OutputType2 meas_in)
 {
     arma::vec state_pred;
     arma::mat state_cov_pred;

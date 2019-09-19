@@ -37,15 +37,16 @@
 #include "exponential_smoother.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
+#include <armadillo>
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>   // for boost::shared_ptr
 #include <gnuradio/block.h>       // for block
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
 #include <pmt/pmt.h>
-#include <cstdint>                // for int32_t
-#include <fstream>                // for string, ofstream
-#include <utility>                // for pair
+#include <cstdint>  // for int32_t
+#include <fstream>  // for string, ofstream
+#include <utility>  // for pair
 #include <vector>
 
 // Abstract model function
@@ -70,7 +71,7 @@ class CarrierTransitionModel : public ModelFunction
 {
 public:
     explicit CarrierTransitionModel(const float carrier_pdi) { pdi = carrier_pdi; };
-    arma::vec operator()(const arma::vec& input) override { 
+    arma::vec operator()(const arma::vec& input) override {
         arma::vec output = arma::zeros(3,1);
         output(0, 0) = input(0) + PI_2*pdi*input(1) + 0.5*PI_2*std::pow(pdi, 2)*input(2);
         output(0, 0) = input(1) + pdi*input(2);

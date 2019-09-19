@@ -67,7 +67,7 @@ bool Cpu_Autocorrelator_Real_Codes::init(
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(float);
 
-    d_corr_out_cx = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(n_correlators * sizeof(std::complex<float>),volk_gnsssdr_get_alignment()));
+    d_corr_out_cx = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(n_correlators * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     d_local_code_cx = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(size * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
 
     d_local_codes_resampled = static_cast<float**>(volk_gnsssdr_malloc(n_correlators * sizeof(float*), volk_gnsssdr_get_alignment()));
@@ -131,7 +131,6 @@ void Cpu_Autocorrelator_Real_Codes::update_local_code(int correlator_length_samp
         {
             d_local_code_cx[n] = std::complex<float>(d_local_code_in[n], 0.0);
         }
-
 }
 
 bool Cpu_Autocorrelator_Real_Codes::Local_code_multi_autocorrelator_resampler(

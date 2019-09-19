@@ -33,25 +33,24 @@
 #ifndef GNSS_SDR_JOINT_VEML_TRACKING_H
 #define GNSS_SDR_JOINT_VEML_TRACKING_H
 
-//#include "tracking_models.h"
-#include "tracking_Gaussian_filter.h"
-
-#include "cpu_multicorrelator_real_codes.h"
 #include "cpu_autocorrelator_real_codes.h"
+#include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
-#include "tracking_loop_filter.h"     // for DLL filter
+#include "tracking_Gaussian_filter.h"
+#include "tracking_loop_filter.h"  // for DLL filter
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>   // for boost::shared_ptr
 #include <gnuradio/block.h>       // for block
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <pmt/pmt.h>              // for pmt_t
-#include <cstdint>                // for int32_t
-#include <fstream>                // for string, ofstream
-#include <utility>                // for pair
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cstdint>  // for int32_t
+#include <fstream>  // for string, ofstream
+#include <string>
+#include <utility>  // for pair
 #include <vector>
 
 template <class OutputType>
@@ -59,23 +58,24 @@ class JointCarrierTransitionModel : public ModelFunction<OutputType>
 {
 public:
     // explicit CarrierTransitionModel(const float carrier_pdi) { pdi = carrier_pdi; };
-    OutputType operator()(const arma::vec& input) override { 
+    OutputType operator()(const arma::vec &input) override
+    {
         // input(0) = A_k;
         // input(1) = dZ_k;
         // input(2) = dPsi_k;
         // input(3) = dot_dPsi_k;
         // input(4) = ddot_dPsi_k)
-        OutputType output = arma::zeros<OutputType>(5,1);
+        OutputType output = arma::zeros<OutputType>(5, 1);
         output(0, 0) = input(0);
-        output(1, 0) = input(1) + beta*t_samp*input(3) + 0.5*beta*std::pow(t_samp,2)*input(4);
-        output(2, 0) = input(2) + t_samp*input(3) + 0.5*std::pow(t_samp,2)*input(4);
-        output(3, 0) = input(3) + t_samp*input(4);
+        output(1, 0) = input(1) + beta * t_samp * input(3) + 0.5 * beta * std::pow(t_samp, 2) * input(4);
+        output(2, 0) = input(2) + t_samp * input(3) + 0.5 * std::pow(t_samp, 2) * input(4);
+        output(3, 0) = input(3) + t_samp * input(4);
         output(4, 0) = input(4);
 
         return output;
     };
     void set_samp_length(const float ts) { t_samp = ts; };
-    void set_chip_length(const float f_carr, const float tc) { beta = f_carr*tc; };
+    void set_chip_length(const float f_carr, const float tc) { beta = f_carr * tc; };
 
 private:
     float t_samp;
@@ -86,7 +86,8 @@ template <class OutputType>
 class JointCarrierMeasurementModel : public ModelFunction<OutputType>
 {
 public:
-    OutputType operator()(const arma::vec& input) override {
+    OutputType operator()(const arma::vec &input) override
+    {
         using namespace std::complex_literals;
 
         // Allocate memory for correlator outputs
@@ -99,24 +100,24 @@ public:
         d_local_code_shift_chips[2] = d_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
 
         // Setup correlator
-        multicorrelator_cpu.init( 2 * d_vector_length, 3);
+        multicorrelator_cpu.init(2 * d_vector_length, 3);
         multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
 
         // Perform correlation
-        perform_correlation(input(2), input(1) );
-        
+        perform_correlation(input(2), input(1));
+
         gr_complex R_Early = std::complex<float>(d_correlator_outs[0], 0.0);
         gr_complex R_Prompt = std::complex<float>(d_correlator_outs[1], 0.0);
         gr_complex R_Late = std::complex<float>(d_correlator_outs[2], 0.0);
 
-        arma::mat output = arma::zeros<arma::mat>(6,1);
-        gr_complex Y_Gain = static_cast<gr_complex>( input(0) * std::exp( 1i * input(2) ) );
-        output(0, 0) = std::real( std::pow(Y_Gain * R_Early, 2) );
-        output(2, 0) = std::real( std::pow(Y_Gain * R_Prompt, 2) );
-        output(4, 0) = std::real( std::pow(Y_Gain * R_Late, 2) );
-        output(1, 0) = std::imag( std::pow(Y_Gain * R_Early, 2) );
-        output(3, 0) = std::imag( std::pow(Y_Gain * R_Prompt, 2) );
-        output(5, 0) = std::imag( std::pow(Y_Gain * R_Late, 2) );
+        arma::mat output = arma::zeros<arma::mat>(6, 1);
+        gr_complex Y_Gain = static_cast<gr_complex>(input(0) * std::exp(1i * input(2)));
+        output(0, 0) = std::real(std::pow(Y_Gain * R_Early, 2));
+        output(2, 0) = std::real(std::pow(Y_Gain * R_Prompt, 2));
+        output(4, 0) = std::real(std::pow(Y_Gain * R_Late, 2));
+        output(1, 0) = std::imag(std::pow(Y_Gain * R_Early, 2));
+        output(3, 0) = std::imag(std::pow(Y_Gain * R_Prompt, 2));
+        output(5, 0) = std::imag(std::pow(Y_Gain * R_Late, 2));
 
         free(d_correlator_outs);
         free(d_local_code_shift_chips);
@@ -125,16 +126,16 @@ public:
     };
 
     void set_local_code_and_input_parameters(
-            const float* local_code_in,
-            const gr_complex* input_buffer,
-            const uint32_t vector_length,
-            const uint32_t samples_per_chip,
-            const uint32_t code_length_chips,
-            const float code_phase_step,
-            const float code_phase_rate_step,
-            const float carrier_step,
-            const float carrier_rate_step,
-            const float early_late_space_chips)
+        const float *local_code_in,
+        const gr_complex *input_buffer,
+        const uint32_t vector_length,
+        const uint32_t samples_per_chip,
+        const uint32_t code_length_chips,
+        const float code_phase_step,
+        const float code_phase_rate_step,
+        const float carrier_step,
+        const float carrier_rate_step,
+        const float early_late_space_chips)
     {
         // Set Input Buffers
         d_input_buffer = input_buffer;
@@ -157,14 +158,14 @@ public:
     }
 
     // Destructor
-    ~JointCarrierMeasurementModel() {
+    ~JointCarrierMeasurementModel()
+    {
         free(d_correlator_outs);
         free(d_local_code_shift_chips);
         multicorrelator_cpu.free();
     };
 
 private:
-
     void perform_correlation(double rem_carr_phase_rad, double rem_code_phase_chips)
     {
         // Compute Early, Prompt and Late correlation
@@ -176,10 +177,9 @@ private:
             static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
             static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
             d_vector_length);
-
     };
-    
-    Cpu_Autocorrelator_Real_Codes multicorrelator_cpu; // Multicorrelator_cpu
+
+    Cpu_Autocorrelator_Real_Codes multicorrelator_cpu;  // Multicorrelator_cpu
     float *d_correlator_outs;
     float *d_local_code_shift_chips;
 
@@ -196,7 +196,6 @@ private:
     float d_carrier_phase_rate_step_rad;
 
     float d_early_late_space_chips;
-
 };
 
 
@@ -287,7 +286,7 @@ private:
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
     Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
+    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  // for data channel
 
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
@@ -322,7 +321,7 @@ private:
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
-    
+
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;

@@ -38,31 +38,32 @@
  */
 
 #include "tracking_Gaussian_filter.h"
+#include <utility>
 
 void TrackingGaussianFilter::set_ncov_measurement(arma::mat ncov)
 {
-    d_ncov_measurement = ncov;
+    d_ncov_measurement = std::move(ncov);
 }
 
 void TrackingGaussianFilter::set_ncov_process(arma::mat ncov)
 {
-    d_ncov_process = ncov;
+    d_ncov_process = std::move(ncov);
 }
 
 void TrackingGaussianFilter::set_state(arma::vec state)
 {
-    d_state = state;
+    d_state = std::move(state);
 }
 
 void TrackingGaussianFilter::set_state_cov(arma::mat state_cov)
 {
-    d_state_cov = state_cov;
+    d_state_cov = std::move(state_cov);
 }
 
 void TrackingGaussianFilter::set_params(arma::vec state, arma::mat state_cov, arma::mat p_ncov, arma::mat m_ncov)
 {
-    set_ncov_process(p_ncov);
-    set_ncov_measurement(m_ncov);
-    set_state(state);
-    set_state_cov(state_cov);
+    set_ncov_process(std::move(p_ncov));
+    set_ncov_measurement(std::move(m_ncov));
+    set_state(std::move(state));
+    set_state_cov(std::move(state_cov));
 }

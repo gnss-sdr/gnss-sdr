@@ -47,9 +47,9 @@
 #define ARMA_NO_DEBUG 1
 #endif
 
+#include "tracking_models.h"
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
-#include "tracking_models.h"
 
 class GaussianFilter
 {
@@ -70,7 +70,7 @@ public:
     arma::mat get_P_x_est() const;
 
     // Prediction and Estimation
-    //void run_sequential(const arma::vec& z_upd, const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, ModelFunction* measurement_fcn, const arma::mat& process_covariance, const arma::mat& measurement_covariance);
+    // void run_sequential(const arma::vec& z_upd, const arma::vec& x_post, const arma::mat& P_x_post, ModelFunction* transition_fcn, ModelFunction* measurement_fcn, const arma::mat& process_covariance, const arma::mat& measurement_covariance);
 
 protected:
     arma::vec x_pred_out;
@@ -193,8 +193,8 @@ void CubatureFilter::update_sequential(const OutputType& z_upd, const arma::vec&
     arma::cx_mat W_k = P_xz_pred * arma::inv(P_zz_pred);
 
     // Compute and store the updated mean and error covariance
-    x_est = x_pred + arma::real( W_k * (z_upd - z_pred) );
-    P_x_est = P_x_pred - arma::real( W_k * P_zz_pred * W_k.t() );
+    x_est = x_pred + arma::real(W_k * (z_upd - z_pred));
+    P_x_est = P_x_pred - arma::real(W_k * P_zz_pred * W_k.t());
 }
 
 /***************** END CUBATURE KALMAN FILTER *****************/

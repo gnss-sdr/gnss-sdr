@@ -114,6 +114,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_data_secondary_code_length = 0U;
     d_data_secondary_code_string = nullptr;
     d_preamble_length_symbols = 0;
+    interchange_iq = false;
     signal_type = std::string(trk_parameters.signal);
 
     std::map<std::string, std::string> map_signal_pretty_name;
@@ -192,6 +193,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                             d_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&GPS_L5I_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "I";
+                            interchange_iq = true;
                         }
                 }
             else
@@ -260,6 +262,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_I_SECONDARY_CODE);
                             signal_pretty_name = signal_pretty_name + "I";
+                            interchange_iq = true;
                         }
                 }
             else
@@ -1767,8 +1770,16 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         // ########### Output the tracking results to Telemetry block ##########
                         // Fill the acquisition data
                         current_synchro_data = *d_acquisition_gnss_synchro;
-                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                        if (interchange_iq)
+                            {
+                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
+                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
+                            }
+                        else
+                            {
+                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
+                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                            }
                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -1808,8 +1819,16 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 // ########### Output the tracking results to Telemetry block ##########
                                 // Fill the acquisition data
                                 current_synchro_data = *d_acquisition_gnss_synchro;
-                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                if (interchange_iq)
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                    }
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                                 current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                                 current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;

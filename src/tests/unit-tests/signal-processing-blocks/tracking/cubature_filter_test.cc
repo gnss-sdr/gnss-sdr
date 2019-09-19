@@ -28,6 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
+// #include "tracking_models.h"
 #include "nonlinear_tracking.h"
 #include <armadillo>
 #include <gtest/gtest.h>
@@ -36,7 +37,7 @@
 #define CUBATURE_TEST_N_TRIALS 1000
 #define CUBATURE_TEST_TOLERANCE 0.01
 
-class TransitionModel : public ModelFunction
+class TransitionModel : public ModelFunction<arma::vec>
 {
 public:
     explicit TransitionModel(const arma::mat& kf_F) { coeff_mat = kf_F; };
@@ -46,7 +47,7 @@ private:
     arma::mat coeff_mat;
 };
 
-class MeasurementModel : public ModelFunction
+class MeasurementModel : public ModelFunction<arma::vec>
 {
 public:
     explicit MeasurementModel(const arma::mat& kf_H) { coeff_mat = kf_H; };
@@ -88,8 +89,8 @@ TEST(CubatureFilterComputationTest, CubatureFilterTest)
     arma::mat kf_P_y;
     arma::mat kf_K;
 
-    ModelFunction* transition_function;
-    ModelFunction* measurement_function;
+    ModelFunction<arma::vec>* transition_function;
+    ModelFunction<arma::vec>* measurement_function;
 
     // -- Perform initializations ------------------------------
 

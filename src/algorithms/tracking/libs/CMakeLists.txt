@@ -21,6 +21,7 @@ set(TRACKING_LIB_SOURCES
     cpu_multicorrelator.cc
     cpu_multicorrelator_real_codes.cc
     cpu_multicorrelator_16sc.cc
+    cpu_autocorrelator_real_codes.cc
     lock_detectors.cc
     tcp_communication.cc
     tcp_packet_data.cc
@@ -29,6 +30,7 @@ set(TRACKING_LIB_SOURCES
     tracking_discriminators.cc
     tracking_FLL_PLL_filter.cc
     tracking_loop_filter.cc
+    tracking_Gaussian_filter.cc
     dll_pll_conf.cc
     bayesian_estimation.cc
     exponential_smoother.cc
@@ -38,6 +40,7 @@ set(TRACKING_LIB_HEADERS
     cpu_multicorrelator.h
     cpu_multicorrelator_real_codes.h
     cpu_multicorrelator_16sc.h
+    cpu_autocorrelator_real_codes.h
     lock_detectors.h
     tcp_communication.h
     tcp_packet_data.h
@@ -46,9 +49,11 @@ set(TRACKING_LIB_HEADERS
     tracking_discriminators.h
     tracking_FLL_PLL_filter.h
     tracking_loop_filter.h
+    tracking_Gaussian_filter.h
     dll_pll_conf.h
     bayesian_estimation.h
     exponential_smoother.h
+    tracking_models.h
 )
 
 
@@ -67,7 +72,7 @@ if(ENABLE_CUDA)
     endif()
 endif()
 
-if(ARMADILLO_VERSION_STRING VERSION_GREATER 7.400)
+if(ARMADILLO_VERSION_STRING VERSION_GREATER_EQUAL 7.400)
     # sqrtmat_sympd() requires 7.400
     set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} nonlinear_tracking.cc)
     set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} nonlinear_tracking.h)

@@ -69,6 +69,7 @@ find_library(LOG4CPP_LIBRARY
         ${PC_LOG4CPP_LIBDIR}
         ${CMAKE_INSTALL_PREFIX}/lib/
   PATHS /usr/local/lib
+        /usr/local/lib64
         /usr/lib/x86_64-linux-gnu
         /usr/lib/i386-linux-gnu
         /usr/lib/arm-linux-gnueabihf

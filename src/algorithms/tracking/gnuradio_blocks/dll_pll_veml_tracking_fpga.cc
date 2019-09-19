@@ -54,7 +54,7 @@
 #include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
-#include <cmath>      // for fmod, round, floor, fabs
+#include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
@@ -106,6 +106,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_data_secondary_code_length = 0U;
     d_data_secondary_code_string = nullptr;
     signal_type = std::string(trk_parameters.signal);
+    interchange_iq = false;
 
     std::map<std::string, std::string> map_signal_pretty_name;
     map_signal_pretty_name["1C"] = "L1 C/A";
@@ -191,6 +192,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             d_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&GPS_L5I_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "I";
+                            interchange_iq = true;
                         }
                 }
             else
@@ -262,6 +264,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_I_SECONDARY_CODE);
                             signal_pretty_name = signal_pretty_name + "I";
+                            interchange_iq = true;
                         }
                 }
             else
@@ -607,7 +610,7 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
     d_Prompt_buffer[d_cn0_estimation_counter % trk_parameters.cn0_samples] = d_P_accu;
     d_cn0_estimation_counter++;
     // Code lock indicator
-    float d_CN0_SNV_dB_Hz_raw = cn0_mm_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer.data(), trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer.data(), 1));
@@ -746,7 +749,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
                     if (d_dll_filt_history.full())
                         {
                             float avg_code_error_chips_s = std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0) / static_cast<float>(d_dll_filt_history.capacity());
-                            if (std::fabs(avg_code_error_chips_s) > 1.0)
+                            if (fabs(avg_code_error_chips_s) > 1.0)
                                 {
                                     float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                                     LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
@@ -1760,8 +1763,16 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 // ########### Output the tracking results to Telemetry block ##########
                                 // Fill the acquisition data
                                 current_synchro_data = *d_acquisition_gnss_synchro;
-                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                if (interchange_iq)
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                    }
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                                 current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                                 current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -1809,8 +1820,16 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                         // ########### Output the tracking results to Telemetry block ##########
                                         // Fill the acquisition data
                                         current_synchro_data = *d_acquisition_gnss_synchro;
-                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                        if (interchange_iq)
+                                            {
+                                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
+                                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
+                                            }
+                                        else
+                                            {
+                                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
+                                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                            }
                                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                                         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -1858,8 +1877,16 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 // ########### Output the tracking results to Telemetry block ##########
                                 // Fill the acquisition data
                                 current_synchro_data = *d_acquisition_gnss_synchro;
-                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                if (interchange_iq)
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                    }
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                                 current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                                 current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -1916,8 +1943,16 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                         // ########### Output the tracking results to Telemetry block ##########
                                         // Fill the acquisition data
                                         current_synchro_data = *d_acquisition_gnss_synchro;
-                                        current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
-                                        current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                        if (interchange_iq)
+                                            {
+                                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.imag());
+                                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.real());
+                                            }
+                                        else
+                                            {
+                                                current_synchro_data.Prompt_I = static_cast<double>(d_P_data_accu.real());
+                                                current_synchro_data.Prompt_Q = static_cast<double>(d_P_data_accu.imag());
+                                            }
                                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                                         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;

@@ -178,6 +178,7 @@ private:
     // tracking vars
     bool d_pull_in_transitory;
     bool d_corrected_doppler;
+    bool interchange_iq;
     double d_current_correlation_time_s;
     double d_carr_phase_error_hz;
     double d_carr_freq_error_hz;

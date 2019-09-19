@@ -28,6 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
+// #include "tracking_models.h"
 #include "nonlinear_tracking.h"
 #include <armadillo>
 #include <gtest/gtest.h>
@@ -36,7 +37,7 @@
 #define UNSCENTED_TEST_N_TRIALS 10
 #define UNSCENTED_TEST_TOLERANCE 10
 
-class TransitionModelUKF : public ModelFunction
+class TransitionModelUKF : public ModelFunction<arma::vec>
 {
 public:
     explicit TransitionModelUKF(const arma::mat& kf_F) { coeff_mat = kf_F; };
@@ -46,7 +47,7 @@ private:
     arma::mat coeff_mat;
 };
 
-class MeasurementModelUKF : public ModelFunction
+class MeasurementModelUKF : public ModelFunction<arma::vec>
 {
 public:
     explicit MeasurementModelUKF(const arma::mat& kf_H) { coeff_mat = kf_H; };
@@ -88,8 +89,8 @@ TEST(UnscentedFilterComputationTest, UnscentedFilterTest)
     arma::mat kf_P_y;
     arma::mat kf_K;
 
-    ModelFunction* transition_function;
-    ModelFunction* measurement_function;
+    ModelFunction<arma::vec>* transition_function;
+    ModelFunction<arma::vec>* measurement_function;
 
     // -- Perform initializations ------------------------------
 

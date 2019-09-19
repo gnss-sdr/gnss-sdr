@@ -1,5 +1,5 @@
 /*!
- * \file cpu_multicorrelator_real_codes.h
+ * \file cpu_autocorrelator_real_codes.h
  * \brief Highly optimized CPU vector multiTAP correlator class using real-valued local codes
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,8 +33,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CPU_MULTICORRELATOR_REAL_CODES_H_
-#define GNSS_SDR_CPU_MULTICORRELATOR_REAL_CODES_H_
+#ifndef GNSS_SDR_CPU_AUTOCORRELATOR_REAL_CODES_H_
+#define GNSS_SDR_CPU_AUTOCORRELATOR_REAL_CODES_H_
 
 
 #include <complex>
@@ -42,28 +42,28 @@
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class Cpu_Multicorrelator_Real_Codes
+class Cpu_Autocorrelator_Real_Codes
 {
 public:
-    Cpu_Multicorrelator_Real_Codes();
+    Cpu_Autocorrelator_Real_Codes();
     void set_high_dynamics_resampler(bool use_high_dynamics_resampler);
-    ~Cpu_Multicorrelator_Real_Codes();
+    ~Cpu_Autocorrelator_Real_Codes();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const float *local_code_in, float *shifts_chips);
-    bool set_input_output_vectors(std::complex<float> *corr_out, const std::complex<float> *sig_in);
+    bool set_output_vector(float *corr_out);
     void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips = 0.0);
     bool free();
 
-    bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float phase_rate_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
-    bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
+    bool Local_code_multi_autocorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
 
 
 private:
     // Allocate the device input vectors
-    const std::complex<float> *d_sig_in;
-    float **d_local_codes_resampled;
     const float *d_local_code_in;
-    std::complex<float> *d_corr_out;
+    std::complex<float> *d_local_code_cx;
+    float **d_local_codes_resampled;
+    float *d_corr_out;
+    std::complex<float> *d_corr_out_cx;
     float *d_shifts_chips;
     bool d_use_high_dynamics_resampler;
     int d_code_length_chips;
@@ -71,4 +71,4 @@ private:
 };
 
 
-#endif /* GNSS_SDR_CPU_MULTICORRELATOR_REAL_CODES_H_ */
+#endif /* GNSS_SDR_CPU_AUTOCORRELATOR_REAL_CODES_H_ */

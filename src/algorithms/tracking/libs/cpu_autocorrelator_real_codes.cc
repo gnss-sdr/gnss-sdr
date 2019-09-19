@@ -1,5 +1,5 @@
 /*!
- * \file cpu_multicorrelator_real_codes.cc
+ * \file cpu_autocorrelator_real_inputs.cc
  * \brief Highly optimized CPU vector multiTAP correlator class with real-valued local codes
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,16 +33,17 @@
  * -------------------------------------------------------------------------
  */
 
-#include "cpu_multicorrelator_real_codes.h"
+#include "cpu_autocorrelator_real_codes.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 
-Cpu_Multicorrelator_Real_Codes::Cpu_Multicorrelator_Real_Codes()
+Cpu_Autocorrelator_Real_Codes::Cpu_Autocorrelator_Real_Codes()
 {
-    d_sig_in = nullptr;
     d_local_code_in = nullptr;
+    d_local_code_cx = nullptr;
     d_shifts_chips = nullptr;
     d_corr_out = nullptr;
+    d_corr_out_cx = nullptr;
     d_local_codes_resampled = nullptr;
     d_code_length_chips = 0;
     d_n_correlators = 0;
@@ -50,21 +51,24 @@ Cpu_Multicorrelator_Real_Codes::Cpu_Multicorrelator_Real_Codes()
 }
 
 
-Cpu_Multicorrelator_Real_Codes::~Cpu_Multicorrelator_Real_Codes()
+Cpu_Autocorrelator_Real_Codes::~Cpu_Autocorrelator_Real_Codes()
 {
-    if (d_local_codes_resampled != nullptr)
+    if ((d_local_codes_resampled != nullptr) || (d_local_code_cx != nullptr) || (d_corr_out_cx != nullptr))
         {
-            Cpu_Multicorrelator_Real_Codes::free();
+            Cpu_Autocorrelator_Real_Codes::free();
         }
 }
 
 
-bool Cpu_Multicorrelator_Real_Codes::init(
+bool Cpu_Autocorrelator_Real_Codes::init(
     int max_signal_length_samples,
     int n_correlators)
 {
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(float);
+
+    d_corr_out_cx = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(n_correlators * sizeof(std::complex<float>),volk_gnsssdr_get_alignment()));
+    d_local_code_cx = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(size * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
 
     d_local_codes_resampled = static_cast<float**>(volk_gnsssdr_malloc(n_correlators * sizeof(float*), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < n_correlators; n++)
@@ -76,7 +80,7 @@ bool Cpu_Multicorrelator_Real_Codes::init(
 }
 
 
-bool Cpu_Multicorrelator_Real_Codes::set_local_code_and_taps(
+bool Cpu_Autocorrelator_Real_Codes::set_local_code_and_taps(
     int code_length_chips,
     const float* local_code_in,
     float* shifts_chips)
@@ -89,16 +93,15 @@ bool Cpu_Multicorrelator_Real_Codes::set_local_code_and_taps(
 }
 
 
-bool Cpu_Multicorrelator_Real_Codes::set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in)
+bool Cpu_Autocorrelator_Real_Codes::set_output_vector(float* corr_out)
 {
     // Save CPU pointers
-    d_sig_in = sig_in;
     d_corr_out = corr_out;
     return true;
 }
 
 
-void Cpu_Multicorrelator_Real_Codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
+void Cpu_Autocorrelator_Real_Codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
 {
     if (d_use_high_dynamics_resampler)
         {
@@ -123,34 +126,15 @@ void Cpu_Multicorrelator_Real_Codes::update_local_code(int correlator_length_sam
                 d_n_correlators,
                 correlator_length_samples);
         }
+
+    for (int n = 0; n < correlator_length_samples; n++)
+        {
+            d_local_code_cx[n] = std::complex<float>(d_local_code_in[n], 0.0);
+        }
+
 }
 
-bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
-    float rem_carrier_phase_in_rad,
-    float phase_step_rad,
-    float phase_rate_step_rad,
-    float rem_code_phase_chips,
-    float code_phase_step_chips,
-    float code_phase_rate_step_chips,
-    int signal_length_samples)
-{
-    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
-    // Regenerate phase at each call in order to avoid numerical issues
-    lv_32fc_t phase_offset_as_complex[1];
-    phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
-    // call VOLK_GNSSSDR kernel
-    if (d_use_high_dynamics_resampler)
-        {
-            volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), std::exp(lv_32fc_t(0.0, -phase_rate_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
-        }
-    else
-        {
-            volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
-        }
-    return true;
-}
-
-bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
+bool Cpu_Autocorrelator_Real_Codes::Local_code_multi_autocorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float rem_code_phase_chips,
@@ -163,13 +147,25 @@ bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
     // call VOLK_GNSSSDR kernel
-    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out_cx, d_local_code_cx, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+    for (int n = 0; n < d_n_correlators; n++)
+        {
+            d_corr_out[n] = d_corr_out_cx[n].real();
+        }
     return true;
 }
 
-bool Cpu_Multicorrelator_Real_Codes::free()
+bool Cpu_Autocorrelator_Real_Codes::free()
 {
     // Free memory
+    if (d_local_code_cx != nullptr)
+        {
+            volk_gnsssdr_free(d_local_code_cx);
+        }
+    if (d_corr_out_cx != nullptr)
+        {
+            volk_gnsssdr_free(d_corr_out_cx);
+        }
     if (d_local_codes_resampled != nullptr)
         {
             for (int n = 0; n < d_n_correlators; n++)
@@ -180,11 +176,4 @@ bool Cpu_Multicorrelator_Real_Codes::free()
             d_local_codes_resampled = nullptr;
         }
     return true;
-}
-
-
-void Cpu_Multicorrelator_Real_Codes::set_high_dynamics_resampler(
-    bool use_high_dynamics_resampler)
-{
-    d_use_high_dynamics_resampler = use_high_dynamics_resampler;
 }

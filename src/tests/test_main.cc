@@ -102,6 +102,8 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc"
 #endif
+#include "unit-tests/signal-processing-blocks/tracking/galileo_e1_mixed_veml_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/galileo_e1_joint_veml_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc"
@@ -137,7 +139,8 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_solver_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
-#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_kf_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_mixed_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_joint_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
 #if FPGA_BLOCKS_TEST

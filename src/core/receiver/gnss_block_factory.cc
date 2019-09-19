@@ -53,6 +53,8 @@
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
+#include "galileo_e1_mixed_veml_tracking.h"
+#include "galileo_e1_joint_veml_tracking.h"
 #include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
@@ -1785,6 +1787,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation == "Galileo_E1_Mixed_VEML_Tracking")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1MixedVemlTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation == "Galileo_E1_Joint_VEML_Tracking")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1JointVemlTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
 #if ENABLE_FPGA
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga")
         {
@@ -2158,6 +2172,18 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation == "Galileo_E1_Mixed_VEML_Tracking")
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1MixedVemlTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation == "Galileo_E1_Joint_VEML_Tracking")
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1JointVemlTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

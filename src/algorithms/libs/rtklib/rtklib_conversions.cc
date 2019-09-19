@@ -158,12 +158,12 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
 
     // Time expressed in GPS Time but using RTKLib format
     glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_b, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
-    adj_week = adjgpsweek(static_cast<int>(week), 0);
+    adj_week = adjgpsweek(static_cast<int>(week));
     rtklib_sat.toe = gpst2time(adj_week, sec);
 
     // Time expressed in GPS Time but using RTKLib format
     glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_k, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
-    adj_week = adjgpsweek(static_cast<int>(week), 0);
+    adj_week = adjgpsweek(static_cast<int>(week));
     rtklib_sat.tof = gpst2time(adj_week, sec);
 
     return rtklib_sat;

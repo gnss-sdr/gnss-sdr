@@ -466,8 +466,8 @@ docker-for-test:
     - echo -e "FROM phusion/baseimage:0.11\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libpugixml-dev libgflags-dev libgoogle-glog-dev googletest libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev git ca-certificates gnuradio-dev python-mako python-six libprotobuf-dev protobuf-compiler texlive-latex-base texlive-fonts-recommended texlive-font-utils texlive-pictures epstool fig2dev octave pstoedit gnuplot-x11 && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_INSTALL_TESTS=ON .. && NPROC=$(grep -c ^processor /proc/cpuinfo) && make -j$(($NPROC+1)) && make install && rm -rf /home/src\nWORKDIR /home\nRUN rm -rf /tmp/* /var/tmp/*\nCMD [\"bash\"]" > Dockerfile
     - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
-    - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
-    - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+    - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
+    - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
 
 
 # Stage "test"
@@ -586,7 +586,7 @@ leo-observables-test-180417120737:
 
 
 position-L1-static:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:
@@ -619,7 +619,7 @@ position-L1-static:
 
 
 position-BDS-B1I:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:
@@ -641,7 +641,7 @@ position-BDS-B1I:
 
 
 position-BDS-B3I:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:
@@ -663,7 +663,7 @@ position-BDS-B3I:
 
 
 position-L5-static:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:
@@ -695,7 +695,7 @@ position-L5-static:
 
 
 position-dual-static:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:
@@ -722,7 +722,7 @@ position-dual-static:
 
 
 position-static-4in1:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   tags:
     - kepler
@@ -741,7 +741,7 @@ position-static-4in1:
 
 
 position-leo:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:
@@ -776,7 +776,7 @@ position-leo:
 
 
 position-GLO-L1:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   tags:
     - kepler
@@ -795,7 +795,7 @@ position-GLO-L1:
 
 
 position-GLO-L2:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   tags:
     - kepler
@@ -814,7 +814,7 @@ position-GLO-L2:
 
 
 position-leo-4in1:
-  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:testing-$CI_COMMIT_REF_NAME
   stage: test
   when: manual
   tags:

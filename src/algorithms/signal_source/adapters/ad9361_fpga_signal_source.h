@@ -108,7 +108,6 @@ private:
     uint32_t in_stream_;
     uint32_t out_stream_;
 
-    std::string item_type_;
     size_t item_size_;
     long samples_;
     bool dump_;

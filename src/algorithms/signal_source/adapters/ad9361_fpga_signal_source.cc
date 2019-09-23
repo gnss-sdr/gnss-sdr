@@ -46,7 +46,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
-    std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000);
@@ -64,7 +63,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", true);
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);

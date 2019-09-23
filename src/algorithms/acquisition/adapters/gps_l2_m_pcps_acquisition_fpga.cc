@@ -56,12 +56,9 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 {
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./acquisition.mat";
 
     LOG(INFO) << "role " << role;
-
-    item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);

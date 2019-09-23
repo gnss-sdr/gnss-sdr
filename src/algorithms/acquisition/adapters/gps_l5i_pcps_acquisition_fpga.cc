@@ -78,6 +78,8 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms;
 
+    acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
+
     // -- Find number of samples per spreading code -------------------------
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_CPS / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
@@ -109,8 +111,14 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
-
+    		if (acq_pilot_)
+    			{
+    				gps_l5q_code_gen_complex_sampled(code, PRN, fs_in);
+    			}
+    		else
+    			{
+    				gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
+    			}
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
                     code[s] = code[s - code_length];

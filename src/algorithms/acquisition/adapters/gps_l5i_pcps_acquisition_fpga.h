@@ -202,6 +202,7 @@ private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     std::string item_type_;
+    bool acq_pilot_;
     uint32_t channel_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;

@@ -56,7 +56,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 {
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "cshort";
 
     DLOG(INFO) << "role " << role;
 

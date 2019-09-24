@@ -46,7 +46,7 @@ Fpga_Switch::Fpga_Switch(const std::string &device_name)
         {
             LOG(WARNING) << "Cannot open deviceio" << device_name;
         }
-    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, FPGA_PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -104,7 +104,7 @@ unsigned Fpga_Switch::fpga_switch_test_register(
 void Fpga_Switch::close_device()
 {
     auto *aux = const_cast<unsigned *>(d_map_base);
-    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
+    if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE) == -1)
         {
             std::cout << "Failed to unmap memory uio" << std::endl;
         }

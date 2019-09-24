@@ -54,7 +54,6 @@ public:
         uint32_t doppler_max,
         uint32_t nsamples_total,
         int64_t fs_in,
-        uint32_t sampled_ms,
         uint32_t select_queue,
         uint32_t *all_fft_codes,
         uint32_t excludelimit);

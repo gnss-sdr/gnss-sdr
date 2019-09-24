@@ -63,7 +63,6 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     uint32_t doppler_max,
     uint32_t nsamples_total,
     int64_t fs_in,
-    uint32_t sampled_ms __attribute__((unused)),
     uint32_t select_queue,
     uint32_t *all_fft_codes,
     uint32_t excludelimit)

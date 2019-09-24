@@ -74,8 +74,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
-    acq_parameters.sampled_ms = sampled_ms;
 
     acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  // could be true in future versions
 
@@ -92,7 +90,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
     acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_CPS) * static_cast<float>(fs_in)));
 

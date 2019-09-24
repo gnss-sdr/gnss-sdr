@@ -110,8 +110,6 @@ private:
 
     size_t item_size_;
     long samples_;
-    bool dump_;
-    std::string dump_filename_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 

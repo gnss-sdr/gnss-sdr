@@ -54,19 +54,20 @@
 /*! \brief cn0_svn_estimator is a Carrier-to-Noise (CN0) estimator
  * based on the Signal-to-Noise Variance (SNV) estimator
  *
- * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
+ * Signal-to-Noise (SNR) (\f$ \rho \f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
  * \f{equation}
  *  \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
  * \f}
- *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
- * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
- * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *  where \f$ \hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2 \f$ is the estimation of the signal power,
+ * \f$ \hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2 \f$ is the estimator of the total power, \f$ |\cdot| \f$ is the absolute value,
+ * \f$ Re(\cdot) \f$ stands for the real part of the value, and \f$ Pc(i) \f$ is the prompt correlator output for the sample index i.
  *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
+ * The SNR value is converted to CN0 [dB-Hz], taking into account the coherent integration time, using the following formula:
  * \f{equation}
  *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
- * where \f$T_{int}\f$ is the coherent integration time, in seconds.
+ * where \f$ T_{int} \f$ is the coherent integration time, in seconds.
+ *
  * Ref: Marco Pini, Emanuela Falletti and Maurizio Fantino, "Performance
  * Evaluation of C/N0 Estimators using a Real Time GNSS Software Receiver,"
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
@@ -76,21 +77,22 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
 
 
 /*! \brief cn0_mm_estimator is a Carrier-to-Noise (CN0) estimator
- * based on the Moments Method (MM)
+ * based on the Second- and Fourth-Order Moments Method (M2M4)
  *
- * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Moments Method:
+ * Signal-to-Noise (SNR) (\f$ \rho \f$) estimator using the Moments Method:
  * \f{equation}
- *  \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\sqrt{2*\hat{M}_2^2 - \hat{M}_4 }}{\hat{M}_2-\sqrt{2*\hat{M}_2^2 - \hat{M}_4 }},
+ *  \hat{\rho}=\frac{\sqrt{2 \hat{M}_2^2 - \hat{M}_4 }}{\hat{M}_2-\sqrt{2 \hat{M}_2^2 - \hat{M}_4 }},
  * \f}
- *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
- * \f$ \hat{M}_2=\frac{1}{N}sum^{N-1}_{i=0}|Pc(i)|^2 \f$, \f$\hat{M}_4 = \frac{1}{N}sum^{N-1}_{i=0}|Pc(i)|^4 \f$, \f$|\cdot|\f$ is the absolute value,
- * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ * where
+ * \f$ \hat{M}_2=\frac{1}{N}\sum^{K-1}_{k=0}|P[k]|^2 \f$, \f$ \hat{M}_4 = \frac{1}{K}\sum^{K-1}_{k=0}|P[k]|^4 \f$, \f$ |\cdot| \f$ is the absolute value,
+ * and \f$ P[k] \f$ is the prompt correlator output for the sample index k.
  *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
+ * The SNR value is converted to CN0 [dB-Hz] taking into account the coherent integration time, using the following formula:
  * \f{equation}
  *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
- * where \f$T_{int}\f$ is the coherent integration time, in seconds.
+ * where \f$ T_{int} \f$ is the coherent integration time, in seconds.
+ *
  * Ref: D. R. Pauluzzi, N. C. Beaulieu, "A comparison of SNR estimation
  * techniques for the AWGN channel," IEEE Trans. on Comm., vol. 48,
  * no. 10, pp. 1681–1691, Oct. 2000.
@@ -104,9 +106,9 @@ float cn0_mm_estimator(const gr_complex* Prompt_buffer, int length, float coh_in
  * \f{equation}
  *     C2\phi=\frac{NBD}{NBP},
  * \f}
- *  where \f$NBD=(\sum^{N-1}_{i=0}|Im(Pc(i))|)^2+(\sum^{N-1}_{i=0}|Re(Pc(i))|)^2\f$,
- *  \f$NBP=\sum^{N-1}_{i=0}Im(Pc(i))^2-\sum^{N-1}_{i=0}Re(Pc(i))^2\f$, and
- *  \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *  where \f$ NBD=(\sum^{N-1}_{i=0}|Im(Pc(i))|)^2+(\sum^{N-1}_{i=0}|Re(Pc(i))|)^2 \f$,
+ *  \f$ NBP=\sum^{N-1}_{i=0}Im(Pc(i))^2-\sum^{N-1}_{i=0}Re(Pc(i))^2 \f$, and
+ *  \f$ Pc(i) \f$ is the prompt correlator output for the sample index i.
  * Ref: Van Dierendonck, A.J. (1996), Global Positioning System: Theory and
  * Applications,
  * Volume I, Chapter 8: GPS Receivers, AJ Systems, Los Altos, CA 94024.

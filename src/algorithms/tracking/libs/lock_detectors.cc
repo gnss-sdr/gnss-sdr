@@ -101,7 +101,7 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
  * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *
  */
-float cn0_mm_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
+float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s)
 {
     float SNR_aux = 0.0;
     float SNR_dB_Hz = 0.0;

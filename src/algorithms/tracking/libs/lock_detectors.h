@@ -76,7 +76,7 @@
 float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s);
 
 
-/*! \brief cn0_mm_estimator is a Carrier-to-Noise (CN0) estimator
+/*! \brief cn0_m2m4_estimator is a Carrier-to-Noise (CN0) estimator
  * based on the Second- and Fourth-Order Moments Method (M2M4)
  *
  * Signal-to-Noise (SNR) (\f$ \rho \f$) estimator using the Moments Method:
@@ -97,7 +97,7 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_i
  * techniques for the AWGN channel," IEEE Trans. on Comm., vol. 48,
  * no. 10, pp. 1681–1691, Oct. 2000.
  */
-float cn0_mm_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s);
+float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s);
 
 
 /*! \brief A carrier lock detector

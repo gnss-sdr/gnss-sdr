@@ -65,7 +65,7 @@ void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
+            _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[i]);
         }
 }
 
@@ -120,11 +120,11 @@ void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
             if (i == _samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
+                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeLength - 1]);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeValueIndex]);  // repeat the chip -> upsample
                 }
         }
 }

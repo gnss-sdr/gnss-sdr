@@ -51,16 +51,16 @@ void galileo_e5_a_code_gen_complex_primary(gsl::span<std::complex<float>> _dest,
             for (size_t i = 0; i < GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1; i++)
                 {
                     hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn][i]);
-                    _dest[index] = std::complex<float>(0.0, static_cast<float>(a[0]));
-                    _dest[index + 1] = std::complex<float>(0.0, static_cast<float>(a[1]));
-                    _dest[index + 2] = std::complex<float>(0.0, static_cast<float>(a[2]));
-                    _dest[index + 3] = std::complex<float>(0.0, static_cast<float>(a[3]));
+                    _dest[index] = std::complex<float>(static_cast<float>(a[0]), 0.0);
+                    _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), 0.0);
+                    _dest[index + 2] = std::complex<float>(static_cast<float>(a[2]), 0.0);
+                    _dest[index + 3] = std::complex<float>(static_cast<float>(a[3]), 0.0);
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
             hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn][GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1]);
-            _dest[index] = std::complex<float>(0.0, static_cast<float>(a[0]));
-            _dest[index + 1] = std::complex<float>(0.0, static_cast<float>(a[1]));
+            _dest[index] = std::complex<float>(static_cast<float>(a[0]), 0.0);
+            _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), 0.0);
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'I')
         {

@@ -31,26 +31,21 @@ pkg_check_modules(PC_LIBIIO libiio)
 find_path(
     LIBIIO_INCLUDE_DIRS
     NAMES iio.h
-    HINTS $ENV{LIBIIO_DIR}/include
-          ${PC_LIBIIO_INCLUDEDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/include
+    HINTS ${PC_LIBIIO_INCLUDEDIR}
+    PATHS /usr/include
           /usr/local/include
-          /usr/include
           /opt/local/include
+          ${CMAKE_INSTALL_PREFIX}/include
           ${LIBIIO_ROOT}/include
           $ENV{LIBIIO_ROOT}/include
+          $ENV{LIBIIO_DIR}/include
 )
 
 find_library(
     LIBIIO_LIBRARIES
     NAMES iio libiio.so.0
-    HINTS $ENV{LIBIIO_DIR}/lib
-          ${PC_LIBIIO_LIBDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /usr/lib
+    HINTS ${PC_LIBIIO_LIBDIR}
+    PATHS /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -76,11 +71,17 @@ find_library(
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/sh4-linux-gnu
           /usr/lib/riscv64-linux-gnu
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
           /Library/Frameworks/iio.framework/
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
           ${LIBIIO_ROOT}/lib
           $ENV{LIBIIO_ROOT}/lib
           ${LIBIIO_ROOT}/lib64
           $ENV{LIBIIO_ROOT}/lib64
+          $ENV{LIBIIO_DIR}/lib
 )
 
 if(LIBIIO_LIBRARIES AND APPLE)

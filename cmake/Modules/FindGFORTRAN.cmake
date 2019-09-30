@@ -22,8 +22,6 @@ endif()
 find_library(GFORTRAN NAMES gfortran
     PATHS /usr/lib
         /usr/lib64
-        /usr/local/lib
-        /usr/local/lib/i386
         /usr/lib/gcc/x86_64-linux-gnu
         /usr/lib/gcc/i686-linux-gnu
         /usr/lib/gcc/i386-linux-gnu
@@ -205,6 +203,9 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/x86_64-linux-gnux32/9
         /usr/lib/gcc/x86_64-kfreebsd-gnu/9
         /usr/lib/gcc/i686-kfreebsd-gnu/9
+        /usr/local/lib
+        /usr/local/lib64
+        /usr/local/lib/i386
         ${GFORTRAN_ROOT}/lib
         $ENV{GFORTRAN_ROOT}/lib
 )

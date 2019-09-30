@@ -33,22 +33,21 @@ pkg_check_modules(PC_VOLK volk QUIET)
 
 find_path(VOLK_INCLUDE_DIRS
     NAMES volk/volk.h
-    HINTS $ENV{VOLK_DIR}/include
-          ${PC_VOLK_INCLUDEDIR}
-    PATHS /usr/local/include
-          /usr/include
+    HINTS ${PC_VOLK_INCLUDEDIR}
+    PATHS /usr/include
+          /usr/local/include
+          /opt/local/include
           ${CMAKE_INSTALL_PREFIX}/include
           ${VOLK_ROOT}/include
           $ENV{VOLK_ROOT}/include
+          $ENV{VOLK_DIR}/include
 )
 
 find_library(VOLK_LIBRARIES
     NAMES volk
-    HINTS $ENV{VOLK_DIR}/lib
-          ${PC_VOLK_LIBDIR}
-    PATHS /usr/local/lib
-          /usr/local/lib64
-          /usr/lib
+    HINTS ${PC_VOLK_LIBDIR}
+    PATHS /usr/lib
+          /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
           /usr/lib/arm-linux-gnueabihf
@@ -72,12 +71,15 @@ find_library(VOLK_LIBRARIES
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/alpha-linux-gnu
           /usr/lib/riscv64-linux-gnu
-          /usr/lib64
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
           ${CMAKE_INSTALL_PREFIX}/lib
           ${VOLK_ROOT}/lib
           $ENV{VOLK_ROOT}/lib
           ${VOLK_ROOT}/lib64
           $ENV{VOLK_ROOT}/lib64
+          $ENV{VOLK_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

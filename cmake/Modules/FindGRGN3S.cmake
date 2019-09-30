@@ -26,30 +26,32 @@ pkg_check_modules(PC_GR_GN3S gr-gn3s)
 find_path(
     GR_GN3S_INCLUDE_DIRS
     NAMES gn3s/gn3s_api.h
-    HINTS $ENV{GR_GN3S_DIR}/include
-          ${PC_GR_GN3S_INCLUDEDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/include
+    HINTS ${PC_GR_GN3S_INCLUDEDIR}
+    PATHS /usr/include
           /usr/local/include
-          /usr/include
+          /opt/local/include
+          ${CMAKE_INSTALL_PREFIX}/include
           ${GRGN3S_ROOT}/include
           $ENV{GRGN3S_ROOT}/include
+          $ENV{GR_GN3S_DIR}/include
 )
 
 find_library(
     GR_GN3S_LIBRARIES
     NAMES gr-gn3s
-    HINTS $ENV{GR_GN3S_DIR}/lib
-          ${PC_GR_GN3S_LIBDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
+    HINTS ${PC_GR_GN3S_LIBDIR}
+    PATHS /usr/lib
+          /usr/lib64
           /usr/local/lib
           /usr/local/lib64
-          /usr/lib
-          /usr/lib64
+          /opt/local/lib
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
           ${GRGN3S_ROOT}/lib
           $ENV{GRGN3S_ROOT}/lib
           ${GRGN3S_ROOT}/lib64
           $ENV{GRGN3S_ROOT}/lib64
+          $ENV{GR_GN3S_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

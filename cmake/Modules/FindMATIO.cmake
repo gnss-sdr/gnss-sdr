@@ -70,6 +70,9 @@ endif()
 find_path(MATIO_INCLUDE_DIR
     NAMES matio.h
     HINTS
+      /usr/include
+      /usr/local/include
+      /opt/local/include
       ${MATIO_ROOT}/include
       $ENV{MATIO_ROOT}/include
     DOC "The MATIO include directory"
@@ -79,10 +82,8 @@ find_path(MATIO_INCLUDE_DIR
 find_library(MATIO_LIBRARY
     NAMES matio
     HINTS
-      ${MATIO_ROOT}/lib
-      $ENV{MATIO_ROOT}/lib
-      ${MATIO_ROOT}/lib64
-      $ENV{MATIO_ROOT}/lib64
+      /usr/lib
+      /usr/lib64
       /usr/lib/alpha-linux-gnu
       /usr/lib/x86_64-linux-gnu
       /usr/lib/aarch64-linux-gnu
@@ -104,6 +105,13 @@ find_library(MATIO_LIBRARY
       /usr/lib/x86_64-linux-gnux32
       /usr/lib/x86_64-kfreebsd-gnu
       /usr/lib/i386-kfreebsd-gnu
+      /usr/local/lib
+      /usr/local/lib64
+      /opt/local/lib
+      ${MATIO_ROOT}/lib
+      $ENV{MATIO_ROOT}/lib
+      ${MATIO_ROOT}/lib64
+      $ENV{MATIO_ROOT}/lib64
     DOC "The MATIO library"
 )
 

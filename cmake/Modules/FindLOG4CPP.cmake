@@ -40,9 +40,9 @@ if(LOG4CPP_INCLUDE_DIR)
 endif()
 
 find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
-  /opt/local/include
-  /usr/local/include
   /usr/include
+  /usr/local/include
+  /opt/local/include
   ${LOG4CPP_ROOT}/include
   $ENV{LOG4CPP_ROOT}/include
   ${PC_LOG4CPP_INCLUDEDIR}
@@ -65,11 +65,9 @@ endif()
 set(LOG4CPP_NAMES log4cpp)
 find_library(LOG4CPP_LIBRARY
   NAMES ${LOG4CPP_NAMES}
-  HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
-        ${PC_LOG4CPP_LIBDIR}
-        ${CMAKE_INSTALL_PREFIX}/lib/
-  PATHS /usr/local/lib
-        /usr/local/lib64
+  HINTS ${PC_LOG4CPP_LIBDIR}
+  PATHS /usr/lib
+        /usr/lib64
         /usr/lib/x86_64-linux-gnu
         /usr/lib/i386-linux-gnu
         /usr/lib/arm-linux-gnueabihf
@@ -94,13 +92,15 @@ find_library(LOG4CPP_LIBRARY
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/alpha-linux-gnu
         /usr/lib/riscv64-linux-gnu
-        /usr/lib64
-        /usr/lib
+        /usr/local/lib
+        /usr/local/lib64
         /opt/local/lib
         ${LOG4CPP_ROOT}/lib
         $ENV{LOG4CPP_ROOT}/lib
         ${LOG4CPP_ROOT}/lib64
         $ENV{LOG4CPP_ROOT}/lib64
+        $ENV{GNURADIO_RUNTIME_DIR}/lib
+        ${CMAKE_INSTALL_PREFIX}/lib
 )
 
 if(LOG4CPP_INCLUDE_DIR AND LOG4CPP_LIBRARY)

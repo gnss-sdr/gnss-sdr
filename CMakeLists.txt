@@ -1511,12 +1511,11 @@ else()
         DESCRIPTION "Transport Layer Security Library"
     )
 endif()
-find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
-    HINTS /usr/lib
+find_library(GNUTLS_OPENSSL_LIBRARY
+    NAMES gnutls-openssl libgnutls-openssl.so.27
+    PATHS
+        /usr/lib
         /usr/lib64
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
         /usr/lib/x86_64-linux-gnu
         /usr/lib/aarch64-linux-gnu
         /usr/lib/arm-linux-gnueabihf
@@ -1542,6 +1541,9 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
         /usr/lib/sparc64-linux-gnu
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/sh4-linux-gnu
+        /usr/local/lib
+        /usr/local/lib64
+        /opt/local/lib
 )
 if(NOT GNUTLS_OPENSSL_LIBRARY)
     if(GnuTLS_FOUND)

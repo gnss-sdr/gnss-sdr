@@ -33,20 +33,21 @@ pkg_check_modules(PC_UHD uhd)
 
 find_path(UHD_INCLUDE_DIRS
     NAMES uhd/config.hpp
-    HINTS $ENV{UHD_DIR}/include
-          ${PC_UHD_INCLUDEDIR}
-    PATHS /usr/local/include
-          /usr/include
+    HINTS ${PC_UHD_INCLUDEDIR}
+    PATHS /usr/include
+          /usr/local/include
+          /opt/local/include
           ${GNURADIO_INSTALL_PREFIX}/include
           ${UHD_ROOT}/include
           $ENV{UHD_ROOT}/include
+          $ENV{UHD_DIR}/include
 )
 
 find_library(UHD_LIBRARIES
     NAMES uhd
-    HINTS $ENV{UHD_DIR}/lib
-          ${PC_UHD_LIBDIR}
-    PATHS /usr/local/lib
+    HINTS ${PC_UHD_LIBDIR}
+    PATHS /usr/lib
+          /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
           /usr/lib/arm-linux-gnueabihf
@@ -71,13 +72,15 @@ find_library(UHD_LIBRARIES
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/alpha-linux-gnu
           /usr/lib/riscv64-linux-gnu
-          /usr/lib64
-          /usr/lib
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
           ${GNURADIO_INSTALL_PREFIX}/lib
           ${UHD_ROOT}/lib
           $ENV{UHD_ROOT}/lib
           ${UHD_ROOT}/lib64
           $ENV{UHD_ROOT}/lib64
+          $ENV{UHD_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

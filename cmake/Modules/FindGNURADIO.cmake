@@ -72,28 +72,25 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     # look for include files
     find_path(${INCVAR_NAME}
         NAMES ${INCFILE}
-        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${PC_INCDIR}
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
-        PATHS /usr/local/include
-              /usr/include
+        HINTS ${PC_INCDIR}
+        PATHS /usr/include
+              /usr/local/include
+              /opt/local/include
               ${GNURADIO_INSTALL_PREFIX}/include
               ${GNURADIO_ROOT}/include
               $ENV{GNURADIO_ROOT}/include
+              $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
     )
 
     # look for libs
     foreach(libname ${PC_GNURADIO_${EXTVAR}_LIBRARIES})
         find_library(${LIBVAR_NAME}_${libname}
             NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
-            HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
-                  ${PC_LIBDIR}
-                  ${CMAKE_INSTALL_PREFIX}/lib
-                  ${CMAKE_INSTALL_PREFIX}/lib64
-                  ${GNURADIO_INSTALL_PREFIX}/lib
-                  ${GNURADIO_INSTALL_PREFIX}/lib64
-            PATHS /usr/local/lib
+            HINTS ${PC_LIBDIR}
+            PATHS /usr/lib
+                  /usr/lib64
                   /usr/lib/x86_64-linux-gnu
                   /usr/lib/i386-linux-gnu
                   /usr/lib/arm-linux-gnueabihf
@@ -118,13 +115,19 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/lib/x86_64-linux-gnux32
                   /usr/lib/alpha-linux-gnu
                   /usr/lib/riscv64-linux-gnu
-                  /usr/lib64
-                  /usr/lib
+                  /usr/local/lib
+                  /usr/local/lib64
+                  /opt/local/lib
                   ${GNURADIO_INSTALL_PREFIX}/lib
                   ${GNURADIO_ROOT}/lib
                   $ENV{GNURADIO_ROOT}/lib
                   ${GNURADIO_ROOT}/lib64
                   $ENV{GNURADIO_ROOT}/lib64
+                  $ENV{GNURADIO_RUNTIME_DIR}/lib
+                  ${CMAKE_INSTALL_PREFIX}/lib
+                  ${CMAKE_INSTALL_PREFIX}/lib64
+                  ${GNURADIO_INSTALL_PREFIX}/lib
+                  ${GNURADIO_INSTALL_PREFIX}/lib64
         )
         list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
     endforeach()
@@ -208,14 +211,15 @@ endif()
 if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
         NAMES gnuradio/blocks/tsb_vector_sink_f.h
-        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
-        PATHS /usr/local/include
-              /usr/include
+        PATHS /usr/include
+              /usr/local/include
+              /opt/local/include
               ${GNURADIO_INSTALL_PREFIX}/include
               ${GNURADIO_ROOT}/include
               $ENV{GNURADIO_ROOT}/include
+              $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
     )
     if(GNURADIO_VERSION_GREATER_THAN_373)
         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
@@ -223,14 +227,15 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
 
     find_file(GNURADIO_VERSION_GREATER_THAN_38
         NAMES gnuradio/filter/mmse_resampler_cc.h
-        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
-        PATHS /usr/local/include
-              /usr/include
+        PATHS /usr/include
+              /usr/local/include
+              /opt/local/include
               ${GNURADIO_INSTALL_PREFIX}/include
               ${GNURADIO_ROOT}/include
               $ENV{GNURADIO_ROOT}/include
+              $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
     )
     if(GNURADIO_VERSION_GREATER_THAN_38)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")

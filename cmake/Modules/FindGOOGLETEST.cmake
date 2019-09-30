@@ -40,19 +40,20 @@ find_path(LIBGTEST_DEV_DIR
         ${GTEST_DIR}
         ${GTEST_DIR}/googletest
         /usr/src/googletest/googletest
-        /usr/local/src/googletest/googletest
         /usr/src/gtest
         /usr/include/gtest
+        /usr/local/src/googletest/googletest
         /opt/local/src/gtest-1.7.0
 )
 
 find_path(GTEST_INCLUDE_DIRS
     NAMES gtest/gtest.h
+    HINTS ${PC_GTEST_INCLUDEDIR}
     PATHS
         ${GTEST_DIR}/googletest/include
         /usr/include
+        /usr/local/include
         /opt/local/src/gtest-1.7.0/include
-        ${PC_GTEST_INCLUDEDIR}
 )
 
 include(FindPackageHandleStandardArgs)

@@ -37,18 +37,17 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <iio.h>
-#include <cassert>  // for assert
 #include <exception>
 #include <fcntl.h>   // for open, O_WRONLY
 #include <fstream>   // for std::ifstream
 #include <iostream>  // for cout, endl
-#include <string>
+#include <string>    // for string manipulation
 #include <unistd.h>  // for write
 #include <utility>
 #include <vector>
 
 
-void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2)
+void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
 {
     const int MAX_INPUT_SAMPLES_TOTAL = 8192;
     int max_value = 0;
@@ -102,7 +101,7 @@ void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, 
     //**************************************************************************
     int nsamples = 0;
 
-    while (file_completed == 0)
+    while ((file_completed == 0) && (enable_DMA == true))
         {
             unsigned int dma_index = 0;
 
@@ -249,8 +248,11 @@ void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, 
             if (nread_elements > 0)
                 {
                     num_transferred_bytes = nread_elements * 2;
-                    assert(num_transferred_bytes ==
-                           write(tx_fd, input_samples_dma.data(), nread_elements * 2));
+                    int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
+                    if (num_bytes_sent != num_transferred_bytes)
+                        {
+                            std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+                        }
                 }
 
             if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)
@@ -316,18 +318,16 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
 
     if (switch_position == 0)  // Inject file(s) via DMA
         {
+            enable_DMA_ = true;
             std::string empty_string;
             filename_rx1 = configuration->property(role + ".filename_rx1", empty_string);
             filename_rx2 = configuration->property(role + ".filename_rx2", empty_string);
             int l1_band = configuration->property("Channels_1C.count", 0) +
-                          configuration->property("Channels_1B.count", 0) +
-                          configuration->property("Channels_L5.count", 0) +
-                          configuration->property("Channels_2S.count", 0) +
-                          configuration->property("Channels_5X.count", 0);
+                          configuration->property("Channels_1B.count", 0);
 
-            int l2_band = configuration->property("Channels_L5.count", 0) * configuration->property("Channels_1C.count", 0) +
-                          configuration->property("Channels_5X.count", 0) * configuration->property("Channels_1B.count", 0) +
-                          configuration->property("Channels_2S.count", 0) * configuration->property("Channels_1C.count", 0);
+            int l2_band = configuration->property("Channels_L5.count", 0) +
+                          configuration->property("Channels_5X.count", 0) +
+                          configuration->property("Channels_2S.count", 0);
 
             if (l1_band != 0)
                 {
@@ -342,7 +342,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                     freq_band = "L1L2";
                 }
 
-            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2); });
+            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2, enable_DMA_); });
         }
     if (switch_position == 2)  // Real-time via AD9361
         {
@@ -385,9 +385,12 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
 Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 {
     /* cleanup and exit */
+
     // std::cout<<"* AD9361 Disabling streaming channels\n";
     // if (rx0_i) { iio_channel_disable(rx0_i); }
     // if (rx0_q) { iio_channel_disable(rx0_q); }
+
+    enable_DMA_ = false;  // disable the DMA
 
     if (enable_dds_lo_)
         {

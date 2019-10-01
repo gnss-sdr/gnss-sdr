@@ -41,7 +41,7 @@
 #include <fcntl.h>   // for open, O_WRONLY
 #include <fstream>   // for std::ifstream
 #include <iostream>  // for cout, endl
-#include <string>	 // for string manipulation
+#include <string>    // for string manipulation
 #include <unistd.h>  // for write
 #include <utility>
 #include <vector>
@@ -248,11 +248,11 @@ void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, 
             if (nread_elements > 0)
                 {
                     num_transferred_bytes = nread_elements * 2;
-					int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
-					if (num_bytes_sent != num_transferred_bytes)
-						{
-							std::cerr << "Error: DMA could not send all the required samples " << std::endl;
-						}
+                    int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
+                    if (num_bytes_sent != num_transferred_bytes)
+                        {
+                            std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+                        }
                 }
 
             if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)
@@ -318,7 +318,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
 
     if (switch_position == 0)  // Inject file(s) via DMA
         {
-    		enable_DMA_ = true;
+            enable_DMA_ = true;
             std::string empty_string;
             filename_rx1 = configuration->property(role + ".filename_rx1", empty_string);
             filename_rx2 = configuration->property(role + ".filename_rx2", empty_string);
@@ -386,11 +386,11 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 {
     /* cleanup and exit */
 
-	// std::cout<<"* AD9361 Disabling streaming channels\n";
+    // std::cout<<"* AD9361 Disabling streaming channels\n";
     // if (rx0_i) { iio_channel_disable(rx0_i); }
     // if (rx0_q) { iio_channel_disable(rx0_q); }
 
-	enable_DMA_ = false; // disable the DMA
+    enable_DMA_ = false;  // disable the DMA
 
     if (enable_dds_lo_)
         {

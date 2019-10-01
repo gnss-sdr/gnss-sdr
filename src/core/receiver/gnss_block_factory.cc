@@ -1446,15 +1446,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 #endif
 
-#if AD9361_DRIVER
-    else if (implementation == "Ad9361_Fpga_Signal_Source")
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new Ad9361FpgaSignalSource(configuration.get(), role, in_streams,
-                out_streams, queue));
-            block = std::move(block_);
-        }
-#endif
-
 #if FLEXIBAND_DRIVER
     else if (implementation == "Flexiband_Signal_Source")
         {
@@ -1927,6 +1918,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+
+#if AD9361_DRIVER
+    // The AD9361_DRIVER Driver is instantiated last. In this way, when using the FPGA, and when using the GNSS receiver
+    // in post-processing mode, the receiver is configured and ready when the DMA starts sending samples to the receiver.
+    else if (implementation == "Ad9361_Fpga_Signal_Source")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new Ad9361FpgaSignalSource(configuration.get(), role, in_streams,
+                out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
     else
         {
             // Log fatal. This causes execution to stop.

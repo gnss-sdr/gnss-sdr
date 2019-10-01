@@ -40,6 +40,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <thread>
 
 class ConfigurationInterface;
 
@@ -79,8 +80,7 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;  // device direction
-    uint64_t freq_;    // frequency of local oscillator
+    uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;
     uint64_t bandwidth_;
     uint64_t buffer_size_;  // reception buffer
@@ -116,6 +116,14 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 
     std::shared_ptr<Fpga_Switch> switch_fpga;
+    int32_t switch_position;
+
+    std::thread thread_file_to_dma;
+    std::string filename_rx1;
+    std::string filename_rx2;
+    std::string freq_band;
+
+    bool enable_DMA_;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_

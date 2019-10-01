@@ -323,14 +323,11 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
             filename_rx1 = configuration->property(role + ".filename_rx1", empty_string);
             filename_rx2 = configuration->property(role + ".filename_rx2", empty_string);
             int l1_band = configuration->property("Channels_1C.count", 0) +
-                          configuration->property("Channels_1B.count", 0) +
-                          configuration->property("Channels_L5.count", 0) +
-                          configuration->property("Channels_2S.count", 0) +
-                          configuration->property("Channels_5X.count", 0);
+                          configuration->property("Channels_1B.count", 0);
 
-            int l2_band = configuration->property("Channels_L5.count", 0) * configuration->property("Channels_1C.count", 0) +
-                          configuration->property("Channels_5X.count", 0) * configuration->property("Channels_1B.count", 0) +
-                          configuration->property("Channels_2S.count", 0) * configuration->property("Channels_1C.count", 0);
+            int l2_band = configuration->property("Channels_L5.count", 0) +
+                          configuration->property("Channels_5X.count", 0) +
+                          configuration->property("Channels_2S.count", 0);
 
             if (l1_band != 0)
                 {

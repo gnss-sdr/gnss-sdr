@@ -122,6 +122,8 @@ private:
     std::string filename_rx1;
     std::string filename_rx2;
     std::string freq_band;
+
+    bool enable_DMA_;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_

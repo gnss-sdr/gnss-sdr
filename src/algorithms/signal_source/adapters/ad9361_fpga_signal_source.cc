@@ -37,12 +37,11 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <iio.h>
-#include <cassert>  // for assert
 #include <exception>
 #include <fcntl.h>   // for open, O_WRONLY
 #include <fstream>   // for std::ifstream
 #include <iostream>  // for cout, endl
-#include <string>
+#include <string>	 // for string manipulation
 #include <unistd.h>  // for write
 #include <utility>
 #include <vector>
@@ -249,8 +248,11 @@ void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, 
             if (nread_elements > 0)
                 {
                     num_transferred_bytes = nread_elements * 2;
-                    assert(num_transferred_bytes ==
-                           write(tx_fd, input_samples_dma.data(), nread_elements * 2));
+					int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
+					if (num_bytes_sent != num_transferred_bytes)
+						{
+							std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+						}
                 }
 
             if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)

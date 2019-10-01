@@ -40,7 +40,6 @@
 #include <boost/dynamic_bitset.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <algorithm>  // for std::reverse
-#include <chrono>     // std::chrono::seconds
 #include <cmath>      // for std::fmod, std::lround
 #include <cstdlib>    // for strtol
 #include <iostream>   // for cout
@@ -89,12 +88,9 @@ void Rtcm::run_server()
     std::cout << "Starting a TCP/IP server of RTCM messages on port " << RTCM_port << std::endl;
     try
         {
-            std::thread tq([&] { std::make_shared<Queue_Reader>(io_context, rtcm_message_queue, RTCM_port)->do_read_queue(); });
-            tq.detach();
-
-            std::thread t([&] { io_context.run(); });
+            tq = std::thread([&] { std::make_shared<Queue_Reader>(io_context, rtcm_message_queue, RTCM_port)->do_read_queue(); });
+            t = std::thread([&] { io_context.run(); });
             server_is_running = true;
-            t.detach();
         }
     catch (const std::exception& e)
         {
@@ -112,10 +108,11 @@ void Rtcm::stop_service()
 void Rtcm::stop_server()
 {
     std::cout << "Stopping TCP/IP server on port " << RTCM_port << std::endl;
-    rtcm_message_queue->push("Goodbye");  // this terminates tq
     Rtcm::stop_service();
     servers.front().close_server();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    rtcm_message_queue->push("Goodbye");  // this terminates tq
+    tq.join();
+    t.join();
     server_is_running = false;
 }
 

@@ -621,7 +621,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_mm_estimator(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD_S);
+                    d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD_S);
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES);
                     // Loss of lock detection

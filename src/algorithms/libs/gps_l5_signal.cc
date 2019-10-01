@@ -257,7 +257,7 @@ void gps_l5q_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _pr
 
     for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * static_cast<float>(_code[i]), 0.0);
+            _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * static_cast<float>(_code[i]));
         }
 }
 
@@ -312,11 +312,11 @@ void gps_l5q_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
             if (i == _samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
+                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeLength - 1]);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeValueIndex]);  // repeat the chip -> upsample
                 }
         }
 }

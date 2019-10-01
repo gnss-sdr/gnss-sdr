@@ -52,8 +52,10 @@ pkg_check_modules(PC_GLOG libglog)
 macro(_FIND_GLOG_LIBRARIES _var)
     find_library(${_var}
           NAMES ${ARGN}
+          HINTS ${PC_GLOG_LIBDIR}
           PATHS ${LIB_PATHS}
-                /usr/local/lib
+                /usr/lib
+                /usr/lib64
                 /usr/lib/x86_64-linux-gnu
                 /usr/lib/i386-linux-gnu
                 /usr/lib/arm-linux-gnueabihf
@@ -78,14 +80,13 @@ macro(_FIND_GLOG_LIBRARIES _var)
                 /usr/lib/x86_64-linux-gnux32
                 /usr/lib/alpha-linux-gnu
                 /usr/lib/riscv64-linux-gnu
-                /usr/lib64
-                /usr/lib
+                /usr/local/lib
+                /usr/local/lib64
+                /opt/local/lib
                 ${GLOG_ROOT}/lib
                 $ENV{GLOG_ROOT}/lib
                 ${GLOG_ROOT}/lib64
                 $ENV{GLOG_ROOT}/lib64
-                ${PC_GLOG_LIBDIR}
-                /opt/local/lib
           PATH_SUFFIXES lib
       )
     mark_as_advanced(${_var})
@@ -102,19 +103,22 @@ endmacro()
 
 if(MSVC)
     find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
+        HINTS
+            ${PC_GLOG_INCLUDEDIR}
         PATHS
             ${GLOG_ROOT}/src/windows
             ${GLOG_ROOT}/src/windows/glog
-            ${PC_GLOG_INCLUDEDIR}
     )
 else()
     # Linux/OS X builds
     find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
-        PATHS
-            ${GLOG_ROOT}/include/glog
-            /usr/include/glog
-            /opt/local/include/glog   # default location in Macports
+        HINTS
             ${PC_GLOG_INCLUDEDIR}
+        PATHS
+            /usr/include/glog
+            /usr/local/include/glog
+            /opt/local/include/glog   # default location in Macports
+            ${GLOG_ROOT}/include/glog
     )
 endif()
 

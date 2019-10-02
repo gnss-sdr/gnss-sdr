@@ -107,19 +107,16 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", trk_param_fpga.carrier_lock_test_smoother_samples);
     trk_param_fpga.carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", trk_param_fpga.carrier_lock_test_smoother_alpha);
 
-    //    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    //    if (FLAGS_max_lock_fail != 50)
-    //        {
-    //            max_lock_fail = FLAGS_max_lock_fail;
-    //        }
-    //    trk_param_fpga.max_lock_fail = max_lock_fail;
-
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    unsigned int device_base = configuration->property(role + ".device_base", 1);
-    trk_param_fpga.device_base = device_base;
+    // obtain the number of the first uio device file that is assigned to the FPGA L2 tracking multicorrelator HW accelerators
+    trk_param_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 27);
+    // compute the number of tracking channels that have already been instantiated. The order in which
+    // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
+    trk_param_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0);
+
 
     auto* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 

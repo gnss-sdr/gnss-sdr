@@ -175,8 +175,12 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    int32_t device_base = configuration->property(role + ".device_base", 27);
-    trk_param_fpga.device_base = device_base;
+    // obtain the number of the first uio device file that is assigned to the FPGA L5 tracking multicorrelator HW accelerators
+    trk_param_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 27);
+    // compute the number of tracking channels that have already been instantiated. The order in which
+    // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
+    trk_param_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
+											configuration->property("Channels_2S.count", 0);
 
     // tracking lock tests smoother parameters
     trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);

@@ -191,7 +191,7 @@ void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events(const pmt::pmt_t &
 {
     try
         {
-            int64_t message = pmt::to_long(std::move(msg));
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)

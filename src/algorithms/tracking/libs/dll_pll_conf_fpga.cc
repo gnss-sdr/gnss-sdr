@@ -81,7 +81,8 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     signal[1] = 'C';
     signal[2] = '\0';
     device_name = "/dev/uio";
-    device_base = 1;
+    dev_file_num = 3;
+    num_prev_assigned_ch = 0;
     code_length_chips = 0U;
     code_samples_per_chip = 0U;
     ca_codes = nullptr;

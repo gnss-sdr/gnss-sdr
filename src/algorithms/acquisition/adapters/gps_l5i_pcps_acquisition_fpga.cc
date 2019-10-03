@@ -75,8 +75,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
-    acq_parameters.sampled_ms = sampled_ms;
 
     // -- Find number of samples per spreading code -------------------------
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_CPS / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
@@ -89,7 +87,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
     acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GPS_L5I_CODE_RATE_CPS) * static_cast<float>(fs_in)));

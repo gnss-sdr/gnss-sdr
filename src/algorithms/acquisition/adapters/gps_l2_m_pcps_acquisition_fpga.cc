@@ -71,7 +71,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
 
-    acq_parameters.sampled_ms = 20;
     unsigned int code_length = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_CPS / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
@@ -82,7 +81,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total / acq_parameters.sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
     acq_parameters.downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);

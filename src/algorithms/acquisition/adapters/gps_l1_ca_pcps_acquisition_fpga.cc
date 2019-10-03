@@ -73,8 +73,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
-    acq_parameters.sampled_ms = sampled_ms;
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
@@ -85,7 +83,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
     acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(fs_in)));
 

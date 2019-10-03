@@ -181,7 +181,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
     trk_param_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
-											configuration->property("Channels_2S.count", 0);
+                                          configuration->property("Channels_2S.count", 0);
 
     // tracking lock tests smoother parameters
     trk_param_fpga.cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", trk_param_fpga.cn0_smoother_samples);

@@ -61,13 +61,15 @@ const float PHASE_CARR_MAX_DIV_PI = 683565275.5764316;  // 2^(31)/pi
 const float TWO_PI = 6.283185307179586;
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
-    const std::string &device_name, int32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
+    const std::string &device_name, uint32_t dev_file_num, uint32_t num_prev_assigned_ch, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
     uint32_t code_samples_per_chip)
 
 {
     d_n_correlators = n_correlators;
     d_device_name = device_name;
-    d_device_base = device_base;
+    d_dev_file_num = dev_file_num;
+    d_num_prev_assigned_ch = num_prev_assigned_ch;
+
     d_track_pilot = track_pilot;
     d_device_descriptor = 0;
     d_map_base = nullptr;
@@ -243,7 +245,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     // open the device corresponding to the assigned channel
     std::string mergedname;
     std::stringstream devicebasetemp;
-    int32_t numdevice = d_device_base + d_channel;
+    uint32_t numdevice = d_dev_file_num + d_channel - d_num_prev_assigned_ch;
     devicebasetemp << numdevice;
     mergedname = d_device_name + devicebasetemp.str();
 

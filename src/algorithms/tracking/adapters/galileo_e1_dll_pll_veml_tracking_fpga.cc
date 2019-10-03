@@ -181,8 +181,14 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    int32_t device_base = configuration->property(role + ".device_base", 15);
-    trk_param_fpga.device_base = device_base;
+    // obtain the number of the first uio device corresponding to a HW accelerator in the FPGA
+    // that can be assigned to the tracking of the E1 signal
+    trk_param_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 15);
+    // compute the number of tracking channels that have already been instantiated. The order in which
+    // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
+    trk_param_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
+                                          configuration->property("Channels_2S.count", 0) +
+                                          configuration->property("Channels_L5.count", 0);
 
     //################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 2;

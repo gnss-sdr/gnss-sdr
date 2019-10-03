@@ -67,8 +67,8 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
 {
     d_n_correlators = n_correlators;
     d_device_name = device_name;
-	d_dev_file_num = dev_file_num;
-	d_num_prev_assigned_ch = num_prev_assigned_ch;
+    d_dev_file_num = dev_file_num;
+    d_num_prev_assigned_ch = num_prev_assigned_ch;
 
     d_track_pilot = track_pilot;
     d_device_descriptor = 0;

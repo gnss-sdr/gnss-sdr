@@ -182,7 +182,8 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    // obtain the number of the first uio device file that is assigned to the FPGA L1 tracking multicorrelator HW accelerators
+    // obtain the number of the first uio device corresponding to a HW accelerator in the FPGA
+    // that can be assigned to the tracking of the L1 signal
     trk_param_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 3);
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, l2, L5, E1, E5a

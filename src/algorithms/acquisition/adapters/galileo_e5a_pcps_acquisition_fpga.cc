@@ -72,9 +72,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
 
-    uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
-    acq_parameters.sampled_ms = sampled_ms;
-
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration_->property(role + ".acquire_iq", false);
     if (acq_iq_)
@@ -93,7 +90,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
     acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GALILEO_E5A_CODE_CHIP_RATE_CPS) * static_cast<float>(fs_in)));

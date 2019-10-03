@@ -54,16 +54,13 @@ class Gnss_Synchro;
 typedef struct
 {
     /* pcps acquisition configuration */
-    uint32_t sampled_ms;
     uint32_t doppler_max;
     int64_t fs_in;
-    int32_t samples_per_ms;
     int32_t samples_per_code;
     int32_t code_length;
     uint32_t select_queue_Fpga;
     std::string device_name;
     uint32_t* all_fft_codes;  // pointer to memory that contains all the code ffts
-    // float downsampling_factor;
     uint32_t downsampling_factor;
     uint32_t total_block_exp;
     uint32_t excludelimit;

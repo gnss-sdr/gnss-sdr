@@ -25,21 +25,28 @@ pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
 
 find_program(ORCC_EXECUTABLE orcc
     HINTS ${PC_ORC_TOOLSDIR}
-    PATHS ${ORC_ROOT}/bin
+    PATHS /usr/bin
+          /usr/local/bin
+          /opt/local/bin
+          ${ORC_ROOT}/bin
           ${CMAKE_INSTALL_PREFIX}/bin
 )
 
 find_path(ORC_INCLUDE_DIR
     NAMES orc/orc.h
     HINTS ${PC_ORC_INCLUDEDIR}
-    PATHS ${ORC_ROOT}/include/orc-0.4
+    PATHS /usr/include
+          /usr/local/include
+          /opt/local/include
+          ${ORC_ROOT}/include/orc-0.4
           ${CMAKE_INSTALL_PREFIX}/include/orc-0.4
 )
 
 find_path(ORC_LIBRARY_DIR
     NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}orc-0.4${CMAKE_SHARED_LIBRARY_SUFFIX}
     HINTS ${PC_ORC_LIBDIR}
-          /usr/local/lib
+    PATHS /usr/lib
+          /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
           /usr/lib/arm-linux-gnueabihf
@@ -53,11 +60,11 @@ find_path(ORC_LIBRARY_DIR
           /usr/lib/powerpc64le-linux-gnu
           /usr/lib/hppa-linux-gnu
           /usr/lib/s390x-linux-gnu
-          /usr/lib64
-          /usr/lib
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
           ${ORC_ROOT}/lib
           $ENV{ORC_ROOT}/lib
-    PATHS
           ${ORC_ROOT}/lib${LIB_SUFFIX}
           ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}
 )

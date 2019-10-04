@@ -182,8 +182,10 @@ private:
     void remove_signal(const Gnss_Signal& gs);
 
     double project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz);
+    bool is_multiband() const;
     bool connected_;
     bool running_;
+    bool multiband_;
     int sources_count_;
 
     unsigned int channels_count_;

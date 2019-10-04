@@ -40,8 +40,8 @@ if(APPLE)
     find_path(GFlags_ROOT_DIR
       libgflags.dylib
       PATHS
-        /opt/local/lib
         /usr/local/lib
+        /opt/local/lib
         ${GFLAGS_ROOT}/lib
         $ENV{GFLAGS_ROOT}/lib
     )
@@ -49,7 +49,8 @@ else()
     find_path(GFlags_ROOT_DIR
       libgflags.so
       HINTS
-        /usr/local/lib
+        /usr/lib
+        /usr/lib64
         /usr/lib/x86_64-linux-gnu
         /usr/lib/i386-linux-gnu
         /usr/lib/arm-linux-gnueabihf
@@ -74,8 +75,9 @@ else()
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/alpha-linux-gnu
         /usr/lib/riscv64-linux-gnu
-        /usr/lib64
-        /usr/lib
+        /usr/local/lib
+        /usr/local/lib64
+        /opt/local/lib
         ${GFLAGS_ROOT}/lib
         $ENV{GFLAGS_ROOT}/lib
         ${GFLAGS_ROOT}/lib64
@@ -88,9 +90,9 @@ if(GFlags_ROOT_DIR)
     find_path(GFlags_INCLUDE_DIRS
       gflags/gflags.h
       HINTS
-        /opt/local/include
-        /usr/local/include
         /usr/include
+        /usr/local/include
+        /opt/local/include
         ${GFlags_ROOT_DIR}/src
         ${GFLAGS_ROOT}/include
         $ENV{GFLAGS_ROOT}/include

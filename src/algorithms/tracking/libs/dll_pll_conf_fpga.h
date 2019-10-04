@@ -87,7 +87,8 @@ public:
     char system;
     char signal[3];
     std::string device_name;
-    int32_t device_base;
+    uint32_t dev_file_num;
+    uint32_t num_prev_assigned_ch;
     uint32_t code_length_chips;
     uint32_t code_samples_per_chip;
     int32_t* ca_codes;

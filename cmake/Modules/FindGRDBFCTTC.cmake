@@ -26,30 +26,32 @@ pkg_check_modules(PC_GR_DBFCTTC gr-dbfcttc)
 find_path(
     GR_DBFCTTC_INCLUDE_DIRS
     NAMES dbfcttc/api.h
-    HINTS $ENV{GR_DBFCTTC_DIR}/include
-          ${PC_GR_DBFCTTC_INCLUDEDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/include
-          /usr/include
+    HINTS ${PC_GR_DBFCTTC_INCLUDEDIR}
+    PATHS /usr/include
           /usr/local/include
+          /opt/local/include
+          ${CMAKE_INSTALL_PREFIX}/include
           ${GRDBFCTTC_ROOT}/include
           $ENV{GRDBFCTTC_ROOT}/include
+          $ENV{GR_DBFCTTC_DIR}/include
 )
 
 find_library(
     GR_DBFCTTC_LIBRARIES
     NAMES gnuradio-dbfcttc
-    HINTS $ENV{GR_DBFCTTC_DIR}/lib
-          ${PC_GR_DBFCTTC_LIBDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          /usr/lib
+    HINTS ${PC_GR_DBFCTTC_LIBDIR}
+    PATHS /usr/lib
           /usr/lib64
           /usr/local/lib
           /usr/local/lib64
+          /opt/local/lib
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
           ${GRDBFCTTC_ROOT}/lib
           $ENV{GRDBFCTTC_ROOT}/lib
           ${GRDBFCTTC_ROOT}/lib64
           $ENV{GRDBFCTTC_ROOT}/lib64
+          $ENV{GR_DBFCTTC_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

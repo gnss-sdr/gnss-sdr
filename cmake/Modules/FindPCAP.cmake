@@ -61,21 +61,23 @@ if(EXISTS $ENV{PCAPDIR})
     NAMES
       pcap/pcap.h
       pcap.h
+    HINTS
+      ${PC_PCAP_INCLUDEDIR}
     PATHS
       $ENV{PCAPDIR}
       ${PCAP_ROOT}/include
       $ENV{PCAP_ROOT}/include
-      ${PC_PCAP_INCLUDEDIR}
     NO_DEFAULT_PATH
   )
   find_library(PCAP_LIBRARY
     NAMES
       pcap
+    HINTS
+      ${PC_PCAP_LIBDIR}
     PATHS
       $ENV{PCAPDIR}
       ${PCAP_ROOT}/lib
       $ENV{PCAP_ROOT}/lib
-      ${PC_PCAP_LIBDIR}
     NO_DEFAULT_PATH
   )
 else()
@@ -84,18 +86,22 @@ else()
       pcap/pcap.h
       pcap.h
     HINTS
+      ${PC_PCAP_INCLUDEDIR}
+    PATHS
+      /usr/include
+      /usr/local/include
+      /opt/local/include
       ${PCAP_ROOT}/include
       $ENV{PCAP_ROOT}/include
-      ${PC_PCAP_INCLUDEDIR}
-      /usr/include
   )
   find_library(PCAP_LIBRARY
     NAMES
       pcap
     HINTS
-      ${PCAP_ROOT}/lib
-      $ENV{PCAP_ROOT}/lib
       ${PC_PCAP_LIBDIR}
+    PATHS
+      /usr/lib
+      /usr/lib64
       /usr/lib/alpha-linux-gnu
       /usr/lib/x86_64-linux-gnu
       /usr/lib/aarch64-linux-gnu
@@ -117,6 +123,11 @@ else()
       /usr/lib/x86_64-linux-gnux32
       /usr/lib/x86_64-kfreebsd-gnu
       /usr/lib/i386-kfreebsd-gnu
+      /usr/local/lib
+      /usr/local/lib64
+      /opt/local/lib
+      ${PCAP_ROOT}/lib
+      $ENV{PCAP_ROOT}/lib
   )
 endif()
 

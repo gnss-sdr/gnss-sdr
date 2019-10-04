@@ -453,10 +453,11 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
         }
     // create multicorrelator class
     std::string device_name = trk_parameters.device_name;
-    int32_t device_base = trk_parameters.device_base;
+    uint32_t dev_file_num = trk_parameters.dev_file_num;
+    uint32_t num_prev_assigned_ch = trk_parameters.num_prev_assigned_ch;
     int32_t *ca_codes = trk_parameters.ca_codes;
     int32_t *data_codes = trk_parameters.data_codes;
-    multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, data_codes, d_code_length_chips, trk_parameters.track_pilot, d_code_samples_per_chip);
+    multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, dev_file_num, num_prev_assigned_ch, ca_codes, data_codes, d_code_length_chips, trk_parameters.track_pilot, d_code_samples_per_chip);
     multicorrelator_fpga->set_output_vectors(d_correlator_outs, d_Prompt_Data);
     d_sample_counter_next = 0ULL;
 

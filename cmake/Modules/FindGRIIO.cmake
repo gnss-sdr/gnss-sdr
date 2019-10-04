@@ -30,13 +30,14 @@ pkg_check_modules(PC_IIO gnuradio-iio)
 
 find_path(IIO_INCLUDE_DIRS
     NAMES gnuradio/iio/api.h
-    HINTS $ENV{IIO_DIR}/include
-          ${PC_IIO_INCLUDEDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/include
+    HINTS ${PC_IIO_INCLUDEDIR}
+    PATHS /usr/include
           /usr/local/include
-          /usr/include
+          /opt/local/include
+          ${CMAKE_INSTALL_PREFIX}/include
           ${GRIIO_ROOT}/include
           $ENV{GRIIO_ROOT}/include
+          $ENV{IIO_DIR}/include
 )
 
 if(IIO_INCLUDE_DIRS)
@@ -44,26 +45,22 @@ if(IIO_INCLUDE_DIRS)
 else()
     find_path(IIO_INCLUDE_DIRS
         NAMES iio/api.h
-        HINTS $ENV{IIO_DIR}/include
-              ${PC_IIO_INCLUDEDIR}
-        PATHS ${CMAKE_INSTALL_PREFIX}/include
+        HINTS ${PC_IIO_INCLUDEDIR}
+        PATHS /usr/include
               /usr/local/include
-              /usr/include
+              /opt/local/include
+              ${CMAKE_INSTALL_PREFIX}/include
               ${GRIIO_ROOT}/include
               $ENV{GRIIO_ROOT}/include
+              $ENV{IIO_DIR}/include
     )
     set(GR_IIO_INCLUDE_HAS_GNURADIO FALSE)
 endif()
 
 find_library(IIO_LIBRARIES
     NAMES gnuradio-iio
-    HINTS $ENV{IIO_DIR}/lib
-          ${PC_IIO_LIBDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /usr/lib
+    HINTS ${PC_IIO_LIBDIR}
+    PATHS /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -89,10 +86,16 @@ find_library(IIO_LIBRARIES
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/sh4-linux-gnu
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
           ${GRIIO_ROOT}/lib
           $ENV{GRIIO_ROOT}/lib
           ${GRIIO_ROOT}/lib64
           $ENV{GRIIO_ROOT}/lib64
+          $ENV{IIO_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

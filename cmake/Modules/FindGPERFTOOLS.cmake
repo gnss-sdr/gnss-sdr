@@ -46,43 +46,55 @@ endif()
 
 find_library(GPERFTOOLS_TCMALLOC
   NAMES tcmalloc
-  HINTS ${Gperftools_ROOT_DIR}/lib
+  HINTS /usr/lib
+        /usr/lib64
+        /usr/local/lib
+        /usr/local/lib64
+        /opt/local/lib
+        ${Gperftools_ROOT_DIR}/lib
         ${GPERFTOOLS_ROOT}/lib
         $ENV{GPERFTOOLS_ROOT}/lib
         ${GPERFTOOLS_ROOT}/lib64
         $ENV{GPERFTOOLS_ROOT}/lib64
-        /usr/lib
-        /usr/lib64
+
 )
 
 find_library(GPERFTOOLS_PROFILER
   NAMES profiler
-  HINTS ${Gperftools_ROOT_DIR}/lib
+  HINTS /usr/lib
+        /usr/lib64
+        /usr/local/lib
+        /usr/local/lib64
+        /opt/local/lib
+        ${Gperftools_ROOT_DIR}/lib
         ${GPERFTOOLS_ROOT}/lib
         $ENV{GPERFTOOLS_ROOT}/lib
         ${GPERFTOOLS_ROOT}/lib64
         $ENV{GPERFTOOLS_ROOT}/lib64
-        /usr/lib
-        /usr/lib64
 )
 
 find_library(GPERFTOOLS_TCMALLOC_AND_PROFILER
   NAMES tcmalloc_and_profiler
-  HINTS ${Gperftools_ROOT_DIR}/lib
+  HINTS /usr/lib
+        /usr/lib64
+        ${Gperftools_ROOT_DIR}/lib
         ${GPERFTOOLS_ROOT}/lib
         $ENV{GPERFTOOLS_ROOT}/lib
         ${GPERFTOOLS_ROOT}/lib64
         $ENV{GPERFTOOLS_ROOT}/lib64
-        /usr/lib
-        /usr/lib64
+        /usr/local/lib
+        /usr/local/lib64
+        /opt/local/lib
 )
 
 find_path(GPERFTOOLS_INCLUDE_DIR
   NAMES gperftools/heap-profiler.h
-  HINTS ${Gperftools_ROOT_DIR}/include
+  HINTS /usr/include
+        /usr/local/include
+        /opt/local/include
+        ${Gperftools_ROOT_DIR}/include
         ${GPERFTOOLS_ROOT}/include
         $ENV{GPERFTOOLS_ROOT}/include
-        /usr/include
 )
 
 set(GPERFTOOLS_LIBRARIES ${GPERFTOOLS_TCMALLOC_AND_PROFILER})

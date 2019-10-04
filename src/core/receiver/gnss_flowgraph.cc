@@ -80,6 +80,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     running_ = false;
     configuration_ = std::move(configuration);
     queue_ = queue;
+    multiband_ = GNSSFlowgraph::is_multiband();
     init();
 }
 
@@ -1218,7 +1219,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                 estimated_doppler,
                                 RX_time);
                             channels_[current_channel]->set_signal(gnss_signal);
-                            start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", true);
+                            start_acquisition = is_primary_freq or assistance_available or !configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_);
                         }
                     else
                         {
@@ -1233,7 +1234,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                             DLOG(INFO) << "Channel " << current_channel
                                        << " Starting acquisition " << channels_[current_channel]->get_signal().get_satellite()
                                        << ", Signal " << channels_[current_channel]->get_signal().get_signal_str();
-                            if (assistance_available == true and configuration_->property("GNSS-SDR.assist_dual_frequency_acq", true))
+                            if (assistance_available == true and configuration_->property("GNSS-SDR.assist_dual_frequency_acq", multiband_))
                                 {
                                     channels_[current_channel]->assist_acquisition_doppler(project_doppler(channels_[current_channel]->get_signal().get_signal_str(), estimated_doppler));
                                 }
@@ -1888,6 +1889,45 @@ void GNSSFlowgraph::set_channels_state()
         }
     acq_channels_count_ = max_acq_channels_;
     DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
+}
+
+
+bool GNSSFlowgraph::is_multiband() const
+{
+    bool multiband = false;
+    if (configuration_->property("Channels_1C.count", 0) > 0)
+        {
+            if (configuration_->property("Channels_2S.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+            if (configuration_->property("Channels_L5.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+        }
+    if (configuration_->property("Channels_1B.count", 0) > 0)
+        {
+            if (configuration_->property("Channels_5X.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+        }
+    if (configuration_->property("Channels_1G.count", 0) > 0)
+        {
+            if (configuration_->property("Channels_2G.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+        }
+    if (configuration_->property("Channels_B1.count", 0) > 0)
+        {
+            if (configuration_->property("Channels_B3.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+        }
+    return multiband;
 }
 
 

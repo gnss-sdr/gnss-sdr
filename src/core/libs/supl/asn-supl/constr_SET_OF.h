@@ -15,8 +15,8 @@ extern "C"
     typedef struct asn_SET_OF_specifics_s
     {
         /*
-	 * Target structure description.
-	 */
+     * Target structure description.
+     */
         int struct_size; /* Size of the target structure. */
         int ctx_offset;  /* Offset of the asn_struct_ctx_t member */
 

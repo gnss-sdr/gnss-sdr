@@ -2,7 +2,7 @@
  * \file fpga_multicorrelator.h
  * \brief FPGA vector correlator class
  * \authors <ul>
- * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
@@ -49,8 +49,8 @@ class Fpga_Multicorrelator_8sc
 {
 public:
     /*!
-	 * \brief Constructor
-	 */
+     * \brief Constructor
+     */
     Fpga_Multicorrelator_8sc(int32_t n_correlators,
         const std::string &device_name,
         uint32_t dev_file_num,

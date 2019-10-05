@@ -36,8 +36,8 @@ extern "C"
  * The variant of the above function which dumps the BASIC-XER (XER_F_BASIC)
  * output into the chosen file pointer.
  * RETURN VALUES:
- * 	 0: The structure is printed.
- * 	-1: Problem printing the structure.
+ *      0: The structure is printed.
+ *     -1: Problem printing the structure.
  * WARNING: No sensible errno value is returned.
  */
     int xer_fprint(FILE *stream, struct asn_TYPE_descriptor_s *td, void *sptr);

@@ -22,9 +22,9 @@ extern "C"
         PXML_TAG,     /* A tag, starting with '<'. */
         PXML_COMMENT, /* An XML comment, including "<!--" and "-->". */
         /*
-	 * The following chunk types are reported if the chunk
-	 * terminates the specified XML element.
-	 */
+     * The following chunk types are reported if the chunk
+     * terminates the specified XML element.
+     */
         PXML_TAG_END,    /* Tag ended */
         PXML_COMMENT_END /* Comment ended */
     } pxml_chunk_type_e;

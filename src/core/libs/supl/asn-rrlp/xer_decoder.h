@@ -88,8 +88,8 @@ extern "C"
     /*
  * Check whether this buffer consists of entirely XER whitespace characters.
  * RETURN VALUES:
- * 1:	Whitespace or empty string
- * 0:	Non-whitespace
+ * 1:    Whitespace or empty string
+ * 0:    Non-whitespace
  */
     int xer_is_whitespace(const void *chunk_buf, size_t chunk_size);
 

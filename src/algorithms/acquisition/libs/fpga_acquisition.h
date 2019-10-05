@@ -46,8 +46,8 @@ class Fpga_Acquisition
 {
 public:
     /*!
-	 * \brief Constructor
-	 */
+     * \brief Constructor
+     */
     Fpga_Acquisition(
         std::string device_name,
         uint32_t nsamples,

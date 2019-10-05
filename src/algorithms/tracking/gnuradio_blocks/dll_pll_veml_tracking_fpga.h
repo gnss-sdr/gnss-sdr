@@ -65,13 +65,13 @@ class dll_pll_veml_tracking_fpga : public gr::block
 {
 public:
     /*!
-	 * \brief Destructor
-	 */
+     * \brief Destructor
+     */
     ~dll_pll_veml_tracking_fpga();
 
     /*!
-	 * \brief Set the channel number and configure some multicorrelator parameters
-	 */
+     * \brief Set the channel number and configure some multicorrelator parameters
+     */
     void set_channel(uint32_t channel);
 
     /*!
@@ -85,24 +85,24 @@ public:
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
-	 * \brief This function starts the tracking process
-	 */
+     * \brief This function starts the tracking process
+     */
     void start_tracking();
 
     /*!
-	 * \brief This function sets a flag that makes general_work to stop in order to finish the tracking process.
-	 */
+     * \brief This function sets a flag that makes general_work to stop in order to finish the tracking process.
+     */
     void stop_tracking();
 
     /*!
-	 * \brief General Work
-	 */
+     * \brief General Work
+     */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     /*!
-	 * \brief This function disables the HW multicorrelator in the FPGA in order to stop the tracking process
-	 */
+     * \brief This function disables the HW multicorrelator in the FPGA in order to stop the tracking process
+     */
     void reset();
 
 private:

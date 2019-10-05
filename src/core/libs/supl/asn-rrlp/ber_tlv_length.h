@@ -16,9 +16,9 @@ extern "C"
  * This function tries to fetch the length of the BER TLV value and place it
  * in *len_r.
  * RETURN VALUES:
- *	 0:	More data expected than bufptr contains.
- *	-1:	Fatal error deciphering length.
- *	>0:	Number of bytes used from bufptr.
+ *     0:    More data expected than bufptr contains.
+ *    -1:    Fatal error deciphering length.
+ *    >0:    Number of bytes used from bufptr.
  * On return with >0, len_r is constrained as -1..MAX, where -1 mean
  * that the value is of indefinite length.
  */
@@ -30,7 +30,7 @@ extern "C"
  * It returns number of bytes occupied by L and V together, suitable
  * for skipping. The function properly handles indefinite length.
  * RETURN VALUES:
- * 	Standard {-1,0,>0} convention.
+ *     Standard {-1,0,>0} convention.
  */
     ssize_t ber_skip_length(
         struct asn_codec_ctx_s *opt_codec_ctx, /* optional context */

@@ -64,13 +64,13 @@ else
     
     %%%%%%%% output vars %%%%%%%%
     %           {
-    % 				double tmp_double;
-    % 				tmp_double = current_synchro_data.Preamble_delay_ms;
-    % 				d_dump_file.write((char*)&tmp_double, sizeof(double));
-    % 				tmp_double = current_synchro_data.Prn_delay_ms;
-    % 				d_dump_file.write((char*)&tmp_double, sizeof(double));
-    % 				tmp_double = current_synchro_data.Preamble_symbol_counter;
-    % 				d_dump_file.write((char*)&tmp_double, sizeof(double));
+    %                 double tmp_double;
+    %                 tmp_double = current_synchro_data.Preamble_delay_ms;
+    %                 d_dump_file.write((char*)&tmp_double, sizeof(double));
+    %                 tmp_double = current_synchro_data.Prn_delay_ms;
+    %                 d_dump_file.write((char*)&tmp_double, sizeof(double));
+    %                 tmp_double = current_synchro_data.Preamble_symbol_counter;
+    %                 d_dump_file.write((char*)&tmp_double, sizeof(double));
     %             }
 end
 

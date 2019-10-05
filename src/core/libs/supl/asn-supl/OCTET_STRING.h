@@ -68,8 +68,8 @@ extern "C"
     typedef struct asn_OCTET_STRING_specifics_s
     {
         /*
-	 * Target structure description.
-	 */
+     * Target structure description.
+     */
         int struct_size; /* Size of the structure */
         int ctx_offset;  /* Offset of the asn_struct_ctx_t member */
 

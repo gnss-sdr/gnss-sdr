@@ -1591,8 +1591,8 @@ void GNSSFlowgraph::init()
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
 
     /*
-	 * Instantiate the receiver monitor block, if required
-	 */
+     * Instantiate the receiver monitor block, if required
+     */
     enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
     bool enable_protobuf = configuration_->property("Monitor.enable_protobuf", true);
     if (configuration_->property("PVT.enable_protobuf", false) == true)

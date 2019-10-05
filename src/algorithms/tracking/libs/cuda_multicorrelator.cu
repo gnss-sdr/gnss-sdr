@@ -140,7 +140,7 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
     int n_correlators)
 {
     // use command-line specified CUDA device, otherwise use device with highest Gflops/s
-    //	findCudaDevice(argc, (const char **)argv);
+    //    findCudaDevice(argc, (const char **)argv);
     cudaDeviceProp prop;
     int num_devices, device;
     cudaGetDeviceCount(&num_devices);
@@ -208,8 +208,8 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
     //******** CudaMalloc version ***********
 
     // input signal GPU memory (can be mapped to CPU memory in shared memory devices!)
-    //	cudaMalloc((void **)&d_sig_in, size);
-    //	cudaMemset(d_sig_in,0,size);
+    //    cudaMalloc((void **)&d_sig_in, size);
+    //    cudaMemset(d_sig_in,0,size);
 
     // Doppler-free signal (internal GPU memory)
     cudaMalloc((void **)&d_sig_doppler_wiped, size);
@@ -249,20 +249,20 @@ bool cuda_multicorrelator::set_local_code_and_taps(
 {
     cudaSetDevice(selected_gps_device);
     //********* ZERO COPY VERSION ************
-    //	// Get device pointer from host memory. No allocation or memcpy
-    //	cudaError_t code;
-    //	// local code CPU -> GPU copy memory
-    //	code=cudaHostGetDevicePointer((void **)&d_local_codes_in,  (void *) local_codes_in, 0);
-    //	if (code!=cudaSuccess)
-    //	{
-    //		printf("cuda cudaHostGetDevicePointer error in set_local_code_and_taps \r\n");
-    //	}
-    //	// Correlator shifts vector CPU -> GPU copy memory (fractional chip shifts are allowed!)
-    //	code=cudaHostGetDevicePointer((void **)&d_shifts_chips,  (void *) shifts_chips, 0);
-    //	if (code!=cudaSuccess)
-    //	{
-    //		printf("cuda cudaHostGetDevicePointer error in set_local_code_and_taps \r\n");
-    //	}
+    //    // Get device pointer from host memory. No allocation or memcpy
+    //    cudaError_t code;
+    //    // local code CPU -> GPU copy memory
+    //    code=cudaHostGetDevicePointer((void **)&d_local_codes_in,  (void *) local_codes_in, 0);
+    //    if (code!=cudaSuccess)
+    //    {
+    //        printf("cuda cudaHostGetDevicePointer error in set_local_code_and_taps \r\n");
+    //    }
+    //    // Correlator shifts vector CPU -> GPU copy memory (fractional chip shifts are allowed!)
+    //    code=cudaHostGetDevicePointer((void **)&d_shifts_chips,  (void *) shifts_chips, 0);
+    //    if (code!=cudaSuccess)
+    //    {
+    //        printf("cuda cudaHostGetDevicePointer error in set_local_code_and_taps \r\n");
+    //    }
 
     //******** CudaMalloc version ***********
     //local code CPU -> GPU copy memory

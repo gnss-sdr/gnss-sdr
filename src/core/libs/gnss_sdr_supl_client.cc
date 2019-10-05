@@ -190,9 +190,9 @@ int Gnss_Sdr_Supl_Client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     else
         {
             /*
-	         * If supl_get_assist() fails, the connection remains open
-	         * and the memory/files are not released.
-	         */
+             * If supl_get_assist() fails, the connection remains open
+             * and the memory/files are not released.
+             */
             supl_close(&ctx);
         }
     return err;

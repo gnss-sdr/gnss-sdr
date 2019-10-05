@@ -90,9 +90,9 @@ extern "C"
         char *xml_tag; /* Name used in XML tag */
 
         /*
-	 * Generalized functions for dealing with the specific type.
-	 * May be directly invoked by applications.
-	 */
+     * Generalized functions for dealing with the specific type.
+     * May be directly invoked by applications.
+     */
         asn_struct_free_f *free_struct;        /* Free the structure */
         asn_struct_print_f *print_struct;      /* Human readable output */
         asn_constr_check_f *check_constraints; /* Constraints validator */
@@ -104,12 +104,12 @@ extern "C"
         per_type_encoder_f *uper_encoder;      /* Unaligned PER encoder */
 
         /***********************************************************************
-	 * Internally useful members. Not to be used by applications directly. *
-	 **********************************************************************/
+     * Internally useful members. Not to be used by applications directly. *
+     **********************************************************************/
 
         /*
-	 * Tags that are expected to occur.
-	 */
+     * Tags that are expected to occur.
+     */
         asn_outmost_tag_f *outmost_tag; /* <optional, internal> */
         ber_tlv_tag_t *tags;            /* Effective tags sequence for this type */
         int tags_count;                 /* Number of tags which are expected */
@@ -119,15 +119,15 @@ extern "C"
         asn_per_constraints_t *per_constraints; /* PER compiled constraints */
 
         /*
-	 * An ASN.1 production type members (members of SEQUENCE, SET, CHOICE).
-	 */
+     * An ASN.1 production type members (members of SEQUENCE, SET, CHOICE).
+     */
         struct asn_TYPE_member_s *elements;
         int elements_count;
 
         /*
-	 * Additional information describing the type, used by appropriate
-	 * functions above.
-	 */
+     * Additional information describing the type, used by appropriate
+     * functions above.
+     */
         void *specifics;
     } asn_TYPE_descriptor_t;
 
@@ -171,8 +171,8 @@ extern "C"
  * the contents of the target language's structure (struct_ptr) into the
  * file pointer (stream) in human readable form.
  * RETURN VALUES:
- * 	 0: The structure is printed.
- * 	-1: Problem dumping the structure.
+ *      0: The structure is printed.
+ *     -1: Problem dumping the structure.
  * (See also xer_fprint() in xer_encoder.h)
  */
     int asn_fprint(FILE *stream,   /* Destination stream descriptor */

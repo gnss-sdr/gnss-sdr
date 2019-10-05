@@ -19,7 +19,7 @@ extern "C"
  * Unaligned PER encoder of any ASN.1 type. May be invoked by the application.
  * WARNING: This function returns the number of encoded bits in the .encoded
  * field of the return value. Use the following formula to convert to bytes:
- * 	bytes = ((.encoded + 7) / 8)
+ *     bytes = ((.encoded + 7) / 8)
  */
     asn_enc_rval_t uper_encode(struct asn_TYPE_descriptor_s *type_descriptor,
         void *struct_ptr,                          /* Structure to be encoded */

@@ -40,7 +40,7 @@
  *
  *         cl
  *         cl_ext_device_fission
- *				#define USE_CL_DEVICE_FISSION
+ *                #define USE_CL_DEVICE_FISSION
  */
 
 /*! \mainpage

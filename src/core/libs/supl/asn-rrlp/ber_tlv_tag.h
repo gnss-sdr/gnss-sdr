@@ -41,9 +41,9 @@ extern "C"
     /*
  * This function tries to fetch the tag from the input stream.
  * RETURN VALUES:
- * 	 0:	More data expected than bufptr contains.
- * 	-1:	Fatal error deciphering tag.
- *	>0:	Number of bytes used from bufptr. tag_r will contain the tag.
+ *      0:    More data expected than bufptr contains.
+ *     -1:    Fatal error deciphering tag.
+ *    >0:    Number of bytes used from bufptr. tag_r will contain the tag.
  */
     ssize_t ber_fetch_tag(const void *bufptr, size_t size, ber_tlv_tag_t *tag_r);
 

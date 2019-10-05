@@ -7,30 +7,28 @@
 #include "RefLocation.h"
 
 static asn_TYPE_member_t asn_MBR_RefLocation_1[] = {
-    { ATF_NOFLAGS, 0, offsetof(struct RefLocation, threeDLocation),
-        (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
-        -1,    /* IMPLICIT tag at current level */
-        &asn_DEF_Ext_GeographicalInformation,
-        0,    /* Defer constraints checking to the member type */
-        0,    /* No PER visible constraints */
-        0,
-        "threeDLocation"
-        },
+    {ATF_NOFLAGS, 0, offsetof(struct RefLocation, threeDLocation),
+     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+     &asn_DEF_Ext_GeographicalInformation,
+     0, /* Defer constraints checking to the member type */
+     0, /* No PER visible constraints */
+     0, "threeDLocation"},
 };
 static ber_tlv_tag_t asn_DEF_RefLocation_tags_1[] = {
-    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
-};
+    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_RefLocation_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* threeDLocation at 650 */
+    {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0} /* threeDLocation at 650 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_RefLocation_specs_1 = {
     sizeof(struct RefLocation),
     offsetof(struct RefLocation, _asn_ctx),
     asn_MAP_RefLocation_tag2el_1,
-    1,    /* Count of tags in the map */
-    0, 0, 0,    /* Optional elements (not needed) */
-    -1,    /* Start extensions */
-    -1    /* Stop extensions */
+    1, /* Count of tags in the map */
+    0,
+    0,
+    0,  /* Optional elements (not needed) */
+    -1, /* Start extensions */
+    -1  /* Stop extensions */
 };
 asn_TYPE_descriptor_t asn_DEF_RefLocation = {
     "RefLocation",
@@ -44,16 +42,15 @@ asn_TYPE_descriptor_t asn_DEF_RefLocation = {
     SEQUENCE_encode_xer,
     SEQUENCE_decode_uper,
     SEQUENCE_encode_uper,
-    0,    /* Use generic outmost tag fetcher */
+    0, /* Use generic outmost tag fetcher */
     asn_DEF_RefLocation_tags_1,
-    sizeof(asn_DEF_RefLocation_tags_1)
-        /sizeof(asn_DEF_RefLocation_tags_1[0]), /* 1 */
-    asn_DEF_RefLocation_tags_1,    /* Same as above */
-    sizeof(asn_DEF_RefLocation_tags_1)
-        /sizeof(asn_DEF_RefLocation_tags_1[0]), /* 1 */
-    0,    /* No PER visible constraints */
+    sizeof(asn_DEF_RefLocation_tags_1) /
+        sizeof(asn_DEF_RefLocation_tags_1[0]), /* 1 */
+    asn_DEF_RefLocation_tags_1,                /* Same as above */
+    sizeof(asn_DEF_RefLocation_tags_1) /
+        sizeof(asn_DEF_RefLocation_tags_1[0]), /* 1 */
+    0,                                         /* No PER visible constraints */
     asn_MBR_RefLocation_1,
-    1,    /* Elements count */
-    &asn_SPC_RefLocation_specs_1    /* Additional specs */
+    1,                           /* Elements count */
+    &asn_SPC_RefLocation_specs_1 /* Additional specs */
 };
-

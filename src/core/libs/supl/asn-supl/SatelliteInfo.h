@@ -7,7 +7,6 @@
 #ifndef _SatelliteInfo_H_
 #define _SatelliteInfo_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

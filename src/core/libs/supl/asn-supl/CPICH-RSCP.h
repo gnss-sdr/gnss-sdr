@@ -7,7 +7,6 @@
 #ifndef _CPICH_RSCP_H_
 #define _CPICH_RSCP_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

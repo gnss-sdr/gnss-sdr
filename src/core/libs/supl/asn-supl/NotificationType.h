@@ -7,7 +7,6 @@
 #ifndef _NotificationType_H_
 #define _NotificationType_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -27,8 +26,8 @@ extern "C"
         NotificationType_notificationAndVerficationDeniedNA = 3,
         NotificationType_privacyOverride = 4
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_NotificationType;
 
     /* NotificationType */

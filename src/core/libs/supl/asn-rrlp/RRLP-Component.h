@@ -7,7 +7,6 @@
 #ifndef _RRLP_Component_H_
 #define _RRLP_Component_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -47,9 +46,9 @@ extern "C"
             NULL_t assistanceDataAck;
             ProtocolError_t protocolError;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

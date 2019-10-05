@@ -7,7 +7,6 @@
 #ifndef _SUPLPOS_H_
 #define _SUPLPOS_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -28,9 +27,9 @@ extern "C"
         PosPayLoad_t posPayLoad;
         struct Velocity *velocity /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

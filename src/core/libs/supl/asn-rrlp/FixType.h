@@ -7,7 +7,6 @@
 #ifndef _FixType_H_
 #define _FixType_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _IPAddress_H_
 #define _IPAddress_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

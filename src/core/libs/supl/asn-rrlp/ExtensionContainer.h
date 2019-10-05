@@ -7,7 +7,6 @@
 #ifndef _ExtensionContainer_H_
 #define _ExtensionContainer_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

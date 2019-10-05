@@ -7,7 +7,6 @@
 #ifndef _GANSSSignalID_H_
 #define _GANSSSignalID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

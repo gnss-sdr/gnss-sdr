@@ -7,7 +7,6 @@
 #ifndef _SETAuthKey_H_
 #define _SETAuthKey_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -37,9 +36,9 @@ extern "C"
             BIT_STRING_t shortKey;
             BIT_STRING_t longKey;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

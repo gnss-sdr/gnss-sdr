@@ -7,7 +7,6 @@
 #ifndef _GANSSRefLocation_H_
 #define _GANSSRefLocation_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

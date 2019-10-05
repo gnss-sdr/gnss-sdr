@@ -7,7 +7,6 @@
 #ifndef _CalcAssistanceBTS_H_
 #define _CalcAssistanceBTS_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

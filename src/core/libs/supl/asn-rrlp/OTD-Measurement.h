@@ -7,7 +7,6 @@
 #ifndef _OTD_Measurement_H_
 #define _OTD_Measurement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

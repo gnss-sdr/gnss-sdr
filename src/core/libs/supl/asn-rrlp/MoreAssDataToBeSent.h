@@ -7,7 +7,6 @@
 #ifndef _MoreAssDataToBeSent_H_
 #define _MoreAssDataToBeSent_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

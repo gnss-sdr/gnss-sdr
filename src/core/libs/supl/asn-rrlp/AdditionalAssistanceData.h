@@ -7,7 +7,6 @@
 #ifndef _AdditionalAssistanceData_H_
 #define _AdditionalAssistanceData_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -27,9 +26,9 @@ extern "C"
         GPSAssistanceData_t *gpsAssistanceData /* OPTIONAL */;
         ExtensionContainer_t *extensionContainer /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
         GANSSAssistanceData_t *ganssAssistanceData /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */

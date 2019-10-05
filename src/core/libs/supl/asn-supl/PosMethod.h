@@ -7,7 +7,6 @@
 #ifndef _PosMethod_H_
 #define _PosMethod_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -32,8 +31,8 @@ extern "C"
         PosMethod_oTDOA = 8,
         PosMethod_noPosition = 9
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_PosMethod;
 
     /* PosMethod */

@@ -7,7 +7,6 @@
 #ifndef _NavModel_KeplerianSet_H_
 #define _NavModel_KeplerianSet_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

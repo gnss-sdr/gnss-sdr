@@ -7,7 +7,6 @@
 #ifndef _Velocity_H_
 #define _Velocity_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -44,9 +43,9 @@ extern "C"
             Horveluncert_t horveluncert;
             Horandveruncert_t horandveruncert;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

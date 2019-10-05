@@ -7,7 +7,6 @@
 #ifndef _GPSTOW24b_H_
 #define _GPSTOW24b_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

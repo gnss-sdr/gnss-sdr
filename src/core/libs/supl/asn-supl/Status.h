@@ -7,7 +7,6 @@
 #ifndef _Status_H_
 #define _Status_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -25,8 +24,8 @@ extern "C"
         Status_current = 1,
         Status_unknown = 2
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_Status;
 
     /* Status */

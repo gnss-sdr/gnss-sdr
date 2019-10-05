@@ -7,7 +7,6 @@
 #ifndef _SeqOfSgnTypeElement_H_
 #define _SeqOfSgnTypeElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

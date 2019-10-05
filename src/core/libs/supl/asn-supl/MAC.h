@@ -7,7 +7,6 @@
 #ifndef _MAC_H_
 #define _MAC_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _BSICAndCarrier_H_
 #define _BSICAndCarrier_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

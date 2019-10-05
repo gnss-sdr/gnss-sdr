@@ -7,7 +7,6 @@
 #ifndef _NavModelElement_H_
 #define _NavModelElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

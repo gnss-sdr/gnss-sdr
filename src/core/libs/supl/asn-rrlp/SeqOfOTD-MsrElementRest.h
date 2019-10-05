@@ -7,7 +7,6 @@
 #ifndef _SeqOfOTD_MsrElementRest_H_
 #define _SeqOfOTD_MsrElementRest_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _FineRTD_H_
 #define _FineRTD_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _UARFCN_H_
 #define _UARFCN_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

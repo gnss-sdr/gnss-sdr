@@ -7,7 +7,6 @@
 #ifndef _GANSSAlmanacElement_H_
 #define _GANSSAlmanacElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -35,9 +34,9 @@ extern "C"
         {
             Almanac_KeplerianSet_t keplerianAlmanacSet;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

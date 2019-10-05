@@ -7,28 +7,22 @@
 #include "NMR.h"
 
 static asn_per_constraints_t ASN_PER_TYPE_NMR_CONSTR_1 = {
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    { APC_CONSTRAINED,     4,  4,  1,  15 }    /* (SIZE(1..15)) */,
-    0, 0    /* No PER value map */
+    {APC_UNCONSTRAINED, -1, -1, 0, 0},
+    {APC_CONSTRAINED, 4, 4, 1, 15} /* (SIZE(1..15)) */,
+    0,
+    0 /* No PER value map */
 };
 static asn_TYPE_member_t asn_MBR_NMR_1[] = {
-    { ATF_POINTER, 0, 0,
-        (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
-        0,
-        &asn_DEF_NMRelement,
-        0,    /* Defer constraints checking to the member type */
-        0,    /* No PER visible constraints */
-        0,
-        ""
-        },
+    {ATF_POINTER, 0, 0, (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0,
+     &asn_DEF_NMRelement, 0, /* Defer constraints checking to the member type */
+     0,                      /* No PER visible constraints */
+     0, ""},
 };
 static ber_tlv_tag_t asn_DEF_NMR_tags_1[] = {
-    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
-};
+    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_SET_OF_specifics_t asn_SPC_NMR_specs_1 = {
-    sizeof(struct NMR),
-    offsetof(struct NMR, _asn_ctx),
-    0,    /* XER encoding is XMLDelimitedItemList */
+    sizeof(struct NMR), offsetof(struct NMR, _asn_ctx),
+    0, /* XER encoding is XMLDelimitedItemList */
 };
 asn_TYPE_descriptor_t asn_DEF_NMR = {
     "NMR",
@@ -42,16 +36,13 @@ asn_TYPE_descriptor_t asn_DEF_NMR = {
     SEQUENCE_OF_encode_xer,
     SEQUENCE_OF_decode_uper,
     SEQUENCE_OF_encode_uper,
-    0,    /* Use generic outmost tag fetcher */
+    0, /* Use generic outmost tag fetcher */
     asn_DEF_NMR_tags_1,
-    sizeof(asn_DEF_NMR_tags_1)
-        /sizeof(asn_DEF_NMR_tags_1[0]), /* 1 */
-    asn_DEF_NMR_tags_1,    /* Same as above */
-    sizeof(asn_DEF_NMR_tags_1)
-        /sizeof(asn_DEF_NMR_tags_1[0]), /* 1 */
+    sizeof(asn_DEF_NMR_tags_1) / sizeof(asn_DEF_NMR_tags_1[0]), /* 1 */
+    asn_DEF_NMR_tags_1, /* Same as above */
+    sizeof(asn_DEF_NMR_tags_1) / sizeof(asn_DEF_NMR_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_NMR_CONSTR_1,
     asn_MBR_NMR_1,
-    1,    /* Single element */
-    &asn_SPC_NMR_specs_1    /* Additional specs */
+    1,                   /* Single element */
+    &asn_SPC_NMR_specs_1 /* Additional specs */
 };
-

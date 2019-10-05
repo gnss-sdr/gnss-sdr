@@ -7,7 +7,6 @@
 #ifndef _MsrPosition_Req_H_
 #define _MsrPosition_Req_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -38,11 +37,13 @@ extern "C"
         struct GPS_AssistData *gps_AssistData /* OPTIONAL */;
         ExtensionContainer_t *extensionContainer /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
-        struct Rel98_MsrPosition_Req_Extension *rel98_MsrPosition_Req_extension /* OPTIONAL */;
-        struct Rel5_MsrPosition_Req_Extension *rel5_MsrPosition_Req_extension /* OPTIONAL */;
+         * This type is extensible,
+         * possible extensions are below.
+         */
+        struct Rel98_MsrPosition_Req_Extension
+            *rel98_MsrPosition_Req_extension /* OPTIONAL */;
+        struct Rel5_MsrPosition_Req_Extension
+            *rel5_MsrPosition_Req_extension /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

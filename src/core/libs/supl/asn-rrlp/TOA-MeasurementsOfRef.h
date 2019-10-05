@@ -7,7 +7,6 @@
 #ifndef _TOA_MeasurementsOfRef_H_
 #define _TOA_MeasurementsOfRef_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

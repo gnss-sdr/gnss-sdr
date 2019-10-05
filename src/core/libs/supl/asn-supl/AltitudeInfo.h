@@ -7,7 +7,6 @@
 #ifndef _AltitudeInfo_H_
 #define _AltitudeInfo_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -34,16 +33,17 @@ extern "C"
         long altitude;
         long altUncertainty;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;
     } AltitudeInfo_t;
 
     /* Implementation */
-    /* extern asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2;   // (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2;   // (Use
+     * -fall-defs-global to expose) */
     extern asn_TYPE_descriptor_t asn_DEF_AltitudeInfo;
 
 #ifdef __cplusplus

@@ -6,18 +6,18 @@
 
 #include "IPAddress.h"
 
-static int
-memb_ipv4Address_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-    asn_app_constraint_failed_f *ctfailcb, void *app_key)
+static int memb_ipv4Address_constraint_1(asn_TYPE_descriptor_t *td,
+                                         const void *sptr,
+                                         asn_app_constraint_failed_f *ctfailcb,
+                                         void *app_key)
 {
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
 
     if (!sptr)
         {
-            _ASN_CTFAIL(app_key, td, sptr,
-                "%s: value not given (%s:%d)",
-                td->name, __FILE__, __LINE__);
+            _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
+                        td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,25 +30,24 @@ memb_ipv4Address_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
     else
         {
-            _ASN_CTFAIL(app_key, td, sptr,
-                "%s: constraint failed (%s:%d)",
-                td->name, __FILE__, __LINE__);
+            _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
+                        td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
-static int
-memb_ipv6Address_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-    asn_app_constraint_failed_f *ctfailcb, void *app_key)
+static int memb_ipv6Address_constraint_1(asn_TYPE_descriptor_t *td,
+                                         const void *sptr,
+                                         asn_app_constraint_failed_f *ctfailcb,
+                                         void *app_key)
 {
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
 
     if (!sptr)
         {
-            _ASN_CTFAIL(app_key, td, sptr,
-                "%s: value not given (%s:%d)",
-                td->name, __FILE__, __LINE__);
+            _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
+                        td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -61,9 +60,8 @@ memb_ipv6Address_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
     else
         {
-            _ASN_CTFAIL(app_key, td, sptr,
-                "%s: constraint failed (%s:%d)",
-                td->name, __FILE__, __LINE__);
+            _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
+                        td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -71,35 +69,30 @@ memb_ipv6Address_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 static asn_per_constraints_t ASN_PER_MEMB_IPV4_ADDRESS_CONSTR_2 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 4, 4} /* (SIZE(4..4)) */,
-    0, 0 /* No PER value map */
+    0,
+    0 /* No PER value map */
 };
 static asn_per_constraints_t ASN_PER_MEMB_IPV6_ADDRESS_CONSTR_3 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 16, 16} /* (SIZE(16..16)) */,
-    0, 0 /* No PER value map */
+    0,
+    0 /* No PER value map */
 };
 static asn_per_constraints_t ASN_PER_TYPE_IP_ADDRESS_CONSTR_1 = {
     {APC_CONSTRAINED, 1, 1, 0, 1} /* (0..1) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
-    0, 0 /* No PER value map */
+    0,
+    0 /* No PER value map */
 };
 static asn_TYPE_member_t asn_MBR_IPAddress_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct IPAddress, choice.ipv4Address),
-        (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
-        -1, /* IMPLICIT tag at current level */
-        &asn_DEF_OCTET_STRING,
-        memb_ipv4Address_constraint_1,
-        &ASN_PER_MEMB_IPV4_ADDRESS_CONSTR_2,
-        0,
-        "ipv4Address"},
+     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+     &asn_DEF_OCTET_STRING, memb_ipv4Address_constraint_1,
+     &ASN_PER_MEMB_IPV4_ADDRESS_CONSTR_2, 0, "ipv4Address"},
     {ATF_NOFLAGS, 0, offsetof(struct IPAddress, choice.ipv6Address),
-        (ASN_TAG_CLASS_CONTEXT | (1 << 2)),
-        -1, /* IMPLICIT tag at current level */
-        &asn_DEF_OCTET_STRING,
-        memb_ipv6Address_constraint_1,
-        &ASN_PER_MEMB_IPV6_ADDRESS_CONSTR_3,
-        0,
-        "ipv6Address"},
+     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+     &asn_DEF_OCTET_STRING, memb_ipv6Address_constraint_1,
+     &ASN_PER_MEMB_IPV6_ADDRESS_CONSTR_3, 0, "ipv6Address"},
 };
 static asn_TYPE_tag2member_t asn_MAP_IPAddress_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* ipv4Address at 41 */

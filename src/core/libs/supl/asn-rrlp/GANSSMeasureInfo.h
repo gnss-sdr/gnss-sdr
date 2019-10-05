@@ -7,7 +7,6 @@
 #ifndef _GANSSMeasureInfo_H_
 #define _GANSSMeasureInfo_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

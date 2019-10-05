@@ -7,7 +7,6 @@
 #ifndef _AcquisAssist_H_
 #define _AcquisAssist_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

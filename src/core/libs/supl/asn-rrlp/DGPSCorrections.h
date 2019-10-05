@@ -7,7 +7,6 @@
 #ifndef _DGPSCorrections_H_
 #define _DGPSCorrections_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

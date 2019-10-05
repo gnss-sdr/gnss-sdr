@@ -7,7 +7,6 @@
 #ifndef _SeqOfNavModelElement_H_
 #define _SeqOfNavModelElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

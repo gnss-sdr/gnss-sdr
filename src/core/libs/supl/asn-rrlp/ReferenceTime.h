@@ -7,7 +7,6 @@
 #ifndef _ReferenceTime_H_
 #define _ReferenceTime_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

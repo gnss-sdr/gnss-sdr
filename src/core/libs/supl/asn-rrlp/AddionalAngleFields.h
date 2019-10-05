@@ -7,7 +7,6 @@
 #ifndef _AddionalAngleFields_H_
 #define _AddionalAngleFields_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

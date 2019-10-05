@@ -6,29 +6,26 @@
 
 #include "SeqOfGANSS-MsrSetElement.h"
 
-static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_GANSS_MSR_SET_ELEMENT_CONSTR_1 = {
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    { APC_CONSTRAINED,     2,  2,  1,  3 }    /* (SIZE(1..3)) */,
-    0, 0    /* No PER value map */
+static asn_per_constraints_t
+    ASN_PER_TYPE_SEQ_OF_GANSS_MSR_SET_ELEMENT_CONSTR_1 = {
+        {APC_UNCONSTRAINED, -1, -1, 0, 0},
+        {APC_CONSTRAINED, 2, 2, 1, 3} /* (SIZE(1..3)) */,
+        0,
+        0 /* No PER value map */
 };
 static asn_TYPE_member_t asn_MBR_SeqOfGANSS_MsrSetElement_1[] = {
-    { ATF_POINTER, 0, 0,
-        (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
-        0,
-        &asn_DEF_GANSS_MsrSetElement,
-        0,    /* Defer constraints checking to the member type */
-        0,    /* No PER visible constraints */
-        0,
-        ""
-        },
+    {ATF_POINTER, 0, 0, (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0,
+     &asn_DEF_GANSS_MsrSetElement,
+     0, /* Defer constraints checking to the member type */
+     0, /* No PER visible constraints */
+     0, ""},
 };
 static ber_tlv_tag_t asn_DEF_SeqOfGANSS_MsrSetElement_tags_1[] = {
-    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
-};
+    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_SET_OF_specifics_t asn_SPC_SeqOfGANSS_MsrSetElement_specs_1 = {
     sizeof(struct SeqOfGANSS_MsrSetElement),
     offsetof(struct SeqOfGANSS_MsrSetElement, _asn_ctx),
-    0,    /* XER encoding is XMLDelimitedItemList */
+    0, /* XER encoding is XMLDelimitedItemList */
 };
 asn_TYPE_descriptor_t asn_DEF_SeqOfGANSS_MsrSetElement = {
     "SeqOfGANSS-MsrSetElement",
@@ -42,16 +39,15 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfGANSS_MsrSetElement = {
     SEQUENCE_OF_encode_xer,
     SEQUENCE_OF_decode_uper,
     SEQUENCE_OF_encode_uper,
-    0,    /* Use generic outmost tag fetcher */
+    0, /* Use generic outmost tag fetcher */
     asn_DEF_SeqOfGANSS_MsrSetElement_tags_1,
-    sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1)
-        /sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1[0]), /* 1 */
-    asn_DEF_SeqOfGANSS_MsrSetElement_tags_1,    /* Same as above */
-    sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1)
-        /sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1[0]), /* 1 */
+    sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1) /
+        sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1[0]), /* 1 */
+    asn_DEF_SeqOfGANSS_MsrSetElement_tags_1,                /* Same as above */
+    sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1) /
+        sizeof(asn_DEF_SeqOfGANSS_MsrSetElement_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_SEQ_OF_GANSS_MSR_SET_ELEMENT_CONSTR_1,
     asn_MBR_SeqOfGANSS_MsrSetElement_1,
-    1,    /* Single element */
-    &asn_SPC_SeqOfGANSS_MsrSetElement_specs_1    /* Additional specs */
+    1,                                        /* Single element */
+    &asn_SPC_SeqOfGANSS_MsrSetElement_specs_1 /* Additional specs */
 };
-

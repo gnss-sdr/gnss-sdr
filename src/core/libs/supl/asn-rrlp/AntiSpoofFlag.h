@@ -7,7 +7,6 @@
 #ifndef _AntiSpoofFlag_H_
 #define _AntiSpoofFlag_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

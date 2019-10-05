@@ -7,7 +7,6 @@
 #ifndef _EnvironmentCharacter_H_
 #define _EnvironmentCharacter_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -25,8 +24,8 @@ extern "C"
         EnvironmentCharacter_notBadArea = 1,
         EnvironmentCharacter_mixedArea = 2
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_EnvironmentCharacter;
 
     /* EnvironmentCharacter */

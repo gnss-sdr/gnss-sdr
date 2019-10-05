@@ -7,7 +7,6 @@
 #ifndef _OTDValue_H_
 #define _OTDValue_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

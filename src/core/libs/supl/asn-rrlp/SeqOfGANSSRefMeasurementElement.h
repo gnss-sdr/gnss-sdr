@@ -7,7 +7,6 @@
 #ifndef _SeqOfGANSSRefMeasurementElement_H_
 #define _SeqOfGANSSRefMeasurementElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

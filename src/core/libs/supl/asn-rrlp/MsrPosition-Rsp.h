@@ -7,7 +7,6 @@
 #ifndef _MsrPosition_Rsp_H_
 #define _MsrPosition_Rsp_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -40,11 +39,13 @@ extern "C"
         struct LocationError *locationError /* OPTIONAL */;
         ExtensionContainer_t *extensionContainer /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
-        struct Rel_98_MsrPosition_Rsp_Extension *rel_98_MsrPosition_Rsp_Extension /* OPTIONAL */;
-        struct Rel_5_MsrPosition_Rsp_Extension *rel_5_MsrPosition_Rsp_Extension /* OPTIONAL */;
+         * This type is extensible,
+         * possible extensions are below.
+         */
+        struct Rel_98_MsrPosition_Rsp_Extension
+            *rel_98_MsrPosition_Rsp_Extension /* OPTIONAL */;
+        struct Rel_5_MsrPosition_Rsp_Extension
+            *rel_5_MsrPosition_Rsp_Extension /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

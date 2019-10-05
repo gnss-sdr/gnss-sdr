@@ -7,7 +7,6 @@
 #ifndef _GANSSPositioningMethod_H_
 #define _GANSSPositioningMethod_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

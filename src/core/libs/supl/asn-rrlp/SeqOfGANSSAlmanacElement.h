@@ -7,7 +7,6 @@
 #ifndef _SeqOfGANSSAlmanacElement_H_
 #define _SeqOfGANSSAlmanacElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

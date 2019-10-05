@@ -7,7 +7,6 @@
 #ifndef _GANSSTOD_H_
 #define _GANSSTOD_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

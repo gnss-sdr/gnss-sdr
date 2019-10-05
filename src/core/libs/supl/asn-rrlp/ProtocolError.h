@@ -7,7 +7,6 @@
 #ifndef _ProtocolError_H_
 #define _ProtocolError_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -29,10 +28,11 @@ extern "C"
         ErrorCodes_t errorCause;
         ExtensionContainer_t *extensionContainer /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
-        struct Rel_5_ProtocolError_Extension *rel_5_ProtocolError_Extension /* OPTIONAL */;
+         * This type is extensible,
+         * possible extensions are below.
+         */
+        struct Rel_5_ProtocolError_Extension
+            *rel_5_ProtocolError_Extension /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

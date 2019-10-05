@@ -7,7 +7,6 @@
 #ifndef _SeqOfAcquisElement_H_
 #define _SeqOfAcquisElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

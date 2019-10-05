@@ -7,7 +7,6 @@
 #ifndef _EphemerisSubframe1Reserved_H_
 #define _EphemerisSubframe1Reserved_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

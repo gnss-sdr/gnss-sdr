@@ -7,7 +7,6 @@
 #ifndef _RelDistance_H_
 #define _RelDistance_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

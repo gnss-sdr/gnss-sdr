@@ -7,7 +7,6 @@
 #ifndef _ExpOTDUncertainty_H_
 #define _ExpOTDUncertainty_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

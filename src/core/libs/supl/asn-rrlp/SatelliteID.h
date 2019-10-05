@@ -7,7 +7,6 @@
 #ifndef _SatelliteID_H_
 #define _SatelliteID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

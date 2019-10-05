@@ -7,7 +7,6 @@
 #ifndef _Rel98_AssistanceData_Extension_H_
 #define _Rel98_AssistanceData_Extension_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -28,11 +27,12 @@ extern "C"
     {
         struct Rel98_Ext_ExpOTD *rel98_Ext_ExpOTD /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
         NULL_t *gpsTimeAssistanceMeasurementRequest /* OPTIONAL */;
-        GPSReferenceTimeUncertainty_t *gpsReferenceTimeUncertainty /* OPTIONAL */;
+        GPSReferenceTimeUncertainty_t
+            *gpsReferenceTimeUncertainty /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

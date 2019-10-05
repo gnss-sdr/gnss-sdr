@@ -7,7 +7,6 @@
 #ifndef _AddionalDopplerFields_H_
 #define _AddionalDopplerFields_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

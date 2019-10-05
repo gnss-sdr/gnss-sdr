@@ -7,7 +7,6 @@
 #ifndef _SeqOfSatElement_H_
 #define _SeqOfSatElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

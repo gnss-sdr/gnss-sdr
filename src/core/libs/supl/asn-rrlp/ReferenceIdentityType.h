@@ -7,7 +7,6 @@
 #ifndef _ReferenceIdentityType_H_
 #define _ReferenceIdentityType_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

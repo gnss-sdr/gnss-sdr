@@ -7,7 +7,6 @@
 #ifndef _GANSSTOD_GSMTimeAssociation_H_
 #define _GANSSTOD_GSMTimeAssociation_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

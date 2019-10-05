@@ -7,7 +7,6 @@
 #ifndef _GANSSRefTimeInfo_H_
 #define _GANSSRefTimeInfo_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

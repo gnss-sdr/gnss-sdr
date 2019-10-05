@@ -7,7 +7,6 @@
 #ifndef _SeqOfGANSSSatelliteElement_H_
 #define _SeqOfGANSSSatelliteElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _CellParametersID_H_
 #define _CellParametersID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

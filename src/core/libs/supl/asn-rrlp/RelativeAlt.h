@@ -7,7 +7,6 @@
 #ifndef _RelativeAlt_H_
 #define _RelativeAlt_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _EOTDQuality_H_
 #define _EOTDQuality_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

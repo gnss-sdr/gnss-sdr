@@ -7,7 +7,6 @@
 #ifndef _FrameNumber_H_
 #define _FrameNumber_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

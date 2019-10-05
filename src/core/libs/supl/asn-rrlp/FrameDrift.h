@@ -7,7 +7,6 @@
 #ifndef _FrameDrift_H_
 #define _FrameDrift_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

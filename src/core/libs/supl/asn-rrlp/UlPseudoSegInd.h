@@ -7,7 +7,6 @@
 #ifndef _UlPseudoSegInd_H_
 #define _UlPseudoSegInd_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

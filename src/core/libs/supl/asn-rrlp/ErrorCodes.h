@@ -7,7 +7,6 @@
 #ifndef _ErrorCodes_H_
 #define _ErrorCodes_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -28,8 +27,8 @@ extern "C"
         ErrorCodes_messageTooShort = 4,
         ErrorCodes_unknowReferenceNumber = 5
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_ErrorCodes;
 
     /* ErrorCodes */

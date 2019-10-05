@@ -7,7 +7,6 @@
 #ifndef _SeqOfOTD_FirstSetMsrs_H_
 #define _SeqOfOTD_FirstSetMsrs_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

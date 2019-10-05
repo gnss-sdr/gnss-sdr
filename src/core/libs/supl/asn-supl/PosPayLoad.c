@@ -6,137 +6,137 @@
 
 #include "PosPayLoad.h"
 
-static int
-memb_tia801payload_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-            asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+static int memb_tia801payload_constraint_1(
+    asn_TYPE_descriptor_t *td, const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb, void *app_key)
+{
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
-    
-    if(!sptr) {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: value not given (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
-    
+
+    if (!sptr)
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
+
     size = st->size;
-    
-    if((size >= 1 && size <= 8192)) {
-        /* Constraint check succeeded */
-        return 0;
-    } else {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: constraint failed (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
+
+    if ((size >= 1 && size <= 8192))
+        {
+            /* Constraint check succeeded */
+            return 0;
+        }
+    else
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
 }
 
-static int
-memb_rrcPayload_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-            asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+static int memb_rrcPayload_constraint_1(asn_TYPE_descriptor_t *td,
+                                        const void *sptr,
+                                        asn_app_constraint_failed_f *ctfailcb,
+                                        void *app_key)
+{
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
-    
-    if(!sptr) {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: value not given (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
-    
+
+    if (!sptr)
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
+
     size = st->size;
-    
-    if((size >= 1 && size <= 8192)) {
-        /* Constraint check succeeded */
-        return 0;
-    } else {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: constraint failed (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
+
+    if ((size >= 1 && size <= 8192))
+        {
+            /* Constraint check succeeded */
+            return 0;
+        }
+    else
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
 }
 
-static int
-memb_rrlpPayload_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-            asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+static int memb_rrlpPayload_constraint_1(asn_TYPE_descriptor_t *td,
+                                         const void *sptr,
+                                         asn_app_constraint_failed_f *ctfailcb,
+                                         void *app_key)
+{
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
-    
-    if(!sptr) {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: value not given (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
-    
+
+    if (!sptr)
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
+
     size = st->size;
-    
-    if((size >= 1 && size <= 8192)) {
-        /* Constraint check succeeded */
-        return 0;
-    } else {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: constraint failed (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
+
+    if ((size >= 1 && size <= 8192))
+        {
+            /* Constraint check succeeded */
+            return 0;
+        }
+    else
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
 }
 
 static asn_per_constraints_t ASN_PER_MEMB_TIA801PAYLOAD_CONSTR_2 = {
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    { APC_CONSTRAINED,     13,  13,  1,  8192 }    /* (SIZE(1..8192)) */,
-    0, 0    /* No PER value map */
+    {APC_UNCONSTRAINED, -1, -1, 0, 0},
+    {APC_CONSTRAINED, 13, 13, 1, 8192} /* (SIZE(1..8192)) */,
+    0,
+    0 /* No PER value map */
 };
 static asn_per_constraints_t ASN_PER_MEMB_RRC_PAYLOAD_CONSTR_3 = {
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    { APC_CONSTRAINED,     13,  13,  1,  8192 }    /* (SIZE(1..8192)) */,
-    0, 0    /* No PER value map */
+    {APC_UNCONSTRAINED, -1, -1, 0, 0},
+    {APC_CONSTRAINED, 13, 13, 1, 8192} /* (SIZE(1..8192)) */,
+    0,
+    0 /* No PER value map */
 };
 static asn_per_constraints_t ASN_PER_MEMB_RRLP_PAYLOAD_CONSTR_4 = {
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    { APC_CONSTRAINED,     13,  13,  1,  8192 }    /* (SIZE(1..8192)) */,
-    0, 0    /* No PER value map */
+    {APC_UNCONSTRAINED, -1, -1, 0, 0},
+    {APC_CONSTRAINED, 13, 13, 1, 8192} /* (SIZE(1..8192)) */,
+    0,
+    0 /* No PER value map */
 };
 static asn_per_constraints_t ASN_PER_TYPE_POS_PAY_LOAD_CONSTR_1 = {
-    { APC_CONSTRAINED | APC_EXTENSIBLE,  2,  2,  0,  2 }    /* (0..2,...) */,
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    0, 0    /* No PER value map */
+    {APC_CONSTRAINED | APC_EXTENSIBLE, 2, 2, 0, 2} /* (0..2,...) */,
+    {APC_UNCONSTRAINED, -1, -1, 0, 0},
+    0,
+    0 /* No PER value map */
 };
 static asn_TYPE_member_t asn_MBR_PosPayLoad_1[] = {
-    { ATF_NOFLAGS, 0, offsetof(struct PosPayLoad, choice.tia801payload),
-        (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
-        -1,    /* IMPLICIT tag at current level */
-        &asn_DEF_OCTET_STRING,
-        memb_tia801payload_constraint_1,
-        &ASN_PER_MEMB_TIA801PAYLOAD_CONSTR_2,
-        0,
-        "tia801payload"
-        },
-    { ATF_NOFLAGS, 0, offsetof(struct PosPayLoad, choice.rrcPayload),
-        (ASN_TAG_CLASS_CONTEXT | (1 << 2)),
-        -1,    /* IMPLICIT tag at current level */
-        &asn_DEF_OCTET_STRING,
-        memb_rrcPayload_constraint_1,
-        &ASN_PER_MEMB_RRC_PAYLOAD_CONSTR_3,
-        0,
-        "rrcPayload"
-        },
-    { ATF_NOFLAGS, 0, offsetof(struct PosPayLoad, choice.rrlpPayload),
-        (ASN_TAG_CLASS_CONTEXT | (2 << 2)),
-        -1,    /* IMPLICIT tag at current level */
-        &asn_DEF_OCTET_STRING,
-        memb_rrlpPayload_constraint_1,
-        &ASN_PER_MEMB_RRLP_PAYLOAD_CONSTR_4,
-        0,
-        "rrlpPayload"
-        },
+    {ATF_NOFLAGS, 0, offsetof(struct PosPayLoad, choice.tia801payload),
+     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+     &asn_DEF_OCTET_STRING, memb_tia801payload_constraint_1,
+     &ASN_PER_MEMB_TIA801PAYLOAD_CONSTR_2, 0, "tia801payload"},
+    {ATF_NOFLAGS, 0, offsetof(struct PosPayLoad, choice.rrcPayload),
+     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+     &asn_DEF_OCTET_STRING, memb_rrcPayload_constraint_1,
+     &ASN_PER_MEMB_RRC_PAYLOAD_CONSTR_3, 0, "rrcPayload"},
+    {ATF_NOFLAGS, 0, offsetof(struct PosPayLoad, choice.rrlpPayload),
+     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+     &asn_DEF_OCTET_STRING, memb_rrlpPayload_constraint_1,
+     &ASN_PER_MEMB_RRLP_PAYLOAD_CONSTR_4, 0, "rrlpPayload"},
 };
 static asn_TYPE_tag2member_t asn_MAP_PosPayLoad_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* tia801payload at 15 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* rrcPayload at 16 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* rrlpPayload at 17 */
+    {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* tia801payload at 15 */
+    {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* rrcPayload at 16 */
+    {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}  /* rrlpPayload at 17 */
 };
 static asn_CHOICE_specifics_t asn_SPC_PosPayLoad_specs_1 = {
     sizeof(struct PosPayLoad),
@@ -144,9 +144,9 @@ static asn_CHOICE_specifics_t asn_SPC_PosPayLoad_specs_1 = {
     offsetof(struct PosPayLoad, present),
     sizeof(((struct PosPayLoad *)0)->present),
     asn_MAP_PosPayLoad_tag2el_1,
-    3,    /* Count of tags in the map */
+    3, /* Count of tags in the map */
     0,
-    3    /* Extensions start */
+    3 /* Extensions start */
 };
 asn_TYPE_descriptor_t asn_DEF_PosPayLoad = {
     "PosPayLoad",
@@ -161,13 +161,12 @@ asn_TYPE_descriptor_t asn_DEF_PosPayLoad = {
     CHOICE_decode_uper,
     CHOICE_encode_uper,
     CHOICE_outmost_tag,
-    0,    /* No effective tags (pointer) */
-    0,    /* No effective tags (count) */
-    0,    /* No tags (pointer) */
-    0,    /* No tags (count) */
+    0, /* No effective tags (pointer) */
+    0, /* No effective tags (count) */
+    0, /* No tags (pointer) */
+    0, /* No tags (count) */
     &ASN_PER_TYPE_POS_PAY_LOAD_CONSTR_1,
     asn_MBR_PosPayLoad_1,
-    3,    /* Elements count */
-    &asn_SPC_PosPayLoad_specs_1    /* Additional specs */
+    3,                          /* Elements count */
+    &asn_SPC_PosPayLoad_specs_1 /* Additional specs */
 };
-

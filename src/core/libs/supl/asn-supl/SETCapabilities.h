@@ -7,7 +7,6 @@
 #ifndef _SETCapabilities_H_
 #define _SETCapabilities_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -28,9 +27,9 @@ extern "C"
         PrefMethod_t prefMethod;
         PosProtocol_t posProtocol;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

@@ -7,7 +7,6 @@
 #ifndef _GPS_MsrElement_H_
 #define _GPS_MsrElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

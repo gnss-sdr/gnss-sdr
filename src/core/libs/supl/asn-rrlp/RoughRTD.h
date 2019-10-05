@@ -7,7 +7,6 @@
 #ifndef _RoughRTD_H_
 #define _RoughRTD_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

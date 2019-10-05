@@ -7,7 +7,6 @@
 #ifndef _ControlHeader_H_
 #define _ControlHeader_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

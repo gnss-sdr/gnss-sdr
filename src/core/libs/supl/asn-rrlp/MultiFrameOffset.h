@@ -7,7 +7,6 @@
 #ifndef _MultiFrameOffset_H_
 #define _MultiFrameOffset_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

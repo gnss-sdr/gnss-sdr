@@ -7,7 +7,6 @@
 #ifndef _WcdmaCellInformation_H_
 #define _WcdmaCellInformation_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -33,9 +32,9 @@ extern "C"
         long *primaryScramblingCode /* OPTIONAL */;
         struct MeasuredResultsList *measuredResultsList /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

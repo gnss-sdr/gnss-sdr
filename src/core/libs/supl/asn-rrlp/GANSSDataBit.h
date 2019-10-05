@@ -7,7 +7,6 @@
 #ifndef _GANSSDataBit_H_
 #define _GANSSDataBit_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

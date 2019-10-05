@@ -7,7 +7,6 @@
 #ifndef _SeqOfSystemInfoAssistBTS_H_
 #define _SeqOfSystemInfoAssistBTS_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

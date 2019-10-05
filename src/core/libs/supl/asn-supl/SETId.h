@@ -7,7 +7,6 @@
 #ifndef _SETId_H_
 #define _SETId_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -48,9 +47,9 @@ extern "C"
             IA5String_t nai;
             IPAddress_t iPAddress;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

@@ -261,23 +261,20 @@ $ sudo ldconfig
 
 
 
-#### Build the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
+#### Download the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
 
 ~~~~~~
 $ wget https://github.com/google/googletest/archive/v1.10.x.zip
 $ unzip v1.10.x.zip
-$ cd googletest-1.10.x
-$ cmake -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF .
-$ make
 ~~~~~~
 
-Please **DO NOT install** Google Test (do *not* type `sudo make install`). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of `#if` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of googletest to its own tests; it is only required that you tell the system where the googletest folder that you downloaded resides. Just add to your `$HOME/.bashrc` file the following line:
+Please **DO NOT build or install** Google Test. Every user needs to compile tests using the same compiler flags used to compile the Google Test libraries; otherwise he or she may run into undefined behaviors (_i.e._, the tests can behave strangely and may even crash for no obvious reasons). The explanation is that C++ has the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (_e.g._, due to the use of `#if` in Google Test). Therefore, for your sanity, GNSS-SDR does not make use of pre-compiled Google Test libraries. Instead, it compiles Google Test's source code itself, such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR manages the compilation and linking of Google Test's source code to its own tests; it is only required that you tell the system where the Google Test folder that you downloaded resides. Just type in your terminal (or add it to your `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ~~~~~~
 export GTEST_DIR=/home/username/googletest-1.10.x
 ~~~~~~
 
-changing `/home/username/googletest-1.10.x` by the actual directory where you unpacked googletest.
+changing `/home/username/googletest-1.10.x` by the actual path where you unpacked Google Test. If the CMake script does not find that folder, or the environment variable is not defined, or the source code is not installed by a package, then it will download a fresh copy of the Google Test source code and will compile and link it for you.
 
 
 

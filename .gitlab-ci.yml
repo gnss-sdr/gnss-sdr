@@ -138,16 +138,20 @@ c++20:
     - pwd
   script:
     - zypper -n dup
-    - zypper -n install cmake git gcc-c++ gcc-fortran ninja boost-devel libboost_atomic-devel libboost_filesystem-devel libboost_system-devel libboost_date_time-devel libboost_thread-devel libboost_regex-devel libboost_serialization-devel libboost_program_options-devel libboost_math-devel libboost_numpy-devel libboost_chrono-devel libboost_python3-devel libboost_test-devel libboost_headers-devel libboost_test-devel libboost_random-devel libboost_numpy3-devel libboost_graph-devel python3-PyYAML python3 python3-qt5 python3-lxml log4cpp-devel libpcap-devel libtool automake hdf5-devel libopenssl-devel python3-Mako python3-six protobuf-devel gmp-devel python3-gmpy fftw3-devel python3-pyFFTW llvm-clang blas-devel lapack-devel
+    - zypper -n install cmake git gcc-c++ gcc-fortran ninja boost-devel libboost_atomic-devel libboost_filesystem-devel libboost_system-devel libboost_date_time-devel libboost_thread-devel libboost_regex-devel libboost_serialization-devel libboost_program_options-devel libboost_math-devel libboost_numpy-devel libboost_chrono-devel libboost_python3-devel libboost_test-devel libboost_headers-devel libboost_test-devel libboost_random-devel libboost_numpy3-devel libboost_graph-devel python3-PyYAML python3 python3-qt5 python3-lxml log4cpp-devel libpcap-devel libtool automake hdf5-devel libopenssl-devel python3-Mako python3-six protobuf-devel gmp-devel python3-gmpy fftw3-devel python3-pyFFTW llvm-clang blas-devel lapack-devel bison flex libxml2-devel
+    - mkdir libiio && cd libiio && git clone https://github.com/analogdevicesinc/libiio.git
+    - cd libiio && mkdir build && cd build && cmake .. && make && make install && ldconfig && cd ../../../
+    - mkdir ad9361 && cd ad9361 && git clone https://github.com/analogdevicesinc/libad9361-iio.git
+    - cd libad9361-iio && mkdir build&& cd build && cmake .. && make && make install && ldconfig && cd ../../../
     - mkdir gnuradio && cd gnuradio
     - git clone --recursive https://github.com/gnuradio/gnuradio
-    - cd gnuradio &&  mkdir build && cd build
+    - cd gnuradio && mkdir build && cd build
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
-    - cmake -DENABLE_DEFAULT=OFF -DENABLE_GNURADIO_RUNTIME=ON -DENABLE_VOLK=ON -DENABLE_GR_BLOCKS=ON -DENABLE_GR_ANALOG=ON -DENABLE_GR_FFT=ON -DENABLE_GR_FILTER=ON ..
+    - cmake -DENABLE_DEFAULT=OFF -DENABLE_GNURADIO_RUNTIME=ON -DENABLE_VOLK=ON -DENABLE_GR_BLOCKS=ON -DENABLE_GR_ANALOG=ON -DENABLE_GR_FFT=ON -DENABLE_GR_FILTER=ON -DENABLE_GR_IIO=ON ..
     - make -j$(($NPROC+1))
     - make install
     - cd ../../../build
-    - cmake -DENABLE_RAW_UDP=ON ..
+    - cmake -DENABLE_RAW_UDP=ON -DENABLE_AD9361=ON ..
     - make -j$(($NPROC+1)) VERBOSE=1
     - make check
     - make install

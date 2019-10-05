@@ -16,11 +16,12 @@ extern "C"
     struct asn_codec_ctx_s;       /* Forward declaration */
 
     /*
- * The BER decoder of any type.
- * This function may be invoked directly from the application.
- * The der_encode() function (der_encoder.h) is an opposite to ber_decode().
- */
-    asn_dec_rval_t ber_decode(struct asn_codec_ctx_s *opt_codec_ctx,
+     * The BER decoder of any type.
+     * This function may be invoked directly from the application.
+     * The der_encode() function (der_encoder.h) is an opposite to ber_decode().
+     */
+    asn_dec_rval_t ber_decode(
+        struct asn_codec_ctx_s *opt_codec_ctx,
         struct asn_TYPE_descriptor_s *type_descriptor,
         void **struct_ptr,  /* Pointer to a target structure's pointer */
         const void *buffer, /* Data to be decoded */
@@ -28,25 +29,25 @@ extern "C"
     );
 
     /*
- * Type of generic function which decodes the byte stream into the structure.
- */
+     * Type of generic function which decodes the byte stream into the
+     * structure.
+     */
     typedef asn_dec_rval_t(ber_type_decoder_f)(
         struct asn_codec_ctx_s *opt_codec_ctx,
-        struct asn_TYPE_descriptor_s *type_descriptor,
-        void **struct_ptr, const void *buf_ptr, size_t size,
-        int tag_mode);
+        struct asn_TYPE_descriptor_s *type_descriptor, void **struct_ptr,
+        const void *buf_ptr, size_t size, int tag_mode);
 
     /*******************************
- * INTERNALLY USEFUL FUNCTIONS *
- *******************************/
+     * INTERNALLY USEFUL FUNCTIONS *
+     *******************************/
 
     /*
- * Check that all tags correspond to the type definition (as given in head).
- * On return, last_length would contain either a non-negative length of the
- * value part of the last TLV, or the negative number of expected
- * "end of content" sequences. The number may only be negative if the
- * head->last_tag_form is non-zero.
- */
+     * Check that all tags correspond to the type definition (as given in head).
+     * On return, last_length would contain either a non-negative length of the
+     * value part of the last TLV, or the negative number of expected
+     * "end of content" sequences. The number may only be negative if the
+     * head->last_tag_form is non-zero.
+     */
     asn_dec_rval_t ber_check_tags(
         struct asn_codec_ctx_s *opt_codec_ctx, /* codec options */
         struct asn_TYPE_descriptor_s *type_descriptor,
@@ -54,8 +55,7 @@ extern "C"
         const void *ptr, size_t size,
         int tag_mode,      /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
         int last_tag_form, /* {-1,0:1}: any, primitive, constr */
-        ber_tlv_len_t *last_length,
-        int *opt_tlv_form /* optional tag form */
+        ber_tlv_len_t *last_length, int *opt_tlv_form /* optional tag form */
     );
 
 #ifdef __cplusplus

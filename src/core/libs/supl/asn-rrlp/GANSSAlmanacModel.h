@@ -7,7 +7,6 @@
 #ifndef _GANSSAlmanacModel_H_
 #define _GANSSAlmanacModel_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _LAC_H_
 #define _LAC_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

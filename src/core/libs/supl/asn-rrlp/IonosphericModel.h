@@ -7,7 +7,6 @@
 #ifndef _IonosphericModel_H_
 #define _IonosphericModel_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

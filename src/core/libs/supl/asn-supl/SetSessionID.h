@@ -7,7 +7,6 @@
 #ifndef _SetSessionID_H_
 #define _SetSessionID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

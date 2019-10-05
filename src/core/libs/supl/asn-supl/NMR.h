@@ -7,7 +7,6 @@
 #ifndef _NMR_H_
 #define _NMR_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

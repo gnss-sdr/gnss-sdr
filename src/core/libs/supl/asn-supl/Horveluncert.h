@@ -7,7 +7,6 @@
 #ifndef _Horveluncert_H_
 #define _Horveluncert_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -26,9 +25,9 @@ extern "C"
         BIT_STRING_t horspeed;
         BIT_STRING_t uncertspeed;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

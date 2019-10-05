@@ -7,7 +7,6 @@
 #ifndef _BSIC_H_
 #define _BSIC_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

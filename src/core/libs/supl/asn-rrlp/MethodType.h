@@ -7,7 +7,6 @@
 #ifndef _MethodType_H_
 #define _MethodType_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

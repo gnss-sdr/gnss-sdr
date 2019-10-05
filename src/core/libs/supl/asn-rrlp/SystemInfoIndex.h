@@ -7,7 +7,6 @@
 #ifndef _SystemInfoIndex_H_
 #define _SystemInfoIndex_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,28 +7,24 @@
 #include "MeasuredResultsList.h"
 
 static asn_per_constraints_t ASN_PER_TYPE_MEASURED_RESULTS_LIST_CONSTR_1 = {
-    { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
-    { APC_CONSTRAINED,     3,  3,  1,  8 }    /* (SIZE(1..8)) */,
-    0, 0    /* No PER value map */
+    {APC_UNCONSTRAINED, -1, -1, 0, 0},
+    {APC_CONSTRAINED, 3, 3, 1, 8} /* (SIZE(1..8)) */,
+    0,
+    0 /* No PER value map */
 };
 static asn_TYPE_member_t asn_MBR_MeasuredResultsList_1[] = {
-    { ATF_POINTER, 0, 0,
-        (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
-        0,
-        &asn_DEF_MeasuredResults,
-        0,    /* Defer constraints checking to the member type */
-        0,    /* No PER visible constraints */
-        0,
-        ""
-        },
+    {ATF_POINTER, 0, 0, (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0,
+     &asn_DEF_MeasuredResults,
+     0, /* Defer constraints checking to the member type */
+     0, /* No PER visible constraints */
+     0, ""},
 };
 static ber_tlv_tag_t asn_DEF_MeasuredResultsList_tags_1[] = {
-    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
-};
+    (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_SET_OF_specifics_t asn_SPC_MeasuredResultsList_specs_1 = {
     sizeof(struct MeasuredResultsList),
     offsetof(struct MeasuredResultsList, _asn_ctx),
-    0,    /* XER encoding is XMLDelimitedItemList */
+    0, /* XER encoding is XMLDelimitedItemList */
 };
 asn_TYPE_descriptor_t asn_DEF_MeasuredResultsList = {
     "MeasuredResultsList",
@@ -42,16 +38,15 @@ asn_TYPE_descriptor_t asn_DEF_MeasuredResultsList = {
     SEQUENCE_OF_encode_xer,
     SEQUENCE_OF_decode_uper,
     SEQUENCE_OF_encode_uper,
-    0,    /* Use generic outmost tag fetcher */
+    0, /* Use generic outmost tag fetcher */
     asn_DEF_MeasuredResultsList_tags_1,
-    sizeof(asn_DEF_MeasuredResultsList_tags_1)
-        /sizeof(asn_DEF_MeasuredResultsList_tags_1[0]), /* 1 */
-    asn_DEF_MeasuredResultsList_tags_1,    /* Same as above */
-    sizeof(asn_DEF_MeasuredResultsList_tags_1)
-        /sizeof(asn_DEF_MeasuredResultsList_tags_1[0]), /* 1 */
+    sizeof(asn_DEF_MeasuredResultsList_tags_1) /
+        sizeof(asn_DEF_MeasuredResultsList_tags_1[0]), /* 1 */
+    asn_DEF_MeasuredResultsList_tags_1,                /* Same as above */
+    sizeof(asn_DEF_MeasuredResultsList_tags_1) /
+        sizeof(asn_DEF_MeasuredResultsList_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_MEASURED_RESULTS_LIST_CONSTR_1,
     asn_MBR_MeasuredResultsList_1,
-    1,    /* Single element */
-    &asn_SPC_MeasuredResultsList_specs_1    /* Additional specs */
+    1,                                   /* Single element */
+    &asn_SPC_MeasuredResultsList_specs_1 /* Additional specs */
 };
-

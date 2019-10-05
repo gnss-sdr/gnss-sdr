@@ -7,7 +7,6 @@
 #ifndef _AcquisElement_H_
 #define _AcquisElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

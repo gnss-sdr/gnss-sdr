@@ -7,7 +7,6 @@
 #ifndef _AssistanceData_H_
 #define _AssistanceData_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -38,11 +37,13 @@ extern "C"
         MoreAssDataToBeSent_t *moreAssDataToBeSent /* OPTIONAL */;
         ExtensionContainer_t *extensionContainer /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
-        struct Rel98_AssistanceData_Extension *rel98_AssistanceData_Extension /* OPTIONAL */;
-        struct Rel5_AssistanceData_Extension *rel5_AssistanceData_Extension /* OPTIONAL */;
+         * This type is extensible,
+         * possible extensions are below.
+         */
+        struct Rel98_AssistanceData_Extension
+            *rel98_AssistanceData_Extension /* OPTIONAL */;
+        struct Rel5_AssistanceData_Extension
+            *rel5_AssistanceData_Extension /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

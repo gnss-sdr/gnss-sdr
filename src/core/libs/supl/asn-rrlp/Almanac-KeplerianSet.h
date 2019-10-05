@@ -7,7 +7,6 @@
 #ifndef _Almanac_KeplerianSet_H_
 #define _Almanac_KeplerianSet_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

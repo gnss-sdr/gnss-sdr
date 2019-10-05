@@ -7,7 +7,6 @@
 #ifndef _SeqOfSystemInfoAssistBTS_R98_ExpOTD_H_
 #define _SeqOfSystemInfoAssistBTS_R98_ExpOTD_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

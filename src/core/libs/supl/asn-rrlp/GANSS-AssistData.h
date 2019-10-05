@@ -7,7 +7,6 @@
 #ifndef _GANSS_AssistData_H_
 #define _GANSS_AssistData_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

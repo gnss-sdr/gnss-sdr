@@ -7,7 +7,6 @@
 #ifndef _AlmanacElement_H_
 #define _AlmanacElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

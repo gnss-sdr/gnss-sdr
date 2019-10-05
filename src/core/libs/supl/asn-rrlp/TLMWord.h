@@ -7,7 +7,6 @@
 #ifndef _TLMWord_H_
 #define _TLMWord_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _ReferenceWGS84_H_
 #define _ReferenceWGS84_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

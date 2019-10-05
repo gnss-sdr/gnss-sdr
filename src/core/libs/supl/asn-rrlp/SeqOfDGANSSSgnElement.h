@@ -7,7 +7,6 @@
 #ifndef _SeqOfDGANSSSgnElement_H_
 #define _SeqOfDGANSSSgnElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

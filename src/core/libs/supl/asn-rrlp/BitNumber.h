@@ -7,7 +7,6 @@
 #ifndef _BitNumber_H_
 #define _BitNumber_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

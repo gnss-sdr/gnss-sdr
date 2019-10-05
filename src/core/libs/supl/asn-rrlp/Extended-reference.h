@@ -7,7 +7,6 @@
 #ifndef _Extended_reference_H_
 #define _Extended_reference_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

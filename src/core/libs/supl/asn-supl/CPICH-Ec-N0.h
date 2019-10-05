@@ -7,7 +7,6 @@
 #ifndef _CPICH_Ec_N0_H_
 #define _CPICH_Ec_N0_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

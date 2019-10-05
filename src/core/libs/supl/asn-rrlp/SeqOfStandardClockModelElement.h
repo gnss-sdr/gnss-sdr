@@ -7,7 +7,6 @@
 #ifndef _SeqOfStandardClockModelElement_H_
 #define _SeqOfStandardClockModelElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

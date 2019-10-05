@@ -7,7 +7,6 @@
 #ifndef _ReferenceRelation_H_
 #define _ReferenceRelation_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

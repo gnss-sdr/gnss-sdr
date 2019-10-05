@@ -7,7 +7,6 @@
 #ifndef _GSMTime_H_
 #define _GSMTime_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

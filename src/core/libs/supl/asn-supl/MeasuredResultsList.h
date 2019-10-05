@@ -7,7 +7,6 @@
 #ifndef _MeasuredResultsList_H_
 #define _MeasuredResultsList_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

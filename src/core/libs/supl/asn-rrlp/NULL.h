@@ -13,9 +13,9 @@ extern "C"
 #endif
 
     /*
- * The value of the NULL type is meaningless: see BOOLEAN if you want to
- * carry true/false semantics.
- */
+     * The value of the NULL type is meaningless: see BOOLEAN if you want to
+     * carry true/false semantics.
+     */
     typedef int NULL_t;
 
     extern asn_TYPE_descriptor_t asn_DEF_NULL;

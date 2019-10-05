@@ -7,7 +7,6 @@
 #ifndef _SeqOfGANSSTimeModel_H_
 #define _SeqOfGANSSTimeModel_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

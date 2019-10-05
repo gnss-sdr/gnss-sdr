@@ -7,7 +7,6 @@
 #ifndef _OTD_MeasureInfo_R98_Ext_H_
 #define _OTD_MeasureInfo_R98_Ext_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -15,36 +15,35 @@ extern "C"
     typedef struct asn_SEQUENCE_specifics_s
     {
         /*
-     * Target structure description.
-     */
+         * Target structure description.
+         */
         int struct_size; /* Size of the target structure. */
         int ctx_offset;  /* Offset of the asn_struct_ctx_t member */
 
         /*
-     * Tags to members mapping table (sorted).
-     */
+         * Tags to members mapping table (sorted).
+         */
         asn_TYPE_tag2member_t *tag2el;
         int tag2el_count;
 
         /*
-     * Optional members of the extensions root (roms) or additions (aoms).
-     * Meaningful for PER.
-     */
+         * Optional members of the extensions root (roms) or additions (aoms).
+         * Meaningful for PER.
+         */
         int *oms;       /* Optional MemberS */
         int roms_count; /* Root optional members count */
         int aoms_count; /* Additions optional members count */
 
         /*
-     * Description of an extensions group.
-     */
+         * Description of an extensions group.
+         */
         int ext_after;  /* Extensions start after this member */
         int ext_before; /* Extensions stop before this member */
     } asn_SEQUENCE_specifics_t;
 
-
     /*
- * A set specialized functions dealing with the SEQUENCE type.
- */
+     * A set specialized functions dealing with the SEQUENCE type.
+     */
     asn_struct_free_f SEQUENCE_free;
     asn_struct_print_f SEQUENCE_print;
     asn_constr_check_f SEQUENCE_constraint;

@@ -7,7 +7,6 @@
 #ifndef _TA1_H_
 #define _TA1_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

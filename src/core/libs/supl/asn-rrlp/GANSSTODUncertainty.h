@@ -7,7 +7,6 @@
 #ifndef _GANSSTODUncertainty_H_
 #define _GANSSTODUncertainty_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

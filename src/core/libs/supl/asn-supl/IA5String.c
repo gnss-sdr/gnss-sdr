@@ -9,21 +9,21 @@
  * IA5String basic type description.
  */
 static ber_tlv_tag_t asn_DEF_IA5String_tags[] = {
-    (ASN_TAG_CLASS_UNIVERSAL | (22 << 2)),    /* [UNIVERSAL 22] IMPLICIT ...*/
-    (ASN_TAG_CLASS_UNIVERSAL | (4 << 2))    /* ... OCTET STRING */
+    (ASN_TAG_CLASS_UNIVERSAL | (22 << 2)), /* [UNIVERSAL 22] IMPLICIT ...*/
+    (ASN_TAG_CLASS_UNIVERSAL | (4 << 2))   /* ... OCTET STRING */
 };
 static asn_per_constraints_t ASN_DEF_I_A5_STRING_CONSTRAINTS = {
-    { APC_CONSTRAINED, 7, 7, 0, 0x7f },    /* Value */
-    { APC_SEMI_CONSTRAINED, -1, -1, 0, 0 },    /* Size */
-    0, 0
-};
+    {APC_CONSTRAINED, 7, 7, 0, 0x7f},     /* Value */
+    {APC_SEMI_CONSTRAINED, -1, -1, 0, 0}, /* Size */
+    0,
+    0};
 asn_TYPE_descriptor_t asn_DEF_IA5String = {
     "IA5String",
     "IA5String",
     OCTET_STRING_free,
-    OCTET_STRING_print_utf8,    /* ASCII subset */
-    IA5String_constraint,       /* Constraint on the alphabet */
-    OCTET_STRING_decode_ber,    /* Implemented in terms of OCTET STRING */
+    OCTET_STRING_print_utf8, /* ASCII subset */
+    IA5String_constraint,    /* Constraint on the alphabet */
+    OCTET_STRING_decode_ber, /* Implemented in terms of OCTET STRING */
     OCTET_STRING_encode_der,
     OCTET_STRING_decode_xer_utf8,
     OCTET_STRING_encode_xer_utf8,
@@ -31,47 +31,47 @@ asn_TYPE_descriptor_t asn_DEF_IA5String = {
     OCTET_STRING_encode_uper,
     0, /* Use generic outmost tag fetcher */
     asn_DEF_IA5String_tags,
-    sizeof(asn_DEF_IA5String_tags)
-      / sizeof(asn_DEF_IA5String_tags[0]) - 1,
+    sizeof(asn_DEF_IA5String_tags) / sizeof(asn_DEF_IA5String_tags[0]) - 1,
     asn_DEF_IA5String_tags,
-    sizeof(asn_DEF_IA5String_tags)
-      / sizeof(asn_DEF_IA5String_tags[0]),
+    sizeof(asn_DEF_IA5String_tags) / sizeof(asn_DEF_IA5String_tags[0]),
     &ASN_DEF_I_A5_STRING_CONSTRAINTS,
-    0, 0,    /* No members */
-    0    /* No specifics */
+    0,
+    0, /* No members */
+    0  /* No specifics */
 };
 
-int
-IA5String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-        asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+int IA5String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
+                         asn_app_constraint_failed_f *ctfailcb, void *app_key)
+{
     const IA5String_t *st = (const IA5String_t *)sptr;
 
-    if(st && st->buf) {
-        uint8_t *buf = st->buf;
-        uint8_t *end = buf + st->size;
-        /*
-         * IA5String is generally equivalent to 7bit ASCII.
-         * ISO/ITU-T T.50, 1963.
-         */
-        for(; buf < end; buf++) {
-            if(*buf > 0x7F) {
-                _ASN_CTFAIL(app_key, td, sptr,
-                    "%s: value byte %ld out of range: "
-                    "%d > 127 (%s:%d)",
-                    td->name,
-                    ((buf - st->buf) + 1),
-                    *buf,
-                    __FILE__, __LINE__);
-                return -1;
-            }
+    if (st && st->buf)
+        {
+            uint8_t *buf = st->buf;
+            uint8_t *end = buf + st->size;
+            /*
+             * IA5String is generally equivalent to 7bit ASCII.
+             * ISO/ITU-T T.50, 1963.
+             */
+            for (; buf < end; buf++)
+                {
+                    if (*buf > 0x7F)
+                        {
+                            _ASN_CTFAIL(app_key, td, sptr,
+                                        "%s: value byte %ld out of range: "
+                                        "%d > 127 (%s:%d)",
+                                        td->name, ((buf - st->buf) + 1), *buf,
+                                        __FILE__, __LINE__);
+                            return -1;
+                        }
+                }
         }
-    } else {
-        _ASN_CTFAIL(app_key, td, sptr,
-            "%s: value not given (%s:%d)",
-            td->name, __FILE__, __LINE__);
-        return -1;
-    }
+    else
+        {
+            _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
+                        td->name, __FILE__, __LINE__);
+            return -1;
+        }
 
     return 0;
 }
-

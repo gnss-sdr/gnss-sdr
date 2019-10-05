@@ -21,8 +21,8 @@ extern "C"
     xer_type_encoder_f UTCTime_encode_xer;
 
     /***********************
- * Some handy helpers. *
- ***********************/
+     * Some handy helpers. *
+     ***********************/
 
     struct tm; /* <time.h> */
 
@@ -30,7 +30,8 @@ extern "C"
     time_t asn_UT2time(const UTCTime_t * /*st*/, struct tm *_tm, int as_gmt);
 
     /* See asn_time2GT() in GeneralizedTime.h */
-    UTCTime_t *asn_time2UT(UTCTime_t *__opt_ut, const struct tm * /*tm*/, int force_gmt);
+    UTCTime_t *asn_time2UT(UTCTime_t *__opt_ut, const struct tm * /*tm*/,
+                           int force_gmt);
 
 #ifdef __cplusplus
 }

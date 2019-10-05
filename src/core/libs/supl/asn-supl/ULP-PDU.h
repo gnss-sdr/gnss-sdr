@@ -7,7 +7,6 @@
 #ifndef _ULP_PDU_H_
 #define _ULP_PDU_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

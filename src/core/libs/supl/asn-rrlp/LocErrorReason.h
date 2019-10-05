@@ -7,7 +7,6 @@
 #ifndef _LocErrorReason_H_
 #define _LocErrorReason_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -33,8 +32,8 @@ extern "C"
         LocErrorReason_refBTSForGPSNotServingBTS = 9,
         LocErrorReason_refBTSForEOTDNotServingBTS = 10,
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
         LocErrorReason_notEnoughGANSSSats = 11,
         LocErrorReason_ganssAssDataMissing = 12,
         LocErrorReason_refBTSForGANSSNotServingBTS = 13

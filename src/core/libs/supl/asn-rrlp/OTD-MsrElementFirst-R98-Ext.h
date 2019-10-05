@@ -7,7 +7,6 @@
 #ifndef _OTD_MsrElementFirst_R98_Ext_H_
 #define _OTD_MsrElementFirst_R98_Ext_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -24,7 +23,8 @@ extern "C"
     /* OTD-MsrElementFirst-R98-Ext */
     typedef struct OTD_MsrElementFirst_R98_Ext
     {
-        struct SeqOfOTD_FirstSetMsrs_R98_Ext *otd_FirstSetMsrs_R98_Ext /* OPTIONAL */;
+        struct SeqOfOTD_FirstSetMsrs_R98_Ext
+            *otd_FirstSetMsrs_R98_Ext /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

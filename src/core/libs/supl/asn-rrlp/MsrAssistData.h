@@ -7,7 +7,6 @@
 #ifndef _MsrAssistData_H_
 #define _MsrAssistData_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

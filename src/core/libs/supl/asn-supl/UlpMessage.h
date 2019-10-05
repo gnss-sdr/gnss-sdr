@@ -7,7 +7,6 @@
 #ifndef _UlpMessage_H_
 #define _UlpMessage_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -55,9 +54,9 @@ extern "C"
             DUMMY_t msDUMMY2;
             DUMMY_t msDUMMY3;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

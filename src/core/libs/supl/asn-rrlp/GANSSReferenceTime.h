@@ -7,7 +7,6 @@
 #ifndef _GANSSReferenceTime_H_
 #define _GANSSReferenceTime_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -26,7 +25,8 @@ extern "C"
     typedef struct GANSSReferenceTime
     {
         GANSSRefTimeInfo_t ganssRefTimeInfo;
-        struct GANSSTOD_GSMTimeAssociation *ganssTOD_GSMTimeAssociation /* OPTIONAL */;
+        struct GANSSTOD_GSMTimeAssociation
+            *ganssTOD_GSMTimeAssociation /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

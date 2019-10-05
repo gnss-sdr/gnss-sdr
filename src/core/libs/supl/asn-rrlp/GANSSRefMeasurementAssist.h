@@ -7,7 +7,6 @@
 #ifndef _GANSSRefMeasurementAssist_H_
 #define _GANSSRefMeasurementAssist_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

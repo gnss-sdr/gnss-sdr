@@ -7,7 +7,6 @@
 #ifndef _GPSTime_H_
 #define _GPSTime_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

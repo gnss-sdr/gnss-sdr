@@ -7,7 +7,6 @@
 #ifndef _SeqOfOTD_FirstSetMsrs_R98_Ext_H_
 #define _SeqOfOTD_FirstSetMsrs_R98_Ext_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

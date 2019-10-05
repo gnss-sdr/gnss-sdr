@@ -7,7 +7,6 @@
 #ifndef _FQDN_H_
 #define _FQDN_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

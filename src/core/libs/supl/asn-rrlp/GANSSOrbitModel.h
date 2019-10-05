@@ -7,7 +7,6 @@
 #ifndef _GANSSOrbitModel_H_
 #define _GANSSOrbitModel_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -35,9 +34,9 @@ extern "C"
         {
             NavModel_KeplerianSet_t keplerianSet;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

@@ -20,7 +20,7 @@ extern "C"
     /* Map with <tag> to integer value association */
     typedef struct asn_INTEGER_enum_map_s
     {
-        int64_t nat_value;        /* associated native integer value */
+        int64_t nat_value;     /* associated native integer value */
         size_t enum_len;       /* strlen("tag") */
         const char *enum_name; /* "tag" */
     } asn_INTEGER_enum_map_t;
@@ -46,24 +46,25 @@ extern "C"
     per_type_encoder_f INTEGER_encode_uper;
 
     /***********************************
- * Some handy conversion routines. *
- ***********************************/
+     * Some handy conversion routines. *
+     ***********************************/
 
     /*
- * Returns 0 if it was possible to convert, -1 otherwise.
- * -1/EINVAL: Mandatory argument missing
- * -1/ERANGE: Value encoded is out of range for long representation
- * -1/ENOMEM: Memory allocation failed (in asn_long2INTEGER()).
- */
+     * Returns 0 if it was possible to convert, -1 otherwise.
+     * -1/EINVAL: Mandatory argument missing
+     * -1/ERANGE: Value encoded is out of range for long representation
+     * -1/ENOMEM: Memory allocation failed (in asn_long2INTEGER()).
+     */
     int asn_INTEGER2long(const INTEGER_t *i, int64_t *l);
     int asn_INTEGER2ulong(const INTEGER_t *i, uint64_t *l);
     int asn_long2INTEGER(INTEGER_t *st, int64_t value);
     int asn_ulong2INTEGER(INTEGER_t *st, uint64_t value);
 
     /*
- * Convert the integer value into the corresponding enumeration map entry.
- */
-    const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, int64_t value);
+     * Convert the integer value into the corresponding enumeration map entry.
+     */
+    const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(
+        asn_INTEGER_specifics_t *specs, int64_t value);
 
 #ifdef __cplusplus
 }

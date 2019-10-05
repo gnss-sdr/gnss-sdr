@@ -7,7 +7,6 @@
 #ifndef _BTSPosition_H_
 #define _BTSPosition_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

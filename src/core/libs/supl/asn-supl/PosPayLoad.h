@@ -7,7 +7,6 @@
 #ifndef _PosPayLoad_H_
 #define _PosPayLoad_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -39,9 +38,9 @@ extern "C"
             OCTET_STRING_t rrcPayload;
             OCTET_STRING_t rrlpPayload;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

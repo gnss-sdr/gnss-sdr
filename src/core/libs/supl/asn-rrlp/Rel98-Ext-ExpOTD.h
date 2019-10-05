@@ -7,7 +7,6 @@
 #ifndef _Rel98_Ext_ExpOTD_H_
 #define _Rel98_Ext_ExpOTD_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -25,8 +24,10 @@ extern "C"
     /* Rel98-Ext-ExpOTD */
     typedef struct Rel98_Ext_ExpOTD
     {
-        struct MsrAssistData_R98_ExpOTD *msrAssistData_R98_ExpOTD /* OPTIONAL */;
-        struct SystemInfoAssistData_R98_ExpOTD *systemInfoAssistData_R98_ExpOTD /* OPTIONAL */;
+        struct MsrAssistData_R98_ExpOTD
+            *msrAssistData_R98_ExpOTD /* OPTIONAL */;
+        struct SystemInfoAssistData_R98_ExpOTD
+            *systemInfoAssistData_R98_ExpOTD /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

@@ -7,7 +7,6 @@
 #ifndef _AccuracyOpt_H_
 #define _AccuracyOpt_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

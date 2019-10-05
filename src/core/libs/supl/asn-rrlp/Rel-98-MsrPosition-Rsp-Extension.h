@@ -7,7 +7,6 @@
 #ifndef _Rel_98_MsrPosition_Rsp_Extension_H_
 #define _Rel_98_MsrPosition_Rsp_Extension_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -27,16 +26,18 @@ extern "C"
     {
         struct rel_98_Ext_MeasureInfo
         {
-            struct OTD_MeasureInfo_R98_Ext *otd_MeasureInfo_R98_Ext /* OPTIONAL */;
+            struct OTD_MeasureInfo_R98_Ext
+                *otd_MeasureInfo_R98_Ext /* OPTIONAL */;
 
             /* Context for parsing across buffer boundaries */
             asn_struct_ctx_t _asn_ctx;
         } rel_98_Ext_MeasureInfo;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
-        struct GPSTimeAssistanceMeasurements *timeAssistanceMeasurements /* OPTIONAL */;
+         * This type is extensible,
+         * possible extensions are below.
+         */
+        struct GPSTimeAssistanceMeasurements
+            *timeAssistanceMeasurements /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

@@ -7,7 +7,6 @@
 #ifndef _EncodingType_H_
 #define _EncodingType_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -25,8 +24,8 @@ extern "C"
         EncodingType_gsmDefault = 1,
         EncodingType_utf8 = 2
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_EncodingType;
 
     /* EncodingType */

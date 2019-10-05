@@ -7,7 +7,6 @@
 #ifndef _CellID_H_
 #define _CellID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

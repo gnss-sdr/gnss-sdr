@@ -7,7 +7,6 @@
 #ifndef _PositionMethod_H_
 #define _PositionMethod_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

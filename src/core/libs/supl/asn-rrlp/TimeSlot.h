@@ -7,7 +7,6 @@
 #ifndef _TimeSlot_H_
 #define _TimeSlot_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _TGSN_H_
 #define _TGSN_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

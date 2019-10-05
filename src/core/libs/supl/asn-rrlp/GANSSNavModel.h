@@ -7,7 +7,6 @@
 #ifndef _GANSSNavModel_H_
 #define _GANSSNavModel_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

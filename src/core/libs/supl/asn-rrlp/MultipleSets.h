@@ -7,7 +7,6 @@
 #ifndef _MultipleSets_H_
 #define _MultipleSets_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

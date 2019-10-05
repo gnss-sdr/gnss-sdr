@@ -7,7 +7,6 @@
 #ifndef _SeqOfBadSignalElement_H_
 #define _SeqOfBadSignalElement_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

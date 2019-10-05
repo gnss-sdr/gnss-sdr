@@ -7,7 +7,6 @@
 #ifndef _SVID_H_
 #define _SVID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

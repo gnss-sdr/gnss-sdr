@@ -7,7 +7,6 @@
 #ifndef _StdResolution_H_
 #define _StdResolution_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

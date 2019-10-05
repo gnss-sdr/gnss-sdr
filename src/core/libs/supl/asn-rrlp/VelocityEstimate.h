@@ -7,7 +7,6 @@
 #ifndef _VelocityEstimate_H_
 #define _VelocityEstimate_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

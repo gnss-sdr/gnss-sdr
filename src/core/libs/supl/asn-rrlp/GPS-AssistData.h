@@ -7,7 +7,6 @@
 #ifndef _GPS_AssistData_H_
 #define _GPS_AssistData_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

@@ -7,7 +7,6 @@
 #ifndef _SLPAddress_H_
 #define _SLPAddress_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -38,9 +37,9 @@ extern "C"
             IPAddress_t iPAddress;
             FQDN_t fQDN;
             /*
-         * This type is extensible,
-         * possible extensions are below.
-         */
+             * This type is extensible,
+             * possible extensions are below.
+             */
         } choice;
 
         /* Context for parsing across buffer boundaries */

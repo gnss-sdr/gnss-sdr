@@ -7,7 +7,6 @@
 #ifndef _SystemInfoAssistData_H_
 #define _SystemInfoAssistData_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

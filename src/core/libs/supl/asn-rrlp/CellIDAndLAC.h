@@ -7,7 +7,6 @@
 #ifndef _CellIDAndLAC_H_
 #define _CellIDAndLAC_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

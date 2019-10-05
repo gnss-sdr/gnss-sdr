@@ -7,7 +7,6 @@
 #ifndef _GANSSIonosphereModel_H_
 #define _GANSSIonosphereModel_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

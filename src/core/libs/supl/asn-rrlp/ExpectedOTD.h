@@ -7,7 +7,6 @@
 #ifndef _ExpectedOTD_H_
 #define _ExpectedOTD_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

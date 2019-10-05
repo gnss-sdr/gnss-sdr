@@ -7,7 +7,6 @@
 #ifndef _GANSS_ControlHeader_H_
 #define _GANSS_ControlHeader_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -26,7 +25,8 @@ extern "C"
     typedef struct GANSS_ControlHeader
     {
         struct GANSSCommonAssistData *ganssCommonAssistData /* OPTIONAL */;
-        struct SeqOfGANSSGenericAssistDataElement *ganssGenericAssistDataList /* OPTIONAL */;
+        struct SeqOfGANSSGenericAssistDataElement
+            *ganssGenericAssistDataList /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

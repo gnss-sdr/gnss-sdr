@@ -7,7 +7,6 @@
 #ifndef _StatusCode_H_
 #define _StatusCode_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -42,8 +41,8 @@ extern "C"
         StatusCode_consentDeniedByUser = 100,
         StatusCode_consentGrantedByUser = 101
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_StatusCode;
 
     /* StatusCode */

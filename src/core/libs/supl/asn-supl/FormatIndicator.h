@@ -7,7 +7,6 @@
 #ifndef _FormatIndicator_H_
 #define _FormatIndicator_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -30,8 +29,8 @@ extern "C"
         FormatIndicator_mdn = 6,
         FormatIndicator_imsPublicIdentity = 7
         /*
-     * Enumeration is extensible
-     */
+         * Enumeration is extensible
+         */
     } e_FormatIndicator;
 
     /* FormatIndicator */

@@ -7,7 +7,6 @@
 #ifndef _GPSTimeAssistanceMeasurements_H_
 #define _GPSTimeAssistanceMeasurements_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -26,7 +25,8 @@ extern "C"
         long referenceFrameMSB;
         long *gpsTowSubms /* OPTIONAL */;
         long *deltaTow /* OPTIONAL */;
-        GPSReferenceTimeUncertainty_t *gpsReferenceTimeUncertainty /* OPTIONAL */;
+        GPSReferenceTimeUncertainty_t
+            *gpsReferenceTimeUncertainty /* OPTIONAL */;
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;

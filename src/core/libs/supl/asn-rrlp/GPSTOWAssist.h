@@ -7,7 +7,6 @@
 #ifndef _GPSTOWAssist_H_
 #define _GPSTOWAssist_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

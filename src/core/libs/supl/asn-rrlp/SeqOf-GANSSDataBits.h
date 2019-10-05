@@ -7,7 +7,6 @@
 #ifndef _SeqOf_GANSSDataBits_H_
 #define _SeqOf_GANSSDataBits_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

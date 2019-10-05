@@ -7,7 +7,6 @@
 #ifndef _PositionEstimate_H_
 #define _PositionEstimate_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */
@@ -48,16 +47,17 @@ extern "C"
         long *confidence /* OPTIONAL */;
         struct AltitudeInfo *altitudeInfo /* OPTIONAL */;
         /*
-     * This type is extensible,
-     * possible extensions are below.
-     */
+         * This type is extensible,
+         * possible extensions are below.
+         */
 
         /* Context for parsing across buffer boundaries */
         asn_struct_ctx_t _asn_ctx;
     } PositionEstimate_t;
 
     /* Implementation */
-    /* extern asn_TYPE_descriptor_t asn_DEF_latitudeSign_2;  // (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_latitudeSign_2;  // (Use
+     * -fall-defs-global to expose) */
     extern asn_TYPE_descriptor_t asn_DEF_PositionEstimate;
 
 #ifdef __cplusplus

@@ -7,7 +7,6 @@
 #ifndef _SlpSessionID_H_
 #define _SlpSessionID_H_
 
-
 #include <asn_application.h>
 
 /* Including external dependencies */

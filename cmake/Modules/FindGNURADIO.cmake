@@ -76,7 +76,6 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
         PATHS /usr/include
               /usr/local/include
               /opt/local/include
-              ${GNURADIO_INSTALL_PREFIX}/include
               ${GNURADIO_ROOT}/include
               $ENV{GNURADIO_ROOT}/include
               $ENV{GNURADIO_RUNTIME_DIR}/include
@@ -118,7 +117,6 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/local/lib
                   /usr/local/lib64
                   /opt/local/lib
-                  ${GNURADIO_INSTALL_PREFIX}/lib
                   ${GNURADIO_ROOT}/lib
                   $ENV{GNURADIO_ROOT}/lib
                   ${GNURADIO_ROOT}/lib64
@@ -276,6 +274,99 @@ else()
         DESCRIPTION "The free and open software radio ecosystem"
     )
 endif()
+
+
+# Search for IIO component
+if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
+    pkg_check_modules(PC_GNURADIO_IIO QUIET gnuradio-iio)
+    # look for include files
+    message(STATUS "Checking for GNU Radio Module: IIO")
+    find_path(GNURADIO_IIO_INCLUDE_DIRS
+        NAMES gnuradio/iio/api.h
+        HINTS ${PC_GNURADIO_IIO_INCLUDEDIR}
+        PATHS /usr/include
+              /usr/local/include
+              /opt/local/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+              ${GNURADIO_ROOT}/include
+              $ENV{GNURADIO_ROOT}/include
+              $ENV{GNURADIO_RUNTIME_DIR}/include
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
+    )
+
+    # look for libs
+    find_library(GNURADIO_IIO_LIBRARIES
+        NAMES gnuradio-iio gnuradio-iio-${GNURADIO_VERSION}
+        HINTS ${PC_GNURADIO_IIO_LIBDIR}
+        PATHS /usr/lib
+              /usr/lib64
+              /usr/lib/x86_64-linux-gnu
+              /usr/lib/i386-linux-gnu
+              /usr/lib/arm-linux-gnueabihf
+              /usr/lib/arm-linux-gnueabi
+              /usr/lib/aarch64-linux-gnu
+              /usr/lib/mipsel-linux-gnu
+              /usr/lib/mips-linux-gnu
+              /usr/lib/mips64el-linux-gnuabi64
+              /usr/lib/powerpc-linux-gnu
+              /usr/lib/powerpc64-linux-gnu
+              /usr/lib/powerpc64le-linux-gnu
+              /usr/lib/powerpc-linux-gnuspe
+              /usr/lib/hppa-linux-gnu
+              /usr/lib/s390x-linux-gnu
+              /usr/lib/i386-gnu
+              /usr/lib/hppa-linux-gnu
+              /usr/lib/x86_64-kfreebsd-gnu
+              /usr/lib/i386-kfreebsd-gnu
+              /usr/lib/m68k-linux-gnu
+              /usr/lib/sh4-linux-gnu
+              /usr/lib/sparc64-linux-gnu
+              /usr/lib/x86_64-linux-gnux32
+              /usr/lib/alpha-linux-gnu
+              /usr/lib/riscv64-linux-gnu
+              /usr/local/lib
+              /usr/local/lib64
+              /opt/local/lib
+              ${GNURADIO_ROOT}/lib
+              $ENV{GNURADIO_ROOT}/lib
+              ${GNURADIO_ROOT}/lib64
+              $ENV{GNURADIO_ROOT}/lib64
+              $ENV{GNURADIO_RUNTIME_DIR}/lib
+              ${CMAKE_INSTALL_PREFIX}/lib
+              ${CMAKE_INSTALL_PREFIX}/lib64
+              ${GNURADIO_INSTALL_PREFIX}/lib
+              ${GNURADIO_INSTALL_PREFIX}/lib64
+    )
+
+    if(GNURADIO_IIO_LIBRARIES)
+        message(STATUS " * INCLUDES=${GNURADIO_IIO_INCLUDE_DIRS}")
+        message(STATUS " * LIBS=${GNURADIO_IIO_LIBRARIES}")
+    endif()
+    find_package_handle_standard_args(GNURADIO_IIO DEFAULT_MSG GNURADIO_IIO_LIBRARIES GNURADIO_IIO_INCLUDE_DIRS)
+
+    if(GNURADIO_IIO_FOUND)
+        message(STATUS "GNURADIO_IIO_FOUND = ${GNURADIO_IIO_FOUND}")
+        # append to all includes and libs list
+        set(GNURADIO_ALL_INCLUDE_DIRS ${GNURADIO_ALL_INCLUDE_DIRS} ${GNURADIO_IIO_INCLUDE_DIRS})
+        set(GNURADIO_ALL_LIBRARIES ${GNURADIO_ALL_LIBRARIES} ${GNURADIO_IIO_LIBRARIES})
+
+        # Create imported target
+        if(NOT TARGET Gnuradio::iio)
+            add_library(Gnuradio::iio SHARED IMPORTED)
+            set(GNURADIO_LIBRARY ${GNURADIO_IIO_LIBRARIES})
+            list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
+            get_filename_component(GNURADIO_DIR ${FIRST_DIR} ABSOLUTE)
+            set_target_properties(Gnuradio::iio PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNURADIO_DIR}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_IIO_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
+            )
+        endif()
+    endif()
+endif()
+
 
 set_package_properties(GNURADIO PROPERTIES
     URL "https://www.gnuradio.org/"

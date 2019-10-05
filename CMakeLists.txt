@@ -2275,11 +2275,17 @@ endif()
 # IIO blocks for GNU Radio
 # https://github.com/analogdevicesinc/gr-iio
 ##############################################
-find_package(GRIIO)
-set_package_properties(GRIIO PROPERTIES
-    PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
-    TYPE OPTIONAL
-)
+if(GNURADIO_IIO_FOUND)
+    set(GRIIO_FOUND TRUE)
+    set(GR_IIO_INCLUDE_HAS_GNURADIO TRUE)
+    set(GNURADIO_API_IIO TRUE)
+else()
+    find_package(GRIIO)
+    set_package_properties(GRIIO PROPERTIES
+        PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
+        TYPE OPTIONAL
+    )
+endif()
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     if(NOT GRIIO_FOUND)
         message(STATUS "gnuradio-iio not found, its installation is required.")

@@ -102,6 +102,10 @@ private:
     std::string rf_port_select_;
     std::string filter_file_;
     bool filter_auto_;
+    std::string filter_source_;
+    std::string filter_filename_;
+    float Fpass_;
+    float Fstop_;
 
     // DDS configuration for LO generation for external mixer
     bool enable_dds_lo_;

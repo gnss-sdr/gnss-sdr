@@ -64,6 +64,10 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     rf_gain_rx2_ = configuration->property(role + ".gain_rx2", 64.0);
     rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
+    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+    filter_filename_ = configuration->property(role + ".filter_filename", std::string(""));
+    Fpass_ = configuration->property(role + ".Fpass", 0.0);
+    Fstop_ = configuration->property(role + ".Fstop", 0.0);
     filter_auto_ = configuration->property(role + ".filter_auto", true);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
@@ -94,6 +98,17 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                         }
                     else
                         {
+#if GNURADIO_API_IIO
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                                uri_.c_str(), freq_, sample_rate_,
+                                bandwidth_,
+                                rx1_en_, rx2_en_,
+                                buffer_size_, quadrature_, rf_dc_,
+                                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                                rf_port_select_.c_str(), filter_source_.c_str(),
+                                filter_filename_.c_str(), Fpass_, Fstop_);
+#else
                             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
                                 uri_.c_str(), freq_, sample_rate_,
                                 bandwidth_,
@@ -103,7 +118,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 gain_mode_rx2_.c_str(), rf_gain_rx2_,
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
-
+#endif
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {
@@ -126,6 +141,17 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                         }
                     else
                         {
+#if GNURADIO_API_IIO
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                                uri_.c_str(), freq_, sample_rate_,
+                                bandwidth_,
+                                rx1_en_, rx2_en_,
+                                buffer_size_, quadrature_, rf_dc_,
+                                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                                rf_port_select_.c_str(), filter_source_.c_str(),
+                                filter_filename_.c_str(), Fpass_, Fstop_);
+#else
                             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
                                 uri_.c_str(), freq_, sample_rate_,
                                 bandwidth_,
@@ -135,6 +161,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 gain_mode_rx2_.c_str(), rf_gain_rx2_,
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
+#endif
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {

@@ -55,7 +55,10 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     rf_gain_ = configuration->property(role + ".gain", 50.0);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", true);
-
+    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+    filter_filename_ = configuration->property(role + ".filter_filename", std::string(""));
+    Fpass_ = configuration->property(role + ".Fpass", 0.0);
+    Fstop_ = configuration->property(role + ".Fstop", 0.0);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -75,10 +78,16 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     std::cout << "gain mode: " << gain_mode_ << std::endl;
     std::cout << "item type: " << item_type_ << std::endl;
 
+#if GNURADIO_API_IIO
+    plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
+        bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
+        gain_mode_.c_str(), rf_gain_, filter_source_.c_str(),
+        filter_filename_.c_str(), Fpass_, Fstop_);
+#else
     plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
         bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
         gain_mode_.c_str(), rf_gain_, filter_file_.c_str(), filter_auto_);
-
+#endif
     if (samples_ != 0)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";

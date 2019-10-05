@@ -97,6 +97,10 @@ private:
     double rf_gain_;
     std::string filter_file_;
     bool filter_auto_;
+    std::string filter_source_;
+    std::string filter_filename_;
+    float Fpass_;
+    float Fstop_;
 
     unsigned int in_stream_;
     unsigned int out_stream_;

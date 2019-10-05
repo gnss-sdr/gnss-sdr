@@ -63,16 +63,6 @@ target_include_directories(signal_source_libs
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
-if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-    target_link_libraries(signal_source_libs
-        PUBLIC
-            Gnuradio::iio
-        PRIVATE
-            Gnuradio::analog
-            Iio::iio
-    )
-endif()
-
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     target_link_libraries(signal_source_libs
         PUBLIC

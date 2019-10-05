@@ -217,6 +217,16 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
             PUBLIC -DGRIIO_INCLUDE_HAS_GNURADIO=1
         )
     endif()
+    if(GNURADIO_API_IIO)
+        target_compile_definitions(signal_source_adapters
+            PUBLIC -DGNURADIO_API_IIO=1
+        )
+    endif()
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::iio
+            Boost::chrono
+    )
 endif()
 
 if(ENABLE_CLANG_TIDY)

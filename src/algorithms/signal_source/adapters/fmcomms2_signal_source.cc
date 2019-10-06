@@ -84,6 +84,46 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 
     item_size_ = sizeof(gr_complex);
 
+    // some basic checks
+    if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
+        {
+            std::cout << "Configuration parameter rf_port_select should take one of these values:" << std::endl;
+            std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2" << std::endl;
+            std::cout << "Error: provided value rf_port_select=" << rf_port_select_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value rf_port_select=A_BALANCED" << std::endl;
+            rf_port_select_ = std::string("A_BALANCED");
+        }
+
+    if ((gain_mode_rx1_ != "manual") and (gain_mode_rx1_ != "slow_attack") and (gain_mode_rx1_ != "fast_attack") and (gain_mode_rx1_ != "hybrid"))
+        {
+            std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:" << std::endl;
+            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+            std::cout << "Error: provided value gain_mode_rx1=" << gain_mode_rx1_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value gain_mode_rx1=manual" << std::endl;
+            gain_mode_rx1_ = std::string("manual");
+        }
+
+    if ((gain_mode_rx2_ != "manual") and (gain_mode_rx2_ != "slow_attack") and (gain_mode_rx2_ != "fast_attack") and (gain_mode_rx2_ != "hybrid"))
+        {
+            std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:" << std::endl;
+            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+            std::cout << "Error: provided value gain_mode_rx2=" << gain_mode_rx2_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value gain_mode_rx2=manual" << std::endl;
+            gain_mode_rx2_ = std::string("manual");
+        }
+
+    if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
+        {
+            std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
+            std::cout << "  Off: Disable filter" << std::endl;
+            std::cout << "  Auto: Use auto-generated filters" << std::endl;
+            std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+            std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+            std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
+            filter_source_ = std::string("Off");
+        }
+
     std::cout << "device address: " << uri_ << std::endl;
     std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
     std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;

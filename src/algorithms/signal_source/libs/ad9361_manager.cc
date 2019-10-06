@@ -183,7 +183,10 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
-    double rf_gain_rx2_)
+    double rf_gain_rx2_,
+    bool quadrature_,
+    bool rfdc_,
+    bool bbdc_)
 
 {
     // RX stream config
@@ -264,6 +267,21 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         {
             std::cout << "Failed to set calib_mode: " << ret << std::endl;
         }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_quadrature_tracking_en", quadrature_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_quadrature_tracking_en: " << ret << std::endl;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_rf_dc_offset_tracking_en", rfdc_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_rf_dc_offset_tracking_en: " << ret << std::endl;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_bb_dc_offset_tracking_en", bbdc_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_bb_dc_offset_tracking_en: " << ret << std::endl;
+        }
     ret = iio_device_attr_write(ad9361_phy, "in_voltage0_gain_control_mode", gain_mode_rx1_.c_str());
     if (ret < 0)
         {
@@ -299,7 +317,10 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
-    double rf_gain_rx2_)
+    double rf_gain_rx2_,
+    bool quadrature_,
+    bool rfdc_,
+    bool bbdc_)
 {
     // RX stream config
     // Stream configurations
@@ -378,6 +399,21 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     if (ret < 0)
         {
             std::cout << "Failed to set calib_mode: " << ret << std::endl;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_quadrature_tracking_en", quadrature_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_quadrature_tracking_en: " << ret << std::endl;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_rf_dc_offset_tracking_en", rfdc_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_rf_dc_offset_tracking_en: " << ret << std::endl;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_bb_dc_offset_tracking_en", bbdc_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_bb_dc_offset_tracking_en: " << ret << std::endl;
         }
     ret = iio_device_attr_write(ad9361_phy, "in_voltage0_gain_control_mode", gain_mode_rx1_.c_str());
     if (ret < 0)

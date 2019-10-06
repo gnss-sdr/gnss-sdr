@@ -1016,7 +1016,6 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 
     do
         {
-            int i;
             if (nelems < 0)
                 {
                     nelems = uper_get_length(pd, ct ? ct->effective_bits : -1,

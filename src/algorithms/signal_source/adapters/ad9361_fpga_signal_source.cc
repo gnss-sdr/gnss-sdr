@@ -342,6 +342,34 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
         }
     if (switch_position == 2)  // Real-time via AD9361
         {
+            // some basic checks
+            if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
+                {
+                    std::cout << "Configuration parameter rf_port_select should take one of these values:" << std::endl;
+                    std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2" << std::endl;
+                    std::cout << "Error: provided value rf_port_select=" << rf_port_select_ << " is not among valid values" << std::endl;
+                    std::cout << " This parameter has been set to its default value rf_port_select=A_BALANCED" << std::endl;
+                    rf_port_select_ = std::string("A_BALANCED");
+                }
+
+            if ((gain_mode_rx1_ != "manual") and (gain_mode_rx1_ != "slow_attack") and (gain_mode_rx1_ != "fast_attack") and (gain_mode_rx1_ != "hybrid"))
+                {
+                    std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:" << std::endl;
+                    std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+                    std::cout << "Error: provided value gain_mode_rx1=" << gain_mode_rx1_ << " is not among valid values" << std::endl;
+                    std::cout << " This parameter has been set to its default value gain_mode_rx1=manual" << std::endl;
+                    gain_mode_rx1_ = std::string("manual");
+                }
+
+            if ((gain_mode_rx2_ != "manual") and (gain_mode_rx2_ != "slow_attack") and (gain_mode_rx2_ != "fast_attack") and (gain_mode_rx2_ != "hybrid"))
+                {
+                    std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:" << std::endl;
+                    std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+                    std::cout << "Error: provided value gain_mode_rx2=" << gain_mode_rx2_ << " is not among valid values" << std::endl;
+                    std::cout << " This parameter has been set to its default value gain_mode_rx2=manual" << std::endl;
+                    gain_mode_rx2_ = std::string("manual");
+                }
+
             std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
             config_ad9361_rx_local(bandwidth_,
                 sample_rate_,
@@ -350,7 +378,10 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                 gain_mode_rx1_,
                 gain_mode_rx2_,
                 rf_gain_rx1_,
-                rf_gain_rx2_);
+                rf_gain_rx2_,
+                quadrature_,
+                rf_dc_,
+                bb_dc_);
 
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
             if (enable_dds_lo_ == true)

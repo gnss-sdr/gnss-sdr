@@ -92,7 +92,10 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
-    double rf_gain_rx2_);
+    double rf_gain_rx2_,
+    bool quadrature_,
+    bool rfdc_,
+    bool bbdc_);
 
 bool config_ad9361_rx_remote(const std::string &remote_host,
     uint64_t bandwidth_,
@@ -102,7 +105,10 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
-    double rf_gain_rx2_);
+    double rf_gain_rx2_,
+    bool quadrature_,
+    bool rfdc_,
+    bool bbdc_);
 
 bool config_ad9361_lo_local(uint64_t bandwidth_,
     uint64_t sample_rate_,

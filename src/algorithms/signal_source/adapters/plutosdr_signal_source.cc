@@ -70,6 +70,16 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
             LOG(FATAL) << "Configuration error: item_type must be gr_complex!";
         }
 
+    // basic check
+    if ((gain_mode_ != "manual") and (gain_mode_ != "slow_attack") and (gain_mode_ != "fast_attack") and (gain_mode_ != "hybrid"))
+        {
+            std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:" << std::endl;
+            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+            std::cout << "Error: provided value gain_mode=" << gain_mode_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value gain_mode=manual" << std::endl;
+            gain_mode_ = std::string("manual");
+        }
+
     item_size_ = sizeof(gr_complex);
 
     std::cout << "device address: " << uri_ << std::endl;

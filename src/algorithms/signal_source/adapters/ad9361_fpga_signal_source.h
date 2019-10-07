@@ -101,6 +101,7 @@ private:
     bool enable_dds_lo_;
     uint64_t freq_rf_tx_hz_;
     uint64_t freq_dds_tx_hz_;
+    uint64_t tx_bandwidth_;
     double scale_dds_dbfs_;
     double phase_dds_deg_;
     double tx_attenuation_db_;
@@ -109,7 +110,7 @@ private:
     uint32_t out_stream_;
 
     size_t item_size_;
-    long samples_;
+    int64_t samples_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 

@@ -283,10 +283,11 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     double default_tx_attenuation_db = -10.0;
     double default_manual_gain_rx1 = 64.0;
     double default_manual_gain_rx2 = 64.0;
+    uint64_t default_bandwidth = 12500000;
     std::string default_rf_port_select("A_BALANCED");
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000);
-    bandwidth_ = configuration->property(role + ".bandwidth", 12500000);
+    bandwidth_ = configuration->property(role + ".bandwidth", default_bandwidth);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
     bb_dc_ = configuration->property(role + ".bb_dc", true);
@@ -297,6 +298,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     rf_port_select_ = configuration->property(role + ".rf_port_select", default_rf_port_select);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", false);
+
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
@@ -406,6 +408,15 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                             rf_gain_rx2_ = default_manual_gain_rx2;
                             LOG(WARNING) << "Invalid configuration value for rf_gain_rx2 parameter. Set to rf_gain_rx2=" << default_manual_gain_rx2;
                         }
+                }
+
+            if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+                {
+                    std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
+                    std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
+                    std::cout << " This parameter has been set to its default value bandwidth=" << default_bandwidth << std::endl;
+                    bandwidth_ = default_bandwidth;
+                    LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=" << default_bandwidth;
                 }
 
             std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;

@@ -67,11 +67,19 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     rf_gain_rx2_ = configuration->property(role + ".gain_rx2", 64.0);
     rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
-    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
-    filter_filename_ = configuration->property(role + ".filter_filename", std::string(""));
+    filter_auto_ = configuration->property(role + ".filter_auto", false);
+    if (filter_auto_)
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
+        }
+    else
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+        }
+    filter_filename_ = configuration->property(role + ".filter_filename", filter_file_);
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
-    filter_auto_ = configuration->property(role + ".filter_auto", false);
+
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -119,10 +127,6 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
             LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx2=" << default_gain_mode;
         }
 
-    if (filter_auto_)
-        {
-            filter_source_ = std::string("Auto");
-        }
     if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
         {
             std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
@@ -158,6 +162,15 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                     rf_gain_rx2_ = 64.0;
                     LOG(WARNING) << "Invalid configuration value for rf_gain_rx2 parameter. Set to rf_gain_rx2=64.0";
                 }
+        }
+
+    if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+        {
+            std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
+            std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value bandwidth=2000000" << std::endl;
+            bandwidth_ = 2000000;
+            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=2000000";
         }
 
     std::cout << "device address: " << uri_ << std::endl;

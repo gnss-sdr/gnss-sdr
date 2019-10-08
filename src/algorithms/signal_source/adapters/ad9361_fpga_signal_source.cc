@@ -37,13 +37,14 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <iio.h>
-#include <cmath>  // for abs
-#include <exception>
-#include <fcntl.h>   // for open, O_WRONLY
-#include <fstream>   // for std::ifstream
-#include <iostream>  // for cout, endl
-#include <string>    // for string manipulation
-#include <unistd.h>  // for write
+#include <algorithm>  // for max
+#include <cmath>      // for abs
+#include <exception>  // for exceptions
+#include <fcntl.h>    // for open, O_WRONLY
+#include <fstream>    // for std::ifstream
+#include <iostream>   // for cout, endl
+#include <string>     // for string manipulation
+#include <unistd.h>   // for write
 #include <utility>
 #include <vector>
 
@@ -299,14 +300,13 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     rf_port_select_ = configuration->property(role + ".rf_port_select", default_rf_port_select);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", false);
-    samples_ = configuration->property(role + ".samples", 0);
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - 1000);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", -3.0);
-    phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
     tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);
+    phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
 
     // turn switch to A/D position
     std::string default_device_name = "/dev/uio1";
@@ -433,10 +433,10 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
             if (enable_dds_lo_ == true)
                 {
-                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_rf_tx_hz_) * 1.1)))
+                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
                         {
-                            std::cout << "Configuration parameter tx_bandwidth should be higher than " << static_cast<double>(freq_rf_tx_hz_) * 1.1 << " Hz" << std::endl;
-                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is lower than the minimum allowed value" << std::endl;
+                            std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz" << std::endl;
+                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values" << std::endl;
                             std::cout << " This parameter has been set to its default value tx_bandwidth=500000" << std::endl;
                             tx_bandwidth_ = 500000;
                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
@@ -449,12 +449,20 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                             tx_attenuation_db_ = default_tx_attenuation_db;
                             LOG(WARNING) << "Invalid configuration value for tx_attenuation_db parameter. Set to tx_attenuation_db=" << default_tx_attenuation_db;
                         }
-                    config_ad9361_lo_local(tx_bandwidth_,
-                        sample_rate_,
-                        freq_rf_tx_hz_,
-                        tx_attenuation_db_,
-                        freq_dds_tx_hz_,
-                        scale_dds_dbfs_);
+                    try
+                        {
+                            config_ad9361_lo_local(tx_bandwidth_,
+                                sample_rate_,
+                                freq_rf_tx_hz_,
+                                tx_attenuation_db_,
+                                freq_dds_tx_hz_,
+                                scale_dds_dbfs_,
+                                phase_dds_deg_);
+                        }
+                    catch (const std::runtime_error &e)
+                        {
+                            std::cout << "Exception cached when configuring the TX carrier: " << e.what() << std::endl;
+                        }
                 }
         }
 

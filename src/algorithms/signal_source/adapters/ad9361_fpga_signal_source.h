@@ -110,7 +110,6 @@ private:
     uint32_t out_stream_;
 
     size_t item_size_;
-    int64_t samples_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 

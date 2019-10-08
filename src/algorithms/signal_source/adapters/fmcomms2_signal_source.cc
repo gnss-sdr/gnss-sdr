@@ -36,6 +36,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
+#include <algorithm>  // for max
 #include <exception>
 #include <iostream>
 #include <utility>
@@ -78,8 +79,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 
     // AD9361 Local Oscillator generation for dual band operation
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - 1000);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", 0.0);
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
@@ -197,10 +198,10 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {
-                                    if (tx_bandwidth_ < static_cast<double>(freq_rf_tx_hz_) * 1.1)
+                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
                                         {
-                                            std::cout << "Configuration parameter tx_bandwidth should be higher than " << static_cast<double>(freq_rf_tx_hz_) * 1.1 << " Hz" << std::endl;
-                                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is lower than the minimum allowed value" << std::endl;
+                                            std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz" << std::endl;
+                                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values" << std::endl;
                                             std::cout << " This parameter has been set to its default value tx_bandwidth=500000" << std::endl;
                                             tx_bandwidth_ = 500000;
                                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
@@ -222,7 +223,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                                 freq_rf_tx_hz_,
                                                 tx_attenuation_db_,
                                                 freq_dds_tx_hz_,
-                                                scale_dds_dbfs_);
+                                                scale_dds_dbfs_,
+                                                phase_dds_deg_);
                                         }
                                     catch (const std::runtime_error& e)
                                         {
@@ -263,10 +265,10 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {
-                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_rf_tx_hz_) * 1.1)))
+                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
                                         {
-                                            std::cout << "Configuration parameter tx_bandwidth should be higher than " << static_cast<double>(freq_rf_tx_hz_) * 1.1 << " Hz" << std::endl;
-                                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is lower than the minimum allowed value" << std::endl;
+                                            std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz" << std::endl;
+                                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values" << std::endl;
                                             std::cout << " This parameter has been set to its default value tx_bandwidth=500000" << std::endl;
                                             tx_bandwidth_ = 500000;
                                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
@@ -288,7 +290,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                                 freq_rf_tx_hz_,
                                                 tx_attenuation_db_,
                                                 freq_dds_tx_hz_,
-                                                scale_dds_dbfs_);
+                                                scale_dds_dbfs_,
+                                                phase_dds_deg_);
                                         }
                                     catch (const std::runtime_error& e)
                                         {

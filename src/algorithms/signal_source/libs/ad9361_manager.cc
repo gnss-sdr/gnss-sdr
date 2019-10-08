@@ -325,10 +325,6 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     // RX stream config
     // Stream configurations
     struct stream_cfg rxcfg;
-    rxcfg.bw_hz = bandwidth_;                // 2 MHz rf bandwidth
-    rxcfg.fs_hz = sample_rate_;              // 2.5 MS/s rx sample rate
-    rxcfg.lo_hz = freq_;                     // 2.5 GHz rf frequency
-    rxcfg.rfport = rf_port_select_.c_str();  // port A (select for rf freq.)
 
     std::cout << "AD9361 Acquiring IIO REMOTE context in host " << remote_host << std::endl;
     struct iio_context *ctx;
@@ -358,11 +354,56 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
             throw std::runtime_error("AD9361 IIO No rx dev found");
         };
 
+    struct iio_device *ad9361_phy;
+    ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
+    int ret;
+
     std::cout << "* Configuring AD9361 for streaming\n";
-    if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, 0))
+
+    if (filter_source_ == "Off")
         {
-            std::cout << "RX port 0 not found\n";
-            throw std::runtime_error("AD9361 IIO RX port 0 not found");
+            struct stream_cfg rxcfg;
+            rxcfg.bw_hz = bandwidth_;                // 2 MHz rf bandwidth
+            rxcfg.fs_hz = sample_rate_;              // 2.5 MS/s rx sample rate
+            rxcfg.lo_hz = freq_;                     // 2.5 GHz rf frequency
+            rxcfg.rfport = rf_port_select_.c_str();  // port A (select for rf freq.)
+
+            if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, 0))
+                {
+                    std::cout << "RX port 0 not found\n";
+                    throw std::runtime_error("AD9361 IIO RX port 0 not found");
+                }
+        }
+    else if (filter_source_ == "Auto")
+        {
+            ret = ad9361_set_bb_rate(ad9361_phy, sample_rate_);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set BB rate");
+                    // set bw
+                    //params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
+                }
+            // in_voltage0_rf_port_select
+        }
+    else if (filter_source_ == "File")
+        {
+            if (!load_fir_filter(filter_filename_, ad9361_phy))
+                {
+                    throw std::runtime_error("Unable to load filter file");
+                }
+        }
+    else if (filter_source_ == "Design")
+        {
+            ret = ad9361_set_bb_rate_custom_filter_manual(
+                ad9361_phy, sample_rate_, Fpass_, Fstop_, bandwidth_, bandwidth_);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set BB rate");
+                }
+        }
+    else
+        {
+            throw std::runtime_error("Unknown filter configuration");
         }
 
     std::cout << "* Initializing AD9361 IIO streaming channels\n";
@@ -382,9 +423,6 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     iio_channel_enable(rx0_i);
     iio_channel_enable(rx0_q);
 
-    struct iio_device *ad9361_phy;
-    ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
-    int ret;
     ret = iio_device_attr_write(ad9361_phy, "trx_rate_governor", "nominal");
     if (ret < 0)
         {
@@ -425,16 +463,23 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         {
             std::cout << "Failed to set in_voltage1_gain_control_mode: " << ret << std::endl;
         }
-    ret = iio_device_attr_write_double(ad9361_phy, "in_voltage0_hardwaregain", rf_gain_rx1_);
-    if (ret < 0)
+    if (gain_mode_rx1_ == "manual")
         {
-            std::cout << "Failed to set in_voltage0_hardwaregain: " << ret << std::endl;
+            ret = iio_device_attr_write_double(ad9361_phy, "in_voltage0_hardwaregain", rf_gain_rx1_);
+            if (ret < 0)
+                {
+                    std::cout << "Failed to set in_voltage0_hardwaregain: " << ret << std::endl;
+                }
         }
-    ret = iio_device_attr_write_double(ad9361_phy, "in_voltage1_hardwaregain", rf_gain_rx2_);
-    if (ret < 0)
+    if (gain_mode_rx2_ == "manual")
         {
-            std::cout << "Failed to set in_voltage1_hardwaregain: " << ret << std::endl;
+            ret = iio_device_attr_write_double(ad9361_phy, "in_voltage1_hardwaregain", rf_gain_rx2_);
+            if (ret < 0)
+                {
+                    std::cout << "Failed to set in_voltage1_hardwaregain: " << ret << std::endl;
+                }
         }
+
 
     std::cout << "End of AD9361 RX configuration.\n";
 

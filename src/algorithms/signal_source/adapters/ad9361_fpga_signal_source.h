@@ -83,9 +83,6 @@ private:
     uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;
     uint64_t bandwidth_;
-    uint64_t buffer_size_;  // reception buffer
-    bool rx1_en_;
-    bool rx2_en_;
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;

@@ -56,7 +56,14 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     rf_gain_ = configuration->property(role + ".gain", 50.0);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", false);
-    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+    if (filter_auto_)
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
+        }
+    else
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+        }
     filter_filename_ = configuration->property(role + ".filter_filename", filter_file_);
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
@@ -64,11 +71,6 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
-    if (filter_auto_)
-        {
-            filter_source_ = std::string("Auto");
-        }
 
     if (item_type_ != "gr_complex")
         {
@@ -110,6 +112,15 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
             std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
             filter_source_ = std::string("Off");
             LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
+        }
+
+    if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+        {
+            std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
+            std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value bandwidth=2000000" << std::endl;
+            bandwidth_ = 2000000;
+            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=2000000";
         }
 
     item_size_ = sizeof(gr_complex);

@@ -132,4 +132,6 @@ bool ad9361_disable_lo_remote(const std::string &remote_host);
 
 bool ad9361_disable_lo_local();
 
+bool load_fir_filter(std::string &filter, struct iio_device *phy);
+
 #endif  // GNSS_SDR_AD9361_MANAGER_H_

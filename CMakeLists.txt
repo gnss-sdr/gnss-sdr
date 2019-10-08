@@ -2286,6 +2286,14 @@ else()
         TYPE OPTIONAL
     )
 endif()
+find_package(LIBAD9361)
+set_package_properties(LIBAD9361 PROPERTIES
+    PURPOSE "Used for configuring the AD9361 chipset"
+    TYPE OPTIONAL
+)
+if(NOT LIBAD9361_FOUND)
+    set(GRIIO_FOUND FALSE)
+endif()
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     if(NOT GRIIO_FOUND)
         message(STATUS "gnuradio-iio not found, its installation is required.")

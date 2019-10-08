@@ -67,6 +67,8 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     target_link_libraries(signal_source_libs
         PUBLIC
             Iio::iio
+        PRIVATE
+            Iio::ad9361
     )
 endif()
 

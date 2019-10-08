@@ -83,9 +83,6 @@ private:
     uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;
     uint64_t bandwidth_;
-    uint64_t buffer_size_;  // reception buffer
-    bool rx1_en_;
-    bool rx2_en_;
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;
@@ -101,6 +98,7 @@ private:
     bool enable_dds_lo_;
     uint64_t freq_rf_tx_hz_;
     uint64_t freq_dds_tx_hz_;
+    uint64_t tx_bandwidth_;
     double scale_dds_dbfs_;
     double phase_dds_deg_;
     double tx_attenuation_db_;
@@ -109,7 +107,6 @@ private:
     uint32_t out_stream_;
 
     size_t item_size_;
-    long samples_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 

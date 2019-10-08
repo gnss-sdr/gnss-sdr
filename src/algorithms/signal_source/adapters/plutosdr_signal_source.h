@@ -42,6 +42,7 @@
 #endif
 #include "concurrent_queue.h"
 #include <pmt/pmt.h>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -85,11 +86,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;     // device direction
-    unsigned long freq_;  // frequency of local oscilator
-    unsigned long sample_rate_;
-    unsigned long bandwidth_;
-    unsigned long buffer_size_;  // reception buffer
+    std::string uri_;  // device direction
+    uint64_t freq_;    // frequency of local oscilator
+    uint64_t sample_rate_;
+    uint64_t bandwidth_;
+    uint64_t buffer_size_;  // reception buffer
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;
@@ -107,7 +108,7 @@ private:
 
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    int64_t samples_;
     bool dump_;
     std::string dump_filename_;
 

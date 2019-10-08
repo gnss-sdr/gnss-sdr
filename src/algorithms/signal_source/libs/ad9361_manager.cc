@@ -493,7 +493,8 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
     uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
     int64_t freq_dds_tx_hz_,
-    double scale_dds_dbfs_)
+    double scale_dds_dbfs_,
+    double phase_dds_deg_)
 {
     // TX stream config
     std::cout << "Start of AD9361 TX Local Oscillator DDS configuration\n";
@@ -535,10 +536,16 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
     ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
     int ret;
     // set output amplifier attenuation
-    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -tx_attenuation_db_);
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -std::abs(tx_attenuation_db_));
     if (ret < 0)
         {
-            std::cout << "Failed to set out_voltage0_hardwaregain value " << -tx_attenuation_db_ << " error " << ret << std::endl;
+            std::cout << "Failed to set out_voltage0_hardwaregain value " << -std::abs(tx_attenuation_db_) << ". Error " << ret << std::endl;
+        }
+    // shut down signal in TX2
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.75);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set out_voltage1_hardwaregain value -89.75 dB. Error " << ret << std::endl;
         }
 
     struct iio_device *dds;
@@ -568,13 +575,13 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_double(dds_channel0_I, "phase", 0.0);
+    ret = iio_channel_attr_write_double(dds_channel0_I, "phase", phase_dds_deg_ * 1000.0);
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS phase I: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_double(dds_channel0_Q, "phase", 270000.0);
+    ret = iio_channel_attr_write_double(dds_channel0_Q, "phase", phase_dds_deg_ * 1000.0 + 270000.0);
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS phase Q: " << ret << std::endl;
@@ -628,7 +635,8 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
     uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
     int64_t freq_dds_tx_hz_,
-    double scale_dds_dbfs_)
+    double scale_dds_dbfs_,
+    double phase_dds_deg_)
 {
     // TX stream config
     std::cout << "Start of AD9361 TX Local Oscillator DDS configuration\n";
@@ -670,12 +678,18 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
     ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
     int ret;
     // set output amplifier attenuation
-    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -tx_attenuation_db_);
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -std::abs(tx_attenuation_db_));
     if (ret < 0)
         {
-            std::cout << "Failed to set out_voltage0_hardwaregain value " << -tx_attenuation_db_ << " error " << ret << std::endl;
+            std::cout << "Failed to set out_voltage0_hardwaregain value " << -std::abs(tx_attenuation_db_) << ". Error " << ret << std::endl;
         }
 
+    // shut down signal in TX2
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.75);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set out_voltage1_hardwaregain value -89.75 dB. Error " << ret << std::endl;
+        }
     struct iio_device *dds;
     dds = iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");
     struct iio_channel *dds_channel0_I;
@@ -703,13 +717,13 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_double(dds_channel0_I, "phase", 0.0);
+    ret = iio_channel_attr_write_double(dds_channel0_I, "phase", phase_dds_deg_ * 1000.0);
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS phase I: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_double(dds_channel0_Q, "phase", 270000.0);
+    ret = iio_channel_attr_write_double(dds_channel0_Q, "phase", phase_dds_deg_ * 1000.0 + 270000.0);
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS phase Q: " << ret << std::endl;

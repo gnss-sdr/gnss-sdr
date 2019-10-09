@@ -189,7 +189,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     bool quadrature_,
     bool rfdc_,
     bool bbdc_,
-    const std::string &filter_source_,
+    std::string filter_source_,
     std::string filter_filename_,
     float Fpass_,
     float Fstop_)
@@ -203,6 +203,19 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     struct iio_channel *rx_chan1;
     struct iio_channel *rx_chan2;
     int ret;
+
+#ifndef LIBAD9361_VERSION_GREATER_THAN_01
+    if (filter_source_ == "Design")
+        {
+            std::cout << "Option filter_source=Design is not available in this version. Set to filter_source=Off" << std::endl;
+            filter_source_ = std::string("Off");
+        }
+    if (Fpass_ != 0.0 or Fstop_ != 0.0)
+        {
+            Fpass_ = 0.0;
+            Fstop_ = 0.0;
+        }
+#endif
 
     ctx = iio_create_default_context();
     if (!ctx)
@@ -301,6 +314,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                 }
             wr_ch_lli(rx_chan1, "frequency", freq_);
         }
+#if LIBAD9361_VERSION_GREATER_THAN_01
     else if (filter_source_ == "Design")
         {
             ret = ad9361_set_bb_rate_custom_filter_manual(
@@ -321,6 +335,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                 }
             wr_ch_lli(rx_chan1, "frequency", freq_);
         }
+#endif
     else
         {
             throw std::runtime_error("Unknown filter configuration");
@@ -409,7 +424,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     bool quadrature_,
     bool rfdc_,
     bool bbdc_,
-    const std::string &filter_source_,
+    std::string filter_source_,
     std::string filter_filename_,
     float Fpass_,
     float Fstop_)
@@ -421,6 +436,19 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     struct iio_device *rx;
     struct iio_channel *rx_chan1;
     struct iio_channel *rx_chan2;
+
+#ifndef LIBAD9361_VERSION_GREATER_THAN_01
+    if (filter_source_ == "Design")
+        {
+            std::cout << "Option filter_source=Design is not available in this version. Set to filter_source=Off" << std::endl;
+            filter_source_ = std::string("Off");
+        }
+    if (Fpass_ != 0.0 or Fstop_ != 0.0)
+        {
+            Fpass_ = 0.0;
+            Fstop_ = 0.0;
+        }
+#endif
 
     ctx = iio_create_network_context(remote_host.c_str());
     if (!ctx)
@@ -523,6 +551,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
                 }
             wr_ch_lli(rx_chan1, "frequency", freq_);
         }
+#if LIBAD9361_VERSION_GREATER_THAN_01
     else if (filter_source_ == "Design")
         {
             ret = ad9361_set_bb_rate_custom_filter_manual(
@@ -543,6 +572,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
                 }
             wr_ch_lli(rx_chan1, "frequency", freq_);
         }
+#endif
     else
         {
             throw std::runtime_error("Unknown filter configuration");

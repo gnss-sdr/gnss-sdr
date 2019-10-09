@@ -93,7 +93,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     bool quadrature_,
     bool rfdc_,
     bool bbdc_,
-    const std::string &filter_source_,
+    std::string filter_source_,
     std::string filter_filename_,
     float Fpass_,
     float Fstop_);
@@ -109,7 +109,11 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     double rf_gain_rx2_,
     bool quadrature_,
     bool rfdc_,
-    bool bbdc_);
+    bool bbdc_,
+    std::string filter_source_,
+    std::string filter_filename_,
+    float Fpass_,
+    float Fstop_);
 
 bool config_ad9361_lo_local(uint64_t bandwidth_,
     uint64_t sample_rate_,

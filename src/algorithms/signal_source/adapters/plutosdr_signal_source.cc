@@ -107,7 +107,9 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
             std::cout << "  Off: Disable filter" << std::endl;
             std::cout << "  Auto: Use auto-generated filters" << std::endl;
             std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+#if LIBAD9361_VERSION_GREATER_THAN_01
             std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+#endif
             std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
             std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
             filter_source_ = std::string("Off");

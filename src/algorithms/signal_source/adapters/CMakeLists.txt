@@ -189,6 +189,16 @@ if(ENABLE_AD9361 AND LIBIIO_FOUND)
     )
 endif()
 
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
+    if(LIBAD9361_VERSION)
+        if(LIBAD9361_VERSION VERSION_GREATER 0.1)
+            target_compile_definitions(signal_source_adapters
+                PUBLIC -DLIBAD9361_VERSION_GREATER_THAN_01=1
+            )
+        endif()
+    endif()
+endif()
+
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE

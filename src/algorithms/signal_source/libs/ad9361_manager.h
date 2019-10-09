@@ -93,7 +93,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     bool quadrature_,
     bool rfdc_,
     bool bbdc_,
-    const std::string& filter_source_,
+    const std::string &filter_source_,
     std::string filter_filename_,
     float Fpass_,
     float Fstop_);

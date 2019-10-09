@@ -55,7 +55,6 @@ struct stream_cfg
     const char *rfport;  // Port name
 };
 
-
 /* check return value of attr_write function */
 void errchk(int v, const char *what);
 
@@ -130,53 +129,5 @@ bool ad9361_disable_lo_remote(const std::string &remote_host);
 bool ad9361_disable_lo_local();
 
 bool load_fir_filter(std::string &filter, struct iio_device *phy);
-
-int ad9361_set_bb_rate_custom_filter_manual(struct iio_device *dev,
-    uint64_t rate, uint64_t Fpass,
-    uint64_t Fstop, uint64_t wnom_tx, uint64_t wnom_rx);
-
-int ad9361_set_bb_rate_custom_filter_auto(struct iio_device *dev,
-    uint64_t rate);
-
-int apply_custom_filter(struct iio_device *dev, unsigned dec_tx,
-    unsigned dec_rx, short *tapsTx,
-    short *tapsRx, unsigned taps,
-    uint64_t rate,
-    int gain_tx, int gain_rx,
-    uint64_t wnom_tx, uint64_t wnom_rx);
-
-int ad9361_calculate_rf_clock_chain(uint64_t sample_rate,
-    uint64_t rate_gov,
-    uint64_t *rx_path_clks,
-    uint64_t *tx_path_clks);
-
-int determine_path_rates_with_fir(uint64_t sample_rate,
-    uint64_t rate_gov,
-    uint64_t *rx_path_clks,
-    uint64_t *tx_path_clks,
-    uint64_t tmp,
-    int FIR);
-
-bool check_rates(int FIR, const int *HB_configs, uint64_t samp_rate,
-    uint64_t *rates);
-
-int determine_pll_div(uint64_t *rates);
-
-int check_dac_adc_config(uint64_t pll_bb, int PLL_mult,
-    int dec_table_index);
-
-double calculate_rfbw(double pll_rate, double caldiv, bool TX,
-    double *rcaldiv);
-
-int build_configuration(struct filter_design_parameters *fdpTX,
-    struct filter_design_parameters *fdpRX,
-    uint64_t sample_rate,
-    uint64_t Fpass,
-    uint64_t Fstop,
-    uint64_t wnomTX,
-    uint64_t wnomRX);
-
-void set_max_taps(struct filter_design_parameters *fdpTX,
-    struct filter_design_parameters *fdpRX);
 
 #endif  // GNSS_SDR_AD9361_MANAGER_H_

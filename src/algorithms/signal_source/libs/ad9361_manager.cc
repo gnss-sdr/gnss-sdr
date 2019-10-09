@@ -188,23 +188,21 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     double rf_gain_rx2_,
     bool quadrature_,
     bool rfdc_,
-    bool bbdc_)
+    bool bbdc_,
+    std::string filter_source_,
+    std::string filter_filename_,
+    float Fpass_,
+    float Fstop_)
 
 {
     // RX stream config
-    // Stream configurations
-    struct stream_cfg rxcfg;
-    rxcfg.bw_hz = bandwidth_;
-    rxcfg.fs_hz = sample_rate_;
-    rxcfg.lo_hz = freq_;
-    rxcfg.rfport = rf_port_select_.c_str();
-
     std::cout << "AD9361 Acquiring IIO LOCAL context\n";
     struct iio_context *ctx;
     // Streaming devices
     struct iio_device *rx;
     struct iio_channel *rx_chan1;
     struct iio_channel *rx_chan2;
+    int ret;
 
     ctx = iio_create_default_context();
     if (!ctx)
@@ -219,20 +217,15 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             throw std::runtime_error("AD9361 IIO No devices");
         }
 
-    std::cout << "* Acquiring AD9361 streaming devices\n";
+    struct iio_device *ad9361_phy;
+    ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
 
+    std::cout << "* Acquiring AD9361 streaming devices\n";
     if (!get_ad9361_stream_dev(ctx, RX, &rx))
         {
             std::cout << "No rx dev found\n";
             throw std::runtime_error("AD9361 IIO No rx dev found");
         };
-
-    std::cout << "* Configuring AD9361 for streaming\n";
-    if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, 0))
-        {
-            std::cout << "RX port 0 not found\n";
-            throw std::runtime_error("AD9361 IIO RX port 0 not found");
-        }
 
     std::cout << "* Initializing AD9361 IIO streaming channels\n";
     if (!get_ad9361_stream_ch(ctx, RX, rx, 0, &rx_chan1))
@@ -247,13 +240,106 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             throw std::runtime_error("RX channel 2 not found");
         }
 
+    if (filter_source_ == "Off")
+        {
+            struct stream_cfg rxcfg;
+            rxcfg.bw_hz = bandwidth_;
+            rxcfg.fs_hz = sample_rate_;
+            rxcfg.lo_hz = freq_;
+            rxcfg.rfport = rf_port_select_.c_str();
+
+            if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, 0))
+                {
+                    std::cout << "RX port 0 not found\n";
+                    throw std::runtime_error("AD9361 IIO RX port 0 not found");
+                }
+        }
+    else if (filter_source_ == "Auto")
+        {
+            ret = ad9361_set_bb_rate(ad9361_phy, sample_rate_);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set BB rate");
+                    // set bw
+                    //params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
+                }
+            //wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
+            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set rf_port_select");
+                }
+            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
+            if (!get_lo_chan(ctx, RX, &rx_chan1))
+                {
+                    return false;
+                }
+            wr_ch_lli(rx_chan1, "frequency", freq_);
+        }
+    else if (filter_source_ == "File")
+        {
+            try
+                {
+                    if (!load_fir_filter(filter_filename_, ad9361_phy))
+                        {
+                            throw std::runtime_error("Unable to load filter file");
+                        }
+                }
+            catch (const std::runtime_error &e)
+                {
+                    std::cout << "Exception cached when configuring the RX FIR filter: " << e.what() << std::endl;
+                }
+            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set rf_port_select");
+                }
+            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
+            if (!get_lo_chan(ctx, RX, &rx_chan1))
+                {
+                    return false;
+                }
+            wr_ch_lli(rx_chan1, "frequency", freq_);
+        }
+    else if (filter_source_ == "Design")
+        {
+            ret = ad9361_set_bb_rate_custom_filter_manual(
+                ad9361_phy, sample_rate_, static_cast<uint64_t>(Fpass_), static_cast<uint64_t>(Fstop_), bandwidth_, bandwidth_);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set BB rate");
+                }
+            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set rf_port_select");
+                }
+            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
+            if (!get_lo_chan(ctx, RX, &rx_chan1))
+                {
+                    return false;
+                }
+            wr_ch_lli(rx_chan1, "frequency", freq_);
+        }
+    else
+        {
+            throw std::runtime_error("Unknown filter configuration");
+        }
+
+    // Filters can only be disabled after the sample rate has been set
+    if (filter_source_ == "Off")
+        {
+            ret = ad9361_set_trx_fir_enable(ad9361_phy, false);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to disable filters");
+                }
+        }
+
     std::cout << "* Enabling IIO streaming channels\n";
     iio_channel_enable(rx_chan1);
     iio_channel_enable(rx_chan2);
 
-    struct iio_device *ad9361_phy;
-    ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
-    int ret;
     ret = iio_device_attr_write(ad9361_phy, "trx_rate_governor", "nominal");
     if (ret < 0)
         {
@@ -322,13 +408,13 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     double rf_gain_rx2_,
     bool quadrature_,
     bool rfdc_,
-    bool bbdc_)
+    bool bbdc_,
+    std::string filter_source_,
+    std::string filter_filename_,
+    float Fpass_,
+    float Fstop_)
 {
-    std::string filter_source_("Off");
-    float Fpass_ = 0.0, Fstop_ = 0.0;
-    std::string filter_filename_;
     // RX stream config
-
     std::cout << "AD9361 Acquiring IIO REMOTE context in host " << remote_host << std::endl;
     struct iio_context *ctx;
     // Streaming devices

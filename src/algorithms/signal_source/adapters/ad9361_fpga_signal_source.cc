@@ -279,7 +279,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
-    std::string default_gain_mode("slow attack");
+    std::string default_gain_mode("slow_attack");
     double default_tx_attenuation_db = -10.0;
     double default_manual_gain_rx1 = 64.0;
     double default_manual_gain_rx2 = 64.0;
@@ -297,8 +297,18 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     rf_gain_rx2_ = configuration->property(role + ".gain_rx2", default_manual_gain_rx2);
     rf_port_select_ = configuration->property(role + ".rf_port_select", default_rf_port_select);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
+    filter_filename_ = configuration->property(role + ".filter_filename", filter_file_);
     filter_auto_ = configuration->property(role + ".filter_auto", false);
-
+    if (filter_auto_)
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
+        }
+    else
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+        }
+    Fpass_ = configuration->property(role + ".Fpass", 0.0);
+    Fstop_ = configuration->property(role + ".Fstop", 0.0);
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
@@ -410,6 +420,19 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                         }
                 }
 
+            if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
+                {
+                    std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
+                    std::cout << "  Off: Disable filter" << std::endl;
+                    std::cout << "  Auto: Use auto-generated filters" << std::endl;
+                    std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+                    std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+                    std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
+                    std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
+                    filter_source_ = std::string("Off");
+                    LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
+                }
+
             if (bandwidth_ < 200000 or bandwidth_ > 56000000)
                 {
                     std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
@@ -432,7 +455,11 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                         rf_gain_rx2_,
                         quadrature_,
                         rf_dc_,
-                        bb_dc_);
+                        bb_dc_,
+                        filter_source_,
+                        filter_filename_,
+                        Fpass_,
+                        Fstop_);
                 }
             catch (const std::runtime_error &e)
                 {

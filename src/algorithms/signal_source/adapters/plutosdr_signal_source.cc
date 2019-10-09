@@ -43,7 +43,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_gain_mode("slow attack");
+    std::string default_gain_mode("slow_attack");
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);

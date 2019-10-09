@@ -74,7 +74,7 @@ find_library(
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          /Library/Frameworks/iio.framework/
+          /Library/Frameworks/ad9361.framework
           ${CMAKE_INSTALL_PREFIX}/lib
           ${CMAKE_INSTALL_PREFIX}/lib64
           ${LIBAD9361_ROOT}/lib
@@ -99,11 +99,11 @@ endif()
 
 if(LIBAD9361_FOUND AND LIBAD9361_VERSION)
     set_package_properties(LIBAD9361 PROPERTIES
-        DESCRIPTION "A library for interfacing with AD936X transceivers (found: v${LIBAD9361_VERSION})"
+        DESCRIPTION "A library for interfacing with AD936X RF transceivers (found: v${LIBAD9361_VERSION})"
     )
 else()
     set_package_properties(LIBAD9361 PROPERTIES
-        DESCRIPTION "A library for interfacing with AD936X transceivers"
+        DESCRIPTION "A library for interfacing with AD936X RF transceivers"
     )
 endif()
 

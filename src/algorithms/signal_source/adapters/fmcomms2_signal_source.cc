@@ -42,13 +42,13 @@
 #include <utility>
 
 
-Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface *configuration,
+    const std::string &role, unsigned int in_stream, unsigned int out_stream,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_gain_mode("slow attack");
+    std::string default_gain_mode("slow_attack");
     double default_tx_attenuation_db = -10.0;
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
@@ -67,11 +67,19 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     rf_gain_rx2_ = configuration->property(role + ".gain_rx2", 64.0);
     rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
-    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
-    filter_filename_ = configuration->property(role + ".filter_filename", std::string(""));
+    filter_auto_ = configuration->property(role + ".filter_auto", false);
+    if (filter_auto_)
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
+        }
+    else
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+        }
+    filter_filename_ = configuration->property(role + ".filter_filename", filter_file_);
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
-    filter_auto_ = configuration->property(role + ".filter_auto", false);
+
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -119,17 +127,15 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
             LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx2=" << default_gain_mode;
         }
 
-    if (filter_auto_)
-        {
-            filter_source_ = std::string("Auto");
-        }
     if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
         {
             std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
             std::cout << "  Off: Disable filter" << std::endl;
             std::cout << "  Auto: Use auto-generated filters" << std::endl;
             std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+#if LIBAD9361_VERSION_GREATER_THAN_01
             std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+#endif
             std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
             std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
             filter_source_ = std::string("Off");
@@ -158,6 +164,15 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                     rf_gain_rx2_ = 64.0;
                     LOG(WARNING) << "Invalid configuration value for rf_gain_rx2 parameter. Set to rf_gain_rx2=64.0";
                 }
+        }
+
+    if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+        {
+            std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
+            std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value bandwidth=2000000" << std::endl;
+            bandwidth_ = 2000000;
+            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=2000000";
         }
 
     std::cout << "device address: " << uri_ << std::endl;
@@ -226,7 +241,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                                 scale_dds_dbfs_,
                                                 phase_dds_deg_);
                                         }
-                                    catch (const std::runtime_error& e)
+                                    catch (const std::runtime_error &e)
                                         {
                                             std::cout << "Exception cached when configuring the TX carrier: " << e.what() << std::endl;
                                         }
@@ -293,7 +308,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                                 scale_dds_dbfs_,
                                                 phase_dds_deg_);
                                         }
-                                    catch (const std::runtime_error& e)
+                                    catch (const std::runtime_error &e)
                                         {
                                             std::cout << "Exception cached when configuring the TX carrier: " << e.what() << std::endl;
                                         }
@@ -334,7 +349,7 @@ Fmcomms2SignalSource::~Fmcomms2SignalSource()
                 {
                     ad9361_disable_lo_remote(uri_);
                 }
-            catch (const std::exception& e)
+            catch (const std::exception &e)
                 {
                     LOG(WARNING) << "Exception thrown in Fmcomms2SignalSource destructor: " << e.what();
                 }

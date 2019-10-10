@@ -57,7 +57,7 @@ if(ENABLE_GN3S)
     # GN3S (USB dongle)
     ##############################################
     if(NOT GRGN3S_FOUND)
-        message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s ")
+        message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s")
         message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
     endif()
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
@@ -76,7 +76,7 @@ if(ENABLE_ARRAY)
     # DBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
     ##############################################
     if(NOT GRDBFCTTC_FOUND)
-        message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
+        message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc")
         message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
     endif()
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
@@ -189,6 +189,16 @@ if(ENABLE_AD9361 AND LIBIIO_FOUND)
     )
 endif()
 
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
+    if(LIBAD9361_VERSION)
+        if(LIBAD9361_VERSION VERSION_GREATER 0.1)
+            target_compile_definitions(signal_source_adapters
+                PRIVATE -DLIBAD9361_VERSION_GREATER_THAN_01=1
+            )
+        endif()
+    endif()
+endif()
+
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
@@ -210,7 +220,6 @@ if(ENABLE_ARRAY AND GRDBFCTTC_FOUND)
     )
 endif()
 
-
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     if(GR_IIO_INCLUDE_HAS_GNURADIO)
         target_compile_definitions(signal_source_adapters
@@ -226,6 +235,8 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
         PUBLIC
             Gnuradio::iio
             Boost::chrono
+        PRIVATE
+            Iio::iio
     )
 endif()
 

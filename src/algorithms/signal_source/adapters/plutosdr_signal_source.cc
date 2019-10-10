@@ -43,7 +43,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_gain_mode("slow attack");
+    std::string default_gain_mode("slow_attack");
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);
@@ -56,7 +56,14 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     rf_gain_ = configuration->property(role + ".gain", 50.0);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", false);
-    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+    if (filter_auto_)
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
+        }
+    else
+        {
+            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+        }
     filter_filename_ = configuration->property(role + ".filter_filename", filter_file_);
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
@@ -64,11 +71,6 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
-    if (filter_auto_)
-        {
-            filter_source_ = std::string("Auto");
-        }
 
     if (item_type_ != "gr_complex")
         {
@@ -105,11 +107,22 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
             std::cout << "  Off: Disable filter" << std::endl;
             std::cout << "  Auto: Use auto-generated filters" << std::endl;
             std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+#if LIBAD9361_VERSION_GREATER_THAN_01
             std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+#endif
             std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
             std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
             filter_source_ = std::string("Off");
             LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
+        }
+
+    if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+        {
+            std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
+            std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value bandwidth=2000000" << std::endl;
+            bandwidth_ = 2000000;
+            LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=2000000";
         }
 
     item_size_ = sizeof(gr_complex);

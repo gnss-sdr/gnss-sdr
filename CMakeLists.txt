@@ -1233,9 +1233,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
     set(GLOG_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
     if(GLOG_MAKE_PROGRAM MATCHES "ninja")
         find_program(GLOG_MAKE_EXECUTABLE make
-            HINTS
-                /usr/bin/
-                /usr/local/bin/
+            PATHS
+                /usr/bin
+                /usr/local/bin
         )
         if(NOT GLOG_MAKE_EXECUTABLE)
             message(FATAL_ERROR "make is required to build Glog from source.")
@@ -1683,9 +1683,9 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             set(MATIO_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
             if(MATIO_MAKE_PROGRAM MATCHES "ninja")
                 find_program(MATIO_MAKE_EXECUTABLE make
-                    HINTS
-                        /usr/bin/
-                        /usr/local/bin/
+                    PATHS
+                        /usr/bin
+                        /usr/local/bin
                 )
                 if(NOT MATIO_MAKE_EXECUTABLE)
                     message(FATAL_ERROR "make is required to build Matio from source.")
@@ -1886,9 +1886,9 @@ if(Protobuf_FOUND AND CMAKE_CROSSCOMPILING)
     find_program(PROTOC_EXECUTABLE protoc)
     if(NOT PROTOC_EXECUTABLE)
         find_program(PROTOC_EXECUTABLE protoc
-            HINTS
-                /usr/bin/
-                /usr/local/bin/
+            PATHS
+                /usr/bin
+                /usr/local/bin
         )
     endif()
     if(PROTOC_EXECUTABLE)
@@ -1959,9 +1959,9 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
         set(PROTOBUF_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
         if(PROTOBUF_MAKE_PROGRAM MATCHES "ninja")
             find_program(MAKE_EXECUTABLE make
-                HINTS
-                    /usr/bin/
-                    /usr/local/bin/
+                PATHS
+                    /usr/bin
+                    /usr/local/bin
             )
             if(NOT MAKE_EXECUTABLE)
                 message(FATAL_ERROR "make is required to build Protocol Buffers from source.")

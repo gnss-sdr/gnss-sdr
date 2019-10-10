@@ -32,18 +32,18 @@
 #include "fmcomms2_signal_source.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
-#include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
+#include <iio.h>
 #include <algorithm>  // for max
 #include <exception>
 #include <iostream>
 #include <utility>
 
 
-Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface *configuration,
+    const std::string &role, unsigned int in_stream, unsigned int out_stream,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
@@ -241,7 +241,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                                 scale_dds_dbfs_,
                                                 phase_dds_deg_);
                                         }
-                                    catch (const std::runtime_error& e)
+                                    catch (const std::runtime_error &e)
                                         {
                                             std::cout << "Exception cached when configuring the TX carrier: " << e.what() << std::endl;
                                         }
@@ -308,7 +308,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                                 scale_dds_dbfs_,
                                                 phase_dds_deg_);
                                         }
-                                    catch (const std::runtime_error& e)
+                                    catch (const std::runtime_error &e)
                                         {
                                             std::cout << "Exception cached when configuring the TX carrier: " << e.what() << std::endl;
                                         }
@@ -341,6 +341,190 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 }
 
 
+bool Fmcomms2SignalSource::config_ad9361_lo_remote(const std::string &remote_host,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
+    double tx_attenuation_db_,
+    int64_t freq_dds_tx_hz_,
+    double scale_dds_dbfs_,
+    double phase_dds_deg_)
+{
+    // TX stream config
+    std::cout << "Start of AD9361 TX Local Oscillator DDS configuration\n";
+    struct stream_cfg txcfg;
+    txcfg.bw_hz = bandwidth_;
+    txcfg.fs_hz = sample_rate_;
+    txcfg.lo_hz = freq_rf_tx_hz_;
+    txcfg.rfport = "A";
+
+    std::cout << "AD9361 Acquiring IIO REMOTE context in host " << remote_host << std::endl;
+    struct iio_context *ctx;
+    ctx = iio_create_network_context(remote_host.c_str());
+    if (!ctx)
+        {
+            std::cout << "No context\n";
+            throw std::runtime_error("AD9361 IIO No context");
+        }
+
+    // find tx device
+    struct iio_device *tx;
+
+    std::cout << "* Acquiring AD9361 TX streaming devices\n";
+
+    if (!get_ad9361_stream_dev(ctx, TX, &tx))
+        {
+            std::cout << "No tx dev found\n";
+            throw std::runtime_error("AD9361 IIO No tx dev found");
+        };
+
+    std::cout << "* Configuring AD9361 for streaming TX\n";
+    if (!cfg_ad9361_streaming_ch(ctx, &txcfg, TX, 0))
+        {
+            std::cout << "TX port 0 not found\n";
+            throw std::runtime_error("AD9361 IIO TX port 0 not found");
+        }
+
+    // ENABLE DDS on TX1
+    struct iio_device *ad9361_phy;
+    ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
+    int ret;
+    // set output amplifier attenuation
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -std::abs(tx_attenuation_db_));
+    if (ret < 0)
+        {
+            std::cout << "Failed to set out_voltage0_hardwaregain value " << -std::abs(tx_attenuation_db_) << ". Error " << ret << std::endl;
+        }
+
+    // shut down signal in TX2
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.75);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set out_voltage1_hardwaregain value -89.75 dB. Error " << ret << std::endl;
+        }
+    struct iio_device *dds;
+    dds = iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");
+    struct iio_channel *dds_channel0_I;
+    dds_channel0_I = iio_device_find_channel(dds, "TX1_I_F1", true);
+
+    struct iio_channel *dds_channel0_Q;
+    dds_channel0_Q = iio_device_find_channel(dds, "TX1_Q_F1", true);
+
+    ret = iio_channel_attr_write_bool(dds_channel0_I, "raw", true);
+    if (ret < 0)
+        {
+            std::cout << "Failed to toggle DDS: " << ret << std::endl;
+        }
+
+    // set frequency, scale and phase
+    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS frequency I: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel0_I, "phase", phase_dds_deg_ * 1000.0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS phase I: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel0_Q, "phase", phase_dds_deg_ * 1000.0 + 270000.0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS phase Q: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel0_I, "scale", pow(10, scale_dds_dbfs_ / 20.0));
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS scale I: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel0_Q, "scale", pow(10, scale_dds_dbfs_ / 20.0));
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS scale Q: " << ret << std::endl;
+        }
+
+    // disable TX2
+    ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set out_voltage1_hardwaregain value " << -89.0 << " error " << ret << std::endl;
+        }
+
+    struct iio_channel *dds_channel1_I;
+    dds_channel1_I = iio_device_find_channel(dds, "TX2_I_F1", true);
+
+    struct iio_channel *dds_channel1_Q;
+    dds_channel1_Q = iio_device_find_channel(dds, "TX2_Q_F1", true);
+
+    ret = iio_channel_attr_write_double(dds_channel1_I, "scale", 0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX2 DDS scale I: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel1_Q, "scale", 0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX2 DDS scale Q: " << ret << std::endl;
+        }
+
+    iio_context_destroy(ctx);
+    return true;
+}
+
+
+bool Fmcomms2SignalSource::ad9361_disable_lo_remote(const std::string &remote_host)
+{
+    std::cout << "AD9361 Acquiring IIO REMOTE context in host " << remote_host << std::endl;
+    struct iio_context *ctx;
+    ctx = iio_create_network_context(remote_host.c_str());
+    if (!ctx)
+        {
+            std::cout << "No context\n";
+            throw std::runtime_error("AD9361 IIO No context");
+        }
+    struct iio_device *dds;
+    dds = iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");
+    struct iio_channel *dds_channel0_I;
+    dds_channel0_I = iio_device_find_channel(dds, "TX1_I_F1", true);
+
+    struct iio_channel *dds_channel0_Q;
+    dds_channel0_Q = iio_device_find_channel(dds, "TX1_Q_F1", true);
+    int ret;
+    ret = iio_channel_attr_write_bool(dds_channel0_I, "raw", false);
+    if (ret < 0)
+        {
+            std::cout << "Failed to toggle DDS: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel0_I, "scale", 0.0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS scale I: " << ret << std::endl;
+        }
+
+    ret = iio_channel_attr_write_double(dds_channel0_Q, "scale", 0.0);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set TX DDS scale Q: " << ret << std::endl;
+        }
+
+    iio_context_destroy(ctx);
+
+    return true;
+}
+
+
 Fmcomms2SignalSource::~Fmcomms2SignalSource()
 {
     if (enable_dds_lo_ == true)
@@ -349,7 +533,7 @@ Fmcomms2SignalSource::~Fmcomms2SignalSource()
                 {
                     ad9361_disable_lo_remote(uri_);
                 }
-            catch (const std::exception& e)
+            catch (const std::exception &e)
                 {
                     LOG(WARNING) << "Exception thrown in Fmcomms2SignalSource destructor: " << e.what();
                 }

@@ -238,6 +238,12 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
         PRIVATE
             Iio::iio
     )
+    if(NOT GNURADIO_API_IIO)
+        target_link_libraries(signal_source_adapters
+            PRIVATE
+                Gnuradio::analog
+        )
+    endif()
 endif()
 
 if(ENABLE_CLANG_TIDY)

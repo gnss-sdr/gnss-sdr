@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <string>
 
+#define FIR_BUF_SIZE 8192
 
 /* RX is input, TX is output */
 enum iodev
@@ -48,12 +49,11 @@ enum iodev
 /* common RX and TX streaming params */
 struct stream_cfg
 {
-    int64_t bw_hz;       // Analog banwidth in Hz
+    int64_t bw_hz;       // Analog bandwidth in Hz
     int64_t fs_hz;       // Baseband sample rate in Hz
     int64_t lo_hz;       // Local oscillator frequency in Hz
     const char *rfport;  // Port name
 };
-
 
 /* check return value of attr_write function */
 void errchk(int v, const char *what);
@@ -63,9 +63,6 @@ void wr_ch_lli(struct iio_channel *chn, const char *what, int64_t val);
 
 /* write attribute: string */
 void wr_ch_str(struct iio_channel *chn, const char *what, const char *str);
-
-/* helper function generating channel names */
-char *get_ch_name(const char *type, int id, char *tmpstr);
 
 /* returns ad9361 phy device */
 struct iio_device *get_ad9361_phy(struct iio_context *ctx);
@@ -95,7 +92,11 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     double rf_gain_rx2_,
     bool quadrature_,
     bool rfdc_,
-    bool bbdc_);
+    bool bbdc_,
+    std::string filter_source_,
+    std::string filter_filename_,
+    float Fpass_,
+    float Fstop_);
 
 bool config_ad9361_rx_remote(const std::string &remote_host,
     uint64_t bandwidth_,
@@ -108,14 +109,19 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     double rf_gain_rx2_,
     bool quadrature_,
     bool rfdc_,
-    bool bbdc_);
+    bool bbdc_,
+    std::string filter_source_,
+    std::string filter_filename_,
+    float Fpass_,
+    float Fstop_);
 
 bool config_ad9361_lo_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
     int64_t freq_dds_tx_hz_,
-    double scale_dds_dbfs_);
+    double scale_dds_dbfs_,
+    double phase_dds_deg_);
 
 bool config_ad9361_lo_remote(const std::string &remote_host,
     uint64_t bandwidth_,
@@ -123,11 +129,13 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
     uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
     int64_t freq_dds_tx_hz_,
-    double scale_dds_dbfs_);
-
+    double scale_dds_dbfs_,
+    double phase_dds_deg_);
 
 bool ad9361_disable_lo_remote(const std::string &remote_host);
 
 bool ad9361_disable_lo_local();
+
+bool load_fir_filter(std::string &filter, struct iio_device *phy);
 
 #endif  // GNSS_SDR_AD9361_MANAGER_H_

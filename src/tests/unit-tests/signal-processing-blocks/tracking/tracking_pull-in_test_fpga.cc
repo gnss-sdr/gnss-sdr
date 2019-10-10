@@ -2,8 +2,8 @@
  * \file tracking_pull-in_test_fpga.cc
  * \brief  This class implements a tracking Pull-In test for FPGA HW accelerator
  *  implementations based on some input parameters.
- * \author 	Marc Majoral, 2019. majoralmarc(at)cttc.es
- * 			Javier Arribas, 2018. jarribas(at)cttc.es
+ * \author     Marc Majoral, 2019. majoralmarc(at)cttc.es
+ *             Javier Arribas, 2018. jarribas(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------

@@ -26,18 +26,18 @@ function [E, N, U] = cart2utm(X, Y, Z, zone)
 %  Erster Band, Springer Verlag
 
 % Explanation of variables used:
-% f	   flattening of ellipsoid
-% a	   semi major axis in m
-% m0	   1 - scale at central meridian; for UTM 0.0004
-% Q_n	   normalized meridian quadrant
-% E0	   Easting of central meridian
-% L0	   Longitude of central meridian
-% bg	   constants for ellipsoidal geogr. to spherical geogr.
-% gb	   constants for spherical geogr. to ellipsoidal geogr.
-% gtu	   constants for ellipsoidal N, E to spherical N, E
-% utg	   constants for spherical N, E to ellipoidal N, E
-% tolutm	tolerance for utm, 1.2E-10*meridian quadrant
-% tolgeo	tolerance for geographical, 0.00040 second of arc
+% f       flattening of ellipsoid
+% a       semi major axis in m
+% m0      1 - scale at central meridian; for UTM 0.0004
+% Q_n     normalized meridian quadrant
+% E0      Easting of central meridian
+% L0      Longitude of central meridian
+% bg      constants for ellipsoidal geogr. to spherical geogr.
+% gb      constants for spherical geogr. to ellipsoidal geogr.
+% gtu     constants for ellipsoidal N, E to spherical N, E
+% utg     constants for spherical N, E to ellipoidal N, E
+% tolutm  tolerance for utm, 1.2E-10*meridian quadrant
+% tolgeo  tolerance for geographical, 0.00040 second of arc
 
 % B, L refer to latitude and longitude. Southern latitude is negative
 % International ellipsoid of 1924, valid for ED50
@@ -49,13 +49,13 @@ c     = a * sqrt(1+ex2);
 vec   = [X; Y; Z-4.5];
 alpha = .756e-6;
 R     = [ 1       -alpha  0;
-    alpha	1       0;
+    alpha    1       0;
     0       0       1];
 trans = [89.5; 93.8; 127.6];
 scale = 0.9999988;
-v     = scale*R*vec + trans;	  % coordinate vector in ED50
+v     = scale*R*vec + trans;      % coordinate vector in ED50
 L     = atan2(v(2), v(1));
-N1    = 6395000;		          % preliminary value
+N1    = 6395000;                  % preliminary value
 B     = atan2(v(3)/((1-f)^2*N1), norm(v(1:2))/N1); % preliminary value
 U     = 0.1;  oldU = 0;
 
@@ -65,7 +65,7 @@ while abs(U-oldU) > 1.e-4
     N1   = c/sqrt(1+ex2*(cos(B))^2);
     B    = atan2(v(3)/((1-f)^2*N1+U), norm(v(1:2))/(N1+U) );
     U    = norm(v(1:2))/cos(B)-N1;
-    
+
     iterations = iterations + 1;
     if iterations > 100
         fprintf('Failed to approximate U with desired precision. U-oldU: %e.\n', U-oldU);
@@ -91,26 +91,26 @@ tolgeo  = 0.000040;
 % Coefficients of trigonometric series
 
 % ellipsoidal to spherical geographical, KW p. 186--187, (51)-(52)
-% bg[1] = n*(-2 + n*(2/3    + n*(4/3	  + n*(-82/45))));
+% bg[1] = n*(-2 + n*(2/3    + n*(4/3      + n*(-82/45))));
 % bg[2] = n^2*(5/3    + n*(-16/15 + n*(-13/9)));
 % bg[3] = n^3*(-26/15 + n*34/21);
 % bg[4] = n^4*1237/630;
 
 % spherical to ellipsoidal geographical, KW p. 190--191, (61)-(62)
-% gb[1] = n*(2	      + n*(-2/3    + n*(-2	 + n*116/45)));
+% gb[1] = n*(2          + n*(-2/3    + n*(-2     + n*116/45)));
 % gb[2] = n^2*(7/3    + n*(-8/5 + n*(-227/45)));
 % gb[3] = n^3*(56/15 + n*(-136/35));
 % gb[4] = n^4*4279/630;
 
 % spherical to ellipsoidal N, E, KW p. 196, (69)
-%  gtu[1] = n*(1/2	  + n*(-2/3    + n*(5/16     + n*41/180)));
-%  gtu[2] = n^2*(13/48	  + n*(-3/5 + n*557/1440));
-%  gtu[3] = n^3*(61/240	 + n*(-103/140));
+%  gtu[1] = n*(1/2      + n*(-2/3    + n*(5/16     + n*41/180)));
+%  gtu[2] = n^2*(13/48      + n*(-3/5 + n*557/1440));
+%  gtu[3] = n^3*(61/240     + n*(-103/140));
 %  gtu[4] = n^4*49561/161280;
 
 % ellipsoidal to spherical N, E, KW p. 194, (65)
-%  utg[1] = n*(-1/2	   + n*(2/3    + n*(-37/96	+ n*1/360)));
-%  utg[2] = n^2*(-1/48	  + n*(-1/15 + n*437/1440));
+%  utg[1] = n*(-1/2       + n*(2/3    + n*(-37/96    + n*1/360)));
+%  utg[2] = n^2*(-1/48      + n*(-1/15 + n*437/1440));
 %  utg[3] = n^3*(-17/480 + n*37/840);
 %  utg[4] = n^4*(-4397/161280);
 

@@ -64,6 +64,10 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     rf_gain_rx2_ = configuration->property(role + ".gain_rx2", 64.0);
     rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
+    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+    filter_filename_ = configuration->property(role + ".filter_filename", std::string(""));
+    Fpass_ = configuration->property(role + ".Fpass", 0.0);
+    Fstop_ = configuration->property(role + ".Fstop", 0.0);
     filter_auto_ = configuration->property(role + ".filter_auto", true);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
@@ -80,6 +84,46 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 
     item_size_ = sizeof(gr_complex);
 
+    // some basic checks
+    if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
+        {
+            std::cout << "Configuration parameter rf_port_select should take one of these values:" << std::endl;
+            std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2" << std::endl;
+            std::cout << "Error: provided value rf_port_select=" << rf_port_select_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value rf_port_select=A_BALANCED" << std::endl;
+            rf_port_select_ = std::string("A_BALANCED");
+        }
+
+    if ((gain_mode_rx1_ != "manual") and (gain_mode_rx1_ != "slow_attack") and (gain_mode_rx1_ != "fast_attack") and (gain_mode_rx1_ != "hybrid"))
+        {
+            std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:" << std::endl;
+            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+            std::cout << "Error: provided value gain_mode_rx1=" << gain_mode_rx1_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value gain_mode_rx1=manual" << std::endl;
+            gain_mode_rx1_ = std::string("manual");
+        }
+
+    if ((gain_mode_rx2_ != "manual") and (gain_mode_rx2_ != "slow_attack") and (gain_mode_rx2_ != "fast_attack") and (gain_mode_rx2_ != "hybrid"))
+        {
+            std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:" << std::endl;
+            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+            std::cout << "Error: provided value gain_mode_rx2=" << gain_mode_rx2_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value gain_mode_rx2=manual" << std::endl;
+            gain_mode_rx2_ = std::string("manual");
+        }
+
+    if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
+        {
+            std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
+            std::cout << "  Off: Disable filter" << std::endl;
+            std::cout << "  Auto: Use auto-generated filters" << std::endl;
+            std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+            std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+            std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
+            filter_source_ = std::string("Off");
+        }
+
     std::cout << "device address: " << uri_ << std::endl;
     std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
     std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
@@ -94,6 +138,17 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                         }
                     else
                         {
+#if GNURADIO_API_IIO
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                                uri_.c_str(), freq_, sample_rate_,
+                                bandwidth_,
+                                rx1_en_, rx2_en_,
+                                buffer_size_, quadrature_, rf_dc_,
+                                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                                rf_port_select_.c_str(), filter_source_.c_str(),
+                                filter_filename_.c_str(), Fpass_, Fstop_);
+#else
                             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
                                 uri_.c_str(), freq_, sample_rate_,
                                 bandwidth_,
@@ -103,7 +158,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 gain_mode_rx2_.c_str(), rf_gain_rx2_,
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
-
+#endif
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {
@@ -126,6 +181,17 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                         }
                     else
                         {
+#if GNURADIO_API_IIO
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                                uri_.c_str(), freq_, sample_rate_,
+                                bandwidth_,
+                                rx1_en_, rx2_en_,
+                                buffer_size_, quadrature_, rf_dc_,
+                                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                                rf_port_select_.c_str(), filter_source_.c_str(),
+                                filter_filename_.c_str(), Fpass_, Fstop_);
+#else
                             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
                                 uri_.c_str(), freq_, sample_rate_,
                                 bandwidth_,
@@ -135,6 +201,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 gain_mode_rx2_.c_str(), rf_gain_rx2_,
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
+#endif
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {

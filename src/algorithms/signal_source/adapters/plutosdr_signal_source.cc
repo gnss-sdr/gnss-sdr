@@ -55,7 +55,10 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     rf_gain_ = configuration->property(role + ".gain", 50.0);
     filter_file_ = configuration->property(role + ".filter_file", std::string(""));
     filter_auto_ = configuration->property(role + ".filter_auto", true);
-
+    filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
+    filter_filename_ = configuration->property(role + ".filter_filename", std::string(""));
+    Fpass_ = configuration->property(role + ".Fpass", 0.0);
+    Fstop_ = configuration->property(role + ".Fstop", 0.0);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -67,6 +70,16 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
             LOG(FATAL) << "Configuration error: item_type must be gr_complex!";
         }
 
+    // basic check
+    if ((gain_mode_ != "manual") and (gain_mode_ != "slow_attack") and (gain_mode_ != "fast_attack") and (gain_mode_ != "hybrid"))
+        {
+            std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:" << std::endl;
+            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
+            std::cout << "Error: provided value gain_mode=" << gain_mode_ << " is not among valid values" << std::endl;
+            std::cout << " This parameter has been set to its default value gain_mode=manual" << std::endl;
+            gain_mode_ = std::string("manual");
+        }
+
     item_size_ = sizeof(gr_complex);
 
     std::cout << "device address: " << uri_ << std::endl;
@@ -75,10 +88,16 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     std::cout << "gain mode: " << gain_mode_ << std::endl;
     std::cout << "item type: " << item_type_ << std::endl;
 
+#if GNURADIO_API_IIO
+    plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
+        bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
+        gain_mode_.c_str(), rf_gain_, filter_source_.c_str(),
+        filter_filename_.c_str(), Fpass_, Fstop_);
+#else
     plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
         bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
         gain_mode_.c_str(), rf_gain_, filter_file_.c_str(), filter_auto_);
-
+#endif
     if (samples_ != 0)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";

@@ -401,8 +401,8 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.700.x")
-set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.800.x")
+set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.12")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
@@ -2275,11 +2275,17 @@ endif()
 # IIO blocks for GNU Radio
 # https://github.com/analogdevicesinc/gr-iio
 ##############################################
-find_package(GRIIO)
-set_package_properties(GRIIO PROPERTIES
-    PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
-    TYPE OPTIONAL
-)
+if(GNURADIO_IIO_FOUND)
+    set(GRIIO_FOUND TRUE)
+    set(GR_IIO_INCLUDE_HAS_GNURADIO TRUE)
+    set(GNURADIO_API_IIO TRUE)
+else()
+    find_package(GRIIO)
+    set_package_properties(GRIIO PROPERTIES
+        PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."
+        TYPE OPTIONAL
+    )
+endif()
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     if(NOT GRIIO_FOUND)
         message(STATUS "gnuradio-iio not found, its installation is required.")

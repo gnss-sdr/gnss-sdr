@@ -36,40 +36,40 @@ extern "C"
     per_type_encoder_f OCTET_STRING_encode_uper;
 
     /******************************
- * Handy conversion routines. *
- ******************************/
+     * Handy conversion routines. *
+     ******************************/
 
     /*
- * This function clears the previous value of the OCTET STRING (if any)
- * and then allocates a new memory with the specified content (str/size).
- * If size = -1, the size of the original string will be determined
- * using strlen(str).
- * If str equals to NULL, the function will silently clear the
- * current contents of the OCTET STRING.
- * Returns 0 if it was possible to perform operation, -1 otherwise.
- */
+     * This function clears the previous value of the OCTET STRING (if any)
+     * and then allocates a new memory with the specified content (str/size).
+     * If size = -1, the size of the original string will be determined
+     * using strlen(str).
+     * If str equals to NULL, the function will silently clear the
+     * current contents of the OCTET STRING.
+     * Returns 0 if it was possible to perform operation, -1 otherwise.
+     */
     int OCTET_STRING_fromBuf(OCTET_STRING_t *s, const char *str, int len);
 
 /* Handy conversion from the C string into the OCTET STRING. */
 #define OCTET_STRING_fromString(s, str) OCTET_STRING_fromBuf(s, str, -1)
 
     /*
- * Allocate and fill the new OCTET STRING and return a pointer to the newly
- * allocated object. NULL is permitted in str: the function will just allocate
- * empty OCTET STRING.
- */
+     * Allocate and fill the new OCTET STRING and return a pointer to the newly
+     * allocated object. NULL is permitted in str: the function will just
+     * allocate empty OCTET STRING.
+     */
     OCTET_STRING_t *OCTET_STRING_new_fromBuf(asn_TYPE_descriptor_t *td,
-        const char *str, int len);
+                                             const char *str, int len);
 
     /****************************
- * Internally useful stuff. *
- ****************************/
+     * Internally useful stuff. *
+     ****************************/
 
     typedef struct asn_OCTET_STRING_specifics_s
     {
         /*
-	 * Target structure description.
-	 */
+         * Target structure description.
+         */
         int struct_size; /* Size of the structure */
         int ctx_offset;  /* Offset of the asn_struct_ctx_t member */
 

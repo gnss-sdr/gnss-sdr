@@ -15,16 +15,17 @@ extern "C"
     struct asn_TYPE_descriptor_s; /* Forward declaration */
 
     /*
- * The DER encoder of any type. May be invoked by the application.
- * The ber_decode() function (ber_decoder.h) is an opposite of der_encode().
- */
+     * The DER encoder of any type. May be invoked by the application.
+     * The ber_decode() function (ber_decoder.h) is an opposite of der_encode().
+     */
     asn_enc_rval_t der_encode(struct asn_TYPE_descriptor_s *type_descriptor,
-        void *struct_ptr, /* Structure to be encoded */
-        asn_app_consume_bytes_f *consume_bytes_cb,
-        void *app_key /* Arbitrary callback argument */
+                              void *struct_ptr, /* Structure to be encoded */
+                              asn_app_consume_bytes_f *consume_bytes_cb,
+                              void *app_key /* Arbitrary callback argument */
     );
 
-    /* A variant of der_encode() which encodes data into the pre-allocated buffer */
+    /* A variant of der_encode() which encodes data into the pre-allocated
+     * buffer */
     asn_enc_rval_t der_encode_to_buffer(
         struct asn_TYPE_descriptor_s *type_descriptor,
         void *struct_ptr,  /* Structure to be encoded */
@@ -33,33 +34,31 @@ extern "C"
     );
 
     /*
- * Type of the generic DER encoder.
- */
+     * Type of the generic DER encoder.
+     */
     typedef asn_enc_rval_t(der_type_encoder_f)(
         struct asn_TYPE_descriptor_s *type_descriptor,
         void *struct_ptr, /* Structure to be encoded */
         int tag_mode,     /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
         ber_tlv_tag_t tag,
         asn_app_consume_bytes_f *consume_bytes_cb, /* Callback */
-        void *app_key                              /* Arbitrary callback argument */
+        void *app_key /* Arbitrary callback argument */
     );
 
-
     /*******************************
- * INTERNALLY USEFUL FUNCTIONS *
- *******************************/
+     * INTERNALLY USEFUL FUNCTIONS *
+     *******************************/
 
     /*
- * Write out leading TL[v] sequence according to the type definition.
- */
-    ssize_t der_write_tags(
-        struct asn_TYPE_descriptor_s *type_descriptor,
-        size_t struct_length,
-        int tag_mode,      /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
-        int last_tag_form, /* {0,!0}: prim, constructed */
-        ber_tlv_tag_t tag,
-        asn_app_consume_bytes_f *consume_bytes_cb,
-        void *app_key);
+     * Write out leading TL[v] sequence according to the type definition.
+     */
+    ssize_t der_write_tags(struct asn_TYPE_descriptor_s *type_descriptor,
+                           size_t struct_length,
+                           int tag_mode, /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
+                           int last_tag_form, /* {0,!0}: prim, constructed */
+                           ber_tlv_tag_t tag,
+                           asn_app_consume_bytes_f *consume_bytes_cb,
+                           void *app_key);
 
 #ifdef __cplusplus
 }

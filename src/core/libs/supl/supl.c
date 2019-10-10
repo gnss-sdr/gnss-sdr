@@ -77,7 +77,7 @@ int EXPORT supl_ulp_encode(supl_ulp_t *pdu)
             memset(pdu->buffer, 0, sizeof(pdu->buffer));
 
             pdu_len = (ret.encoded + 7) >> 3;
-            ((ULP_PDU_t *)pdu->pdu)->length = pdu_len;
+            (pdu->pdu)->length = pdu_len;
 
             ret = uper_encode_to_buffer(&asn_DEF_ULP_PDU, pdu->pdu, pdu->buffer, sizeof(pdu->buffer));
             if (ret.encoded > 0)
@@ -250,7 +250,7 @@ int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server)
 
     SSLeay_add_ssl_algorithms();
     // meth = TLSv1_client_method();
-    meth = (SSL_METHOD *)SSLv23_client_method();
+    meth = (SSL_METHOD*)SSLv23_client_method();
     SSL_load_error_strings();
     ctx->ssl_ctx = SSL_CTX_new(meth);
     if (!ctx->ssl_ctx)
@@ -800,20 +800,20 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
                     if (ue)
                         {
 #if 0
-	assist->eph_x[i].L2P = ue->ephemL2Pflag;
-	assist->eph_x[i].fit = ue->ephemFitFlag;
+    assist->eph_x[i].L2P = ue->ephemL2Pflag;
+    assist->eph_x[i].fit = ue->ephemFitFlag;
 #endif
                             assist->eph[i].delta_n = ue->ephemDeltaN;
                             assist->eph[i].M0 = ue->ephemM0;
 #if 0
-	// this is needed for asn1c version 0.9.22
-	{
-	  long v;
-	  asn_INTEGER2long((INTEGER_t *)&ue->ephemE, &v);
-	  assist->eph[i].e = v;
-	  asn_INTEGER2long((INTEGER_t *)&ue->ephemAPowerHalf, &v);
-	  assist->eph[i].e = v;
-	}
+    // this is needed for asn1c version 0.9.22
+    {
+      long v;
+      asn_INTEGER2long((INTEGER_t *)&ue->ephemE, &v);
+      assist->eph[i].e = v;
+      asn_INTEGER2long((INTEGER_t *)&ue->ephemAPowerHalf, &v);
+      assist->eph[i].e = v;
+    }
 #else
                             assist->eph[i].e = ue->ephemE;
                             assist->eph[i].A_sqrt = ue->ephemAPowerHalf;

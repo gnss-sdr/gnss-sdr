@@ -17,7 +17,7 @@
 #
 
 
-if(ENABLE_AD9361)
+if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ad9361_manager.h)
 endif()
@@ -67,13 +67,9 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     target_link_libraries(signal_source_libs
         PUBLIC
             Iio::iio
-    )
-    if(ENABLE_AD9361)
-        target_link_libraries(signal_source_libs
-            PRIVATE
-                Iio::ad9361
+        PRIVATE
+            Iio::ad9361
         )
-    endif()
     if(LIBAD9361_VERSION)
         if(LIBAD9361_VERSION VERSION_GREATER 0.1)
             target_compile_definitions(signal_source_libs

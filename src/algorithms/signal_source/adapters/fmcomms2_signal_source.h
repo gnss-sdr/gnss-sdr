@@ -82,16 +82,6 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    bool config_ad9361_lo_remote(const std::string &remote_host,
-        uint64_t bandwidth,
-        uint64_t sample_rate,
-        uint64_t freq_rf_tx_hz,
-        double tx_attenuation_db,
-        int64_t freq_dds_tx_hz,
-        double scale_dds_dbfs,
-        double phase_dds_deg);
-
-    bool ad9361_disable_lo_remote(const std::string &remote_host);
     std::string role_;
 
     // Front-end settings

@@ -87,7 +87,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface *configuration
 
     // AD9361 Local Oscillator generation for dual band operation
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000);
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", 0.0);
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);

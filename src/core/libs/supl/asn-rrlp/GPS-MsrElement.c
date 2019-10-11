@@ -7,15 +7,15 @@
 #include "GPS-MsrElement.h"
 
 static int memb_cNo_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,22 +29,22 @@ static int memb_cNo_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_doppler_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,22 +58,22 @@ static int memb_doppler_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_wholeChips_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -87,22 +87,22 @@ static int memb_wholeChips_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_fracChips_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -116,7 +116,7 @@ static int memb_fracChips_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -130,7 +130,7 @@ static int memb_pseuRangeRMSErr_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -144,7 +144,7 @@ static int memb_pseuRangeRMSErr_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -181,36 +181,36 @@ static asn_per_constraints_t ASN_PER_MEMB_PSEU_RANGE_RMS_ERR_CONSTR_8 = {
 };
 static asn_TYPE_member_t asn_MBR_GPS_MsrElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, satelliteID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SatelliteID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "satelliteID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SatelliteID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "satelliteID"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, cNo),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_cNo_constraint_1, &ASN_PER_MEMB_C_NO_CONSTR_3,
-     0, "cNo"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_cNo_constraint_1, &ASN_PER_MEMB_C_NO_CONSTR_3,
+        0, "cNo"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, doppler),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_doppler_constraint_1,
-     &ASN_PER_MEMB_DOPPLER_CONSTR_4, 0, "doppler"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_doppler_constraint_1,
+        &ASN_PER_MEMB_DOPPLER_CONSTR_4, 0, "doppler"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, wholeChips),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_wholeChips_constraint_1,
-     &ASN_PER_MEMB_WHOLE_CHIPS_CONSTR_5, 0, "wholeChips"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_wholeChips_constraint_1,
+        &ASN_PER_MEMB_WHOLE_CHIPS_CONSTR_5, 0, "wholeChips"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, fracChips),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_fracChips_constraint_1,
-     &ASN_PER_MEMB_FRAC_CHIPS_CONSTR_6, 0, "fracChips"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_fracChips_constraint_1,
+        &ASN_PER_MEMB_FRAC_CHIPS_CONSTR_6, 0, "fracChips"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, mpathIndic),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MpathIndic, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "mpathIndic"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MpathIndic, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "mpathIndic"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrElement, pseuRangeRMSErr),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_pseuRangeRMSErr_constraint_1,
-     &ASN_PER_MEMB_PSEU_RANGE_RMS_ERR_CONSTR_8, 0, "pseuRangeRMSErr"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_pseuRangeRMSErr_constraint_1,
+        &ASN_PER_MEMB_PSEU_RANGE_RMS_ERR_CONSTR_8, 0, "pseuRangeRMSErr"},
 };
 static ber_tlv_tag_t asn_DEF_GPS_MsrElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -253,7 +253,7 @@ asn_TYPE_descriptor_t asn_DEF_GPS_MsrElement = {
     asn_DEF_GPS_MsrElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GPS_MsrElement_tags_1) /
         sizeof(asn_DEF_GPS_MsrElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                            /* No PER visible constraints */
     asn_MBR_GPS_MsrElement_1,
     7,                              /* Elements count */
     &asn_SPC_GPS_MsrElement_specs_1 /* Additional specs */

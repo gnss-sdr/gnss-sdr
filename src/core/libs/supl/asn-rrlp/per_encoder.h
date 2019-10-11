@@ -25,7 +25,7 @@ extern "C"
         struct asn_TYPE_descriptor_s *type_descriptor,
         void *struct_ptr,                          /* Structure to be encoded */
         asn_app_consume_bytes_f *consume_bytes_cb, /* Data collector */
-        void *app_key /* Arbitrary callback argument */
+        void *app_key                              /* Arbitrary callback argument */
     );
 
     /*

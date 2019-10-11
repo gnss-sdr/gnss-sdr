@@ -15,10 +15,10 @@ static asn_per_constraints_t ASN_PER_TYPE_CELL_MEASURED_RESULTS_LIST_CONSTR_1 =
 };
 static asn_TYPE_member_t asn_MBR_CellMeasuredResultsList_1[] = {
     {ATF_POINTER, 0, 0, (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0,
-     &asn_DEF_CellMeasuredResults,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, ""},
+        &asn_DEF_CellMeasuredResults,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, ""},
 };
 static ber_tlv_tag_t asn_DEF_CellMeasuredResultsList_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

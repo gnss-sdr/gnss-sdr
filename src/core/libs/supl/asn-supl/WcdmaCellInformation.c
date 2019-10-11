@@ -7,15 +7,15 @@
 #include "WcdmaCellInformation.h"
 
 static int memb_refMCC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_refMCC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_refMNC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,21 +57,21 @@ static int memb_refMNC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_refUC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,7 +85,7 @@ static int memb_refUC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -99,7 +99,7 @@ static int memb_primaryScramblingCode_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -113,7 +113,7 @@ static int memb_primaryScramblingCode_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -144,35 +144,35 @@ static asn_per_constraints_t ASN_PER_MEMB_PRIMARY_SCRAMBLING_CODE_CONSTR_6 = {
 };
 static asn_TYPE_member_t asn_MBR_WcdmaCellInformation_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct WcdmaCellInformation, refMCC),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refMCC_constraint_1,
-     &ASN_PER_MEMB_REF_MCC_CONSTR_2, 0, "refMCC"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refMCC_constraint_1,
+        &ASN_PER_MEMB_REF_MCC_CONSTR_2, 0, "refMCC"},
     {ATF_NOFLAGS, 0, offsetof(struct WcdmaCellInformation, refMNC),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refMNC_constraint_1,
-     &ASN_PER_MEMB_REF_MNC_CONSTR_3, 0, "refMNC"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refMNC_constraint_1,
+        &ASN_PER_MEMB_REF_MNC_CONSTR_3, 0, "refMNC"},
     {ATF_NOFLAGS, 0, offsetof(struct WcdmaCellInformation, refUC),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refUC_constraint_1,
-     &ASN_PER_MEMB_REF_UC_CONSTR_4, 0, "refUC"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refUC_constraint_1,
+        &ASN_PER_MEMB_REF_UC_CONSTR_4, 0, "refUC"},
     {ATF_POINTER, 3, offsetof(struct WcdmaCellInformation, frequencyInfo),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FrequencyInfo,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "frequencyInfo"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FrequencyInfo,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "frequencyInfo"},
     {ATF_POINTER, 2,
-     offsetof(struct WcdmaCellInformation, primaryScramblingCode),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_primaryScramblingCode_constraint_1,
-     &ASN_PER_MEMB_PRIMARY_SCRAMBLING_CODE_CONSTR_6, 0,
-     "primaryScramblingCode"},
+        offsetof(struct WcdmaCellInformation, primaryScramblingCode),
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_primaryScramblingCode_constraint_1,
+        &ASN_PER_MEMB_PRIMARY_SCRAMBLING_CODE_CONSTR_6, 0,
+        "primaryScramblingCode"},
     {ATF_POINTER, 1, offsetof(struct WcdmaCellInformation, measuredResultsList),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MeasuredResultsList,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "measuredResultsList"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MeasuredResultsList,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "measuredResultsList"},
 };
 static int asn_MAP_WcdmaCellInformation_oms_1[] = {3, 4, 5};
 static ber_tlv_tag_t asn_DEF_WcdmaCellInformation_tags_1[] = {
@@ -183,9 +183,9 @@ static asn_TYPE_tag2member_t asn_MAP_WcdmaCellInformation_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* refUC at 114 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* frequencyInfo at 115 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0,
-     0}, /* primaryScramblingCode at 116 */
+        0}, /* primaryScramblingCode at 116 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0,
-     0} /* measuredResultsList at 117 */
+        0} /* measuredResultsList at 117 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_WcdmaCellInformation_specs_1 = {
     sizeof(struct WcdmaCellInformation),
@@ -217,7 +217,7 @@ asn_TYPE_descriptor_t asn_DEF_WcdmaCellInformation = {
     asn_DEF_WcdmaCellInformation_tags_1,                /* Same as above */
     sizeof(asn_DEF_WcdmaCellInformation_tags_1) /
         sizeof(asn_DEF_WcdmaCellInformation_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                  /* No PER visible constraints */
     asn_MBR_WcdmaCellInformation_1,
     6,                                    /* Elements count */
     &asn_SPC_WcdmaCellInformation_specs_1 /* Additional specs */

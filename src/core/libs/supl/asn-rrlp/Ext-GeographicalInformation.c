@@ -16,7 +16,7 @@ int Ext_GeographicalInformation_constraint(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ int Ext_GeographicalInformation_constraint(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -58,16 +58,16 @@ static void Ext_GeographicalInformation_1_inherit_TYPE_descriptor(
 }
 
 void Ext_GeographicalInformation_free(asn_TYPE_descriptor_t *td,
-                                      void *struct_ptr, int contents_only)
+    void *struct_ptr, int contents_only)
 {
     Ext_GeographicalInformation_1_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 int Ext_GeographicalInformation_print(asn_TYPE_descriptor_t *td,
-                                      const void *struct_ptr, int ilevel,
-                                      asn_app_consume_bytes_f *cb,
-                                      void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     Ext_GeographicalInformation_1_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
@@ -79,7 +79,7 @@ asn_dec_rval_t Ext_GeographicalInformation_decode_ber(
 {
     Ext_GeographicalInformation_1_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 asn_enc_rval_t Ext_GeographicalInformation_encode_der(
@@ -96,7 +96,7 @@ asn_dec_rval_t Ext_GeographicalInformation_decode_xer(
 {
     Ext_GeographicalInformation_1_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 asn_enc_rval_t Ext_GeographicalInformation_encode_xer(
@@ -114,7 +114,7 @@ asn_dec_rval_t Ext_GeographicalInformation_decode_uper(
 {
     Ext_GeographicalInformation_1_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 asn_enc_rval_t Ext_GeographicalInformation_encode_uper(
@@ -150,7 +150,7 @@ asn_TYPE_descriptor_t asn_DEF_Ext_GeographicalInformation = {
     asn_DEF_Ext_GeographicalInformation_tags_1,
     sizeof(asn_DEF_Ext_GeographicalInformation_tags_1) /
         sizeof(asn_DEF_Ext_GeographicalInformation_tags_1[0]), /* 1 */
-    asn_DEF_Ext_GeographicalInformation_tags_1, /* Same as above */
+    asn_DEF_Ext_GeographicalInformation_tags_1,                /* Same as above */
     sizeof(asn_DEF_Ext_GeographicalInformation_tags_1) /
         sizeof(asn_DEF_Ext_GeographicalInformation_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_EXT_GEOGRAPHICAL_INFORMATION_CONSTR_1,

@@ -14,28 +14,28 @@ static asn_per_constraints_t ASN_PER_TYPE_VELOCITY_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_Velocity_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Velocity, choice.horvel),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Horvel, 0, /* Defer constraints checking to the member type */
-     0,                  /* No PER visible constraints */
-     0, "horvel"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Horvel, 0,                     /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "horvel"},
     {ATF_NOFLAGS, 0, offsetof(struct Velocity, choice.horandvervel),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Horandvervel,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "horandvervel"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Horandvervel,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "horandvervel"},
     {ATF_NOFLAGS, 0, offsetof(struct Velocity, choice.horveluncert),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Horveluncert,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "horveluncert"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Horveluncert,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "horveluncert"},
     {ATF_NOFLAGS, 0, offsetof(struct Velocity, choice.horandveruncert),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Horandveruncert,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "horandveruncert"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Horandveruncert,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "horandveruncert"},
 };
 static asn_TYPE_tag2member_t asn_MAP_Velocity_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* horvel at 226 */

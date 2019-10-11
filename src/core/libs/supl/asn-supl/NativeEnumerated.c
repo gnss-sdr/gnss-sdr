@@ -9,8 +9,8 @@
  * implementation deals with the standard (machine-specific) representation
  * of them instead of using the platform-independent buffer.
  */
-#include <asn_internal.h>
 #include <NativeEnumerated.h>
+#include <asn_internal.h>
 
 /*
  * NativeEnumerated basic type description.
@@ -43,10 +43,10 @@ asn_TYPE_descriptor_t asn_DEF_NativeEnumerated = {
 };
 
 asn_enc_rval_t NativeEnumerated_encode_xer(asn_TYPE_descriptor_t *td,
-                                           void *sptr, int ilevel,
-                                           enum xer_encoder_flags_e flags,
-                                           asn_app_consume_bytes_f *cb,
-                                           void *app_key)
+    void *sptr, int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
     asn_enc_rval_t er;
@@ -79,9 +79,9 @@ asn_enc_rval_t NativeEnumerated_encode_xer(asn_TYPE_descriptor_t *td,
 }
 
 asn_dec_rval_t NativeEnumerated_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                            asn_TYPE_descriptor_t *td,
-                                            asn_per_constraints_t *constraints,
-                                            void **sptr, asn_per_data_t *pd)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints,
+    void **sptr, asn_per_data_t *pd)
 {
     asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
     asn_dec_rval_t rval = {RC_OK, 0};
@@ -150,8 +150,8 @@ static int NativeEnumerated__compar_value2enum(const void *ap, const void *bp)
 }
 
 asn_enc_rval_t NativeEnumerated_encode_uper(asn_TYPE_descriptor_t *td,
-                                            asn_per_constraints_t *constraints,
-                                            void *sptr, asn_per_outp_t *po)
+    asn_per_constraints_t *constraints,
+    void *sptr, asn_per_outp_t *po)
 {
     asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
     asn_enc_rval_t er;
@@ -181,7 +181,7 @@ asn_enc_rval_t NativeEnumerated_encode_uper(asn_TYPE_descriptor_t *td,
 
     key.nat_value = native;
     kf = bsearch(&key, specs->value2enum, specs->map_count, sizeof(key),
-                 NativeEnumerated__compar_value2enum);
+        NativeEnumerated__compar_value2enum);
     if (!kf)
         {
             ASN_DEBUG("No element corresponds to %ld", native);
@@ -217,8 +217,8 @@ asn_enc_rval_t NativeEnumerated_encode_uper(asn_TYPE_descriptor_t *td,
      * X.691, #10.6: normally small non-negative whole number;
      */
     ASN_DEBUG("value = %ld, ext = %d, inext = %d, res = %ld", value,
-              specs->extension, inext,
-              value - (inext ? (specs->extension - 1) : 0));
+        specs->extension, inext,
+        value - (inext ? (specs->extension - 1) : 0));
     if (uper_put_nsnnwn(po, value - (inext ? (specs->extension - 1) : 0)))
         _ASN_ENCODE_FAILED;
 

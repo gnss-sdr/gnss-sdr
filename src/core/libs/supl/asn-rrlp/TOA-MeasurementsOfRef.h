@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "RefQuality.h"
 #include "NumOfMeasurements.h"
+#include "RefQuality.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

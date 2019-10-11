@@ -15,18 +15,18 @@ static asn_per_constraints_t
 };
 static asn_TYPE_member_t asn_MBR_SystemInfoAssistBTS_R98_ExpOTD_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct SystemInfoAssistBTS_R98_ExpOTD, choice.notPresent),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NULL, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "notPresent"},
+        offsetof(struct SystemInfoAssistBTS_R98_ExpOTD, choice.notPresent),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NULL, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "notPresent"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct SystemInfoAssistBTS_R98_ExpOTD, choice.present),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AssistBTSData_R98_ExpOTD,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "present"},
+        offsetof(struct SystemInfoAssistBTS_R98_ExpOTD, choice.present),
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AssistBTSData_R98_ExpOTD,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "present"},
 };
 static asn_TYPE_tag2member_t asn_MAP_SystemInfoAssistBTS_R98_ExpOTD_tag2el_1[] =
     {

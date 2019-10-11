@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "IPAddress.h"
 #include "FQDN.h"
+#include "IPAddress.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

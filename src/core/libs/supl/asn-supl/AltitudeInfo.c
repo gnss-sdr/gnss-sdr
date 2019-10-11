@@ -7,9 +7,9 @@
 #include "AltitudeInfo.h"
 
 static int altitudeDirection_2_constraint(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     /* Replace with underlying type checker */
     td->check_constraints = asn_DEF_ENUMERATED.check_constraints;
@@ -41,15 +41,15 @@ static void altitudeDirection_2_inherit_TYPE_descriptor(
 }
 
 static void altitudeDirection_2_free(asn_TYPE_descriptor_t *td,
-                                     void *struct_ptr, int contents_only)
+    void *struct_ptr, int contents_only)
 {
     altitudeDirection_2_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 static int altitudeDirection_2_print(asn_TYPE_descriptor_t *td,
-                                     const void *struct_ptr, int ilevel,
-                                     asn_app_consume_bytes_f *cb, void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     altitudeDirection_2_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
@@ -61,7 +61,7 @@ static asn_dec_rval_t altitudeDirection_2_decode_ber(
 {
     altitudeDirection_2_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 static asn_enc_rval_t altitudeDirection_2_encode_der(
@@ -78,7 +78,7 @@ static asn_dec_rval_t altitudeDirection_2_decode_xer(
 {
     altitudeDirection_2_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 static asn_enc_rval_t altitudeDirection_2_encode_xer(
@@ -96,7 +96,7 @@ static asn_dec_rval_t altitudeDirection_2_decode_uper(
 {
     altitudeDirection_2_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 static asn_enc_rval_t altitudeDirection_2_encode_uper(
@@ -108,16 +108,16 @@ static asn_enc_rval_t altitudeDirection_2_encode_uper(
 }
 
 static int memb_altitude_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -131,7 +131,7 @@ static int memb_altitude_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -145,7 +145,7 @@ static int memb_altUncertainty_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -159,7 +159,7 @@ static int memb_altUncertainty_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -227,19 +227,19 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_AltitudeInfo_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct AltitudeInfo, altitudeDirection),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_altitudeDirection_2,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "altitudeDirection"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_altitudeDirection_2,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "altitudeDirection"},
     {ATF_NOFLAGS, 0, offsetof(struct AltitudeInfo, altitude),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_altitude_constraint_1,
-     &ASN_PER_MEMB_ALTITUDE_CONSTR_5, 0, "altitude"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_altitude_constraint_1,
+        &ASN_PER_MEMB_ALTITUDE_CONSTR_5, 0, "altitude"},
     {ATF_NOFLAGS, 0, offsetof(struct AltitudeInfo, altUncertainty),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_altUncertainty_constraint_1,
-     &ASN_PER_MEMB_ALT_UNCERTAINTY_CONSTR_6, 0, "altUncertainty"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_altUncertainty_constraint_1,
+        &ASN_PER_MEMB_ALT_UNCERTAINTY_CONSTR_6, 0, "altUncertainty"},
 };
 static ber_tlv_tag_t asn_DEF_AltitudeInfo_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

@@ -8,23 +8,23 @@
 
 static asn_TYPE_member_t asn_MBR_ReferenceWGS84_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceWGS84, relativeNorth),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RelDistance,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "relativeNorth"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RelDistance,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "relativeNorth"},
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceWGS84, relativeEast),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RelDistance,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "relativeEast"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RelDistance,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "relativeEast"},
     {ATF_POINTER, 1, offsetof(struct ReferenceWGS84, relativeAlt),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RelativeAlt,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "relativeAlt"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RelativeAlt,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "relativeAlt"},
 };
 static int asn_MAP_ReferenceWGS84_oms_1[] = {2};
 static ber_tlv_tag_t asn_DEF_ReferenceWGS84_tags_1[] = {
@@ -64,7 +64,7 @@ asn_TYPE_descriptor_t asn_DEF_ReferenceWGS84 = {
     asn_DEF_ReferenceWGS84_tags_1,                /* Same as above */
     sizeof(asn_DEF_ReferenceWGS84_tags_1) /
         sizeof(asn_DEF_ReferenceWGS84_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                            /* No PER visible constraints */
     asn_MBR_ReferenceWGS84_1,
     3,                              /* Elements count */
     &asn_SPC_ReferenceWGS84_specs_1 /* Additional specs */

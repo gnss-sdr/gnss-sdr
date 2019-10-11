@@ -7,16 +7,16 @@
 #include "GANSSDataBitAssist.h"
 
 static int memb_ganssTOD_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_ganssTOD_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -44,7 +44,7 @@ static int memb_ganssDataTypeID_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_ganssDataTypeID_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -77,24 +77,24 @@ static asn_per_constraints_t ASN_PER_MEMB_GANSS_DATA_TYPE_ID_CONSTR_4 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSDataBitAssist_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSSDataBitAssist, ganssTOD),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssTOD_constraint_1,
-     &ASN_PER_MEMB_GANSS_TOD_CONSTR_2, 0, "ganssTOD"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssTOD_constraint_1,
+        &ASN_PER_MEMB_GANSS_TOD_CONSTR_2, 0, "ganssTOD"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSDataBitAssist, svID),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SVID, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "svID"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SVID, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "svID"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSDataBitAssist, ganssDataTypeID),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssDataTypeID_constraint_1,
-     &ASN_PER_MEMB_GANSS_DATA_TYPE_ID_CONSTR_4, 0, "ganssDataTypeID"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssDataTypeID_constraint_1,
+        &ASN_PER_MEMB_GANSS_DATA_TYPE_ID_CONSTR_4, 0, "ganssDataTypeID"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSDataBitAssist, ganssDataBits),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SeqOf_GANSSDataBits,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssDataBits"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SeqOf_GANSSDataBits,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssDataBits"},
 };
 static ber_tlv_tag_t asn_DEF_GANSSDataBitAssist_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -134,7 +134,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSDataBitAssist = {
     asn_DEF_GANSSDataBitAssist_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSDataBitAssist_tags_1) /
         sizeof(asn_DEF_GANSSDataBitAssist_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                /* No PER visible constraints */
     asn_MBR_GANSSDataBitAssist_1,
     4,                                  /* Elements count */
     &asn_SPC_GANSSDataBitAssist_specs_1 /* Additional specs */

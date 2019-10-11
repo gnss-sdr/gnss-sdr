@@ -15,7 +15,7 @@ static int memb_nbrOfMeasurements_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,22 +29,22 @@ static int memb_nbrOfMeasurements_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_stdOfEOTD_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_stdOfEOTD_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -77,19 +77,19 @@ static asn_per_constraints_t ASN_PER_MEMB_STD_OF_EOTD_CONSTR_3 = {
 };
 static asn_TYPE_member_t asn_MBR_EOTDQuality_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct EOTDQuality, nbrOfMeasurements),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_nbrOfMeasurements_constraint_1,
-     &ASN_PER_MEMB_NBR_OF_MEASUREMENTS_CONSTR_2, 0, "nbrOfMeasurements"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_nbrOfMeasurements_constraint_1,
+        &ASN_PER_MEMB_NBR_OF_MEASUREMENTS_CONSTR_2, 0, "nbrOfMeasurements"},
     {ATF_NOFLAGS, 0, offsetof(struct EOTDQuality, stdOfEOTD),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stdOfEOTD_constraint_1,
-     &ASN_PER_MEMB_STD_OF_EOTD_CONSTR_3, 0, "stdOfEOTD"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stdOfEOTD_constraint_1,
+        &ASN_PER_MEMB_STD_OF_EOTD_CONSTR_3, 0, "stdOfEOTD"},
 };
 static ber_tlv_tag_t asn_DEF_EOTDQuality_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_EOTDQuality_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0},                                          /* nbrOfMeasurements at 393 */
+        0},                                       /* nbrOfMeasurements at 393 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0} /* stdOfEOTD at 394 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_EOTDQuality_specs_1 = {

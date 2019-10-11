@@ -39,12 +39,12 @@ extern "C"
     } asn_struct_ctx_t;
 
 #include <ber_decoder.h> /* Basic Encoding Rules decoder */
+#include <constraints.h> /* Subtype constraints support */
 #include <der_encoder.h> /* Distinguished Encoding Rules encoder */
-#include <xer_decoder.h> /* Decoder of XER (XML, text) */
-#include <xer_encoder.h> /* Encoder into XER (XML, text) */
 #include <per_decoder.h> /* Packet Encoding Rules decoder */
 #include <per_encoder.h> /* Packet Encoding Rules encoder */
-#include <constraints.h> /* Subtype constraints support */
+#include <xer_decoder.h> /* Decoder of XER (XML, text) */
+#include <xer_encoder.h> /* Encoder into XER (XML, text) */
 
     /*
      * Free the structure according to its specification.
@@ -110,10 +110,10 @@ extern "C"
          * Tags that are expected to occur.
          */
         asn_outmost_tag_f *outmost_tag; /* <optional, internal> */
-        ber_tlv_tag_t *tags;     /* Effective tags sequence for this type */
-        int tags_count;          /* Number of tags which are expected */
-        ber_tlv_tag_t *all_tags; /* Every tag for BER/containment */
-        int all_tags_count;      /* Number of tags */
+        ber_tlv_tag_t *tags;            /* Effective tags sequence for this type */
+        int tags_count;                 /* Number of tags which are expected */
+        ber_tlv_tag_t *all_tags;        /* Every tag for BER/containment */
+        int all_tags_count;             /* Number of tags */
 
         asn_per_constraints_t *per_constraints; /* PER compiled constraints */
 
@@ -142,16 +142,16 @@ extern "C"
     };
     typedef struct asn_TYPE_member_s
     {
-        enum asn_TYPE_flags_e flags; /* Element's presentation flags */
-        int optional;      /* Following optional members, including current */
-        int memb_offset;   /* Offset of the element */
-        ber_tlv_tag_t tag; /* Outmost (most immediate) tag */
-        int tag_mode;      /* IMPLICIT/no/EXPLICIT tag at current level */
-        asn_TYPE_descriptor_t *type;            /* Member type descriptor */
-        asn_constr_check_f *memb_constraints;   /* Constraints validator */
-        asn_per_constraints_t *per_constraints; /* PER compiled constraints */
+        enum asn_TYPE_flags_e flags;                   /* Element's presentation flags */
+        int optional;                                  /* Following optional members, including current */
+        int memb_offset;                               /* Offset of the element */
+        ber_tlv_tag_t tag;                             /* Outmost (most immediate) tag */
+        int tag_mode;                                  /* IMPLICIT/no/EXPLICIT tag at current level */
+        asn_TYPE_descriptor_t *type;                   /* Member type descriptor */
+        asn_constr_check_f *memb_constraints;          /* Constraints validator */
+        asn_per_constraints_t *per_constraints;        /* PER compiled constraints */
         int (*default_value)(int setval, void **sptr); /* DEFAULT <value> */
-        char *name; /* ASN.1 identifier of the element */
+        char *name;                                    /* ASN.1 identifier of the element */
     } asn_TYPE_member_t;
 
     /*
@@ -174,9 +174,9 @@ extern "C"
      *     -1: Problem dumping the structure.
      * (See also xer_fprint() in xer_encoder.h)
      */
-    int asn_fprint(FILE *stream, /* Destination stream descriptor */
-                   asn_TYPE_descriptor_t *td, /* ASN.1 type descriptor */
-                   const void *struct_ptr);   /* Structure to be printed */
+    int asn_fprint(FILE *stream,   /* Destination stream descriptor */
+        asn_TYPE_descriptor_t *td, /* ASN.1 type descriptor */
+        const void *struct_ptr);   /* Structure to be printed */
 
 #ifdef __cplusplus
 }

@@ -2,8 +2,8 @@
  * Copyright (c) 2003 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
 #include <IA5String.h>
+#include <asn_internal.h>
 
 /*
  * IA5String basic type description.
@@ -41,7 +41,7 @@ asn_TYPE_descriptor_t asn_DEF_IA5String = {
 };
 
 int IA5String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                         asn_app_constraint_failed_f *ctfailcb, void *app_key)
+    asn_app_constraint_failed_f *ctfailcb, void *app_key)
 {
     const IA5String_t *st = (const IA5String_t *)sptr;
 
@@ -58,10 +58,10 @@ int IA5String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
                     if (*buf > 0x7F)
                         {
                             _ASN_CTFAIL(app_key, td, sptr,
-                                        "%s: value byte %ld out of range: "
-                                        "%d > 127 (%s:%d)",
-                                        td->name, ((buf - st->buf) + 1), *buf,
-                                        __FILE__, __LINE__);
+                                "%s: value byte %ld out of range: "
+                                "%d > 127 (%s:%d)",
+                                td->name, ((buf - st->buf) + 1), *buf,
+                                __FILE__, __LINE__);
                             return -1;
                         }
                 }
@@ -69,7 +69,7 @@ int IA5String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 

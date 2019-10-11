@@ -8,8 +8,8 @@
  * multiple of 8 bytes.
  */
 asn_dec_rval_t uper_decode_complete(asn_codec_ctx_t *opt_codec_ctx,
-                                    asn_TYPE_descriptor_t *td, void **sptr,
-                                    const void *buffer, size_t size)
+    asn_TYPE_descriptor_t *td, void **sptr,
+    const void *buffer, size_t size)
 {
     asn_dec_rval_t rval;
 
@@ -48,9 +48,9 @@ asn_dec_rval_t uper_decode_complete(asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_dec_rval_t uper_decode(asn_codec_ctx_t *opt_codec_ctx,
-                           asn_TYPE_descriptor_t *td, void **sptr,
-                           const void *buffer, size_t size, int skip_bits,
-                           int unused_bits)
+    asn_TYPE_descriptor_t *td, void **sptr,
+    const void *buffer, size_t size, int skip_bits,
+    int unused_bits)
 {
     asn_codec_ctx_t s_codec_ctx;
     asn_dec_rval_t rval;
@@ -98,7 +98,7 @@ asn_dec_rval_t uper_decode(asn_codec_ctx_t *opt_codec_ctx,
             rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3) +
                             pd.nboff - skip_bits;
             ASN_DEBUG("PER decoding consumed %d, counted %d", rval.consumed,
-                      pd.moved);
+                pd.moved);
             assert(rval.consumed == pd.moved);
         }
     else

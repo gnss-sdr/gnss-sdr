@@ -7,9 +7,9 @@
 #include "Horvel.h"
 
 static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -17,7 +17,7 @@ static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -39,15 +39,15 @@ static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -55,7 +55,7 @@ static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -77,7 +77,7 @@ static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -96,13 +96,13 @@ static asn_per_constraints_t ASN_PER_MEMB_HORSPEED_CONSTR_3 = {
 };
 static asn_TYPE_member_t asn_MBR_Horvel_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Horvel, bearing),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_bearing_constraint_1,
-     &ASN_PER_MEMB_BEARING_CONSTR_2, 0, "bearing"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_bearing_constraint_1,
+        &ASN_PER_MEMB_BEARING_CONSTR_2, 0, "bearing"},
     {ATF_NOFLAGS, 0, offsetof(struct Horvel, horspeed),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_horspeed_constraint_1,
-     &ASN_PER_MEMB_HORSPEED_CONSTR_3, 0, "horspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_horspeed_constraint_1,
+        &ASN_PER_MEMB_HORSPEED_CONSTR_3, 0, "horspeed"},
 };
 static ber_tlv_tag_t asn_DEF_Horvel_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -136,9 +136,9 @@ asn_TYPE_descriptor_t asn_DEF_Horvel = {
     0, /* Use generic outmost tag fetcher */
     asn_DEF_Horvel_tags_1,
     sizeof(asn_DEF_Horvel_tags_1) / sizeof(asn_DEF_Horvel_tags_1[0]), /* 1 */
-    asn_DEF_Horvel_tags_1, /* Same as above */
+    asn_DEF_Horvel_tags_1,                                            /* Same as above */
     sizeof(asn_DEF_Horvel_tags_1) / sizeof(asn_DEF_Horvel_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                                /* No PER visible constraints */
     asn_MBR_Horvel_1,
     2,                      /* Elements count */
     &asn_SPC_Horvel_specs_1 /* Additional specs */

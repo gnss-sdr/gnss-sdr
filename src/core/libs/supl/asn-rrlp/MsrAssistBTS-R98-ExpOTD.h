@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "ExpectedOTD.h"
 #include "ExpOTDUncertainty.h"
+#include "ExpectedOTD.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

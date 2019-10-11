@@ -7,16 +7,16 @@
 #include "GANSSSatelliteElement.h"
 
 static int memb_svHealth_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,21 +30,21 @@ static int memb_svHealth_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_iod_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_iod_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -77,30 +77,30 @@ static asn_per_constraints_t ASN_PER_MEMB_IOD_CONSTR_4 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSSatelliteElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSSSatelliteElement, svID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SVID, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "svID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SVID, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "svID"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSSatelliteElement, svHealth),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_svHealth_constraint_1,
-     &ASN_PER_MEMB_SV_HEALTH_CONSTR_3, 0, "svHealth"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_svHealth_constraint_1,
+        &ASN_PER_MEMB_SV_HEALTH_CONSTR_3, 0, "svHealth"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSSatelliteElement, iod),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_iod_constraint_1, &ASN_PER_MEMB_IOD_CONSTR_4,
-     0, "iod"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_iod_constraint_1, &ASN_PER_MEMB_IOD_CONSTR_4,
+        0, "iod"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSSatelliteElement, ganssClockModel),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_GANSSClockModel,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssClockModel"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_GANSSClockModel,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssClockModel"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSSatelliteElement, ganssOrbitModel),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_GANSSOrbitModel,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssOrbitModel"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_GANSSOrbitModel,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssOrbitModel"},
 };
 static ber_tlv_tag_t asn_DEF_GANSSSatelliteElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -141,7 +141,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSSatelliteElement = {
     asn_DEF_GANSSSatelliteElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSSatelliteElement_tags_1) /
         sizeof(asn_DEF_GANSSSatelliteElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                   /* No PER visible constraints */
     asn_MBR_GANSSSatelliteElement_1,
     5,                                     /* Elements count */
     &asn_SPC_GANSSSatelliteElement_specs_1 /* Additional specs */

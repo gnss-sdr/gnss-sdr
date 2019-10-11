@@ -10,12 +10,12 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "GANSSTODm.h"
-#include <NativeInteger.h>
-#include "GANSSTODUncertainty.h"
-#include "FixType.h"
-#include "PositionData.h"
 #include "Ext-GeographicalInformation.h"
+#include "FixType.h"
+#include "GANSSTODUncertainty.h"
+#include "GANSSTODm.h"
+#include "PositionData.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

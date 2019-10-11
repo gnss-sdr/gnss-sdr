@@ -14,26 +14,26 @@ static asn_per_constraints_t ASN_PER_TYPE_METHOD_TYPE_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_MethodType_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct MethodType, choice.msAssisted),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AccuracyOpt,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "msAssisted"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AccuracyOpt,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "msAssisted"},
     {ATF_NOFLAGS, 0, offsetof(struct MethodType, choice.msBased),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Accuracy, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "msBased"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Accuracy, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msBased"},
     {ATF_NOFLAGS, 0, offsetof(struct MethodType, choice.msBasedPref),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Accuracy, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "msBasedPref"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Accuracy, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msBasedPref"},
     {ATF_NOFLAGS, 0, offsetof(struct MethodType, choice.msAssistedPref),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Accuracy, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "msAssistedPref"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Accuracy, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msAssistedPref"},
 };
 static asn_TYPE_tag2member_t asn_MAP_MethodType_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* msAssisted at 117 */

@@ -14,16 +14,16 @@ static asn_per_constraints_t ASN_PER_TYPE_SYSTEM_INFO_ASSIST_BTS_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_SystemInfoAssistBTS_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SystemInfoAssistBTS, choice.notPresent),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NULL, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "notPresent"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NULL, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "notPresent"},
     {ATF_NOFLAGS, 0, offsetof(struct SystemInfoAssistBTS, choice.present),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AssistBTSData,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "present"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AssistBTSData,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "present"},
 };
 static asn_TYPE_tag2member_t asn_MAP_SystemInfoAssistBTS_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* notPresent at 223 */

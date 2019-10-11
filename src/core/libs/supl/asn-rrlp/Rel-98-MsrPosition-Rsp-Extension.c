@@ -8,19 +8,19 @@
 
 static asn_TYPE_member_t asn_MBR_rel_98_Ext_MeasureInfo_2[] = {
     {ATF_POINTER, 1,
-     offsetof(struct rel_98_Ext_MeasureInfo, otd_MeasureInfo_R98_Ext),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_OTD_MeasureInfo_R98_Ext,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "otd-MeasureInfo-R98-Ext"},
+        offsetof(struct rel_98_Ext_MeasureInfo, otd_MeasureInfo_R98_Ext),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_OTD_MeasureInfo_R98_Ext,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "otd-MeasureInfo-R98-Ext"},
 };
 static int asn_MAP_rel_98_Ext_MeasureInfo_oms_2[] = {0};
 static ber_tlv_tag_t asn_DEF_rel_98_Ext_MeasureInfo_tags_2[] = {
     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_rel_98_Ext_MeasureInfo_tag2el_2[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0} /* otd-MeasureInfo-R98-Ext at 960 */
+        0} /* otd-MeasureInfo-R98-Ext at 960 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_rel_98_Ext_MeasureInfo_specs_2 = {
     sizeof(struct rel_98_Ext_MeasureInfo),
@@ -54,7 +54,7 @@ static /* Use -fall-defs-global to expose */
         asn_DEF_rel_98_Ext_MeasureInfo_tags_2, /* Same as above */
         sizeof(asn_DEF_rel_98_Ext_MeasureInfo_tags_2) /
             sizeof(asn_DEF_rel_98_Ext_MeasureInfo_tags_2[0]), /* 2 */
-        0, /* No PER visible constraints */
+        0,                                                    /* No PER visible constraints */
         asn_MBR_rel_98_Ext_MeasureInfo_2,
         1,                                      /* Elements count */
         &asn_SPC_rel_98_Ext_MeasureInfo_specs_2 /* Additional specs */
@@ -62,19 +62,19 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_Rel_98_MsrPosition_Rsp_Extension_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct Rel_98_MsrPosition_Rsp_Extension, rel_98_Ext_MeasureInfo),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, &asn_DEF_rel_98_Ext_MeasureInfo_2,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "rel-98-Ext-MeasureInfo"},
+        offsetof(struct Rel_98_MsrPosition_Rsp_Extension, rel_98_Ext_MeasureInfo),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, &asn_DEF_rel_98_Ext_MeasureInfo_2,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "rel-98-Ext-MeasureInfo"},
     {ATF_POINTER, 1,
-     offsetof(struct Rel_98_MsrPosition_Rsp_Extension,
-              timeAssistanceMeasurements),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GPSTimeAssistanceMeasurements,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "timeAssistanceMeasurements"},
+        offsetof(struct Rel_98_MsrPosition_Rsp_Extension,
+            timeAssistanceMeasurements),
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GPSTimeAssistanceMeasurements,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "timeAssistanceMeasurements"},
 };
 static int asn_MAP_Rel_98_MsrPosition_Rsp_Extension_oms_1[] = {1};
 static ber_tlv_tag_t asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1[] = {
@@ -82,16 +82,16 @@ static ber_tlv_tag_t asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1[] = {
 static asn_TYPE_tag2member_t
     asn_MAP_Rel_98_MsrPosition_Rsp_Extension_tag2el_1[] = {
         {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-         0}, /* rel-98-Ext-MeasureInfo at 960 */
+            0}, /* rel-98-Ext-MeasureInfo at 960 */
         {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-         0} /* timeAssistanceMeasurements at 963 */
+            0} /* timeAssistanceMeasurements at 963 */
 };
 static asn_SEQUENCE_specifics_t
     asn_SPC_Rel_98_MsrPosition_Rsp_Extension_specs_1 = {
         sizeof(struct Rel_98_MsrPosition_Rsp_Extension),
         offsetof(struct Rel_98_MsrPosition_Rsp_Extension, _asn_ctx),
         asn_MAP_Rel_98_MsrPosition_Rsp_Extension_tag2el_1,
-        2, /* Count of tags in the map */
+        2,                                              /* Count of tags in the map */
         asn_MAP_Rel_98_MsrPosition_Rsp_Extension_oms_1, /* Optional members */
         0,
         1, /* Root/Additions */
@@ -114,10 +114,10 @@ asn_TYPE_descriptor_t asn_DEF_Rel_98_MsrPosition_Rsp_Extension = {
     asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1,
     sizeof(asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1) /
         sizeof(asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1[0]), /* 1 */
-    asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1, /* Same as above */
+    asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1,                /* Same as above */
     sizeof(asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1) /
         sizeof(asn_DEF_Rel_98_MsrPosition_Rsp_Extension_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                              /* No PER visible constraints */
     asn_MBR_Rel_98_MsrPosition_Rsp_Extension_1,
     2,                                                /* Elements count */
     &asn_SPC_Rel_98_MsrPosition_Rsp_Extension_specs_1 /* Additional specs */

@@ -8,11 +8,11 @@
 
 static asn_TYPE_member_t asn_MBR_RefLocation_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct RefLocation, threeDLocation),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Ext_GeographicalInformation,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "threeDLocation"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Ext_GeographicalInformation,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "threeDLocation"},
 };
 static ber_tlv_tag_t asn_DEF_RefLocation_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

@@ -50,8 +50,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "AdditionalDopplerFields.h"
 #include "AddionalAngleFields.h"
+#include "AdditionalDopplerFields.h"
 
 #endif /* _GANSSRefMeasurementElement_H_ */
 #include <asn_internal.h>

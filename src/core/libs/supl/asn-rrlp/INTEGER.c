@@ -3,9 +3,9 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
 #include <INTEGER.h>
 #include <asn_codecs_prim.h> /* Encoder and decoder of a primitive type */
+#include <asn_internal.h>
 #include <errno.h>
 #include <inttypes.h>
 
@@ -41,13 +41,13 @@ asn_TYPE_descriptor_t asn_DEF_INTEGER = {
  * Encode INTEGER type using DER.
  */
 asn_enc_rval_t INTEGER_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
-                                  int tag_mode, ber_tlv_tag_t tag,
-                                  asn_app_consume_bytes_f *cb, void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     INTEGER_t *st = (INTEGER_t *)sptr;
 
     ASN_DEBUG("%s %s as INTEGER (tm=%d)", cb ? "Encoding" : "Estimating",
-              td->name, tag_mode);
+        td->name, tag_mode);
 
     /*
      * Canonicalize integer in the buffer.
@@ -71,12 +71,12 @@ asn_enc_rval_t INTEGER_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
                      */
                     switch (*buf)
                         {
-                            case 0x00:
-                                if ((buf[1] & 0x80) == 0) continue;
-                                break;
-                            case 0xff:
-                                if ((buf[1] & 0x80)) continue;
-                                break;
+                        case 0x00:
+                            if ((buf[1] & 0x80) == 0) continue;
+                            break;
+                        case 0xff:
+                            if ((buf[1] & 0x80)) continue;
+                            break;
                         }
                     break;
                 }
@@ -106,8 +106,8 @@ static const asn_INTEGER_enum_map_t *INTEGER_map_enum2value(
  * INTEGER specific human-readable output.
  */
 static ssize_t INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st,
-                             asn_app_consume_bytes_f *cb, void *app_key,
-                             int plainOrXER)
+    asn_app_consume_bytes_f *cb, void *app_key,
+    int plainOrXER)
 {
     asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
     char scratch[32]; /* Enough for 64-bit integer */
@@ -129,12 +129,12 @@ static ssize_t INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st,
         {
             switch (*buf)
                 {
-                    case 0x00:
-                        if ((buf[1] & 0x80) == 0) continue;
-                        break;
-                    case 0xff:
-                        if ((buf[1] & 0x80) != 0) continue;
-                        break;
+                case 0x00:
+                    if ((buf[1] & 0x80) == 0) continue;
+                    break;
+                case 0xff:
+                    if ((buf[1] & 0x80) != 0) continue;
+                    break;
                 }
             break;
         }
@@ -163,7 +163,7 @@ static ssize_t INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st,
                     scr = (char *)alloca(scrsize);
                     if (plainOrXER == 0)
                         ret = snprintf(scr, scrsize, "%+" PRId64 "(%s)", accum,
-                                       el->enum_name);
+                            el->enum_name);
                     else
                         ret = snprintf(scr, scrsize, "<%s/>", el->enum_name);
                 }
@@ -181,9 +181,9 @@ static ssize_t INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st,
                     scr = scratch;
                     ret =
                         snprintf(scr, scrsize,
-                                 (specs && specs->field_unsigned) ? "%" PRIu64
-                                                                  : "%+" PRId64,
-                                 accum);
+                            (specs && specs->field_unsigned) ? "%" PRIu64
+                                                             : "%+" PRId64,
+                            accum);
                 }
             assert(ret > 0 && (size_t)ret < scrsize);
             return (cb(scr, ret, app_key) < 0) ? -1 : ret;
@@ -227,7 +227,7 @@ static ssize_t INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st,
  * INTEGER specific human-readable output.
  */
 int INTEGER_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                  asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     const INTEGER_t *st = (const INTEGER_t *)sptr;
     ssize_t ret;
@@ -288,17 +288,17 @@ static const asn_INTEGER_enum_map_t *INTEGER_map_enum2value(
         {
             switch (*lp)
                 {
-                    case 9:
-                    case 10:
-                    case 11:
-                    case 12:
-                    case 13:
-                    case 32:   /* WSP */
-                    case 0x2f: /* '/' */
-                    case 0x3e: /* '>' */
-                        break;
-                    default:
-                        continue;
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 32:   /* WSP */
+                case 0x2f: /* '/' */
+                case 0x3e: /* '>' */
+                    break;
+                default:
+                    continue;
                 }
             break;
         }
@@ -310,8 +310,8 @@ static const asn_INTEGER_enum_map_t *INTEGER_map_enum2value(
     key.vemap = specs->value2enum;
     key.evmap = specs->enum2value;
     el_found = (asn_INTEGER_enum_map_t *)bsearch(&key, specs->value2enum, count,
-                                                 sizeof(specs->value2enum[0]),
-                                                 INTEGER__compar_enum2value);
+        sizeof(specs->value2enum[0]),
+        INTEGER__compar_enum2value);
     if (el_found)
         {
             /* Remap enum2value into value2enum */
@@ -339,8 +339,8 @@ const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(
     int count = specs ? specs->map_count : 0;
     if (!count) return 0;
     return (asn_INTEGER_enum_map_t *)bsearch(&value, specs->value2enum, count,
-                                             sizeof(specs->value2enum[0]),
-                                             INTEGER__compar_value2enum);
+        sizeof(specs->value2enum[0]),
+        INTEGER__compar_value2enum);
 }
 
 static int INTEGER_st_prealloc(INTEGER_t *st, int min_size)
@@ -364,9 +364,9 @@ static int INTEGER_st_prealloc(INTEGER_t *st, int min_size)
  * Decode the chunk of XML text encoding INTEGER.
  */
 static enum xer_pbd_rval INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td,
-                                                  void *sptr,
-                                                  const void *chunk_buf,
-                                                  size_t chunk_size)
+    void *sptr,
+    const void *chunk_buf,
+    size_t chunk_size)
 {
     INTEGER_t *st = (INTEGER_t *)sptr;
     int64_t sign = 1;
@@ -388,7 +388,7 @@ static enum xer_pbd_rval INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td,
 
     if (chunk_size)
         ASN_DEBUG("INTEGER body %ld 0x%2x..0x%2x", (int64_t)chunk_size, *lstart,
-                  lstop[-1]);
+            lstop[-1]);
 
     /*
      * We may have received a tag here. It will be processed inline.
@@ -399,183 +399,183 @@ static enum xer_pbd_rval INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td,
             int lv = *lp;
             switch (lv)
                 {
-                    case 0x09:
-                    case 0x0a:
-                    case 0x0d:
-                    case 0x20:
-                        switch (state)
-                            {
-                                case ST_SKIPSPACE:
-                                case ST_SKIPSPHEX:
-                                    continue;
-                                case ST_HEXCOLON:
-                                    if (xer_is_whitespace(lp, lstop - lp))
-                                        {
-                                            lp = lstop - 1;
-                                            continue;
-                                        }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        break;
-                    case 0x2d: /* '-' */
-                        if (state == ST_SKIPSPACE)
-                            {
-                                sign = -1;
-                                state = ST_WAITDIGITS;
-                                continue;
-                            }
-                        break;
-                    case 0x2b: /* '+' */
-                        if (state == ST_SKIPSPACE)
-                            {
-                                state = ST_WAITDIGITS;
-                                continue;
-                            }
-                        break;
-                    case 0x30:
-                    case 0x31:
-                    case 0x32:
-                    case 0x33:
-                    case 0x34:
-                    case 0x35:
-                    case 0x36:
-                    case 0x37:
-                    case 0x38:
-                    case 0x39:
-                        switch (state)
-                            {
-                                case ST_DIGITS:
-                                    break;
-                                case ST_SKIPSPHEX: /* Fall through */
-                                case ST_HEXDIGIT1:
-                                    value = (lv - 0x30) << 4;
-                                    state = ST_HEXDIGIT2;
-                                    continue;
-                                case ST_HEXDIGIT2:
-                                    value += (lv - 0x30);
-                                    state = ST_HEXCOLON;
-                                    st->buf[st->size++] = (uint8_t)value;
-                                    continue;
-                                case ST_HEXCOLON:
-                                    return XPBD_BROKEN_ENCODING;
-                                default:
-                                    state = ST_DIGITS;
-                                    break;
-                            }
-
+                case 0x09:
+                case 0x0a:
+                case 0x0d:
+                case 0x20:
+                    switch (state)
                         {
-                            int64_t new_value = value * 10;
-
-                            if (new_value / 10 != value) /* Overflow */
-                                return XPBD_DECODER_LIMIT;
-
-                            value = new_value + (lv - 0x30);
-                            /* Check for two's complement overflow */
-                            if (value < 0)
+                        case ST_SKIPSPACE:
+                        case ST_SKIPSPHEX:
+                            continue;
+                        case ST_HEXCOLON:
+                            if (xer_is_whitespace(lp, lstop - lp))
                                 {
-                                    /* Check whether it is a LONG_MIN */
-                                    if (sign == -1 &&
-                                        (uint64_t)value == ~((uint64_t)-1 >> 1))
-                                        {
-                                            sign = 1;
-                                        }
-                                    else
-                                        {
-                                            /* Overflow */
-                                            return XPBD_DECODER_LIMIT;
-                                        }
+                                    lp = lstop - 1;
+                                    continue;
                                 }
+                            break;
+                        default:
+                            break;
                         }
-                        continue;
-                    case 0x3c: /* '<' */
-                        if (state == ST_SKIPSPACE)
+                    break;
+                case 0x2d: /* '-' */
+                    if (state == ST_SKIPSPACE)
+                        {
+                            sign = -1;
+                            state = ST_WAITDIGITS;
+                            continue;
+                        }
+                    break;
+                case 0x2b: /* '+' */
+                    if (state == ST_SKIPSPACE)
+                        {
+                            state = ST_WAITDIGITS;
+                            continue;
+                        }
+                    break;
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                    switch (state)
+                        {
+                        case ST_DIGITS:
+                            break;
+                        case ST_SKIPSPHEX: /* Fall through */
+                        case ST_HEXDIGIT1:
+                            value = (lv - 0x30) << 4;
+                            state = ST_HEXDIGIT2;
+                            continue;
+                        case ST_HEXDIGIT2:
+                            value += (lv - 0x30);
+                            state = ST_HEXCOLON;
+                            st->buf[st->size++] = (uint8_t)value;
+                            continue;
+                        case ST_HEXCOLON:
+                            return XPBD_BROKEN_ENCODING;
+                        default:
+                            state = ST_DIGITS;
+                            break;
+                        }
+
+                    {
+                        int64_t new_value = value * 10;
+
+                        if (new_value / 10 != value) /* Overflow */
+                            return XPBD_DECODER_LIMIT;
+
+                        value = new_value + (lv - 0x30);
+                        /* Check for two's complement overflow */
+                        if (value < 0)
                             {
-                                const asn_INTEGER_enum_map_t *el;
-                                el = INTEGER_map_enum2value(
-                                    (asn_INTEGER_specifics_t *)td->specifics,
-                                    lstart, lstop);
-                                if (el)
+                                /* Check whether it is a LONG_MIN */
+                                if (sign == -1 &&
+                                    (uint64_t)value == ~((uint64_t)-1 >> 1))
                                     {
-                                        ASN_DEBUG("Found \"%s\" => %ld",
-                                                  el->enum_name, el->nat_value);
-                                        state = ST_DIGITS;
-                                        value = el->nat_value;
-                                        lp = lstop - 1;
-                                        continue;
+                                        sign = 1;
                                     }
-                                ASN_DEBUG("Unknown identifier for INTEGER");
+                                else
+                                    {
+                                        /* Overflow */
+                                        return XPBD_DECODER_LIMIT;
+                                    }
                             }
-                        return XPBD_BROKEN_ENCODING;
-                    case 0x3a: /* ':' */
-                        if (state == ST_HEXCOLON)
-                            {
-                                /* This colon is expected */
-                                state = ST_HEXDIGIT1;
-                                continue;
-                            }
-                        else if (state == ST_DIGITS)
-                            {
-                                /* The colon here means that we have
+                    }
+                    continue;
+                case 0x3c: /* '<' */
+                    if (state == ST_SKIPSPACE)
+                        {
+                            const asn_INTEGER_enum_map_t *el;
+                            el = INTEGER_map_enum2value(
+                                (asn_INTEGER_specifics_t *)td->specifics,
+                                lstart, lstop);
+                            if (el)
+                                {
+                                    ASN_DEBUG("Found \"%s\" => %ld",
+                                        el->enum_name, el->nat_value);
+                                    state = ST_DIGITS;
+                                    value = el->nat_value;
+                                    lp = lstop - 1;
+                                    continue;
+                                }
+                            ASN_DEBUG("Unknown identifier for INTEGER");
+                        }
+                    return XPBD_BROKEN_ENCODING;
+                case 0x3a: /* ':' */
+                    if (state == ST_HEXCOLON)
+                        {
+                            /* This colon is expected */
+                            state = ST_HEXDIGIT1;
+                            continue;
+                        }
+                    else if (state == ST_DIGITS)
+                        {
+                            /* The colon here means that we have
                                  * decoded the first two hexadecimal
                                  * places as a decimal value.
                                  * Switch decoding mode. */
-                                ASN_DEBUG("INTEGER re-evaluate as hex form");
-                                if (INTEGER_st_prealloc(st,
-                                                        (chunk_size / 3) + 1))
-                                    return XPBD_SYSTEM_FAILURE;
-                                state = ST_SKIPSPHEX;
-                                lp = lstart - 1;
-                                continue;
-                            }
-                        else
-                            {
-                                ASN_DEBUG("state %d at %d", state, lp - lstart);
-                                break;
-                            }
-                    /* [A-Fa-f] */
-                    case 0x41:
-                    case 0x42:
-                    case 0x43:
-                    case 0x44:
-                    case 0x45:
-                    case 0x46:
-                    case 0x61:
-                    case 0x62:
-                    case 0x63:
-                    case 0x64:
-                    case 0x65:
-                    case 0x66:
-                        switch (state)
-                            {
-                                case ST_SKIPSPHEX:
-                                case ST_SKIPSPACE: /* Fall through */
-                                case ST_HEXDIGIT1:
-                                    value = lv - ((lv < 0x61) ? 0x41 : 0x61);
-                                    value += 10;
-                                    value <<= 4;
-                                    state = ST_HEXDIGIT2;
-                                    continue;
-                                case ST_HEXDIGIT2:
-                                    value += lv - ((lv < 0x61) ? 0x41 : 0x61);
-                                    value += 10;
-                                    st->buf[st->size++] = (uint8_t)value;
-                                    state = ST_HEXCOLON;
-                                    continue;
-                                case ST_DIGITS:
-                                    ASN_DEBUG(
-                                        "INTEGER re-evaluate as hex form");
-                                    if (INTEGER_st_prealloc(
-                                            st, (chunk_size / 3) + 1))
-                                        return XPBD_SYSTEM_FAILURE;
-                                    state = ST_SKIPSPHEX;
-                                    lp = lstart - 1;
-                                    continue;
-                                default:
-                                    break;
-                            }
-                        break;
+                            ASN_DEBUG("INTEGER re-evaluate as hex form");
+                            if (INTEGER_st_prealloc(st,
+                                    (chunk_size / 3) + 1))
+                                return XPBD_SYSTEM_FAILURE;
+                            state = ST_SKIPSPHEX;
+                            lp = lstart - 1;
+                            continue;
+                        }
+                    else
+                        {
+                            ASN_DEBUG("state %d at %d", state, lp - lstart);
+                            break;
+                        }
+                /* [A-Fa-f] */
+                case 0x41:
+                case 0x42:
+                case 0x43:
+                case 0x44:
+                case 0x45:
+                case 0x46:
+                case 0x61:
+                case 0x62:
+                case 0x63:
+                case 0x64:
+                case 0x65:
+                case 0x66:
+                    switch (state)
+                        {
+                        case ST_SKIPSPHEX:
+                        case ST_SKIPSPACE: /* Fall through */
+                        case ST_HEXDIGIT1:
+                            value = lv - ((lv < 0x61) ? 0x41 : 0x61);
+                            value += 10;
+                            value <<= 4;
+                            state = ST_HEXDIGIT2;
+                            continue;
+                        case ST_HEXDIGIT2:
+                            value += lv - ((lv < 0x61) ? 0x41 : 0x61);
+                            value += 10;
+                            st->buf[st->size++] = (uint8_t)value;
+                            state = ST_HEXCOLON;
+                            continue;
+                        case ST_DIGITS:
+                            ASN_DEBUG(
+                                "INTEGER re-evaluate as hex form");
+                            if (INTEGER_st_prealloc(
+                                    st, (chunk_size / 3) + 1))
+                                return XPBD_SYSTEM_FAILURE;
+                            state = ST_SKIPSPHEX;
+                            lp = lstart - 1;
+                            continue;
+                        default:
+                            break;
+                        }
+                    break;
                 }
 
             /* Found extra non-numeric stuff */
@@ -586,29 +586,29 @@ static enum xer_pbd_rval INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td,
 
     switch (state)
         {
-            case ST_DIGITS:
-                /* Everything is cool */
-                break;
-            case ST_HEXCOLON:
-                st->buf[st->size] = 0; /* Just in case termination */
-                return XPBD_BODY_CONSUMED;
-            case ST_HEXDIGIT1:
-            case ST_HEXDIGIT2:
-            case ST_SKIPSPHEX:
-                return XPBD_BROKEN_ENCODING;
-            default:
-                if (xer_is_whitespace(lp, lstop - lp))
-                    {
-                        if (state != ST_EXTRASTUFF) return XPBD_NOT_BODY_IGNORE;
-                        break;
-                    }
-                else
-                    {
-                        ASN_DEBUG("INTEGER: No useful digits (state %d)",
-                                  state);
-                        return XPBD_BROKEN_ENCODING; /* No digits */
-                    }
-                break;
+        case ST_DIGITS:
+            /* Everything is cool */
+            break;
+        case ST_HEXCOLON:
+            st->buf[st->size] = 0; /* Just in case termination */
+            return XPBD_BODY_CONSUMED;
+        case ST_HEXDIGIT1:
+        case ST_HEXDIGIT2:
+        case ST_SKIPSPHEX:
+            return XPBD_BROKEN_ENCODING;
+        default:
+            if (xer_is_whitespace(lp, lstop - lp))
+                {
+                    if (state != ST_EXTRASTUFF) return XPBD_NOT_BODY_IGNORE;
+                    break;
+                }
+            else
+                {
+                    ASN_DEBUG("INTEGER: No useful digits (state %d)",
+                        state);
+                    return XPBD_BROKEN_ENCODING; /* No digits */
+                }
+            break;
         }
 
     value *= sign; /* Change sign, if needed */
@@ -619,18 +619,18 @@ static enum xer_pbd_rval INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td,
 }
 
 asn_dec_rval_t INTEGER_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                  asn_TYPE_descriptor_t *td, void **sptr,
-                                  const char *opt_mname, const void *buf_ptr,
-                                  size_t size)
+    asn_TYPE_descriptor_t *td, void **sptr,
+    const char *opt_mname, const void *buf_ptr,
+    size_t size)
 {
     return xer_decode_primitive(opt_codec_ctx, td, sptr, sizeof(INTEGER_t),
-                                opt_mname, buf_ptr, size,
-                                INTEGER__xer_body_decode);
+        opt_mname, buf_ptr, size,
+        INTEGER__xer_body_decode);
 }
 
 asn_enc_rval_t INTEGER_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                  int ilevel, enum xer_encoder_flags_e flags,
-                                  asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     const INTEGER_t *st = (const INTEGER_t *)sptr;
     asn_enc_rval_t er;
@@ -647,9 +647,9 @@ asn_enc_rval_t INTEGER_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 }
 
 asn_dec_rval_t INTEGER_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                   asn_TYPE_descriptor_t *td,
-                                   asn_per_constraints_t *constraints,
-                                   void **sptr, asn_per_data_t *pd)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints,
+    void **sptr, asn_per_data_t *pd)
 {
     asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
     asn_dec_rval_t rval = {RC_OK, 0};
@@ -718,7 +718,7 @@ asn_dec_rval_t INTEGER_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
                             if (value < 0) _ASN_DECODE_STARVED;
                         }
                     ASN_DEBUG("Got value %ld + low %ld", value,
-                              ct->lower_bound);
+                        ct->lower_bound);
                     value += ct->lower_bound;
                     if ((specs && specs->field_unsigned)
                             ? asn_ulong2INTEGER(st, value)
@@ -770,8 +770,8 @@ asn_dec_rval_t INTEGER_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
-                                   asn_per_constraints_t *constraints,
-                                   void *sptr, asn_per_outp_t *po)
+    asn_per_constraints_t *constraints,
+    void *sptr, asn_per_outp_t *po)
 {
     asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
     asn_enc_rval_t er;
@@ -807,8 +807,8 @@ asn_enc_rval_t INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
                                 inext = 1;
                         }
                     ASN_DEBUG("Value %lu (%02x/%d) lb %lu ub %lu %s", uval,
-                              st->buf[0], st->size, ct->lower_bound,
-                              ct->upper_bound, inext ? "ext" : "fix");
+                        st->buf[0], st->size, ct->lower_bound,
+                        ct->upper_bound, inext ? "ext" : "fix");
                     value = uval;
                 }
             else
@@ -826,8 +826,8 @@ asn_enc_rval_t INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
                                 inext = 1;
                         }
                     ASN_DEBUG("Value %ld (%02x/%d) lb %ld ub %ld %s", value,
-                              st->buf[0], st->size, ct->lower_bound,
-                              ct->upper_bound, inext ? "ext" : "fix");
+                        st->buf[0], st->size, ct->lower_bound,
+                        ct->upper_bound, inext ? "ext" : "fix");
                 }
             if (ct->flags & APC_EXTENSIBLE)
                 {
@@ -856,7 +856,7 @@ asn_enc_rval_t INTEGER_encode_uper(asn_TYPE_descriptor_t *td,
             else
                 {
                     if (per_put_few_bits(po, value - ct->lower_bound,
-                                         ct->range_bits))
+                            ct->range_bits))
                         _ASN_ENCODE_FAILED;
                 }
             _ASN_ENCODED_OK(er);
@@ -913,12 +913,12 @@ int asn_INTEGER2long(const INTEGER_t *iptr, int64_t *lptr)
                 {
                     switch (*b)
                         {
-                            case 0x00:
-                                if ((b[1] & 0x80) == 0) continue;
-                                break;
-                            case 0xff:
-                                if ((b[1] & 0x80) != 0) continue;
-                                break;
+                        case 0x00:
+                            if ((b[1] & 0x80) == 0) continue;
+                            break;
+                        case 0xff:
+                            if ((b[1] & 0x80) != 0) continue;
+                            break;
                         }
                     break;
                 }
@@ -1054,12 +1054,12 @@ int asn_long2INTEGER(INTEGER_t *st, int64_t value)
         {
             switch (*p)
                 {
-                    case 0x00:
-                        if ((*(p + add) & 0x80) == 0) continue;
-                        break;
-                    case 0xff:
-                        if ((*(p + add) & 0x80)) continue;
-                        break;
+                case 0x00:
+                    if ((*(p + add) & 0x80) == 0) continue;
+                    break;
+                case 0xff:
+                    if ((*(p + add) & 0x80)) continue;
+                    break;
                 }
             break;
         }

@@ -12,8 +12,8 @@
 /* Including external dependencies */
 #include "BCCHCarrier.h"
 #include "BSIC.h"
-#include "TimeSlotScheme.h"
 #include "BTSPosition.h"
+#include "TimeSlotScheme.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

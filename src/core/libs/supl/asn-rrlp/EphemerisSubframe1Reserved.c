@@ -7,16 +7,16 @@
 #include "EphemerisSubframe1Reserved.h"
 
 static int memb_reserved1_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,22 +30,22 @@ static int memb_reserved1_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_reserved2_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -59,22 +59,22 @@ static int memb_reserved2_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_reserved3_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -88,22 +88,22 @@ static int memb_reserved3_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_reserved4_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -117,7 +117,7 @@ static int memb_reserved4_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -148,21 +148,21 @@ static asn_per_constraints_t ASN_PER_MEMB_RESERVED4_CONSTR_5 = {
 };
 static asn_TYPE_member_t asn_MBR_EphemerisSubframe1Reserved_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct EphemerisSubframe1Reserved, reserved1),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_reserved1_constraint_1,
-     &ASN_PER_MEMB_RESERVED1_CONSTR_2, 0, "reserved1"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_reserved1_constraint_1,
+        &ASN_PER_MEMB_RESERVED1_CONSTR_2, 0, "reserved1"},
     {ATF_NOFLAGS, 0, offsetof(struct EphemerisSubframe1Reserved, reserved2),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_reserved2_constraint_1,
-     &ASN_PER_MEMB_RESERVED2_CONSTR_3, 0, "reserved2"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_reserved2_constraint_1,
+        &ASN_PER_MEMB_RESERVED2_CONSTR_3, 0, "reserved2"},
     {ATF_NOFLAGS, 0, offsetof(struct EphemerisSubframe1Reserved, reserved3),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_reserved3_constraint_1,
-     &ASN_PER_MEMB_RESERVED3_CONSTR_4, 0, "reserved3"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_reserved3_constraint_1,
+        &ASN_PER_MEMB_RESERVED3_CONSTR_4, 0, "reserved3"},
     {ATF_NOFLAGS, 0, offsetof(struct EphemerisSubframe1Reserved, reserved4),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_reserved4_constraint_1,
-     &ASN_PER_MEMB_RESERVED4_CONSTR_5, 0, "reserved4"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_reserved4_constraint_1,
+        &ASN_PER_MEMB_RESERVED4_CONSTR_5, 0, "reserved4"},
 };
 static ber_tlv_tag_t asn_DEF_EphemerisSubframe1Reserved_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -199,10 +199,10 @@ asn_TYPE_descriptor_t asn_DEF_EphemerisSubframe1Reserved = {
     asn_DEF_EphemerisSubframe1Reserved_tags_1,
     sizeof(asn_DEF_EphemerisSubframe1Reserved_tags_1) /
         sizeof(asn_DEF_EphemerisSubframe1Reserved_tags_1[0]), /* 1 */
-    asn_DEF_EphemerisSubframe1Reserved_tags_1, /* Same as above */
+    asn_DEF_EphemerisSubframe1Reserved_tags_1,                /* Same as above */
     sizeof(asn_DEF_EphemerisSubframe1Reserved_tags_1) /
         sizeof(asn_DEF_EphemerisSubframe1Reserved_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                        /* No PER visible constraints */
     asn_MBR_EphemerisSubframe1Reserved_1,
     4,                                          /* Elements count */
     &asn_SPC_EphemerisSubframe1Reserved_specs_1 /* Additional specs */

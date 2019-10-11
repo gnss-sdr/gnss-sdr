@@ -3,15 +3,15 @@
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #include <asn_internal.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 
 /*
  * The XER encoder of any type. May be invoked by the application.
  */
 asn_enc_rval_t xer_encode(asn_TYPE_descriptor_t *td, void *sptr,
-                          enum xer_encoder_flags_e xer_flags,
-                          asn_app_consume_bytes_f *cb, void *app_key)
+    enum xer_encoder_flags_e xer_flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_enc_rval_t er;
     asn_enc_rval_t tmper;

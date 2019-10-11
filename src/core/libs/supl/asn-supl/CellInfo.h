@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include "CdmaCellInformation.h"
 #include "GsmCellInformation.h"
 #include "WcdmaCellInformation.h"
-#include "CdmaCellInformation.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include "PosProtocol.h"
 #include "PosTechnology.h"
 #include "PrefMethod.h"
-#include "PosProtocol.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

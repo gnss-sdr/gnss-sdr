@@ -8,34 +8,34 @@
 
 static asn_TYPE_member_t asn_MBR_PositionInstruct_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct PositionInstruct, methodType),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_MethodType, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "methodType"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_MethodType, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "methodType"},
     {ATF_NOFLAGS, 0, offsetof(struct PositionInstruct, positionMethod),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PositionMethod,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "positionMethod"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PositionMethod,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "positionMethod"},
     {ATF_NOFLAGS, 0, offsetof(struct PositionInstruct, measureResponseTime),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MeasureResponseTime,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "measureResponseTime"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MeasureResponseTime,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "measureResponseTime"},
     {ATF_NOFLAGS, 0, offsetof(struct PositionInstruct, useMultipleSets),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_UseMultipleSets,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "useMultipleSets"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_UseMultipleSets,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "useMultipleSets"},
     {ATF_POINTER, 1, offsetof(struct PositionInstruct, environmentCharacter),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_EnvironmentCharacter,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "environmentCharacter"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_EnvironmentCharacter,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "environmentCharacter"},
 };
 static int asn_MAP_PositionInstruct_oms_1[] = {4};
 static ber_tlv_tag_t asn_DEF_PositionInstruct_tags_1[] = {
@@ -44,10 +44,10 @@ static asn_TYPE_tag2member_t asn_MAP_PositionInstruct_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* methodType at 108 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* positionMethod at 109 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0}, /* measureResponseTime at 110 */
+        0},                                        /* measureResponseTime at 110 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* useMultipleSets at 111 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0,
-     0} /* environmentCharacter at 112 */
+        0} /* environmentCharacter at 112 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_PositionInstruct_specs_1 = {
     sizeof(struct PositionInstruct),
@@ -79,7 +79,7 @@ asn_TYPE_descriptor_t asn_DEF_PositionInstruct = {
     asn_DEF_PositionInstruct_tags_1,                /* Same as above */
     sizeof(asn_DEF_PositionInstruct_tags_1) /
         sizeof(asn_DEF_PositionInstruct_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_PositionInstruct_1,
     5,                                /* Elements count */
     &asn_SPC_PositionInstruct_specs_1 /* Additional specs */

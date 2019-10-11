@@ -7,16 +7,16 @@
 #include "AcquisElement.h"
 
 static int memb_doppler0_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,22 +30,22 @@ static int memb_doppler0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_codePhase_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -59,22 +59,22 @@ static int memb_codePhase_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_intCodePhase_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -88,22 +88,22 @@ static int memb_intCodePhase_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_gpsBitNumber_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -117,7 +117,7 @@ static int memb_gpsBitNumber_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -131,7 +131,7 @@ static int memb_codePhaseSearchWindow_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -145,7 +145,7 @@ static int memb_codePhaseSearchWindow_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -182,44 +182,44 @@ static asn_per_constraints_t ASN_PER_MEMB_CODE_PHASE_SEARCH_WINDOW_CONSTR_8 = {
 };
 static asn_TYPE_member_t asn_MBR_AcquisElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct AcquisElement, svid),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SatelliteID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "svid"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SatelliteID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "svid"},
     {ATF_NOFLAGS, 0, offsetof(struct AcquisElement, doppler0),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_doppler0_constraint_1,
-     &ASN_PER_MEMB_DOPPLER0_CONSTR_3, 0, "doppler0"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_doppler0_constraint_1,
+        &ASN_PER_MEMB_DOPPLER0_CONSTR_3, 0, "doppler0"},
     {ATF_POINTER, 1, offsetof(struct AcquisElement, addionalDoppler),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AddionalDopplerFields,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "addionalDoppler"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AddionalDopplerFields,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "addionalDoppler"},
     {ATF_NOFLAGS, 0, offsetof(struct AcquisElement, codePhase),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_codePhase_constraint_1,
-     &ASN_PER_MEMB_CODE_PHASE_CONSTR_5, 0, "codePhase"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_codePhase_constraint_1,
+        &ASN_PER_MEMB_CODE_PHASE_CONSTR_5, 0, "codePhase"},
     {ATF_NOFLAGS, 0, offsetof(struct AcquisElement, intCodePhase),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_intCodePhase_constraint_1,
-     &ASN_PER_MEMB_INT_CODE_PHASE_CONSTR_6, 0, "intCodePhase"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_intCodePhase_constraint_1,
+        &ASN_PER_MEMB_INT_CODE_PHASE_CONSTR_6, 0, "intCodePhase"},
     {ATF_NOFLAGS, 0, offsetof(struct AcquisElement, gpsBitNumber),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_gpsBitNumber_constraint_1,
-     &ASN_PER_MEMB_GPS_BIT_NUMBER_CONSTR_7, 0, "gpsBitNumber"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_gpsBitNumber_constraint_1,
+        &ASN_PER_MEMB_GPS_BIT_NUMBER_CONSTR_7, 0, "gpsBitNumber"},
     {ATF_NOFLAGS, 0, offsetof(struct AcquisElement, codePhaseSearchWindow),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_codePhaseSearchWindow_constraint_1,
-     &ASN_PER_MEMB_CODE_PHASE_SEARCH_WINDOW_CONSTR_8, 0,
-     "codePhaseSearchWindow"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_codePhaseSearchWindow_constraint_1,
+        &ASN_PER_MEMB_CODE_PHASE_SEARCH_WINDOW_CONSTR_8, 0,
+        "codePhaseSearchWindow"},
     {ATF_POINTER, 1, offsetof(struct AcquisElement, addionalAngle),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AddionalAngleFields,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "addionalAngle"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AddionalAngleFields,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "addionalAngle"},
 };
 static int asn_MAP_AcquisElement_oms_1[] = {2, 7};
 static ber_tlv_tag_t asn_DEF_AcquisElement_tags_1[] = {
@@ -232,7 +232,7 @@ static asn_TYPE_tag2member_t asn_MAP_AcquisElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* intCodePhase at 841 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0}, /* gpsBitNumber at 842 */
     {(ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0,
-     0}, /* codePhaseSearchWindow at 843 */
+        0},                                       /* codePhaseSearchWindow at 843 */
     {(ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0} /* addionalAngle at 844 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_AcquisElement_specs_1 = {
@@ -265,7 +265,7 @@ asn_TYPE_descriptor_t asn_DEF_AcquisElement = {
     asn_DEF_AcquisElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_AcquisElement_tags_1) /
         sizeof(asn_DEF_AcquisElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                           /* No PER visible constraints */
     asn_MBR_AcquisElement_1,
     8,                             /* Elements count */
     &asn_SPC_AcquisElement_specs_1 /* Additional specs */

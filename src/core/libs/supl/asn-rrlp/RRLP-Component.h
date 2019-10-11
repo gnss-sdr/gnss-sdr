@@ -10,11 +10,11 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include "AssistanceData.h"
 #include "MsrPosition-Req.h"
 #include "MsrPosition-Rsp.h"
-#include "AssistanceData.h"
-#include <NULL.h>
 #include "ProtocolError.h"
+#include <NULL.h>
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

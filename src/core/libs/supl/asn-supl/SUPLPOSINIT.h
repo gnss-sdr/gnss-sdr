@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "SETCapabilities.h"
 #include "LocationId.h"
+#include "SETCapabilities.h"
 #include "Ver.h"
 #include <constr_SEQUENCE.h>
 
@@ -51,8 +51,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "RequestedAssistData.h"
 #include "Position.h"
+#include "RequestedAssistData.h"
 #include "SUPLPOS.h"
 
 #endif /* _SUPLPOSINIT_H_ */

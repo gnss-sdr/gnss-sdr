@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "Horvel.h"
-#include "Horandvervel.h"
-#include "Horveluncert.h"
 #include "Horandveruncert.h"
+#include "Horandvervel.h"
+#include "Horvel.h"
+#include "Horveluncert.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

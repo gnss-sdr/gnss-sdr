@@ -8,17 +8,17 @@
 
 static asn_TYPE_member_t asn_MBR_SessionID_1[] = {
     {ATF_POINTER, 2, offsetof(struct SessionID, setSessionID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SetSessionID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "setSessionID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SetSessionID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "setSessionID"},
     {ATF_POINTER, 1, offsetof(struct SessionID, slpSessionID),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SlpSessionID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "slpSessionID"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SlpSessionID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "slpSessionID"},
 };
 static int asn_MAP_SessionID_oms_1[] = {0, 1};
 static ber_tlv_tag_t asn_DEF_SessionID_tags_1[] = {

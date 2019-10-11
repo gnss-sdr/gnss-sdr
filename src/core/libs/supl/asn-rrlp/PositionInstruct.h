@@ -10,11 +10,11 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include "EnvironmentCharacter.h"
+#include "MeasureResponseTime.h"
 #include "MethodType.h"
 #include "PositionMethod.h"
-#include "MeasureResponseTime.h"
 #include "UseMultipleSets.h"
-#include "EnvironmentCharacter.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

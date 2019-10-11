@@ -40,14 +40,14 @@ extern "C"
     typedef int(asn_constr_check_f)(
         struct asn_TYPE_descriptor_s *type_descriptor, const void *struct_ptr,
         asn_app_constraint_failed_f *optional_callback, /* Log the error */
-        void *optional_app_key /* Opaque key passed to a callback */
+        void *optional_app_key                          /* Opaque key passed to a callback */
     );
 
     /*******************************
      * INTERNALLY USEFUL FUNCTIONS *
      *******************************/
 
-    asn_constr_check_f asn_generic_no_constraint; /* No constraint whatsoever */
+    asn_constr_check_f asn_generic_no_constraint;      /* No constraint whatsoever */
     asn_constr_check_f asn_generic_unknown_constraint; /* Not fully supported */
 
 /*

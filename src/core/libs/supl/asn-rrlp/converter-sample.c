@@ -10,16 +10,15 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdio.h>
-#include <sys/types.h>
-#include <stdlib.h>   /* for atoi(3) */
-#include <unistd.h>   /* for getopt(3) */
-#include <string.h>   /* for strerror(3) */
-#include <sysexits.h> /* for EX_* exit codes */
-#include <errno.h>    /* for errno */
-
 #include <asn_application.h>
 #include <asn_internal.h> /* for _ASN_DEFAULT_STACK_MAX */
+#include <errno.h>        /* for errno */
+#include <stdio.h>
+#include <stdlib.h> /* for atoi(3) */
+#include <string.h> /* for strerror(3) */
+#include <sys/types.h>
+#include <sysexits.h> /* for EX_* exit codes */
+#include <unistd.h>   /* for getopt(3) */
 
 /* Convert "Type" defined by -DPDU into "asn_DEF_Type" */
 #define ASN_DEF_PDU(t) asn_DEF_##t
@@ -35,8 +34,8 @@ extern asn_TYPE_descriptor_t *asn_pdu_collection[];
  * Open file and parse its contents.
  */
 static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
-                                   const char *name, ssize_t suggested_bufsize,
-                                   int first_pdu);
+    const char *name, ssize_t suggested_bufsize,
+    int first_pdu);
 static int write_out(const void *buffer, size_t size, void *key);
 static FILE *argument_to_file(char *av[], int idx);
 static char *argument_to_name(char *av[], int idx);
@@ -100,202 +99,202 @@ int main(int ac, char *av[])
      */
     while ((ch = getopt(ac, av, "i:o:1b:cdn:p:hs:" JUNKOPT)) != -1) switch (ch)
             {
-                case 'i':
-                    if (optarg[0] == 'b')
-                        {
-                            iform = INP_BER;
-                            break;
-                        }
-                    if (optarg[0] == 'x')
-                        {
-                            iform = INP_XER;
-                            break;
-                        }
-                    if (pduType->uper_decoder && optarg[0] == 'p')
-                        {
-                            iform = INP_PER;
-                            break;
-                        }
-                    fprintf(stderr,
-                            "-i<format>: '%s': improper format selector\n",
+            case 'i':
+                if (optarg[0] == 'b')
+                    {
+                        iform = INP_BER;
+                        break;
+                    }
+                if (optarg[0] == 'x')
+                    {
+                        iform = INP_XER;
+                        break;
+                    }
+                if (pduType->uper_decoder && optarg[0] == 'p')
+                    {
+                        iform = INP_PER;
+                        break;
+                    }
+                fprintf(stderr,
+                    "-i<format>: '%s': improper format selector\n",
+                    optarg);
+                exit(EX_UNAVAILABLE);
+            case 'o':
+                if (optarg[0] == 'd')
+                    {
+                        oform = OUT_DER;
+                        break;
+                    }
+                if (pduType->uper_encoder && optarg[0] == 'p')
+                    {
+                        oform = OUT_PER;
+                        break;
+                    }
+                if (optarg[0] == 'x')
+                    {
+                        oform = OUT_XER;
+                        break;
+                    }
+                if (optarg[0] == 't')
+                    {
+                        oform = OUT_TEXT;
+                        break;
+                    }
+                if (optarg[0] == 'n')
+                    {
+                        oform = OUT_NULL;
+                        break;
+                    }
+                fprintf(stderr,
+                    "-o<format>: '%s': improper format selector\n",
+                    optarg);
+                exit(EX_UNAVAILABLE);
+            case '1':
+                opt_onepdu = 1;
+                break;
+            case 'b':
+                suggested_bufsize = atoi(optarg);
+                if (suggested_bufsize < 1 ||
+                    suggested_bufsize > 16 * 1024 * 1024)
+                    {
+                        fprintf(stderr,
+                            "-b %s: Improper buffer size (1..16M)\n",
                             optarg);
-                    exit(EX_UNAVAILABLE);
-                case 'o':
-                    if (optarg[0] == 'd')
-                        {
-                            oform = OUT_DER;
-                            break;
-                        }
-                    if (pduType->uper_encoder && optarg[0] == 'p')
-                        {
-                            oform = OUT_PER;
-                            break;
-                        }
-                    if (optarg[0] == 'x')
-                        {
-                            oform = OUT_XER;
-                            break;
-                        }
-                    if (optarg[0] == 't')
-                        {
-                            oform = OUT_TEXT;
-                            break;
-                        }
-                    if (optarg[0] == 'n')
-                        {
-                            oform = OUT_NULL;
-                            break;
-                        }
-                    fprintf(stderr,
-                            "-o<format>: '%s': improper format selector\n",
+                        exit(EX_UNAVAILABLE);
+                    }
+                break;
+            case 'c':
+                opt_check = 1;
+                break;
+            case 'd':
+                opt_debug++; /* Double -dd means ASN.1 debug */
+                break;
+            case 'n':
+                number_of_iterations = atoi(optarg);
+                if (number_of_iterations < 1)
+                    {
+                        fprintf(stderr,
+                            "-n %s: Improper iterations count\n",
                             optarg);
-                    exit(EX_UNAVAILABLE);
-                case '1':
-                    opt_onepdu = 1;
-                    break;
-                case 'b':
-                    suggested_bufsize = atoi(optarg);
-                    if (suggested_bufsize < 1 ||
-                        suggested_bufsize > 16 * 1024 * 1024)
-                        {
-                            fprintf(stderr,
-                                    "-b %s: Improper buffer size (1..16M)\n",
-                                    optarg);
-                            exit(EX_UNAVAILABLE);
-                        }
-                    break;
-                case 'c':
-                    opt_check = 1;
-                    break;
-                case 'd':
-                    opt_debug++; /* Double -dd means ASN.1 debug */
-                    break;
-                case 'n':
-                    number_of_iterations = atoi(optarg);
-                    if (number_of_iterations < 1)
-                        {
-                            fprintf(stderr,
-                                    "-n %s: Improper iterations count\n",
-                                    optarg);
-                            exit(EX_UNAVAILABLE);
-                        }
-                    break;
-                case 'p':
-                    if (strcmp(optarg, "er-nopad") == 0)
-                        {
-                            opt_nopad = 1;
-                            break;
-                        }
+                        exit(EX_UNAVAILABLE);
+                    }
+                break;
+            case 'p':
+                if (strcmp(optarg, "er-nopad") == 0)
+                    {
+                        opt_nopad = 1;
+                        break;
+                    }
 #ifdef ASN_PDU_COLLECTION
-                    if (strcmp(optarg, "list") == 0)
-                        {
-                            asn_TYPE_descriptor_t **pdu = asn_pdu_collection;
-                            fprintf(stderr, "Available PDU types:\n");
-                            for (; *pdu; pdu++) printf("%s\n", (*pdu)->name);
-                            exit(0);
-                        }
-                    else if (optarg[0] >= 'A' && optarg[0] <= 'Z')
-                        {
-                            asn_TYPE_descriptor_t **pdu = asn_pdu_collection;
-                            while (*pdu && strcmp((*pdu)->name, optarg)) pdu++;
-                            if (*pdu)
-                                {
-                                    pduType = *pdu;
-                                    break;
-                                }
-                            fprintf(stderr, "-p %s: Unrecognized PDU\n",
-                                    optarg);
-                        }
+                if (strcmp(optarg, "list") == 0)
+                    {
+                        asn_TYPE_descriptor_t **pdu = asn_pdu_collection;
+                        fprintf(stderr, "Available PDU types:\n");
+                        for (; *pdu; pdu++) printf("%s\n", (*pdu)->name);
+                        exit(0);
+                    }
+                else if (optarg[0] >= 'A' && optarg[0] <= 'Z')
+                    {
+                        asn_TYPE_descriptor_t **pdu = asn_pdu_collection;
+                        while (*pdu && strcmp((*pdu)->name, optarg)) pdu++;
+                        if (*pdu)
+                            {
+                                pduType = *pdu;
+                                break;
+                            }
+                        fprintf(stderr, "-p %s: Unrecognized PDU\n",
+                            optarg);
+                    }
 #endif /* ASN_PDU_COLLECTION */
-                    fprintf(stderr, "-p %s: Unrecognized option\n", optarg);
-                    exit(EX_UNAVAILABLE);
-                case 's':
-                    opt_stack = atoi(optarg);
-                    if (opt_stack < 0)
-                        {
-                            fprintf(stderr,
-                                    "-s %s: Non-negative value expected\n",
-                                    optarg);
-                            exit(EX_UNAVAILABLE);
-                        }
-                    break;
+                fprintf(stderr, "-p %s: Unrecognized option\n", optarg);
+                exit(EX_UNAVAILABLE);
+            case 's':
+                opt_stack = atoi(optarg);
+                if (opt_stack < 0)
+                    {
+                        fprintf(stderr,
+                            "-s %s: Non-negative value expected\n",
+                            optarg);
+                        exit(EX_UNAVAILABLE);
+                    }
+                break;
 #ifdef JUNKTEST
-                case 'J':
-                    opt_jprob = strtod(optarg, 0);
-                    if (opt_jprob <= 0.0 || opt_jprob > 1.0)
-                        {
-                            fprintf(stderr,
-                                    "-J %s: Probability range 0..1 expected \n",
-                                    optarg);
-                            exit(EX_UNAVAILABLE);
-                        }
-                    break;
+            case 'J':
+                opt_jprob = strtod(optarg, 0);
+                if (opt_jprob <= 0.0 || opt_jprob > 1.0)
+                    {
+                        fprintf(stderr,
+                            "-J %s: Probability range 0..1 expected \n",
+                            optarg);
+                        exit(EX_UNAVAILABLE);
+                    }
+                break;
 #endif /* JUNKTEST */
-                case 'h':
-                default:
+            case 'h':
+            default:
 #ifdef ASN_CONVERTER_TITLE
 #define _AXS(x) #x
 #define _ASX(x) _AXS(x)
-                    fprintf(stderr, "%s\n", _ASX(ASN_CONVERTER_TITLE));
+                fprintf(stderr, "%s\n", _ASX(ASN_CONVERTER_TITLE));
 #endif
-                    fprintf(stderr, "Usage: %s [options] <data.ber> ...\n",
-                            av[0]);
-                    fprintf(stderr, "Where options are:\n");
-                    if (pduType->uper_decoder)
-                        fprintf(
-                            stderr,
-                            "  -iper        Input is in Unaligned PER (Packed "
-                            "Encoding Rules) (DEFAULT)\n");
-                    fprintf(stderr,
-                            "  -iber        Input is in BER (Basic Encoding "
-                            "Rules)%s\n",
-                            iform == INP_PER ? "" : " (DEFAULT)");
-                    fprintf(stderr,
-                            "  -ixer        Input is in XER (XML Encoding "
-                            "Rules)\n");
-                    if (pduType->uper_encoder)
-                        fprintf(
-                            stderr,
-                            "  -oper        Output in Unaligned PER (Packed "
-                            "Encoding "
-                            "Rules)\n");
+                fprintf(stderr, "Usage: %s [options] <data.ber> ...\n",
+                    av[0]);
+                fprintf(stderr, "Where options are:\n");
+                if (pduType->uper_decoder)
                     fprintf(
                         stderr,
-                        "  -oder        Output in DER (Distinguished Encoding "
-                        "Rules)\n"
-                        "  -oxer        Output in XER (XML Encoding Rules) "
-                        "(DEFAULT)\n"
-                        "  -otext       Output in plain semi-structured text "
-                        "(dump)\n"
-                        "  -onull       Verify (decode) input, but do not "
-                        "output\n");
-                    if (pduType->uper_decoder)
-                        fprintf(stderr,
-                                "  -per-nopad   Assume PER PDUs are not padded "
-                                "(-iper)\n");
+                        "  -iper        Input is in Unaligned PER (Packed "
+                        "Encoding Rules) (DEFAULT)\n");
+                fprintf(stderr,
+                    "  -iber        Input is in BER (Basic Encoding "
+                    "Rules)%s\n",
+                    iform == INP_PER ? "" : " (DEFAULT)");
+                fprintf(stderr,
+                    "  -ixer        Input is in XER (XML Encoding "
+                    "Rules)\n");
+                if (pduType->uper_encoder)
+                    fprintf(
+                        stderr,
+                        "  -oper        Output in Unaligned PER (Packed "
+                        "Encoding "
+                        "Rules)\n");
+                fprintf(
+                    stderr,
+                    "  -oder        Output in DER (Distinguished Encoding "
+                    "Rules)\n"
+                    "  -oxer        Output in XER (XML Encoding Rules) "
+                    "(DEFAULT)\n"
+                    "  -otext       Output in plain semi-structured text "
+                    "(dump)\n"
+                    "  -onull       Verify (decode) input, but do not "
+                    "output\n");
+                if (pduType->uper_decoder)
+                    fprintf(stderr,
+                        "  -per-nopad   Assume PER PDUs are not padded "
+                        "(-iper)\n");
 #ifdef ASN_PDU_COLLECTION
-                    fprintf(stderr,
-                            "  -p <PDU>     Specify PDU type to decode\n"
-                            "  -p list      List available PDUs\n");
+                fprintf(stderr,
+                    "  -p <PDU>     Specify PDU type to decode\n"
+                    "  -p list      List available PDUs\n");
 #endif /* ASN_PDU_COLLECTION */
-                    fprintf(
-                        stderr,
-                        "  -1           Decode only the first PDU in file\n"
-                        "  -b <size>    Set the i/o buffer size (default is "
-                        "%ld)\n"
-                        "  -c           Check ASN.1 constraints after "
-                        "decoding\n"
-                        "  -d           Enable debugging (-dd is even better)\n"
-                        "  -n <num>     Process files <num> times\n"
-                        "  -s <size>    Set the stack usage limit (default is "
-                        "%d)\n"
+                fprintf(
+                    stderr,
+                    "  -1           Decode only the first PDU in file\n"
+                    "  -b <size>    Set the i/o buffer size (default is "
+                    "%ld)\n"
+                    "  -c           Check ASN.1 constraints after "
+                    "decoding\n"
+                    "  -d           Enable debugging (-dd is even better)\n"
+                    "  -n <num>     Process files <num> times\n"
+                    "  -s <size>    Set the stack usage limit (default is "
+                    "%d)\n"
 #ifdef JUNKTEST
-                        "  -J <prob>    Set random junk test bit garbaging "
-                        "probability\n"
+                    "  -J <prob>    Set random junk test bit garbaging "
+                    "probability\n"
 #endif
-                        ,
-                        (long)suggested_bufsize, _ASN_DEFAULT_STACK_MAX);
-                    exit(EX_USAGE);
+                    ,
+                    (long)suggested_bufsize, _ASN_DEFAULT_STACK_MAX);
+                exit(EX_USAGE);
             }
 
     ac -= optind;
@@ -304,9 +303,9 @@ int main(int ac, char *av[])
     if (ac < 1)
         {
             fprintf(stderr,
-                    "%s: No input files specified. "
-                    "Try '-h' for more information\n",
-                    av[-optind]);
+                "%s: No input files specified. "
+                "Try '-h' for more information\n",
+                av[-optind]);
             exit(EX_USAGE);
         }
 
@@ -355,70 +354,70 @@ int main(int ac, char *av[])
                                     char errbuf[128];
                                     size_t errlen = sizeof(errbuf);
                                     if (asn_check_constraints(pduType,
-                                                              structure, errbuf,
-                                                              &errlen))
+                                            structure, errbuf,
+                                            &errlen))
                                         {
                                             fprintf(stderr,
-                                                    "%s: ASN.1 constraint "
-                                                    "check failed: %s\n",
-                                                    name, errbuf);
+                                                "%s: ASN.1 constraint "
+                                                "check failed: %s\n",
+                                                name, errbuf);
                                             exit(EX_DATAERR);
                                         }
                                 }
 
                             switch (oform)
                                 {
-                                    case OUT_NULL:
+                                case OUT_NULL:
 #ifdef JUNKTEST
-                                        if (opt_jprob == 0.0)
+                                    if (opt_jprob == 0.0)
 #endif
-                                            fprintf(
-                                                stderr,
-                                                "%s: decoded successfully\n",
-                                                name);
-                                        break;
-                                    case OUT_TEXT: /* -otext */
-                                        asn_fprint(stdout, pduType, structure);
-                                        break;
-                                    case OUT_XER: /* -oxer */
-                                        if (xer_fprint(stdout, pduType,
-                                                       structure))
-                                            {
-                                                fprintf(stderr,
-                                                        "%s: Cannot convert %s "
-                                                        "into XML\n",
-                                                        name, pduType->name);
-                                                exit(EX_UNAVAILABLE);
-                                            }
-                                        break;
-                                    case OUT_DER:
-                                        erv = der_encode(pduType, structure,
-                                                         write_out, stdout);
-                                        if (erv.encoded < 0)
-                                            {
-                                                fprintf(stderr,
-                                                        "%s: Cannot convert %s "
-                                                        "into DER\n",
-                                                        name, pduType->name);
-                                                exit(EX_UNAVAILABLE);
-                                            }
-                                        DEBUG("Encoded in %ld bytes of DER",
-                                              (long)erv.encoded);
-                                        break;
-                                    case OUT_PER:
-                                        erv = uper_encode(pduType, structure,
-                                                          write_out, stdout);
-                                        if (erv.encoded < 0)
-                                            {
-                                                fprintf(stderr,
-                                                        "%s: Cannot convert %s "
-                                                        "into Unaligned PER\n",
-                                                        name, pduType->name);
-                                                exit(EX_UNAVAILABLE);
-                                            }
-                                        DEBUG("Encoded in %ld bits of UPER",
-                                              (long)erv.encoded);
-                                        break;
+                                        fprintf(
+                                            stderr,
+                                            "%s: decoded successfully\n",
+                                            name);
+                                    break;
+                                case OUT_TEXT: /* -otext */
+                                    asn_fprint(stdout, pduType, structure);
+                                    break;
+                                case OUT_XER: /* -oxer */
+                                    if (xer_fprint(stdout, pduType,
+                                            structure))
+                                        {
+                                            fprintf(stderr,
+                                                "%s: Cannot convert %s "
+                                                "into XML\n",
+                                                name, pduType->name);
+                                            exit(EX_UNAVAILABLE);
+                                        }
+                                    break;
+                                case OUT_DER:
+                                    erv = der_encode(pduType, structure,
+                                        write_out, stdout);
+                                    if (erv.encoded < 0)
+                                        {
+                                            fprintf(stderr,
+                                                "%s: Cannot convert %s "
+                                                "into DER\n",
+                                                name, pduType->name);
+                                            exit(EX_UNAVAILABLE);
+                                        }
+                                    DEBUG("Encoded in %ld bytes of DER",
+                                        (long)erv.encoded);
+                                    break;
+                                case OUT_PER:
+                                    erv = uper_encode(pduType, structure,
+                                        write_out, stdout);
+                                    if (erv.encoded < 0)
+                                        {
+                                            fprintf(stderr,
+                                                "%s: Cannot convert %s "
+                                                "into Unaligned PER\n",
+                                                name, pduType->name);
+                                            exit(EX_UNAVAILABLE);
+                                        }
+                                    DEBUG("Encoded in %ld bits of UPER",
+                                        (long)erv.encoded);
+                                    break;
                                 }
 
                             ASN_STRUCT_FREE(*pduType, structure);
@@ -432,7 +431,7 @@ int main(int ac, char *av[])
     if (opt_jprob > 0.0)
         {
             fprintf(stderr, "Junked %f OK (%d/%d)\n", opt_jprob, junk_failures,
-                    number_of_iterations);
+                number_of_iterations);
         }
 #endif /* JUNKTEST */
 
@@ -456,16 +455,16 @@ static void buffer_dump()
     uint8_t *e = p + DynamicBuffer.length - (DynamicBuffer.unbits ? 1 : 0);
     if (!opt_debug) return;
     DEBUG("Buffer: { d=%p, o=%ld, l=%ld, u=%ld, a=%ld, s=%ld }",
-          DynamicBuffer.data, (long)DynamicBuffer.offset,
-          (long)DynamicBuffer.length, (long)DynamicBuffer.unbits,
-          (long)DynamicBuffer.allocated, (long)DynamicBuffer.bytes_shifted);
+        DynamicBuffer.data, (long)DynamicBuffer.offset,
+        (long)DynamicBuffer.length, (long)DynamicBuffer.unbits,
+        (long)DynamicBuffer.allocated, (long)DynamicBuffer.bytes_shifted);
     for (; p < e; p++)
         {
             fprintf(stderr, " %c%c%c%c%c%c%c%c", ((*p >> 7) & 1) ? '1' : '0',
-                    ((*p >> 6) & 1) ? '1' : '0', ((*p >> 5) & 1) ? '1' : '0',
-                    ((*p >> 4) & 1) ? '1' : '0', ((*p >> 3) & 1) ? '1' : '0',
-                    ((*p >> 2) & 1) ? '1' : '0', ((*p >> 1) & 1) ? '1' : '0',
-                    ((*p >> 0) & 1) ? '1' : '0');
+                ((*p >> 6) & 1) ? '1' : '0', ((*p >> 5) & 1) ? '1' : '0',
+                ((*p >> 4) & 1) ? '1' : '0', ((*p >> 3) & 1) ? '1' : '0',
+                ((*p >> 2) & 1) ? '1' : '0', ((*p >> 1) & 1) ? '1' : '0',
+                ((*p >> 0) & 1) ? '1' : '0');
         }
     if (DynamicBuffer.unbits)
         {
@@ -474,7 +473,7 @@ static void buffer_dump()
             for (shift = 7; shift >= DynamicBuffer.unbits; shift--)
                 fprintf(stderr, "%c", ((*p >> shift) & 1) ? '1' : '0');
             fprintf(stderr, " %ld:%ld\n", (long)DynamicBuffer.length - 1,
-                    (long)8 - DynamicBuffer.unbits);
+                (long)8 - DynamicBuffer.unbits);
         }
     else
         {
@@ -495,8 +494,8 @@ static void buffer_shift_left(size_t offset, int bits)
     if (!bits) return;
 
     DEBUG("Shifting left %d bits off %ld (o=%ld, u=%ld, l=%ld)", bits,
-          (long)offset, (long)DynamicBuffer.offset, (long)DynamicBuffer.unbits,
-          (long)DynamicBuffer.length);
+        (long)offset, (long)DynamicBuffer.offset, (long)DynamicBuffer.unbits,
+        (long)DynamicBuffer.length);
 
     if (offset)
         {
@@ -504,22 +503,22 @@ static void buffer_shift_left(size_t offset, int bits)
             right = ptr[0] >> (8 - bits);
 
             DEBUG("oleft: %c%c%c%c%c%c%c%c", ((ptr[-1] >> 7) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 6) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 5) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 4) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 3) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 2) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 1) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 0) & 1) ? '1' : '0');
+                ((ptr[-1] >> 6) & 1) ? '1' : '0',
+                ((ptr[-1] >> 5) & 1) ? '1' : '0',
+                ((ptr[-1] >> 4) & 1) ? '1' : '0',
+                ((ptr[-1] >> 3) & 1) ? '1' : '0',
+                ((ptr[-1] >> 2) & 1) ? '1' : '0',
+                ((ptr[-1] >> 1) & 1) ? '1' : '0',
+                ((ptr[-1] >> 0) & 1) ? '1' : '0');
 
             DEBUG("oriht: %c%c%c%c%c%c%c%c", ((ptr[0] >> 7) & 1) ? '1' : '0',
-                  ((ptr[0] >> 6) & 1) ? '1' : '0',
-                  ((ptr[0] >> 5) & 1) ? '1' : '0',
-                  ((ptr[0] >> 4) & 1) ? '1' : '0',
-                  ((ptr[0] >> 3) & 1) ? '1' : '0',
-                  ((ptr[0] >> 2) & 1) ? '1' : '0',
-                  ((ptr[0] >> 1) & 1) ? '1' : '0',
-                  ((ptr[0] >> 0) & 1) ? '1' : '0');
+                ((ptr[0] >> 6) & 1) ? '1' : '0',
+                ((ptr[0] >> 5) & 1) ? '1' : '0',
+                ((ptr[0] >> 4) & 1) ? '1' : '0',
+                ((ptr[0] >> 3) & 1) ? '1' : '0',
+                ((ptr[0] >> 2) & 1) ? '1' : '0',
+                ((ptr[0] >> 1) & 1) ? '1' : '0',
+                ((ptr[0] >> 0) & 1) ? '1' : '0');
 
             DEBUG(
                 "mriht: %c%c%c%c%c%c%c%c", ((right >> 7) & 1) ? '1' : '0',
@@ -531,13 +530,13 @@ static void buffer_shift_left(size_t offset, int bits)
             ptr[-1] = (ptr[-1] & (0xff << bits)) | right;
 
             DEBUG("after: %c%c%c%c%c%c%c%c", ((ptr[-1] >> 7) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 6) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 5) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 4) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 3) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 2) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 1) & 1) ? '1' : '0',
-                  ((ptr[-1] >> 0) & 1) ? '1' : '0');
+                ((ptr[-1] >> 6) & 1) ? '1' : '0',
+                ((ptr[-1] >> 5) & 1) ? '1' : '0',
+                ((ptr[-1] >> 4) & 1) ? '1' : '0',
+                ((ptr[-1] >> 3) & 1) ? '1' : '0',
+                ((ptr[-1] >> 2) & 1) ? '1' : '0',
+                ((ptr[-1] >> 1) & 1) ? '1' : '0',
+                ((ptr[-1] >> 0) & 1) ? '1' : '0');
         }
 
     buffer_dump();
@@ -569,7 +568,7 @@ static void buffer_shift_left(size_t offset, int bits)
     buffer_dump();
 
     DEBUG("Shifted. Now (o=%ld, u=%ld l=%ld)", (long)DynamicBuffer.offset,
-          (long)DynamicBuffer.unbits, (long)DynamicBuffer.length);
+        (long)DynamicBuffer.unbits, (long)DynamicBuffer.length);
 }
 
 /*
@@ -580,8 +579,8 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes)
     if (bytes == 0) return;
 
     DEBUG("=> add_bytes(%ld) { o=%ld l=%ld u=%ld, s=%ld }", (long)bytes,
-          (long)DynamicBuffer.offset, (long)DynamicBuffer.length,
-          (long)DynamicBuffer.unbits, (long)DynamicBuffer.allocated);
+        (long)DynamicBuffer.offset, (long)DynamicBuffer.length,
+        (long)DynamicBuffer.unbits, (long)DynamicBuffer.allocated);
 
     if (DynamicBuffer.allocated >=
         (DynamicBuffer.offset + DynamicBuffer.length + bytes))
@@ -594,8 +593,8 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes)
 
             /* Shift the buffer contents */
             memmove(DynamicBuffer.data,
-                    DynamicBuffer.data + DynamicBuffer.offset,
-                    DynamicBuffer.length);
+                DynamicBuffer.data + DynamicBuffer.offset,
+                DynamicBuffer.length);
             DynamicBuffer.bytes_shifted += DynamicBuffer.offset;
             DynamicBuffer.offset = 0;
         }
@@ -609,18 +608,18 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes)
                     exit(EX_OSERR);
                 }
             memcpy(p, DynamicBuffer.data + DynamicBuffer.offset,
-                   DynamicBuffer.length);
+                DynamicBuffer.length);
             FREEMEM(DynamicBuffer.data);
             DynamicBuffer.data = (uint8_t *)p;
             DynamicBuffer.offset = 0;
             DynamicBuffer.allocated = newsize;
             DynamicBuffer.nreallocs++;
             DEBUG("\tBuffer reallocated to %ld (%d time)", newsize,
-                  DynamicBuffer.nreallocs);
+                DynamicBuffer.nreallocs);
         }
 
     memcpy(DynamicBuffer.data + DynamicBuffer.offset + DynamicBuffer.length,
-           data2add, bytes);
+        data2add, bytes);
     DynamicBuffer.length += bytes;
     if (DynamicBuffer.unbits)
         {
@@ -630,13 +629,13 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes)
         }
 
     DEBUG("<= add_bytes(%ld) { o=%ld l=%ld u=%ld, s=%ld }", (long)bytes,
-          (long)DynamicBuffer.offset, (long)DynamicBuffer.length,
-          (long)DynamicBuffer.unbits, (long)DynamicBuffer.allocated);
+        (long)DynamicBuffer.offset, (long)DynamicBuffer.length,
+        (long)DynamicBuffer.unbits, (long)DynamicBuffer.allocated);
 }
 
 static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
-                                   const char *name, ssize_t suggested_bufsize,
-                                   int on_first_pdu)
+    const char *name, ssize_t suggested_bufsize,
+    int on_first_pdu)
 {
     static uint8_t *fbuf;
     static ssize_t fbuf_size;
@@ -724,50 +723,50 @@ static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
 
             switch (iform)
                 {
-                    case INP_BER:
-                        rval = ber_decode(opt_codec_ctx, pduType, &structure,
-                                          i_bptr, i_size);
-                        break;
-                    case INP_XER:
-                        rval = xer_decode(opt_codec_ctx, pduType, &structure,
-                                          i_bptr, i_size);
-                        break;
-                    case INP_PER:
-                        if (opt_nopad)
-                            rval = uper_decode(opt_codec_ctx, pduType,
-                                               &structure, i_bptr, i_size, 0,
-                                               DynamicBuffer.unbits);
-                        else
-                            rval = uper_decode_complete(opt_codec_ctx, pduType,
-                                                        &structure, i_bptr,
-                                                        i_size);
-                        switch (rval.code)
-                            {
-                                case RC_OK:
-                                    /* Fall through */
-                                case RC_FAIL:
-                                    if (opt_nopad)
-                                        {
-                                            /* uper_decode() returns bits! */
-                                            /* Extra bits */
-                                            ecbits = rval.consumed % 8;
-                                            /* Convert into bytes! */
-                                            rval.consumed /= 8;
-                                        }
-                                    break;
-                                case RC_WMORE:
-                                    /* PER does not support restartability */
-                                    ASN_STRUCT_FREE(*pduType, structure);
-                                    structure = 0;
-                                    rval.consumed = 0;
-                                    /* Continue accumulating data */
-                                    break;
-                            }
-                        break;
+                case INP_BER:
+                    rval = ber_decode(opt_codec_ctx, pduType, &structure,
+                        i_bptr, i_size);
+                    break;
+                case INP_XER:
+                    rval = xer_decode(opt_codec_ctx, pduType, &structure,
+                        i_bptr, i_size);
+                    break;
+                case INP_PER:
+                    if (opt_nopad)
+                        rval = uper_decode(opt_codec_ctx, pduType,
+                            &structure, i_bptr, i_size, 0,
+                            DynamicBuffer.unbits);
+                    else
+                        rval = uper_decode_complete(opt_codec_ctx, pduType,
+                            &structure, i_bptr,
+                            i_size);
+                    switch (rval.code)
+                        {
+                        case RC_OK:
+                            /* Fall through */
+                        case RC_FAIL:
+                            if (opt_nopad)
+                                {
+                                    /* uper_decode() returns bits! */
+                                    /* Extra bits */
+                                    ecbits = rval.consumed % 8;
+                                    /* Convert into bytes! */
+                                    rval.consumed /= 8;
+                                }
+                            break;
+                        case RC_WMORE:
+                            /* PER does not support restartability */
+                            ASN_STRUCT_FREE(*pduType, structure);
+                            structure = 0;
+                            rval.consumed = 0;
+                            /* Continue accumulating data */
+                            break;
+                        }
+                    break;
                 }
             DEBUG("decode(%ld) consumed %ld+%db (%ld), code %d",
-                  (long)DynamicBuffer.length, (long)rval.consumed, ecbits,
-                  (long)i_size, rval.code);
+                (long)DynamicBuffer.length, (long)rval.consumed, ecbits,
+                (long)i_size, rval.code);
 
             if (DynamicBuffer.allocated == 0)
                 {
@@ -777,7 +776,7 @@ static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
                     if (rval.code != RC_FAIL && rval.consumed < rd)
                         {
                             add_bytes_to_buffer(fbuf + rval.consumed,
-                                                rd - rval.consumed);
+                                rd - rval.consumed);
                             buffer_shift_left(0, ecbits);
                             DynamicBuffer.bytes_shifted = rval.consumed;
                             rval.consumed = 0;
@@ -800,24 +799,24 @@ static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
 
             switch (rval.code)
                 {
-                    case RC_OK:
-                        if (ecbits) buffer_shift_left(0, ecbits);
-                        DEBUG("RC_OK, finishing up with %ld+%d",
-                              (long)rval.consumed, ecbits);
-                        return structure;
-                    case RC_WMORE:
-                        DEBUG(
-                            "RC_WMORE, continuing read=%ld, cons=%ld "
-                            " with %ld..%ld-%ld..%ld",
-                            (long)rd, (long)rval.consumed,
-                            (long)DynamicBuffer.offset,
-                            (long)DynamicBuffer.length,
-                            (long)DynamicBuffer.unbits,
-                            (long)DynamicBuffer.allocated);
-                        if (!rd) tolerate_eof--;
-                        continue;
-                    case RC_FAIL:
-                        break;
+                case RC_OK:
+                    if (ecbits) buffer_shift_left(0, ecbits);
+                    DEBUG("RC_OK, finishing up with %ld+%d",
+                        (long)rval.consumed, ecbits);
+                    return structure;
+                case RC_WMORE:
+                    DEBUG(
+                        "RC_WMORE, continuing read=%ld, cons=%ld "
+                        " with %ld..%ld-%ld..%ld",
+                        (long)rd, (long)rval.consumed,
+                        (long)DynamicBuffer.offset,
+                        (long)DynamicBuffer.length,
+                        (long)DynamicBuffer.unbits,
+                        (long)DynamicBuffer.allocated);
+                    if (!rd) tolerate_eof--;
+                    continue;
+                case RC_FAIL:
+                    break;
                 }
             break;
         }
@@ -848,14 +847,14 @@ static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType, FILE *file,
 #endif
 
             DEBUG("ofp %d, no=%ld, oo=%ld, dbl=%ld", on_first_pdu,
-                  (long)new_offset, (long)old_offset,
-                  (long)DynamicBuffer.length);
+                (long)new_offset, (long)old_offset,
+                (long)DynamicBuffer.length);
             fprintf(stderr,
-                    "%s: "
-                    "Decode failed past byte %ld: %s\n",
-                    name, (long)new_offset,
-                    (rval.code == RC_WMORE) ? "Unexpected end of input"
-                                            : "Input processing error");
+                "%s: "
+                "Decode failed past byte %ld: %s\n",
+                name, (long)new_offset,
+                (rval.code == RC_WMORE) ? "Unexpected end of input"
+                                        : "Input processing error");
 #ifndef ENOMSG
 #define ENOMSG EINVAL
 #endif

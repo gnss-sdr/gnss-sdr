@@ -8,21 +8,21 @@
 
 static asn_TYPE_member_t asn_MBR_Position_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Position, timestamp),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_UTCTime, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "timestamp"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_UTCTime, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "timestamp"},
     {ATF_NOFLAGS, 0, offsetof(struct Position, positionEstimate),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PositionEstimate,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "positionEstimate"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PositionEstimate,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "positionEstimate"},
     {ATF_POINTER, 1, offsetof(struct Position, velocity),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_Velocity, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "velocity"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_Velocity, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "velocity"},
 };
 static int asn_MAP_Position_oms_1[] = {2};
 static ber_tlv_tag_t asn_DEF_Position_tags_1[] = {

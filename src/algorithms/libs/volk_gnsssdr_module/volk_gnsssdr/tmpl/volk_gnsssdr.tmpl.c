@@ -16,15 +16,17 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
+// clang-format off
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include "volk_gnsssdr_machines.h"
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include "volk_gnsssdr_rank_archs.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+// clang-format on
 
 static size_t __alignment = 0;
 static intptr_t __alignment_mask = 0;

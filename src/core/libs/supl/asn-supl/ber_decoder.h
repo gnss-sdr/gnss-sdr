@@ -53,8 +53,8 @@ extern "C"
         struct asn_TYPE_descriptor_s *td,
         asn_struct_ctx_t *opt_ctx, /* saved decoding context */
         const void *ptr, size_t size,
-        int tag_mode,      /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
-        int last_tag_form, /* {-1,0:1}: any, primitive, constr */
+        int tag_mode,                                 /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
+        int last_tag_form,                            /* {-1,0:1}: any, primitive, constr */
         ber_tlv_len_t *last_length, int *opt_tlv_form /* optional tag form */
     );
 

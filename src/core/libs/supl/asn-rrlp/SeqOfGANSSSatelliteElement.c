@@ -15,10 +15,10 @@ static asn_per_constraints_t
 };
 static asn_TYPE_member_t asn_MBR_SeqOfGANSSSatelliteElement_1[] = {
     {ATF_POINTER, 0, 0, (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0,
-     &asn_DEF_GANSSSatelliteElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, ""},
+        &asn_DEF_GANSSSatelliteElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, ""},
 };
 static ber_tlv_tag_t asn_DEF_SeqOfGANSSSatelliteElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -43,7 +43,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSSatelliteElement = {
     asn_DEF_SeqOfGANSSSatelliteElement_tags_1,
     sizeof(asn_DEF_SeqOfGANSSSatelliteElement_tags_1) /
         sizeof(asn_DEF_SeqOfGANSSSatelliteElement_tags_1[0]), /* 1 */
-    asn_DEF_SeqOfGANSSSatelliteElement_tags_1, /* Same as above */
+    asn_DEF_SeqOfGANSSSatelliteElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_SeqOfGANSSSatelliteElement_tags_1) /
         sizeof(asn_DEF_SeqOfGANSSSatelliteElement_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_SEQ_OF_GANSS_SATELLITE_ELEMENT_CONSTR_1,

@@ -14,47 +14,47 @@ static asn_per_constraints_t ASN_PER_TYPE_NEIGHBOR_IDENTITY_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_NeighborIdentity_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct NeighborIdentity, choice.bsicAndCarrier),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BSICAndCarrier,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "bsicAndCarrier"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BSICAndCarrier,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "bsicAndCarrier"},
     {ATF_NOFLAGS, 0, offsetof(struct NeighborIdentity, choice.ci),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellID, 0, /* Defer constraints checking to the member type */
-     0,                  /* No PER visible constraints */
-     0, "ci"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellID, 0,                     /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "ci"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct NeighborIdentity, choice.multiFrameCarrier),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MultiFrameCarrier,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "multiFrameCarrier"},
+        offsetof(struct NeighborIdentity, choice.multiFrameCarrier),
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MultiFrameCarrier,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "multiFrameCarrier"},
     {ATF_NOFLAGS, 0, offsetof(struct NeighborIdentity, choice.requestIndex),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RequestIndex,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "requestIndex"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RequestIndex,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "requestIndex"},
     {ATF_NOFLAGS, 0, offsetof(struct NeighborIdentity, choice.systemInfoIndex),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SystemInfoIndex,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "systemInfoIndex"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SystemInfoIndex,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "systemInfoIndex"},
     {ATF_NOFLAGS, 0, offsetof(struct NeighborIdentity, choice.ciAndLAC),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellIDAndLAC,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ciAndLAC"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellIDAndLAC,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ciAndLAC"},
 };
 static asn_TYPE_tag2member_t asn_MAP_NeighborIdentity_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* bsicAndCarrier at 398 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* ci at 399 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0}, /* multiFrameCarrier at 400 */
+        0},                                        /* multiFrameCarrier at 400 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* requestIndex at 401 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* systemInfoIndex at 402 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0}  /* ciAndLAC at 407 */

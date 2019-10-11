@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NativeInteger.h>
 #include "SETId.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

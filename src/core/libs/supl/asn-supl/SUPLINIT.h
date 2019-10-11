@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include "KeyIdentity.h"
+#include "MAC.h"
 #include "PosMethod.h"
 #include "SLPMode.h"
-#include "MAC.h"
-#include "KeyIdentity.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -54,8 +54,8 @@ extern "C"
 
 /* Referred external types */
 #include "Notification.h"
-#include "SLPAddress.h"
 #include "QoP.h"
+#include "SLPAddress.h"
 
 #endif /* _SUPLINIT_H_ */
 #include <asn_internal.h>

@@ -16,12 +16,13 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
+// clang-format off
 #include <volk_gnsssdr_rank_archs.h>
 #include <volk_gnsssdr/volk_gnsssdr_prefs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// clang-format on
 
 #if __GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ >= 4
 #define __popcnt __builtin_popcount

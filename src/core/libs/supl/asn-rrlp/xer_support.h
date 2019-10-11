@@ -38,8 +38,8 @@ extern "C"
      * The chunk is NOT '\0'-terminated.
      */
     typedef int(pxml_callback_f)(pxml_chunk_type_e _type,
-                                 const void *_chunk_data, size_t _chunk_size,
-                                 void *_key);
+        const void *_chunk_data, size_t _chunk_size,
+        void *_key);
 
     /*
      * Parse the given buffer as it were a chunk of XML data.
@@ -49,7 +49,7 @@ extern "C"
      * The next invocation of this function must account the difference.
      */
     ssize_t pxml_parse(int *_stateContext, const void *_buf, size_t _size,
-                       pxml_callback_f *cb, void *_key);
+        pxml_callback_f *cb, void *_key);
 
 #ifdef __cplusplus
 }

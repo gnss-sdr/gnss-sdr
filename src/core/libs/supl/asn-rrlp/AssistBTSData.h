@@ -12,8 +12,8 @@
 /* Including external dependencies */
 #include "BSIC.h"
 #include "MultiFrameOffset.h"
-#include "TimeSlotScheme.h"
 #include "RoughRTD.h"
+#include "TimeSlotScheme.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

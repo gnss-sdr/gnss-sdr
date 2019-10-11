@@ -10,13 +10,13 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "SUPLINIT.h"
-#include "SUPLSTART.h"
-#include "SUPLRESPONSE.h"
-#include "SUPLPOSINIT.h"
-#include "SUPLPOS.h"
-#include "SUPLEND.h"
 #include "DUMMY.h"
+#include "SUPLEND.h"
+#include "SUPLINIT.h"
+#include "SUPLPOS.h"
+#include "SUPLPOSINIT.h"
+#include "SUPLRESPONSE.h"
+#include "SUPLSTART.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

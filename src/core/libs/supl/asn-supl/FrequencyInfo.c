@@ -14,17 +14,17 @@ static asn_per_constraints_t ASN_PER_TYPE_FMODE_SPECIFIC_INFO_CONSTR_2 = {
 };
 static asn_TYPE_member_t asn_MBR_fmodeSpecificInfo_2[] = {
     {ATF_NOFLAGS, 0, offsetof(struct fmodeSpecificInfo, choice.fdd),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FrequencyInfoFDD,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "fdd"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FrequencyInfoFDD,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "fdd"},
     {ATF_NOFLAGS, 0, offsetof(struct fmodeSpecificInfo, choice.tdd),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FrequencyInfoTDD,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "tdd"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FrequencyInfoTDD,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "tdd"},
 };
 static asn_TYPE_tag2member_t asn_MAP_fmodeSpecificInfo_tag2el_2[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* fdd at 122 */
@@ -66,11 +66,11 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_FrequencyInfo_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct FrequencyInfo, fmodeSpecificInfo),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_fmodeSpecificInfo_2,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "fmodeSpecificInfo"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_fmodeSpecificInfo_2,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "fmodeSpecificInfo"},
 };
 static ber_tlv_tag_t asn_DEF_FrequencyInfo_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -107,7 +107,7 @@ asn_TYPE_descriptor_t asn_DEF_FrequencyInfo = {
     asn_DEF_FrequencyInfo_tags_1,                /* Same as above */
     sizeof(asn_DEF_FrequencyInfo_tags_1) /
         sizeof(asn_DEF_FrequencyInfo_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                           /* No PER visible constraints */
     asn_MBR_FrequencyInfo_1,
     1,                             /* Elements count */
     &asn_SPC_FrequencyInfo_specs_1 /* Additional specs */

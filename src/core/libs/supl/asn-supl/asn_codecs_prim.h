@@ -14,8 +14,8 @@ extern "C"
 
     typedef struct ASN__PRIMITIVE_TYPE_s
     {
-        uint8_t *buf; /* Buffer with consecutive primitive encoding bytes */
-        int size;     /* Size of the buffer */
+        uint8_t *buf;        /* Buffer with consecutive primitive encoding bytes */
+        int size;            /* Size of the buffer */
     } ASN__PRIMITIVE_TYPE_t; /* Do not use this type directly! */
 
     asn_struct_free_f ASN__PRIMITIVE_TYPE_free;

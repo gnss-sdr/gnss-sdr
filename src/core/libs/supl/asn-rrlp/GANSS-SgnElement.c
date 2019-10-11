@@ -7,15 +7,15 @@
 #include "GANSS-SgnElement.h"
 
 static int memb_cNo_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,7 +29,7 @@ static int memb_cNo_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -43,7 +43,7 @@ static int memb_carrierQualityInd_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,22 +57,22 @@ static int memb_carrierQualityInd_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_codePhase_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -86,7 +86,7 @@ static int memb_codePhase_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -100,7 +100,7 @@ static int memb_integerCodePhase_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -114,7 +114,7 @@ static int memb_integerCodePhase_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -128,7 +128,7 @@ static int memb_codePhaseRMSError_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -142,22 +142,22 @@ static int memb_codePhaseRMSError_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_doppler_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -171,21 +171,21 @@ static int memb_doppler_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_adr_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -199,7 +199,7 @@ static int memb_adr_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -248,43 +248,43 @@ static asn_per_constraints_t ASN_PER_MEMB_ADR_CONSTR_10 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnElement, svID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SVID, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "svID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SVID, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "svID"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnElement, cNo),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_cNo_constraint_1, &ASN_PER_MEMB_C_NO_CONSTR_3,
-     0, "cNo"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_cNo_constraint_1, &ASN_PER_MEMB_C_NO_CONSTR_3,
+        0, "cNo"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnElement, mpathDet),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MpathIndic, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "mpathDet"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MpathIndic, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "mpathDet"},
     {ATF_POINTER, 1, offsetof(struct GANSS_SgnElement, carrierQualityInd),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_carrierQualityInd_constraint_1,
-     &ASN_PER_MEMB_CARRIER_QUALITY_IND_CONSTR_5, 0, "carrierQualityInd"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_carrierQualityInd_constraint_1,
+        &ASN_PER_MEMB_CARRIER_QUALITY_IND_CONSTR_5, 0, "carrierQualityInd"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnElement, codePhase),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_codePhase_constraint_1,
-     &ASN_PER_MEMB_CODE_PHASE_CONSTR_6, 0, "codePhase"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_codePhase_constraint_1,
+        &ASN_PER_MEMB_CODE_PHASE_CONSTR_6, 0, "codePhase"},
     {ATF_POINTER, 1, offsetof(struct GANSS_SgnElement, integerCodePhase),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_integerCodePhase_constraint_1,
-     &ASN_PER_MEMB_INTEGER_CODE_PHASE_CONSTR_7, 0, "integerCodePhase"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_integerCodePhase_constraint_1,
+        &ASN_PER_MEMB_INTEGER_CODE_PHASE_CONSTR_7, 0, "integerCodePhase"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnElement, codePhaseRMSError),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_codePhaseRMSError_constraint_1,
-     &ASN_PER_MEMB_CODE_PHASE_RMS_ERROR_CONSTR_8, 0, "codePhaseRMSError"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_codePhaseRMSError_constraint_1,
+        &ASN_PER_MEMB_CODE_PHASE_RMS_ERROR_CONSTR_8, 0, "codePhaseRMSError"},
     {ATF_POINTER, 2, offsetof(struct GANSS_SgnElement, doppler),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_doppler_constraint_1,
-     &ASN_PER_MEMB_DOPPLER_CONSTR_9, 0, "doppler"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_doppler_constraint_1,
+        &ASN_PER_MEMB_DOPPLER_CONSTR_9, 0, "doppler"},
     {ATF_POINTER, 1, offsetof(struct GANSS_SgnElement, adr),
-     (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_adr_constraint_1, &ASN_PER_MEMB_ADR_CONSTR_10,
-     0, "adr"},
+        (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_adr_constraint_1, &ASN_PER_MEMB_ADR_CONSTR_10,
+        0, "adr"},
 };
 static int asn_MAP_GANSS_SgnElement_oms_1[] = {3, 5, 7, 8};
 static ber_tlv_tag_t asn_DEF_GANSS_SgnElement_tags_1[] = {
@@ -294,12 +294,12 @@ static asn_TYPE_tag2member_t asn_MAP_GANSS_SgnElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* cNo at 1480 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* mpathDet at 1481 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0,
-     0}, /* carrierQualityInd at 1482 */
+        0},                                        /* carrierQualityInd at 1482 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* codePhase at 1483 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0,
-     0}, /* integerCodePhase at 1484 */
+        0}, /* integerCodePhase at 1484 */
     {(ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0,
-     0}, /* codePhaseRMSError at 1485 */
+        0},                                        /* codePhaseRMSError at 1485 */
     {(ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0}, /* doppler at 1486 */
     {(ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0}  /* adr at 1487 */
 };
@@ -333,7 +333,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement = {
     asn_DEF_GANSS_SgnElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSS_SgnElement_tags_1) /
         sizeof(asn_DEF_GANSS_SgnElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_GANSS_SgnElement_1,
     9,                                /* Elements count */
     &asn_SPC_GANSS_SgnElement_specs_1 /* Additional specs */

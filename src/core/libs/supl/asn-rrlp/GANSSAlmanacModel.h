@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NativeInteger.h>
 #include "SVIDMASK.h"
 #include "SeqOfGANSSAlmanacElement.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

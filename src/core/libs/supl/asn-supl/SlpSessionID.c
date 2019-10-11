@@ -7,9 +7,9 @@
 #include "SlpSessionID.h"
 
 static int memb_sessionID_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
@@ -17,7 +17,7 @@ static int memb_sessionID_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -31,7 +31,7 @@ static int memb_sessionID_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -44,14 +44,14 @@ static asn_per_constraints_t ASN_PER_MEMB_SESSION_ID_CONSTR_2 = {
 };
 static asn_TYPE_member_t asn_MBR_SlpSessionID_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SlpSessionID, sessionID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_OCTET_STRING, memb_sessionID_constraint_1,
-     &ASN_PER_MEMB_SESSION_ID_CONSTR_2, 0, "sessionID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_OCTET_STRING, memb_sessionID_constraint_1,
+        &ASN_PER_MEMB_SESSION_ID_CONSTR_2, 0, "sessionID"},
     {ATF_NOFLAGS, 0, offsetof(struct SlpSessionID, slpId),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_SLPAddress, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "slpId"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_SLPAddress, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "slpId"},
 };
 static ber_tlv_tag_t asn_DEF_SlpSessionID_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

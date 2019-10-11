@@ -15,7 +15,7 @@ static int memb_stanClockTocLSB_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,22 +29,22 @@ static int memb_stanClockTocLSB_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_stanClockAF2_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,22 +58,22 @@ static int memb_stanClockAF2_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_stanClockAF1_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -87,22 +87,22 @@ static int memb_stanClockAF1_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_stanClockAF0_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -116,22 +116,22 @@ static int memb_stanClockAF0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_stanClockTgd_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -145,22 +145,22 @@ static int memb_stanClockTgd_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_stanModelID_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -174,7 +174,7 @@ static int memb_stanModelID_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -199,7 +199,7 @@ static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_A_F1_CONSTR_4 = {
 };
 static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_A_F0_CONSTR_5 = {
     {APC_CONSTRAINED, 28, -1, -134217728,
-     134217727} /* (-134217728..134217727) */,
+        134217727} /* (-134217728..134217727) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0,
     0 /* No PER value map */
@@ -218,30 +218,30 @@ static asn_per_constraints_t ASN_PER_MEMB_STAN_MODEL_ID_CONSTR_7 = {
 };
 static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct StandardClockModelElement, stanClockTocLSB),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stanClockTocLSB_constraint_1,
-     &ASN_PER_MEMB_STAN_CLOCK_TOC_LSB_CONSTR_2, 0, "stanClockTocLSB"},
+        offsetof(struct StandardClockModelElement, stanClockTocLSB),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stanClockTocLSB_constraint_1,
+        &ASN_PER_MEMB_STAN_CLOCK_TOC_LSB_CONSTR_2, 0, "stanClockTocLSB"},
     {ATF_NOFLAGS, 0, offsetof(struct StandardClockModelElement, stanClockAF2),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stanClockAF2_constraint_1,
-     &ASN_PER_MEMB_STAN_CLOCK_A_F2_CONSTR_3, 0, "stanClockAF2"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stanClockAF2_constraint_1,
+        &ASN_PER_MEMB_STAN_CLOCK_A_F2_CONSTR_3, 0, "stanClockAF2"},
     {ATF_NOFLAGS, 0, offsetof(struct StandardClockModelElement, stanClockAF1),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stanClockAF1_constraint_1,
-     &ASN_PER_MEMB_STAN_CLOCK_A_F1_CONSTR_4, 0, "stanClockAF1"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stanClockAF1_constraint_1,
+        &ASN_PER_MEMB_STAN_CLOCK_A_F1_CONSTR_4, 0, "stanClockAF1"},
     {ATF_NOFLAGS, 0, offsetof(struct StandardClockModelElement, stanClockAF0),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stanClockAF0_constraint_1,
-     &ASN_PER_MEMB_STAN_CLOCK_A_F0_CONSTR_5, 0, "stanClockAF0"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stanClockAF0_constraint_1,
+        &ASN_PER_MEMB_STAN_CLOCK_A_F0_CONSTR_5, 0, "stanClockAF0"},
     {ATF_POINTER, 2, offsetof(struct StandardClockModelElement, stanClockTgd),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stanClockTgd_constraint_1,
-     &ASN_PER_MEMB_STAN_CLOCK_TGD_CONSTR_6, 0, "stanClockTgd"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stanClockTgd_constraint_1,
+        &ASN_PER_MEMB_STAN_CLOCK_TGD_CONSTR_6, 0, "stanClockTgd"},
     {ATF_POINTER, 1, offsetof(struct StandardClockModelElement, stanModelID),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stanModelID_constraint_1,
-     &ASN_PER_MEMB_STAN_MODEL_ID_CONSTR_7, 0, "stanModelID"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stanModelID_constraint_1,
+        &ASN_PER_MEMB_STAN_MODEL_ID_CONSTR_7, 0, "stanModelID"},
 };
 static int asn_MAP_StandardClockModelElement_oms_1[] = {4, 5};
 static ber_tlv_tag_t asn_DEF_StandardClockModelElement_tags_1[] = {
@@ -284,7 +284,7 @@ asn_TYPE_descriptor_t asn_DEF_StandardClockModelElement = {
     asn_DEF_StandardClockModelElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_StandardClockModelElement_tags_1) /
         sizeof(asn_DEF_StandardClockModelElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                       /* No PER visible constraints */
     asn_MBR_StandardClockModelElement_1,
     6,                                         /* Elements count */
     &asn_SPC_StandardClockModelElement_specs_1 /* Additional specs */

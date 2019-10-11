@@ -55,7 +55,10 @@ extern "C"
 #define ASN_DEBUG ASN_DEBUG_f
 #endif /* __GNUC__ */
 #else  /* EMIT_ASN_DEBUG != 1 */
-    static inline void ASN_DEBUG(const char *fmt, ...) { (void)fmt; }
+    static inline void ASN_DEBUG(const char *fmt, ...)
+    {
+        (void)fmt;
+    }
 #endif /* EMIT_ASN_DEBUG */
 #endif /* ASN_DEBUG */
 
@@ -115,7 +118,7 @@ extern "C"
                 if (usedstack < -(ptrdiff_t)ctx->max_stack_size)
                     {
                         ASN_DEBUG("Stack limit %ld reached",
-                                  (long)ctx->max_stack_size);
+                            (long)ctx->max_stack_size);
                         return -1;
                     }
             }

@@ -2,8 +2,8 @@
  * Copyright (c) 2003, 2006 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
 #include <VisibleString.h>
+#include <asn_internal.h>
 
 /*
  * VisibleString basic type description.
@@ -42,8 +42,8 @@ asn_TYPE_descriptor_t asn_DEF_VisibleString = {
 };
 
 int VisibleString_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                             asn_app_constraint_failed_f *ctfailcb,
-                             void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const VisibleString_t *st = (const VisibleString_t *)sptr;
 
@@ -63,10 +63,10 @@ int VisibleString_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
                     if (*buf < 0x20 || *buf > 0x7e)
                         {
                             _ASN_CTFAIL(app_key, td, sptr,
-                                        "%s: value byte %ld (%d) "
-                                        "not in VisibleString alphabet (%s:%d)",
-                                        td->name, ((buf - st->buf) + 1), *buf,
-                                        __FILE__, __LINE__);
+                                "%s: value byte %ld (%d) "
+                                "not in VisibleString alphabet (%s:%d)",
+                                td->name, ((buf - st->buf) + 1), *buf,
+                                __FILE__, __LINE__);
                             return -1;
                         }
                 }
@@ -74,7 +74,7 @@ int VisibleString_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 

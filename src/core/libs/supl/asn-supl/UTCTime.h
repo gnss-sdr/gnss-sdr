@@ -31,7 +31,7 @@ extern "C"
 
     /* See asn_time2GT() in GeneralizedTime.h */
     UTCTime_t *asn_time2UT(UTCTime_t *__opt_ut, const struct tm * /*tm*/,
-                           int force_gmt);
+        int force_gmt);
 
 #ifdef __cplusplus
 }

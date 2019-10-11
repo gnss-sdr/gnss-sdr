@@ -7,9 +7,9 @@
 #include "Notification.h"
 
 static int memb_requestorId_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
@@ -17,7 +17,7 @@ static int memb_requestorId_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -31,15 +31,15 @@ static int memb_requestorId_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_clientName_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     size_t size;
@@ -47,7 +47,7 @@ static int memb_clientName_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -61,7 +61,7 @@ static int memb_clientName_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -80,37 +80,37 @@ static asn_per_constraints_t ASN_PER_MEMB_CLIENT_NAME_CONSTR_6 = {
 };
 static asn_TYPE_member_t asn_MBR_Notification_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Notification, notificationType),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NotificationType,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "notificationType"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NotificationType,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "notificationType"},
     {ATF_POINTER, 5, offsetof(struct Notification, encodingType),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_EncodingType,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "encodingType"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_EncodingType,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "encodingType"},
     {ATF_POINTER, 4, offsetof(struct Notification, requestorId),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_OCTET_STRING, memb_requestorId_constraint_1,
-     &ASN_PER_MEMB_REQUESTOR_ID_CONSTR_4, 0, "requestorId"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_OCTET_STRING, memb_requestorId_constraint_1,
+        &ASN_PER_MEMB_REQUESTOR_ID_CONSTR_4, 0, "requestorId"},
     {ATF_POINTER, 3, offsetof(struct Notification, requestorIdType),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FormatIndicator,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "requestorIdType"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FormatIndicator,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "requestorIdType"},
     {ATF_POINTER, 2, offsetof(struct Notification, clientName),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_OCTET_STRING, memb_clientName_constraint_1,
-     &ASN_PER_MEMB_CLIENT_NAME_CONSTR_6, 0, "clientName"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_OCTET_STRING, memb_clientName_constraint_1,
+        &ASN_PER_MEMB_CLIENT_NAME_CONSTR_6, 0, "clientName"},
     {ATF_POINTER, 1, offsetof(struct Notification, clientNameType),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FormatIndicator,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "clientNameType"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FormatIndicator,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "clientNameType"},
 };
 static int asn_MAP_Notification_oms_1[] = {1, 2, 3, 4, 5};
 static ber_tlv_tag_t asn_DEF_Notification_tags_1[] = {

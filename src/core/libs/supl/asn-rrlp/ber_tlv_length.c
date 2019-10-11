@@ -7,7 +7,7 @@
 #include <ber_tlv_tag.h>
 
 ssize_t ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
-                         ber_tlv_len_t *len_r)
+    ber_tlv_len_t *len_r)
 {
     const uint8_t *buf = (const uint8_t *)bufptr;
     unsigned oct;
@@ -80,7 +80,7 @@ ssize_t ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
 }
 
 ssize_t ber_skip_length(asn_codec_ctx_t *opt_codec_ctx, int _is_constructed,
-                        const void *ptr, size_t size)
+    const void *ptr, size_t size)
 {
     ber_tlv_len_t vlen; /* Length of V in TLV */
     ssize_t tl;         /* Length of L in TLV */
@@ -121,7 +121,7 @@ ssize_t ber_skip_length(asn_codec_ctx_t *opt_codec_ctx, int _is_constructed,
             if (tl <= 0) return tl;
 
             ll = ber_skip_length(opt_codec_ctx, BER_TLV_CONSTRUCTED(ptr),
-                                 ((const char *)ptr) + tl, size - tl);
+                ((const char *)ptr) + tl, size - tl);
             if (ll <= 0) return ll;
 
             skip += tl + ll;

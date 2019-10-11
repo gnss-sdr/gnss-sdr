@@ -8,42 +8,42 @@
 
 static asn_TYPE_member_t asn_MBR_SUPLINIT_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SUPLINIT, posMethod),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PosMethod, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "posMethod"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PosMethod, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "posMethod"},
     {ATF_POINTER, 3, offsetof(struct SUPLINIT, notification),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Notification,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "notification"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Notification,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "notification"},
     {ATF_POINTER, 2, offsetof(struct SUPLINIT, sLPAddress),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_SLPAddress, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "sLPAddress"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_SLPAddress, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "sLPAddress"},
     {ATF_POINTER, 1, offsetof(struct SUPLINIT, qoP),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_QoP, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "qoP"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_QoP, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "qoP"},
     {ATF_NOFLAGS, 0, offsetof(struct SUPLINIT, sLPMode),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SLPMode, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "sLPMode"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SLPMode, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "sLPMode"},
     {ATF_POINTER, 2, offsetof(struct SUPLINIT, mAC),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MAC, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "mAC"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MAC, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "mAC"},
     {ATF_POINTER, 1, offsetof(struct SUPLINIT, keyIdentity),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_KeyIdentity,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "keyIdentity"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_KeyIdentity,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "keyIdentity"},
 };
 static int asn_MAP_SUPLINIT_oms_1[] = {1, 2, 3, 5, 6};
 static ber_tlv_tag_t asn_DEF_SUPLINIT_tags_1[] = {

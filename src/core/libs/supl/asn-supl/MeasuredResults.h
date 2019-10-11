@@ -41,8 +41,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "FrequencyInfo.h"
 #include "CellMeasuredResultsList.h"
+#include "FrequencyInfo.h"
 
 #endif /* _MeasuredResults_H_ */
 #include <asn_internal.h>

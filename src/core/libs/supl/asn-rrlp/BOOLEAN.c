@@ -2,9 +2,9 @@
  * Copyright (c) 2003, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <asn_codecs_prim.h>
 #include <BOOLEAN.h>
+#include <asn_codecs_prim.h>
+#include <asn_internal.h>
 
 /*
  * BOOLEAN basic type description.
@@ -38,9 +38,9 @@ asn_TYPE_descriptor_t asn_DEF_BOOLEAN = {
  * Decode BOOLEAN type.
  */
 asn_dec_rval_t BOOLEAN_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                  asn_TYPE_descriptor_t *td, void **bool_value,
-                                  const void *buf_ptr, size_t size,
-                                  int tag_mode)
+    asn_TYPE_descriptor_t *td, void **bool_value,
+    const void *buf_ptr, size_t size,
+    int tag_mode)
 {
     BOOLEAN_t *st = (BOOLEAN_t *)*bool_value;
     asn_dec_rval_t rval;
@@ -64,7 +64,7 @@ asn_dec_rval_t BOOLEAN_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
      * Check tags.
      */
     rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size, tag_mode, 0,
-                          &length, 0);
+        &length, 0);
     if (rval.code != RC_OK) return rval;
 
     ASN_DEBUG("Boolean length is %d bytes", (int)length);
@@ -95,14 +95,14 @@ asn_dec_rval_t BOOLEAN_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
     rval.consumed += length;
 
     ASN_DEBUG("Took %ld/%ld bytes to encode %s, value=%d", (long)rval.consumed,
-              (long)length, td->name, *st);
+        (long)length, td->name, *st);
 
     return rval;
 }
 
 asn_enc_rval_t BOOLEAN_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
-                                  int tag_mode, ber_tlv_tag_t tag,
-                                  asn_app_consume_bytes_f *cb, void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_enc_rval_t erval;
     BOOLEAN_t *st = (BOOLEAN_t *)sptr;
@@ -139,9 +139,9 @@ asn_enc_rval_t BOOLEAN_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
  * Decode the chunk of XML text encoding INTEGER.
  */
 static enum xer_pbd_rval BOOLEAN__xer_body_decode(asn_TYPE_descriptor_t *td,
-                                                  void *sptr,
-                                                  const void *chunk_buf,
-                                                  size_t chunk_size)
+    void *sptr,
+    const void *chunk_buf,
+    size_t chunk_size)
 {
     BOOLEAN_t *st = (BOOLEAN_t *)sptr;
     const char *p = (const char *)chunk_buf;
@@ -152,19 +152,19 @@ static enum xer_pbd_rval BOOLEAN__xer_body_decode(asn_TYPE_descriptor_t *td,
         {
             switch (xer_check_tag(chunk_buf, chunk_size, "false"))
                 {
-                    case XCT_BOTH:
-                        /* "<false/>" */
-                        *st = 0;
-                        break;
-                    case XCT_UNKNOWN_BO:
-                        if (xer_check_tag(chunk_buf, chunk_size, "true") !=
-                            XCT_BOTH)
-                            return XPBD_BROKEN_ENCODING;
-                        /* "<true/>" */
-                        *st = 1; /* Or 0xff as in DER?.. */
-                        break;
-                    default:
+                case XCT_BOTH:
+                    /* "<false/>" */
+                    *st = 0;
+                    break;
+                case XCT_UNKNOWN_BO:
+                    if (xer_check_tag(chunk_buf, chunk_size, "true") !=
+                        XCT_BOTH)
                         return XPBD_BROKEN_ENCODING;
+                    /* "<true/>" */
+                    *st = 1; /* Or 0xff as in DER?.. */
+                    break;
+                default:
+                    return XPBD_BROKEN_ENCODING;
                 }
             return XPBD_BODY_CONSUMED;
         }
@@ -178,18 +178,18 @@ static enum xer_pbd_rval BOOLEAN__xer_body_decode(asn_TYPE_descriptor_t *td,
 }
 
 asn_dec_rval_t BOOLEAN_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                  asn_TYPE_descriptor_t *td, void **sptr,
-                                  const char *opt_mname, const void *buf_ptr,
-                                  size_t size)
+    asn_TYPE_descriptor_t *td, void **sptr,
+    const char *opt_mname, const void *buf_ptr,
+    size_t size)
 {
     return xer_decode_primitive(opt_codec_ctx, td, sptr, sizeof(BOOLEAN_t),
-                                opt_mname, buf_ptr, size,
-                                BOOLEAN__xer_body_decode);
+        opt_mname, buf_ptr, size,
+        BOOLEAN__xer_body_decode);
 }
 
 asn_enc_rval_t BOOLEAN_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                  int ilevel, enum xer_encoder_flags_e flags,
-                                  asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     const BOOLEAN_t *st = (const BOOLEAN_t *)sptr;
     asn_enc_rval_t er;
@@ -216,7 +216,7 @@ cb_failed:
 }
 
 int BOOLEAN_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                  asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     const BOOLEAN_t *st = (const BOOLEAN_t *)sptr;
     const char *buf;
@@ -256,9 +256,9 @@ void BOOLEAN_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only)
 }
 
 asn_dec_rval_t BOOLEAN_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                   asn_TYPE_descriptor_t *td,
-                                   asn_per_constraints_t *constraints,
-                                   void **sptr, asn_per_data_t *pd)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints,
+    void **sptr, asn_per_data_t *pd)
 {
     asn_dec_rval_t rv;
     BOOLEAN_t *st = (BOOLEAN_t *)*sptr;
@@ -277,15 +277,15 @@ asn_dec_rval_t BOOLEAN_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
      */
     switch (per_get_few_bits(pd, 1))
         {
-            case 1:
-                *st = 1;
-                break;
-            case 0:
-                *st = 0;
-                break;
-            case -1:
-            default:
-                _ASN_DECODE_STARVED;
+        case 1:
+            *st = 1;
+            break;
+        case 0:
+            *st = 0;
+            break;
+        case -1:
+        default:
+            _ASN_DECODE_STARVED;
         }
 
     ASN_DEBUG("%s decoded as %s", td->name, *st ? "TRUE" : "FALSE");
@@ -296,8 +296,8 @@ asn_dec_rval_t BOOLEAN_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t BOOLEAN_encode_uper(asn_TYPE_descriptor_t *td,
-                                   asn_per_constraints_t *constraints,
-                                   void *sptr, asn_per_outp_t *po)
+    asn_per_constraints_t *constraints,
+    void *sptr, asn_per_outp_t *po)
 {
     const BOOLEAN_t *st = (const BOOLEAN_t *)sptr;
     asn_enc_rval_t er;

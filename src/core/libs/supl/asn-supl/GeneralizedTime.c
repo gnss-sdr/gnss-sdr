@@ -6,8 +6,8 @@
 #ifndef _REENTRANT
 #define _REENTRANT /* for Sun */
 #endif
-#include <asn_internal.h>
 #include <GeneralizedTime.h>
+#include <asn_internal.h>
 #include <errno.h>
 
 #ifdef __CYGWIN__
@@ -209,8 +209,8 @@ asn_TYPE_descriptor_t asn_DEF_GeneralizedTime = {
  * Check that the time looks like the time.
  */
 int GeneralizedTime_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                               asn_app_constraint_failed_f *ctfailcb,
-                               void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const GeneralizedTime_t *st = (const GeneralizedTime_t *)sptr;
     time_t tloc;
@@ -220,8 +220,8 @@ int GeneralizedTime_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     if (tloc == -1 && errno != EPERM)
         {
             _ASN_CTFAIL(app_key, td, sptr,
-                        "%s: Invalid time format: %s (%s:%d)", td->name,
-                        strerror(errno), __FILE__, __LINE__);
+                "%s: Invalid time format: %s (%s:%d)", td->name,
+                strerror(errno), __FILE__, __LINE__);
             return -1;
         }
 
@@ -229,9 +229,9 @@ int GeneralizedTime_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 asn_enc_rval_t GeneralizedTime_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
-                                          int tag_mode, ber_tlv_tag_t tag,
-                                          asn_app_consume_bytes_f *cb,
-                                          void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     GeneralizedTime_t *st = (GeneralizedTime_t *)sptr;
     asn_enc_rval_t erval;
@@ -263,10 +263,10 @@ asn_enc_rval_t GeneralizedTime_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 #ifndef __ASN_INTERNAL_TEST_MODE__
 
 asn_enc_rval_t GeneralizedTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                          int ilevel,
-                                          enum xer_encoder_flags_e flags,
-                                          asn_app_consume_bytes_f *cb,
-                                          void *app_key)
+    int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     if (flags & XER_F_CANONICAL)
         {
@@ -286,22 +286,22 @@ asn_enc_rval_t GeneralizedTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             if (!gt) _ASN_ENCODE_FAILED;
 
             rv = OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb,
-                                              app_key);
+                app_key);
             ASN_STRUCT_FREE(asn_DEF_GeneralizedTime, gt);
             return rv;
         }
     else
         {
             return OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb,
-                                                app_key);
+                app_key);
         }
 }
 
 #endif /* __ASN_INTERNAL_TEST_MODE__ */
 
 int GeneralizedTime_print(asn_TYPE_descriptor_t *td, const void *sptr,
-                          int ilevel, asn_app_consume_bytes_f *cb,
-                          void *app_key)
+    int ilevel, asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     const GeneralizedTime_t *st = (const GeneralizedTime_t *)sptr;
 
@@ -319,9 +319,9 @@ int GeneralizedTime_print(asn_TYPE_descriptor_t *td, const void *sptr,
                 return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
 
             ret = snprintf(buf, sizeof(buf),
-                           "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
-                           tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-                           tm.tm_hour, tm.tm_min, tm.tm_sec);
+                "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
+                tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+                tm.tm_hour, tm.tm_min, tm.tm_sec);
             assert(ret > 0 && ret < (int)sizeof(buf));
             return (cb(buf, ret, app_key) < 0) ? -1 : 0;
         }
@@ -337,7 +337,7 @@ time_t asn_GT2time(const GeneralizedTime_t *st, struct tm *ret_tm, int as_gmt)
 }
 
 time_t asn_GT2time_prec(const GeneralizedTime_t *st, int *frac_value,
-                        int frac_digits, struct tm *ret_tm, int as_gmt)
+    int frac_digits, struct tm *ret_tm, int as_gmt)
 {
     time_t tloc;
     int fv;
@@ -373,7 +373,7 @@ time_t asn_GT2time_prec(const GeneralizedTime_t *st, int *frac_value,
 }
 
 time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
-                        int *frac_digits, struct tm *ret_tm, int as_gmt)
+    int *frac_digits, struct tm *ret_tm, int as_gmt)
 {
     struct tm tm_s;
     uint8_t *buf;
@@ -446,32 +446,32 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
      */
     switch (*buf)
         {
-            case 0x30:
-            case 0x31:
-            case 0x32:
-            case 0x33:
-            case 0x34:
-            case 0x35:
-            case 0x36:
-            case 0x37:
-            case 0x38:
-            case 0x39:
-                tm_s.tm_min = (*buf++) - 0x30;
-                if (buf == end)
-                    {
-                        errno = EINVAL;
-                        return -1;
-                    }
-                B2T(tm_min);
-                break;
-            case 0x2B:
-            case 0x2D: /* +, - */
-                goto offset;
-            case 0x5A: /* Z */
-                goto utc_finish;
-            default:
-                errno = EINVAL;
-                return -1;
+        case 0x30:
+        case 0x31:
+        case 0x32:
+        case 0x33:
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+        case 0x38:
+        case 0x39:
+            tm_s.tm_min = (*buf++) - 0x30;
+            if (buf == end)
+                {
+                    errno = EINVAL;
+                    return -1;
+                }
+            B2T(tm_min);
+            break;
+        case 0x2B:
+        case 0x2D: /* +, - */
+            goto offset;
+        case 0x5A: /* Z */
+            goto utc_finish;
+        default:
+            errno = EINVAL;
+            return -1;
         }
 
     if (buf == end) goto local_finish;
@@ -482,32 +482,32 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
      */
     switch (*buf)
         {
-            case 0x30:
-            case 0x31:
-            case 0x32:
-            case 0x33:
-            case 0x34:
-            case 0x35:
-            case 0x36:
-            case 0x37:
-            case 0x38:
-            case 0x39:
-                tm_s.tm_sec = (*buf++) - 0x30;
-                if (buf == end)
-                    {
-                        errno = EINVAL;
-                        return -1;
-                    }
-                B2T(tm_sec);
-                break;
-            case 0x2B:
-            case 0x2D: /* +, - */
-                goto offset;
-            case 0x5A: /* Z */
-                goto utc_finish;
-            default:
-                errno = EINVAL;
-                return -1;
+        case 0x30:
+        case 0x31:
+        case 0x32:
+        case 0x33:
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+        case 0x38:
+        case 0x39:
+            tm_s.tm_sec = (*buf++) - 0x30;
+            if (buf == end)
+                {
+                    errno = EINVAL;
+                    return -1;
+                }
+            B2T(tm_sec);
+            break;
+        case 0x2B:
+        case 0x2D: /* +, - */
+            goto offset;
+        case 0x5A: /* Z */
+            goto utc_finish;
+        default:
+            errno = EINVAL;
+            return -1;
         }
 
     if (buf == end) goto local_finish;
@@ -518,57 +518,57 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
      */
     switch (*buf)
         {
-            case 0x2C:
-            case 0x2E: /* (.|,) */
-                /*
+        case 0x2C:
+        case 0x2E: /* (.|,) */
+            /*
                  * Process fractions of seconds.
                  */
-                for (buf++; buf < end; buf++)
-                    {
-                        int v = *buf;
-                        int new_fvalue;
-                        switch (v)
-                            {
-                                case 0x30:
-                                case 0x31:
-                                case 0x32:
-                                case 0x33:
-                                case 0x34:
-                                case 0x35:
-                                case 0x36:
-                                case 0x37:
-                                case 0x38:
-                                case 0x39:
-                                    new_fvalue = fvalue * 10 + (v - 0x30);
-                                    if (new_fvalue / 10 != fvalue)
-                                        {
-                                            /* Not enough precision, ignore */
-                                        }
-                                    else
-                                        {
-                                            fvalue = new_fvalue;
-                                            fdigits++;
-                                        }
-                                    continue;
-                                default:
-                                    break;
-                            }
-                        break;
-                    }
+            for (buf++; buf < end; buf++)
+                {
+                    int v = *buf;
+                    int new_fvalue;
+                    switch (v)
+                        {
+                        case 0x30:
+                        case 0x31:
+                        case 0x32:
+                        case 0x33:
+                        case 0x34:
+                        case 0x35:
+                        case 0x36:
+                        case 0x37:
+                        case 0x38:
+                        case 0x39:
+                            new_fvalue = fvalue * 10 + (v - 0x30);
+                            if (new_fvalue / 10 != fvalue)
+                                {
+                                    /* Not enough precision, ignore */
+                                }
+                            else
+                                {
+                                    fvalue = new_fvalue;
+                                    fdigits++;
+                                }
+                            continue;
+                        default:
+                            break;
+                        }
+                    break;
+                }
         }
 
     if (buf == end) goto local_finish;
 
     switch (*buf)
         {
-            case 0x2B:
-            case 0x2D: /* +, - */
-                goto offset;
-            case 0x5A: /* Z */
-                goto utc_finish;
-            default:
-                errno = EINVAL;
-                return -1;
+        case 0x2B:
+        case 0x2D: /* +, - */
+            goto offset;
+        case 0x5A: /* Z */
+            goto utc_finish;
+        default:
+            errno = EINVAL;
+            return -1;
         }
 
 offset:
@@ -681,14 +681,14 @@ local_finish:
 }
 
 GeneralizedTime_t *asn_time2GT(GeneralizedTime_t *opt_gt, const struct tm *tm,
-                               int force_gmt)
+    int force_gmt)
 {
     return asn_time2GT_frac(opt_gt, tm, 0, 0, force_gmt);
 }
 
 GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
-                                    const struct tm *tm, int frac_value,
-                                    int frac_digits, int force_gmt)
+    const struct tm *tm, int frac_value,
+    int frac_digits, int force_gmt)
 {
     struct tm tm_s;
     long gmtoff;
@@ -729,8 +729,8 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
         }
 
     size = snprintf(buf, buf_size, "%04d%02d%02d%02d%02d%02d",
-                    tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-                    tm->tm_hour, tm->tm_min, tm->tm_sec);
+        tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+        tm->tm_hour, tm->tm_min, tm->tm_sec);
     if (size != 14)
         {
             /* Could be assert(size == 14); */
@@ -790,7 +790,7 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
             int ret;
             gmtoff %= 86400;
             ret = snprintf(p, buf_size - size, "%+03ld%02ld", gmtoff / 3600,
-                           labs(gmtoff % 3600) / 60);
+                labs(gmtoff % 3600) / 60);
             if (ret != 5)
                 {
                     FREEMEM(buf);

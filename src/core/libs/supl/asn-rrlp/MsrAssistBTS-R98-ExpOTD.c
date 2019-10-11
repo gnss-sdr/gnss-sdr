@@ -8,24 +8,24 @@
 
 static asn_TYPE_member_t asn_MBR_MsrAssistBTS_R98_ExpOTD_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct MsrAssistBTS_R98_ExpOTD, expectedOTD),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ExpectedOTD,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "expectedOTD"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ExpectedOTD,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "expectedOTD"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct MsrAssistBTS_R98_ExpOTD, expOTDUncertainty),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ExpOTDUncertainty,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "expOTDUncertainty"},
+        offsetof(struct MsrAssistBTS_R98_ExpOTD, expOTDUncertainty),
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ExpOTDUncertainty,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "expOTDUncertainty"},
 };
 static ber_tlv_tag_t asn_DEF_MsrAssistBTS_R98_ExpOTD_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_MsrAssistBTS_R98_ExpOTD_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* expectedOTD at 910 */
-    {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0} /* expOTDUncertainty at 912 */
+    {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}  /* expOTDUncertainty at 912 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_MsrAssistBTS_R98_ExpOTD_specs_1 = {
     sizeof(struct MsrAssistBTS_R98_ExpOTD),
@@ -57,7 +57,7 @@ asn_TYPE_descriptor_t asn_DEF_MsrAssistBTS_R98_ExpOTD = {
     asn_DEF_MsrAssistBTS_R98_ExpOTD_tags_1,                /* Same as above */
     sizeof(asn_DEF_MsrAssistBTS_R98_ExpOTD_tags_1) /
         sizeof(asn_DEF_MsrAssistBTS_R98_ExpOTD_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                     /* No PER visible constraints */
     asn_MBR_MsrAssistBTS_R98_ExpOTD_1,
     2,                                       /* Elements count */
     &asn_SPC_MsrAssistBTS_R98_ExpOTD_specs_1 /* Additional specs */

@@ -2,7 +2,6 @@
  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
 #include <BIT_STRING.h>
 #include <asn_internal.h>
 
@@ -39,7 +38,7 @@ asn_TYPE_descriptor_t asn_DEF_BIT_STRING = {
  * BIT STRING generic constraint.
  */
 int BIT_STRING_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                          asn_app_constraint_failed_f *ctfailcb, void *app_key)
+    asn_app_constraint_failed_f *ctfailcb, void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
 
@@ -49,15 +48,15 @@ int BIT_STRING_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
                 st->bits_unused > 7)
                 {
                     _ASN_CTFAIL(app_key, td, sptr,
-                                "%s: invalid padding byte (%s:%d)", td->name,
-                                __FILE__, __LINE__);
+                        "%s: invalid padding byte (%s:%d)", td->name,
+                        __FILE__, __LINE__);
                     return -1;
                 }
         }
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -65,12 +64,12 @@ int BIT_STRING_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static char *_bit_pattern[16] = {"0000", "0001", "0010", "0011", "0100", "0101",
-                                 "0110", "0111", "1000", "1001", "1010", "1011",
-                                 "1100", "1101", "1110", "1111"};
+    "0110", "0111", "1000", "1001", "1010", "1011",
+    "1100", "1101", "1110", "1111"};
 
 asn_enc_rval_t BIT_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                     int ilevel, enum xer_encoder_flags_e flags,
-                                     asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_enc_rval_t er;
     char scratch[128];
@@ -133,7 +132,7 @@ cb_failed:
  * BIT STRING specific contents printer.
  */
 int BIT_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                     asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     static const char *h2c = "0123456789ABCDEF";
     char scratch[64];

@@ -7,9 +7,9 @@
 #include "GANSSPositioningMethod.h"
 
 int GANSSPositioningMethod_constraint(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -17,7 +17,7 @@ int GANSSPositioningMethod_constraint(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -39,7 +39,7 @@ int GANSSPositioningMethod_constraint(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -67,36 +67,36 @@ static void GANSSPositioningMethod_1_inherit_TYPE_descriptor(
 }
 
 void GANSSPositioningMethod_free(asn_TYPE_descriptor_t *td, void *struct_ptr,
-                                 int contents_only)
+    int contents_only)
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 int GANSSPositioningMethod_print(asn_TYPE_descriptor_t *td,
-                                 const void *struct_ptr, int ilevel,
-                                 asn_app_consume_bytes_f *cb, void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
 }
 
 asn_dec_rval_t GANSSPositioningMethod_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                                 asn_TYPE_descriptor_t *td,
-                                                 void **structure,
-                                                 const void *bufptr,
-                                                 size_t size, int tag_mode)
+    asn_TYPE_descriptor_t *td,
+    void **structure,
+    const void *bufptr,
+    size_t size, int tag_mode)
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 asn_enc_rval_t GANSSPositioningMethod_encode_der(asn_TYPE_descriptor_t *td,
-                                                 void *structure, int tag_mode,
-                                                 ber_tlv_tag_t tag,
-                                                 asn_app_consume_bytes_f *cb,
-                                                 void *app_key)
+    void *structure, int tag_mode,
+    ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     return td->der_encoder(td, structure, tag_mode, tag, cb, app_key);
@@ -108,14 +108,14 @@ asn_dec_rval_t GANSSPositioningMethod_decode_xer(
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 asn_enc_rval_t GANSSPositioningMethod_encode_xer(asn_TYPE_descriptor_t *td,
-                                                 void *structure, int ilevel,
-                                                 enum xer_encoder_flags_e flags,
-                                                 asn_app_consume_bytes_f *cb,
-                                                 void *app_key)
+    void *structure, int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     return td->xer_encoder(td, structure, ilevel, flags, cb, app_key);
@@ -128,7 +128,7 @@ asn_dec_rval_t GANSSPositioningMethod_decode_uper(
 {
     GANSSPositioningMethod_1_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 asn_enc_rval_t GANSSPositioningMethod_encode_uper(

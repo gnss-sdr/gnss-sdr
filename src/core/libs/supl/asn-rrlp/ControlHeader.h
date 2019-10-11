@@ -53,15 +53,15 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "ReferenceTime.h"
-#include "RefLocation.h"
-#include "DGPSCorrections.h"
-#include "NavigationModel.h"
-#include "IonosphericModel.h"
-#include "UTCModel.h"
-#include "Almanac.h"
 #include "AcquisAssist.h"
+#include "Almanac.h"
+#include "DGPSCorrections.h"
+#include "IonosphericModel.h"
+#include "NavigationModel.h"
+#include "RefLocation.h"
+#include "ReferenceTime.h"
 #include "SeqOf-BadSatelliteSet.h"
+#include "UTCModel.h"
 
 #endif /* _ControlHeader_H_ */
 #include <asn_internal.h>

@@ -14,16 +14,16 @@ static asn_per_constraints_t ASN_PER_TYPE_GANSS_ALMANAC_ELEMENT_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSAlmanacElement_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct GANSSAlmanacElement, choice.keplerianAlmanacSet),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Almanac_KeplerianSet,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "keplerianAlmanacSet"},
+        offsetof(struct GANSSAlmanacElement, choice.keplerianAlmanacSet),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Almanac_KeplerianSet,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "keplerianAlmanacSet"},
 };
 static asn_TYPE_tag2member_t asn_MAP_GANSSAlmanacElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0} /* keplerianAlmanacSet at 1362 */
+        0} /* keplerianAlmanacSet at 1362 */
 };
 static asn_CHOICE_specifics_t asn_SPC_GANSSAlmanacElement_specs_1 = {
     sizeof(struct GANSSAlmanacElement),

@@ -8,18 +8,18 @@
 
 static asn_TYPE_member_t asn_MBR_GANSSIonosphericModel_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonosphericModel, ganssIonoModel),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSIonosphereModel,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssIonoModel"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSIonosphereModel,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssIonoModel"},
     {ATF_POINTER, 1,
-     offsetof(struct GANSSIonosphericModel, ganssIonoStormFlags),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSIonoStormFlags,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssIonoStormFlags"},
+        offsetof(struct GANSSIonosphericModel, ganssIonoStormFlags),
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSIonoStormFlags,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssIonoStormFlags"},
 };
 static int asn_MAP_GANSSIonosphericModel_oms_1[] = {1};
 static ber_tlv_tag_t asn_DEF_GANSSIonosphericModel_tags_1[] = {
@@ -27,7 +27,7 @@ static ber_tlv_tag_t asn_DEF_GANSSIonosphericModel_tags_1[] = {
 static asn_TYPE_tag2member_t asn_MAP_GANSSIonosphericModel_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* ganssIonoModel at 1138 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0} /* ganssIonoStormFlags at 1139 */
+        0} /* ganssIonoStormFlags at 1139 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_GANSSIonosphericModel_specs_1 = {
     sizeof(struct GANSSIonosphericModel),
@@ -59,7 +59,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSIonosphericModel = {
     asn_DEF_GANSSIonosphericModel_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSIonosphericModel_tags_1) /
         sizeof(asn_DEF_GANSSIonosphericModel_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                   /* No PER visible constraints */
     asn_MBR_GANSSIonosphericModel_1,
     2,                                     /* Elements count */
     &asn_SPC_GANSSIonosphericModel_specs_1 /* Additional specs */

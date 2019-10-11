@@ -46,7 +46,7 @@ extern "C"
      *    >0:    Number of bytes used from bufptr. tag_r will contain the tag.
      */
     ssize_t ber_fetch_tag(const void *bufptr, size_t size,
-                          ber_tlv_tag_t *tag_r);
+        ber_tlv_tag_t *tag_r);
 
     /*
      * This function serializes the tag (T from TLV) in BER format.

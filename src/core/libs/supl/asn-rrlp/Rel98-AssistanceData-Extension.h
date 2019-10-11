@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NULL.h>
 #include "GPSReferenceTimeUncertainty.h"
+#include <NULL.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

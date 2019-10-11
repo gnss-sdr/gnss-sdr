@@ -18,8 +18,8 @@
  */
 
 #include "volk_gnsssdr/volk_gnsssdr_malloc.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*

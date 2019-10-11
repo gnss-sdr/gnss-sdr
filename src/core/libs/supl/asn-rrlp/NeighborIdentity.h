@@ -12,10 +12,10 @@
 /* Including external dependencies */
 #include "BSICAndCarrier.h"
 #include "CellID.h"
+#include "CellIDAndLAC.h"
 #include "MultiFrameCarrier.h"
 #include "RequestIndex.h"
 #include "SystemInfoIndex.h"
-#include "CellIDAndLAC.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

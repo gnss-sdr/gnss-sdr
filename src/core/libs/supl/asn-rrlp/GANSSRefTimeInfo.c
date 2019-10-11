@@ -7,16 +7,16 @@
 #include "GANSSRefTimeInfo.h"
 
 static int memb_ganssDay_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,22 +30,22 @@ static int memb_ganssDay_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ganssTimeID_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -59,7 +59,7 @@ static int memb_ganssTimeID_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -78,24 +78,24 @@ static asn_per_constraints_t ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_5 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSRefTimeInfo_1[] = {
     {ATF_POINTER, 1, offsetof(struct GANSSRefTimeInfo, ganssDay),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssDay_constraint_1,
-     &ASN_PER_MEMB_GANSS_DAY_CONSTR_2, 0, "ganssDay"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssDay_constraint_1,
+        &ASN_PER_MEMB_GANSS_DAY_CONSTR_2, 0, "ganssDay"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSRefTimeInfo, ganssTOD),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSTOD, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "ganssTOD"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSTOD, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "ganssTOD"},
     {ATF_POINTER, 2, offsetof(struct GANSSRefTimeInfo, ganssTODUncertainty),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSTODUncertainty,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssTODUncertainty"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSTODUncertainty,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssTODUncertainty"},
     {ATF_POINTER, 1, offsetof(struct GANSSRefTimeInfo, ganssTimeID),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssTimeID_constraint_1,
-     &ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_5, 0, "ganssTimeID"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssTimeID_constraint_1,
+        &ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_5, 0, "ganssTimeID"},
 };
 static int asn_MAP_GANSSRefTimeInfo_oms_1[] = {0, 2, 3};
 static ber_tlv_tag_t asn_DEF_GANSSRefTimeInfo_tags_1[] = {
@@ -104,7 +104,7 @@ static asn_TYPE_tag2member_t asn_MAP_GANSSRefTimeInfo_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* ganssDay at 1104 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* ganssTOD at 1105 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0}, /* ganssTODUncertainty at 1106 */
+        0},                                       /* ganssTODUncertainty at 1106 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0} /* ganssTimeID at 1107 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_GANSSRefTimeInfo_specs_1 = {
@@ -137,7 +137,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSRefTimeInfo = {
     asn_DEF_GANSSRefTimeInfo_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSRefTimeInfo_tags_1) /
         sizeof(asn_DEF_GANSSRefTimeInfo_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_GANSSRefTimeInfo_1,
     4,                                /* Elements count */
     &asn_SPC_GANSSRefTimeInfo_specs_1 /* Additional specs */

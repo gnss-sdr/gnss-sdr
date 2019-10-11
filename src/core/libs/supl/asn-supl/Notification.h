@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "NotificationType.h"
 #include "EncodingType.h"
-#include <OCTET_STRING.h>
 #include "FormatIndicator.h"
+#include "NotificationType.h"
+#include <OCTET_STRING.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

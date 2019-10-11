@@ -15,7 +15,7 @@ static int memb_ganssTimeModelRefTime_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,22 +29,22 @@ static int memb_ganssTimeModelRefTime_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_gnssTOID_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,22 +58,22 @@ static int memb_gnssTOID_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_weekNumber_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -87,7 +87,7 @@ static int memb_weekNumber_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -112,41 +112,41 @@ static asn_per_constraints_t ASN_PER_MEMB_WEEK_NUMBER_CONSTR_7 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSTimeModelElement_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct GANSSTimeModelElement, ganssTimeModelRefTime),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssTimeModelRefTime_constraint_1,
-     &ASN_PER_MEMB_GANSS_TIME_MODEL_REF_TIME_CONSTR_2, 0,
-     "ganssTimeModelRefTime"},
+        offsetof(struct GANSSTimeModelElement, ganssTimeModelRefTime),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssTimeModelRefTime_constraint_1,
+        &ASN_PER_MEMB_GANSS_TIME_MODEL_REF_TIME_CONSTR_2, 0,
+        "ganssTimeModelRefTime"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSTimeModelElement, tA0),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TA0, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "tA0"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TA0, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "tA0"},
     {ATF_POINTER, 2, offsetof(struct GANSSTimeModelElement, tA1),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TA1, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "tA1"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TA1, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "tA1"},
     {ATF_POINTER, 1, offsetof(struct GANSSTimeModelElement, tA2),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TA2, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "tA2"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TA2, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "tA2"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSTimeModelElement, gnssTOID),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_gnssTOID_constraint_1,
-     &ASN_PER_MEMB_GNSS_TOID_CONSTR_6, 0, "gnssTOID"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_gnssTOID_constraint_1,
+        &ASN_PER_MEMB_GNSS_TOID_CONSTR_6, 0, "gnssTOID"},
     {ATF_POINTER, 1, offsetof(struct GANSSTimeModelElement, weekNumber),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_weekNumber_constraint_1,
-     &ASN_PER_MEMB_WEEK_NUMBER_CONSTR_7, 0, "weekNumber"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_weekNumber_constraint_1,
+        &ASN_PER_MEMB_WEEK_NUMBER_CONSTR_7, 0, "weekNumber"},
 };
 static int asn_MAP_GANSSTimeModelElement_oms_1[] = {2, 3, 5};
 static ber_tlv_tag_t asn_DEF_GANSSTimeModelElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_GANSSTimeModelElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0}, /* ganssTimeModelRefTime at 1167 */
+        0},                                        /* ganssTimeModelRefTime at 1167 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* tA0 at 1168 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* tA1 at 1169 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* tA2 at 1170 */
@@ -183,7 +183,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSTimeModelElement = {
     asn_DEF_GANSSTimeModelElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSTimeModelElement_tags_1) /
         sizeof(asn_DEF_GANSSTimeModelElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                   /* No PER visible constraints */
     asn_MBR_GANSSTimeModelElement_1,
     6,                                     /* Elements count */
     &asn_SPC_GANSSTimeModelElement_specs_1 /* Additional specs */

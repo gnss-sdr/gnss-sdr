@@ -7,7 +7,7 @@ static asn_enc_rval_t uper_encode_internal(
     void *sptr, asn_app_consume_bytes_f *cb, void *app_key);
 
 asn_enc_rval_t uper_encode(asn_TYPE_descriptor_t *td, void *sptr,
-                           asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     return uper_encode_internal(td, 0, sptr, cb, app_key);
 }
@@ -35,7 +35,7 @@ static int encode_to_buffer_cb(const void *buffer, size_t size, void *key)
 }
 
 asn_enc_rval_t uper_encode_to_buffer(asn_TYPE_descriptor_t *td, void *sptr,
-                                     void *buffer, size_t buffer_size)
+    void *buffer, size_t buffer_size)
 {
     enc_to_buf_arg key;
 
@@ -74,8 +74,8 @@ static int encode_dyn_cb(const void *buffer, size_t size, void *key)
     return 0;
 }
 ssize_t uper_encode_to_new_buffer(asn_TYPE_descriptor_t *td,
-                                  asn_per_constraints_t *constraints,
-                                  void *sptr, void **buffer_r)
+    asn_per_constraints_t *constraints,
+    void *sptr, void **buffer_r)
 {
     asn_enc_rval_t er;
     enc_dyn_arg key;
@@ -85,26 +85,26 @@ ssize_t uper_encode_to_new_buffer(asn_TYPE_descriptor_t *td,
     er = uper_encode_internal(td, constraints, sptr, encode_dyn_cb, &key);
     switch (er.encoded)
         {
-            case -1:
-                FREEMEM(key.buffer);
-                return -1;
-            case 0:
-                FREEMEM(key.buffer);
-                key.buffer = MALLOC(1);
-                if (key.buffer)
-                    {
-                        *(char *)key.buffer = '\0';
-                        *buffer_r = key.buffer;
-                        return 1;
-                    }
-                else
-                    {
-                        return -1;
-                    }
-            default:
-                *buffer_r = key.buffer;
-                ASN_DEBUG("Complete encoded in %d bits", er.encoded);
-                return ((er.encoded + 7) >> 3);
+        case -1:
+            FREEMEM(key.buffer);
+            return -1;
+        case 0:
+            FREEMEM(key.buffer);
+            key.buffer = MALLOC(1);
+            if (key.buffer)
+                {
+                    *(char *)key.buffer = '\0';
+                    *buffer_r = key.buffer;
+                    return 1;
+                }
+            else
+                {
+                    return -1;
+                }
+        default:
+            *buffer_r = key.buffer;
+            ASN_DEBUG("Complete encoded in %d bits", er.encoded);
+            return ((er.encoded + 7) >> 3);
         }
 }
 
@@ -131,10 +131,10 @@ static int _uper_encode_flush_outp(asn_per_outp_t *po)
 }
 
 static asn_enc_rval_t uper_encode_internal(asn_TYPE_descriptor_t *td,
-                                           asn_per_constraints_t *constraints,
-                                           void *sptr,
-                                           asn_app_consume_bytes_f *cb,
-                                           void *app_key)
+    asn_per_constraints_t *constraints,
+    void *sptr,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     asn_per_outp_t po;
     asn_enc_rval_t er;

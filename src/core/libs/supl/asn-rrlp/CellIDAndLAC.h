@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "LAC.h"
 #include "CellID.h"
+#include "LAC.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

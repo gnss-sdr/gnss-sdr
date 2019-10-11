@@ -8,15 +8,15 @@
 
 static asn_TYPE_member_t asn_MBR_SUPLPOS_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SUPLPOS, posPayLoad),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_PosPayLoad, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "posPayLoad"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_PosPayLoad, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "posPayLoad"},
     {ATF_POINTER, 1, offsetof(struct SUPLPOS, velocity),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_Velocity, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "velocity"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_Velocity, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "velocity"},
 };
 static int asn_MAP_SUPLPOS_oms_1[] = {1};
 static ber_tlv_tag_t asn_DEF_SUPLPOS_tags_1[] = {
@@ -51,9 +51,9 @@ asn_TYPE_descriptor_t asn_DEF_SUPLPOS = {
     0, /* Use generic outmost tag fetcher */
     asn_DEF_SUPLPOS_tags_1,
     sizeof(asn_DEF_SUPLPOS_tags_1) / sizeof(asn_DEF_SUPLPOS_tags_1[0]), /* 1 */
-    asn_DEF_SUPLPOS_tags_1, /* Same as above */
+    asn_DEF_SUPLPOS_tags_1,                                             /* Same as above */
     sizeof(asn_DEF_SUPLPOS_tags_1) / sizeof(asn_DEF_SUPLPOS_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                                  /* No PER visible constraints */
     asn_MBR_SUPLPOS_1,
     2,                       /* Elements count */
     &asn_SPC_SUPLPOS_specs_1 /* Additional specs */

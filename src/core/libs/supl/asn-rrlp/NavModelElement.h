@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "SatelliteID.h"
 #include "SatStatus.h"
+#include "SatelliteID.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

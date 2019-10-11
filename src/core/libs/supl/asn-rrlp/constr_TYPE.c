@@ -17,8 +17,8 @@ static asn_app_consume_bytes_f _print2fp;
  * Return the outmost tag of the type.
  */
 ber_tlv_tag_t asn_TYPE_outmost_tag(asn_TYPE_descriptor_t *type_descriptor,
-                                   const void *struct_ptr, int tag_mode,
-                                   ber_tlv_tag_t tag)
+    const void *struct_ptr, int tag_mode,
+    ber_tlv_tag_t tag)
 {
     if (tag_mode) return tag;
 

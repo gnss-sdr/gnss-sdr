@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "AccuracyOpt.h"
 #include "Accuracy.h"
+#include "AccuracyOpt.h"
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

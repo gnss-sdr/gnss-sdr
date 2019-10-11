@@ -8,16 +8,16 @@
 
 static asn_TYPE_member_t asn_MBR_BSICAndCarrier_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct BSICAndCarrier, carrier),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BCCHCarrier,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "carrier"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BCCHCarrier,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "carrier"},
     {ATF_NOFLAGS, 0, offsetof(struct BSICAndCarrier, bsic),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BSIC, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "bsic"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BSIC, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "bsic"},
 };
 static ber_tlv_tag_t asn_DEF_BSICAndCarrier_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -55,7 +55,7 @@ asn_TYPE_descriptor_t asn_DEF_BSICAndCarrier = {
     asn_DEF_BSICAndCarrier_tags_1,                /* Same as above */
     sizeof(asn_DEF_BSICAndCarrier_tags_1) /
         sizeof(asn_DEF_BSICAndCarrier_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                            /* No PER visible constraints */
     asn_MBR_BSICAndCarrier_1,
     2,                              /* Elements count */
     &asn_SPC_BSICAndCarrier_specs_1 /* Additional specs */

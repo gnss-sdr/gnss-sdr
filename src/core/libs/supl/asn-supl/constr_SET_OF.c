@@ -3,9 +3,9 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
+#include <asn_SET_OF.h>
 #include <asn_internal.h>
 #include <constr_SET_OF.h>
-#include <asn_SET_OF.h>
 
 /*
  * Number of bytes left for this structure.
@@ -79,8 +79,8 @@
  * The decoder of the SET OF type.
  */
 asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                 asn_TYPE_descriptor_t *td, void **struct_ptr,
-                                 const void *ptr, size_t size, int tag_mode)
+    asn_TYPE_descriptor_t *td, void **struct_ptr,
+    const void *ptr, size_t size, int tag_mode)
 {
     /*
      * Bring closer parts of structure description.
@@ -123,191 +123,191 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
      */
     switch (ctx->phase)
         {
-            case 0:
-                /*
+        case 0:
+            /*
                  * PHASE 0.
                  * Check that the set of tags associated with given structure
                  * perfectly fits our expectations.
                  */
 
-                rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
-                                      tag_mode, 1, &ctx->left, 0);
-                if (rval.code != RC_OK)
-                    {
-                        ASN_DEBUG("%s tagging check failed: %d", td->name,
-                                  rval.code);
-                        return rval;
-                    }
+            rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
+                tag_mode, 1, &ctx->left, 0);
+            if (rval.code != RC_OK)
+                {
+                    ASN_DEBUG("%s tagging check failed: %d", td->name,
+                        rval.code);
+                    return rval;
+                }
 
-                if (ctx->left >= 0)
-                    ctx->left += rval.consumed; /* ?Subtracted below! */
-                ADVANCE(rval.consumed);
+            if (ctx->left >= 0)
+                ctx->left += rval.consumed; /* ?Subtracted below! */
+            ADVANCE(rval.consumed);
 
-                ASN_DEBUG(
-                    "Structure consumes %ld bytes, "
-                    "buffer %ld",
-                    (long)ctx->left, (long)size);
+            ASN_DEBUG(
+                "Structure consumes %ld bytes, "
+                "buffer %ld",
+                (long)ctx->left, (long)size);
 
-                NEXT_PHASE(ctx);
-                /* Fall through */
-            case 1:
-                /*
+            NEXT_PHASE(ctx);
+            /* Fall through */
+        case 1:
+            /*
                  * PHASE 1.
                  * From the place where we've left it previously,
                  * try to decode the next item.
                  */
-                for (;; ctx->step = 0)
-                    {
-                        ssize_t tag_len; /* Length of TLV's T */
+            for (;; ctx->step = 0)
+                {
+                    ssize_t tag_len; /* Length of TLV's T */
 
-                        if (ctx->step & 1) goto microphase2;
+                    if (ctx->step & 1) goto microphase2;
 
-                        /*
+                    /*
                          * MICROPHASE 1: Synchronize decoding.
                          */
 
-                        if (ctx->left == 0)
-                            {
-                                ASN_DEBUG("End of SET OF %s", td->name);
-                                /*
+                    if (ctx->left == 0)
+                        {
+                            ASN_DEBUG("End of SET OF %s", td->name);
+                            /*
                                  * No more things to decode.
                                  * Exit out of here.
                                  */
-                                PHASE_OUT(ctx);
-                                RETURN(RC_OK);
-                            }
+                            PHASE_OUT(ctx);
+                            RETURN(RC_OK);
+                        }
 
-                        /*
+                    /*
                          * Fetch the T from TLV.
                          */
-                        tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
-                        switch (tag_len)
-                            {
-                                case 0:
-                                    if (!SIZE_VIOLATION) RETURN(RC_WMORE);
-                                    /* Fall through */
-                                case -1:
-                                    RETURN(RC_FAIL);
-                            }
+                    tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
+                    switch (tag_len)
+                        {
+                        case 0:
+                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                            /* Fall through */
+                        case -1:
+                            RETURN(RC_FAIL);
+                        }
 
-                        if (ctx->left < 0 && ((const uint8_t *)ptr)[0] == 0)
-                            {
-                                if (LEFT < 2)
-                                    {
-                                        if (SIZE_VIOLATION)
-                                            RETURN(RC_FAIL);
-                                        else
-                                            RETURN(RC_WMORE);
-                                    }
-                                else if (((const uint8_t *)ptr)[1] == 0)
-                                    {
-                                        /*
+                    if (ctx->left < 0 && ((const uint8_t *)ptr)[0] == 0)
+                        {
+                            if (LEFT < 2)
+                                {
+                                    if (SIZE_VIOLATION)
+                                        RETURN(RC_FAIL);
+                                    else
+                                        RETURN(RC_WMORE);
+                                }
+                            else if (((const uint8_t *)ptr)[1] == 0)
+                                {
+                                    /*
                                          * Found the terminator of the
                                          * indefinite length structure.
                                          */
-                                        break;
-                                    }
-                            }
+                                    break;
+                                }
+                        }
 
-                        /* Outmost tag may be unknown and cannot be
+                    /* Outmost tag may be unknown and cannot be
                          * fetched/compared */
-                        if (elm->tag != (ber_tlv_tag_t)-1)
-                            {
-                                if (BER_TAGS_EQUAL(tlv_tag, elm->tag))
-                                    {
-                                        /*
+                    if (elm->tag != (ber_tlv_tag_t)-1)
+                        {
+                            if (BER_TAGS_EQUAL(tlv_tag, elm->tag))
+                                {
+                                    /*
                                          * The new list member of expected type
                                          * has arrived.
                                          */
-                                    }
-                                else
-                                    {
-                                        ASN_DEBUG(
-                                            "Unexpected tag %s fixed SET OF %s",
-                                            ber_tlv_tag_string(tlv_tag),
-                                            td->name);
-                                        ASN_DEBUG("%s SET OF has tag %s",
-                                                  td->name,
-                                                  ber_tlv_tag_string(elm->tag));
-                                        RETURN(RC_FAIL);
-                                    }
-                            }
+                                }
+                            else
+                                {
+                                    ASN_DEBUG(
+                                        "Unexpected tag %s fixed SET OF %s",
+                                        ber_tlv_tag_string(tlv_tag),
+                                        td->name);
+                                    ASN_DEBUG("%s SET OF has tag %s",
+                                        td->name,
+                                        ber_tlv_tag_string(elm->tag));
+                                    RETURN(RC_FAIL);
+                                }
+                        }
 
-                        /*
+                    /*
                          * MICROPHASE 2: Invoke the member-specific decoder.
                          */
-                        ctx->step |= 1; /* Confirm entering next microphase */
-                    microphase2:
+                    ctx->step |= 1; /* Confirm entering next microphase */
+                microphase2:
 
-                        /*
+                    /*
                          * Invoke the member fetch routine according to member's
                          * type
                          */
-                        rval = elm->type->ber_decoder(opt_codec_ctx, elm->type,
-                                                      &ctx->ptr, ptr, LEFT, 0);
-                        ASN_DEBUG("In %s SET OF %s code %d consumed %d",
-                                  td->name, elm->type->name, rval.code,
-                                  (int)rval.consumed);
-                        switch (rval.code)
+                    rval = elm->type->ber_decoder(opt_codec_ctx, elm->type,
+                        &ctx->ptr, ptr, LEFT, 0);
+                    ASN_DEBUG("In %s SET OF %s code %d consumed %d",
+                        td->name, elm->type->name, rval.code,
+                        (int)rval.consumed);
+                    switch (rval.code)
+                        {
+                        case RC_OK:
                             {
-                                case RC_OK:
-                                    {
-                                        asn_anonymous_set_ *list =
-                                            _A_SET_FROM_VOID(st);
-                                        if (ASN_SET_ADD(list, ctx->ptr) != 0)
-                                            RETURN(RC_FAIL);
-                                        else
-                                            ctx->ptr = 0;
-                                    }
-                                    break;
-                                case RC_WMORE: /* More data expected */
-                                    if (!SIZE_VIOLATION)
-                                        {
-                                            ADVANCE(rval.consumed);
-                                            RETURN(RC_WMORE);
-                                        }
-                                    /* Fall through */
-                                case RC_FAIL: /* Fatal error */
-                                    ASN_STRUCT_FREE(*elm->type, ctx->ptr);
-                                    ctx->ptr = 0;
+                                asn_anonymous_set_ *list =
+                                    _A_SET_FROM_VOID(st);
+                                if (ASN_SET_ADD(list, ctx->ptr) != 0)
                                     RETURN(RC_FAIL);
-                            } /* switch(rval) */
+                                else
+                                    ctx->ptr = 0;
+                            }
+                            break;
+                        case RC_WMORE: /* More data expected */
+                            if (!SIZE_VIOLATION)
+                                {
+                                    ADVANCE(rval.consumed);
+                                    RETURN(RC_WMORE);
+                                }
+                            /* Fall through */
+                        case RC_FAIL: /* Fatal error */
+                            ASN_STRUCT_FREE(*elm->type, ctx->ptr);
+                            ctx->ptr = 0;
+                            RETURN(RC_FAIL);
+                        } /* switch(rval) */
 
-                        ADVANCE(rval.consumed);
-                    } /* for(all list members) */
+                    ADVANCE(rval.consumed);
+                } /* for(all list members) */
 
-                NEXT_PHASE(ctx);
-            case 2:
-                /*
+            NEXT_PHASE(ctx);
+        case 2:
+            /*
                  * Read in all "end of content" TLVs.
                  */
-                while (ctx->left < 0)
-                    {
-                        if (LEFT < 2)
-                            {
-                                if (LEFT > 0 && ((const char *)ptr)[0] != 0)
-                                    {
-                                        /* Unexpected tag */
-                                        RETURN(RC_FAIL);
-                                    }
-                                else
-                                    {
-                                        RETURN(RC_WMORE);
-                                    }
-                            }
-                        if (((const char *)ptr)[0] == 0 &&
-                            ((const char *)ptr)[1] == 0)
-                            {
-                                ADVANCE(2);
-                                ctx->left++;
-                            }
-                        else
-                            {
-                                RETURN(RC_FAIL);
-                            }
-                    }
+            while (ctx->left < 0)
+                {
+                    if (LEFT < 2)
+                        {
+                            if (LEFT > 0 && ((const char *)ptr)[0] != 0)
+                                {
+                                    /* Unexpected tag */
+                                    RETURN(RC_FAIL);
+                                }
+                            else
+                                {
+                                    RETURN(RC_WMORE);
+                                }
+                        }
+                    if (((const char *)ptr)[0] == 0 &&
+                        ((const char *)ptr)[1] == 0)
+                        {
+                            ADVANCE(2);
+                            ctx->left++;
+                        }
+                    else
+                        {
+                            RETURN(RC_FAIL);
+                        }
+                }
 
-                PHASE_OUT(ctx);
+            PHASE_OUT(ctx);
         }
 
     RETURN(RC_OK);
@@ -362,8 +362,8 @@ static int _el_buf_cmp(const void *ap, const void *bp)
  * The DER encoder of the SET OF type.
  */
 asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
-                                 int tag_mode, ber_tlv_tag_t tag,
-                                 asn_app_consume_bytes_f *cb, void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_TYPE_member_t *elm = td->elements;
     asn_TYPE_descriptor_t *elm_type = elm->type;
@@ -466,7 +466,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
              * Encode the member into the prepared space.
              */
             erval = der_encoder(elm_type, memb_ptr, 0, elm->tag, _el_addbytes,
-                                encoded_el);
+                encoded_el);
             if (erval.encoded == -1)
                 {
                     for (; edx >= 0; edx--) FREEMEM(encoded_els[edx].buf);
@@ -531,9 +531,9 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
  * Decode the XER (XML) data.
  */
 asn_dec_rval_t SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                 asn_TYPE_descriptor_t *td, void **struct_ptr,
-                                 const char *opt_mname, const void *buf_ptr,
-                                 size_t size)
+    asn_TYPE_descriptor_t *td, void **struct_ptr,
+    const char *opt_mname, const void *buf_ptr,
+    size_t size)
 {
     /*
      * Bring closer parts of structure description.
@@ -624,63 +624,63 @@ asn_dec_rval_t SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
             ch_size = xer_next_token(&ctx->context, buf_ptr, size, &ch_type);
             switch (ch_size)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
-                    default:
-                        switch (ch_type)
-                            {
-                                case PXER_COMMENT: /* Got XML comment */
-                                case PXER_TEXT: /* Ignore free-standing text */
-                                    XER_ADVANCE(ch_size); /* Skip silently */
-                                    continue;
-                                case PXER_TAG:
-                                    break; /* Check the rest down there */
-                            }
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
+                default:
+                    switch (ch_type)
+                        {
+                        case PXER_COMMENT:        /* Got XML comment */
+                        case PXER_TEXT:           /* Ignore free-standing text */
+                            XER_ADVANCE(ch_size); /* Skip silently */
+                            continue;
+                        case PXER_TAG:
+                            break; /* Check the rest down there */
+                        }
                 }
 
             tcv = xer_check_tag(buf_ptr, ch_size, xml_tag);
             ASN_DEBUG("XER/SET OF: tcv = %d, ph=%d t=%s", tcv, ctx->phase,
-                      xml_tag);
+                xml_tag);
             switch (tcv)
                 {
-                    case XCT_CLOSING:
-                        if (ctx->phase == 0) break;
-                        ctx->phase = 0;
-                        /* Fall through */
-                    case XCT_BOTH:
-                        if (ctx->phase == 0)
-                            {
-                                /* No more things to decode */
-                                XER_ADVANCE(ch_size);
-                                ctx->phase = 3; /* Phase out */
-                                RETURN(RC_OK);
-                            }
-                        /* Fall through */
-                    case XCT_OPENING:
-                        if (ctx->phase == 0)
-                            {
-                                XER_ADVANCE(ch_size);
-                                ctx->phase = 1; /* Processing body phase */
-                                continue;
-                            }
-                        /* Fall through */
-                    case XCT_UNKNOWN_OP:
-                    case XCT_UNKNOWN_BO:
+                case XCT_CLOSING:
+                    if (ctx->phase == 0) break;
+                    ctx->phase = 0;
+                    /* Fall through */
+                case XCT_BOTH:
+                    if (ctx->phase == 0)
+                        {
+                            /* No more things to decode */
+                            XER_ADVANCE(ch_size);
+                            ctx->phase = 3; /* Phase out */
+                            RETURN(RC_OK);
+                        }
+                    /* Fall through */
+                case XCT_OPENING:
+                    if (ctx->phase == 0)
+                        {
+                            XER_ADVANCE(ch_size);
+                            ctx->phase = 1; /* Processing body phase */
+                            continue;
+                        }
+                    /* Fall through */
+                case XCT_UNKNOWN_OP:
+                case XCT_UNKNOWN_BO:
 
-                        ASN_DEBUG("XER/SET OF: tcv=%d, ph=%d", tcv, ctx->phase);
-                        if (ctx->phase == 1)
-                            {
-                                /*
+                    ASN_DEBUG("XER/SET OF: tcv=%d, ph=%d", tcv, ctx->phase);
+                    if (ctx->phase == 1)
+                        {
+                            /*
                                  * Process a single possible member.
                                  */
-                                ctx->phase = 2;
-                                continue;
-                            }
-                        /* Fall through */
-                    default:
-                        break;
+                            ctx->phase = 2;
+                            continue;
+                        }
+                    /* Fall through */
+                default:
+                    break;
                 }
 
             ASN_DEBUG("Unexpected XML tag in SET OF");
@@ -698,7 +698,7 @@ typedef struct xer_tmp_enc_s
     size_t size;
 } xer_tmp_enc_t;
 static int SET_OF_encode_xer_callback(const void *buffer, size_t size,
-                                      void *key)
+    void *key)
 {
     xer_tmp_enc_t *t = (xer_tmp_enc_t *)key;
     if (t->offset + size >= t->size)
@@ -729,8 +729,8 @@ static int SET_OF_xer_order(const void *aptr, const void *bptr)
 }
 
 asn_enc_rval_t SET_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                 int ilevel, enum xer_encoder_flags_e flags,
-                                 asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_enc_rval_t er;
     asn_SET_OF_specifics_t *specs = (asn_SET_OF_specifics_t *)td->specifics;
@@ -846,7 +846,7 @@ cleanup:
 }
 
 int SET_OF_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                 asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_TYPE_member_t *elm = td->elements;
     const asn_anonymous_set_ *list = _A_CSET_FROM_VOID(sptr);
@@ -868,7 +868,7 @@ int SET_OF_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             _i_INDENT(1);
 
             ret = elm->type->print_struct(elm->type, memb_ptr, ilevel + 1, cb,
-                                          app_key);
+                app_key);
             if (ret) return ret;
         }
 
@@ -917,7 +917,7 @@ void SET_OF_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only)
 }
 
 int SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                      asn_app_constraint_failed_f *ctfailcb, void *app_key)
+    asn_app_constraint_failed_f *ctfailcb, void *app_key)
 {
     asn_TYPE_member_t *elm = td->elements;
     asn_constr_check_f *constr;
@@ -927,7 +927,7 @@ int SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -960,9 +960,9 @@ int SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                  asn_TYPE_descriptor_t *td,
-                                  asn_per_constraints_t *constraints,
-                                  void **sptr, asn_per_data_t *pd)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints,
+    void **sptr, asn_per_data_t *pd)
 {
     asn_dec_rval_t rv;
     asn_SET_OF_specifics_t *specs = (asn_SET_OF_specifics_t *)td->specifics;
@@ -1005,7 +1005,7 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             /* X.691, #19.5: No length determinant */
             nelems = per_get_few_bits(pd, ct->effective_bits);
             ASN_DEBUG("Preparing to fetch %ld+%ld elements from %s",
-                      (long)nelems, ct->lower_bound, td->name);
+                (long)nelems, ct->lower_bound, td->name);
             if (nelems < 0) _ASN_DECODE_STARVED;
             nelems += ct->lower_bound;
         }
@@ -1019,9 +1019,9 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             if (nelems < 0)
                 {
                     nelems = uper_get_length(pd, ct ? ct->effective_bits : -1,
-                                             &repeat);
+                        &repeat);
                     ASN_DEBUG("Got to decode %d elements (eff %d)", (int)nelems,
-                              (long)ct ? ct->effective_bits : -1);
+                        (long)ct ? ct->effective_bits : -1);
                     if (nelems < 0) _ASN_DECODE_STARVED;
                 }
 
@@ -1031,21 +1031,21 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
                     ASN_DEBUG("SET OF %s decoding", elm->type->name);
                     rv =
                         elm->type->uper_decoder(opt_codec_ctx, elm->type,
-                                                elm->per_constraints, &ptr, pd);
+                            elm->per_constraints, &ptr, pd);
                     ASN_DEBUG("%s SET OF %s decoded %d, %p", td->name,
-                              elm->type->name, rv.code, ptr);
+                        elm->type->name, rv.code, ptr);
                     if (rv.code == RC_OK)
                         {
                             if (ASN_SET_ADD(list, ptr) == 0) continue;
                             ASN_DEBUG("Failed to add element into %s",
-                                      td->name);
+                                td->name);
                             /* Fall through */
                             rv.code = RC_FAIL;
                         }
                     else
                         {
                             ASN_DEBUG("Failed decoding %s of %s (SET OF)",
-                                      elm->type->name, td->name);
+                                elm->type->name, td->name);
                         }
                     if (ptr) ASN_STRUCT_FREE(*elm->type, ptr);
                     return rv;

@@ -7,16 +7,16 @@
 #include "BadSignalElement.h"
 
 static int memb_badSignalID_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_badSignalID_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -43,14 +43,14 @@ static asn_per_constraints_t ASN_PER_MEMB_BAD_SIGNAL_ID_CONSTR_3 = {
 };
 static asn_TYPE_member_t asn_MBR_BadSignalElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct BadSignalElement, badSVID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SVID, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "badSVID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SVID, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "badSVID"},
     {ATF_POINTER, 1, offsetof(struct BadSignalElement, badSignalID),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_badSignalID_constraint_1,
-     &ASN_PER_MEMB_BAD_SIGNAL_ID_CONSTR_3, 0, "badSignalID"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_badSignalID_constraint_1,
+        &ASN_PER_MEMB_BAD_SIGNAL_ID_CONSTR_3, 0, "badSignalID"},
 };
 static int asn_MAP_BadSignalElement_oms_1[] = {1};
 static ber_tlv_tag_t asn_DEF_BadSignalElement_tags_1[] = {
@@ -89,7 +89,7 @@ asn_TYPE_descriptor_t asn_DEF_BadSignalElement = {
     asn_DEF_BadSignalElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_BadSignalElement_tags_1) /
         sizeof(asn_DEF_BadSignalElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_BadSignalElement_1,
     2,                                /* Elements count */
     &asn_SPC_BadSignalElement_specs_1 /* Additional specs */

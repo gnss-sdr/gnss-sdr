@@ -14,28 +14,28 @@ static asn_per_constraints_t ASN_PER_TYPE_SAT_STATUS_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_SatStatus_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SatStatus, choice.newSatelliteAndModelUC),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_UncompressedEphemeris,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "newSatelliteAndModelUC"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_UncompressedEphemeris,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "newSatelliteAndModelUC"},
     {ATF_NOFLAGS, 0, offsetof(struct SatStatus, choice.oldSatelliteAndModel),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NULL, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "oldSatelliteAndModel"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NULL, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "oldSatelliteAndModel"},
     {ATF_NOFLAGS, 0, offsetof(struct SatStatus, choice.newNaviModelUC),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_UncompressedEphemeris,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "newNaviModelUC"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_UncompressedEphemeris,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "newNaviModelUC"},
 };
 static asn_TYPE_tag2member_t asn_MAP_SatStatus_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0}, /* newSatelliteAndModelUC at 710 */
+        0}, /* newSatelliteAndModelUC at 710 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0}, /* oldSatelliteAndModel at 713 */
+        0},                                       /* oldSatelliteAndModel at 713 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0} /* newNaviModelUC at 716 */
 };
 static asn_CHOICE_specifics_t asn_SPC_SatStatus_specs_1 = {

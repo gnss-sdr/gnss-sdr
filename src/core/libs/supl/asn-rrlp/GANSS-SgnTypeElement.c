@@ -15,7 +15,7 @@ static int memb_ganssSignalID_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,7 +29,7 @@ static int memb_ganssSignalID_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -42,15 +42,15 @@ static asn_per_constraints_t ASN_PER_MEMB_GANSS_SIGNAL_ID_CONSTR_2 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSS_SgnTypeElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnTypeElement, ganssSignalID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssSignalID_constraint_1,
-     &ASN_PER_MEMB_GANSS_SIGNAL_ID_CONSTR_2, 0, "ganssSignalID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssSignalID_constraint_1,
+        &ASN_PER_MEMB_GANSS_SIGNAL_ID_CONSTR_2, 0, "ganssSignalID"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_SgnTypeElement, ganss_SgnList),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SeqOfGANSS_SgnElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganss-SgnList"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SeqOfGANSS_SgnElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganss-SgnList"},
 };
 static ber_tlv_tag_t asn_DEF_GANSS_SgnTypeElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -88,7 +88,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSS_SgnTypeElement = {
     asn_DEF_GANSS_SgnTypeElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSS_SgnTypeElement_tags_1) /
         sizeof(asn_DEF_GANSS_SgnTypeElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                  /* No PER visible constraints */
     asn_MBR_GANSS_SgnTypeElement_1,
     2,                                    /* Elements count */
     &asn_SPC_GANSS_SgnTypeElement_specs_1 /* Additional specs */

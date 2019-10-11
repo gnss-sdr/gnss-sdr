@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "GANSSTODm.h"
-#include <NativeInteger.h>
 #include "GANSSTODUncertainty.h"
+#include "GANSSTODm.h"
 #include "SeqOfGANSS-SgnTypeElement.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

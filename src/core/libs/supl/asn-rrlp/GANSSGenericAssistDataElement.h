@@ -58,14 +58,14 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "SeqOfGANSSTimeModel.h"
+#include "GANSSAlmanacModel.h"
+#include "GANSSDataBitAssist.h"
 #include "GANSSDiffCorrections.h"
 #include "GANSSNavModel.h"
 #include "GANSSRealTimeIntegrity.h"
-#include "GANSSDataBitAssist.h"
 #include "GANSSRefMeasurementAssist.h"
-#include "GANSSAlmanacModel.h"
 #include "GANSSUTCModel.h"
+#include "SeqOfGANSSTimeModel.h"
 
 #endif /* _GANSSGenericAssistDataElement_H_ */
 #include <asn_internal.h>

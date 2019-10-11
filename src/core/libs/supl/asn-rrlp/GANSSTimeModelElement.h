@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NativeInteger.h>
 #include "TA0.h"
 #include "TA1.h"
 #include "TA2.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

@@ -10,11 +10,11 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "SatelliteID.h"
-#include "TLMWord.h"
-#include "AntiSpoofFlag.h"
 #include "AlertFlag.h"
+#include "AntiSpoofFlag.h"
+#include "SatelliteID.h"
 #include "TLMReservedBits.h"
+#include "TLMWord.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

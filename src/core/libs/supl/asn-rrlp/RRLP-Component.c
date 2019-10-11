@@ -14,34 +14,34 @@ static asn_per_constraints_t ASN_PER_TYPE_RRLP_COMPONENT_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_RRLP_Component_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct RRLP_Component, choice.msrPositionReq),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MsrPosition_Req,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "msrPositionReq"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MsrPosition_Req,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "msrPositionReq"},
     {ATF_NOFLAGS, 0, offsetof(struct RRLP_Component, choice.msrPositionRsp),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MsrPosition_Rsp,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "msrPositionRsp"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MsrPosition_Rsp,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "msrPositionRsp"},
     {ATF_NOFLAGS, 0, offsetof(struct RRLP_Component, choice.assistanceData),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AssistanceData,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "assistanceData"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AssistanceData,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "assistanceData"},
     {ATF_NOFLAGS, 0, offsetof(struct RRLP_Component, choice.assistanceDataAck),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NULL, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "assistanceDataAck"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NULL, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "assistanceDataAck"},
     {ATF_NOFLAGS, 0, offsetof(struct RRLP_Component, choice.protocolError),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ProtocolError,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "protocolError"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ProtocolError,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "protocolError"},
 };
 static asn_TYPE_tag2member_t asn_MAP_RRLP_Component_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* msrPositionReq at 21 */

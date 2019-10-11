@@ -7,15 +7,15 @@
 #include "NMRelement.h"
 
 static int memb_aRFCN_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_aRFCN_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_bSIC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                  asn_app_constraint_failed_f *ctfailcb,
-                                  void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,21 +57,21 @@ static int memb_bSIC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_rxLev_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,7 +85,7 @@ static int memb_rxLev_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -110,17 +110,17 @@ static asn_per_constraints_t ASN_PER_MEMB_RX_LEV_CONSTR_4 = {
 };
 static asn_TYPE_member_t asn_MBR_NMRelement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct NMRelement, aRFCN),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_aRFCN_constraint_1,
-     &ASN_PER_MEMB_A_RFCN_CONSTR_2, 0, "aRFCN"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_aRFCN_constraint_1,
+        &ASN_PER_MEMB_A_RFCN_CONSTR_2, 0, "aRFCN"},
     {ATF_NOFLAGS, 0, offsetof(struct NMRelement, bSIC),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_bSIC_constraint_1,
-     &ASN_PER_MEMB_B_SIC_CONSTR_3, 0, "bSIC"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_bSIC_constraint_1,
+        &ASN_PER_MEMB_B_SIC_CONSTR_3, 0, "bSIC"},
     {ATF_NOFLAGS, 0, offsetof(struct NMRelement, rxLev),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_rxLev_constraint_1,
-     &ASN_PER_MEMB_RX_LEV_CONSTR_4, 0, "rxLev"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_rxLev_constraint_1,
+        &ASN_PER_MEMB_RX_LEV_CONSTR_4, 0, "rxLev"},
 };
 static ber_tlv_tag_t asn_DEF_NMRelement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

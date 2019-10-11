@@ -8,37 +8,37 @@
 
 static asn_TYPE_member_t asn_MBR_AdditionalAssistanceData_1[] = {
     {ATF_POINTER, 3,
-     offsetof(struct AdditionalAssistanceData, gpsAssistanceData),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GPSAssistanceData,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "gpsAssistanceData"},
+        offsetof(struct AdditionalAssistanceData, gpsAssistanceData),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GPSAssistanceData,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "gpsAssistanceData"},
     {ATF_POINTER, 2,
-     offsetof(struct AdditionalAssistanceData, extensionContainer),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ExtensionContainer,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "extensionContainer"},
+        offsetof(struct AdditionalAssistanceData, extensionContainer),
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ExtensionContainer,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "extensionContainer"},
     {ATF_POINTER, 1,
-     offsetof(struct AdditionalAssistanceData, ganssAssistanceData),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSAssistanceData,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssAssistanceData"},
+        offsetof(struct AdditionalAssistanceData, ganssAssistanceData),
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSAssistanceData,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssAssistanceData"},
 };
 static int asn_MAP_AdditionalAssistanceData_oms_1[] = {0, 1, 2};
 static ber_tlv_tag_t asn_DEF_AdditionalAssistanceData_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_AdditionalAssistanceData_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0}, /* gpsAssistanceData at 520 */
+        0}, /* gpsAssistanceData at 520 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0}, /* extensionContainer at 521 */
+        0}, /* extensionContainer at 521 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0} /* ganssAssistanceData at 523 */
+        0} /* ganssAssistanceData at 523 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_AdditionalAssistanceData_specs_1 = {
     sizeof(struct AdditionalAssistanceData),
@@ -70,7 +70,7 @@ asn_TYPE_descriptor_t asn_DEF_AdditionalAssistanceData = {
     asn_DEF_AdditionalAssistanceData_tags_1,                /* Same as above */
     sizeof(asn_DEF_AdditionalAssistanceData_tags_1) /
         sizeof(asn_DEF_AdditionalAssistanceData_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                      /* No PER visible constraints */
     asn_MBR_AdditionalAssistanceData_1,
     3,                                        /* Elements count */
     &asn_SPC_AdditionalAssistanceData_specs_1 /* Additional specs */

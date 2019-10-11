@@ -15,7 +15,7 @@ static int memb_ionoStormFlag1_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,7 +29,7 @@ static int memb_ionoStormFlag1_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -43,7 +43,7 @@ static int memb_ionoStormFlag2_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,7 +57,7 @@ static int memb_ionoStormFlag2_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -71,7 +71,7 @@ static int memb_ionoStormFlag3_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,7 +85,7 @@ static int memb_ionoStormFlag3_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -99,7 +99,7 @@ static int memb_ionoStormFlag4_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -113,7 +113,7 @@ static int memb_ionoStormFlag4_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -127,7 +127,7 @@ static int memb_ionoStormFlag5_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -141,7 +141,7 @@ static int memb_ionoStormFlag5_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -178,25 +178,25 @@ static asn_per_constraints_t ASN_PER_MEMB_IONO_STORM_FLAG5_CONSTR_6 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSIonoStormFlags_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonoStormFlags, ionoStormFlag1),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ionoStormFlag1_constraint_1,
-     &ASN_PER_MEMB_IONO_STORM_FLAG1_CONSTR_2, 0, "ionoStormFlag1"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ionoStormFlag1_constraint_1,
+        &ASN_PER_MEMB_IONO_STORM_FLAG1_CONSTR_2, 0, "ionoStormFlag1"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonoStormFlags, ionoStormFlag2),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ionoStormFlag2_constraint_1,
-     &ASN_PER_MEMB_IONO_STORM_FLAG2_CONSTR_3, 0, "ionoStormFlag2"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ionoStormFlag2_constraint_1,
+        &ASN_PER_MEMB_IONO_STORM_FLAG2_CONSTR_3, 0, "ionoStormFlag2"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonoStormFlags, ionoStormFlag3),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ionoStormFlag3_constraint_1,
-     &ASN_PER_MEMB_IONO_STORM_FLAG3_CONSTR_4, 0, "ionoStormFlag3"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ionoStormFlag3_constraint_1,
+        &ASN_PER_MEMB_IONO_STORM_FLAG3_CONSTR_4, 0, "ionoStormFlag3"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonoStormFlags, ionoStormFlag4),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ionoStormFlag4_constraint_1,
-     &ASN_PER_MEMB_IONO_STORM_FLAG4_CONSTR_5, 0, "ionoStormFlag4"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ionoStormFlag4_constraint_1,
+        &ASN_PER_MEMB_IONO_STORM_FLAG4_CONSTR_5, 0, "ionoStormFlag4"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonoStormFlags, ionoStormFlag5),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ionoStormFlag5_constraint_1,
-     &ASN_PER_MEMB_IONO_STORM_FLAG5_CONSTR_6, 0, "ionoStormFlag5"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ionoStormFlag5_constraint_1,
+        &ASN_PER_MEMB_IONO_STORM_FLAG5_CONSTR_6, 0, "ionoStormFlag5"},
 };
 static ber_tlv_tag_t asn_DEF_GANSSIonoStormFlags_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -237,7 +237,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSIonoStormFlags = {
     asn_DEF_GANSSIonoStormFlags_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSIonoStormFlags_tags_1) /
         sizeof(asn_DEF_GANSSIonoStormFlags_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                 /* No PER visible constraints */
     asn_MBR_GANSSIonoStormFlags_1,
     5,                                   /* Elements count */
     &asn_SPC_GANSSIonoStormFlags_specs_1 /* Additional specs */

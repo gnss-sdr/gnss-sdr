@@ -10,8 +10,8 @@
  * Decode the XER encoding of a given type.
  */
 asn_dec_rval_t xer_decode(asn_codec_ctx_t *opt_codec_ctx,
-                          asn_TYPE_descriptor_t *td, void **struct_ptr,
-                          const void *buffer, size_t size)
+    asn_TYPE_descriptor_t *td, void **struct_ptr,
+    const void *buffer, size_t size)
 {
     asn_codec_ctx_t s_codec_ctx;
 
@@ -50,7 +50,7 @@ struct xer__cb_arg
 };
 
 static int xer__token_cb(pxml_chunk_type_e type, const void *_chunk_data,
-                         size_t _chunk_size, void *key)
+    size_t _chunk_size, void *key)
 {
     struct xer__cb_arg *arg = (struct xer__cb_arg *)key;
     arg->chunk_type = type;
@@ -64,7 +64,7 @@ static int xer__token_cb(pxml_chunk_type_e type, const void *_chunk_data,
  * Fetch the next token from the XER/XML stream.
  */
 ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
-                       pxer_chunk_type_e *ch_type)
+    pxer_chunk_type_e *ch_type)
 {
     struct xer__cb_arg arg;
     int new_stateContext = *stateContext;
@@ -89,18 +89,18 @@ ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
      */
     switch (arg.chunk_type)
         {
-            case PXML_TEXT:
-                *ch_type = PXER_TEXT;
-                break;
-            case PXML_TAG:
-                return 0; /* Want more */
-            case PXML_TAG_END:
-                *ch_type = PXER_TAG;
-                break;
-            case PXML_COMMENT:
-            case PXML_COMMENT_END:
-                *ch_type = PXER_COMMENT;
-                break;
+        case PXML_TEXT:
+            *ch_type = PXER_TEXT;
+            break;
+        case PXML_TAG:
+            return 0; /* Want more */
+        case PXML_TAG_END:
+            *ch_type = PXER_TAG;
+            break;
+        case PXML_COMMENT:
+        case PXML_COMMENT_END:
+            *ch_type = PXER_COMMENT;
+            break;
         }
 
     *stateContext = new_stateContext;
@@ -112,7 +112,7 @@ ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
 #define RANGLE 0x3e /* '>' */
 
 xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
-                              const char *need_tag)
+    const char *need_tag)
 {
     const char *buf = (const char *)buf_ptr;
     const char *end;
@@ -163,13 +163,13 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
                         {
                             switch (b)
                                 {
-                                    case 0x09:
-                                    case 0x0a:
-                                    case 0x0c:
-                                    case 0x0d:
-                                    case 0x20:
-                                        /* "<abc def/>": whitespace is normal */
-                                        return ct;
+                                case 0x09:
+                                case 0x0a:
+                                case 0x0c:
+                                case 0x0d:
+                                case 0x20:
+                                    /* "<abc def/>": whitespace is normal */
+                                    return ct;
                                 }
                         }
                     return (xer_check_tag_e)(XCT__UNK__MASK | ct);
@@ -208,7 +208,7 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
         {                                                              \
             ssize_t converted_size =                                   \
                 body_receiver(struct_key, chunk_buf, chunk_size,       \
-                              (size_t)(chunk_size) < (size));          \
+                    (size_t)(chunk_size) < (size));                    \
             if (converted_size == -1) RETURN(RC_FAIL);                 \
             if (converted_size == 0 && (size) == (size_t)(chunk_size)) \
                 RETURN(RC_WMORE);                                      \
@@ -232,9 +232,9 @@ asn_dec_rval_t xer_decode_general(
     void *struct_key, const char *xml_tag, /* Expected XML tag */
     const void *buf_ptr, size_t size,
     int (*opt_unexpected_tag_decoder)(void *struct_key, const void *chunk_buf,
-                                      size_t chunk_size),
+        size_t chunk_size),
     ssize_t (*body_receiver)(void *struct_key, const void *chunk_buf,
-                             size_t chunk_size, int have_more))
+        size_t chunk_size, int have_more))
 {
     asn_dec_rval_t rval;
     ssize_t consumed_myself = 0;
@@ -259,37 +259,37 @@ asn_dec_rval_t xer_decode_general(
             ch_size = xer_next_token(&ctx->context, buf_ptr, size, &ch_type);
             switch (ch_size)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
-                    default:
-                        switch (ch_type)
-                            {
-                                case PXER_COMMENT:    /* Got XML comment */
-                                    ADVANCE(ch_size); /* Skip silently */
-                                    continue;
-                                case PXER_TEXT:
-                                    if (ctx->phase == 0)
-                                        {
-                                            /*
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
+                default:
+                    switch (ch_type)
+                        {
+                        case PXER_COMMENT:    /* Got XML comment */
+                            ADVANCE(ch_size); /* Skip silently */
+                            continue;
+                        case PXER_TEXT:
+                            if (ctx->phase == 0)
+                                {
+                                    /*
                                              * We have to ignore whitespace
                                              * here, but in order to be forward
                                              * compatible with EXTENDED-XER
                                              * (EMBED-VALUES, #25) any text is
                                              * just ignored here.
                                              */
-                                        }
-                                    else
-                                        {
-                                            XER_GOT_BODY(buf_ptr, ch_size,
-                                                         size);
-                                        }
-                                    ADVANCE(ch_size);
-                                    continue;
-                                case PXER_TAG:
-                                    break; /* Check the rest down there */
-                            }
+                                }
+                            else
+                                {
+                                    XER_GOT_BODY(buf_ptr, ch_size,
+                                        size);
+                                }
+                            ADVANCE(ch_size);
+                            continue;
+                        case PXER_TAG:
+                            break; /* Check the rest down there */
+                        }
                 }
 
             assert(ch_type == PXER_TAG && size);
@@ -304,45 +304,45 @@ asn_dec_rval_t xer_decode_general(
              */
             switch (tcv)
                 {
-                    case XCT_BOTH:
-                        if (ctx->phase) break;
-                        /* Finished decoding of an empty element */
-                        XER_GOT_EMPTY();
-                        ADVANCE(ch_size);
-                        ctx->phase = 2; /* Phase out */
-                        RETURN(RC_OK);
-                    case XCT_OPENING:
-                        if (ctx->phase) break;
-                        ADVANCE(ch_size);
-                        ctx->phase = 1; /* Processing body phase */
-                        continue;
-                    case XCT_CLOSING:
-                        if (!ctx->phase) break;
-                        ADVANCE(ch_size);
-                        ctx->phase = 2; /* Phase out */
-                        RETURN(RC_OK);
-                    case XCT_UNKNOWN_BO:
-                        /*
+                case XCT_BOTH:
+                    if (ctx->phase) break;
+                    /* Finished decoding of an empty element */
+                    XER_GOT_EMPTY();
+                    ADVANCE(ch_size);
+                    ctx->phase = 2; /* Phase out */
+                    RETURN(RC_OK);
+                case XCT_OPENING:
+                    if (ctx->phase) break;
+                    ADVANCE(ch_size);
+                    ctx->phase = 1; /* Processing body phase */
+                    continue;
+                case XCT_CLOSING:
+                    if (!ctx->phase) break;
+                    ADVANCE(ch_size);
+                    ctx->phase = 2; /* Phase out */
+                    RETURN(RC_OK);
+                case XCT_UNKNOWN_BO:
+                    /*
                          * Certain tags in the body may be expected.
                          */
-                        if (opt_unexpected_tag_decoder &&
-                            opt_unexpected_tag_decoder(struct_key, buf_ptr,
-                                                       ch_size) >= 0)
-                            {
-                                /* Tag's processed fine */
-                                ADVANCE(ch_size);
-                                if (!ctx->phase)
-                                    {
-                                        /* We are not expecting
+                    if (opt_unexpected_tag_decoder &&
+                        opt_unexpected_tag_decoder(struct_key, buf_ptr,
+                            ch_size) >= 0)
+                        {
+                            /* Tag's processed fine */
+                            ADVANCE(ch_size);
+                            if (!ctx->phase)
+                                {
+                                    /* We are not expecting
                                          * the closing tag anymore. */
-                                        ctx->phase = 2; /* Phase out */
-                                        RETURN(RC_OK);
-                                    }
-                                continue;
-                            }
-                        /* Fall through */
-                    default:
-                        break; /* Unexpected tag */
+                                    ctx->phase = 2; /* Phase out */
+                                    RETURN(RC_OK);
+                                }
+                            continue;
+                        }
+                    /* Fall through */
+                default:
+                    break; /* Unexpected tag */
                 }
 
             ASN_DEBUG("Unexpected XML tag (expected \"%s\")", xml_tag);
@@ -361,19 +361,19 @@ int xer_is_whitespace(const void *chunk_buf, size_t chunk_size)
         {
             switch (*p)
                 {
-                    /* X.693, #8.1.4
+                /* X.693, #8.1.4
                      * HORISONTAL TAB (9)
                      * LINE FEED (10)
                      * CARRIAGE RETURN (13)
                      * SPACE (32)
                      */
-                    case 0x09:
-                    case 0x0a:
-                    case 0x0d:
-                    case 0x20:
-                        break;
-                    default:
-                        return 0;
+                case 0x09:
+                case 0x0a:
+                case 0x0d:
+                case 0x20:
+                    break;
+                default:
+                    return 0;
                 }
         }
     return 1; /* All whitespace */
@@ -387,19 +387,19 @@ int xer_skip_unknown(xer_check_tag_e tcv, ber_tlv_len_t *depth)
     assert(*depth > 0);
     switch (tcv)
         {
-            case XCT_BOTH:
-            case XCT_UNKNOWN_BO:
-                /* These negate each other. */
-                return 0;
-            case XCT_OPENING:
-            case XCT_UNKNOWN_OP:
-                ++(*depth);
-                return 0;
-            case XCT_CLOSING:
-            case XCT_UNKNOWN_CL:
-                if (--(*depth) == 0) return (tcv == XCT_CLOSING) ? 2 : 1;
-                return 0;
-            default:
-                return -1;
+        case XCT_BOTH:
+        case XCT_UNKNOWN_BO:
+            /* These negate each other. */
+            return 0;
+        case XCT_OPENING:
+        case XCT_UNKNOWN_OP:
+            ++(*depth);
+            return 0;
+        case XCT_CLOSING:
+        case XCT_UNKNOWN_CL:
+            if (--(*depth) == 0) return (tcv == XCT_CLOSING) ? 2 : 1;
+            return 0;
+        default:
+            return -1;
         }
 }

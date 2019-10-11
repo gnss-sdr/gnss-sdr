@@ -16,10 +16,12 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
+// clang-format off
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <stdlib.h>
 #include <string.h>
+// clang-format on
 
 struct VOLK_CPU volk_gnsssdr_cpu;
 

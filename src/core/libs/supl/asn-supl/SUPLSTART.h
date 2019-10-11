@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "SETCapabilities.h"
 #include "LocationId.h"
+#include "SETCapabilities.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

@@ -8,20 +8,20 @@
 
 static asn_TYPE_member_t asn_MBR_PosProtocol_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct PosProtocol, tia801),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BOOLEAN, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "tia801"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BOOLEAN, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "tia801"},
     {ATF_NOFLAGS, 0, offsetof(struct PosProtocol, rrlp),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BOOLEAN, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "rrlp"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BOOLEAN, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "rrlp"},
     {ATF_NOFLAGS, 0, offsetof(struct PosProtocol, rrc),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BOOLEAN, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "rrc"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BOOLEAN, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "rrc"},
 };
 static ber_tlv_tag_t asn_DEF_PosProtocol_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

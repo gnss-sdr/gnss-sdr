@@ -16,11 +16,11 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
+// clang-format off
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include "volk_gnsssdr_machines.h"
 
-// clang-format off
 struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
 %for machine in machines:
 #ifdef LV_MACHINE_${machine.name.upper()}

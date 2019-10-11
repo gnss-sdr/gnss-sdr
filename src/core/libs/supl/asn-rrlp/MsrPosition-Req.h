@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "PositionInstruct.h"
 #include "ExtensionContainer.h"
+#include "PositionInstruct.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -57,12 +57,12 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "ReferenceAssistData.h"
-#include "MsrAssistData.h"
-#include "SystemInfoAssistData.h"
 #include "GPS-AssistData.h"
-#include "Rel98-MsrPosition-Req-Extension.h"
+#include "MsrAssistData.h"
+#include "ReferenceAssistData.h"
 #include "Rel5-MsrPosition-Req-Extension.h"
+#include "Rel98-MsrPosition-Req-Extension.h"
+#include "SystemInfoAssistData.h"
 
 #endif /* _MsrPosition_Req_H_ */
 #include <asn_internal.h>

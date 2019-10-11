@@ -72,7 +72,7 @@
  * See the definitions.
  */
 static int _fetch_present_idx(const void *struct_ptr, int pres_offset,
-                              int size);
+    int size);
 static void _set_present_idx(void *struct_ptr, int offset, int size, int pres);
 
 /*
@@ -112,8 +112,8 @@ static int _search4tag(const void *ap, const void *bp)
  * The decoder of the CHOICE type.
  */
 asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                 asn_TYPE_descriptor_t *td, void **struct_ptr,
-                                 const void *ptr, size_t size, int tag_mode)
+    asn_TYPE_descriptor_t *td, void **struct_ptr,
+    const void *ptr, size_t size, int tag_mode)
 {
     /*
      * Bring closer parts of structure description.
@@ -157,265 +157,265 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
      */
     switch (ctx->phase)
         {
-            case 0:
-                /*
+        case 0:
+            /*
                  * PHASE 0.
                  * Check that the set of tags associated with given structure
                  * perfectly fits our expectations.
                  */
 
-                if (tag_mode || td->tags_count)
-                    {
-                        rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
-                                              tag_mode, -1, &ctx->left, 0);
-                        if (rval.code != RC_OK)
-                            {
-                                ASN_DEBUG("%s tagging check failed: %d",
-                                          td->name, rval.code);
-                                return rval;
-                            }
+            if (tag_mode || td->tags_count)
+                {
+                    rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
+                        tag_mode, -1, &ctx->left, 0);
+                    if (rval.code != RC_OK)
+                        {
+                            ASN_DEBUG("%s tagging check failed: %d",
+                                td->name, rval.code);
+                            return rval;
+                        }
 
-                        if (ctx->left >= 0)
-                            {
-                                /* ?Subtracted below! */
-                                ctx->left += rval.consumed;
-                            }
-                        ADVANCE(rval.consumed);
-                    }
-                else
-                    {
-                        ctx->left = -1;
-                    }
+                    if (ctx->left >= 0)
+                        {
+                            /* ?Subtracted below! */
+                            ctx->left += rval.consumed;
+                        }
+                    ADVANCE(rval.consumed);
+                }
+            else
+                {
+                    ctx->left = -1;
+                }
 
-                NEXT_PHASE(ctx);
+            NEXT_PHASE(ctx);
 
-                ASN_DEBUG("Structure consumes %ld bytes, buffer %ld",
-                          (long)ctx->left, (long)size);
+            ASN_DEBUG("Structure consumes %ld bytes, buffer %ld",
+                (long)ctx->left, (long)size);
 
-                /* Fall through */
-            case 1:
-                /*
+            /* Fall through */
+        case 1:
+            /*
                  * Fetch the T from TLV.
                  */
-                tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
-                ASN_DEBUG("In %s CHOICE tag length %d", td->name, (int)tag_len);
-                switch (tag_len)
-                    {
-                        case 0:
-                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
-                            /* Fall through */
-                        case -1:
-                            RETURN(RC_FAIL);
-                    }
+            tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
+            ASN_DEBUG("In %s CHOICE tag length %d", td->name, (int)tag_len);
+            switch (tag_len)
+                {
+                case 0:
+                    if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                    /* Fall through */
+                case -1:
+                    RETURN(RC_FAIL);
+                }
 
-                do
-                    {
-                        asn_TYPE_tag2member_t *t2m;
-                        asn_TYPE_tag2member_t key;
+            do
+                {
+                    asn_TYPE_tag2member_t *t2m;
+                    asn_TYPE_tag2member_t key;
 
-                        key.el_tag = tlv_tag;
-                        t2m = (asn_TYPE_tag2member_t *)bsearch(
-                            &key, specs->tag2el, specs->tag2el_count,
-                            sizeof(specs->tag2el[0]), _search4tag);
-                        if (t2m)
-                            {
-                                /*
+                    key.el_tag = tlv_tag;
+                    t2m = (asn_TYPE_tag2member_t *)bsearch(
+                        &key, specs->tag2el, specs->tag2el_count,
+                        sizeof(specs->tag2el[0]), _search4tag);
+                    if (t2m)
+                        {
+                            /*
                                  * Found the element corresponding to the tag.
                                  */
-                                NEXT_PHASE(ctx);
-                                ctx->step = t2m->el_no;
-                                break;
-                            }
-                        else if (specs->ext_start == -1)
-                            {
-                                ASN_DEBUG(
-                                    "Unexpected tag %s "
-                                    "in non-extensible CHOICE %s",
-                                    ber_tlv_tag_string(tlv_tag), td->name);
-                                RETURN(RC_FAIL);
-                            }
-                        else
-                            {
-                                /* Skip this tag */
-                                ssize_t skip;
+                            NEXT_PHASE(ctx);
+                            ctx->step = t2m->el_no;
+                            break;
+                        }
+                    else if (specs->ext_start == -1)
+                        {
+                            ASN_DEBUG(
+                                "Unexpected tag %s "
+                                "in non-extensible CHOICE %s",
+                                ber_tlv_tag_string(tlv_tag), td->name);
+                            RETURN(RC_FAIL);
+                        }
+                    else
+                        {
+                            /* Skip this tag */
+                            ssize_t skip;
 
-                                ASN_DEBUG("Skipping unknown tag %s",
-                                          ber_tlv_tag_string(tlv_tag));
+                            ASN_DEBUG("Skipping unknown tag %s",
+                                ber_tlv_tag_string(tlv_tag));
 
-                                skip = ber_skip_length(
-                                    opt_codec_ctx, BER_TLV_CONSTRUCTED(ptr),
-                                    (const char *)ptr + tag_len,
-                                    LEFT - tag_len);
+                            skip = ber_skip_length(
+                                opt_codec_ctx, BER_TLV_CONSTRUCTED(ptr),
+                                (const char *)ptr + tag_len,
+                                LEFT - tag_len);
 
-                                switch (skip)
-                                    {
-                                        case 0:
-                                            if (!SIZE_VIOLATION)
-                                                RETURN(RC_WMORE);
-                                            /* Fall through */
-                                        case -1:
-                                            RETURN(RC_FAIL);
-                                    }
+                            switch (skip)
+                                {
+                                case 0:
+                                    if (!SIZE_VIOLATION)
+                                        RETURN(RC_WMORE);
+                                    /* Fall through */
+                                case -1:
+                                    RETURN(RC_FAIL);
+                                }
 
-                                ADVANCE(skip + tag_len);
-                                RETURN(RC_OK);
-                            }
-                    }
-                while (0);
+                            ADVANCE(skip + tag_len);
+                            RETURN(RC_OK);
+                        }
+                }
+            while (0);
 
-            case 2:
-                /*
+        case 2:
+            /*
                  * PHASE 2.
                  * Read in the element.
                  */
-                do
-                    {
-                        asn_TYPE_member_t *elm; /* CHOICE's element */
-                        void *memb_ptr;         /* Pointer to the member */
-                        void **memb_ptr2;       /* Pointer to that pointer */
+            do
+                {
+                    asn_TYPE_member_t *elm; /* CHOICE's element */
+                    void *memb_ptr;         /* Pointer to the member */
+                    void **memb_ptr2;       /* Pointer to that pointer */
 
-                        elm = &elements[ctx->step];
+                    elm = &elements[ctx->step];
 
-                        /*
+                    /*
                          * Compute the position of the member inside a
                          * structure, and also a type of containment (it may be
                          * contained as pointer or using inline inclusion).
                          */
-                        if (elm->flags & ATF_POINTER)
-                            {
-                                /* Member is a pointer to another structure */
-                                memb_ptr2 =
-                                    (void **)((char *)st + elm->memb_offset);
-                            }
-                        else
-                            {
-                                /*
+                    if (elm->flags & ATF_POINTER)
+                        {
+                            /* Member is a pointer to another structure */
+                            memb_ptr2 =
+                                (void **)((char *)st + elm->memb_offset);
+                        }
+                    else
+                        {
+                            /*
                                  * A pointer to a pointer
                                  * holding the start of the structure
                                  */
-                                memb_ptr = (char *)st + elm->memb_offset;
-                                memb_ptr2 = &memb_ptr;
-                            }
-                        /* Set presence to be able to free it properly at any
+                            memb_ptr = (char *)st + elm->memb_offset;
+                            memb_ptr2 = &memb_ptr;
+                        }
+                    /* Set presence to be able to free it properly at any
                          * time */
-                        _set_present_idx(st, specs->pres_offset,
-                                         specs->pres_size, ctx->step + 1);
-                        /*
+                    _set_present_idx(st, specs->pres_offset,
+                        specs->pres_size, ctx->step + 1);
+                    /*
                          * Invoke the member fetch routine according to member's
                          * type
                          */
-                        rval = elm->type->ber_decoder(opt_codec_ctx, elm->type,
-                                                      memb_ptr2, ptr, LEFT,
-                                                      elm->tag_mode);
-                        switch (rval.code)
-                            {
-                                case RC_OK:
-                                    break;
-                                case RC_WMORE: /* More data expected */
-                                    if (!SIZE_VIOLATION)
-                                        {
-                                            ADVANCE(rval.consumed);
-                                            RETURN(RC_WMORE);
-                                        }
-                                    RETURN(RC_FAIL);
-                                case RC_FAIL: /* Fatal error */
-                                    RETURN(rval.code);
-                            } /* switch(rval) */
+                    rval = elm->type->ber_decoder(opt_codec_ctx, elm->type,
+                        memb_ptr2, ptr, LEFT,
+                        elm->tag_mode);
+                    switch (rval.code)
+                        {
+                        case RC_OK:
+                            break;
+                        case RC_WMORE: /* More data expected */
+                            if (!SIZE_VIOLATION)
+                                {
+                                    ADVANCE(rval.consumed);
+                                    RETURN(RC_WMORE);
+                                }
+                            RETURN(RC_FAIL);
+                        case RC_FAIL: /* Fatal error */
+                            RETURN(rval.code);
+                        } /* switch(rval) */
 
-                        ADVANCE(rval.consumed);
-                    }
-                while (0);
+                    ADVANCE(rval.consumed);
+                }
+            while (0);
 
-                NEXT_PHASE(ctx);
+            NEXT_PHASE(ctx);
 
-                /* Fall through */
-            case 3:
-                ASN_DEBUG("CHOICE %s Leftover: %ld, size = %ld, tm=%d, tc=%d",
-                          td->name, (long)ctx->left, (long)size, tag_mode,
-                          td->tags_count);
+            /* Fall through */
+        case 3:
+            ASN_DEBUG("CHOICE %s Leftover: %ld, size = %ld, tm=%d, tc=%d",
+                td->name, (long)ctx->left, (long)size, tag_mode,
+                td->tags_count);
 
-                if (ctx->left > 0)
-                    {
-                        /*
+            if (ctx->left > 0)
+                {
+                    /*
                          * The type must be fully decoded
                          * by the CHOICE member-specific decoder.
                          */
-                        RETURN(RC_FAIL);
-                    }
+                    RETURN(RC_FAIL);
+                }
 
-                if (ctx->left == -1 && !(tag_mode || td->tags_count))
-                    {
-                        /*
+            if (ctx->left == -1 && !(tag_mode || td->tags_count))
+                {
+                    /*
                          * This is an untagged CHOICE.
                          * It doesn't contain nothing
                          * except for the member itself, including all its tags.
                          * The decoding is completed.
                          */
-                        NEXT_PHASE(ctx);
-                        break;
-                    }
+                    NEXT_PHASE(ctx);
+                    break;
+                }
 
-                /*
+            /*
                  * Read in the "end of data chunks"'s.
                  */
-                while (ctx->left < 0)
-                    {
-                        ssize_t tl;
+            while (ctx->left < 0)
+                {
+                    ssize_t tl;
 
-                        tl = ber_fetch_tag(ptr, LEFT, &tlv_tag);
-                        switch (tl)
-                            {
-                                case 0:
-                                    if (!SIZE_VIOLATION) RETURN(RC_WMORE);
-                                    /* Fall through */
-                                case -1:
-                                    RETURN(RC_FAIL);
-                            }
+                    tl = ber_fetch_tag(ptr, LEFT, &tlv_tag);
+                    switch (tl)
+                        {
+                        case 0:
+                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                            /* Fall through */
+                        case -1:
+                            RETURN(RC_FAIL);
+                        }
 
-                        /*
+                    /*
                          * Expected <0><0>...
                          */
-                        if (((const uint8_t *)ptr)[0] == 0)
-                            {
-                                if (LEFT < 2)
-                                    {
-                                        if (SIZE_VIOLATION)
-                                            RETURN(RC_FAIL);
-                                        else
-                                            RETURN(RC_WMORE);
-                                    }
-                                else if (((const uint8_t *)ptr)[1] == 0)
-                                    {
-                                        /*
+                    if (((const uint8_t *)ptr)[0] == 0)
+                        {
+                            if (LEFT < 2)
+                                {
+                                    if (SIZE_VIOLATION)
+                                        RETURN(RC_FAIL);
+                                    else
+                                        RETURN(RC_WMORE);
+                                }
+                            else if (((const uint8_t *)ptr)[1] == 0)
+                                {
+                                    /*
                                          * Correctly finished with <0><0>.
                                          */
-                                        ADVANCE(2);
-                                        ctx->left++;
-                                        continue;
-                                    }
-                            }
-                        else
-                            {
-                                ASN_DEBUG("Unexpected continuation in %s",
-                                          td->name);
-                                RETURN(RC_FAIL);
-                            }
+                                    ADVANCE(2);
+                                    ctx->left++;
+                                    continue;
+                                }
+                        }
+                    else
+                        {
+                            ASN_DEBUG("Unexpected continuation in %s",
+                                td->name);
+                            RETURN(RC_FAIL);
+                        }
 
-                        /* UNREACHABLE */
-                    }
+                    /* UNREACHABLE */
+                }
 
-                NEXT_PHASE(ctx);
-            case 4:
-                /* No meaningful work here */
-                break;
+            NEXT_PHASE(ctx);
+        case 4:
+            /* No meaningful work here */
+            break;
         }
 
     RETURN(RC_OK);
 }
 
 asn_enc_rval_t CHOICE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
-                                 int tag_mode, ber_tlv_tag_t tag,
-                                 asn_app_consume_bytes_f *cb, void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     asn_TYPE_member_t *elm; /* CHOICE element */
@@ -482,12 +482,12 @@ asn_enc_rval_t CHOICE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 
             /* Encode member with its tag */
             erval = elm->type->der_encoder(elm->type, memb_ptr, elm->tag_mode,
-                                           elm->tag, 0, 0);
+                elm->tag, 0, 0);
             if (erval.encoded == -1) return erval;
 
             /* Encode CHOICE with parent or my own tag */
             ret = der_write_tags(td, erval.encoded, tag_mode, 1, tag, cb,
-                                 app_key);
+                app_key);
             if (ret == -1) _ASN_ENCODE_FAILED;
             computed_size += ret;
         }
@@ -496,11 +496,11 @@ asn_enc_rval_t CHOICE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
      * Encode the single underlying member.
      */
     erval = elm->type->der_encoder(elm->type, memb_ptr, elm->tag_mode, elm->tag,
-                                   cb, app_key);
+        cb, app_key);
     if (erval.encoded == -1) return erval;
 
     ASN_DEBUG("Encoded CHOICE member in %ld bytes (+%ld)", (long)erval.encoded,
-              (long)computed_size);
+        (long)computed_size);
 
     erval.encoded += computed_size;
 
@@ -508,7 +508,7 @@ asn_enc_rval_t CHOICE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 }
 
 ber_tlv_tag_t CHOICE_outmost_tag(asn_TYPE_descriptor_t *td, const void *ptr,
-                                 int tag_mode, ber_tlv_tag_t tag)
+    int tag_mode, ber_tlv_tag_t tag)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     int present;
@@ -540,7 +540,7 @@ ber_tlv_tag_t CHOICE_outmost_tag(asn_TYPE_descriptor_t *td, const void *ptr,
                 }
 
             return asn_TYPE_outmost_tag(elm->type, memb_ptr, elm->tag_mode,
-                                        elm->tag);
+                elm->tag);
         }
     else
         {
@@ -549,7 +549,7 @@ ber_tlv_tag_t CHOICE_outmost_tag(asn_TYPE_descriptor_t *td, const void *ptr,
 }
 
 int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                      asn_app_constraint_failed_f *ctfailcb, void *app_key)
+    asn_app_constraint_failed_f *ctfailcb, void *app_key)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     int present;
@@ -557,7 +557,7 @@ int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -578,10 +578,10 @@ int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
                         {
                             if (elm->optional) return 0;
                             _ASN_CTFAIL(app_key, td, sptr,
-                                        "%s: mandatory CHOICE element %s "
-                                        "absent (%s:%d)",
-                                        td->name, elm->name, __FILE__,
-                                        __LINE__);
+                                "%s: mandatory CHOICE element %s "
+                                "absent (%s:%d)",
+                                td->name, elm->name, __FILE__,
+                                __LINE__);
                             return -1;
                         }
                 }
@@ -594,12 +594,12 @@ int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
             if (elm->memb_constraints)
                 {
                     return elm->memb_constraints(elm->type, memb_ptr, ctfailcb,
-                                                 app_key);
+                        app_key);
                 }
             else
                 {
                     int ret = elm->type->check_constraints(elm->type, memb_ptr,
-                                                           ctfailcb, app_key);
+                        ctfailcb, app_key);
                     /*
                      * Cannot inherit it eralier:
                      * need to make sure we get the updated version.
@@ -611,8 +611,8 @@ int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr,
-                        "%s: no CHOICE element given (%s:%d)", td->name,
-                        __FILE__, __LINE__);
+                "%s: no CHOICE element given (%s:%d)", td->name,
+                __FILE__, __LINE__);
             return -1;
         }
 }
@@ -632,9 +632,9 @@ int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
  * Decode the XER (XML) data.
  */
 asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                 asn_TYPE_descriptor_t *td, void **struct_ptr,
-                                 const char *opt_mname, const void *buf_ptr,
-                                 size_t size)
+    asn_TYPE_descriptor_t *td, void **struct_ptr,
+    const char *opt_mname, const void *buf_ptr,
+    size_t size)
 {
     /*
      * Bring closer parts of structure description.
@@ -709,17 +709,17 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
 
                     /* Start/Continue decoding the inner member */
                     tmprval = elm->type->xer_decoder(opt_codec_ctx, elm->type,
-                                                     memb_ptr2, elm->name,
-                                                     buf_ptr, size);
+                        memb_ptr2, elm->name,
+                        buf_ptr, size);
                     XER_ADVANCE(tmprval.consumed);
                     ASN_DEBUG("XER/CHOICE: itdf: [%s] code=%d", elm->type->name,
-                              tmprval.code);
+                        tmprval.code);
                     if (tmprval.code != RC_OK) RETURN(tmprval.code);
                     assert(_fetch_present_idx(st, specs->pres_offset,
-                                              specs->pres_size) == 0);
+                               specs->pres_size) == 0);
                     /* Record what we've got */
                     _set_present_idx(st, specs->pres_offset, specs->pres_size,
-                                     edx + 1);
+                        edx + 1);
                     ctx->phase = 3;
                     /* Fall through */
                 }
@@ -737,29 +737,29 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
             ch_size = xer_next_token(&ctx->context, buf_ptr, size, &ch_type);
             switch (ch_size)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
-                    default:
-                        switch (ch_type)
-                            {
-                                case PXER_COMMENT: /* Got XML comment */
-                                case PXER_TEXT: /* Ignore free-standing text */
-                                    XER_ADVANCE(ch_size); /* Skip silently */
-                                    continue;
-                                case PXER_TAG:
-                                    break; /* Check the rest down there */
-                            }
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
+                default:
+                    switch (ch_type)
+                        {
+                        case PXER_COMMENT:        /* Got XML comment */
+                        case PXER_TEXT:           /* Ignore free-standing text */
+                            XER_ADVANCE(ch_size); /* Skip silently */
+                            continue;
+                        case PXER_TAG:
+                            break; /* Check the rest down there */
+                        }
                 }
 
             tcv = xer_check_tag(buf_ptr, ch_size, xml_tag);
             ASN_DEBUG("XER/CHOICE checked [%c%c%c%c] vs [%s], tcv=%d",
-                      ch_size > 0 ? ((const uint8_t *)buf_ptr)[0] : '?',
-                      ch_size > 1 ? ((const uint8_t *)buf_ptr)[1] : '?',
-                      ch_size > 2 ? ((const uint8_t *)buf_ptr)[2] : '?',
-                      ch_size > 3 ? ((const uint8_t *)buf_ptr)[3] : '?',
-                      xml_tag, tcv);
+                ch_size > 0 ? ((const uint8_t *)buf_ptr)[0] : '?',
+                ch_size > 1 ? ((const uint8_t *)buf_ptr)[1] : '?',
+                ch_size > 2 ? ((const uint8_t *)buf_ptr)[2] : '?',
+                ch_size > 3 ? ((const uint8_t *)buf_ptr)[3] : '?',
+                xml_tag, tcv);
 
             /* Skip the extensions section */
             if (ctx->phase == 4)
@@ -767,99 +767,99 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                     ASN_DEBUG("skip_unknown(%d, %ld)", tcv, (long)ctx->left);
                     switch (xer_skip_unknown(tcv, &ctx->left))
                         {
-                            case -1:
-                                ctx->phase = 5;
-                                RETURN(RC_FAIL);
-                                continue;
-                            case 1:
-                                ctx->phase = 3;
-                                /* Fall through */
-                            case 0:
-                                XER_ADVANCE(ch_size);
-                                continue;
-                            case 2:
-                                ctx->phase = 3;
-                                break;
+                        case -1:
+                            ctx->phase = 5;
+                            RETURN(RC_FAIL);
+                            continue;
+                        case 1:
+                            ctx->phase = 3;
+                            /* Fall through */
+                        case 0:
+                            XER_ADVANCE(ch_size);
+                            continue;
+                        case 2:
+                            ctx->phase = 3;
+                            break;
                         }
                 }
 
             switch (tcv)
                 {
-                    case XCT_BOTH:
-                        break; /* No CHOICE? */
-                    case XCT_CLOSING:
-                        if (ctx->phase != 3) break;
-                        XER_ADVANCE(ch_size);
-                        ctx->phase = 5; /* Phase out */
-                        RETURN(RC_OK);
-                    case XCT_OPENING:
-                        if (ctx->phase == 0)
-                            {
-                                XER_ADVANCE(ch_size);
-                                ctx->phase = 1; /* Processing body phase */
-                                continue;
-                            }
-                        /* Fall through */
-                    case XCT_UNKNOWN_OP:
-                    case XCT_UNKNOWN_BO:
+                case XCT_BOTH:
+                    break; /* No CHOICE? */
+                case XCT_CLOSING:
+                    if (ctx->phase != 3) break;
+                    XER_ADVANCE(ch_size);
+                    ctx->phase = 5; /* Phase out */
+                    RETURN(RC_OK);
+                case XCT_OPENING:
+                    if (ctx->phase == 0)
+                        {
+                            XER_ADVANCE(ch_size);
+                            ctx->phase = 1; /* Processing body phase */
+                            continue;
+                        }
+                    /* Fall through */
+                case XCT_UNKNOWN_OP:
+                case XCT_UNKNOWN_BO:
 
-                        if (ctx->phase != 1) break; /* Really unexpected */
+                    if (ctx->phase != 1) break; /* Really unexpected */
 
-                        /*
+                    /*
                          * Search which inner member corresponds to this tag.
                          */
-                        for (edx = 0; edx < td->elements_count; edx++)
-                            {
-                                elm = &td->elements[edx];
-                                tcv =
-                                    xer_check_tag(buf_ptr, ch_size, elm->name);
-                                switch (tcv)
-                                    {
-                                        case XCT_BOTH:
-                                        case XCT_OPENING:
-                                            /*
+                    for (edx = 0; edx < td->elements_count; edx++)
+                        {
+                            elm = &td->elements[edx];
+                            tcv =
+                                xer_check_tag(buf_ptr, ch_size, elm->name);
+                            switch (tcv)
+                                {
+                                case XCT_BOTH:
+                                case XCT_OPENING:
+                                    /*
                                              * Process this member.
                                              */
-                                            ctx->step = edx;
-                                            ctx->phase = 2;
-                                            break;
-                                        case XCT_UNKNOWN_OP:
-                                        case XCT_UNKNOWN_BO:
-                                            continue;
-                                        default:
-                                            edx = td->elements_count;
-                                            break; /* Phase out */
-                                    }
-                                break;
-                            }
-                        if (edx != td->elements_count) continue;
+                                    ctx->step = edx;
+                                    ctx->phase = 2;
+                                    break;
+                                case XCT_UNKNOWN_OP:
+                                case XCT_UNKNOWN_BO:
+                                    continue;
+                                default:
+                                    edx = td->elements_count;
+                                    break; /* Phase out */
+                                }
+                            break;
+                        }
+                    if (edx != td->elements_count) continue;
 
-                        /* It is expected extension */
-                        if (specs->ext_start != -1)
-                            {
-                                ASN_DEBUG("Got anticipated extension");
-                                /*
+                    /* It is expected extension */
+                    if (specs->ext_start != -1)
+                        {
+                            ASN_DEBUG("Got anticipated extension");
+                            /*
                                  * Check for (XCT_BOTH or XCT_UNKNOWN_BO)
                                  * By using a mask. Only record a pure
                                  * <opening> tags.
                                  */
-                                if (tcv & XCT_CLOSING)
-                                    {
-                                        /* Found </extension> without body */
-                                        ctx->phase = 3; /* Terminating */
-                                    }
-                                else
-                                    {
-                                        ctx->left = 1;
-                                        ctx->phase = 4; /* Skip ...'s */
-                                    }
-                                XER_ADVANCE(ch_size);
-                                continue;
-                            }
+                            if (tcv & XCT_CLOSING)
+                                {
+                                    /* Found </extension> without body */
+                                    ctx->phase = 3; /* Terminating */
+                                }
+                            else
+                                {
+                                    ctx->left = 1;
+                                    ctx->phase = 4; /* Skip ...'s */
+                                }
+                            XER_ADVANCE(ch_size);
+                            continue;
+                        }
 
-                        /* Fall through */
-                    default:
-                        break;
+                    /* Fall through */
+                default:
+                    break;
                 }
 
             ASN_DEBUG(
@@ -878,8 +878,8 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t CHOICE_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                 int ilevel, enum xer_encoder_flags_e flags,
-                                 asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     asn_enc_rval_t er;
@@ -920,7 +920,7 @@ asn_enc_rval_t CHOICE_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             _ASN_CALLBACK3("<", 1, mname, mlen, ">", 1);
 
             tmper = elm->type->xer_encoder(elm->type, memb_ptr, ilevel + 1,
-                                           flags, cb, app_key);
+                flags, cb, app_key);
             if (tmper.encoded == -1) return tmper;
 
             _ASN_CALLBACK3("</", 2, mname, mlen, ">", 1);
@@ -936,9 +936,9 @@ cb_failed:
 }
 
 asn_dec_rval_t CHOICE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                  asn_TYPE_descriptor_t *td,
-                                  asn_per_constraints_t *constraints,
-                                  void **sptr, asn_per_data_t *pd)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints,
+    void **sptr, asn_per_data_t *pd)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     asn_dec_rval_t rv;
@@ -979,7 +979,7 @@ asn_dec_rval_t CHOICE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             value = per_get_few_bits(pd, ct->range_bits);
             if (value < 0) _ASN_DECODE_STARVED;
             ASN_DEBUG("CHOICE %s got index %d in range %d", td->name, value,
-                      ct->range_bits);
+                ct->range_bits);
             if (value > ct->upper_bound) _ASN_DECODE_FAILED;
         }
     else
@@ -1013,23 +1013,23 @@ asn_dec_rval_t CHOICE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     if (ct && ct->range_bits >= 0)
         {
             rv = elm->type->uper_decoder(opt_codec_ctx, elm->type,
-                                         elm->per_constraints, memb_ptr2, pd);
+                elm->per_constraints, memb_ptr2, pd);
         }
     else
         {
             rv = uper_open_type_get(opt_codec_ctx, elm->type,
-                                    elm->per_constraints, memb_ptr2, pd);
+                elm->per_constraints, memb_ptr2, pd);
         }
 
     if (rv.code != RC_OK)
         ASN_DEBUG("Failed to decode %s in %s (CHOICE) %d", elm->name, td->name,
-                  rv.code);
+            rv.code);
     return rv;
 }
 
 asn_enc_rval_t CHOICE_encode_uper(asn_TYPE_descriptor_t *td,
-                                  asn_per_constraints_t *constraints,
-                                  void *sptr, asn_per_outp_t *po)
+    asn_per_constraints_t *constraints,
+    void *sptr, asn_per_outp_t *po)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     asn_TYPE_member_t *elm; /* CHOICE's element */
@@ -1100,7 +1100,7 @@ asn_enc_rval_t CHOICE_encode_uper(asn_TYPE_descriptor_t *td,
                 _ASN_ENCODE_FAILED;
 
             return elm->type->uper_encoder(elm->type, elm->per_constraints,
-                                           memb_ptr, po);
+                memb_ptr, po);
         }
     else
         {
@@ -1109,7 +1109,7 @@ asn_enc_rval_t CHOICE_encode_uper(asn_TYPE_descriptor_t *td,
             if (uper_put_nsnnwn(po, present - specs->ext_start))
                 _ASN_ENCODE_FAILED;
             if (uper_open_type_put(elm->type, elm->per_constraints, memb_ptr,
-                                   po))
+                    po))
                 _ASN_ENCODE_FAILED;
             rval.encoded = 0;
             _ASN_ENCODED_OK(rval);
@@ -1117,7 +1117,7 @@ asn_enc_rval_t CHOICE_encode_uper(asn_TYPE_descriptor_t *td,
 }
 
 int CHOICE_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                 asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
     int present;
@@ -1159,7 +1159,7 @@ int CHOICE_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 }
 
             return elm->type->print_struct(elm->type, memb_ptr, ilevel, cb,
-                                           app_key);
+                app_key);
         }
     else
         {
@@ -1217,7 +1217,7 @@ void CHOICE_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only)
  * produce packed code.
  */
 static int _fetch_present_idx(const void *struct_ptr, int pres_offset,
-                              int pres_size)
+    int pres_size)
 {
     const void *present_ptr;
     int present;
@@ -1226,43 +1226,43 @@ static int _fetch_present_idx(const void *struct_ptr, int pres_offset,
 
     switch (pres_size)
         {
-            case sizeof(int):
-                present = *(const int *)present_ptr;
-                break;
-            case sizeof(short):
-                present = *(const short *)present_ptr;
-                break;
-            case sizeof(char):
-                present = *(const char *)present_ptr;
-                break;
-            default:
-                /* ANSI C mandates enum to be equivalent to integer */
-                assert(pres_size != sizeof(int));
-                return 0; /* If not aborted, pass back safe value */
+        case sizeof(int):
+            present = *(const int *)present_ptr;
+            break;
+        case sizeof(short):
+            present = *(const short *)present_ptr;
+            break;
+        case sizeof(char):
+            present = *(const char *)present_ptr;
+            break;
+        default:
+            /* ANSI C mandates enum to be equivalent to integer */
+            assert(pres_size != sizeof(int));
+            return 0; /* If not aborted, pass back safe value */
         }
 
     return present;
 }
 
 static void _set_present_idx(void *struct_ptr, int pres_offset, int pres_size,
-                             int present)
+    int present)
 {
     void *present_ptr;
     present_ptr = ((char *)struct_ptr) + pres_offset;
 
     switch (pres_size)
         {
-            case sizeof(int):
-                *(int *)present_ptr = present;
-                break;
-            case sizeof(short):
-                *(short *)present_ptr = present;
-                break;
-            case sizeof(char):
-                *(char *)present_ptr = present;
-                break;
-            default:
-                /* ANSI C mandates enum to be equivalent to integer */
-                assert(pres_size != sizeof(int));
+        case sizeof(int):
+            *(int *)present_ptr = present;
+            break;
+        case sizeof(short):
+            *(short *)present_ptr = present;
+            break;
+        case sizeof(char):
+            *(char *)present_ptr = present;
+            break;
+        default:
+            /* ANSI C mandates enum to be equivalent to integer */
+            assert(pres_size != sizeof(int));
         }
 }

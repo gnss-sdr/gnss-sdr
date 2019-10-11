@@ -8,15 +8,15 @@
 
 static asn_TYPE_member_t asn_MBR_CellIDAndLAC_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct CellIDAndLAC, referenceLAC),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_LAC, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "referenceLAC"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_LAC, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "referenceLAC"},
     {ATF_NOFLAGS, 0, offsetof(struct CellIDAndLAC, referenceCI),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellID, 0, /* Defer constraints checking to the member type */
-     0,                  /* No PER visible constraints */
-     0, "referenceCI"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellID, 0,                     /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "referenceCI"},
 };
 static ber_tlv_tag_t asn_DEF_CellIDAndLAC_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

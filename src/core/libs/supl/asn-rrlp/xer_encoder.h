@@ -27,10 +27,10 @@ extern "C"
      * The XER encoder of any type. May be invoked by the application.
      */
     asn_enc_rval_t xer_encode(struct asn_TYPE_descriptor_s *type_descriptor,
-                              void *struct_ptr, /* Structure to be encoded */
-                              enum xer_encoder_flags_e xer_flags,
-                              asn_app_consume_bytes_f *consume_bytes_cb,
-                              void *app_key /* Arbitrary callback argument */
+        void *struct_ptr, /* Structure to be encoded */
+        enum xer_encoder_flags_e xer_flags,
+        asn_app_consume_bytes_f *consume_bytes_cb,
+        void *app_key /* Arbitrary callback argument */
     );
 
     /*
@@ -52,7 +52,7 @@ extern "C"
         int ilevel,       /* Level of indentation */
         enum xer_encoder_flags_e xer_flags,
         asn_app_consume_bytes_f *consume_bytes_cb, /* Callback */
-        void *app_key /* Arbitrary callback argument */
+        void *app_key                              /* Arbitrary callback argument */
     );
 
 #ifdef __cplusplus

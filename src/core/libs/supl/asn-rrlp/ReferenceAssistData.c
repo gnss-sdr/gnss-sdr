@@ -8,28 +8,28 @@
 
 static asn_TYPE_member_t asn_MBR_ReferenceAssistData_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceAssistData, bcchCarrier),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BCCHCarrier,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "bcchCarrier"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BCCHCarrier,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "bcchCarrier"},
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceAssistData, bsic),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BSIC, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "bsic"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BSIC, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "bsic"},
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceAssistData, timeSlotScheme),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TimeSlotScheme,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "timeSlotScheme"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TimeSlotScheme,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "timeSlotScheme"},
     {ATF_POINTER, 1, offsetof(struct ReferenceAssistData, btsPosition),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BTSPosition,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "btsPosition"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BTSPosition,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "btsPosition"},
 };
 static int asn_MAP_ReferenceAssistData_oms_1[] = {3};
 static ber_tlv_tag_t asn_DEF_ReferenceAssistData_tags_1[] = {
@@ -70,7 +70,7 @@ asn_TYPE_descriptor_t asn_DEF_ReferenceAssistData = {
     asn_DEF_ReferenceAssistData_tags_1,                /* Same as above */
     sizeof(asn_DEF_ReferenceAssistData_tags_1) /
         sizeof(asn_DEF_ReferenceAssistData_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                 /* No PER visible constraints */
     asn_MBR_ReferenceAssistData_1,
     4,                                   /* Elements count */
     &asn_SPC_ReferenceAssistData_specs_1 /* Additional specs */

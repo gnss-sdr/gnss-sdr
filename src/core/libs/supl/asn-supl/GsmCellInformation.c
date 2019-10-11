@@ -7,15 +7,15 @@
 #include "GsmCellInformation.h"
 
 static int memb_refMCC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_refMCC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_refMNC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,21 +57,21 @@ static int memb_refMNC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_refLAC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,21 +85,21 @@ static int memb_refLAC_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_refCI_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -113,21 +113,21 @@ static int memb_refCI_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_tA_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                asn_app_constraint_failed_f *ctfailcb,
-                                void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -141,7 +141,7 @@ static int memb_tA_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -178,30 +178,30 @@ static asn_per_constraints_t ASN_PER_MEMB_T_A_CONSTR_7 = {
 };
 static asn_TYPE_member_t asn_MBR_GsmCellInformation_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GsmCellInformation, refMCC),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refMCC_constraint_1,
-     &ASN_PER_MEMB_REF_MCC_CONSTR_2, 0, "refMCC"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refMCC_constraint_1,
+        &ASN_PER_MEMB_REF_MCC_CONSTR_2, 0, "refMCC"},
     {ATF_NOFLAGS, 0, offsetof(struct GsmCellInformation, refMNC),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refMNC_constraint_1,
-     &ASN_PER_MEMB_REF_MNC_CONSTR_3, 0, "refMNC"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refMNC_constraint_1,
+        &ASN_PER_MEMB_REF_MNC_CONSTR_3, 0, "refMNC"},
     {ATF_NOFLAGS, 0, offsetof(struct GsmCellInformation, refLAC),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refLAC_constraint_1,
-     &ASN_PER_MEMB_REF_LAC_CONSTR_4, 0, "refLAC"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refLAC_constraint_1,
+        &ASN_PER_MEMB_REF_LAC_CONSTR_4, 0, "refLAC"},
     {ATF_NOFLAGS, 0, offsetof(struct GsmCellInformation, refCI),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refCI_constraint_1,
-     &ASN_PER_MEMB_REF_CI_CONSTR_5, 0, "refCI"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refCI_constraint_1,
+        &ASN_PER_MEMB_REF_CI_CONSTR_5, 0, "refCI"},
     {ATF_POINTER, 2, offsetof(struct GsmCellInformation, nMR),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NMR, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "nMR"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NMR, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "nMR"},
     {ATF_POINTER, 1, offsetof(struct GsmCellInformation, tA),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_tA_constraint_1, &ASN_PER_MEMB_T_A_CONSTR_7,
-     0, "tA"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_tA_constraint_1, &ASN_PER_MEMB_T_A_CONSTR_7,
+        0, "tA"},
 };
 static int asn_MAP_GsmCellInformation_oms_1[] = {4, 5};
 static ber_tlv_tag_t asn_DEF_GsmCellInformation_tags_1[] = {
@@ -244,7 +244,7 @@ asn_TYPE_descriptor_t asn_DEF_GsmCellInformation = {
     asn_DEF_GsmCellInformation_tags_1,                /* Same as above */
     sizeof(asn_DEF_GsmCellInformation_tags_1) /
         sizeof(asn_DEF_GsmCellInformation_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                /* No PER visible constraints */
     asn_MBR_GsmCellInformation_1,
     6,                                  /* Elements count */
     &asn_SPC_GsmCellInformation_specs_1 /* Additional specs */

@@ -7,15 +7,15 @@
 #include "DGANSSSgnElement.h"
 
 static int memb_iod_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_iod_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_udre_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                  asn_app_constraint_failed_f *ctfailcb,
-                                  void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,7 +57,7 @@ static int memb_udre_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -71,7 +71,7 @@ static int memb_pseudoRangeCor_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,22 +85,22 @@ static int memb_pseudoRangeCor_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_rangeRateCor_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -114,7 +114,7 @@ static int memb_rangeRateCor_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -145,26 +145,26 @@ static asn_per_constraints_t ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6 = {
 };
 static asn_TYPE_member_t asn_MBR_DGANSSSgnElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct DGANSSSgnElement, svID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SVID, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "svID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SVID, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "svID"},
     {ATF_NOFLAGS, 0, offsetof(struct DGANSSSgnElement, iod),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_iod_constraint_1, &ASN_PER_MEMB_IOD_CONSTR_3,
-     0, "iod"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_iod_constraint_1, &ASN_PER_MEMB_IOD_CONSTR_3,
+        0, "iod"},
     {ATF_NOFLAGS, 0, offsetof(struct DGANSSSgnElement, udre),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_udre_constraint_1,
-     &ASN_PER_MEMB_UDRE_CONSTR_4, 0, "udre"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_udre_constraint_1,
+        &ASN_PER_MEMB_UDRE_CONSTR_4, 0, "udre"},
     {ATF_NOFLAGS, 0, offsetof(struct DGANSSSgnElement, pseudoRangeCor),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_pseudoRangeCor_constraint_1,
-     &ASN_PER_MEMB_PSEUDO_RANGE_COR_CONSTR_5, 0, "pseudoRangeCor"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_pseudoRangeCor_constraint_1,
+        &ASN_PER_MEMB_PSEUDO_RANGE_COR_CONSTR_5, 0, "pseudoRangeCor"},
     {ATF_NOFLAGS, 0, offsetof(struct DGANSSSgnElement, rangeRateCor),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_rangeRateCor_constraint_1,
-     &ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6, 0, "rangeRateCor"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_rangeRateCor_constraint_1,
+        &ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6, 0, "rangeRateCor"},
 };
 static ber_tlv_tag_t asn_DEF_DGANSSSgnElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -205,7 +205,7 @@ asn_TYPE_descriptor_t asn_DEF_DGANSSSgnElement = {
     asn_DEF_DGANSSSgnElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_DGANSSSgnElement_tags_1) /
         sizeof(asn_DEF_DGANSSSgnElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_DGANSSSgnElement_1,
     5,                                /* Elements count */
     &asn_SPC_DGANSSSgnElement_specs_1 /* Additional specs */

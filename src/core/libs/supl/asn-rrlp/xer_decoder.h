@@ -51,10 +51,10 @@ extern "C"
         const char *xml_tag,   /* Expected XML tag name */
         const void *buf_ptr, size_t size,
         int (*opt_unexpected_tag_decoder)(void *struct_key,
-                                          const void *chunk_buf,
-                                          size_t chunk_size),
+            const void *chunk_buf,
+            size_t chunk_size),
         ssize_t (*body_receiver)(void *struct_key, const void *chunk_buf,
-                                 size_t chunk_size, int have_more));
+            size_t chunk_size, int have_more));
 
     /*
      * Fetch the next XER (XML) token from the stream.
@@ -69,7 +69,7 @@ extern "C"
         PXER_COMMENT /* A comment, may be part of */
     } pxer_chunk_type_e;
     ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
-                           pxer_chunk_type_e *_ch_type);
+        pxer_chunk_type_e *_ch_type);
 
     /*
      * This function checks the buffer against the tag name is expected to
@@ -87,7 +87,7 @@ extern "C"
         XCT_UNKNOWN_BO = 7  /* Unexpected <modified/> tag */
     } xer_check_tag_e;
     xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
-                                  const char *need_tag);
+        const char *need_tag);
 
     /*
      * Check whether this buffer consists of entirely XER whitespace characters.

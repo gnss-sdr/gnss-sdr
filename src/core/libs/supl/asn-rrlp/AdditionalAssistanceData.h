@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "GPSAssistanceData.h"
 #include "ExtensionContainer.h"
 #include "GANSSAssistanceData.h"
+#include "GPSAssistanceData.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

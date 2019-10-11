@@ -8,37 +8,37 @@
 
 static asn_TYPE_member_t asn_MBR_SUPLPOSINIT_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SUPLPOSINIT, sETCapabilities),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SETCapabilities,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "sETCapabilities"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SETCapabilities,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "sETCapabilities"},
     {ATF_POINTER, 1, offsetof(struct SUPLPOSINIT, requestedAssistData),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RequestedAssistData,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "requestedAssistData"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RequestedAssistData,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "requestedAssistData"},
     {ATF_NOFLAGS, 0, offsetof(struct SUPLPOSINIT, locationId),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_LocationId, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "locationId"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_LocationId, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "locationId"},
     {ATF_POINTER, 3, offsetof(struct SUPLPOSINIT, position),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Position, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "position"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Position, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "position"},
     {ATF_POINTER, 2, offsetof(struct SUPLPOSINIT, sUPLPOS),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLPOS, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "sUPLPOS"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLPOS, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "sUPLPOS"},
     {ATF_POINTER, 1, offsetof(struct SUPLPOSINIT, ver),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Ver, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "ver"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Ver, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "ver"},
 };
 static int asn_MAP_SUPLPOSINIT_oms_1[] = {1, 3, 4, 5};
 static ber_tlv_tag_t asn_DEF_SUPLPOSINIT_tags_1[] = {
@@ -46,7 +46,7 @@ static ber_tlv_tag_t asn_DEF_SUPLPOSINIT_tags_1[] = {
 static asn_TYPE_tag2member_t asn_MAP_SUPLPOSINIT_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* sETCapabilities at 15 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0}, /* requestedAssistData at 16 */
+        0},                                        /* requestedAssistData at 16 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* locationId at 17 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* position at 18 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* sUPLPOS at 19 */

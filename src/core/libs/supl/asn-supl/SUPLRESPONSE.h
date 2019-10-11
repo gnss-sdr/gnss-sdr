@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "PosMethod.h"
 #include "KeyIdentity4.h"
+#include "PosMethod.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -47,8 +47,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "SLPAddress.h"
 #include "SETAuthKey.h"
+#include "SLPAddress.h"
 
 #endif /* _SUPLRESPONSE_H_ */
 #include <asn_internal.h>

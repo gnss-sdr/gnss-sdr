@@ -33,8 +33,8 @@
  * The BER decoder of any type.
  */
 asn_dec_rval_t ber_decode(asn_codec_ctx_t *opt_codec_ctx,
-                          asn_TYPE_descriptor_t *type_descriptor,
-                          void **struct_ptr, const void *ptr, size_t size)
+    asn_TYPE_descriptor_t *type_descriptor,
+    void **struct_ptr, const void *ptr, size_t size)
 {
     asn_codec_ctx_t s_codec_ctx;
 
@@ -73,10 +73,10 @@ asn_dec_rval_t ber_decode(asn_codec_ctx_t *opt_codec_ctx,
  * Check the set of <TL<TL<TL...>>> tags matches the definition.
  */
 asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
-                              asn_TYPE_descriptor_t *td,
-                              asn_struct_ctx_t *opt_ctx, const void *ptr,
-                              size_t size, int tag_mode, int last_tag_form,
-                              ber_tlv_len_t *last_length, int *opt_tlv_form)
+    asn_TYPE_descriptor_t *td,
+    asn_struct_ctx_t *opt_ctx, const void *ptr,
+    size_t size, int tag_mode, int last_tag_form,
+    ber_tlv_len_t *last_length, int *opt_tlv_form)
 {
     ssize_t consumed_myself = 0;
     ssize_t tag_len;
@@ -85,7 +85,7 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
     ber_tlv_len_t tlv_len;
     ber_tlv_len_t limit_len = -1;
     int expect_00_terminators = 0;
-    int tlv_constr = -1; /* If CHOICE, opt_tlv_form is not given */
+    int tlv_constr = -1;                    /* If CHOICE, opt_tlv_form is not given */
     int step = opt_ctx ? opt_ctx->step : 0; /* Where we left previously */
     int tagno;
 
@@ -119,7 +119,7 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
     tagno = step /* Continuing where left previously */
             + (tag_mode == 1 ? -1 : 0);
     ASN_DEBUG("ber_check_tags(%s, size=%ld, tm=%d, step=%d, tagno=%d)",
-              td->name, (long)size, tag_mode, step, tagno);
+        td->name, (long)size, tag_mode, step, tagno);
     /* assert(td->tags_count >= 1) May not be the case for CHOICE or ANY */
 
     if (tag_mode == 0 && tagno == td->tags_count)
@@ -132,20 +132,20 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
             tag_len = ber_fetch_tag(ptr, size, &tlv_tag);
             switch (tag_len)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
                 }
             tlv_constr = BER_TLV_CONSTRUCTED(ptr);
             len_len = ber_fetch_length(tlv_constr, (const char *)ptr + tag_len,
-                                       size - tag_len, &tlv_len);
+                size - tag_len, &tlv_len);
             switch (len_len)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
                 }
             ASN_DEBUG("Advancing %ld in ANY case", (tag_len + len_len));
             ADVANCE(tag_len + len_len);
@@ -167,10 +167,10 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
                 ber_tlv_tag_string(tlv_tag));
             switch (tag_len)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
                 }
 
             tlv_constr = BER_TLV_CONSTRUCTED(ptr);
@@ -224,7 +224,7 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
                     if (last_tag_form != tlv_constr && last_tag_form != -1)
                         {
                             ASN_DEBUG("last_tag_form %d != %d", last_tag_form,
-                                      tlv_constr);
+                                tlv_constr);
                             RETURN(RC_FAIL);
                         }
                 }
@@ -233,14 +233,14 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
              * Fetch and process L from TLV.
              */
             len_len = ber_fetch_length(tlv_constr, (const char *)ptr + tag_len,
-                                       size - tag_len, &tlv_len);
+                size - tag_len, &tlv_len);
             ASN_DEBUG("Fetchinig len = %ld", (long)len_len);
             switch (len_len)
                 {
-                    case -1:
-                        RETURN(RC_FAIL);
-                    case 0:
-                        RETURN(RC_WMORE);
+                case -1:
+                    RETURN(RC_FAIL);
+                case 0:
+                    RETURN(RC_WMORE);
                 }
 
             /*
@@ -300,7 +300,7 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
                      * with the outer TLV's length value.
                      */
                     ASN_DEBUG("Outer TLV is %ld and inner is %ld",
-                              (long)limit_len, (long)tlv_len);
+                        (long)limit_len, (long)tlv_len);
                     RETURN(RC_FAIL);
                 }
 

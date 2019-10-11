@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <UTCTime.h>
 #include "PositionEstimate.h"
+#include <UTCTime.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

@@ -14,16 +14,16 @@ static asn_per_constraints_t ASN_PER_TYPE_GANSS_CLOCK_MODEL_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSClockModel_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct GANSSClockModel, choice.standardClockModelList),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SeqOfStandardClockModelElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "standardClockModelList"},
+        offsetof(struct GANSSClockModel, choice.standardClockModelList),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SeqOfStandardClockModelElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "standardClockModelList"},
 };
 static asn_TYPE_tag2member_t asn_MAP_GANSSClockModel_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0} /* standardClockModelList at 1274 */
+        0} /* standardClockModelList at 1274 */
 };
 static asn_CHOICE_specifics_t asn_SPC_GANSSClockModel_specs_1 = {
     sizeof(struct GANSSClockModel),

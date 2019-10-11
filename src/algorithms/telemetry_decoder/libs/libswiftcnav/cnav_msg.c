@@ -30,10 +30,9 @@
  */
 
 
-#include "edc.h"
-#include "bits.h"
 #include "cnav_msg.h"
-
+#include "bits.h"
+#include "edc.h"
 #include <limits.h>
 #include <string.h>
 

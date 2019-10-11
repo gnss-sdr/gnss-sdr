@@ -23,9 +23,9 @@ extern "C"
     asn_dec_rval_t uper_decode_complete(
         struct asn_codec_ctx_s *opt_codec_ctx,
         struct asn_TYPE_descriptor_s *td, /* Type to decode */
-        void **sptr,        /* Pointer to a target structure's pointer */
-        const void *buffer, /* Data to be decoded */
-        size_t size         /* Size of data buffer */
+        void **sptr,                      /* Pointer to a target structure's pointer */
+        const void *buffer,               /* Data to be decoded */
+        size_t size                       /* Size of data buffer */
     );
 
     /*
@@ -36,11 +36,11 @@ extern "C"
     asn_dec_rval_t uper_decode(
         struct asn_codec_ctx_s *opt_codec_ctx,
         struct asn_TYPE_descriptor_s *td, /* Type to decode */
-        void **sptr,        /* Pointer to a target structure's pointer */
-        const void *buffer, /* Data to be decoded */
-        size_t size,        /* Size of data buffer */
-        int skip_bits,      /* Number of unused leading bits, 0..7 */
-        int unused_bits     /* Number of unused tailing bits, 0..7 */
+        void **sptr,                      /* Pointer to a target structure's pointer */
+        const void *buffer,               /* Data to be decoded */
+        size_t size,                      /* Size of data buffer */
+        int skip_bits,                    /* Number of unused leading bits, 0..7 */
+        int unused_bits                   /* Number of unused tailing bits, 0..7 */
     );
 
     /*

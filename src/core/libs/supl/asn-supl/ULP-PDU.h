@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NativeInteger.h>
-#include "Version.h"
 #include "SessionID.h"
 #include "UlpMessage.h"
+#include "Version.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

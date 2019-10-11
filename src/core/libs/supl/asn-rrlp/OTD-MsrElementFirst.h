@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NativeInteger.h>
 #include "ModuloTimeSlot.h"
 #include "StdResolution.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -46,8 +46,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "TOA-MeasurementsOfRef.h"
 #include "SeqOfOTD-FirstSetMsrs.h"
+#include "TOA-MeasurementsOfRef.h"
 
 #endif /* _OTD_MsrElementFirst_H_ */
 #include <asn_internal.h>

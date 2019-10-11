@@ -7,15 +7,15 @@
 #include "IonosphericModel.h"
 
 static int memb_alfa0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_alfa0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_alfa1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,21 +57,21 @@ static int memb_alfa1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_alfa2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,21 +85,21 @@ static int memb_alfa2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_alfa3_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -113,21 +113,21 @@ static int memb_alfa3_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_beta0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -141,21 +141,21 @@ static int memb_beta0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_beta1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -169,21 +169,21 @@ static int memb_beta1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_beta2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -197,21 +197,21 @@ static int memb_beta2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_beta3_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -225,7 +225,7 @@ static int memb_beta3_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -280,37 +280,37 @@ static asn_per_constraints_t ASN_PER_MEMB_BETA3_CONSTR_9 = {
 };
 static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, alfa0),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_alfa0_constraint_1,
-     &ASN_PER_MEMB_ALFA0_CONSTR_2, 0, "alfa0"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_alfa0_constraint_1,
+        &ASN_PER_MEMB_ALFA0_CONSTR_2, 0, "alfa0"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, alfa1),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_alfa1_constraint_1,
-     &ASN_PER_MEMB_ALFA1_CONSTR_3, 0, "alfa1"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_alfa1_constraint_1,
+        &ASN_PER_MEMB_ALFA1_CONSTR_3, 0, "alfa1"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, alfa2),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_alfa2_constraint_1,
-     &ASN_PER_MEMB_ALFA2_CONSTR_4, 0, "alfa2"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_alfa2_constraint_1,
+        &ASN_PER_MEMB_ALFA2_CONSTR_4, 0, "alfa2"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, alfa3),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_alfa3_constraint_1,
-     &ASN_PER_MEMB_ALFA3_CONSTR_5, 0, "alfa3"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_alfa3_constraint_1,
+        &ASN_PER_MEMB_ALFA3_CONSTR_5, 0, "alfa3"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, beta0),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_beta0_constraint_1,
-     &ASN_PER_MEMB_BETA0_CONSTR_6, 0, "beta0"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_beta0_constraint_1,
+        &ASN_PER_MEMB_BETA0_CONSTR_6, 0, "beta0"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, beta1),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_beta1_constraint_1,
-     &ASN_PER_MEMB_BETA1_CONSTR_7, 0, "beta1"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_beta1_constraint_1,
+        &ASN_PER_MEMB_BETA1_CONSTR_7, 0, "beta1"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, beta2),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_beta2_constraint_1,
-     &ASN_PER_MEMB_BETA2_CONSTR_8, 0, "beta2"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_beta2_constraint_1,
+        &ASN_PER_MEMB_BETA2_CONSTR_8, 0, "beta2"},
     {ATF_NOFLAGS, 0, offsetof(struct IonosphericModel, beta3),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_beta3_constraint_1,
-     &ASN_PER_MEMB_BETA3_CONSTR_9, 0, "beta3"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_beta3_constraint_1,
+        &ASN_PER_MEMB_BETA3_CONSTR_9, 0, "beta3"},
 };
 static ber_tlv_tag_t asn_DEF_IonosphericModel_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -354,7 +354,7 @@ asn_TYPE_descriptor_t asn_DEF_IonosphericModel = {
     asn_DEF_IonosphericModel_tags_1,                /* Same as above */
     sizeof(asn_DEF_IonosphericModel_tags_1) /
         sizeof(asn_DEF_IonosphericModel_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_IonosphericModel_1,
     8,                                /* Elements count */
     &asn_SPC_IonosphericModel_specs_1 /* Additional specs */

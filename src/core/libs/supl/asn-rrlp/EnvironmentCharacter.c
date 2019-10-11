@@ -7,8 +7,8 @@
 #include "EnvironmentCharacter.h"
 
 int EnvironmentCharacter_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     /* Replace with underlying type checker */
     td->check_constraints = asn_DEF_ENUMERATED.check_constraints;
@@ -40,57 +40,57 @@ static void EnvironmentCharacter_1_inherit_TYPE_descriptor(
 }
 
 void EnvironmentCharacter_free(asn_TYPE_descriptor_t *td, void *struct_ptr,
-                               int contents_only)
+    int contents_only)
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 int EnvironmentCharacter_print(asn_TYPE_descriptor_t *td,
-                               const void *struct_ptr, int ilevel,
-                               asn_app_consume_bytes_f *cb, void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
 }
 
 asn_dec_rval_t EnvironmentCharacter_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                               asn_TYPE_descriptor_t *td,
-                                               void **structure,
-                                               const void *bufptr, size_t size,
-                                               int tag_mode)
+    asn_TYPE_descriptor_t *td,
+    void **structure,
+    const void *bufptr, size_t size,
+    int tag_mode)
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 asn_enc_rval_t EnvironmentCharacter_encode_der(asn_TYPE_descriptor_t *td,
-                                               void *structure, int tag_mode,
-                                               ber_tlv_tag_t tag,
-                                               asn_app_consume_bytes_f *cb,
-                                               void *app_key)
+    void *structure, int tag_mode,
+    ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     return td->der_encoder(td, structure, tag_mode, tag, cb, app_key);
 }
 
 asn_dec_rval_t EnvironmentCharacter_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                               asn_TYPE_descriptor_t *td,
-                                               void **structure,
-                                               const char *opt_mname,
-                                               const void *bufptr, size_t size)
+    asn_TYPE_descriptor_t *td,
+    void **structure,
+    const char *opt_mname,
+    const void *bufptr, size_t size)
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 asn_enc_rval_t EnvironmentCharacter_encode_xer(asn_TYPE_descriptor_t *td,
-                                               void *structure, int ilevel,
-                                               enum xer_encoder_flags_e flags,
-                                               asn_app_consume_bytes_f *cb,
-                                               void *app_key)
+    void *structure, int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     return td->xer_encoder(td, structure, ilevel, flags, cb, app_key);
@@ -103,7 +103,7 @@ asn_dec_rval_t EnvironmentCharacter_decode_uper(
 {
     EnvironmentCharacter_1_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 asn_enc_rval_t EnvironmentCharacter_encode_uper(
@@ -133,10 +133,10 @@ static unsigned int asn_MAP_EnvironmentCharacter_enum2value_1[] = {
 static asn_INTEGER_specifics_t asn_SPC_EnvironmentCharacter_specs_1 = {
     asn_MAP_EnvironmentCharacter_value2enum_1, /* "tag" => N; sorted by tag */
     asn_MAP_EnvironmentCharacter_enum2value_1, /* N => "tag"; sorted by N */
-    3, /* Number of elements in the maps */
-    4, /* Extensions before this member */
-    1, /* Strict enumeration */
-    0, /* Native long size */
+    3,                                         /* Number of elements in the maps */
+    4,                                         /* Extensions before this member */
+    1,                                         /* Strict enumeration */
+    0,                                         /* Native long size */
     0};
 static ber_tlv_tag_t asn_DEF_EnvironmentCharacter_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (10 << 2))};

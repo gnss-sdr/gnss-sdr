@@ -8,33 +8,33 @@
 
 static asn_TYPE_member_t asn_MBR_AssistBTSData_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct AssistBTSData, bsic),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BSIC, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "bsic"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BSIC, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "bsic"},
     {ATF_NOFLAGS, 0, offsetof(struct AssistBTSData, multiFrameOffset),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_MultiFrameOffset,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "multiFrameOffset"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_MultiFrameOffset,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "multiFrameOffset"},
     {ATF_NOFLAGS, 0, offsetof(struct AssistBTSData, timeSlotScheme),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TimeSlotScheme,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "timeSlotScheme"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TimeSlotScheme,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "timeSlotScheme"},
     {ATF_NOFLAGS, 0, offsetof(struct AssistBTSData, roughRTD),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RoughRTD, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "roughRTD"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RoughRTD, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "roughRTD"},
     {ATF_POINTER, 1, offsetof(struct AssistBTSData, calcAssistanceBTS),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CalcAssistanceBTS,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "calcAssistanceBTS"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CalcAssistanceBTS,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "calcAssistanceBTS"},
 };
 static int asn_MAP_AssistBTSData_oms_1[] = {4};
 static ber_tlv_tag_t asn_DEF_AssistBTSData_tags_1[] = {
@@ -44,7 +44,7 @@ static asn_TYPE_tag2member_t asn_MAP_AssistBTSData_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* multiFrameOffset at 230 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* timeSlotScheme at 231 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* roughRTD at 232 */
-    {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0} /* calcAssistanceBTS at 235 */
+    {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}  /* calcAssistanceBTS at 235 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_AssistBTSData_specs_1 = {
     sizeof(struct AssistBTSData),
@@ -76,7 +76,7 @@ asn_TYPE_descriptor_t asn_DEF_AssistBTSData = {
     asn_DEF_AssistBTSData_tags_1,                /* Same as above */
     sizeof(asn_DEF_AssistBTSData_tags_1) /
         sizeof(asn_DEF_AssistBTSData_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                           /* No PER visible constraints */
     asn_MBR_AssistBTSData_1,
     5,                             /* Elements count */
     &asn_SPC_AssistBTSData_specs_1 /* Additional specs */

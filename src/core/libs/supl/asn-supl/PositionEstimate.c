@@ -7,9 +7,9 @@
 #include "PositionEstimate.h"
 
 static int latitudeSign_2_constraint(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     /* Replace with underlying type checker */
     td->check_constraints = asn_DEF_ENUMERATED.check_constraints;
@@ -40,57 +40,57 @@ static void latitudeSign_2_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td)
 }
 
 static void latitudeSign_2_free(asn_TYPE_descriptor_t *td, void *struct_ptr,
-                                int contents_only)
+    int contents_only)
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 static int latitudeSign_2_print(asn_TYPE_descriptor_t *td,
-                                const void *struct_ptr, int ilevel,
-                                asn_app_consume_bytes_f *cb, void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
 }
 
 static asn_dec_rval_t latitudeSign_2_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                                asn_TYPE_descriptor_t *td,
-                                                void **structure,
-                                                const void *bufptr, size_t size,
-                                                int tag_mode)
+    asn_TYPE_descriptor_t *td,
+    void **structure,
+    const void *bufptr, size_t size,
+    int tag_mode)
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 static asn_enc_rval_t latitudeSign_2_encode_der(asn_TYPE_descriptor_t *td,
-                                                void *structure, int tag_mode,
-                                                ber_tlv_tag_t tag,
-                                                asn_app_consume_bytes_f *cb,
-                                                void *app_key)
+    void *structure, int tag_mode,
+    ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     return td->der_encoder(td, structure, tag_mode, tag, cb, app_key);
 }
 
 static asn_dec_rval_t latitudeSign_2_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                                asn_TYPE_descriptor_t *td,
-                                                void **structure,
-                                                const char *opt_mname,
-                                                const void *bufptr, size_t size)
+    asn_TYPE_descriptor_t *td,
+    void **structure,
+    const char *opt_mname,
+    const void *bufptr, size_t size)
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 static asn_enc_rval_t latitudeSign_2_encode_xer(asn_TYPE_descriptor_t *td,
-                                                void *structure, int ilevel,
-                                                enum xer_encoder_flags_e flags,
-                                                asn_app_consume_bytes_f *cb,
-                                                void *app_key)
+    void *structure, int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     return td->xer_encoder(td, structure, ilevel, flags, cb, app_key);
@@ -103,7 +103,7 @@ static asn_dec_rval_t latitudeSign_2_decode_uper(
 {
     latitudeSign_2_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 static asn_enc_rval_t latitudeSign_2_encode_uper(
@@ -123,7 +123,7 @@ static int memb_uncertaintySemiMajor_constraint_7(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -137,7 +137,7 @@ static int memb_uncertaintySemiMajor_constraint_7(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -151,7 +151,7 @@ static int memb_uncertaintySemiMinor_constraint_7(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -165,7 +165,7 @@ static int memb_uncertaintySemiMinor_constraint_7(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -179,7 +179,7 @@ static int memb_orientationMajorAxis_constraint_7(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -193,22 +193,22 @@ static int memb_orientationMajorAxis_constraint_7(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_latitude_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -222,22 +222,22 @@ static int memb_latitude_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_longitude_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -251,22 +251,22 @@ static int memb_longitude_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_confidence_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -280,7 +280,7 @@ static int memb_confidence_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -372,27 +372,27 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_uncertainty_7[] = {
     {ATF_NOFLAGS, 0, offsetof(struct uncertainty, uncertaintySemiMajor),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_uncertaintySemiMajor_constraint_7,
-     &ASN_PER_MEMB_UNCERTAINTY_SEMI_MAJOR_CONSTR_8, 0, "uncertaintySemiMajor"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_uncertaintySemiMajor_constraint_7,
+        &ASN_PER_MEMB_UNCERTAINTY_SEMI_MAJOR_CONSTR_8, 0, "uncertaintySemiMajor"},
     {ATF_NOFLAGS, 0, offsetof(struct uncertainty, uncertaintySemiMinor),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_uncertaintySemiMinor_constraint_7,
-     &ASN_PER_MEMB_UNCERTAINTY_SEMI_MINOR_CONSTR_9, 0, "uncertaintySemiMinor"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_uncertaintySemiMinor_constraint_7,
+        &ASN_PER_MEMB_UNCERTAINTY_SEMI_MINOR_CONSTR_9, 0, "uncertaintySemiMinor"},
     {ATF_NOFLAGS, 0, offsetof(struct uncertainty, orientationMajorAxis),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_orientationMajorAxis_constraint_7,
-     &ASN_PER_MEMB_ORIENTATION_MAJOR_AXIS_CONSTR_10, 0, "orientationMajorAxis"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_orientationMajorAxis_constraint_7,
+        &ASN_PER_MEMB_ORIENTATION_MAJOR_AXIS_CONSTR_10, 0, "orientationMajorAxis"},
 };
 static ber_tlv_tag_t asn_DEF_uncertainty_tags_7[] = {
     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_uncertainty_tag2el_7[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0}, /* uncertaintySemiMajor at 77 */
+        0}, /* uncertaintySemiMajor at 77 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0}, /* uncertaintySemiMinor at 78 */
+        0}, /* uncertaintySemiMinor at 78 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0} /* orientationMajorAxis at 79 */
+        0} /* orientationMajorAxis at 79 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_uncertainty_specs_7 = {
     sizeof(struct uncertainty),
@@ -426,7 +426,7 @@ static /* Use -fall-defs-global to expose */
         asn_DEF_uncertainty_tags_7, /* Same as above */
         sizeof(asn_DEF_uncertainty_tags_7) /
             sizeof(asn_DEF_uncertainty_tags_7[0]), /* 2 */
-        0, /* No PER visible constraints */
+        0,                                         /* No PER visible constraints */
         asn_MBR_uncertainty_7,
         3,                           /* Elements count */
         &asn_SPC_uncertainty_specs_7 /* Additional specs */
@@ -434,34 +434,34 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_PositionEstimate_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct PositionEstimate, latitudeSign),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_latitudeSign_2,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "latitudeSign"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_latitudeSign_2,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "latitudeSign"},
     {ATF_NOFLAGS, 0, offsetof(struct PositionEstimate, latitude),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_latitude_constraint_1,
-     &ASN_PER_MEMB_LATITUDE_CONSTR_5, 0, "latitude"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_latitude_constraint_1,
+        &ASN_PER_MEMB_LATITUDE_CONSTR_5, 0, "latitude"},
     {ATF_NOFLAGS, 0, offsetof(struct PositionEstimate, longitude),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_longitude_constraint_1,
-     &ASN_PER_MEMB_LONGITUDE_CONSTR_6, 0, "longitude"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_longitude_constraint_1,
+        &ASN_PER_MEMB_LONGITUDE_CONSTR_6, 0, "longitude"},
     {ATF_POINTER, 3, offsetof(struct PositionEstimate, uncertainty),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 0, &asn_DEF_uncertainty_7,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "uncertainty"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 0, &asn_DEF_uncertainty_7,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "uncertainty"},
     {ATF_POINTER, 2, offsetof(struct PositionEstimate, confidence),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_confidence_constraint_1,
-     &ASN_PER_MEMB_CONFIDENCE_CONSTR_11, 0, "confidence"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_confidence_constraint_1,
+        &ASN_PER_MEMB_CONFIDENCE_CONSTR_11, 0, "confidence"},
     {ATF_POINTER, 1, offsetof(struct PositionEstimate, altitudeInfo),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_AltitudeInfo,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "altitudeInfo"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_AltitudeInfo,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "altitudeInfo"},
 };
 static int asn_MAP_PositionEstimate_oms_1[] = {3, 4, 5};
 static ber_tlv_tag_t asn_DEF_PositionEstimate_tags_1[] = {
@@ -504,7 +504,7 @@ asn_TYPE_descriptor_t asn_DEF_PositionEstimate = {
     asn_DEF_PositionEstimate_tags_1,                /* Same as above */
     sizeof(asn_DEF_PositionEstimate_tags_1) /
         sizeof(asn_DEF_PositionEstimate_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                              /* No PER visible constraints */
     asn_MBR_PositionEstimate_1,
     6,                                /* Elements count */
     &asn_SPC_PositionEstimate_specs_1 /* Additional specs */

@@ -7,16 +7,16 @@
 #include "GANSSAlmanacModel.h"
 
 static int memb_weekNumber_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,21 +30,21 @@ static int memb_weekNumber_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_toa_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,21 +58,21 @@ static int memb_toa_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ioda_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                  asn_app_constraint_failed_f *ctfailcb,
-                                  void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -86,7 +86,7 @@ static int memb_ioda_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -111,28 +111,28 @@ static asn_per_constraints_t ASN_PER_MEMB_IODA_CONSTR_5 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSAlmanacModel_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSSAlmanacModel, weekNumber),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_weekNumber_constraint_1,
-     &ASN_PER_MEMB_WEEK_NUMBER_CONSTR_2, 0, "weekNumber"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_weekNumber_constraint_1,
+        &ASN_PER_MEMB_WEEK_NUMBER_CONSTR_2, 0, "weekNumber"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSAlmanacModel, svIDMask),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SVIDMASK, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "svIDMask"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SVIDMASK, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "svIDMask"},
     {ATF_POINTER, 2, offsetof(struct GANSSAlmanacModel, toa),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_toa_constraint_1, &ASN_PER_MEMB_TOA_CONSTR_4,
-     0, "toa"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_toa_constraint_1, &ASN_PER_MEMB_TOA_CONSTR_4,
+        0, "toa"},
     {ATF_POINTER, 1, offsetof(struct GANSSAlmanacModel, ioda),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ioda_constraint_1,
-     &ASN_PER_MEMB_IODA_CONSTR_5, 0, "ioda"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ioda_constraint_1,
+        &ASN_PER_MEMB_IODA_CONSTR_5, 0, "ioda"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSAlmanacModel, ganssAlmanacList),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SeqOfGANSSAlmanacElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssAlmanacList"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SeqOfGANSSAlmanacElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssAlmanacList"},
 };
 static int asn_MAP_GANSSAlmanacModel_oms_1[] = {2, 3};
 static ber_tlv_tag_t asn_DEF_GANSSAlmanacModel_tags_1[] = {
@@ -142,7 +142,7 @@ static asn_TYPE_tag2member_t asn_MAP_GANSSAlmanacModel_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* svIDMask at 1349 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* toa at 1350 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* ioda at 1351 */
-    {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0} /* ganssAlmanacList at 1353 */
+    {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}  /* ganssAlmanacList at 1353 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_GANSSAlmanacModel_specs_1 = {
     sizeof(struct GANSSAlmanacModel),
@@ -174,7 +174,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacModel = {
     asn_DEF_GANSSAlmanacModel_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSAlmanacModel_tags_1) /
         sizeof(asn_DEF_GANSSAlmanacModel_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                               /* No PER visible constraints */
     asn_MBR_GANSSAlmanacModel_1,
     5,                                 /* Elements count */
     &asn_SPC_GANSSAlmanacModel_specs_1 /* Additional specs */

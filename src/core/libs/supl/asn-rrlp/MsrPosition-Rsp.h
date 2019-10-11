@@ -59,14 +59,14 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "MultipleSets.h"
-#include "ReferenceIdentity.h"
-#include "OTD-MeasureInfo.h"
-#include "LocationInfo.h"
 #include "GPS-MeasureInfo.h"
 #include "LocationError.h"
-#include "Rel-98-MsrPosition-Rsp-Extension.h"
+#include "LocationInfo.h"
+#include "MultipleSets.h"
+#include "OTD-MeasureInfo.h"
+#include "ReferenceIdentity.h"
 #include "Rel-5-MsrPosition-Rsp-Extension.h"
+#include "Rel-98-MsrPosition-Rsp-Extension.h"
 
 #endif /* _MsrPosition_Rsp_H_ */
 #include <asn_internal.h>

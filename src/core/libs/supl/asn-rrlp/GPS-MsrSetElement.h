@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NativeInteger.h>
 #include "GPSTOW24b.h"
 #include "SeqOfGPS-MsrElement.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

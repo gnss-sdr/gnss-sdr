@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "NeighborIdentity.h"
-#include "ModuloTimeSlot.h"
 #include "EOTDQuality.h"
+#include "ModuloTimeSlot.h"
+#include "NeighborIdentity.h"
 #include "OTDValue.h"
 #include <constr_SEQUENCE.h>
 

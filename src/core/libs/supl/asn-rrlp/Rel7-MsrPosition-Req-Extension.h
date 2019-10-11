@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NULL.h>
 #include "GANSSPositioningMethod.h"
 #include "RequiredResponseTime.h"
+#include <NULL.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

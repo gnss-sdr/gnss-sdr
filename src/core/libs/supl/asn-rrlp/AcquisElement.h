@@ -47,8 +47,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "AddionalDopplerFields.h"
 #include "AddionalAngleFields.h"
+#include "AddionalDopplerFields.h"
 
 #endif /* _AcquisElement_H_ */
 #include <asn_internal.h>

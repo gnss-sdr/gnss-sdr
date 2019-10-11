@@ -7,16 +7,16 @@
 #include "MultipleSets.h"
 
 static int memb_nbrOfSets_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_nbrOfSets_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -44,7 +44,7 @@ static int memb_nbrOfReferenceBTSs_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_nbrOfReferenceBTSs_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -77,19 +77,19 @@ static asn_per_constraints_t ASN_PER_MEMB_NBR_OF_REFERENCE_BT_SS_CONSTR_3 = {
 };
 static asn_TYPE_member_t asn_MBR_MultipleSets_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct MultipleSets, nbrOfSets),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_nbrOfSets_constraint_1,
-     &ASN_PER_MEMB_NBR_OF_SETS_CONSTR_2, 0, "nbrOfSets"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_nbrOfSets_constraint_1,
+        &ASN_PER_MEMB_NBR_OF_SETS_CONSTR_2, 0, "nbrOfSets"},
     {ATF_NOFLAGS, 0, offsetof(struct MultipleSets, nbrOfReferenceBTSs),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_nbrOfReferenceBTSs_constraint_1,
-     &ASN_PER_MEMB_NBR_OF_REFERENCE_BT_SS_CONSTR_3, 0, "nbrOfReferenceBTSs"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_nbrOfReferenceBTSs_constraint_1,
+        &ASN_PER_MEMB_NBR_OF_REFERENCE_BT_SS_CONSTR_3, 0, "nbrOfReferenceBTSs"},
     {ATF_POINTER, 1, offsetof(struct MultipleSets, referenceRelation),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ReferenceRelation,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "referenceRelation"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ReferenceRelation,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "referenceRelation"},
 };
 static int asn_MAP_MultipleSets_oms_1[] = {2};
 static ber_tlv_tag_t asn_DEF_MultipleSets_tags_1[] = {
@@ -97,7 +97,7 @@ static ber_tlv_tag_t asn_DEF_MultipleSets_tags_1[] = {
 static asn_TYPE_tag2member_t asn_MAP_MultipleSets_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* nbrOfSets at 267 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0}, /* nbrOfReferenceBTSs at 270 */
+        0},                                       /* nbrOfReferenceBTSs at 270 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0} /* referenceRelation at 274 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_MultipleSets_specs_1 = {

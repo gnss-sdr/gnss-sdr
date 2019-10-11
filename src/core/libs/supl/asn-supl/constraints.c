@@ -1,9 +1,11 @@
+// clang-format off
 #include "asn_internal.h"
 #include "constraints.h"
+// clang-format on
 
 int asn_generic_no_constraint(asn_TYPE_descriptor_t *type_descriptor,
-                              const void *struct_ptr,
-                              asn_app_constraint_failed_f *cb, void *key)
+    const void *struct_ptr,
+    asn_app_constraint_failed_f *cb, void *key)
 {
     (void)type_descriptor; /* Unused argument */
     (void)struct_ptr;      /* Unused argument */
@@ -15,8 +17,8 @@ int asn_generic_no_constraint(asn_TYPE_descriptor_t *type_descriptor,
 }
 
 int asn_generic_unknown_constraint(asn_TYPE_descriptor_t *type_descriptor,
-                                   const void *struct_ptr,
-                                   asn_app_constraint_failed_f *cb, void *key)
+    const void *struct_ptr,
+    asn_app_constraint_failed_f *cb, void *key)
 {
     (void)type_descriptor; /* Unused argument */
     (void)struct_ptr;      /* Unused argument */
@@ -36,7 +38,7 @@ struct errbufDesc
 };
 
 static void _asn_i_ctfailcb(void *key, asn_TYPE_descriptor_t *td,
-                            const void *sptr, const char *fmt, ...)
+    const void *sptr, const char *fmt, ...)
 {
     struct errbufDesc *arg = key;
     va_list ap;
@@ -77,7 +79,7 @@ static void _asn_i_ctfailcb(void *key, asn_TYPE_descriptor_t *td,
 }
 
 int asn_check_constraints(asn_TYPE_descriptor_t *type_descriptor,
-                          const void *struct_ptr, char *errbuf, size_t *errlen)
+    const void *struct_ptr, char *errbuf, size_t *errlen)
 {
     struct errbufDesc arg;
     int ret;
@@ -88,7 +90,7 @@ int asn_check_constraints(asn_TYPE_descriptor_t *type_descriptor,
     arg.errlen = errlen ? *errlen : 0;
 
     ret = type_descriptor->check_constraints(type_descriptor, struct_ptr,
-                                             _asn_i_ctfailcb, &arg);
+        _asn_i_ctfailcb, &arg);
     if (ret == -1 && errlen) *errlen = arg.errlen;
 
     return ret;

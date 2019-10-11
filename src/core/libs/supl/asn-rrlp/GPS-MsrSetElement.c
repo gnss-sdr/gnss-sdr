@@ -7,16 +7,16 @@
 #include "GPS-MsrSetElement.h"
 
 static int memb_refFrame_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_refFrame_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -43,20 +43,20 @@ static asn_per_constraints_t ASN_PER_MEMB_REF_FRAME_CONSTR_2 = {
 };
 static asn_TYPE_member_t asn_MBR_GPS_MsrSetElement_1[] = {
     {ATF_POINTER, 1, offsetof(struct GPS_MsrSetElement, refFrame),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_refFrame_constraint_1,
-     &ASN_PER_MEMB_REF_FRAME_CONSTR_2, 0, "refFrame"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_refFrame_constraint_1,
+        &ASN_PER_MEMB_REF_FRAME_CONSTR_2, 0, "refFrame"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrSetElement, gpsTOW),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GPSTOW24b, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "gpsTOW"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GPSTOW24b, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "gpsTOW"},
     {ATF_NOFLAGS, 0, offsetof(struct GPS_MsrSetElement, gps_msrList),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SeqOfGPS_MsrElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "gps-msrList"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SeqOfGPS_MsrElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "gps-msrList"},
 };
 static int asn_MAP_GPS_MsrSetElement_oms_1[] = {0};
 static ber_tlv_tag_t asn_DEF_GPS_MsrSetElement_tags_1[] = {
@@ -96,7 +96,7 @@ asn_TYPE_descriptor_t asn_DEF_GPS_MsrSetElement = {
     asn_DEF_GPS_MsrSetElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GPS_MsrSetElement_tags_1) /
         sizeof(asn_DEF_GPS_MsrSetElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                               /* No PER visible constraints */
     asn_MBR_GPS_MsrSetElement_1,
     3,                                 /* Elements count */
     &asn_SPC_GPS_MsrSetElement_specs_1 /* Additional specs */

@@ -8,22 +8,22 @@
 
 static asn_TYPE_member_t asn_MBR_SETCapabilities_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SETCapabilities, posTechnology),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PosTechnology,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "posTechnology"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PosTechnology,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "posTechnology"},
     {ATF_NOFLAGS, 0, offsetof(struct SETCapabilities, prefMethod),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PrefMethod, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "prefMethod"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PrefMethod, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "prefMethod"},
     {ATF_NOFLAGS, 0, offsetof(struct SETCapabilities, posProtocol),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PosProtocol,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "posProtocol"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PosProtocol,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "posProtocol"},
 };
 static ber_tlv_tag_t asn_DEF_SETCapabilities_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -62,7 +62,7 @@ asn_TYPE_descriptor_t asn_DEF_SETCapabilities = {
     asn_DEF_SETCapabilities_tags_1,                /* Same as above */
     sizeof(asn_DEF_SETCapabilities_tags_1) /
         sizeof(asn_DEF_SETCapabilities_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                             /* No PER visible constraints */
     asn_MBR_SETCapabilities_1,
     3,                               /* Elements count */
     &asn_SPC_SETCapabilities_specs_1 /* Additional specs */

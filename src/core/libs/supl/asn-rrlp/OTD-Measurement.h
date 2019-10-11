@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "ModuloTimeSlot.h"
 #include "EOTDQuality.h"
+#include "ModuloTimeSlot.h"
 #include "OTDValue.h"
 #include <constr_SEQUENCE.h>
 

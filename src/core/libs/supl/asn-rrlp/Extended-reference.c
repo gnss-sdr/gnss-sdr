@@ -7,16 +7,16 @@
 #include "Extended-reference.h"
 
 static int memb_smlc_code_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_smlc_code_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -44,7 +44,7 @@ static int memb_transaction_ID_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_transaction_ID_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -77,13 +77,13 @@ static asn_per_constraints_t ASN_PER_MEMB_TRANSACTION_ID_CONSTR_3 = {
 };
 static asn_TYPE_member_t asn_MBR_Extended_reference_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Extended_reference, smlc_code),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_smlc_code_constraint_1,
-     &ASN_PER_MEMB_SMLC_CODE_CONSTR_2, 0, "smlc-code"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_smlc_code_constraint_1,
+        &ASN_PER_MEMB_SMLC_CODE_CONSTR_2, 0, "smlc-code"},
     {ATF_NOFLAGS, 0, offsetof(struct Extended_reference, transaction_ID),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_transaction_ID_constraint_1,
-     &ASN_PER_MEMB_TRANSACTION_ID_CONSTR_3, 0, "transaction-ID"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_transaction_ID_constraint_1,
+        &ASN_PER_MEMB_TRANSACTION_ID_CONSTR_3, 0, "transaction-ID"},
 };
 static ber_tlv_tag_t asn_DEF_Extended_reference_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -121,7 +121,7 @@ asn_TYPE_descriptor_t asn_DEF_Extended_reference = {
     asn_DEF_Extended_reference_tags_1,                /* Same as above */
     sizeof(asn_DEF_Extended_reference_tags_1) /
         sizeof(asn_DEF_Extended_reference_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                /* No PER visible constraints */
     asn_MBR_Extended_reference_1,
     2,                                  /* Elements count */
     &asn_SPC_Extended_reference_specs_1 /* Additional specs */

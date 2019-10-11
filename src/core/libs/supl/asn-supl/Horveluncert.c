@@ -7,9 +7,9 @@
 #include "Horveluncert.h"
 
 static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -17,7 +17,7 @@ static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -39,15 +39,15 @@ static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -55,7 +55,7 @@ static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -77,15 +77,15 @@ static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_uncertspeed_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -93,7 +93,7 @@ static int memb_uncertspeed_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -115,7 +115,7 @@ static int memb_uncertspeed_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -140,17 +140,17 @@ static asn_per_constraints_t ASN_PER_MEMB_UNCERTSPEED_CONSTR_4 = {
 };
 static asn_TYPE_member_t asn_MBR_Horveluncert_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Horveluncert, bearing),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_bearing_constraint_1,
-     &ASN_PER_MEMB_BEARING_CONSTR_2, 0, "bearing"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_bearing_constraint_1,
+        &ASN_PER_MEMB_BEARING_CONSTR_2, 0, "bearing"},
     {ATF_NOFLAGS, 0, offsetof(struct Horveluncert, horspeed),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_horspeed_constraint_1,
-     &ASN_PER_MEMB_HORSPEED_CONSTR_3, 0, "horspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_horspeed_constraint_1,
+        &ASN_PER_MEMB_HORSPEED_CONSTR_3, 0, "horspeed"},
     {ATF_NOFLAGS, 0, offsetof(struct Horveluncert, uncertspeed),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_uncertspeed_constraint_1,
-     &ASN_PER_MEMB_UNCERTSPEED_CONSTR_4, 0, "uncertspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_uncertspeed_constraint_1,
+        &ASN_PER_MEMB_UNCERTSPEED_CONSTR_4, 0, "uncertspeed"},
 };
 static ber_tlv_tag_t asn_DEF_Horveluncert_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

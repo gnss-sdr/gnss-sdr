@@ -41,8 +41,8 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "GSMTime.h"
 #include "GPSTOWAssist.h"
+#include "GSMTime.h"
 
 #endif /* _ReferenceTime_H_ */
 #include <asn_internal.h>

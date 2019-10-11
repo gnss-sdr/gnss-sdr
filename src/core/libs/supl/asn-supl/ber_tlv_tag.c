@@ -83,18 +83,18 @@ ssize_t ber_tlv_tag_snprint(ber_tlv_tag_t tag, char *buf, size_t size)
 
     switch (tag & 0x3)
         {
-            case ASN_TAG_CLASS_UNIVERSAL:
-                type = "UNIVERSAL ";
-                break;
-            case ASN_TAG_CLASS_APPLICATION:
-                type = "APPLICATION ";
-                break;
-            case ASN_TAG_CLASS_CONTEXT:
-                type = "";
-                break;
-            case ASN_TAG_CLASS_PRIVATE:
-                type = "PRIVATE ";
-                break;
+        case ASN_TAG_CLASS_UNIVERSAL:
+            type = "UNIVERSAL ";
+            break;
+        case ASN_TAG_CLASS_APPLICATION:
+            type = "APPLICATION ";
+            break;
+        case ASN_TAG_CLASS_CONTEXT:
+            type = "";
+            break;
+        case ASN_TAG_CLASS_PRIVATE:
+            type = "PRIVATE ";
+            break;
         }
 
     ret = snprintf(buf, size, "[%s%u]", type, ((unsigned)tag) >> 2);

@@ -7,15 +7,15 @@
 #include "SatElement.h"
 
 static int memb_iode_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                  asn_app_constraint_failed_f *ctfailcb,
-                                  void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_iode_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_udre_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                  asn_app_constraint_failed_f *ctfailcb,
-                                  void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,7 +57,7 @@ static int memb_udre_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -71,7 +71,7 @@ static int memb_pseudoRangeCor_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,22 +85,22 @@ static int memb_pseudoRangeCor_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_rangeRateCor_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -114,7 +114,7 @@ static int memb_rangeRateCor_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -128,7 +128,7 @@ static int memb_deltaPseudoRangeCor2_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -142,7 +142,7 @@ static int memb_deltaPseudoRangeCor2_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -156,7 +156,7 @@ static int memb_deltaRangeRateCor2_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -170,7 +170,7 @@ static int memb_deltaRangeRateCor2_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -184,7 +184,7 @@ static int memb_deltaPseudoRangeCor3_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -198,7 +198,7 @@ static int memb_deltaPseudoRangeCor3_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -212,7 +212,7 @@ static int memb_deltaRangeRateCor3_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -226,7 +226,7 @@ static int memb_deltaRangeRateCor3_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -281,43 +281,43 @@ static asn_per_constraints_t ASN_PER_MEMB_DELTA_RANGE_RATE_COR3_CONSTR_10 = {
 };
 static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, satelliteID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SatelliteID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "satelliteID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SatelliteID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "satelliteID"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, iode),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_iode_constraint_1,
-     &ASN_PER_MEMB_IODE_CONSTR_3, 0, "iode"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_iode_constraint_1,
+        &ASN_PER_MEMB_IODE_CONSTR_3, 0, "iode"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, udre),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_udre_constraint_1,
-     &ASN_PER_MEMB_UDRE_CONSTR_4, 0, "udre"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_udre_constraint_1,
+        &ASN_PER_MEMB_UDRE_CONSTR_4, 0, "udre"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, pseudoRangeCor),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_pseudoRangeCor_constraint_1,
-     &ASN_PER_MEMB_PSEUDO_RANGE_COR_CONSTR_5, 0, "pseudoRangeCor"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_pseudoRangeCor_constraint_1,
+        &ASN_PER_MEMB_PSEUDO_RANGE_COR_CONSTR_5, 0, "pseudoRangeCor"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, rangeRateCor),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_rangeRateCor_constraint_1,
-     &ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6, 0, "rangeRateCor"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_rangeRateCor_constraint_1,
+        &ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6, 0, "rangeRateCor"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, deltaPseudoRangeCor2),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_deltaPseudoRangeCor2_constraint_1,
-     &ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR2_CONSTR_7, 0, "deltaPseudoRangeCor2"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_deltaPseudoRangeCor2_constraint_1,
+        &ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR2_CONSTR_7, 0, "deltaPseudoRangeCor2"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, deltaRangeRateCor2),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_deltaRangeRateCor2_constraint_1,
-     &ASN_PER_MEMB_DELTA_RANGE_RATE_COR2_CONSTR_8, 0, "deltaRangeRateCor2"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_deltaRangeRateCor2_constraint_1,
+        &ASN_PER_MEMB_DELTA_RANGE_RATE_COR2_CONSTR_8, 0, "deltaRangeRateCor2"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, deltaPseudoRangeCor3),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_deltaPseudoRangeCor3_constraint_1,
-     &ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR3_CONSTR_9, 0, "deltaPseudoRangeCor3"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_deltaPseudoRangeCor3_constraint_1,
+        &ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR3_CONSTR_9, 0, "deltaPseudoRangeCor3"},
     {ATF_NOFLAGS, 0, offsetof(struct SatElement, deltaRangeRateCor3),
-     (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_deltaRangeRateCor3_constraint_1,
-     &ASN_PER_MEMB_DELTA_RANGE_RATE_COR3_CONSTR_10, 0, "deltaRangeRateCor3"},
+        (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_deltaRangeRateCor3_constraint_1,
+        &ASN_PER_MEMB_DELTA_RANGE_RATE_COR3_CONSTR_10, 0, "deltaRangeRateCor3"},
 };
 static ber_tlv_tag_t asn_DEF_SatElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -328,13 +328,13 @@ static asn_TYPE_tag2member_t asn_MAP_SatElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* pseudoRangeCor at 673 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* rangeRateCor at 677 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0,
-     0}, /* deltaPseudoRangeCor2 at 680 */
+        0}, /* deltaPseudoRangeCor2 at 680 */
     {(ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0,
-     0}, /* deltaRangeRateCor2 at 683 */
+        0}, /* deltaRangeRateCor2 at 683 */
     {(ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0,
-     0}, /* deltaPseudoRangeCor3 at 686 */
+        0}, /* deltaPseudoRangeCor3 at 686 */
     {(ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0,
-     0} /* deltaRangeRateCor3 at 689 */
+        0} /* deltaRangeRateCor3 at 689 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_SatElement_specs_1 = {
     sizeof(struct SatElement),

@@ -7,16 +7,16 @@
 #include "CellMeasuredResults.h"
 
 static int memb_cellIdentity_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_cellIdentity_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -49,34 +49,34 @@ static asn_per_constraints_t ASN_PER_MEMB_CELL_IDENTITY_CONSTR_2 = {
 };
 static asn_TYPE_member_t asn_MBR_fdd_4[] = {
     {ATF_NOFLAGS, 0, offsetof(struct fdd, primaryCPICH_Info),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PrimaryCPICH_Info,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "primaryCPICH-Info"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PrimaryCPICH_Info,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "primaryCPICH-Info"},
     {ATF_POINTER, 3, offsetof(struct fdd, cpich_Ec_N0),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CPICH_Ec_N0,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "cpich-Ec-N0"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CPICH_Ec_N0,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "cpich-Ec-N0"},
     {ATF_POINTER, 2, offsetof(struct fdd, cpich_RSCP),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CPICH_RSCP, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "cpich-RSCP"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CPICH_RSCP, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "cpich-RSCP"},
     {ATF_POINTER, 1, offsetof(struct fdd, pathloss),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Pathloss, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "pathloss"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Pathloss, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "pathloss"},
 };
 static int asn_MAP_fdd_oms_4[] = {1, 2, 3};
 static ber_tlv_tag_t asn_DEF_fdd_tags_4[] = {
     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_fdd_tag2el_4[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0}, /* primaryCPICH-Info at 163 */
+        0},                                        /* primaryCPICH-Info at 163 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* cpich-Ec-N0 at 164 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* cpich-RSCP at 165 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}  /* pathloss at 166 */
@@ -108,9 +108,9 @@ static /* Use -fall-defs-global to expose */
         0, /* Use generic outmost tag fetcher */
         asn_DEF_fdd_tags_4,
         sizeof(asn_DEF_fdd_tags_4) / sizeof(asn_DEF_fdd_tags_4[0]) - 1, /* 1 */
-        asn_DEF_fdd_tags_4, /* Same as above */
-        sizeof(asn_DEF_fdd_tags_4) / sizeof(asn_DEF_fdd_tags_4[0]), /* 2 */
-        0, /* No PER visible constraints */
+        asn_DEF_fdd_tags_4,                                             /* Same as above */
+        sizeof(asn_DEF_fdd_tags_4) / sizeof(asn_DEF_fdd_tags_4[0]),     /* 2 */
+        0,                                                              /* No PER visible constraints */
         asn_MBR_fdd_4,
         4,                   /* Elements count */
         &asn_SPC_fdd_specs_4 /* Additional specs */
@@ -118,33 +118,33 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_tdd_9[] = {
     {ATF_NOFLAGS, 0, offsetof(struct tdd, cellParametersID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellParametersID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "cellParametersID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellParametersID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "cellParametersID"},
     {ATF_POINTER, 4, offsetof(struct tdd, proposedTGSN),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TGSN, 0, /* Defer constraints checking to the member type */
-     0,                /* No PER visible constraints */
-     0, "proposedTGSN"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TGSN, 0,                       /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "proposedTGSN"},
     {ATF_POINTER, 3, offsetof(struct tdd, primaryCCPCH_RSCP),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PrimaryCCPCH_RSCP,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "primaryCCPCH-RSCP"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PrimaryCCPCH_RSCP,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "primaryCCPCH-RSCP"},
     {ATF_POINTER, 2, offsetof(struct tdd, pathloss),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Pathloss, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "pathloss"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Pathloss, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "pathloss"},
     {ATF_POINTER, 1, offsetof(struct tdd, timeslotISCP_List),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_TimeslotISCP_List,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "timeslotISCP-List"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_TimeslotISCP_List,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "timeslotISCP-List"},
 };
 static int asn_MAP_tdd_oms_9[] = {1, 2, 3, 4};
 static ber_tlv_tag_t asn_DEF_tdd_tags_9[] = {
@@ -153,9 +153,9 @@ static asn_TYPE_tag2member_t asn_MAP_tdd_tag2el_9[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* cellParametersID at 168 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* proposedTGSN at 169 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0}, /* primaryCCPCH-RSCP at 170 */
+        0},                                        /* primaryCCPCH-RSCP at 170 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* pathloss at 171 */
-    {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0} /* timeslotISCP-List at 172 */
+    {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}  /* timeslotISCP-List at 172 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_tdd_specs_9 = {
     sizeof(struct tdd),
@@ -184,9 +184,9 @@ static /* Use -fall-defs-global to expose */
         0, /* Use generic outmost tag fetcher */
         asn_DEF_tdd_tags_9,
         sizeof(asn_DEF_tdd_tags_9) / sizeof(asn_DEF_tdd_tags_9[0]) - 1, /* 1 */
-        asn_DEF_tdd_tags_9, /* Same as above */
-        sizeof(asn_DEF_tdd_tags_9) / sizeof(asn_DEF_tdd_tags_9[0]), /* 2 */
-        0, /* No PER visible constraints */
+        asn_DEF_tdd_tags_9,                                             /* Same as above */
+        sizeof(asn_DEF_tdd_tags_9) / sizeof(asn_DEF_tdd_tags_9[0]),     /* 2 */
+        0,                                                              /* No PER visible constraints */
         asn_MBR_tdd_9,
         5,                   /* Elements count */
         &asn_SPC_tdd_specs_9 /* Additional specs */
@@ -194,15 +194,15 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_modeSpecificInfo_3[] = {
     {ATF_NOFLAGS, 0, offsetof(struct modeSpecificInfo, choice.fdd),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, &asn_DEF_fdd_4,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "fdd"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, &asn_DEF_fdd_4,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "fdd"},
     {ATF_NOFLAGS, 0, offsetof(struct modeSpecificInfo, choice.tdd),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 0, &asn_DEF_tdd_9,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "tdd"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 0, &asn_DEF_tdd_9,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "tdd"},
 };
 static asn_TYPE_tag2member_t asn_MAP_modeSpecificInfo_tag2el_3[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* fdd at 163 */
@@ -244,15 +244,15 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_CellMeasuredResults_1[] = {
     {ATF_POINTER, 1, offsetof(struct CellMeasuredResults, cellIdentity),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_cellIdentity_constraint_1,
-     &ASN_PER_MEMB_CELL_IDENTITY_CONSTR_2, 0, "cellIdentity"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_cellIdentity_constraint_1,
+        &ASN_PER_MEMB_CELL_IDENTITY_CONSTR_2, 0, "cellIdentity"},
     {ATF_NOFLAGS, 0, offsetof(struct CellMeasuredResults, modeSpecificInfo),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_modeSpecificInfo_3,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "modeSpecificInfo"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_modeSpecificInfo_3,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "modeSpecificInfo"},
 };
 static int asn_MAP_CellMeasuredResults_oms_1[] = {0};
 static ber_tlv_tag_t asn_DEF_CellMeasuredResults_tags_1[] = {
@@ -291,7 +291,7 @@ asn_TYPE_descriptor_t asn_DEF_CellMeasuredResults = {
     asn_DEF_CellMeasuredResults_tags_1,                /* Same as above */
     sizeof(asn_DEF_CellMeasuredResults_tags_1) /
         sizeof(asn_DEF_CellMeasuredResults_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                 /* No PER visible constraints */
     asn_MBR_CellMeasuredResults_1,
     2,                                   /* Elements count */
     &asn_SPC_CellMeasuredResults_specs_1 /* Additional specs */

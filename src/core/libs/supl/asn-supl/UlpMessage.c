@@ -14,47 +14,47 @@ static asn_per_constraints_t ASN_PER_TYPE_ULP_MESSAGE_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_UlpMessage_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msSUPLINIT),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLINIT, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "msSUPLINIT"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLINIT, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msSUPLINIT"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msSUPLSTART),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLSTART, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "msSUPLSTART"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLSTART, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msSUPLSTART"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msSUPLRESPONSE),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLRESPONSE,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "msSUPLRESPONSE"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLRESPONSE,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "msSUPLRESPONSE"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msSUPLPOSINIT),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLPOSINIT,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "msSUPLPOSINIT"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLPOSINIT,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "msSUPLPOSINIT"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msSUPLPOS),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLPOS, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "msSUPLPOS"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLPOS, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msSUPLPOS"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msSUPLEND),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SUPLEND, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "msSUPLEND"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SUPLEND, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msSUPLEND"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msDUMMY2),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_DUMMY, 0, /* Defer constraints checking to the member type */
-     0,                 /* No PER visible constraints */
-     0, "msDUMMY2"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_DUMMY, 0,                      /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msDUMMY2"},
     {ATF_NOFLAGS, 0, offsetof(struct UlpMessage, choice.msDUMMY3),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_DUMMY, 0, /* Defer constraints checking to the member type */
-     0,                 /* No PER visible constraints */
-     0, "msDUMMY3"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_DUMMY, 0,                      /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "msDUMMY3"},
 };
 static asn_TYPE_tag2member_t asn_MAP_UlpMessage_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* msSUPLINIT at 37 */

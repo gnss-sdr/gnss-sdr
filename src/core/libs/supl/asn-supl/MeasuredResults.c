@@ -8,23 +8,23 @@
 
 static asn_TYPE_member_t asn_MBR_MeasuredResults_1[] = {
     {ATF_POINTER, 3, offsetof(struct MeasuredResults, frequencyInfo),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FrequencyInfo,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "frequencyInfo"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FrequencyInfo,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "frequencyInfo"},
     {ATF_POINTER, 2, offsetof(struct MeasuredResults, utra_CarrierRSSI),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_UTRA_CarrierRSSI,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "utra-CarrierRSSI"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_UTRA_CarrierRSSI,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "utra-CarrierRSSI"},
     {ATF_POINTER, 1, offsetof(struct MeasuredResults, cellMeasuredResultsList),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellMeasuredResultsList,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "cellMeasuredResultsList"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellMeasuredResultsList,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "cellMeasuredResultsList"},
 };
 static int asn_MAP_MeasuredResults_oms_1[] = {0, 1, 2};
 static ber_tlv_tag_t asn_DEF_MeasuredResults_tags_1[] = {
@@ -33,7 +33,7 @@ static asn_TYPE_tag2member_t asn_MAP_MeasuredResults_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* frequencyInfo at 148 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* utra-CarrierRSSI at 149 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0} /* cellMeasuredResultsList at 150 */
+        0} /* cellMeasuredResultsList at 150 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_MeasuredResults_specs_1 = {
     sizeof(struct MeasuredResults),
@@ -65,7 +65,7 @@ asn_TYPE_descriptor_t asn_DEF_MeasuredResults = {
     asn_DEF_MeasuredResults_tags_1,                /* Same as above */
     sizeof(asn_DEF_MeasuredResults_tags_1) /
         sizeof(asn_DEF_MeasuredResults_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                             /* No PER visible constraints */
     asn_MBR_MeasuredResults_1,
     3,                               /* Elements count */
     &asn_SPC_MeasuredResults_specs_1 /* Additional specs */

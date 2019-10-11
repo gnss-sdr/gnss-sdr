@@ -14,23 +14,23 @@ static asn_per_constraints_t ASN_PER_TYPE_CELL_INFO_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_CellInfo_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct CellInfo, choice.gsmCell),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GsmCellInformation,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "gsmCell"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GsmCellInformation,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "gsmCell"},
     {ATF_NOFLAGS, 0, offsetof(struct CellInfo, choice.wcdmaCell),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_WcdmaCellInformation,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "wcdmaCell"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_WcdmaCellInformation,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "wcdmaCell"},
     {ATF_NOFLAGS, 0, offsetof(struct CellInfo, choice.cdmaCell),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CdmaCellInformation,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "cdmaCell"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CdmaCellInformation,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "cdmaCell"},
 };
 static asn_TYPE_tag2member_t asn_MAP_CellInfo_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* gsmCell at 61 */

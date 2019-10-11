@@ -7,16 +7,16 @@
 #include "ReferenceFrame.h"
 
 static int memb_referenceFN_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_referenceFN_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -44,7 +44,7 @@ static int memb_referenceFNMSB_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_referenceFNMSB_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -77,13 +77,13 @@ static asn_per_constraints_t ASN_PER_MEMB_REFERENCE_FNMSB_CONSTR_3 = {
 };
 static asn_TYPE_member_t asn_MBR_ReferenceFrame_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceFrame, referenceFN),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_referenceFN_constraint_1,
-     &ASN_PER_MEMB_REFERENCE_FN_CONSTR_2, 0, "referenceFN"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_referenceFN_constraint_1,
+        &ASN_PER_MEMB_REFERENCE_FN_CONSTR_2, 0, "referenceFN"},
     {ATF_POINTER, 1, offsetof(struct ReferenceFrame, referenceFNMSB),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_referenceFNMSB_constraint_1,
-     &ASN_PER_MEMB_REFERENCE_FNMSB_CONSTR_3, 0, "referenceFNMSB"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_referenceFNMSB_constraint_1,
+        &ASN_PER_MEMB_REFERENCE_FNMSB_CONSTR_3, 0, "referenceFNMSB"},
 };
 static int asn_MAP_ReferenceFrame_oms_1[] = {1};
 static ber_tlv_tag_t asn_DEF_ReferenceFrame_tags_1[] = {
@@ -122,7 +122,7 @@ asn_TYPE_descriptor_t asn_DEF_ReferenceFrame = {
     asn_DEF_ReferenceFrame_tags_1,                /* Same as above */
     sizeof(asn_DEF_ReferenceFrame_tags_1) /
         sizeof(asn_DEF_ReferenceFrame_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                            /* No PER visible constraints */
     asn_MBR_ReferenceFrame_1,
     2,                              /* Elements count */
     &asn_SPC_ReferenceFrame_specs_1 /* Additional specs */

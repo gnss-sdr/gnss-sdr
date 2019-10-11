@@ -7,15 +7,15 @@
 #include "GANSSIonosphereModel.h"
 
 static int memb_ai0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_ai0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ai1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,21 +57,21 @@ static int memb_ai1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ai2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                 asn_app_constraint_failed_f *ctfailcb,
-                                 void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,7 +85,7 @@ static int memb_ai2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -110,17 +110,17 @@ static asn_per_constraints_t ASN_PER_MEMB_AI2_CONSTR_4 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSIonosphereModel_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonosphereModel, ai0),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ai0_constraint_1, &ASN_PER_MEMB_AI0_CONSTR_2,
-     0, "ai0"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ai0_constraint_1, &ASN_PER_MEMB_AI0_CONSTR_2,
+        0, "ai0"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonosphereModel, ai1),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ai1_constraint_1, &ASN_PER_MEMB_AI1_CONSTR_3,
-     0, "ai1"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ai1_constraint_1, &ASN_PER_MEMB_AI1_CONSTR_3,
+        0, "ai1"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSIonosphereModel, ai2),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ai2_constraint_1, &ASN_PER_MEMB_AI2_CONSTR_4,
-     0, "ai2"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ai2_constraint_1, &ASN_PER_MEMB_AI2_CONSTR_4,
+        0, "ai2"},
 };
 static ber_tlv_tag_t asn_DEF_GANSSIonosphereModel_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -159,7 +159,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSIonosphereModel = {
     asn_DEF_GANSSIonosphereModel_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSIonosphereModel_tags_1) /
         sizeof(asn_DEF_GANSSIonosphereModel_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                  /* No PER visible constraints */
     asn_MBR_GANSSIonosphereModel_1,
     3,                                    /* Elements count */
     &asn_SPC_GANSSIonosphereModel_specs_1 /* Additional specs */

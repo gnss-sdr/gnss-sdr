@@ -8,15 +8,15 @@
 
 static asn_TYPE_member_t asn_MBR_LocationId_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct LocationId, cellInfo),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_CellInfo, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "cellInfo"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_CellInfo, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "cellInfo"},
     {ATF_NOFLAGS, 0, offsetof(struct LocationId, status),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Status, 0, /* Defer constraints checking to the member type */
-     0,                  /* No PER visible constraints */
-     0, "status"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Status, 0,                     /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "status"},
 };
 static ber_tlv_tag_t asn_DEF_LocationId_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

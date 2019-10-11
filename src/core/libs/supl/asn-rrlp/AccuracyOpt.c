@@ -8,10 +8,10 @@
 
 static asn_TYPE_member_t asn_MBR_AccuracyOpt_1[] = {
     {ATF_POINTER, 1, offsetof(struct AccuracyOpt, accuracy),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Accuracy, 0, /* Defer constraints checking to the member type */
-     0,                    /* No PER visible constraints */
-     0, "accuracy"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Accuracy, 0,                   /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "accuracy"},
 };
 static int asn_MAP_AccuracyOpt_oms_1[] = {0};
 static ber_tlv_tag_t asn_DEF_AccuracyOpt_tags_1[] = {

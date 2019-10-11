@@ -7,16 +7,16 @@
 #include "Almanac-KeplerianSet.h"
 
 static int memb_kepAlmanacE_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,7 +30,7 @@ static int memb_kepAlmanacE_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -44,7 +44,7 @@ static int memb_kepAlmanacDeltaI_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -58,7 +58,7 @@ static int memb_kepAlmanacDeltaI_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -72,7 +72,7 @@ static int memb_kepAlmanacOmegaDot_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -86,22 +86,22 @@ static int memb_kepAlmanacOmegaDot_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_kepSVHealth_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -115,7 +115,7 @@ static int memb_kepSVHealth_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -129,7 +129,7 @@ static int memb_kepAlmanacAPowerHalf_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -143,7 +143,7 @@ static int memb_kepAlmanacAPowerHalf_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -157,7 +157,7 @@ static int memb_kepAlmanacOmega0_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -171,22 +171,22 @@ static int memb_kepAlmanacOmega0_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_kepAlmanacW_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -200,22 +200,22 @@ static int memb_kepAlmanacW_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_kepAlmanacM0_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -229,7 +229,7 @@ static int memb_kepAlmanacM0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -243,7 +243,7 @@ static int memb_kepAlmanacAF0_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -257,7 +257,7 @@ static int memb_kepAlmanacAF0_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -271,7 +271,7 @@ static int memb_kepAlmanacAF1_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -285,7 +285,7 @@ static int memb_kepAlmanacAF1_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -352,61 +352,61 @@ static asn_per_constraints_t ASN_PER_MEMB_KEP_ALMANAC_A_F1_CONSTR_11 = {
 };
 static asn_TYPE_member_t asn_MBR_Almanac_KeplerianSet_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacE),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacE_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_E_CONSTR_2, 0, "kepAlmanacE"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacE_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_E_CONSTR_2, 0, "kepAlmanacE"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacDeltaI),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacDeltaI_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_DELTA_I_CONSTR_3, 0, "kepAlmanacDeltaI"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacDeltaI_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_DELTA_I_CONSTR_3, 0, "kepAlmanacDeltaI"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacOmegaDot),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacOmegaDot_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_OMEGA_DOT_CONSTR_4, 0, "kepAlmanacOmegaDot"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacOmegaDot_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_OMEGA_DOT_CONSTR_4, 0, "kepAlmanacOmegaDot"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepSVHealth),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepSVHealth_constraint_1,
-     &ASN_PER_MEMB_KEP_SV_HEALTH_CONSTR_5, 0, "kepSVHealth"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepSVHealth_constraint_1,
+        &ASN_PER_MEMB_KEP_SV_HEALTH_CONSTR_5, 0, "kepSVHealth"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct Almanac_KeplerianSet, kepAlmanacAPowerHalf),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacAPowerHalf_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_A_POWER_HALF_CONSTR_6, 0,
-     "kepAlmanacAPowerHalf"},
+        offsetof(struct Almanac_KeplerianSet, kepAlmanacAPowerHalf),
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacAPowerHalf_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_A_POWER_HALF_CONSTR_6, 0,
+        "kepAlmanacAPowerHalf"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacOmega0),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacOmega0_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_OMEGA0_CONSTR_7, 0, "kepAlmanacOmega0"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacOmega0_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_OMEGA0_CONSTR_7, 0, "kepAlmanacOmega0"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacW),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacW_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_W_CONSTR_8, 0, "kepAlmanacW"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacW_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_W_CONSTR_8, 0, "kepAlmanacW"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacM0),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacM0_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_M0_CONSTR_9, 0, "kepAlmanacM0"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacM0_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_M0_CONSTR_9, 0, "kepAlmanacM0"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacAF0),
-     (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacAF0_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_A_F0_CONSTR_10, 0, "kepAlmanacAF0"},
+        (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacAF0_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_A_F0_CONSTR_10, 0, "kepAlmanacAF0"},
     {ATF_NOFLAGS, 0, offsetof(struct Almanac_KeplerianSet, kepAlmanacAF1),
-     (ASN_TAG_CLASS_CONTEXT | (9 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_kepAlmanacAF1_constraint_1,
-     &ASN_PER_MEMB_KEP_ALMANAC_A_F1_CONSTR_11, 0, "kepAlmanacAF1"},
+        (ASN_TAG_CLASS_CONTEXT | (9 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_kepAlmanacAF1_constraint_1,
+        &ASN_PER_MEMB_KEP_ALMANAC_A_F1_CONSTR_11, 0, "kepAlmanacAF1"},
 };
 static ber_tlv_tag_t asn_DEF_Almanac_KeplerianSet_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
 static asn_TYPE_tag2member_t asn_MAP_Almanac_KeplerianSet_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* kepAlmanacE at 1368 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0,
-     0}, /* kepAlmanacDeltaI at 1369 */
+        0}, /* kepAlmanacDeltaI at 1369 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0,
-     0}, /* kepAlmanacOmegaDot at 1370 */
+        0},                                        /* kepAlmanacOmegaDot at 1370 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0}, /* kepSVHealth at 1371 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0,
-     0}, /* kepAlmanacAPowerHalf at 1372 */
+        0}, /* kepAlmanacAPowerHalf at 1372 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0,
-     0}, /* kepAlmanacOmega0 at 1373 */
+        0},                                        /* kepAlmanacOmega0 at 1373 */
     {(ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0}, /* kepAlmanacW at 1374 */
     {(ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0}, /* kepAlmanacM0 at 1375 */
     {(ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0}, /* kepAlmanacAF0 at 1376 */
@@ -442,7 +442,7 @@ asn_TYPE_descriptor_t asn_DEF_Almanac_KeplerianSet = {
     asn_DEF_Almanac_KeplerianSet_tags_1,                /* Same as above */
     sizeof(asn_DEF_Almanac_KeplerianSet_tags_1) /
         sizeof(asn_DEF_Almanac_KeplerianSet_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                  /* No PER visible constraints */
     asn_MBR_Almanac_KeplerianSet_1,
     10,                                   /* Elements count */
     &asn_SPC_Almanac_KeplerianSet_specs_1 /* Additional specs */

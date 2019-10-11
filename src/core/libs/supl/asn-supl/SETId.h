@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <OCTET_STRING.h>
+#include "IPAddress.h"
 #include <BIT_STRING.h>
 #include <IA5String.h>
-#include "IPAddress.h"
+#include <OCTET_STRING.h>
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

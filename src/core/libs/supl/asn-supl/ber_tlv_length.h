@@ -23,7 +23,7 @@ extern "C"
      * that the value is of indefinite length.
      */
     ssize_t ber_fetch_length(int _is_constructed, const void *bufptr,
-                             size_t size, ber_tlv_len_t *len_r);
+        size_t size, ber_tlv_len_t *len_r);
 
     /*
      * This function expects bufptr to be positioned over L in TLV.
@@ -43,7 +43,7 @@ extern "C"
      * against the supplied buffer's size.
      */
     size_t der_tlv_length_serialize(ber_tlv_len_t len, void *bufptr,
-                                    size_t size);
+        size_t size);
 
 #ifdef __cplusplus
 }

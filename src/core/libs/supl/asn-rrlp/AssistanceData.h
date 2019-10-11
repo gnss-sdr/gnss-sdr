@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "MoreAssDataToBeSent.h"
 #include "ExtensionContainer.h"
+#include "MoreAssDataToBeSent.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -57,12 +57,12 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "ReferenceAssistData.h"
-#include "MsrAssistData.h"
-#include "SystemInfoAssistData.h"
 #include "GPS-AssistData.h"
-#include "Rel98-AssistanceData-Extension.h"
+#include "MsrAssistData.h"
+#include "ReferenceAssistData.h"
 #include "Rel5-AssistanceData-Extension.h"
+#include "Rel98-AssistanceData-Extension.h"
+#include "SystemInfoAssistData.h"
 
 #endif /* _AssistanceData_H_ */
 #include <asn_internal.h>

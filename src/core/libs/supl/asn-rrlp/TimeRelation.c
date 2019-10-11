@@ -8,15 +8,15 @@
 
 static asn_TYPE_member_t asn_MBR_TimeRelation_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct TimeRelation, gpsTOW),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GPSTOW23b, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "gpsTOW"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GPSTOW23b, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "gpsTOW"},
     {ATF_POINTER, 1, offsetof(struct TimeRelation, gsmTime),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GSMTime, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "gsmTime"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GSMTime, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "gsmTime"},
 };
 static int asn_MAP_TimeRelation_oms_1[] = {1};
 static ber_tlv_tag_t asn_DEF_TimeRelation_tags_1[] = {

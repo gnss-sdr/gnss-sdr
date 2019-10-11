@@ -3,17 +3,17 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
+#include <asn_SEQUENCE_OF.h>
 #include <asn_internal.h>
 #include <constr_SEQUENCE_OF.h>
-#include <asn_SEQUENCE_OF.h>
 
 /*
  * The DER encoder of the SEQUENCE OF type.
  */
 asn_enc_rval_t SEQUENCE_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
-                                      int tag_mode, ber_tlv_tag_t tag,
-                                      asn_app_consume_bytes_f *cb,
-                                      void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     asn_TYPE_member_t *elm = td->elements;
     asn_anonymous_sequence_ *list = _A_SEQUENCE_FROM_VOID(ptr);
@@ -67,7 +67,7 @@ asn_enc_rval_t SEQUENCE_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
             void *memb_ptr = list->array[edx];
             if (!memb_ptr) continue;
             erval = elm->type->der_encoder(elm->type, memb_ptr, 0, elm->tag, cb,
-                                           app_key);
+                app_key);
             if (erval.encoded == -1) return erval;
             encoding_size += erval.encoded;
         }
@@ -92,10 +92,10 @@ asn_enc_rval_t SEQUENCE_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
 }
 
 asn_enc_rval_t SEQUENCE_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                      int ilevel,
-                                      enum xer_encoder_flags_e flags,
-                                      asn_app_consume_bytes_f *cb,
-                                      void *app_key)
+    int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     asn_enc_rval_t er;
     asn_SET_OF_specifics_t *specs = (asn_SET_OF_specifics_t *)td->specifics;
@@ -125,7 +125,7 @@ asn_enc_rval_t SEQUENCE_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
                 }
 
             tmper = elm->type->xer_encoder(elm->type, memb_ptr, ilevel + 1,
-                                           flags, cb, app_key);
+                flags, cb, app_key);
             if (tmper.encoded == -1) return tmper;
             if (tmper.encoded == 0 && specs->as_XMLValueList)
                 {
@@ -152,8 +152,8 @@ cb_failed:
 }
 
 asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
-                                       asn_per_constraints_t *constraints,
-                                       void *sptr, asn_per_outp_t *po)
+    asn_per_constraints_t *constraints,
+    void *sptr, asn_per_outp_t *po)
 {
     asn_anonymous_sequence_ *list;
     asn_per_constraint_t *ct;
@@ -181,7 +181,7 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
             int not_in_root = (list->count < ct->lower_bound ||
                                list->count > ct->upper_bound);
             ASN_DEBUG("lb %ld ub %ld %s", ct->lower_bound, ct->upper_bound,
-                      ct->flags & APC_EXTENSIBLE ? "ext" : "fix");
+                ct->flags & APC_EXTENSIBLE ? "ext" : "fix");
             if (ct->flags & APC_EXTENSIBLE)
                 {
                     /* Declare whether size is in extension root */
@@ -197,7 +197,7 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
         {
             /* X.691, #19.5: No length determinant */
             if (per_put_few_bits(po, list->count - ct->lower_bound,
-                                 ct->effective_bits))
+                    ct->effective_bits))
                 _ASN_ENCODE_FAILED;
         }
 

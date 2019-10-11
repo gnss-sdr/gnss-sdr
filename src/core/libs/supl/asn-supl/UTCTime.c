@@ -2,9 +2,9 @@
  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <UTCTime.h>
 #include <GeneralizedTime.h>
+#include <UTCTime.h>
+#include <asn_internal.h>
 #include <errno.h>
 
 #ifdef __CYGWIN__
@@ -57,7 +57,7 @@ asn_TYPE_descriptor_t asn_DEF_UTCTime = {
  * Check that the time looks like the time.
  */
 int UTCTime_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                       asn_app_constraint_failed_f *ctfailcb, void *app_key)
+    asn_app_constraint_failed_f *ctfailcb, void *app_key)
 {
     const UTCTime_t *st = (const UTCTime_t *)sptr;
     time_t tloc;
@@ -67,8 +67,8 @@ int UTCTime_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     if (tloc == -1 && errno != EPERM)
         {
             _ASN_CTFAIL(app_key, td, sptr,
-                        "%s: Invalid time format: %s (%s:%d)", td->name,
-                        strerror(errno), __FILE__, __LINE__);
+                "%s: Invalid time format: %s (%s:%d)", td->name,
+                strerror(errno), __FILE__, __LINE__);
             return -1;
         }
 
@@ -78,8 +78,8 @@ int UTCTime_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 #ifndef __ASN_INTERNAL_TEST_MODE__
 
 asn_enc_rval_t UTCTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                                  int ilevel, enum xer_encoder_flags_e flags,
-                                  asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     if (flags & XER_F_CANONICAL)
         {
@@ -96,21 +96,21 @@ asn_enc_rval_t UTCTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             if (!ut) _ASN_ENCODE_FAILED;
 
             rv = OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb,
-                                              app_key);
+                app_key);
             OCTET_STRING_free(&asn_DEF_UTCTime, ut, 0);
             return rv;
         }
     else
         {
             return OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb,
-                                                app_key);
+                app_key);
         }
 }
 
 #endif /* __ASN_INTERNAL_TEST_MODE__ */
 
 int UTCTime_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                  asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     const UTCTime_t *st = (const UTCTime_t *)sptr;
 
@@ -128,9 +128,9 @@ int UTCTime_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
 
             ret = snprintf(buf, sizeof(buf),
-                           "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
-                           tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-                           tm.tm_hour, tm.tm_min, tm.tm_sec);
+                "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
+                tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+                tm.tm_hour, tm.tm_min, tm.tm_sec);
             assert(ret > 0 && ret < (int)sizeof(buf));
             return (cb(buf, ret, app_key) < 0) ? -1 : 0;
         }

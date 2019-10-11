@@ -59,7 +59,7 @@ extern "C"
      * allocate empty OCTET STRING.
      */
     OCTET_STRING_t *OCTET_STRING_new_fromBuf(asn_TYPE_descriptor_t *td,
-                                             const char *str, int len);
+        const char *str, int len);
 
     /****************************
      * Internally useful stuff. *

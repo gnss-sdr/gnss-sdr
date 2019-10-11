@@ -32,7 +32,7 @@
 
 #include "ad9361_fpga_signal_source.h"
 #include "GPS_L1_CA.h"
-#include "GPS_L2C.h"
+#include "GPS_L5.h"
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
@@ -310,8 +310,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_);
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", -3.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
     tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);

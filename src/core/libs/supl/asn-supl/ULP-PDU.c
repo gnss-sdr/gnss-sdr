@@ -7,15 +7,15 @@
 #include "ULP-PDU.h"
 
 static int memb_length_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,7 +29,7 @@ static int memb_length_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -42,24 +42,24 @@ static asn_per_constraints_t ASN_PER_MEMB_LENGTH_CONSTR_2 = {
 };
 static asn_TYPE_member_t asn_MBR_ULP_PDU_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct ULP_PDU, length),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_length_constraint_1,
-     &ASN_PER_MEMB_LENGTH_CONSTR_2, 0, "length"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_length_constraint_1,
+        &ASN_PER_MEMB_LENGTH_CONSTR_2, 0, "length"},
     {ATF_NOFLAGS, 0, offsetof(struct ULP_PDU, version),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Version, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "version"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Version, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "version"},
     {ATF_NOFLAGS, 0, offsetof(struct ULP_PDU, sessionID),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SessionID, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "sessionID"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SessionID, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "sessionID"},
     {ATF_NOFLAGS, 0, offsetof(struct ULP_PDU, message),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_UlpMessage, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "message"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_UlpMessage, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "message"},
 };
 static ber_tlv_tag_t asn_DEF_ULP_PDU_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -95,9 +95,9 @@ asn_TYPE_descriptor_t asn_DEF_ULP_PDU = {
     0, /* Use generic outmost tag fetcher */
     asn_DEF_ULP_PDU_tags_1,
     sizeof(asn_DEF_ULP_PDU_tags_1) / sizeof(asn_DEF_ULP_PDU_tags_1[0]), /* 1 */
-    asn_DEF_ULP_PDU_tags_1, /* Same as above */
+    asn_DEF_ULP_PDU_tags_1,                                             /* Same as above */
     sizeof(asn_DEF_ULP_PDU_tags_1) / sizeof(asn_DEF_ULP_PDU_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                                  /* No PER visible constraints */
     asn_MBR_ULP_PDU_1,
     4,                       /* Elements count */
     &asn_SPC_ULP_PDU_specs_1 /* Additional specs */

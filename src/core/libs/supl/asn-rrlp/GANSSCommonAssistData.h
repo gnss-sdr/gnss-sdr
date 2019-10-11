@@ -45,9 +45,9 @@ extern "C"
 #endif
 
 /* Referred external types */
-#include "GANSSReferenceTime.h"
-#include "GANSSRefLocation.h"
 #include "GANSSIonosphericModel.h"
+#include "GANSSRefLocation.h"
+#include "GANSSReferenceTime.h"
 
 #endif /* _GANSSCommonAssistData_H_ */
 #include <asn_internal.h>

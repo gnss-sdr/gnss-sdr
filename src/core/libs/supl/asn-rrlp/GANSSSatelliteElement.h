@@ -10,10 +10,10 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "SVID.h"
-#include <NativeInteger.h>
 #include "GANSSClockModel.h"
 #include "GANSSOrbitModel.h"
+#include "SVID.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

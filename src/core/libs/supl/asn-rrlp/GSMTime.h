@@ -12,9 +12,9 @@
 /* Including external dependencies */
 #include "BCCHCarrier.h"
 #include "BSIC.h"
+#include "BitNumber.h"
 #include "FrameNumber.h"
 #include "TimeSlot.h"
-#include "BitNumber.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

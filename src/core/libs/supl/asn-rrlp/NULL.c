@@ -2,10 +2,10 @@
  * Copyright (c) 2003, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <asn_codecs_prim.h>
-#include <NULL.h>
 #include <BOOLEAN.h> /* Implemented in terms of BOOLEAN type */
+#include <NULL.h>
+#include <asn_codecs_prim.h>
+#include <asn_internal.h>
 
 /*
  * NULL basic type description.
@@ -36,8 +36,8 @@ asn_TYPE_descriptor_t asn_DEF_NULL = {
 };
 
 asn_enc_rval_t NULL_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
-                               int tag_mode, ber_tlv_tag_t tag,
-                               asn_app_consume_bytes_f *cb, void *app_key)
+    int tag_mode, ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_enc_rval_t erval;
 
@@ -52,8 +52,8 @@ asn_enc_rval_t NULL_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
 }
 
 asn_enc_rval_t NULL_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-                               int ilevel, enum xer_encoder_flags_e flags,
-                               asn_app_consume_bytes_f *cb, void *app_key)
+    int ilevel, enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     asn_enc_rval_t er;
 
@@ -70,9 +70,9 @@ asn_enc_rval_t NULL_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 }
 
 static enum xer_pbd_rval NULL__xer_body_decode(asn_TYPE_descriptor_t *td,
-                                               void *sptr,
-                                               const void *chunk_buf,
-                                               size_t chunk_size)
+    void *sptr,
+    const void *chunk_buf,
+    size_t chunk_size)
 {
     (void)td;
     (void)sptr;
@@ -84,17 +84,17 @@ static enum xer_pbd_rval NULL__xer_body_decode(asn_TYPE_descriptor_t *td,
 }
 
 asn_dec_rval_t NULL_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                               asn_TYPE_descriptor_t *td, void **sptr,
-                               const char *opt_mname, const void *buf_ptr,
-                               size_t size)
+    asn_TYPE_descriptor_t *td, void **sptr,
+    const char *opt_mname, const void *buf_ptr,
+    size_t size)
 {
     return xer_decode_primitive(opt_codec_ctx, td, sptr, sizeof(NULL_t),
-                                opt_mname, buf_ptr, size,
-                                NULL__xer_body_decode);
+        opt_mname, buf_ptr, size,
+        NULL__xer_body_decode);
 }
 
 int NULL_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-               asn_app_consume_bytes_f *cb, void *app_key)
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     (void)td;     /* Unused argument */
     (void)ilevel; /* Unused argument */
@@ -110,9 +110,9 @@ int NULL_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 }
 
 asn_dec_rval_t NULL_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                asn_TYPE_descriptor_t *td,
-                                asn_per_constraints_t *constraints, void **sptr,
-                                asn_per_data_t *pd)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints, void **sptr,
+    asn_per_data_t *pd)
 {
     asn_dec_rval_t rv;
 
@@ -144,8 +144,8 @@ asn_dec_rval_t NULL_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t NULL_encode_uper(asn_TYPE_descriptor_t *td,
-                                asn_per_constraints_t *constraints, void *sptr,
-                                asn_per_outp_t *po)
+    asn_per_constraints_t *constraints, void *sptr,
+    asn_per_outp_t *po)
 {
     asn_enc_rval_t er;
 

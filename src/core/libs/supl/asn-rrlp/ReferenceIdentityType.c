@@ -14,37 +14,37 @@ static asn_per_constraints_t ASN_PER_TYPE_REFERENCE_IDENTITY_TYPE_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_ReferenceIdentityType_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct ReferenceIdentityType, choice.bsicAndCarrier),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BSICAndCarrier,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "bsicAndCarrier"},
+        offsetof(struct ReferenceIdentityType, choice.bsicAndCarrier),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BSICAndCarrier,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "bsicAndCarrier"},
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceIdentityType, choice.ci),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellID, 0, /* Defer constraints checking to the member type */
-     0,                  /* No PER visible constraints */
-     0, "ci"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellID, 0,                     /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "ci"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct ReferenceIdentityType, choice.requestIndex),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_RequestIndex,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "requestIndex"},
+        offsetof(struct ReferenceIdentityType, choice.requestIndex),
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_RequestIndex,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "requestIndex"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct ReferenceIdentityType, choice.systemInfoIndex),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SystemInfoIndex,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "systemInfoIndex"},
+        offsetof(struct ReferenceIdentityType, choice.systemInfoIndex),
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SystemInfoIndex,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "systemInfoIndex"},
     {ATF_NOFLAGS, 0, offsetof(struct ReferenceIdentityType, choice.ciAndLAC),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_CellIDAndLAC,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ciAndLAC"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_CellIDAndLAC,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ciAndLAC"},
 };
 static asn_TYPE_tag2member_t asn_MAP_ReferenceIdentityType_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0}, /* bsicAndCarrier at 294 */

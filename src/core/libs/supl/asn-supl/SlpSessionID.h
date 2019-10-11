@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <OCTET_STRING.h>
 #include "SLPAddress.h"
+#include <OCTET_STRING.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

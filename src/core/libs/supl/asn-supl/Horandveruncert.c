@@ -7,9 +7,9 @@
 #include "Horandveruncert.h"
 
 static int memb_verdirect_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -17,7 +17,7 @@ static int memb_verdirect_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -39,15 +39,15 @@ static int memb_verdirect_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -55,7 +55,7 @@ static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -77,15 +77,15 @@ static int memb_bearing_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -93,7 +93,7 @@ static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -115,15 +115,15 @@ static int memb_horspeed_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_verspeed_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
     size_t size;
@@ -131,7 +131,7 @@ static int memb_verspeed_constraint_1(asn_TYPE_descriptor_t *td,
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -153,7 +153,7 @@ static int memb_verspeed_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -168,7 +168,7 @@ static int memb_horuncertspeed_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -190,7 +190,7 @@ static int memb_horuncertspeed_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -205,7 +205,7 @@ static int memb_veruncertspeed_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -227,7 +227,7 @@ static int memb_veruncertspeed_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -270,29 +270,29 @@ static asn_per_constraints_t ASN_PER_MEMB_VERUNCERTSPEED_CONSTR_7 = {
 };
 static asn_TYPE_member_t asn_MBR_Horandveruncert_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct Horandveruncert, verdirect),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_verdirect_constraint_1,
-     &ASN_PER_MEMB_VERDIRECT_CONSTR_2, 0, "verdirect"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_verdirect_constraint_1,
+        &ASN_PER_MEMB_VERDIRECT_CONSTR_2, 0, "verdirect"},
     {ATF_NOFLAGS, 0, offsetof(struct Horandveruncert, bearing),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_bearing_constraint_1,
-     &ASN_PER_MEMB_BEARING_CONSTR_3, 0, "bearing"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_bearing_constraint_1,
+        &ASN_PER_MEMB_BEARING_CONSTR_3, 0, "bearing"},
     {ATF_NOFLAGS, 0, offsetof(struct Horandveruncert, horspeed),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_horspeed_constraint_1,
-     &ASN_PER_MEMB_HORSPEED_CONSTR_4, 0, "horspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_horspeed_constraint_1,
+        &ASN_PER_MEMB_HORSPEED_CONSTR_4, 0, "horspeed"},
     {ATF_NOFLAGS, 0, offsetof(struct Horandveruncert, verspeed),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_verspeed_constraint_1,
-     &ASN_PER_MEMB_VERSPEED_CONSTR_5, 0, "verspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_verspeed_constraint_1,
+        &ASN_PER_MEMB_VERSPEED_CONSTR_5, 0, "verspeed"},
     {ATF_NOFLAGS, 0, offsetof(struct Horandveruncert, horuncertspeed),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_horuncertspeed_constraint_1,
-     &ASN_PER_MEMB_HORUNCERTSPEED_CONSTR_6, 0, "horuncertspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_horuncertspeed_constraint_1,
+        &ASN_PER_MEMB_HORUNCERTSPEED_CONSTR_6, 0, "horuncertspeed"},
     {ATF_NOFLAGS, 0, offsetof(struct Horandveruncert, veruncertspeed),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_BIT_STRING, memb_veruncertspeed_constraint_1,
-     &ASN_PER_MEMB_VERUNCERTSPEED_CONSTR_7, 0, "veruncertspeed"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_BIT_STRING, memb_veruncertspeed_constraint_1,
+        &ASN_PER_MEMB_VERUNCERTSPEED_CONSTR_7, 0, "veruncertspeed"},
 };
 static ber_tlv_tag_t asn_DEF_Horandveruncert_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -334,7 +334,7 @@ asn_TYPE_descriptor_t asn_DEF_Horandveruncert = {
     asn_DEF_Horandveruncert_tags_1,                /* Same as above */
     sizeof(asn_DEF_Horandveruncert_tags_1) /
         sizeof(asn_DEF_Horandveruncert_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                             /* No PER visible constraints */
     asn_MBR_Horandveruncert_1,
     6,                               /* Elements count */
     &asn_SPC_Horandveruncert_specs_1 /* Additional specs */

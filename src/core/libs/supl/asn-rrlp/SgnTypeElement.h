@@ -11,8 +11,8 @@
 
 /* Including external dependencies */
 #include "GANSSSignalID.h"
-#include <NativeInteger.h>
 #include "SeqOfDGANSSSgnElement.h"
+#include <NativeInteger.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

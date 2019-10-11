@@ -6,15 +6,15 @@
 #include <errno.h>
 
 static ssize_t der_write_TL(ber_tlv_tag_t tag, ber_tlv_len_t len,
-                            asn_app_consume_bytes_f *cb, void *app_key,
-                            int constructed);
+    asn_app_consume_bytes_f *cb, void *app_key,
+    int constructed);
 
 /*
  * The DER encoder of any type.
  */
 asn_enc_rval_t der_encode(asn_TYPE_descriptor_t *type_descriptor,
-                          void *struct_ptr,
-                          asn_app_consume_bytes_f *consume_bytes, void *app_key)
+    void *struct_ptr,
+    asn_app_consume_bytes_f *consume_bytes, void *app_key)
 {
     ASN_DEBUG("DER encoder invoked for %s", type_descriptor->name);
 
@@ -52,8 +52,8 @@ static int encode_to_buffer_cb(const void *buffer, size_t size, void *key)
  * A variant of the der_encode() which encodes the data into the provided buffer
  */
 asn_enc_rval_t der_encode_to_buffer(asn_TYPE_descriptor_t *type_descriptor,
-                                    void *struct_ptr, void *buffer,
-                                    size_t buffer_size)
+    void *struct_ptr, void *buffer,
+    size_t buffer_size)
 {
     enc_to_buf_arg arg;
     asn_enc_rval_t ec;
@@ -76,9 +76,9 @@ asn_enc_rval_t der_encode_to_buffer(asn_TYPE_descriptor_t *type_descriptor,
  * Write out leading TL[v] sequence according to the type definition.
  */
 ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
-                       int tag_mode, int last_tag_form,
-                       ber_tlv_tag_t tag, /* EXPLICIT or IMPLICIT tag */
-                       asn_app_consume_bytes_f *cb, void *app_key)
+    int tag_mode, int last_tag_form,
+    ber_tlv_tag_t tag, /* EXPLICIT or IMPLICIT tag */
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     ber_tlv_tag_t *tags; /* Copy of tags stream */
     int tags_count;      /* Number of tags */
@@ -87,10 +87,10 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
     int i;
 
     ASN_DEBUG("Writing tags (%s, tm=%d, tc=%d, tag=%s, mtc=%d)", sd->name,
-              tag_mode, sd->tags_count, ber_tlv_tag_string(tag),
-              tag_mode
-                  ? (sd->tags_count + 1 - ((tag_mode == -1) && sd->tags_count))
-                  : sd->tags_count);
+        tag_mode, sd->tags_count, ber_tlv_tag_string(tag),
+        tag_mode
+            ? (sd->tags_count + 1 - ((tag_mode == -1) && sd->tags_count))
+            : sd->tags_count);
 
     if (tag_mode)
         {
@@ -148,7 +148,7 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
     if (!cb) return overall_length - struct_length;
 
     ASN_DEBUG("%s %s TL sequence (%d elements)", cb ? "Encoding" : "Estimating",
-              sd->name, tags_count);
+        sd->name, tags_count);
 
     /*
      * Encode the TL sequence for real.
@@ -169,8 +169,8 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
 }
 
 static ssize_t der_write_TL(ber_tlv_tag_t tag, ber_tlv_len_t len,
-                            asn_app_consume_bytes_f *cb, void *app_key,
-                            int constructed)
+    asn_app_consume_bytes_f *cb, void *app_key,
+    int constructed)
 {
     uint8_t buf[32];
     size_t size = 0;
@@ -184,7 +184,7 @@ static ssize_t der_write_TL(ber_tlv_tag_t tag, ber_tlv_len_t len,
 
     /* Serialize length (L from TLV) into possibly zero-length buffer */
     tmp = der_tlv_length_serialize(len, buf + size,
-                                   buf_size ? buf_size - size : 0);
+        buf_size ? buf_size - size : 0);
     if (tmp == -1) return -1;
     size += tmp;
 

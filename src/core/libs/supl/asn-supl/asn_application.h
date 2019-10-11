@@ -8,8 +8,10 @@
 #ifndef _ASN_APPLICATION_H_
 #define _ASN_APPLICATION_H_
 
+// clang-format off
 #include "asn_system.h" /* for platform-dependent types */
 #include "asn_codecs.h" /* for ASN.1 codecs specifics */
+// clang-format on
 
 #ifdef __cplusplus
 extern "C"
@@ -24,7 +26,7 @@ extern "C"
      * Non-negative return values indicate success, and ignored.
      */
     typedef int(asn_app_consume_bytes_f)(const void *buffer, size_t size,
-                                         void *application_specific_key);
+        void *application_specific_key);
 
     /*
      * A callback of this type is called whenever constraint validation fails

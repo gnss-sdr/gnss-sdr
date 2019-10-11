@@ -7,15 +7,15 @@
 #include "UncompressedEphemeris.h"
 
 static int ephemE_17_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-                                asn_app_constraint_failed_f *ctfailcb,
-                                void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     unsigned long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -48,92 +48,92 @@ static void ephemE_17_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td)
 }
 
 static void ephemE_17_free(asn_TYPE_descriptor_t *td, void *struct_ptr,
-                           int contents_only)
+    int contents_only)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 static int ephemE_17_print(asn_TYPE_descriptor_t *td, const void *struct_ptr,
-                           int ilevel, asn_app_consume_bytes_f *cb,
-                           void *app_key)
+    int ilevel, asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
 }
 
 static asn_dec_rval_t ephemE_17_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-                                           asn_TYPE_descriptor_t *td,
-                                           void **structure, const void *bufptr,
-                                           size_t size, int tag_mode)
+    asn_TYPE_descriptor_t *td,
+    void **structure, const void *bufptr,
+    size_t size, int tag_mode)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 static asn_enc_rval_t ephemE_17_encode_der(asn_TYPE_descriptor_t *td,
-                                           void *structure, int tag_mode,
-                                           ber_tlv_tag_t tag,
-                                           asn_app_consume_bytes_f *cb,
-                                           void *app_key)
+    void *structure, int tag_mode,
+    ber_tlv_tag_t tag,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->der_encoder(td, structure, tag_mode, tag, cb, app_key);
 }
 
 static asn_dec_rval_t ephemE_17_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-                                           asn_TYPE_descriptor_t *td,
-                                           void **structure,
-                                           const char *opt_mname,
-                                           const void *bufptr, size_t size)
+    asn_TYPE_descriptor_t *td,
+    void **structure,
+    const char *opt_mname,
+    const void *bufptr, size_t size)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 static asn_enc_rval_t ephemE_17_encode_xer(asn_TYPE_descriptor_t *td,
-                                           void *structure, int ilevel,
-                                           enum xer_encoder_flags_e flags,
-                                           asn_app_consume_bytes_f *cb,
-                                           void *app_key)
+    void *structure, int ilevel,
+    enum xer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->xer_encoder(td, structure, ilevel, flags, cb, app_key);
 }
 
 static asn_dec_rval_t ephemE_17_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-                                            asn_TYPE_descriptor_t *td,
-                                            asn_per_constraints_t *constraints,
-                                            void **structure,
-                                            asn_per_data_t *per_data)
+    asn_TYPE_descriptor_t *td,
+    asn_per_constraints_t *constraints,
+    void **structure,
+    asn_per_data_t *per_data)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 static asn_enc_rval_t ephemE_17_encode_uper(asn_TYPE_descriptor_t *td,
-                                            asn_per_constraints_t *constraints,
-                                            void *structure,
-                                            asn_per_outp_t *per_out)
+    asn_per_constraints_t *constraints,
+    void *structure,
+    asn_per_outp_t *per_out)
 {
     ephemE_17_inherit_TYPE_descriptor(td);
     return td->uper_encoder(td, constraints, structure, per_out);
 }
 
 static int ephemAPowerHalf_19_constraint(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     unsigned long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -167,15 +167,15 @@ static void ephemAPowerHalf_19_inherit_TYPE_descriptor(
 }
 
 static void ephemAPowerHalf_19_free(asn_TYPE_descriptor_t *td, void *struct_ptr,
-                                    int contents_only)
+    int contents_only)
 {
     ephemAPowerHalf_19_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 static int ephemAPowerHalf_19_print(asn_TYPE_descriptor_t *td,
-                                    const void *struct_ptr, int ilevel,
-                                    asn_app_consume_bytes_f *cb, void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb, void *app_key)
 {
     ephemAPowerHalf_19_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
@@ -187,7 +187,7 @@ static asn_dec_rval_t ephemAPowerHalf_19_decode_ber(
 {
     ephemAPowerHalf_19_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 static asn_enc_rval_t ephemAPowerHalf_19_encode_der(
@@ -204,7 +204,7 @@ static asn_dec_rval_t ephemAPowerHalf_19_decode_xer(
 {
     ephemAPowerHalf_19_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 static asn_enc_rval_t ephemAPowerHalf_19_encode_xer(
@@ -222,7 +222,7 @@ static asn_dec_rval_t ephemAPowerHalf_19_decode_uper(
 {
     ephemAPowerHalf_19_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 static asn_enc_rval_t ephemAPowerHalf_19_encode_uper(
@@ -242,7 +242,7 @@ static int memb_ephemCodeOnL2_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -256,22 +256,22 @@ static int memb_ephemCodeOnL2_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemURA_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -285,7 +285,7 @@ static int memb_ephemURA_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -299,7 +299,7 @@ static int memb_ephemSVhealth_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -313,22 +313,22 @@ static int memb_ephemSVhealth_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemIODC_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -342,22 +342,22 @@ static int memb_ephemIODC_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemL2Pflag_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -371,22 +371,22 @@ static int memb_ephemL2Pflag_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemTgd_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -400,22 +400,22 @@ static int memb_ephemTgd_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemToc_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -429,22 +429,22 @@ static int memb_ephemToc_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemAF2_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -458,22 +458,22 @@ static int memb_ephemAF2_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemAF1_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -487,22 +487,22 @@ static int memb_ephemAF1_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemAF0_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -516,22 +516,22 @@ static int memb_ephemAF0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemCrs_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -545,22 +545,22 @@ static int memb_ephemCrs_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemDeltaN_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -574,22 +574,22 @@ static int memb_ephemDeltaN_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemM0_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -603,22 +603,22 @@ static int memb_ephemM0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemCuc_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -632,21 +632,21 @@ static int memb_ephemCuc_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemE_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     unsigned long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -657,16 +657,16 @@ static int memb_ephemE_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int memb_ephemCus_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -680,7 +680,7 @@ static int memb_ephemCus_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -694,7 +694,7 @@ static int memb_ephemAPowerHalf_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -705,16 +705,16 @@ static int memb_ephemAPowerHalf_constraint_1(
 }
 
 static int memb_ephemToe_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -728,22 +728,22 @@ static int memb_ephemToe_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemFitFlag_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -757,22 +757,22 @@ static int memb_ephemFitFlag_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemAODA_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -786,22 +786,22 @@ static int memb_ephemAODA_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemCic_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -815,22 +815,22 @@ static int memb_ephemCic_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemOmegaA0_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -844,22 +844,22 @@ static int memb_ephemOmegaA0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemCis_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -873,22 +873,22 @@ static int memb_ephemCis_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemI0_constraint_1(asn_TYPE_descriptor_t *td,
-                                     const void *sptr,
-                                     asn_app_constraint_failed_f *ctfailcb,
-                                     void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -902,22 +902,22 @@ static int memb_ephemI0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemCrc_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -931,21 +931,21 @@ static int memb_ephemCrc_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemW_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -959,7 +959,7 @@ static int memb_ephemW_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -973,7 +973,7 @@ static int memb_ephemOmegaADot_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -987,22 +987,22 @@ static int memb_ephemOmegaADot_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ephemIDot_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -1016,7 +1016,7 @@ static int memb_ephemIDot_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -1107,7 +1107,7 @@ static asn_per_constraints_t ASN_PER_MEMB_EPHEM_DELTA_N_CONSTR_14 = {
 };
 static asn_per_constraints_t ASN_PER_MEMB_EPHEM_M0_CONSTR_15 = {
     {APC_CONSTRAINED, 32, -1, (-2147483647L - 1),
-     2147483647} /* (-2147483648..2147483647) */,
+        2147483647} /* (-2147483648..2147483647) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0,
     0 /* No PER value map */
@@ -1162,7 +1162,7 @@ static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CIC_CONSTR_23 = {
 };
 static asn_per_constraints_t ASN_PER_MEMB_EPHEM_OMEGA_A0_CONSTR_24 = {
     {APC_CONSTRAINED, 32, -1, (-2147483647L - 1),
-     2147483647} /* (-2147483648..2147483647) */,
+        2147483647} /* (-2147483648..2147483647) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0,
     0 /* No PER value map */
@@ -1175,7 +1175,7 @@ static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CIS_CONSTR_25 = {
 };
 static asn_per_constraints_t ASN_PER_MEMB_EPHEM_I0_CONSTR_26 = {
     {APC_CONSTRAINED, 32, -1, (-2147483647L - 1),
-     2147483647} /* (-2147483648..2147483647) */,
+        2147483647} /* (-2147483648..2147483647) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0,
     0 /* No PER value map */
@@ -1188,7 +1188,7 @@ static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CRC_CONSTR_27 = {
 };
 static asn_per_constraints_t ASN_PER_MEMB_EPHEM_W_CONSTR_28 = {
     {APC_CONSTRAINED, 32, -1, (-2147483647L - 1),
-     2147483647} /* (-2147483648..2147483647) */,
+        2147483647} /* (-2147483648..2147483647) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0,
     0 /* No PER value map */
@@ -1272,142 +1272,142 @@ static /* Use -fall-defs-global to expose */
 
 static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCodeOnL2),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCodeOnL2_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CODE_ON_L2_CONSTR_2, 0, "ephemCodeOnL2"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCodeOnL2_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CODE_ON_L2_CONSTR_2, 0, "ephemCodeOnL2"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemURA),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemURA_constraint_1,
-     &ASN_PER_MEMB_EPHEM_URA_CONSTR_3, 0, "ephemURA"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemURA_constraint_1,
+        &ASN_PER_MEMB_EPHEM_URA_CONSTR_3, 0, "ephemURA"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemSVhealth),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemSVhealth_constraint_1,
-     &ASN_PER_MEMB_EPHEM_S_VHEALTH_CONSTR_4, 0, "ephemSVhealth"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemSVhealth_constraint_1,
+        &ASN_PER_MEMB_EPHEM_S_VHEALTH_CONSTR_4, 0, "ephemSVhealth"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemIODC),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemIODC_constraint_1,
-     &ASN_PER_MEMB_EPHEM_IODC_CONSTR_5, 0, "ephemIODC"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemIODC_constraint_1,
+        &ASN_PER_MEMB_EPHEM_IODC_CONSTR_5, 0, "ephemIODC"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemL2Pflag),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemL2Pflag_constraint_1,
-     &ASN_PER_MEMB_EPHEM_L2_PFLAG_CONSTR_6, 0, "ephemL2Pflag"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemL2Pflag_constraint_1,
+        &ASN_PER_MEMB_EPHEM_L2_PFLAG_CONSTR_6, 0, "ephemL2Pflag"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemSF1Rsvd),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_EphemerisSubframe1Reserved,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ephemSF1Rsvd"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_EphemerisSubframe1Reserved,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ephemSF1Rsvd"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemTgd),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemTgd_constraint_1,
-     &ASN_PER_MEMB_EPHEM_TGD_CONSTR_8, 0, "ephemTgd"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemTgd_constraint_1,
+        &ASN_PER_MEMB_EPHEM_TGD_CONSTR_8, 0, "ephemTgd"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemToc),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemToc_constraint_1,
-     &ASN_PER_MEMB_EPHEM_TOC_CONSTR_9, 0, "ephemToc"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemToc_constraint_1,
+        &ASN_PER_MEMB_EPHEM_TOC_CONSTR_9, 0, "ephemToc"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemAF2),
-     (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemAF2_constraint_1,
-     &ASN_PER_MEMB_EPHEM_A_F2_CONSTR_10, 0, "ephemAF2"},
+        (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemAF2_constraint_1,
+        &ASN_PER_MEMB_EPHEM_A_F2_CONSTR_10, 0, "ephemAF2"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemAF1),
-     (ASN_TAG_CLASS_CONTEXT | (9 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemAF1_constraint_1,
-     &ASN_PER_MEMB_EPHEM_A_F1_CONSTR_11, 0, "ephemAF1"},
+        (ASN_TAG_CLASS_CONTEXT | (9 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemAF1_constraint_1,
+        &ASN_PER_MEMB_EPHEM_A_F1_CONSTR_11, 0, "ephemAF1"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemAF0),
-     (ASN_TAG_CLASS_CONTEXT | (10 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemAF0_constraint_1,
-     &ASN_PER_MEMB_EPHEM_A_F0_CONSTR_12, 0, "ephemAF0"},
+        (ASN_TAG_CLASS_CONTEXT | (10 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemAF0_constraint_1,
+        &ASN_PER_MEMB_EPHEM_A_F0_CONSTR_12, 0, "ephemAF0"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCrs),
-     (ASN_TAG_CLASS_CONTEXT | (11 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCrs_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CRS_CONSTR_13, 0, "ephemCrs"},
+        (ASN_TAG_CLASS_CONTEXT | (11 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCrs_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CRS_CONSTR_13, 0, "ephemCrs"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemDeltaN),
-     (ASN_TAG_CLASS_CONTEXT | (12 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemDeltaN_constraint_1,
-     &ASN_PER_MEMB_EPHEM_DELTA_N_CONSTR_14, 0, "ephemDeltaN"},
+        (ASN_TAG_CLASS_CONTEXT | (12 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemDeltaN_constraint_1,
+        &ASN_PER_MEMB_EPHEM_DELTA_N_CONSTR_14, 0, "ephemDeltaN"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemM0),
-     (ASN_TAG_CLASS_CONTEXT | (13 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemM0_constraint_1,
-     &ASN_PER_MEMB_EPHEM_M0_CONSTR_15, 0, "ephemM0"},
+        (ASN_TAG_CLASS_CONTEXT | (13 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemM0_constraint_1,
+        &ASN_PER_MEMB_EPHEM_M0_CONSTR_15, 0, "ephemM0"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCuc),
-     (ASN_TAG_CLASS_CONTEXT | (14 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCuc_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CUC_CONSTR_16, 0, "ephemCuc"},
+        (ASN_TAG_CLASS_CONTEXT | (14 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCuc_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CUC_CONSTR_16, 0, "ephemCuc"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemE),
-     (ASN_TAG_CLASS_CONTEXT | (15 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ephemE_17, memb_ephemE_constraint_1,
-     &ASN_PER_MEMB_EPHEM_E_CONSTR_17, 0, "ephemE"},
+        (ASN_TAG_CLASS_CONTEXT | (15 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ephemE_17, memb_ephemE_constraint_1,
+        &ASN_PER_MEMB_EPHEM_E_CONSTR_17, 0, "ephemE"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCus),
-     (ASN_TAG_CLASS_CONTEXT | (16 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCus_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CUS_CONSTR_18, 0, "ephemCus"},
+        (ASN_TAG_CLASS_CONTEXT | (16 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCus_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CUS_CONSTR_18, 0, "ephemCus"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemAPowerHalf),
-     (ASN_TAG_CLASS_CONTEXT | (17 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ephemAPowerHalf_19, memb_ephemAPowerHalf_constraint_1,
-     &ASN_PER_MEMB_EPHEM_A_POWER_HALF_CONSTR_19, 0, "ephemAPowerHalf"},
+        (ASN_TAG_CLASS_CONTEXT | (17 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ephemAPowerHalf_19, memb_ephemAPowerHalf_constraint_1,
+        &ASN_PER_MEMB_EPHEM_A_POWER_HALF_CONSTR_19, 0, "ephemAPowerHalf"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemToe),
-     (ASN_TAG_CLASS_CONTEXT | (18 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemToe_constraint_1,
-     &ASN_PER_MEMB_EPHEM_TOE_CONSTR_20, 0, "ephemToe"},
+        (ASN_TAG_CLASS_CONTEXT | (18 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemToe_constraint_1,
+        &ASN_PER_MEMB_EPHEM_TOE_CONSTR_20, 0, "ephemToe"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemFitFlag),
-     (ASN_TAG_CLASS_CONTEXT | (19 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemFitFlag_constraint_1,
-     &ASN_PER_MEMB_EPHEM_FIT_FLAG_CONSTR_21, 0, "ephemFitFlag"},
+        (ASN_TAG_CLASS_CONTEXT | (19 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemFitFlag_constraint_1,
+        &ASN_PER_MEMB_EPHEM_FIT_FLAG_CONSTR_21, 0, "ephemFitFlag"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemAODA),
-     (ASN_TAG_CLASS_CONTEXT | (20 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemAODA_constraint_1,
-     &ASN_PER_MEMB_EPHEM_AODA_CONSTR_22, 0, "ephemAODA"},
+        (ASN_TAG_CLASS_CONTEXT | (20 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemAODA_constraint_1,
+        &ASN_PER_MEMB_EPHEM_AODA_CONSTR_22, 0, "ephemAODA"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCic),
-     (ASN_TAG_CLASS_CONTEXT | (21 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCic_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CIC_CONSTR_23, 0, "ephemCic"},
+        (ASN_TAG_CLASS_CONTEXT | (21 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCic_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CIC_CONSTR_23, 0, "ephemCic"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemOmegaA0),
-     (ASN_TAG_CLASS_CONTEXT | (22 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemOmegaA0_constraint_1,
-     &ASN_PER_MEMB_EPHEM_OMEGA_A0_CONSTR_24, 0, "ephemOmegaA0"},
+        (ASN_TAG_CLASS_CONTEXT | (22 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemOmegaA0_constraint_1,
+        &ASN_PER_MEMB_EPHEM_OMEGA_A0_CONSTR_24, 0, "ephemOmegaA0"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCis),
-     (ASN_TAG_CLASS_CONTEXT | (23 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCis_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CIS_CONSTR_25, 0, "ephemCis"},
+        (ASN_TAG_CLASS_CONTEXT | (23 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCis_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CIS_CONSTR_25, 0, "ephemCis"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemI0),
-     (ASN_TAG_CLASS_CONTEXT | (24 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemI0_constraint_1,
-     &ASN_PER_MEMB_EPHEM_I0_CONSTR_26, 0, "ephemI0"},
+        (ASN_TAG_CLASS_CONTEXT | (24 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemI0_constraint_1,
+        &ASN_PER_MEMB_EPHEM_I0_CONSTR_26, 0, "ephemI0"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemCrc),
-     (ASN_TAG_CLASS_CONTEXT | (25 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemCrc_constraint_1,
-     &ASN_PER_MEMB_EPHEM_CRC_CONSTR_27, 0, "ephemCrc"},
+        (ASN_TAG_CLASS_CONTEXT | (25 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemCrc_constraint_1,
+        &ASN_PER_MEMB_EPHEM_CRC_CONSTR_27, 0, "ephemCrc"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemW),
-     (ASN_TAG_CLASS_CONTEXT | (26 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemW_constraint_1,
-     &ASN_PER_MEMB_EPHEM_W_CONSTR_28, 0, "ephemW"},
+        (ASN_TAG_CLASS_CONTEXT | (26 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemW_constraint_1,
+        &ASN_PER_MEMB_EPHEM_W_CONSTR_28, 0, "ephemW"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemOmegaADot),
-     (ASN_TAG_CLASS_CONTEXT | (27 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemOmegaADot_constraint_1,
-     &ASN_PER_MEMB_EPHEM_OMEGA_A_DOT_CONSTR_29, 0, "ephemOmegaADot"},
+        (ASN_TAG_CLASS_CONTEXT | (27 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemOmegaADot_constraint_1,
+        &ASN_PER_MEMB_EPHEM_OMEGA_A_DOT_CONSTR_29, 0, "ephemOmegaADot"},
     {ATF_NOFLAGS, 0, offsetof(struct UncompressedEphemeris, ephemIDot),
-     (ASN_TAG_CLASS_CONTEXT | (28 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ephemIDot_constraint_1,
-     &ASN_PER_MEMB_EPHEM_I_DOT_CONSTR_30, 0, "ephemIDot"},
+        (ASN_TAG_CLASS_CONTEXT | (28 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ephemIDot_constraint_1,
+        &ASN_PER_MEMB_EPHEM_I_DOT_CONSTR_30, 0, "ephemIDot"},
 };
 static ber_tlv_tag_t asn_DEF_UncompressedEphemeris_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -1430,7 +1430,7 @@ static asn_TYPE_tag2member_t asn_MAP_UncompressedEphemeris_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (15 << 2)), 15, 0, 0}, /* ephemE at 737 */
     {(ASN_TAG_CLASS_CONTEXT | (16 << 2)), 16, 0, 0}, /* ephemCus at 738 */
     {(ASN_TAG_CLASS_CONTEXT | (17 << 2)), 17, 0,
-     0}, /* ephemAPowerHalf at 739 */
+        0},                                          /* ephemAPowerHalf at 739 */
     {(ASN_TAG_CLASS_CONTEXT | (18 << 2)), 18, 0, 0}, /* ephemToe at 740 */
     {(ASN_TAG_CLASS_CONTEXT | (19 << 2)), 19, 0, 0}, /* ephemFitFlag at 741 */
     {(ASN_TAG_CLASS_CONTEXT | (20 << 2)), 20, 0, 0}, /* ephemAODA at 742 */
@@ -1473,7 +1473,7 @@ asn_TYPE_descriptor_t asn_DEF_UncompressedEphemeris = {
     asn_DEF_UncompressedEphemeris_tags_1,                /* Same as above */
     sizeof(asn_DEF_UncompressedEphemeris_tags_1) /
         sizeof(asn_DEF_UncompressedEphemeris_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                   /* No PER visible constraints */
     asn_MBR_UncompressedEphemeris_1,
     29,                                    /* Elements count */
     &asn_SPC_UncompressedEphemeris_specs_1 /* Additional specs */

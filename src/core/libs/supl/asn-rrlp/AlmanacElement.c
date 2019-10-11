@@ -7,16 +7,16 @@
 #include "AlmanacElement.h"
 
 static int memb_almanacE_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,22 +30,22 @@ static int memb_almanacE_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_alamanacToa_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -59,22 +59,22 @@ static int memb_alamanacToa_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_almanacKsii_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -88,7 +88,7 @@ static int memb_almanacKsii_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -102,7 +102,7 @@ static int memb_almanacOmegaDot_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -116,7 +116,7 @@ static int memb_almanacOmegaDot_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -130,7 +130,7 @@ static int memb_almanacSVhealth_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -144,7 +144,7 @@ static int memb_almanacSVhealth_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -158,7 +158,7 @@ static int memb_almanacAPowerHalf_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -172,7 +172,7 @@ static int memb_almanacAPowerHalf_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -186,7 +186,7 @@ static int memb_almanacOmega0_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -200,22 +200,22 @@ static int memb_almanacOmega0_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_almanacW_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -229,22 +229,22 @@ static int memb_almanacW_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_almanacM0_constraint_1(asn_TYPE_descriptor_t *td,
-                                       const void *sptr,
-                                       asn_app_constraint_failed_f *ctfailcb,
-                                       void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -258,22 +258,22 @@ static int memb_almanacM0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_almanacAF0_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -287,22 +287,22 @@ static int memb_almanacAF0_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_almanacAF1_constraint_1(asn_TYPE_descriptor_t *td,
-                                        const void *sptr,
-                                        asn_app_constraint_failed_f *ctfailcb,
-                                        void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -316,7 +316,7 @@ static int memb_almanacAF1_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -389,57 +389,57 @@ static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_A_F1_CONSTR_13 = {
 };
 static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, satelliteID),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SatelliteID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "satelliteID"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SatelliteID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "satelliteID"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacE),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacE_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_E_CONSTR_3, 0, "almanacE"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacE_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_E_CONSTR_3, 0, "almanacE"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, alamanacToa),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_alamanacToa_constraint_1,
-     &ASN_PER_MEMB_ALAMANAC_TOA_CONSTR_4, 0, "alamanacToa"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_alamanacToa_constraint_1,
+        &ASN_PER_MEMB_ALAMANAC_TOA_CONSTR_4, 0, "alamanacToa"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacKsii),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacKsii_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_KSII_CONSTR_5, 0, "almanacKsii"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacKsii_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_KSII_CONSTR_5, 0, "almanacKsii"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacOmegaDot),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacOmegaDot_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_OMEGA_DOT_CONSTR_6, 0, "almanacOmegaDot"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacOmegaDot_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_OMEGA_DOT_CONSTR_6, 0, "almanacOmegaDot"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacSVhealth),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacSVhealth_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_S_VHEALTH_CONSTR_7, 0, "almanacSVhealth"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacSVhealth_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_S_VHEALTH_CONSTR_7, 0, "almanacSVhealth"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacAPowerHalf),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacAPowerHalf_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_A_POWER_HALF_CONSTR_8, 0, "almanacAPowerHalf"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacAPowerHalf_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_A_POWER_HALF_CONSTR_8, 0, "almanacAPowerHalf"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacOmega0),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacOmega0_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_OMEGA0_CONSTR_9, 0, "almanacOmega0"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacOmega0_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_OMEGA0_CONSTR_9, 0, "almanacOmega0"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacW),
-     (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacW_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_W_CONSTR_10, 0, "almanacW"},
+        (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacW_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_W_CONSTR_10, 0, "almanacW"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacM0),
-     (ASN_TAG_CLASS_CONTEXT | (9 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacM0_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_M0_CONSTR_11, 0, "almanacM0"},
+        (ASN_TAG_CLASS_CONTEXT | (9 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacM0_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_M0_CONSTR_11, 0, "almanacM0"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacAF0),
-     (ASN_TAG_CLASS_CONTEXT | (10 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacAF0_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_A_F0_CONSTR_12, 0, "almanacAF0"},
+        (ASN_TAG_CLASS_CONTEXT | (10 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacAF0_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_A_F0_CONSTR_12, 0, "almanacAF0"},
     {ATF_NOFLAGS, 0, offsetof(struct AlmanacElement, almanacAF1),
-     (ASN_TAG_CLASS_CONTEXT | (11 << 2)),
-     -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_almanacAF1_constraint_1,
-     &ASN_PER_MEMB_ALMANAC_A_F1_CONSTR_13, 0, "almanacAF1"},
+        (ASN_TAG_CLASS_CONTEXT | (11 << 2)),
+        -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_almanacAF1_constraint_1,
+        &ASN_PER_MEMB_ALMANAC_A_F1_CONSTR_13, 0, "almanacAF1"},
 };
 static ber_tlv_tag_t asn_DEF_AlmanacElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -451,7 +451,7 @@ static asn_TYPE_tag2member_t asn_MAP_AlmanacElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* almanacOmegaDot at 803 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0}, /* almanacSVhealth at 804 */
     {(ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0,
-     0}, /* almanacAPowerHalf at 805 */
+        0},                                          /* almanacAPowerHalf at 805 */
     {(ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0},   /* almanacOmega0 at 806 */
     {(ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0},   /* almanacW at 807 */
     {(ASN_TAG_CLASS_CONTEXT | (9 << 2)), 9, 0, 0},   /* almanacM0 at 808 */
@@ -488,7 +488,7 @@ asn_TYPE_descriptor_t asn_DEF_AlmanacElement = {
     asn_DEF_AlmanacElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_AlmanacElement_tags_1) /
         sizeof(asn_DEF_AlmanacElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                            /* No PER visible constraints */
     asn_MBR_AlmanacElement_1,
     12,                             /* Elements count */
     &asn_SPC_AlmanacElement_specs_1 /* Additional specs */

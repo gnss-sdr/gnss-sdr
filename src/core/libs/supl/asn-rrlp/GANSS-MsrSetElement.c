@@ -15,7 +15,7 @@ static int memb_deltaGNASSTOD_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,7 +29,7 @@ static int memb_deltaGNASSTOD_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -42,32 +42,32 @@ static asn_per_constraints_t ASN_PER_MEMB_DELTA_GNASSTOD_CONSTR_4 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSS_MsrSetElement_1[] = {
     {ATF_POINTER, 4, offsetof(struct GANSS_MsrSetElement, referenceFrame),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ReferenceFrame,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "referenceFrame"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ReferenceFrame,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "referenceFrame"},
     {ATF_POINTER, 3, offsetof(struct GANSS_MsrSetElement, ganssTODm),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSTODm, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "ganssTODm"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSTODm, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "ganssTODm"},
     {ATF_POINTER, 2, offsetof(struct GANSS_MsrSetElement, deltaGNASSTOD),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_deltaGNASSTOD_constraint_1,
-     &ASN_PER_MEMB_DELTA_GNASSTOD_CONSTR_4, 0, "deltaGNASSTOD"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_deltaGNASSTOD_constraint_1,
+        &ASN_PER_MEMB_DELTA_GNASSTOD_CONSTR_4, 0, "deltaGNASSTOD"},
     {ATF_POINTER, 1, offsetof(struct GANSS_MsrSetElement, ganssTODUncertainty),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSTODUncertainty,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssTODUncertainty"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSTODUncertainty,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssTODUncertainty"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSS_MsrSetElement, ganss_SgnTypeList),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SeqOfGANSS_SgnTypeElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganss-SgnTypeList"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SeqOfGANSS_SgnTypeElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganss-SgnTypeList"},
 };
 static int asn_MAP_GANSS_MsrSetElement_oms_1[] = {0, 1, 2, 3};
 static ber_tlv_tag_t asn_DEF_GANSS_MsrSetElement_tags_1[] = {
@@ -77,9 +77,9 @@ static asn_TYPE_tag2member_t asn_MAP_GANSS_MsrSetElement_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* ganssTODm at 1457 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* deltaGNASSTOD at 1458 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0,
-     0}, /* ganssTODUncertainty at 1459 */
+        0}, /* ganssTODUncertainty at 1459 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0,
-     0} /* ganss-SgnTypeList at 1463 */
+        0} /* ganss-SgnTypeList at 1463 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_GANSS_MsrSetElement_specs_1 = {
     sizeof(struct GANSS_MsrSetElement),
@@ -111,7 +111,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSS_MsrSetElement = {
     asn_DEF_GANSS_MsrSetElement_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSS_MsrSetElement_tags_1) /
         sizeof(asn_DEF_GANSS_MsrSetElement_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                                 /* No PER visible constraints */
     asn_MBR_GANSS_MsrSetElement_1,
     5,                                   /* Elements count */
     &asn_SPC_GANSS_MsrSetElement_specs_1 /* Additional specs */

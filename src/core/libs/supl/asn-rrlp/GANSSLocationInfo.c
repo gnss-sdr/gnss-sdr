@@ -7,16 +7,16 @@
 #include "GANSSLocationInfo.h"
 
 static int memb_ganssTODFrac_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -30,22 +30,22 @@ static int memb_ganssTODFrac_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_ganssTimeID_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -59,7 +59,7 @@ static int memb_ganssTimeID_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -73,7 +73,7 @@ static int memb_stationaryIndication_constraint_1(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -87,7 +87,7 @@ static int memb_stationaryIndication_constraint_1(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -112,51 +112,51 @@ static asn_per_constraints_t ASN_PER_MEMB_STATIONARY_INDICATION_CONSTR_9 = {
 };
 static asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[] = {
     {ATF_POINTER, 5, offsetof(struct GANSSLocationInfo, referenceFrame),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ReferenceFrame,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "referenceFrame"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ReferenceFrame,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "referenceFrame"},
     {ATF_POINTER, 4, offsetof(struct GANSSLocationInfo, ganssTODm),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSTODm, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "ganssTODm"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSTODm, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "ganssTODm"},
     {ATF_POINTER, 3, offsetof(struct GANSSLocationInfo, ganssTODFrac),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssTODFrac_constraint_1,
-     &ASN_PER_MEMB_GANSS_TOD_FRAC_CONSTR_4, 0, "ganssTODFrac"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssTODFrac_constraint_1,
+        &ASN_PER_MEMB_GANSS_TOD_FRAC_CONSTR_4, 0, "ganssTODFrac"},
     {ATF_POINTER, 2, offsetof(struct GANSSLocationInfo, ganssTODUncertainty),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_GANSSTODUncertainty,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "ganssTODUncertainty"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_GANSSTODUncertainty,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "ganssTODUncertainty"},
     {ATF_POINTER, 1, offsetof(struct GANSSLocationInfo, ganssTimeID),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_ganssTimeID_constraint_1,
-     &ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_6, 0, "ganssTimeID"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_ganssTimeID_constraint_1,
+        &ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_6, 0, "ganssTimeID"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSLocationInfo, fixType),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FixType, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "fixType"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FixType, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "fixType"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSLocationInfo, posData),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PositionData,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "posData"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PositionData,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "posData"},
     {ATF_POINTER, 1, offsetof(struct GANSSLocationInfo, stationaryIndication),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_stationaryIndication_constraint_1,
-     &ASN_PER_MEMB_STATIONARY_INDICATION_CONSTR_9, 0, "stationaryIndication"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_stationaryIndication_constraint_1,
+        &ASN_PER_MEMB_STATIONARY_INDICATION_CONSTR_9, 0, "stationaryIndication"},
     {ATF_NOFLAGS, 0, offsetof(struct GANSSLocationInfo, posEstimate),
-     (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_Ext_GeographicalInformation,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "posEstimate"},
+        (ASN_TAG_CLASS_CONTEXT | (8 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_Ext_GeographicalInformation,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "posEstimate"},
 };
 static int asn_MAP_GANSSLocationInfo_oms_1[] = {0, 1, 2, 3, 4, 7};
 static ber_tlv_tag_t asn_DEF_GANSSLocationInfo_tags_1[] = {
@@ -166,12 +166,12 @@ static asn_TYPE_tag2member_t asn_MAP_GANSSLocationInfo_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0}, /* ganssTODm at 1412 */
     {(ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0}, /* ganssTODFrac at 1413 */
     {(ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0,
-     0}, /* ganssTODUncertainty at 1414 */
+        0},                                        /* ganssTODUncertainty at 1414 */
     {(ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0}, /* ganssTimeID at 1415 */
     {(ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0}, /* fixType at 1416 */
     {(ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0}, /* posData at 1417 */
     {(ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0,
-     0}, /* stationaryIndication at 1418 */
+        0},                                       /* stationaryIndication at 1418 */
     {(ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0} /* posEstimate at 1424 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_GANSSLocationInfo_specs_1 = {
@@ -204,7 +204,7 @@ asn_TYPE_descriptor_t asn_DEF_GANSSLocationInfo = {
     asn_DEF_GANSSLocationInfo_tags_1,                /* Same as above */
     sizeof(asn_DEF_GANSSLocationInfo_tags_1) /
         sizeof(asn_DEF_GANSSLocationInfo_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                               /* No PER visible constraints */
     asn_MBR_GANSSLocationInfo_1,
     9,                                 /* Elements count */
     &asn_SPC_GANSSLocationInfo_specs_1 /* Additional specs */

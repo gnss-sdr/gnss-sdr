@@ -8,21 +8,21 @@
 
 static asn_TYPE_member_t asn_MBR_SUPLSTART_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SUPLSTART, sETCapabilities),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_SETCapabilities,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "sETCapabilities"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_SETCapabilities,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "sETCapabilities"},
     {ATF_NOFLAGS, 0, offsetof(struct SUPLSTART, locationId),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_LocationId, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "locationId"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_LocationId, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "locationId"},
     {ATF_POINTER, 1, offsetof(struct SUPLSTART, qoP),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_QoP, 0, /* Defer constraints checking to the member type */
-     0,               /* No PER visible constraints */
-     0, "qoP"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_QoP, 0,                        /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "qoP"},
 };
 static int asn_MAP_SUPLSTART_oms_1[] = {2};
 static ber_tlv_tag_t asn_DEF_SUPLSTART_tags_1[] = {

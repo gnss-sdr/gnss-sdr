@@ -7,15 +7,15 @@
 #include "UTCModel.h"
 
 static int memb_utcA1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,21 +29,21 @@ static int memb_utcA1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcA0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -57,21 +57,21 @@ static int memb_utcA0_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcTot_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -85,21 +85,21 @@ static int memb_utcTot_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcWNt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                    asn_app_constraint_failed_f *ctfailcb,
-                                    void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -113,22 +113,22 @@ static int memb_utcWNt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcDeltaTls_constraint_1(asn_TYPE_descriptor_t *td,
-                                         const void *sptr,
-                                         asn_app_constraint_failed_f *ctfailcb,
-                                         void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -142,22 +142,22 @@ static int memb_utcDeltaTls_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcWNlsf_constraint_1(asn_TYPE_descriptor_t *td,
-                                      const void *sptr,
-                                      asn_app_constraint_failed_f *ctfailcb,
-                                      void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -171,21 +171,21 @@ static int memb_utcWNlsf_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcDN_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-                                   asn_app_constraint_failed_f *ctfailcb,
-                                   void *app_key)
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -199,22 +199,22 @@ static int memb_utcDN_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
 
 static int memb_utcDeltaTlsf_constraint_1(asn_TYPE_descriptor_t *td,
-                                          const void *sptr,
-                                          asn_app_constraint_failed_f *ctfailcb,
-                                          void *app_key)
+    const void *sptr,
+    asn_app_constraint_failed_f *ctfailcb,
+    void *app_key)
 {
     long value;
 
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -228,7 +228,7 @@ static int memb_utcDeltaTlsf_constraint_1(asn_TYPE_descriptor_t *td,
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -241,7 +241,7 @@ static asn_per_constraints_t ASN_PER_MEMB_UTC_A1_CONSTR_2 = {
 };
 static asn_per_constraints_t ASN_PER_MEMB_UTC_A0_CONSTR_3 = {
     {APC_CONSTRAINED, 32, -1, (-2147483647L - 1),
-     2147483647} /* (-2147483648..2147483647) */,
+        2147483647} /* (-2147483648..2147483647) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0,
     0 /* No PER value map */
@@ -284,37 +284,37 @@ static asn_per_constraints_t ASN_PER_MEMB_UTC_DELTA_TLSF_CONSTR_9 = {
 };
 static asn_TYPE_member_t asn_MBR_UTCModel_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcA1),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcA1_constraint_1,
-     &ASN_PER_MEMB_UTC_A1_CONSTR_2, 0, "utcA1"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcA1_constraint_1,
+        &ASN_PER_MEMB_UTC_A1_CONSTR_2, 0, "utcA1"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcA0),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcA0_constraint_1,
-     &ASN_PER_MEMB_UTC_A0_CONSTR_3, 0, "utcA0"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcA0_constraint_1,
+        &ASN_PER_MEMB_UTC_A0_CONSTR_3, 0, "utcA0"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcTot),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcTot_constraint_1,
-     &ASN_PER_MEMB_UTC_TOT_CONSTR_4, 0, "utcTot"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcTot_constraint_1,
+        &ASN_PER_MEMB_UTC_TOT_CONSTR_4, 0, "utcTot"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcWNt),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcWNt_constraint_1,
-     &ASN_PER_MEMB_UTC_W_NT_CONSTR_5, 0, "utcWNt"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcWNt_constraint_1,
+        &ASN_PER_MEMB_UTC_W_NT_CONSTR_5, 0, "utcWNt"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcDeltaTls),
-     (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcDeltaTls_constraint_1,
-     &ASN_PER_MEMB_UTC_DELTA_TLS_CONSTR_6, 0, "utcDeltaTls"},
+        (ASN_TAG_CLASS_CONTEXT | (4 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcDeltaTls_constraint_1,
+        &ASN_PER_MEMB_UTC_DELTA_TLS_CONSTR_6, 0, "utcDeltaTls"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcWNlsf),
-     (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcWNlsf_constraint_1,
-     &ASN_PER_MEMB_UTC_W_NLSF_CONSTR_7, 0, "utcWNlsf"},
+        (ASN_TAG_CLASS_CONTEXT | (5 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcWNlsf_constraint_1,
+        &ASN_PER_MEMB_UTC_W_NLSF_CONSTR_7, 0, "utcWNlsf"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcDN),
-     (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcDN_constraint_1,
-     &ASN_PER_MEMB_UTC_DN_CONSTR_8, 0, "utcDN"},
+        (ASN_TAG_CLASS_CONTEXT | (6 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcDN_constraint_1,
+        &ASN_PER_MEMB_UTC_DN_CONSTR_8, 0, "utcDN"},
     {ATF_NOFLAGS, 0, offsetof(struct UTCModel, utcDeltaTlsf),
-     (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_NativeInteger, memb_utcDeltaTlsf_constraint_1,
-     &ASN_PER_MEMB_UTC_DELTA_TLSF_CONSTR_9, 0, "utcDeltaTlsf"},
+        (ASN_TAG_CLASS_CONTEXT | (7 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_NativeInteger, memb_utcDeltaTlsf_constraint_1,
+        &ASN_PER_MEMB_UTC_DELTA_TLSF_CONSTR_9, 0, "utcDeltaTlsf"},
 };
 static ber_tlv_tag_t asn_DEF_UTCModel_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

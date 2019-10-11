@@ -14,10 +14,10 @@ static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_SGN_TYPE_ELEMENT_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_SeqOfSgnTypeElement_1[] = {
     {ATF_POINTER, 0, 0, (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0,
-     &asn_DEF_SgnTypeElement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, ""},
+        &asn_DEF_SgnTypeElement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, ""},
 };
 static ber_tlv_tag_t asn_DEF_SeqOfSgnTypeElement_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};

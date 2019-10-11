@@ -46,7 +46,7 @@ extern "C"
         const uint8_t *buffer; /* Pointer to the octet stream */
         size_t nboff;          /* Bit offset to the meaningful bit */
         size_t nbits;          /* Number of bits in the stream */
-        size_t moved; /* Number of bits moved through this bit stream */
+        size_t moved;          /* Number of bits moved through this bit stream */
         int (*refill)(struct asn_per_data_s *);
         void *refill_key;
     } asn_per_data_t;
@@ -67,7 +67,7 @@ extern "C"
      * extracted due to EOD or other conditions.
      */
     int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int alright,
-                          int get_nbits);
+        int get_nbits);
 
     /*
      * Get the length "n" from the Unaligned PER stream.
@@ -86,7 +86,7 @@ extern "C"
 
     /* X.691-2008/11, #11.5.6 */
     int uper_get_constrained_whole_number(asn_per_data_t *pd,
-                                          unsigned long *out_value, int nbits);
+        unsigned long *out_value, int nbits);
 
     /* Non-thread-safe debugging function, don't use it */
     char *per_data_string(asn_per_data_t *pd);
@@ -110,7 +110,7 @@ extern "C"
 
     /* Output a large number of bits */
     int per_put_many_bits(asn_per_outp_t *po, const uint8_t *src,
-                          int put_nbits);
+        int put_nbits);
 
     /*
      * Flush whole bytes (0 or more) through (outper) member.
@@ -121,9 +121,9 @@ extern "C"
 
     /* X.691-2008/11, #11.5 */
     int uper_put_constrained_whole_number_s(asn_per_outp_t *po, long v,
-                                            int nbits);
+        int nbits);
     int uper_put_constrained_whole_number_u(asn_per_outp_t *po, unsigned long v,
-                                            int nbits);
+        int nbits);
 
     /*
      * Put the length "n" to the Unaligned PER stream.

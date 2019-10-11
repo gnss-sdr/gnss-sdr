@@ -15,7 +15,7 @@ int GPSReferenceTimeUncertainty_constraint(
     if (!sptr)
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: value not given (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 
@@ -29,7 +29,7 @@ int GPSReferenceTimeUncertainty_constraint(
     else
         {
             _ASN_CTFAIL(app_key, td, sptr, "%s: constraint failed (%s:%d)",
-                        td->name, __FILE__, __LINE__);
+                td->name, __FILE__, __LINE__);
             return -1;
         }
 }
@@ -57,16 +57,16 @@ static void GPSReferenceTimeUncertainty_1_inherit_TYPE_descriptor(
 }
 
 void GPSReferenceTimeUncertainty_free(asn_TYPE_descriptor_t *td,
-                                      void *struct_ptr, int contents_only)
+    void *struct_ptr, int contents_only)
 {
     GPSReferenceTimeUncertainty_1_inherit_TYPE_descriptor(td);
     td->free_struct(td, struct_ptr, contents_only);
 }
 
 int GPSReferenceTimeUncertainty_print(asn_TYPE_descriptor_t *td,
-                                      const void *struct_ptr, int ilevel,
-                                      asn_app_consume_bytes_f *cb,
-                                      void *app_key)
+    const void *struct_ptr, int ilevel,
+    asn_app_consume_bytes_f *cb,
+    void *app_key)
 {
     GPSReferenceTimeUncertainty_1_inherit_TYPE_descriptor(td);
     return td->print_struct(td, struct_ptr, ilevel, cb, app_key);
@@ -78,7 +78,7 @@ asn_dec_rval_t GPSReferenceTimeUncertainty_decode_ber(
 {
     GPSReferenceTimeUncertainty_1_inherit_TYPE_descriptor(td);
     return td->ber_decoder(opt_codec_ctx, td, structure, bufptr, size,
-                           tag_mode);
+        tag_mode);
 }
 
 asn_enc_rval_t GPSReferenceTimeUncertainty_encode_der(
@@ -95,7 +95,7 @@ asn_dec_rval_t GPSReferenceTimeUncertainty_decode_xer(
 {
     GPSReferenceTimeUncertainty_1_inherit_TYPE_descriptor(td);
     return td->xer_decoder(opt_codec_ctx, td, structure, opt_mname, bufptr,
-                           size);
+        size);
 }
 
 asn_enc_rval_t GPSReferenceTimeUncertainty_encode_xer(
@@ -113,7 +113,7 @@ asn_dec_rval_t GPSReferenceTimeUncertainty_decode_uper(
 {
     GPSReferenceTimeUncertainty_1_inherit_TYPE_descriptor(td);
     return td->uper_decoder(opt_codec_ctx, td, constraints, structure,
-                            per_data);
+        per_data);
 }
 
 asn_enc_rval_t GPSReferenceTimeUncertainty_encode_uper(
@@ -149,7 +149,7 @@ asn_TYPE_descriptor_t asn_DEF_GPSReferenceTimeUncertainty = {
     asn_DEF_GPSReferenceTimeUncertainty_tags_1,
     sizeof(asn_DEF_GPSReferenceTimeUncertainty_tags_1) /
         sizeof(asn_DEF_GPSReferenceTimeUncertainty_tags_1[0]), /* 1 */
-    asn_DEF_GPSReferenceTimeUncertainty_tags_1, /* Same as above */
+    asn_DEF_GPSReferenceTimeUncertainty_tags_1,                /* Same as above */
     sizeof(asn_DEF_GPSReferenceTimeUncertainty_tags_1) /
         sizeof(asn_DEF_GPSReferenceTimeUncertainty_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_GPS_REFERENCE_TIME_UNCERTAINTY_CONSTR_1,

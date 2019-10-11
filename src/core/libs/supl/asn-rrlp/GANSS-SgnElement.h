@@ -10,9 +10,9 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include "MpathIndic.h"
 #include "SVID.h"
 #include <NativeInteger.h>
-#include "MpathIndic.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

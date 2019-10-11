@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "TimeRelation.h"
 #include "SeqOfAcquisElement.h"
+#include "TimeRelation.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus

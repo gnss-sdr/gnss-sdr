@@ -8,26 +8,26 @@
 
 static asn_TYPE_member_t asn_MBR_SUPLRESPONSE_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct SUPLRESPONSE, posMethod),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_PosMethod, 0, /* Defer constraints checking to the member type */
-     0,                     /* No PER visible constraints */
-     0, "posMethod"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_PosMethod, 0,                  /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "posMethod"},
     {ATF_POINTER, 3, offsetof(struct SUPLRESPONSE, sLPAddress),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_SLPAddress, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "sLPAddress"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_SLPAddress, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "sLPAddress"},
     {ATF_POINTER, 2, offsetof(struct SUPLRESPONSE, sETAuthKey),
-     (ASN_TAG_CLASS_CONTEXT | (2 << 2)), +1, /* EXPLICIT tag at current level */
-     &asn_DEF_SETAuthKey, 0, /* Defer constraints checking to the member type */
-     0,                      /* No PER visible constraints */
-     0, "sETAuthKey"},
+        (ASN_TAG_CLASS_CONTEXT | (2 << 2)), +1, /* EXPLICIT tag at current level */
+        &asn_DEF_SETAuthKey, 0,                 /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "sETAuthKey"},
     {ATF_POINTER, 1, offsetof(struct SUPLRESPONSE, keyIdentity4),
-     (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_KeyIdentity4,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "keyIdentity4"},
+        (ASN_TAG_CLASS_CONTEXT | (3 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_KeyIdentity4,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "keyIdentity4"},
 };
 static int asn_MAP_SUPLRESPONSE_oms_1[] = {1, 2, 3};
 static ber_tlv_tag_t asn_DEF_SUPLRESPONSE_tags_1[] = {

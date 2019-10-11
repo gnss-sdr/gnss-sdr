@@ -14,23 +14,23 @@ static asn_per_constraints_t ASN_PER_TYPE_OTD_MSRS_OF_OTHER_SETS_CONSTR_1 = {
 };
 static asn_TYPE_member_t asn_MBR_OTD_MsrsOfOtherSets_1[] = {
     {ATF_NOFLAGS, 0,
-     offsetof(struct OTD_MsrsOfOtherSets, choice.identityNotPresent),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_OTD_Measurement,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "identityNotPresent"},
+        offsetof(struct OTD_MsrsOfOtherSets, choice.identityNotPresent),
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_OTD_Measurement,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "identityNotPresent"},
     {ATF_NOFLAGS, 0,
-     offsetof(struct OTD_MsrsOfOtherSets, choice.identityPresent),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_OTD_MeasurementWithID,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "identityPresent"},
+        offsetof(struct OTD_MsrsOfOtherSets, choice.identityPresent),
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_OTD_MeasurementWithID,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "identityPresent"},
 };
 static asn_TYPE_tag2member_t asn_MAP_OTD_MsrsOfOtherSets_tag2el_1[] = {
     {(ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0,
-     0}, /* identityNotPresent at 372 */
+        0},                                       /* identityNotPresent at 372 */
     {(ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0} /* identityPresent at 374 */
 };
 static asn_CHOICE_specifics_t asn_SPC_OTD_MsrsOfOtherSets_specs_1 = {

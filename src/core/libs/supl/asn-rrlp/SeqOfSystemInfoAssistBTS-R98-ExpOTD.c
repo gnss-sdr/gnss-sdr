@@ -15,10 +15,10 @@ static asn_per_constraints_t
 };
 static asn_TYPE_member_t asn_MBR_SeqOfSystemInfoAssistBTS_R98_ExpOTD_1[] = {
     {ATF_POINTER, 0, 0, -1 /* Ambiguous tag (CHOICE?) */, 0,
-     &asn_DEF_SystemInfoAssistBTS_R98_ExpOTD,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, ""},
+        &asn_DEF_SystemInfoAssistBTS_R98_ExpOTD,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, ""},
 };
 static ber_tlv_tag_t asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -44,7 +44,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD = {
     asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1,
     sizeof(asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1) /
         sizeof(asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1[0]), /* 1 */
-    asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1, /* Same as above */
+    asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1,                /* Same as above */
     sizeof(asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1) /
         sizeof(asn_DEF_SeqOfSystemInfoAssistBTS_R98_ExpOTD_tags_1[0]), /* 1 */
     &ASN_PER_TYPE_SEQ_OF_SYSTEM_INFO_ASSIST_BTS_R98_EXP_OTD_CONSTR_1,

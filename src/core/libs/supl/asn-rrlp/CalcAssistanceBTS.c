@@ -8,16 +8,16 @@
 
 static asn_TYPE_member_t asn_MBR_CalcAssistanceBTS_1[] = {
     {ATF_NOFLAGS, 0, offsetof(struct CalcAssistanceBTS, fineRTD),
-     (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_FineRTD, 0, /* Defer constraints checking to the member type */
-     0,                   /* No PER visible constraints */
-     0, "fineRTD"},
+        (ASN_TAG_CLASS_CONTEXT | (0 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_FineRTD, 0,                    /* Defer constraints checking to the member type */
+        0,                                      /* No PER visible constraints */
+        0, "fineRTD"},
     {ATF_NOFLAGS, 0, offsetof(struct CalcAssistanceBTS, referenceWGS84),
-     (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
-     &asn_DEF_ReferenceWGS84,
-     0, /* Defer constraints checking to the member type */
-     0, /* No PER visible constraints */
-     0, "referenceWGS84"},
+        (ASN_TAG_CLASS_CONTEXT | (1 << 2)), -1, /* IMPLICIT tag at current level */
+        &asn_DEF_ReferenceWGS84,
+        0, /* Defer constraints checking to the member type */
+        0, /* No PER visible constraints */
+        0, "referenceWGS84"},
 };
 static ber_tlv_tag_t asn_DEF_CalcAssistanceBTS_tags_1[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (16 << 2))};
@@ -55,7 +55,7 @@ asn_TYPE_descriptor_t asn_DEF_CalcAssistanceBTS = {
     asn_DEF_CalcAssistanceBTS_tags_1,                /* Same as above */
     sizeof(asn_DEF_CalcAssistanceBTS_tags_1) /
         sizeof(asn_DEF_CalcAssistanceBTS_tags_1[0]), /* 1 */
-    0, /* No PER visible constraints */
+    0,                                               /* No PER visible constraints */
     asn_MBR_CalcAssistanceBTS_1,
     2,                                 /* Elements count */
     &asn_SPC_CalcAssistanceBTS_specs_1 /* Additional specs */

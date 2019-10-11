@@ -10,8 +10,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <NULL.h>
 #include "AssistBTSData.h"
+#include <NULL.h>
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus

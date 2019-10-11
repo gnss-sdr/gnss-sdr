@@ -16,7 +16,10 @@ static int check_permitted_alphabet_6(const void *sptr)
     for (; ch < end; ch++)
         {
             uint8_t cv = *ch;
-            if (!(cv <= 127)) return -1;
+            if (!(cv <= 127))
+                {
+                    return -1;
+                }
         }
     return 0;
 }

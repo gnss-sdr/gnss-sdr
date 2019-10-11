@@ -99,6 +99,7 @@ Checks: '-*,
         performance-unnecessary-copy-initialization,
         performance-unnecessary-value-param,
         readability-avoid-const-params-in-decls,
+        readability-braces-around-statements,
         readability-container-size-empty,
         readability-identifier-naming,
         readability-inconsistent-declaration-parameter-name,
@@ -194,8 +195,6 @@ CheckOptions:
     value:           CamelCase
   - key:             modernize-pass-by-value.IncludeStyle
     value:           llvm
-  - key:             modernize-pass-by-value.ValuesOnly
-    value:           '0'
   - key:             modernize-raw-string-literal.ReplaceShorterLiterals
     value:           '0'
   - key:             modernize-replace-auto-ptr.IncludeStyle
@@ -248,6 +247,8 @@ CheckOptions:
     value:           ''
   - key:             performance-unnecessary-value-param.IncludeStyle
     value:           llvm
+  - key:             readability-braces-around-statements.ShortStatementLines
+    value:           '0'
   - key:             readability-identifier-naming.AbstractClassCase
     value:           CamelCase
   - key:             readability-identifier-naming.AbstractClassPrefix

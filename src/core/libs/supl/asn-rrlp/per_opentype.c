@@ -40,19 +40,31 @@ int uper_open_type_put(asn_TYPE_descriptor_t *td,
     ASN_DEBUG("Open type put %s ...", td->name);
 
     size = uper_encode_to_new_buffer(td, constraints, sptr, &buf);
-    if (size <= 0) return -1;
+    if (size <= 0)
+        {
+            return -1;
+        }
 
     for (bptr = buf, toGo = size; toGo;)
         {
             ssize_t maySave = uper_put_length(po, toGo);
-            if (maySave < 0) break;
-            if (per_put_many_bits(po, bptr, maySave * 8)) break;
+            if (maySave < 0)
+                {
+                    break;
+                }
+            if (per_put_many_bits(po, bptr, maySave * 8))
+                {
+                    break;
+                }
             bptr = (char *)bptr + maySave;
             toGo -= maySave;
         }
 
     FREEMEM(buf);
-    if (toGo) return -1;
+    if (toGo)
+        {
+            return -1;
+        }
 
     ASN_DEBUG("Open type put %s of length %d + overhead (1byte?)", td->name,
         size);
@@ -241,7 +253,10 @@ static asn_dec_rval_t GCC_NOTUSED uper_open_type_get_complex(
     UPDRESTOREPD;
 
     /* Skip data not consumed by the decoder */
-    if (arg.unclaimed) ASN_DEBUG("Getting unclaimed %d", arg.unclaimed);
+    if (arg.unclaimed)
+        {
+            ASN_DEBUG("Getting unclaimed %d", arg.unclaimed);
+        }
     if (arg.unclaimed)
         {
             switch (per_skip_bits(pd, arg.unclaimed))
@@ -288,9 +303,13 @@ int uper_open_type_skip(asn_codec_ctx_t *ctx, asn_per_data_t *pd)
 
     rv = uper_open_type_get(ctx, &s_td, 0, 0, pd);
     if (rv.code != RC_OK)
-        return -1;
+        {
+            return -1;
+        }
     else
-        return 0;
+        {
+            return 0;
+        }
 }
 
 /*
@@ -310,7 +329,9 @@ static asn_dec_rval_t uper_sot_suck(asn_codec_ctx_t *ctx,
     (void)sptr;
 
     while (per_get_few_bits(pd, 24) >= 0)
-        ;
+        {
+            ;
+        }
 
     rv.code = RC_OK;
     rv.consumed = pd->moved;
@@ -340,7 +361,10 @@ static int uper_ugot_refill(asn_per_data_t *pd)
     if (arg->unclaimed)
         {
             /* Refill the container */
-            if (per_get_few_bits(oldpd, 1)) return -1;
+            if (per_get_few_bits(oldpd, 1))
+                {
+                    return -1;
+                }
             if (oldpd->nboff == 0)
                 {
                     assert(0);
@@ -362,7 +386,10 @@ static int uper_ugot_refill(asn_per_data_t *pd)
     next_chunk_bytes = uper_get_length(oldpd, -1, &arg->repeat);
     ASN_DEBUG("Open type LENGTH %d bytes at off %d, repeat %d",
         next_chunk_bytes, oldpd->moved, arg->repeat);
-    if (next_chunk_bytes < 0) return -1;
+    if (next_chunk_bytes < 0)
+        {
+            return -1;
+        }
     if (next_chunk_bytes == 0)
         {
             pd->refill = 0;       /* No more refills, naturally */
@@ -399,9 +426,13 @@ static int per_skip_bits(asn_per_data_t *pd, int skip_nbits)
         {
             int skip = 0;
             if (skip_nbits < skip)
-                skip = skip_nbits;
+                {
+                    skip = skip_nbits;
+                }
             else
-                skip = 24;
+                {
+                    skip = 24;
+                }
             skip_nbits -= skip;
 
             switch (per_get_few_bits(pd, skip))

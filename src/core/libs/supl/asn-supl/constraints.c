@@ -49,7 +49,10 @@ static void _asn_i_ctfailcb(void *key, asn_TYPE_descriptor_t *td,
     arg->failed_struct_ptr = sptr;
 
     maxlen = arg->errlen;
-    if (maxlen <= 0) return;
+    if (maxlen <= 0)
+        {
+            return;
+        }
 
     va_start(ap, fmt);
     vlen = vsnprintf(arg->errbuf, maxlen, fmt, ap);
@@ -91,7 +94,10 @@ int asn_check_constraints(asn_TYPE_descriptor_t *type_descriptor,
 
     ret = type_descriptor->check_constraints(type_descriptor, struct_ptr,
         _asn_i_ctfailcb, &arg);
-    if (ret == -1 && errlen) *errlen = arg.errlen;
+    if (ret == -1 && errlen)
+        {
+            *errlen = arg.errlen;
+        }
 
     return ret;
 }

@@ -41,20 +41,32 @@ int32_t per_get_few_bits(asn_per_data_t *pd, int nbits)
     uint32_t accum;
     const uint8_t *buf;
 
-    if (nbits < 0) return -1;
+    if (nbits < 0)
+        {
+            return -1;
+        }
 
     nleft = pd->nbits - pd->nboff;
     if (nbits > nleft)
         {
             int32_t tailv;
             int32_t vhead;
-            if (!pd->refill || nbits > 31) return -1;
+            if (!pd->refill || nbits > 31)
+                {
+                    return -1;
+                }
             /* Accumulate unused bytes before refill */
             ASN_DEBUG("Obtain the rest %d bits (want %d)", (int)nleft, nbits);
             tailv = per_get_few_bits(pd, nleft);
-            if (tailv < 0) return -1;
+            if (tailv < 0)
+                {
+                    return -1;
+                }
             /* Refill (replace pd contents with new data) */
-            if (pd->refill(pd)) return -1;
+            if (pd->refill(pd))
+                {
+                    return -1;
+                }
             nbits -= nleft;
             vhead = per_get_few_bits(pd, nbits);
             /* Combine the rest of previous pd with the head of new one */
@@ -80,14 +92,22 @@ int32_t per_get_few_bits(asn_per_data_t *pd, int nbits)
      * Extract specified number of bits.
      */
     if (off <= 8)
-        accum = nbits ? (buf[0]) >> (8 - off) : 0;
+        {
+            accum = nbits ? (buf[0]) >> (8 - off) : 0;
+        }
     else if (off <= 16)
-        accum = ((buf[0] << 8) + buf[1]) >> (16 - off);
+        {
+            accum = ((buf[0] << 8) + buf[1]) >> (16 - off);
+        }
     else if (off <= 24)
-        accum = ((buf[0] << 16) + (buf[1] << 8) + buf[2]) >> (24 - off);
+        {
+            accum = ((buf[0] << 16) + (buf[1] << 8) + buf[2]) >> (24 - off);
+        }
     else if (off <= 31)
-        accum = ((buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + (buf[3])) >>
-                (32 - off);
+        {
+            accum = ((buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + (buf[3])) >>
+                    (32 - off);
+        }
     else if (nbits <= 31)
         {
             asn_per_data_t tpd = *pd;
@@ -129,7 +149,10 @@ int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int alright, int nbits)
         {
             /* Perform right alignment of a first few bits */
             value = per_get_few_bits(pd, nbits & 0x07);
-            if (value < 0) return -1;
+            if (value < 0)
+                {
+                    return -1;
+                }
             *dst++ = value; /* value is already right-aligned */
             nbits &= ~7;
         }
@@ -139,7 +162,10 @@ int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int alright, int nbits)
             if (nbits >= 24)
                 {
                     value = per_get_few_bits(pd, 24);
-                    if (value < 0) return -1;
+                    if (value < 0)
+                        {
+                            return -1;
+                        }
                     *(dst++) = value >> 16;
                     *(dst++) = value >> 8;
                     *(dst++) = value;
@@ -148,14 +174,26 @@ int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int alright, int nbits)
             else
                 {
                     value = per_get_few_bits(pd, nbits);
-                    if (value < 0) return -1;
+                    if (value < 0)
+                        {
+                            return -1;
+                        }
                     if (nbits & 7)
                         { /* implies left alignment */
                             value <<= 8 - (nbits & 7), nbits += 8 - (nbits & 7);
-                            if (nbits > 24) *dst++ = value >> 24;
+                            if (nbits > 24)
+                                {
+                                    *dst++ = value >> 24;
+                                }
                         }
-                    if (nbits > 16) *dst++ = value >> 16;
-                    if (nbits > 8) *dst++ = value >> 8;
+                    if (nbits > 16)
+                        {
+                            *dst++ = value >> 16;
+                        }
+                    if (nbits > 8)
+                        {
+                            *dst++ = value >> 8;
+                        }
                     *dst++ = value;
                     break;
                 }
@@ -219,7 +257,10 @@ ssize_t uper_get_nslength(asn_per_data_t *pd)
     if (per_get_few_bits(pd, 1) == 0)
         {
             length = per_get_few_bits(pd, 6) + 1;
-            if (length <= 0) return -1;
+            if (length <= 0)
+                {
+                    return -1;
+                }
             ASN_DEBUG("l=%d", (int)length);
             return length;
         }
@@ -227,7 +268,10 @@ ssize_t uper_get_nslength(asn_per_data_t *pd)
         {
             int repeat;
             length = uper_get_length(pd, -1, &repeat);
-            if (length >= 0 && !repeat) return length;
+            if (length >= 0 && !repeat)
+                {
+                    return length;
+                }
             return -1; /* Error, or do not support >16K extensions */
         }
 }
@@ -246,10 +290,18 @@ ssize_t uper_get_nsnnwn(asn_per_data_t *pd)
             value &= 63;
             value <<= 2;
             value |= per_get_few_bits(pd, 2);
-            if (value & 128) /* implicit (value < 0) */
-                return -1;
-            if (value == 0) return 0;
-            if (value >= 3) return -1;
+            if (value & 128)
+                { /* implicit (value < 0) */
+                    return -1;
+                }
+            if (value == 0)
+                {
+                    return 0;
+                }
+            if (value >= 3)
+                {
+                    return -1;
+                }
             value = per_get_few_bits(pd, 8 * value);
             return value;
         }
@@ -267,18 +319,32 @@ int uper_put_nsnnwn(asn_per_outp_t *po, int n)
 
     if (n <= 63)
         {
-            if (n < 0) return -1;
+            if (n < 0)
+                {
+                    return -1;
+                }
             return per_put_few_bits(po, n, 7);
         }
     if (n < 256)
-        bytes = 1;
+        {
+            bytes = 1;
+        }
     else if (n < 65536)
-        bytes = 2;
+        {
+            bytes = 2;
+        }
     else if (n < 256 * 65536)
-        bytes = 3;
+        {
+            bytes = 3;
+        }
     else
-        return -1; /* This is not a "normally small" value */
-    if (per_put_few_bits(po, bytes, 8)) return -1;
+        {
+            return -1; /* This is not a "normally small" value */
+        }
+    if (per_put_few_bits(po, bytes, 8))
+        {
+            return -1;
+        }
 
     return per_put_few_bits(po, n, 8 * bytes);
 }
@@ -293,17 +359,29 @@ int uper_get_constrained_whole_number(asn_per_data_t *pd,
     if (nbits <= 31)
         {
             half = per_get_few_bits(pd, nbits);
-            if (half < 0) return -1;
+            if (half < 0)
+                {
+                    return -1;
+                }
             *out_value = half;
             return 0;
         }
 
-    if ((size_t)nbits > 8 * sizeof(*out_value)) return -1; /* RANGE */
+    if ((size_t)nbits > 8 * sizeof(*out_value))
+        {
+            return -1; /* RANGE */
+        }
 
     half = per_get_few_bits(pd, 31);
-    if (half < 0) return -1;
+    if (half < 0)
+        {
+            return -1;
+        }
 
-    if (uper_get_constrained_whole_number(pd, &lhalf, nbits - 31)) return -1;
+    if (uper_get_constrained_whole_number(pd, &lhalf, nbits - 31))
+        {
+            return -1;
+        }
 
     *out_value = ((unsigned long)half << (nbits - 31)) | lhalf;
     return 0;
@@ -336,7 +414,9 @@ int uper_put_constrained_whole_number_u(asn_per_outp_t *po, unsigned long v,
         {
             /* Put higher portion first, followed by lower 31-bit */
             if (uper_put_constrained_whole_number_u(po, v >> 31, nbits - 31))
-                return -1;
+                {
+                    return -1;
+                }
             return per_put_few_bits(po, v, 31);
         }
 }
@@ -375,7 +455,10 @@ int per_put_few_bits(asn_per_outp_t *po, uint32_t bits, int obits)
     size_t omsk; /* Existing last byte meaningful bits mask */
     uint8_t *buf;
 
-    if (obits <= 0 || obits >= 32) return obits ? -1 : 0;
+    if (obits <= 0 || obits >= 32)
+        {
+            return obits ? -1 : 0;
+        }
 
     ASN_DEBUG("[PER put %d bits %x to %p+%d bits]", obits, (int)bits,
         po->buffer, (int)po->nboff);
@@ -396,13 +479,21 @@ int per_put_few_bits(asn_per_outp_t *po, uint32_t bits, int obits)
     if (po->nboff + obits > po->nbits)
         {
             size_t complete_bytes;
-            if (!po->buffer) po->buffer = po->tmpspace;
+            if (!po->buffer)
+                {
+                    po->buffer = po->tmpspace;
+                }
             complete_bytes = (po->buffer - po->tmpspace);
             ASN_DEBUG("[PER output %ld complete + %ld]", (long)complete_bytes,
                 (long)po->flushed_bytes);
             if (po->outper(po->tmpspace, complete_bytes, po->op_key) < 0)
-                return -1;
-            if (po->nboff) po->tmpspace[0] = po->buffer[0];
+                {
+                    return -1;
+                }
+            if (po->nboff)
+                {
+                    po->tmpspace[0] = po->buffer[0];
+                }
             po->buffer = po->tmpspace;
             po->nbits = 8 * sizeof(po->tmpspace);
             po->flushed_bytes += complete_bytes;
@@ -422,27 +513,40 @@ int per_put_few_bits(asn_per_outp_t *po, uint32_t bits, int obits)
         (int)bits, (int)po->nboff, (int)off, buf[0], (int)(omsk & 0xff),
         (int)(buf[0] & omsk));
 
-    if (off <= 8) /* Completely within 1 byte */
-        po->nboff = off, bits <<= (8 - off), buf[0] = (buf[0] & omsk) | bits;
+    if (off <= 8)
+        { /* Completely within 1 byte */
+            po->nboff = off, bits <<= (8 - off), buf[0] = (buf[0] & omsk) | bits;
+        }
     else if (off <= 16)
-        po->nboff = off, bits <<= (16 - off),
-        buf[0] = (buf[0] & omsk) | (bits >> 8), buf[1] = bits;
+        {
+            po->nboff = off, bits <<= (16 - off),
+            buf[0] = (buf[0] & omsk) | (bits >> 8), buf[1] = bits;
+        }
     else if (off <= 24)
-        po->nboff = off, bits <<= (24 - off),
-        buf[0] = (buf[0] & omsk) | (bits >> 16), buf[1] = bits >> 8,
-        buf[2] = bits;
+        {
+            po->nboff = off, bits <<= (24 - off),
+            buf[0] = (buf[0] & omsk) | (bits >> 16), buf[1] = bits >> 8,
+            buf[2] = bits;
+        }
     else if (off <= 31)
-        po->nboff = off, bits <<= (32 - off),
-        buf[0] = (buf[0] & omsk) | (bits >> 24), buf[1] = bits >> 16,
-        buf[2] = bits >> 8, buf[3] = bits;
+        {
+            po->nboff = off, bits <<= (32 - off),
+            buf[0] = (buf[0] & omsk) | (bits >> 24), buf[1] = bits >> 16,
+            buf[2] = bits >> 8, buf[3] = bits;
+        }
     else
         {
             if ((obits - 24) > 0)
                 {
                     if (per_put_few_bits(po, bits >> (obits - 24), 24))
-                        return -1;
+                        {
+                            return -1;
+                        }
                 }
-            if (per_put_few_bits(po, bits, obits - 24)) return -1;
+            if (per_put_few_bits(po, bits, obits - 24))
+                {
+                    return -1;
+                }
         }
 
     ASN_DEBUG("[PER out %u/%x => %02x buf+%ld]", (int)bits, (int)bits, buf[0],
@@ -465,15 +569,30 @@ int per_put_many_bits(asn_per_outp_t *po, const uint8_t *src, int nbits)
                     value = (src[0] << 16) | (src[1] << 8) | src[2];
                     src += 3;
                     nbits -= 24;
-                    if (per_put_few_bits(po, value, 24)) return -1;
+                    if (per_put_few_bits(po, value, 24))
+                        {
+                            return -1;
+                        }
                 }
             else
                 {
                     value = src[0];
-                    if (nbits > 8) value = (value << 8) | src[1];
-                    if (nbits > 16) value = (value << 8) | src[2];
-                    if (nbits & 0x07) value >>= (8 - (nbits & 0x07));
-                    if (per_put_few_bits(po, value, nbits)) return -1;
+                    if (nbits > 8)
+                        {
+                            value = (value << 8) | src[1];
+                        }
+                    if (nbits > 16)
+                        {
+                            value = (value << 8) | src[2];
+                        }
+                    if (nbits & 0x07)
+                        {
+                            value >>= (8 - (nbits & 0x07));
+                        }
+                    if (per_put_few_bits(po, value, nbits))
+                        {
+                            return -1;
+                        }
                     break;
                 }
         }
@@ -486,13 +605,20 @@ int per_put_many_bits(asn_per_outp_t *po, const uint8_t *src, int nbits)
  */
 ssize_t uper_put_length(asn_per_outp_t *po, size_t length)
 {
-    if (length <= 127) /* #10.9.3.6 */
-        return per_put_few_bits(po, length, 8) ? -1 : (ssize_t)length;
-    else if (length < 16384) /* #10.9.3.7 */
-        return per_put_few_bits(po, length | 0x8000, 16) ? -1 : (ssize_t)length;
+    if (length <= 127)
+        { /* #10.9.3.6 */
+            return per_put_few_bits(po, length, 8) ? -1 : (ssize_t)length;
+        }
+    else if (length < 16384)
+        { /* #10.9.3.7 */
+            return per_put_few_bits(po, length | 0x8000, 16) ? -1 : (ssize_t)length;
+        }
 
     length >>= 14;
-    if (length > 4) length = 4;
+    if (length > 4)
+        {
+            length = 4;
+        }
 
     return per_put_few_bits(po, 0xC0 | length, 8) ? -1
                                                   : (ssize_t)(length << 14);
@@ -508,7 +634,10 @@ int uper_put_nslength(asn_per_outp_t *po, size_t length)
     if (length <= 64)
         {
             /* #10.9.3.4 */
-            if (length == 0) return -1;
+            if (length == 0)
+                {
+                    return -1;
+                }
             return per_put_few_bits(po, length - 1, 7) ? -1 : 0;
         }
     else

@@ -65,7 +65,10 @@ asn_dec_rval_t BOOLEAN_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
      */
     rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size, tag_mode, 0,
         &length, 0);
-    if (rval.code != RC_OK) return rval;
+    if (rval.code != RC_OK)
+        {
+            return rval;
+        }
 
     ASN_DEBUG("Boolean length is %d bytes", (int)length);
 
@@ -159,7 +162,9 @@ static enum xer_pbd_rval BOOLEAN__xer_body_decode(asn_TYPE_descriptor_t *td,
                 case XCT_UNKNOWN_BO:
                     if (xer_check_tag(chunk_buf, chunk_size, "true") !=
                         XCT_BOTH)
-                        return XPBD_BROKEN_ENCODING;
+                        {
+                            return XPBD_BROKEN_ENCODING;
+                        }
                     /* "<true/>" */
                     *st = 1; /* Or 0xff as in DER?.. */
                     break;
@@ -171,9 +176,13 @@ static enum xer_pbd_rval BOOLEAN__xer_body_decode(asn_TYPE_descriptor_t *td,
     else
         {
             if (xer_is_whitespace(chunk_buf, chunk_size))
-                return XPBD_NOT_BODY_IGNORE;
+                {
+                    return XPBD_NOT_BODY_IGNORE;
+                }
             else
-                return XPBD_BROKEN_ENCODING;
+                {
+                    return XPBD_BROKEN_ENCODING;
+                }
         }
 }
 
@@ -197,7 +206,10 @@ asn_enc_rval_t BOOLEAN_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
     (void)ilevel;
     (void)flags;
 
-    if (!st) _ASN_ENCODE_FAILED;
+    if (!st)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     if (*st)
         {
@@ -269,7 +281,10 @@ asn_dec_rval_t BOOLEAN_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     if (!st)
         {
             st = (BOOLEAN_t *)(*sptr = MALLOC(sizeof(*st)));
-            if (!st) _ASN_DECODE_FAILED;
+            if (!st)
+                {
+                    _ASN_DECODE_FAILED;
+                }
         }
 
     /*
@@ -304,7 +319,10 @@ asn_enc_rval_t BOOLEAN_encode_uper(asn_TYPE_descriptor_t *td,
 
     (void)constraints;
 
-    if (!st) _ASN_ENCODE_FAILED;
+    if (!st)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     per_put_few_bits(po, *st ? 1 : 0, 1);
 

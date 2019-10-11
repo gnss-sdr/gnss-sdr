@@ -1513,7 +1513,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                     {
                         d_worker_is_done = false;
                         boost::mutex::scoped_lock lock(d_mutex);
-                        while (!d_worker_is_done) m_condition.wait(lock);
+                        while (!d_worker_is_done)
+                            {
+                                m_condition.wait(lock);
+                            }
 
                         // Signal alignment (skip samples until the incoming signal is aligned with local replica)
                         int64_t acq_trk_diff_samples;

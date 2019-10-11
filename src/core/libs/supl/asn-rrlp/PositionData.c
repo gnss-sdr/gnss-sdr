@@ -58,7 +58,9 @@ static void PositionData_1_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td)
     td->uper_decoder = asn_DEF_BIT_STRING.uper_decoder;
     td->uper_encoder = asn_DEF_BIT_STRING.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints = asn_DEF_BIT_STRING.per_constraints;
+        {
+            td->per_constraints = asn_DEF_BIT_STRING.per_constraints;
+        }
     td->elements = asn_DEF_BIT_STRING.elements;
     td->elements_count = asn_DEF_BIT_STRING.elements_count;
     td->specifics = asn_DEF_BIT_STRING.specifics;

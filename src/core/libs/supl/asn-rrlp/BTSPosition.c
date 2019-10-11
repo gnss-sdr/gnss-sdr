@@ -50,8 +50,10 @@ static void BTSPosition_1_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td)
     td->uper_decoder = asn_DEF_Ext_GeographicalInformation.uper_decoder;
     td->uper_encoder = asn_DEF_Ext_GeographicalInformation.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints =
-            asn_DEF_Ext_GeographicalInformation.per_constraints;
+        {
+            td->per_constraints =
+                asn_DEF_Ext_GeographicalInformation.per_constraints;
+        }
     td->elements = asn_DEF_Ext_GeographicalInformation.elements;
     td->elements_count = asn_DEF_Ext_GeographicalInformation.elements_count;
     td->specifics = asn_DEF_Ext_GeographicalInformation.specifics;

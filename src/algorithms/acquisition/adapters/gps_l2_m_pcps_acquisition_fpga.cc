@@ -68,7 +68,10 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
 
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters.doppler_max = doppler_max_;
 
     unsigned int code_length = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_CPS / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));

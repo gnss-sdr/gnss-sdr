@@ -30,10 +30,16 @@ asn_enc_rval_t SEQUENCE_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     for (edx = 0; edx < list->count; edx++)
         {
             void *memb_ptr = list->array[edx];
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
             erval =
                 elm->type->der_encoder(elm->type, memb_ptr, 0, elm->tag, 0, 0);
-            if (erval.encoded == -1) return erval;
+            if (erval.encoded == -1)
+                {
+                    return erval;
+                }
             computed_size += erval.encoded;
         }
 
@@ -65,10 +71,16 @@ asn_enc_rval_t SEQUENCE_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     for (edx = 0; edx < list->count; edx++)
         {
             void *memb_ptr = list->array[edx];
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
             erval = elm->type->der_encoder(elm->type, memb_ptr, 0, elm->tag, cb,
                 app_key);
-            if (erval.encoded == -1) return erval;
+            if (erval.encoded == -1)
+                {
+                    return erval;
+                }
             encoding_size += erval.encoded;
         }
 
@@ -108,7 +120,10 @@ asn_enc_rval_t SEQUENCE_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
     int xcan = (flags & XER_F_CANONICAL);
     int i;
 
-    if (!sptr) _ASN_ENCODE_FAILED;
+    if (!sptr)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     er.encoded = 0;
 
@@ -116,22 +131,34 @@ asn_enc_rval_t SEQUENCE_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
         {
             asn_enc_rval_t tmper;
             void *memb_ptr = list->array[i];
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
 
             if (mname)
                 {
-                    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel);
+                    if (!xcan)
+                        {
+                            _i_ASN_TEXT_INDENT(1, ilevel);
+                        }
                     _ASN_CALLBACK3("<", 1, mname, mlen, ">", 1);
                 }
 
             tmper = elm->type->xer_encoder(elm->type, memb_ptr, ilevel + 1,
                 flags, cb, app_key);
-            if (tmper.encoded == -1) return tmper;
+            if (tmper.encoded == -1)
+                {
+                    return tmper;
+                }
             if (tmper.encoded == 0 && specs->as_XMLValueList)
                 {
                     const char *name = elm->type->xml_tag;
                     size_t len = strlen(name);
-                    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel + 1);
+                    if (!xcan)
+                        {
+                            _i_ASN_TEXT_INDENT(1, ilevel + 1);
+                        }
                     _ASN_CALLBACK3("<", 1, name, len, "/>", 2);
                 }
 
@@ -144,7 +171,10 @@ asn_enc_rval_t SEQUENCE_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             er.encoded += (2 * mlen) + tmper.encoded;
         }
 
-    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel - 1);
+    if (!xcan)
+        {
+            _i_ASN_TEXT_INDENT(1, ilevel - 1);
+        }
 
     _ASN_ENCODED_OK(er);
 cb_failed:
@@ -161,7 +191,10 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
     asn_TYPE_member_t *elm = td->elements;
     int seq;
 
-    if (!sptr) _ASN_ENCODE_FAILED;
+    if (!sptr)
+        {
+            _ASN_ENCODE_FAILED;
+        }
     list = _A_SEQUENCE_FROM_VOID(sptr);
 
     er.encoded = 0;
@@ -169,11 +202,17 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
     ASN_DEBUG("Encoding %s as SEQUENCE OF (%d)", td->name, list->count);
 
     if (constraints)
-        ct = &constraints->size;
+        {
+            ct = &constraints->size;
+        }
     else if (td->per_constraints)
-        ct = &td->per_constraints->size;
+        {
+            ct = &td->per_constraints->size;
+        }
     else
-        ct = 0;
+        {
+            ct = 0;
+        }
 
     /* If extensible constraint, check if size is in root */
     if (ct)
@@ -186,11 +225,18 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
                 {
                     /* Declare whether size is in extension root */
                     if (per_put_few_bits(po, not_in_root, 1))
-                        _ASN_ENCODE_FAILED;
-                    if (not_in_root) ct = 0;
+                        {
+                            _ASN_ENCODE_FAILED;
+                        }
+                    if (not_in_root)
+                        {
+                            ct = 0;
+                        }
                 }
             else if (not_in_root && ct->effective_bits >= 0)
-                _ASN_ENCODE_FAILED;
+                {
+                    _ASN_ENCODE_FAILED;
+                }
         }
 
     if (ct && ct->effective_bits >= 0)
@@ -198,13 +244,18 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
             /* X.691, #19.5: No length determinant */
             if (per_put_few_bits(po, list->count - ct->lower_bound,
                     ct->effective_bits))
-                _ASN_ENCODE_FAILED;
+                {
+                    _ASN_ENCODE_FAILED;
+                }
         }
 
     for (seq = -1; seq < list->count;)
         {
             ssize_t mayEncode;
-            if (seq < 0) seq = 0;
+            if (seq < 0)
+                {
+                    seq = 0;
+                }
             if (ct && ct->effective_bits >= 0)
                 {
                     mayEncode = list->count;
@@ -212,16 +263,25 @@ asn_enc_rval_t SEQUENCE_OF_encode_uper(asn_TYPE_descriptor_t *td,
             else
                 {
                     mayEncode = uper_put_length(po, list->count - seq);
-                    if (mayEncode < 0) _ASN_ENCODE_FAILED;
+                    if (mayEncode < 0)
+                        {
+                            _ASN_ENCODE_FAILED;
+                        }
                 }
 
             while (mayEncode--)
                 {
                     void *memb_ptr = list->array[seq++];
-                    if (!memb_ptr) _ASN_ENCODE_FAILED;
+                    if (!memb_ptr)
+                        {
+                            _ASN_ENCODE_FAILED;
+                        }
                     er = elm->type->uper_encoder(
                         elm->type, elm->per_constraints, memb_ptr, po);
-                    if (er.encoded == -1) _ASN_ENCODE_FAILED;
+                    if (er.encoded == -1)
+                        {
+                            _ASN_ENCODE_FAILED;
+                        }
                 }
         }
 

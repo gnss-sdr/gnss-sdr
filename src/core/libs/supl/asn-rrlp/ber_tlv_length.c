@@ -12,7 +12,10 @@ ssize_t ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
     const uint8_t *buf = (const uint8_t *)bufptr;
     unsigned oct;
 
-    if (size == 0) return 0; /* Want more */
+    if (size == 0)
+        {
+            return 0; /* Want more */
+        }
 
     oct = *buf;
     if ((oct & 0x80) == 0)
@@ -90,13 +93,19 @@ ssize_t ber_skip_length(asn_codec_ctx_t *opt_codec_ctx, int _is_constructed,
     /*
      * Make sure we didn't exceed the maximum stack size.
      */
-    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx)) return -1;
+    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        {
+            return -1;
+        }
 
     /*
      * Determine the size of L in TLV.
      */
     ll = ber_fetch_length(_is_constructed, ptr, size, &vlen);
-    if (ll <= 0) return ll;
+    if (ll <= 0)
+        {
+            return ll;
+        }
 
     /*
      * Definite length.
@@ -104,7 +113,10 @@ ssize_t ber_skip_length(asn_codec_ctx_t *opt_codec_ctx, int _is_constructed,
     if (vlen >= 0)
         {
             skip = ll + vlen;
-            if (skip > size) return 0; /* Want more */
+            if (skip > size)
+                {
+                    return 0; /* Want more */
+                }
             return skip;
         }
 
@@ -118,11 +130,17 @@ ssize_t ber_skip_length(asn_codec_ctx_t *opt_codec_ctx, int _is_constructed,
 
             /* Fetch the tag */
             tl = ber_fetch_tag(ptr, size, &tag);
-            if (tl <= 0) return tl;
+            if (tl <= 0)
+                {
+                    return tl;
+                }
 
             ll = ber_skip_length(opt_codec_ctx, BER_TLV_CONSTRUCTED(ptr),
                 ((const char *)ptr) + tl, size - tl);
-            if (ll <= 0) return ll;
+            if (ll <= 0)
+                {
+                    return ll;
+                }
 
             skip += tl + ll;
 
@@ -133,7 +151,9 @@ ssize_t ber_skip_length(asn_codec_ctx_t *opt_codec_ctx, int _is_constructed,
              */
             if (((const uint8_t *)ptr)[0] == 0 &&
                 ((const uint8_t *)ptr)[1] == 0)
-                return skip;
+                {
+                    return skip;
+                }
 
             ptr = ((const char *)ptr) + tl + ll;
             size -= tl + ll;
@@ -152,7 +172,10 @@ size_t der_tlv_length_serialize(ber_tlv_len_t len, void *bufp, size_t size)
     if (len <= 127)
         {
             /* Encoded in 1 octet */
-            if (size) *buf = (uint8_t)len;
+            if (size)
+                {
+                    *buf = (uint8_t)len;
+                }
             return 1;
         }
 
@@ -162,12 +185,19 @@ size_t der_tlv_length_serialize(ber_tlv_len_t len, void *bufp, size_t size)
     for (required_size = 1, i = 8; i < 8 * sizeof(len); i += 8)
         {
             if (len >> i)
-                required_size++;
+                {
+                    required_size++;
+                }
             else
-                break;
+                {
+                    break;
+                }
         }
 
-    if (size <= required_size) return required_size + 1;
+    if (size <= required_size)
+        {
+            return required_size + 1;
+        }
 
     *buf++ = (uint8_t)(0x80 | required_size); /* Length of the encoding */
 
@@ -175,7 +205,10 @@ size_t der_tlv_length_serialize(ber_tlv_len_t len, void *bufp, size_t size)
      * Produce the len encoding, space permitting.
      */
     end = buf + required_size;
-    for (i -= 8; buf < end; i -= 8, buf++) *buf = (uint8_t)(len >> i);
+    for (i -= 8; buf < end; i -= 8, buf++)
+        {
+            *buf = (uint8_t)(len >> i);
+        }
 
     return required_size + 1;
 }

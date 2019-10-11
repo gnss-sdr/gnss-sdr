@@ -246,11 +246,16 @@ asn_enc_rval_t GeneralizedTime_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
     errno = EPERM;
     tloc = asn_GT2time_frac(st, &fv, &fd, &tm, 1); /* Recognize time */
     if (tloc == -1 && errno != EPERM)
-        /* Failed to recognize time. Fail completely. */
-        _ASN_ENCODE_FAILED;
+        {
+            /* Failed to recognize time. Fail completely. */
+            _ASN_ENCODE_FAILED;
+        }
 
     st = asn_time2GT_frac(0, &tm, fv, fd, 1); /* Save time canonically */
-    if (!st) _ASN_ENCODE_FAILED;              /* Memory allocation failure. */
+    if (!st)
+        {
+            _ASN_ENCODE_FAILED; /* Memory allocation failure. */
+        }
 
     erval = OCTET_STRING_encode_der(td, st, tag_mode, tag, cb, app_key);
 
@@ -280,10 +285,15 @@ asn_enc_rval_t GeneralizedTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             if (asn_GT2time_frac((GeneralizedTime_t *)sptr, &fv, &fd, &tm, 1) ==
                     -1 &&
                 errno != EPERM)
-                _ASN_ENCODE_FAILED;
+                {
+                    _ASN_ENCODE_FAILED;
+                }
 
             gt = asn_time2GT_frac(0, &tm, fv, fd, 1);
-            if (!gt) _ASN_ENCODE_FAILED;
+            if (!gt)
+                {
+                    _ASN_ENCODE_FAILED;
+                }
 
             rv = OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb,
                 app_key);
@@ -316,7 +326,9 @@ int GeneralizedTime_print(asn_TYPE_descriptor_t *td, const void *sptr,
 
             errno = EPERM;
             if (asn_GT2time(st, &tm, 1) == -1 && errno != EPERM)
-                return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
+                {
+                    return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
+                }
 
             ret = snprintf(buf, sizeof(buf),
                 "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
@@ -344,16 +356,23 @@ time_t asn_GT2time_prec(const GeneralizedTime_t *st, int *frac_value,
     int fd = 0;
 
     if (frac_value)
-        tloc = asn_GT2time_frac(st, &fv, &fd, ret_tm, as_gmt);
+        {
+            tloc = asn_GT2time_frac(st, &fv, &fd, ret_tm, as_gmt);
+        }
     else
-        return asn_GT2time_frac(st, 0, 0, ret_tm, as_gmt);
+        {
+            return asn_GT2time_frac(st, 0, 0, ret_tm, as_gmt);
+        }
     if (fd == 0 || frac_digits <= 0)
         {
             *frac_value = 0;
         }
     else
         {
-            while (fd > frac_digits) fv /= 10, fd--;
+            while (fd > frac_digits)
+                {
+                    fv /= 10, fd--;
+                }
             while (fd < frac_digits)
                 {
                     int new_fv = fv * 10;
@@ -438,7 +457,10 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
     B2T(tm_hour); /* 9: h */
     B2T(tm_hour); /* 0: h */
 
-    if (buf == end) goto local_finish;
+    if (buf == end)
+        {
+            goto local_finish;
+        }
 
     /*
      * Parse [mm[ss[(.|,)ffff]]]
@@ -474,7 +496,10 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
             return -1;
         }
 
-    if (buf == end) goto local_finish;
+    if (buf == end)
+        {
+            goto local_finish;
+        }
 
     /*
      * Parse [mm[ss[(.|,)ffff]]]
@@ -510,7 +535,10 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
             return -1;
         }
 
-    if (buf == end) goto local_finish;
+    if (buf == end)
+        {
+            goto local_finish;
+        }
 
     /*
      * Parse [mm[ss[(.|,)ffff]]]
@@ -557,7 +585,10 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
                 }
         }
 
-    if (buf == end) goto local_finish;
+    if (buf == end)
+        {
+            goto local_finish;
+        }
 
     switch (*buf)
         {
@@ -581,10 +612,14 @@ offset:
     buf++;
     B2F(gmtoff_h);
     B2F(gmtoff_h);
-    if (buf[-3] == 0x2D) /* Negative */
-        gmtoff = -1;
+    if (buf[-3] == 0x2D)
+        { /* Negative */
+            gmtoff = -1;
+        }
     else
-        gmtoff = 1;
+        {
+            gmtoff = 1;
+        }
 
     if ((end - buf) == 2)
         {
@@ -674,8 +709,14 @@ local_finish:
         }
 
     /* Fractions of seconds */
-    if (frac_value) *frac_value = fvalue;
-    if (frac_digits) *frac_digits = fdigits;
+    if (frac_value)
+        {
+            *frac_value = fvalue;
+        }
+    if (frac_digits)
+        {
+            *frac_digits = fdigits;
+        }
 
     return tloc;
 }
@@ -711,7 +752,10 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
 
     /* Pre-allocate a buffer of sufficient yet small length */
     buf = (char *)MALLOC(buf_size);
-    if (!buf) return 0;
+    if (!buf)
+        {
+            return 0;
+        }
 
     gmtoff = GMTOFF(*tm);
 
@@ -752,10 +796,16 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
             *z++ = '.';
 
             /* Place bounds on precision */
-            while (frac_digits-- > 6) frac_value /= 10;
+            while (frac_digits-- > 6)
+                {
+                    frac_value /= 10;
+                }
 
             /* emulate fbase = pow(10, frac_digits) */
-            for (fbase = 1; frac_digits--;) fbase *= 10;
+            for (fbase = 1; frac_digits--;)
+                {
+                    fbase *= 10;
+                }
 
             do
                 {
@@ -773,7 +823,9 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
             if (z)
                 {
                     for (--z; *z == 0x30; --z)
-                        ; /* Strip zeroes */
+                        {
+                            ; /* Strip zeroes */
+                        }
                     p = z + (*z != '.');
                     size = p - buf;
                 }
@@ -802,7 +854,10 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
 
     if (opt_gt)
         {
-            if (opt_gt->buf) FREEMEM(opt_gt->buf);
+            if (opt_gt->buf)
+                {
+                    FREEMEM(opt_gt->buf);
+                }
         }
     else
         {

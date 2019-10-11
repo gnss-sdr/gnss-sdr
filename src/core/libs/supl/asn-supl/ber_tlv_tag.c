@@ -12,7 +12,10 @@ ssize_t ber_fetch_tag(const void *ptr, size_t size, ber_tlv_tag_t *tag_r)
     ber_tlv_tag_t tclass;
     size_t skipped;
 
-    if (size == 0) return 0;
+    if (size == 0)
+        {
+            return 0;
+        }
 
     val = *(const uint8_t *)ptr;
     tclass = (val >> 6);
@@ -98,7 +101,10 @@ ssize_t ber_tlv_tag_snprint(ber_tlv_tag_t tag, char *buf, size_t size)
         }
 
     ret = snprintf(buf, size, "[%s%u]", type, ((unsigned)tag) >> 2);
-    if (ret <= 0 && size) buf[0] = '\0'; /* against broken libc's */
+    if (ret <= 0 && size)
+        {
+            buf[0] = '\0'; /* against broken libc's */
+        }
 
     return ret;
 }
@@ -124,7 +130,10 @@ size_t ber_tlv_tag_serialize(ber_tlv_tag_t tag, void *bufp, size_t size)
     if (tval <= 30)
         {
             /* Encoded in 1 octet */
-            if (size) buf[0] = (tclass << 6) | tval;
+            if (size)
+                {
+                    buf[0] = (tclass << 6) | tval;
+                }
             return 1;
         }
     else if (size)
@@ -139,18 +148,28 @@ size_t ber_tlv_tag_serialize(ber_tlv_tag_t tag, void *bufp, size_t size)
     for (required_size = 1, i = 7; i < 8 * sizeof(tval); i += 7)
         {
             if (tval >> i)
-                required_size++;
+                {
+                    required_size++;
+                }
             else
-                break;
+                {
+                    break;
+                }
         }
 
-    if (size < required_size) return required_size + 1;
+    if (size < required_size)
+        {
+            return required_size + 1;
+        }
 
     /*
      * Fill in the buffer, space permitting.
      */
     end = buf + required_size - 1;
-    for (i -= 7; buf < end; i -= 7, buf++) *buf = 0x80 | ((tval >> i) & 0x7F);
+    for (i -= 7; buf < end; i -= 7, buf++)
+        {
+            *buf = 0x80 | ((tval >> i) & 0x7F);
+        }
     *buf = (tval & 0x7F); /* Last octet without high bit */
 
     return required_size + 1;

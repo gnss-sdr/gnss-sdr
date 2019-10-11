@@ -92,7 +92,10 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
     /*
      * Make sure we didn't exceed the maximum stack size.
      */
-    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx)) RETURN(RC_FAIL);
+    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        {
+            RETURN(RC_FAIL);
+        }
 
     /*
      * So what does all this implicit skip stuff mean?
@@ -317,11 +320,18 @@ asn_dec_rval_t ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
                 }
         }
 
-    if (opt_tlv_form) *opt_tlv_form = tlv_constr;
+    if (opt_tlv_form)
+        {
+            *opt_tlv_form = tlv_constr;
+        }
     if (expect_00_terminators)
-        *last_length = -expect_00_terminators;
+        {
+            *last_length = -expect_00_terminators;
+        }
     else
-        *last_length = tlv_len;
+        {
+            *last_length = tlv_len;
+        }
 
     RETURN(RC_OK);
 }

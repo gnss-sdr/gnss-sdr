@@ -31,7 +31,9 @@ static void OTD_FirstSetMsrs_1_inherit_TYPE_descriptor(
     td->uper_decoder = asn_DEF_OTD_MeasurementWithID.uper_decoder;
     td->uper_encoder = asn_DEF_OTD_MeasurementWithID.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints = asn_DEF_OTD_MeasurementWithID.per_constraints;
+        {
+            td->per_constraints = asn_DEF_OTD_MeasurementWithID.per_constraints;
+        }
     td->elements = asn_DEF_OTD_MeasurementWithID.elements;
     td->elements_count = asn_DEF_OTD_MeasurementWithID.elements_count;
     td->specifics = asn_DEF_OTD_MeasurementWithID.specifics;

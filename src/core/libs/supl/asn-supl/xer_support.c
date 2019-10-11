@@ -106,20 +106,28 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                          * Initial state: we're in the middle of some text,
                          * or just have started.
                          */
-                    if (C == LANGLE) /* We're now in the tag, probably */
-                        TOKEN_CB(PXML_TEXT, ST_TAG_START, 0);
+                    if (C == LANGLE)
+                        { /* We're now in the tag, probably */
+                            TOKEN_CB(PXML_TEXT, ST_TAG_START, 0);
+                        }
                     break;
                 case ST_TAG_START:
                     if (ALPHA(C) || (C == CSLASH))
-                        state = ST_TAG_BODY;
+                        {
+                            state = ST_TAG_BODY;
+                        }
                     else if (C == EXCLAM)
-                        state = ST_COMMENT_WAIT_DASH1;
+                        {
+                            state = ST_COMMENT_WAIT_DASH1;
+                        }
                     else
-                        /*
+                        {
+                            /*
                              * Not characters and not whitespace.
                              * Must be something like "3 < 4".
                              */
-                        TOKEN_CB(PXML_TEXT, ST_TEXT, 1); /* Flush as data */
+                            TOKEN_CB(PXML_TEXT, ST_TEXT, 1); /* Flush as data */
+                        }
                     break;
                 case ST_TAG_BODY:
                     switch (C)
@@ -156,8 +164,10 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                             break;
                         default:
                             if (!WHITESPACE(
-                                    C)) /* Unquoted string value */
-                                state = ST_TAG_UNQUOTED_STRING;
+                                    C))
+                                { /* Unquoted string value */
+                                    state = ST_TAG_UNQUOTED_STRING;
+                                }
                         }
                     break;
                 case ST_TAG_QUOTED_STRING:

@@ -72,7 +72,10 @@ ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
 
     arg.callback_not_invoked = 1;
     ret = pxml_parse(&new_stateContext, buffer, size, xer__token_cb, &arg);
-    if (ret < 0) return -1;
+    if (ret < 0)
+        {
+            return -1;
+        }
     if (arg.callback_not_invoked)
         {
             assert(ret == 0); /* No data was consumed */
@@ -121,7 +124,9 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
     if (size < 2 || buf[0] != LANGLE || buf[size - 1] != RANGLE)
         {
             if (size >= 2)
-                ASN_DEBUG("Broken XML tag: \"%c...%c\"", buf[0], buf[size - 1]);
+                {
+                    ASN_DEBUG("Broken XML tag: \"%c...%c\"", buf[0], buf[size - 1]);
+                }
             return XCT_BROKEN;
         }
 
@@ -134,7 +139,9 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
             size -= 3; /* strip "</" and ">" */
             ct = XCT_CLOSING;
             if (size > 0 && buf[size - 1] == CSLASH)
-                return XCT_BROKEN; /* </abc/> */
+                {
+                    return XCT_BROKEN; /* </abc/> */
+                }
         }
     else
         {
@@ -148,7 +155,10 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
         }
 
     /* Sometimes we don't care about the tag */
-    if (!need_tag || !*need_tag) return (xer_check_tag_e)(XCT__UNK__MASK | ct);
+    if (!need_tag || !*need_tag)
+        {
+            return (xer_check_tag_e)(XCT__UNK__MASK | ct);
+        }
 
     /*
      * Determine the tag name.
@@ -174,9 +184,15 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
                         }
                     return (xer_check_tag_e)(XCT__UNK__MASK | ct);
                 }
-            if (b == 0) return XCT_BROKEN; /* Embedded 0 in buf?! */
+            if (b == 0)
+                {
+                    return XCT_BROKEN; /* Embedded 0 in buf?! */
+                }
         }
-    if (*need_tag) return (xer_check_tag_e)(XCT__UNK__MASK | ct);
+    if (*need_tag)
+        {
+            return (xer_check_tag_e)(XCT__UNK__MASK | ct);
+        }
 
     return ct;
 }
@@ -246,7 +262,10 @@ asn_dec_rval_t xer_decode_general(
      * Phase 0: Check that the opening tag matches our expectations.
      * Phase 1: Processing body and reacting on closing tag.
      */
-    if (ctx->phase > 1) RETURN(RC_FAIL);
+    if (ctx->phase > 1)
+        {
+            RETURN(RC_FAIL);
+        }
     for (;;)
         {
             pxer_chunk_type_e ch_type; /* XER chunk type */
@@ -305,19 +324,28 @@ asn_dec_rval_t xer_decode_general(
             switch (tcv)
                 {
                 case XCT_BOTH:
-                    if (ctx->phase) break;
+                    if (ctx->phase)
+                        {
+                            break;
+                        }
                     /* Finished decoding of an empty element */
                     XER_GOT_EMPTY();
                     ADVANCE(ch_size);
                     ctx->phase = 2; /* Phase out */
                     RETURN(RC_OK);
                 case XCT_OPENING:
-                    if (ctx->phase) break;
+                    if (ctx->phase)
+                        {
+                            break;
+                        }
                     ADVANCE(ch_size);
                     ctx->phase = 1; /* Processing body phase */
                     continue;
                 case XCT_CLOSING:
-                    if (!ctx->phase) break;
+                    if (!ctx->phase)
+                        {
+                            break;
+                        }
                     ADVANCE(ch_size);
                     ctx->phase = 2; /* Phase out */
                     RETURN(RC_OK);
@@ -397,7 +425,10 @@ int xer_skip_unknown(xer_check_tag_e tcv, ber_tlv_len_t *depth)
             return 0;
         case XCT_CLOSING:
         case XCT_UNKNOWN_CL:
-            if (--(*depth) == 0) return (tcv == XCT_CLOSING) ? 2 : 1;
+            if (--(*depth) == 0)
+                {
+                    return (tcv == XCT_CLOSING) ? 2 : 1;
+                }
             return 0;
         default:
             return -1;

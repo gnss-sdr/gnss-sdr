@@ -39,7 +39,9 @@ static int encode_to_buffer_cb(const void *buffer, size_t size, void *key)
     enc_to_buf_arg *arg = (enc_to_buf_arg *)key;
 
     if (arg->left < size)
-        return -1; /* Data exceeds the available buffer size */
+        {
+            return -1; /* Data exceeds the available buffer size */
+        }
 
     memcpy(arg->buffer, buffer, size);
     arg->buffer = ((char *)arg->buffer) + size;
@@ -114,7 +116,9 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
             tags[0] = tag;
             stag_offset = -1 + ((tag_mode == -1) && sd->tags_count);
             for (i = 1; i < tags_count; i++)
-                tags[i] = sd->tags[i + stag_offset];
+                {
+                    tags[i] = sd->tags[i + stag_offset];
+                }
         }
     else
         {
@@ -123,7 +127,10 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
         }
 
     /* No tags to write */
-    if (tags_count == 0) return 0;
+    if (tags_count == 0)
+        {
+            return 0;
+        }
 
     lens = (ssize_t *)alloca(tags_count * sizeof(lens[0]));
     if (!lens)
@@ -140,12 +147,18 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
     for (i = tags_count - 1; i >= 0; --i)
         {
             lens[i] = der_write_TL(tags[i], overall_length, 0, 0, 0);
-            if (lens[i] == -1) return -1;
+            if (lens[i] == -1)
+                {
+                    return -1;
+                }
             overall_length += lens[i];
             lens[i] = overall_length - lens[i];
         }
 
-    if (!cb) return overall_length - struct_length;
+    if (!cb)
+        {
+            return overall_length - struct_length;
+        }
 
     ASN_DEBUG("%s %s TL sequence (%d elements)", cb ? "Encoding" : "Estimating",
         sd->name, tags_count);
@@ -162,7 +175,10 @@ ssize_t der_write_tags(asn_TYPE_descriptor_t *sd, size_t struct_length,
             _constr = (last_tag_form || i < (tags_count - 1));
 
             len = der_write_TL(tags[i], lens[i], cb, app_key, _constr);
-            if (len == -1) return -1;
+            if (len == -1)
+                {
+                    return -1;
+                }
         }
 
     return overall_length - struct_length;
@@ -179,24 +195,39 @@ static ssize_t der_write_TL(ber_tlv_tag_t tag, ber_tlv_len_t len,
 
     /* Serialize tag (T from TLV) into possibly zero-length buffer */
     tmp = ber_tlv_tag_serialize(tag, buf, buf_size);
-    if (tmp == -1 || tmp > (ssize_t)sizeof(buf)) return -1;
+    if (tmp == -1 || tmp > (ssize_t)sizeof(buf))
+        {
+            return -1;
+        }
     size += tmp;
 
     /* Serialize length (L from TLV) into possibly zero-length buffer */
     tmp = der_tlv_length_serialize(len, buf + size,
         buf_size ? buf_size - size : 0);
-    if (tmp == -1) return -1;
+    if (tmp == -1)
+        {
+            return -1;
+        }
     size += tmp;
 
-    if (size > sizeof(buf)) return -1;
+    if (size > sizeof(buf))
+        {
+            return -1;
+        }
 
     /*
      * If callback is specified, invoke it, and check its return value.
      */
     if (cb)
         {
-            if (constructed) *buf |= 0x20;
-            if (cb(buf, size, app_key) < 0) return -1;
+            if (constructed)
+                {
+                    *buf |= 0x20;
+                }
+            if (cb(buf, size, app_key) < 0)
+                {
+                    return -1;
+                }
         }
 
     return size;

@@ -99,7 +99,10 @@ static int _t2e_cmp(const void *ap, const void *bp)
 
             if (a_value == b_value)
                 {
-                    if (a->el_no > b->el_no) return 1;
+                    if (a->el_no > b->el_no)
+                        {
+                            return 1;
+                        }
                     /*
                      * Important: we do not check
                      * for a->el_no <= b->el_no!
@@ -107,9 +110,13 @@ static int _t2e_cmp(const void *ap, const void *bp)
                     return 0;
                 }
             else if (a_value < b_value)
-                return -1;
+                {
+                    return -1;
+                }
             else
-                return 1;
+                {
+                    return 1;
+                }
         }
     else if (a_class < b_class)
         {
@@ -187,7 +194,9 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                 }
 
             if (ctx->left >= 0)
-                ctx->left += rval.consumed; /* ?Subtracted below! */
+                {
+                    ctx->left += rval.consumed; /* ?Subtracted below! */
+                }
             ADVANCE(rval.consumed);
 
             NEXT_PHASE(ctx);
@@ -217,7 +226,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     int use_bsearch;
                     int n;
 
-                    if (ctx->step & 1) goto microphase2;
+                    if (ctx->step & 1)
+                        {
+                            goto microphase2;
+                        }
 
                     /*
                          * MICROPHASE 1: Synchronize decoding.
@@ -259,7 +271,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     switch (tag_len)
                         {
                         case 0:
-                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                            if (!SIZE_VIOLATION)
+                                {
+                                    RETURN(RC_WMORE);
+                                }
                             /* Fall through */
                         case -1:
                             RETURN(RC_FAIL);
@@ -270,9 +285,13 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             if (LEFT < 2)
                                 {
                                     if (SIZE_VIOLATION)
-                                        RETURN(RC_FAIL);
+                                        {
+                                            RETURN(RC_FAIL);
+                                        }
                                     else
-                                        RETURN(RC_WMORE);
+                                        {
+                                            RETURN(RC_WMORE);
+                                        }
                                 }
                             else if (((const uint8_t *)ptr)[1] == 0)
                                 {
@@ -306,7 +325,9 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     use_bsearch = 0;
                     opt_edx_end = edx + elements[edx].optional + 1;
                     if (opt_edx_end > td->elements_count)
-                        opt_edx_end = td->elements_count; /* Cap */
+                        {
+                            opt_edx_end = td->elements_count; /* Cap */
+                        }
                     else if (opt_edx_end - edx > 8)
                         {
                             /* Limit the scope of linear search... */
@@ -372,8 +393,14 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                                     t2m_l = t2m + t2m->toff_last;
                                     for (t2m = t2m_f; t2m <= t2m_l; t2m++)
                                         {
-                                            if (t2m->el_no > edx_max) break;
-                                            if (t2m->el_no < edx) continue;
+                                            if (t2m->el_no > edx_max)
+                                                {
+                                                    break;
+                                                }
+                                            if (t2m->el_no < edx)
+                                                {
+                                                    continue;
+                                                }
                                             best = t2m;
                                         }
                                     if (best)
@@ -428,7 +455,9 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                                         {
                                         case 0:
                                             if (!SIZE_VIOLATION)
-                                                RETURN(RC_WMORE);
+                                                {
+                                                    RETURN(RC_WMORE);
+                                                }
                                             /* Fall through */
                                         case -1:
                                             RETURN(RC_FAIL);
@@ -524,7 +553,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     switch (tl)
                         {
                         case 0:
-                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                            if (!SIZE_VIOLATION)
+                                {
+                                    RETURN(RC_WMORE);
+                                }
                             /* Fall through */
                         case -1:
                             RETURN(RC_FAIL);
@@ -538,9 +570,13 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             if (LEFT < 2)
                                 {
                                     if (SIZE_VIOLATION)
-                                        RETURN(RC_FAIL);
+                                        {
+                                            RETURN(RC_FAIL);
+                                        }
                                     else
-                                        RETURN(RC_WMORE);
+                                        {
+                                            RETURN(RC_WMORE);
+                                        }
                                 }
                             else if (((const uint8_t *)ptr)[1] == 0)
                                 {
@@ -571,7 +607,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     switch (ll)
                         {
                         case 0:
-                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                            if (!SIZE_VIOLATION)
+                                {
+                                    RETURN(RC_WMORE);
+                                }
                             /* Fall through */
                         case -1:
                             RETURN(RC_FAIL);
@@ -612,7 +651,10 @@ asn_enc_rval_t SEQUENCE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
                     memb_ptr = *(void **)((char *)sptr + elm->memb_offset);
                     if (!memb_ptr)
                         {
-                            if (elm->optional) continue;
+                            if (elm->optional)
+                                {
+                                    continue;
+                                }
                             /* Mandatory element is missing */
                             _ASN_ENCODE_FAILED;
                         }
@@ -623,7 +665,10 @@ asn_enc_rval_t SEQUENCE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
                 }
             erval = elm->type->der_encoder(elm->type, memb_ptr, elm->tag_mode,
                 elm->tag, 0, 0);
-            if (erval.encoded == -1) return erval;
+            if (erval.encoded == -1)
+                {
+                    return erval;
+                }
             computed_size += erval.encoded;
             ASN_DEBUG("Member %d %s estimated %ld bytes", edx, elm->name,
                 (long)erval.encoded);
@@ -634,10 +679,16 @@ asn_enc_rval_t SEQUENCE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
      */
     ret = der_write_tags(td, computed_size, tag_mode, 1, tag, cb, app_key);
     ASN_DEBUG("Wrote tags: %ld (+%ld)", (long)ret, (long)computed_size);
-    if (ret == -1) _ASN_ENCODE_FAILED;
+    if (ret == -1)
+        {
+            _ASN_ENCODE_FAILED;
+        }
     erval.encoded = computed_size + ret;
 
-    if (!cb) _ASN_ENCODED_OK(erval);
+    if (!cb)
+        {
+            _ASN_ENCODED_OK(erval);
+        }
 
     /*
      * Encode all members.
@@ -651,7 +702,10 @@ asn_enc_rval_t SEQUENCE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
             if (elm->flags & ATF_POINTER)
                 {
                     memb_ptr = *(void **)((char *)sptr + elm->memb_offset);
-                    if (!memb_ptr) continue;
+                    if (!memb_ptr)
+                        {
+                            continue;
+                        }
                 }
             else
                 {
@@ -659,17 +713,22 @@ asn_enc_rval_t SEQUENCE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
                 }
             tmperval = elm->type->der_encoder(
                 elm->type, memb_ptr, elm->tag_mode, elm->tag, cb, app_key);
-            if (tmperval.encoded == -1) return tmperval;
+            if (tmperval.encoded == -1)
+                {
+                    return tmperval;
+                }
             computed_size -= tmperval.encoded;
             ASN_DEBUG("Member %d %s of SEQUENCE %s encoded in %ld bytes", edx,
                 elm->name, td->name, (long)tmperval.encoded);
         }
 
     if (computed_size != 0)
-        /*
+        {
+            /*
          * Encoded size is not equal to the computed size.
          */
-        _ASN_ENCODE_FAILED;
+            _ASN_ENCODE_FAILED;
+        }
 
     _ASN_ENCODED_OK(erval);
 }
@@ -717,7 +776,10 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
     if (st == 0)
         {
             st = *struct_ptr = CALLOC(1, specs->struct_size);
-            if (st == 0) RETURN(RC_FAIL);
+            if (st == 0)
+                {
+                    RETURN(RC_FAIL);
+                }
         }
 
     /*
@@ -769,7 +831,10 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                         memb_ptr2, elm->name,
                         buf_ptr, size);
                     XER_ADVANCE(tmprval.consumed);
-                    if (tmprval.code != RC_OK) RETURN(tmprval.code);
+                    if (tmprval.code != RC_OK)
+                        {
+                            RETURN(tmprval.code);
+                        }
                     ctx->phase = 1; /* Back to body processing */
                     ctx->step = ++edx;
                     ASN_DEBUG("XER/SEQUENCE phase => %d, step => %d",
@@ -827,7 +892,10 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
             switch (tcv)
                 {
                 case XCT_CLOSING:
-                    if (ctx->phase == 0) break;
+                    if (ctx->phase == 0)
+                        {
+                            break;
+                        }
                     ctx->phase = 0;
                     /* Fall through */
                 case XCT_BOTH:
@@ -879,7 +947,9 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                                  */
                             edx_end = edx + elements[edx].optional + 1;
                             if (edx_end > td->elements_count)
-                                edx_end = td->elements_count;
+                                {
+                                    edx_end = td->elements_count;
+                                }
                             for (n = edx; n < edx_end; n++)
                                 {
                                     elm = &td->elements[n];
@@ -904,7 +974,10 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                                         }
                                     break;
                                 }
-                            if (n != edx_end) continue;
+                            if (n != edx_end)
+                                {
+                                    continue;
+                                }
                         }
                     else
                         {
@@ -965,7 +1038,10 @@ asn_enc_rval_t SEQUENCE_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
     int xcan = (flags & XER_F_CANONICAL);
     int edx;
 
-    if (!sptr) _ASN_ENCODE_FAILED;
+    if (!sptr)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     er.encoded = 0;
 
@@ -982,7 +1058,10 @@ asn_enc_rval_t SEQUENCE_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
                     memb_ptr = *(void **)((char *)sptr + elm->memb_offset);
                     if (!memb_ptr)
                         {
-                            if (elm->optional) continue;
+                            if (elm->optional)
+                                {
+                                    continue;
+                                }
                             /* Mandatory element is missing */
                             _ASN_ENCODE_FAILED;
                         }
@@ -992,19 +1071,28 @@ asn_enc_rval_t SEQUENCE_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
                     memb_ptr = (void *)((char *)sptr + elm->memb_offset);
                 }
 
-            if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel);
+            if (!xcan)
+                {
+                    _i_ASN_TEXT_INDENT(1, ilevel);
+                }
             _ASN_CALLBACK3("<", 1, mname, mlen, ">", 1);
 
             /* Print the member itself */
             tmper = elm->type->xer_encoder(elm->type, memb_ptr, ilevel + 1,
                 flags, cb, app_key);
-            if (tmper.encoded == -1) return tmper;
+            if (tmper.encoded == -1)
+                {
+                    return tmper;
+                }
 
             _ASN_CALLBACK3("</", 2, mname, mlen, ">", 1);
             er.encoded += 5 + (2 * mlen) + tmper.encoded;
         }
 
-    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel - 1);
+    if (!xcan)
+        {
+            _i_ASN_TEXT_INDENT(1, ilevel - 1);
+        }
 
     _ASN_ENCODED_OK(er);
 cb_failed:
@@ -1017,12 +1105,17 @@ int SEQUENCE_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
     int edx;
     int ret;
 
-    if (!sptr) return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+    if (!sptr)
+        {
+            return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+        }
 
     /* Dump preamble */
     if (cb(td->name, strlen(td->name), app_key) < 0 ||
         cb(" ::= {", 6, app_key) < 0)
-        return -1;
+        {
+            return -1;
+        }
 
     for (edx = 0; edx < td->elements_count; edx++)
         {
@@ -1035,7 +1128,10 @@ int SEQUENCE_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                                                       elm->memb_offset);
                     if (!memb_ptr)
                         {
-                            if (elm->optional) continue;
+                            if (elm->optional)
+                                {
+                                    continue;
+                                }
                             /* Print <absent> line */
                             /* Fall through */
                         }
@@ -1052,12 +1148,17 @@ int SEQUENCE_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             /* Print the member's name and stuff */
             if (cb(elm->name, strlen(elm->name), app_key) < 0 ||
                 cb(": ", 2, app_key) < 0)
-                return -1;
+                {
+                    return -1;
+                }
 
             /* Print the member itself */
             ret = elm->type->print_struct(elm->type, memb_ptr, ilevel + 1, cb,
                 app_key);
-            if (ret) return ret;
+            if (ret)
+                {
+                    return ret;
+                }
         }
 
     ilevel--;
@@ -1070,7 +1171,10 @@ void SEQUENCE_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only)
 {
     int edx;
 
-    if (!td || !sptr) return;
+    if (!td || !sptr)
+        {
+            return;
+        }
 
     ASN_DEBUG("Freeing %s as SEQUENCE", td->name);
 
@@ -1081,7 +1185,10 @@ void SEQUENCE_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only)
             if (elm->flags & ATF_POINTER)
                 {
                     memb_ptr = *(void **)((char *)sptr + elm->memb_offset);
-                    if (memb_ptr) ASN_STRUCT_FREE(*elm->type, memb_ptr);
+                    if (memb_ptr)
+                        {
+                            ASN_STRUCT_FREE(*elm->type, memb_ptr);
+                        }
                 }
             else
                 {
@@ -1122,7 +1229,10 @@ int SEQUENCE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
                                                       elm->memb_offset);
                     if (!memb_ptr)
                         {
-                            if (elm->optional) continue;
+                            if (elm->optional)
+                                {
+                                    continue;
+                                }
                             _ASN_CTFAIL(
                                 app_key, td, sptr,
                                 "%s: mandatory element %s absent (%s:%d)",
@@ -1140,13 +1250,19 @@ int SEQUENCE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
                 {
                     int ret = elm->memb_constraints(elm->type, memb_ptr,
                         ctfailcb, app_key);
-                    if (ret) return ret;
+                    if (ret)
+                        {
+                            return ret;
+                        }
                 }
             else
                 {
                     int ret = elm->type->check_constraints(elm->type, memb_ptr,
                         ctfailcb, app_key);
-                    if (ret) return ret;
+                    if (ret)
+                        {
+                            return ret;
+                        }
                     /*
                      * Cannot inherit it earlier:
                      * need to make sure we get the updated version.
@@ -1173,12 +1289,18 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 
     (void)constraints;
 
-    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx)) _ASN_DECODE_FAILED;
+    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        {
+            _ASN_DECODE_FAILED;
+        }
 
     if (!st)
         {
             st = *sptr = CALLOC(1, specs->struct_size);
-            if (!st) _ASN_DECODE_FAILED;
+            if (!st)
+                {
+                    _ASN_DECODE_FAILED;
+                }
         }
 
     ASN_DEBUG("Decoding %s as SEQUENCE (UPER)", td->name);
@@ -1187,7 +1309,10 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     if (specs->ext_before >= 0)
         {
             extpresent = per_get_few_bits(pd, 1);
-            if (extpresent < 0) _ASN_DECODE_STARVED;
+            if (extpresent < 0)
+                {
+                    _ASN_DECODE_STARVED;
+                }
         }
     else
         {
@@ -1199,7 +1324,10 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     if (specs->roms_count)
         {
             opres = (uint8_t *)MALLOC(((specs->roms_count + 7) >> 3) + 1);
-            if (!opres) _ASN_DECODE_FAILED;
+            if (!opres)
+                {
+                    _ASN_DECODE_FAILED;
+                }
             /* Get the presence map */
             if (per_get_many_bits(pd, opres, 0, specs->roms_count))
                 {
@@ -1225,7 +1353,10 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             void *memb_ptr;   /* Pointer to the member */
             void **memb_ptr2; /* Pointer to that pointer */
 
-            if (IN_EXTENSION_GROUP(specs, edx)) continue;
+            if (IN_EXTENSION_GROUP(specs, edx))
+                {
+                    continue;
+                }
 
             /* Fetch the pointer to this member */
             if (elm->flags & ATF_POINTER)
@@ -1289,12 +1420,18 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             asn_per_data_t epmd;
 
             bmlength = uper_get_nslength(pd);
-            if (bmlength < 0) _ASN_DECODE_STARVED;
+            if (bmlength < 0)
+                {
+                    _ASN_DECODE_STARVED;
+                }
 
             ASN_DEBUG("Extensions %d present in %s", bmlength, td->name);
 
             epres = (uint8_t *)MALLOC((bmlength + 15) >> 3);
-            if (!epres) _ASN_DECODE_STARVED;
+            if (!epres)
+                {
+                    _ASN_DECODE_STARVED;
+                }
 
             /* Get the extensions map */
             if (per_get_many_bits(pd, epres, 0, bmlength))
@@ -1338,7 +1475,10 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
                     present = per_get_few_bits(&epmd, 1);
                     if (present <= 0)
                         {
-                            if (present < 0) break; /* No more extensions */
+                            if (present < 0)
+                                {
+                                    break; /* No more extensions */
+                                }
                             continue;
                         }
 
@@ -1385,13 +1525,19 @@ asn_dec_rval_t SEQUENCE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             asn_TYPE_member_t *elm = &td->elements[edx];
             void **memb_ptr2; /* Pointer to member pointer */
 
-            if (!elm->default_value) continue;
+            if (!elm->default_value)
+                {
+                    continue;
+                }
 
             /* Fetch the pointer to this member */
             if (elm->flags & ATF_POINTER)
                 {
                     memb_ptr2 = (void **)((char *)st + elm->memb_offset);
-                    if (*memb_ptr2) continue;
+                    if (*memb_ptr2)
+                        {
+                            continue;
+                        }
                 }
             else
                 {
@@ -1418,7 +1564,10 @@ static int SEQUENCE_handle_extensions(asn_TYPE_descriptor_t *td, void *sptr,
     int exts_count = 0;
     int edx;
 
-    if (specs->ext_before < 0) return 0;
+    if (specs->ext_before < 0)
+        {
+            return 0;
+        }
 
     /* Find out which extensions are present */
     for (edx = specs->ext_after + 1; edx < td->elements_count; edx++)
@@ -1454,12 +1603,17 @@ static int SEQUENCE_handle_extensions(asn_TYPE_descriptor_t *td, void *sptr,
             exts_present += present;
 
             /* Encode as presence marker */
-            if (po1 && per_put_few_bits(po1, present, 1)) return -1;
+            if (po1 && per_put_few_bits(po1, present, 1))
+                {
+                    return -1;
+                }
             /* Encode as open type field */
             if (po2 && present &&
                 uper_open_type_put(elm->type, elm->per_constraints, *memb_ptr2,
                     po2))
-                return -1;
+                {
+                    return -1;
+                }
         }
 
     return exts_present ? exts_count : 0;
@@ -1477,7 +1631,10 @@ asn_enc_rval_t SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 
     (void)constraints;
 
-    if (!sptr) _ASN_ENCODE_FAILED;
+    if (!sptr)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     er.encoded = 0;
 
@@ -1524,13 +1681,18 @@ asn_enc_rval_t SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
             /* Eliminate default values */
             if (present && elm->default_value &&
                 elm->default_value(0, memb_ptr2) == 1)
-                present = 0;
+                {
+                    present = 0;
+                }
 
             ASN_DEBUG("Element %s %s %s->%s is %s",
                 elm->flags & ATF_POINTER ? "ptr" : "inline",
                 elm->default_value ? "def" : "wtv", td->name, elm->name,
                 present ? "present" : "absent");
-            if (per_put_few_bits(po, present, 1)) _ASN_ENCODE_FAILED;
+            if (per_put_few_bits(po, present, 1))
+                {
+                    _ASN_ENCODE_FAILED;
+                }
         }
 
     /*
@@ -1546,7 +1708,10 @@ asn_enc_rval_t SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
             void *memb_ptr;   /* Pointer to the member */
             void **memb_ptr2; /* Pointer to that pointer */
 
-            if (IN_EXTENSION_GROUP(specs, edx)) continue;
+            if (IN_EXTENSION_GROUP(specs, edx))
+                {
+                    continue;
+                }
 
             ASN_DEBUG("About to encode %s", elm->type->name);
 
@@ -1558,7 +1723,10 @@ asn_enc_rval_t SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
                         {
                             ASN_DEBUG("Element %s %d not present", elm->name,
                                 edx);
-                            if (elm->optional) continue;
+                            if (elm->optional)
+                                {
+                                    continue;
+                                }
                             /* Mandatory element is missing */
                             _ASN_ENCODE_FAILED;
                         }
@@ -1571,31 +1739,46 @@ asn_enc_rval_t SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 
             /* Eliminate default values */
             if (elm->default_value && elm->default_value(0, memb_ptr2) == 1)
-                continue;
+                {
+                    continue;
+                }
 
             ASN_DEBUG("Encoding %s->%s", td->name, elm->name);
             er = elm->type->uper_encoder(elm->type, elm->per_constraints,
                 *memb_ptr2, po);
-            if (er.encoded == -1) return er;
+            if (er.encoded == -1)
+                {
+                    return er;
+                }
         }
 
     /* No extensions to encode */
-    if (!n_extensions) _ASN_ENCODED_OK(er);
+    if (!n_extensions)
+        {
+            _ASN_ENCODED_OK(er);
+        }
 
     ASN_DEBUG("Length of %d bit-map", n_extensions);
     /* #18.8. Write down the presence bit-map length. */
-    if (uper_put_nslength(po, n_extensions)) _ASN_ENCODE_FAILED;
+    if (uper_put_nslength(po, n_extensions))
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     ASN_DEBUG("Bit-map of %d elements", n_extensions);
     /* #18.7. Encoding the extensions presence bit-map. */
     /* TODO: act upon NOTE in #18.7 for canonical PER */
     if (SEQUENCE_handle_extensions(td, sptr, po, 0) != n_extensions)
-        _ASN_ENCODE_FAILED;
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     ASN_DEBUG("Writing %d extensions", n_extensions);
     /* #18.9. Encode extensions as open type fields. */
     if (SEQUENCE_handle_extensions(td, sptr, 0, po) != n_extensions)
-        _ASN_ENCODE_FAILED;
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     _ASN_ENCODED_OK(er);
 }

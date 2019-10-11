@@ -140,7 +140,9 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                 }
 
             if (ctx->left >= 0)
-                ctx->left += rval.consumed; /* ?Subtracted below! */
+                {
+                    ctx->left += rval.consumed; /* ?Subtracted below! */
+                }
             ADVANCE(rval.consumed);
 
             ASN_DEBUG(
@@ -160,7 +162,10 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                 {
                     ssize_t tag_len; /* Length of TLV's T */
 
-                    if (ctx->step & 1) goto microphase2;
+                    if (ctx->step & 1)
+                        {
+                            goto microphase2;
+                        }
 
                     /*
                          * MICROPHASE 1: Synchronize decoding.
@@ -184,7 +189,10 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     switch (tag_len)
                         {
                         case 0:
-                            if (!SIZE_VIOLATION) RETURN(RC_WMORE);
+                            if (!SIZE_VIOLATION)
+                                {
+                                    RETURN(RC_WMORE);
+                                }
                             /* Fall through */
                         case -1:
                             RETURN(RC_FAIL);
@@ -195,9 +203,13 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             if (LEFT < 2)
                                 {
                                     if (SIZE_VIOLATION)
-                                        RETURN(RC_FAIL);
+                                        {
+                                            RETURN(RC_FAIL);
+                                        }
                                     else
-                                        RETURN(RC_WMORE);
+                                        {
+                                            RETURN(RC_WMORE);
+                                        }
                                 }
                             else if (((const uint8_t *)ptr)[1] == 0)
                                 {
@@ -255,9 +267,13 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                                 asn_anonymous_set_ *list =
                                     _A_SET_FROM_VOID(st);
                                 if (ASN_SET_ADD(list, ctx->ptr) != 0)
-                                    RETURN(RC_FAIL);
+                                    {
+                                        RETURN(RC_FAIL);
+                                    }
                                 else
-                                    ctx->ptr = 0;
+                                    {
+                                        ctx->ptr = 0;
+                                    }
                             }
                             break;
                         case RC_WMORE: /* More data expected */
@@ -327,7 +343,10 @@ static int _el_addbytes(const void *buffer, size_t size, void *el_buf_ptr)
 {
     struct _el_buffer *el_buf = (struct _el_buffer *)el_buf_ptr;
 
-    if (el_buf->length + size > el_buf->size) return -1;
+    if (el_buf->length + size > el_buf->size)
+        {
+            return -1;
+        }
 
     memcpy(el_buf->buf + el_buf->length, buffer, size);
 
@@ -342,17 +361,25 @@ static int _el_buf_cmp(const void *ap, const void *bp)
     size_t common_len;
 
     if (a->length < b->length)
-        common_len = a->length;
+        {
+            common_len = a->length;
+        }
     else
-        common_len = b->length;
+        {
+            common_len = b->length;
+        }
 
     ret = memcmp(a->buf, b->buf, common_len);
     if (ret == 0)
         {
             if (a->length < b->length)
-                ret = -1;
+                {
+                    ret = -1;
+                }
             else if (a->length > b->length)
-                ret = 1;
+                {
+                    ret = 1;
+                }
         }
 
     return ret;
@@ -386,14 +413,22 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     for (edx = 0; edx < list->count; edx++)
         {
             void *memb_ptr = list->array[edx];
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
             erval = der_encoder(elm_type, memb_ptr, 0, elm->tag, 0, 0);
-            if (erval.encoded == -1) return erval;
+            if (erval.encoded == -1)
+                {
+                    return erval;
+                }
             computed_size += erval.encoded;
 
             /* Compute maximum encoding's size */
             if (max_encoded_len < (size_t)erval.encoded)
-                max_encoded_len = erval.encoded;
+                {
+                    max_encoded_len = erval.encoded;
+                }
         }
 
     /*
@@ -441,7 +476,10 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
             void *memb_ptr = list->array[edx];
             struct _el_buffer *encoded_el = &encoded_els[eels_count];
 
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
 
             /*
              * Prepare space for encoding.
@@ -454,7 +492,10 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
                 }
             else
                 {
-                    for (edx--; edx >= 0; edx--) FREEMEM(encoded_els[edx].buf);
+                    for (edx--; edx >= 0; edx--)
+                        {
+                            FREEMEM(encoded_els[edx].buf);
+                        }
                     FREEMEM(encoded_els);
                     erval.encoded = -1;
                     erval.failed_type = td;
@@ -469,7 +510,10 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
                 encoded_el);
             if (erval.encoded == -1)
                 {
-                    for (; edx >= 0; edx--) FREEMEM(encoded_els[edx].buf);
+                    for (; edx >= 0; edx--)
+                        {
+                            FREEMEM(encoded_els[edx].buf);
+                        }
                     FREEMEM(encoded_els);
                     return erval;
                 }
@@ -493,7 +537,9 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
             /* Report encoded chunks to the application */
             if (ret == 0 &&
                 cb(encoded_el->buf, encoded_el->length, app_key) < 0)
-                ret = -1;
+                {
+                    ret = -1;
+                }
             FREEMEM(encoded_el->buf);
         }
     FREEMEM(encoded_els);
@@ -558,7 +604,10 @@ asn_dec_rval_t SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
     if (st == 0)
         {
             st = *struct_ptr = CALLOC(1, specs->struct_size);
-            if (st == 0) RETURN(RC_FAIL);
+            if (st == 0)
+                {
+                    RETURN(RC_FAIL);
+                }
         }
 
     /* Which tag is expected for the downstream */
@@ -604,7 +653,9 @@ asn_dec_rval_t SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                         {
                             asn_anonymous_set_ *list = _A_SET_FROM_VOID(st);
                             if (ASN_SET_ADD(list, ctx->ptr) != 0)
-                                RETURN(RC_FAIL);
+                                {
+                                    RETURN(RC_FAIL);
+                                }
                             ctx->ptr = 0;
                             XER_ADVANCE(tmprval.consumed);
                         }
@@ -646,7 +697,10 @@ asn_dec_rval_t SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
             switch (tcv)
                 {
                 case XCT_CLOSING:
-                    if (ctx->phase == 0) break;
+                    if (ctx->phase == 0)
+                        {
+                            break;
+                        }
                     ctx->phase = 0;
                     /* Fall through */
                 case XCT_BOTH:
@@ -705,7 +759,10 @@ static int SET_OF_encode_xer_callback(const void *buffer, size_t size,
         {
             size_t newsize = (t->size << 2) + size;
             void *p = REALLOC(t->buffer, newsize);
-            if (!p) return -1;
+            if (!p)
+                {
+                    return -1;
+                }
             t->buffer = p;
             t->size = newsize;
         }
@@ -719,12 +776,24 @@ static int SET_OF_xer_order(const void *aptr, const void *bptr)
     const xer_tmp_enc_t *b = (const xer_tmp_enc_t *)bptr;
     size_t minlen = a->offset;
     int ret;
-    if (b->offset < minlen) minlen = b->offset;
+    if (b->offset < minlen)
+        {
+            minlen = b->offset;
+        }
     /* Well-formed UTF-8 has this nice lexicographical property... */
     ret = memcmp(a->buffer, b->buffer, minlen);
-    if (ret != 0) return ret;
-    if (a->offset == b->offset) return 0;
-    if (a->offset == minlen) return -1;
+    if (ret != 0)
+        {
+            return ret;
+        }
+    if (a->offset == b->offset)
+        {
+            return 0;
+        }
+    if (a->offset == minlen)
+        {
+            return -1;
+        }
     return 1;
 }
 
@@ -747,12 +816,18 @@ asn_enc_rval_t SET_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
     asn_app_consume_bytes_f *original_cb = cb;
     int i;
 
-    if (!sptr) _ASN_ENCODE_FAILED;
+    if (!sptr)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     if (xcan)
         {
             encs = (xer_tmp_enc_t *)MALLOC(list->count * sizeof(encs[0]));
-            if (!encs) _ASN_ENCODE_FAILED;
+            if (!encs)
+                {
+                    _ASN_ENCODE_FAILED;
+                }
             cb = SET_OF_encode_xer_callback;
         }
 
@@ -763,7 +838,10 @@ asn_enc_rval_t SET_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             asn_enc_rval_t tmper;
 
             void *memb_ptr = list->array[i];
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
 
             if (encs)
                 {
@@ -774,12 +852,17 @@ asn_enc_rval_t SET_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 
             if (mname)
                 {
-                    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel);
+                    if (!xcan)
+                        {
+                            _i_ASN_TEXT_INDENT(1, ilevel);
+                        }
                     _ASN_CALLBACK3("<", 1, mname, mlen, ">", 1);
                 }
 
             if (!xcan && specs->as_XMLValueList == 1)
-                _i_ASN_TEXT_INDENT(1, ilevel + 1);
+                {
+                    _i_ASN_TEXT_INDENT(1, ilevel + 1);
+                }
             tmper = elm->type->xer_encoder(
                 elm->type, memb_ptr, ilevel + (specs->as_XMLValueList != 2),
                 flags, cb, app_key);
@@ -805,7 +888,10 @@ asn_enc_rval_t SET_OF_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             er.encoded += (2 * mlen) + tmper.encoded;
         }
 
-    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel - 1);
+    if (!xcan)
+        {
+            _i_ASN_TEXT_INDENT(1, ilevel - 1);
+        }
 
     if (encs)
         {
@@ -838,7 +924,9 @@ cleanup:
             while (encs_count-- > 0)
                 {
                     if (encs[encs_count].buffer)
-                        FREEMEM(encs[encs_count].buffer);
+                        {
+                            FREEMEM(encs[encs_count].buffer);
+                        }
                 }
             FREEMEM(encs);
         }
@@ -853,23 +941,34 @@ int SET_OF_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
     int ret;
     int i;
 
-    if (!sptr) return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+    if (!sptr)
+        {
+            return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+        }
 
     /* Dump preamble */
     if (cb(td->name, strlen(td->name), app_key) < 0 ||
         cb(" ::= {", 6, app_key) < 0)
-        return -1;
+        {
+            return -1;
+        }
 
     for (i = 0; i < list->count; i++)
         {
             const void *memb_ptr = list->array[i];
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
 
             _i_INDENT(1);
 
             ret = elm->type->print_struct(elm->type, memb_ptr, ilevel + 1, cb,
                 app_key);
-            if (ret) return ret;
+            if (ret)
+                {
+                    return ret;
+                }
         }
 
     ilevel--;
@@ -895,7 +994,10 @@ void SET_OF_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only)
             for (i = 0; i < list->count; i++)
                 {
                     void *memb_ptr = list->array[i];
-                    if (memb_ptr) ASN_STRUCT_FREE(*elm->type, memb_ptr);
+                    if (memb_ptr)
+                        {
+                            ASN_STRUCT_FREE(*elm->type, memb_ptr);
+                        }
                 }
             list->count = 0; /* No meaningful elements left */
 
@@ -932,7 +1034,10 @@ int SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
         }
 
     constr = elm->memb_constraints;
-    if (!constr) constr = elm->type->check_constraints;
+    if (!constr)
+        {
+            constr = elm->type->check_constraints;
+        }
 
     /*
      * Iterate over the members of an array.
@@ -943,10 +1048,16 @@ int SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
             const void *memb_ptr = list->array[i];
             int ret;
 
-            if (!memb_ptr) continue;
+            if (!memb_ptr)
+                {
+                    continue;
+                }
 
             ret = constr(elm->type, memb_ptr, ctfailcb, app_key);
-            if (ret) return ret;
+            if (ret)
+                {
+                    return ret;
+                }
         }
 
     /*
@@ -954,7 +1065,9 @@ int SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
      * need to make sure we get the updated version.
      */
     if (!elm->memb_constraints)
-        elm->memb_constraints = elm->type->check_constraints;
+        {
+            elm->memb_constraints = elm->type->check_constraints;
+        }
 
     return 0;
 }
@@ -973,7 +1086,10 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     int repeat = 0;
     ssize_t nelems;
 
-    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx)) _ASN_DECODE_FAILED;
+    if (_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        {
+            _ASN_DECODE_FAILED;
+        }
 
     /*
      * Create the target structure if it is not present already.
@@ -981,23 +1097,38 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     if (!st)
         {
             st = *sptr = CALLOC(1, specs->struct_size);
-            if (!st) _ASN_DECODE_FAILED;
+            if (!st)
+                {
+                    _ASN_DECODE_FAILED;
+                }
         }
     list = _A_SET_FROM_VOID(st);
 
     /* Figure out which constraints to use */
     if (constraints)
-        ct = &constraints->size;
+        {
+            ct = &constraints->size;
+        }
     else if (td->per_constraints)
-        ct = &td->per_constraints->size;
+        {
+            ct = &td->per_constraints->size;
+        }
     else
-        ct = 0;
+        {
+            ct = 0;
+        }
 
     if (ct && ct->flags & APC_EXTENSIBLE)
         {
             int value = per_get_few_bits(pd, 1);
-            if (value < 0) _ASN_DECODE_STARVED;
-            if (value) ct = 0; /* Not restricted! */
+            if (value < 0)
+                {
+                    _ASN_DECODE_STARVED;
+                }
+            if (value)
+                {
+                    ct = 0; /* Not restricted! */
+                }
         }
 
     if (ct && ct->effective_bits >= 0)
@@ -1006,7 +1137,10 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
             nelems = per_get_few_bits(pd, ct->effective_bits);
             ASN_DEBUG("Preparing to fetch %ld+%ld elements from %s",
                 (long)nelems, ct->lower_bound, td->name);
-            if (nelems < 0) _ASN_DECODE_STARVED;
+            if (nelems < 0)
+                {
+                    _ASN_DECODE_STARVED;
+                }
             nelems += ct->lower_bound;
         }
     else
@@ -1022,7 +1156,10 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
                         &repeat);
                     ASN_DEBUG("Got to decode %d elements (eff %d)", (int)nelems,
                         (long)ct ? ct->effective_bits : -1);
-                    if (nelems < 0) _ASN_DECODE_STARVED;
+                    if (nelems < 0)
+                        {
+                            _ASN_DECODE_STARVED;
+                        }
                 }
 
             for (ssize_t k = 0; k < nelems; k++)
@@ -1036,7 +1173,10 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
                         elm->type->name, rv.code, ptr);
                     if (rv.code == RC_OK)
                         {
-                            if (ASN_SET_ADD(list, ptr) == 0) continue;
+                            if (ASN_SET_ADD(list, ptr) == 0)
+                                {
+                                    continue;
+                                }
                             ASN_DEBUG("Failed to add element into %s",
                                 td->name);
                             /* Fall through */
@@ -1047,7 +1187,10 @@ asn_dec_rval_t SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
                             ASN_DEBUG("Failed decoding %s of %s (SET OF)",
                                 elm->type->name, td->name);
                         }
-                    if (ptr) ASN_STRUCT_FREE(*elm->type, ptr);
+                    if (ptr)
+                        {
+                            ASN_STRUCT_FREE(*elm->type, ptr);
+                        }
                     return rv;
                 }
 

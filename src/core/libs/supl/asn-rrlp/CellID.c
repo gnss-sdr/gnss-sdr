@@ -48,7 +48,9 @@ static void CellID_1_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td)
     td->uper_decoder = asn_DEF_NativeInteger.uper_decoder;
     td->uper_encoder = asn_DEF_NativeInteger.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints = asn_DEF_NativeInteger.per_constraints;
+        {
+            td->per_constraints = asn_DEF_NativeInteger.per_constraints;
+        }
     td->elements = asn_DEF_NativeInteger.elements;
     td->elements_count = asn_DEF_NativeInteger.elements_count;
     td->specifics = asn_DEF_NativeInteger.specifics;

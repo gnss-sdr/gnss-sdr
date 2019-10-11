@@ -102,7 +102,10 @@ static int check_permitted_alphabet_1(const void *sptr)
     for (; ch < end; ch++)
         {
             uint8_t cv = *ch;
-            if (!table[cv]) return -1;
+            if (!table[cv])
+                {
+                    return -1;
+                }
         }
     return 0;
 }
@@ -139,14 +142,18 @@ static int asn_PER_MAP_FQDN_1_v2c(unsigned int value)
 {
     if (value >= sizeof(permitted_alphabet_table_1) /
                      sizeof(permitted_alphabet_table_1[0]))
-        return -1;
+        {
+            return -1;
+        }
     return permitted_alphabet_table_1[value] - 1;
 }
 static int asn_PER_MAP_FQDN_1_c2v(unsigned int code)
 {
     if (code >= sizeof(permitted_alphabet_code2value_1) /
                     sizeof(permitted_alphabet_code2value_1[0]))
-        return -1;
+        {
+            return -1;
+        }
     return permitted_alphabet_code2value_1[code];
 }
 /*
@@ -164,7 +171,9 @@ static void FQDN_1_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td)
     td->uper_decoder = asn_DEF_VisibleString.uper_decoder;
     td->uper_encoder = asn_DEF_VisibleString.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints = asn_DEF_VisibleString.per_constraints;
+        {
+            td->per_constraints = asn_DEF_VisibleString.per_constraints;
+        }
     td->elements = asn_DEF_VisibleString.elements;
     td->elements_count = asn_DEF_VisibleString.elements_count;
     td->specifics = asn_DEF_VisibleString.specifics;

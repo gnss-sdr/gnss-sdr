@@ -80,7 +80,10 @@ asn_enc_rval_t BIT_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
     uint8_t *buf;
     uint8_t *end;
 
-    if (!st || !st->buf) _ASN_ENCODE_FAILED;
+    if (!st || !st->buf)
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     er.encoded = 0;
 
@@ -99,14 +102,20 @@ asn_enc_rval_t BIT_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
                     er.encoded += p - scratch;
                     _ASN_CALLBACK(scratch, p - scratch);
                     p = scratch;
-                    if (nline) _i_ASN_TEXT_INDENT(1, ilevel);
+                    if (nline)
+                        {
+                            _i_ASN_TEXT_INDENT(1, ilevel);
+                        }
                 }
             memcpy(p + 0, _bit_pattern[v >> 4], 4);
             memcpy(p + 4, _bit_pattern[v & 0x0f], 4);
             p += 8;
         }
 
-    if (!xcan && ((buf - st->buf) % 8) == 0) _i_ASN_TEXT_INDENT(1, ilevel);
+    if (!xcan && ((buf - st->buf) % 8) == 0)
+        {
+            _i_ASN_TEXT_INDENT(1, ilevel);
+        }
     er.encoded += p - scratch;
     _ASN_CALLBACK(scratch, p - scratch);
     p = scratch;
@@ -116,12 +125,18 @@ asn_enc_rval_t BIT_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
             int v = *buf;
             int ubits = st->bits_unused;
             int i;
-            for (i = 7; i >= ubits; i--) *p++ = (v & (1 << i)) ? 0x31 : 0x30;
+            for (i = 7; i >= ubits; i--)
+                {
+                    *p++ = (v & (1 << i)) ? 0x31 : 0x30;
+                }
             er.encoded += p - scratch;
             _ASN_CALLBACK(scratch, p - scratch);
         }
 
-    if (!xcan) _i_ASN_TEXT_INDENT(1, ilevel - 1);
+    if (!xcan)
+        {
+            _i_ASN_TEXT_INDENT(1, ilevel - 1);
+        }
 
     _ASN_ENCODED_OK(er);
 cb_failed:
@@ -143,7 +158,10 @@ int BIT_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
     (void)td; /* Unused argument */
 
-    if (!st || !st->buf) return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+    if (!st || !st->buf)
+        {
+            return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+        }
 
     ilevel++;
     buf = st->buf;
@@ -158,7 +176,10 @@ int BIT_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 {
                     _i_INDENT(1);
                     /* Dump the string */
-                    if (cb(scratch, p - scratch, app_key) < 0) return -1;
+                    if (cb(scratch, p - scratch, app_key) < 0)
+                        {
+                            return -1;
+                        }
                     p = scratch;
                 }
             *p++ = h2c[*buf >> 4];
@@ -176,7 +197,10 @@ int BIT_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 }
 
             /* Dump the incomplete 16-bytes row */
-            if (cb(scratch, p - scratch, app_key) < 0) return -1;
+            if (cb(scratch, p - scratch, app_key) < 0)
+                {
+                    return -1;
+                }
         }
 
     return 0;

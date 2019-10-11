@@ -24,7 +24,10 @@ asn_dec_rval_t ber_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
     if (st == NULL)
         {
             st = (ASN__PRIMITIVE_TYPE_t *)CALLOC(1, sizeof(*st));
-            if (st == NULL) _ASN_DECODE_FAILED;
+            if (st == NULL)
+                {
+                    _ASN_DECODE_FAILED;
+                }
             *sptr = (void *)st;
         }
 
@@ -35,7 +38,10 @@ asn_dec_rval_t ber_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
      */
     rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size, tag_mode, 0,
         &length, 0);
-    if (rval.code != RC_OK) return rval;
+    if (rval.code != RC_OK)
+        {
+            return rval;
+        }
 
     ASN_DEBUG("%s length is %d bytes", td->name, (int)length);
 
@@ -124,13 +130,22 @@ void ASN__PRIMITIVE_TYPE_free(asn_TYPE_descriptor_t *td, void *sptr,
 {
     ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)sptr;
 
-    if (!td || !sptr) return;
+    if (!td || !sptr)
+        {
+            return;
+        }
 
     ASN_DEBUG("Freeing %s as a primitive type", td->name);
 
-    if (st->buf) FREEMEM(st->buf);
+    if (st->buf)
+        {
+            FREEMEM(st->buf);
+        }
 
-    if (!contents_only) FREEMEM(st);
+    if (!contents_only)
+        {
+            FREEMEM(st);
+        }
 }
 
 /*
@@ -154,7 +169,9 @@ static int xer_decode__unexpected_tag(void *key, const void *chunk_buf,
     if (arg->decoded_something)
         {
             if (xer_is_whitespace(chunk_buf, chunk_size))
-                return 0; /* Skip it. */
+                {
+                    return 0; /* Skip it. */
+                }
             /*
              * Decoding was done once already. Prohibit doing it again.
              */
@@ -188,7 +205,10 @@ static ssize_t xer_decode__body(void *key, const void *chunk_buf,
 
     if (arg->decoded_something)
         {
-            if (xer_is_whitespace(chunk_buf, chunk_size)) return chunk_size;
+            if (xer_is_whitespace(chunk_buf, chunk_size))
+                {
+                    return chunk_size;
+                }
             /*
              * Decoding was done once already. Prohibit doing it again.
              */
@@ -244,7 +264,10 @@ asn_dec_rval_t xer_decode_primitive(
     if (!*sptr)
         {
             *sptr = CALLOC(1, struct_size);
-            if (!*sptr) _ASN_DECODE_FAILED;
+            if (!*sptr)
+                {
+                    _ASN_DECODE_FAILED;
+                }
         }
 
     memset(&s_ctx, 0, sizeof(s_ctx));
@@ -291,9 +314,13 @@ asn_dec_rval_t xer_decode_primitive(
         case RC_FAIL:
             rc.consumed = 0;
             if (s_arg.want_more)
-                rc.code = RC_WMORE;
+                {
+                    rc.code = RC_WMORE;
+                }
             else
-                _ASN_DECODE_FAILED;
+                {
+                    _ASN_DECODE_FAILED;
+                }
             break;
         }
     return rc;

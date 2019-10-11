@@ -51,7 +51,10 @@ void asn_set_del(void *asn_set_of_x, int number, int _do_free)
     if (as)
         {
             void *ptr;
-            if (number < 0 || number >= as->count) return;
+            if (number < 0 || number >= as->count)
+                {
+                    return;
+                }
 
             if (_do_free && as->free)
                 {
@@ -68,7 +71,10 @@ void asn_set_del(void *asn_set_of_x, int number, int _do_free)
              * Invoke the third-party function only when the state
              * of the parent structure is consistent.
              */
-            if (ptr) as->free(ptr);
+            if (ptr)
+                {
+                    as->free(ptr);
+                }
         }
 }
 
@@ -85,7 +91,10 @@ void asn_set_empty(void *asn_set_of_x)
                 {
                     if (as->free)
                         {
-                            while (as->count--) as->free(as->array[as->count]);
+                            while (as->count--)
+                                {
+                                    as->free(as->array[as->count]);
+                                }
                         }
                     FREEMEM(as->array);
                     as->array = 0;

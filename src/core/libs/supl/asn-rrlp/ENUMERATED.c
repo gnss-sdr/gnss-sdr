@@ -49,13 +49,21 @@ asn_dec_rval_t ENUMERATED_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
     if (!st)
         {
             st = (ENUMERATED_t *)(*sptr = CALLOC(1, sizeof(*st)));
-            if (!st) _ASN_DECODE_FAILED;
+            if (!st)
+                {
+                    _ASN_DECODE_FAILED;
+                }
         }
 
     rval =
         NativeEnumerated_decode_uper(opt_codec_ctx, td, constraints, &vptr, pd);
     if (rval.code == RC_OK)
-        if (asn_long2INTEGER(st, value)) rval.code = RC_FAIL;
+        {
+            if (asn_long2INTEGER(st, value))
+                {
+                    rval.code = RC_FAIL;
+                }
+        }
     return rval;
 }
 
@@ -66,7 +74,10 @@ asn_enc_rval_t ENUMERATED_encode_uper(asn_TYPE_descriptor_t *td,
     ENUMERATED_t *st = (ENUMERATED_t *)sptr;
     int64_t value;
 
-    if (asn_INTEGER2long(st, &value)) _ASN_ENCODE_FAILED;
+    if (asn_INTEGER2long(st, &value))
+        {
+            _ASN_ENCODE_FAILED;
+        }
 
     return NativeEnumerated_encode_uper(td, constraints, &value, po);
 }

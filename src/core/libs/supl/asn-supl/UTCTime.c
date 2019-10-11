@@ -89,11 +89,16 @@ asn_enc_rval_t UTCTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 
             errno = EPERM;
             if (asn_UT2time((UTCTime_t *)sptr, &tm, 1) == -1 && errno != EPERM)
-                _ASN_ENCODE_FAILED;
+                {
+                    _ASN_ENCODE_FAILED;
+                }
 
             /* Fractions are not allowed in UTCTime */
             ut = asn_time2GT(0, 0, 1);
-            if (!ut) _ASN_ENCODE_FAILED;
+            if (!ut)
+                {
+                    _ASN_ENCODE_FAILED;
+                }
 
             rv = OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb,
                 app_key);
@@ -125,7 +130,9 @@ int UTCTime_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
             errno = EPERM;
             if (asn_UT2time(st, &tm, 1) == -1 && errno != EPERM)
-                return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
+                {
+                    return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
+                }
 
             ret = snprintf(buf, sizeof(buf),
                 "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
@@ -175,7 +182,10 @@ UTCTime_t *asn_time2UT(UTCTime_t *opt_ut, const struct tm *tm, int force_gmt)
     GeneralizedTime_t *gt = (GeneralizedTime_t *)opt_ut;
 
     gt = asn_time2GT(gt, tm, force_gmt);
-    if (gt == 0) return 0;
+    if (gt == 0)
+        {
+            return 0;
+        }
 
     assert(gt->size >= 2);
     gt->size -= 2;

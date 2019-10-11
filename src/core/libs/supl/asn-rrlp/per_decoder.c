@@ -58,7 +58,9 @@ asn_dec_rval_t uper_decode(asn_codec_ctx_t *opt_codec_ctx,
 
     if (skip_bits < 0 || skip_bits > 7 || unused_bits < 0 || unused_bits > 7 ||
         (unused_bits > 0 && !size))
-        _ASN_DECODE_FAILED;
+        {
+            _ASN_DECODE_FAILED;
+        }
 
     /*
      * Stack checker requires that the codec context
@@ -85,12 +87,18 @@ asn_dec_rval_t uper_decode(asn_codec_ctx_t *opt_codec_ctx,
     pd.buffer = (const uint8_t *)buffer;
     pd.nboff = skip_bits;
     pd.nbits = 8 * size - unused_bits; /* 8 is CHAR_BIT from <limits.h> */
-    if (pd.nboff > pd.nbits) _ASN_DECODE_FAILED;
+    if (pd.nboff > pd.nbits)
+        {
+            _ASN_DECODE_FAILED;
+        }
 
     /*
      * Invoke type-specific decoder.
      */
-    if (!td->uper_decoder) _ASN_DECODE_FAILED; /* PER is not compiled in */
+    if (!td->uper_decoder)
+        {
+            _ASN_DECODE_FAILED; /* PER is not compiled in */
+        }
     rval = td->uper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
     if (rval.code == RC_OK)
         {

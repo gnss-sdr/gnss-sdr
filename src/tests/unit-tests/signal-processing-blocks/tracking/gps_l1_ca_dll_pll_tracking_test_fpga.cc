@@ -294,7 +294,9 @@ int GpsL1CADllPllTrackingTestFpga::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);

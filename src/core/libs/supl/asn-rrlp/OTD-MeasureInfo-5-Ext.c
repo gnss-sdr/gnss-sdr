@@ -52,7 +52,9 @@ static void OTD_MeasureInfo_5_Ext_1_inherit_TYPE_descriptor(
     td->uper_decoder = asn_DEF_SeqOfOTD_MsrElementRest.uper_decoder;
     td->uper_encoder = asn_DEF_SeqOfOTD_MsrElementRest.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints = asn_DEF_SeqOfOTD_MsrElementRest.per_constraints;
+        {
+            td->per_constraints = asn_DEF_SeqOfOTD_MsrElementRest.per_constraints;
+        }
     td->elements = asn_DEF_SeqOfOTD_MsrElementRest.elements;
     td->elements_count = asn_DEF_SeqOfOTD_MsrElementRest.elements_count;
     td->specifics = asn_DEF_SeqOfOTD_MsrElementRest.specifics;

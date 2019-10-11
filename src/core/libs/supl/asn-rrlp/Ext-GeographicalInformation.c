@@ -51,7 +51,9 @@ static void Ext_GeographicalInformation_1_inherit_TYPE_descriptor(
     td->uper_decoder = asn_DEF_OCTET_STRING.uper_decoder;
     td->uper_encoder = asn_DEF_OCTET_STRING.uper_encoder;
     if (!td->per_constraints)
-        td->per_constraints = asn_DEF_OCTET_STRING.per_constraints;
+        {
+            td->per_constraints = asn_DEF_OCTET_STRING.per_constraints;
+        }
     td->elements = asn_DEF_OCTET_STRING.elements;
     td->elements_count = asn_DEF_OCTET_STRING.elements_count;
     td->specifics = asn_DEF_OCTET_STRING.specifics;

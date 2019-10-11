@@ -19,7 +19,10 @@ asn_enc_rval_t xer_encode(asn_TYPE_descriptor_t *td, void *sptr,
     size_t mlen;
     int xcan = (xer_flags & XER_F_CANONICAL) ? 1 : 2;
 
-    if (!td || !sptr) goto cb_failed;
+    if (!td || !sptr)
+        {
+            goto cb_failed;
+        }
 
     mname = td->xml_tag;
     mlen = strlen(mname);
@@ -27,7 +30,10 @@ asn_enc_rval_t xer_encode(asn_TYPE_descriptor_t *td, void *sptr,
     _ASN_CALLBACK3("<", 1, mname, mlen, ">", 1);
 
     tmper = td->xer_encoder(td, sptr, 1, xer_flags, cb, app_key);
-    if (tmper.encoded == -1) return tmper;
+    if (tmper.encoded == -1)
+        {
+            return tmper;
+        }
 
     _ASN_CALLBACK3("</", 2, mname, mlen, ">\n", xcan);
 
@@ -46,7 +52,10 @@ static int xer__print2fp(const void *buffer, size_t size, void *app_key)
 {
     FILE *stream = (FILE *)app_key;
 
-    if (fwrite(buffer, 1, size, stream) != size) return -1;
+    if (fwrite(buffer, 1, size, stream) != size)
+        {
+            return -1;
+        }
 
     return 0;
 }
@@ -55,11 +64,20 @@ int xer_fprint(FILE *stream, asn_TYPE_descriptor_t *td, void *sptr)
 {
     asn_enc_rval_t er;
 
-    if (!stream) stream = stdout;
-    if (!td || !sptr) return -1;
+    if (!stream)
+        {
+            stream = stdout;
+        }
+    if (!td || !sptr)
+        {
+            return -1;
+        }
 
     er = xer_encode(td, sptr, XER_F_BASIC, xer__print2fp, stream);
-    if (er.encoded == -1) return -1;
+    if (er.encoded == -1)
+        {
+            return -1;
+        }
 
     return fflush(stream);
 }

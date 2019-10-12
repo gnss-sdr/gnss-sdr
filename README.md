@@ -63,7 +63,7 @@ If you want to start building and running GNSS-SDR as quick and easy as possible
 If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~
-$ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
+$ sudo apt-get install build-essential cmake git pkg-config libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
@@ -84,7 +84,7 @@ Once you have installed these packages, you can jump directly to [download the s
 If you are using Arch Linux:
 
 ~~~~~~
-$ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
+$ pacman -S gcc make cmake pkgconf git boost boost-libs log4cpp libvolk gnuradio \
        blas lapack gflags google-glog openssl pugixml \
        python-mako python-six libmatio libpcap gtest protobuf
 ~~~~~~

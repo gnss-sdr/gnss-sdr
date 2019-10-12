@@ -65,7 +65,7 @@ archlinux:
     - pwd
   script:
     - pacman -Syu --noconfirm
-    - pacman -S --noconfirm gcc make cmake git boost boost-libs log4cpp libvolk gnuradio libpcap blas lapack gflags google-glog openssl python-mako python-six pugixml libmatio gtest protobuf
+    - pacman -S --noconfirm gcc make cmake pkgconf git boost boost-libs log4cpp libvolk gnuradio libpcap blas lapack gflags google-glog openssl python-mako python-six pugixml libmatio gtest protobuf
     - cd build
     - cmake -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -173,7 +173,7 @@ debian8:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential libtool automake make curl libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libgfortran-4.9-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential pkg-config libtool automake make curl libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libgfortran-4.9-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -189,7 +189,7 @@ debian9:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential pkg-config cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -205,7 +205,7 @@ debian10:
   script:
     - apt-get update
     - apt-get upgrade -y
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libiio-dev libad9361-dev gr-iio libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential pkg-config cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libiio-dev libad9361-dev gr-iio libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -221,7 +221,7 @@ debian11:
   script:
     - apt-get update
     - apt-get upgrade -y
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libiio-dev libad9361-dev gr-iio libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential pkg-config cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libiio-dev libad9361-dev gr-iio libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

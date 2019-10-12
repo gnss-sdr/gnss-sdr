@@ -1202,7 +1202,13 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
     # Ensure that aclocal and libtool are present
     if(OS_IS_LINUX)
         if(EXISTS "/usr/bin/libtoolize")
-            if(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+            if(EXISTS "/usr/bin/aclocal" OR
+                EXISTS "/usr/bin/aclocal-1.16" OR
+                EXISTS "/usr/bin/aclocal-1.15" OR
+                EXISTS "/usr/bin/aclocal-1.14" OR
+                EXISTS "/usr/bin/aclocal-1.13" OR
+                EXISTS "/usr/bin/aclocal-1.11" OR
+                EXISTS "/usr/bin/aclocal-1.10")
                 # Everything ok, we can move on
             else()
                 message(" aclocal has not been found.")
@@ -2288,7 +2294,7 @@ else()
 endif()
 find_package(LIBAD9361)
 set_package_properties(LIBAD9361 PROPERTIES
-    PURPOSE "Used for configuring the AD9361 chipset"
+    PURPOSE "Used for configuring devices with the AD9361 chipset."
     TYPE OPTIONAL
 )
 if(NOT LIBAD9361_FOUND)

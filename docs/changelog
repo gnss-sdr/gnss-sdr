@@ -22,14 +22,16 @@
 - Fixed PVT solution in receivers processing L1 plus L2C and/or L5 signals.
 - Added RINEX files generation for triple-band configurations (L1 + L2C + L5 and L1 + E1 + L2C + L5 + E5a).
 - Fixed a bug in the decoding of BeiDou navigation messages.
+- Improved management of devices with the AD9361 RF transceiver.
 
 
 ### Improvements in Maintainability:
 
 - New CMake option ENABLE_ARMA_NO_DEBUG defines the macro ARMA_NO_DEBUG, which disables all run-time checks, such as bounds checking, in the Armadillo library. This will result in faster code. This option is disabled by default during development, but automatically set to ON if the option ENABLE_PACKAGING is set to ON.
-- Apply more clang-tidy checks related to readability: readability-avoid-const-params-in-decls, readability-isolate-declaration, readability-redundant-control-flow, readability-uppercase-literal-suffix. Fixed raised warnings.
+- Apply more clang-tidy checks related to readability: readability-avoid-const-params-in-decls, readability-braces-around-statements, readability-isolate-declaration, readability-redundant-control-flow, readability-uppercase-literal-suffix. Fixed raised warnings.
 - Fixed cpplint.py build/include_what_you_use, whitespace/tab, whitespace/blank_line errors.
-- Add more check options to .clang-tidy file.
+- clang-format can now be applied to the whole code tree without breaking compilation.
+- Added more check options to .clang-tidy file.
 
 
 ### Improvements in Portability:
@@ -50,7 +52,7 @@
 
 ### Improvements in Usability:
 
-- A new parameter allows to process raw sample files containing GPS L1 C/A signals dated before July 14, 2009. If GNSS-SDR.
+- A new parameter allows to process raw sample files containing GPS L1 C/A signals dated before July 14, 2009.
 - Improved DLL-PLL binary dump MATLAB/Octave plot script. Old versions removed.
 - Simplified RTKLIB error log.
 - Added a Python 3 plotting script to show relative performance of generic volk_gnsssdr kernels wrt SIMD fastest versions.

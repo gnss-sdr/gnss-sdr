@@ -86,6 +86,8 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq_,
     const std::string &rf_port_select_,
+    bool rx1_enable_,
+    bool rx2_enable_,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
@@ -103,6 +105,8 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     uint64_t sample_rate_,
     uint64_t freq_,
     const std::string &rf_port_select_,
+    bool rx1_enable_,
+    bool rx2_enable_,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
@@ -137,5 +141,9 @@ bool ad9361_disable_lo_remote(const std::string &remote_host);
 bool ad9361_disable_lo_local();
 
 bool load_fir_filter(std::string &filter, struct iio_device *phy);
+
+bool disable_ad9361_rx_local();
+
+bool disable_ad9361_rx_remote(const std::string &remote_host);
 
 #endif  // GNSS_SDR_AD9361_MANAGER_H_

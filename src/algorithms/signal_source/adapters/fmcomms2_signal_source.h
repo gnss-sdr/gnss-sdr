@@ -56,7 +56,7 @@ public:
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    virtual ~Fmcomms2SignalSource();
+    ~Fmcomms2SignalSource();
 
     inline std::string role() override
     {
@@ -107,6 +107,7 @@ private:
     std::string filter_filename_;
     float Fpass_;
     float Fstop_;
+    bool rf_shutdown_;
 
     // DDS configuration for LO generation for external mixer
     bool enable_dds_lo_;

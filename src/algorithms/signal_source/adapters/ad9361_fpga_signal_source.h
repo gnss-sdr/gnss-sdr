@@ -86,6 +86,8 @@ private:
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;
+    bool rx1_enable_;
+    bool rx2_enable_;
     std::string gain_mode_rx1_;
     std::string gain_mode_rx2_;
     double rf_gain_rx1_;
@@ -123,6 +125,7 @@ private:
     std::string freq_band;
 
     bool enable_DMA_;
+    bool rf_shutdown_;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_

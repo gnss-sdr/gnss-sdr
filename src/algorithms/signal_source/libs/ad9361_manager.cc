@@ -182,6 +182,8 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq_,
     const std::string &rf_port_select_,
+    bool rx1_enable_,
+    bool rx2_enable_,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
@@ -238,7 +240,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         {
             std::cout << "No rx dev found\n";
             throw std::runtime_error("AD9361 IIO No rx dev found");
-        };
+        }
 
     std::cout << "* Initializing AD9361 IIO streaming channels\n";
     if (!get_ad9361_stream_ch(ctx, RX, rx, 0, &rx_chan1))
@@ -352,8 +354,18 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         }
 
     std::cout << "* Enabling IIO streaming channels\n";
-    iio_channel_enable(rx_chan1);
-    iio_channel_enable(rx_chan2);
+    if (rx1_enable_)
+        {
+            iio_channel_enable(rx_chan1);
+        }
+    if (rx2_enable_)
+        {
+            iio_channel_enable(rx_chan2);
+        }
+    if (!rx1_enable_ and !rx2_enable_)
+        {
+            std::cout << "WARNING: No Rx channels enabled.\n";
+        }
 
     ret = iio_device_attr_write(ad9361_phy, "trx_rate_governor", "nominal");
     if (ret < 0)
@@ -417,6 +429,8 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     uint64_t sample_rate_,
     uint64_t freq_,
     const std::string &rf_port_select_,
+    bool rx1_enable_,
+    bool rx2_enable_,
     const std::string &gain_mode_rx1_,
     const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
@@ -469,7 +483,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         {
             std::cout << "No rx dev found\n";
             throw std::runtime_error("AD9361 IIO No rx dev found");
-        };
+        }
 
     std::cout << "* Configuring AD9361 for streaming\n";
 
@@ -589,8 +603,18 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         }
 
     std::cout << "* Enabling IIO streaming channels\n";
-    iio_channel_enable(rx_chan1);
-    iio_channel_enable(rx_chan2);
+    if (rx1_enable_)
+        {
+            iio_channel_enable(rx_chan1);
+        }
+    if (rx2_enable_)
+        {
+            iio_channel_enable(rx_chan2);
+        }
+    if (!rx1_enable_ and !rx2_enable_)
+        {
+            std::cout << "WARNING: No Rx channels enabled.\n";
+        }
 
     ret = iio_device_attr_write(ad9361_phy, "trx_rate_governor", "nominal");
     if (ret < 0)
@@ -690,7 +714,7 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
         {
             std::cout << "No tx dev found\n";
             throw std::runtime_error("AD9361 IIO No tx dev found");
-        };
+        }
 
     std::cout << "* Configuring AD9361 for streaming TX\n";
     if (!cfg_ad9361_streaming_ch(ctx, &txcfg, TX, 0))
@@ -832,7 +856,7 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
         {
             std::cout << "No tx dev found\n";
             throw std::runtime_error("AD9361 IIO No tx dev found");
-        };
+        }
 
     std::cout << "* Configuring AD9361 for streaming TX\n";
     if (!cfg_ad9361_streaming_ch(ctx, &txcfg, TX, 0))
@@ -1064,4 +1088,87 @@ bool load_fir_filter(
         "filter_fir_config", buffer.data(), length);
 
     return ret > 0;
+}
+
+
+bool disable_ad9361_rx_local()
+{
+    struct iio_context *ctx;
+    struct iio_device *rx;
+    struct iio_channel *rx_chan1;
+    struct iio_channel *rx_chan2;
+
+    ctx = iio_create_default_context();
+    if (!ctx)
+        {
+            std::cout << "No default context available when disabling RX channels\n";
+            return false;
+        }
+
+    if (iio_context_get_devices_count(ctx) <= 0)
+        {
+            std::cout << "No devices available when disabling RX channels\n";
+            return false;
+        }
+
+    if (!get_ad9361_stream_dev(ctx, RX, &rx))
+        {
+            std::cout << "No rx streams found when disabling RX channels\n";
+            return false;
+        }
+
+    if (!get_ad9361_stream_ch(ctx, RX, rx, 0, &rx_chan1))
+        {
+            std::cout << "RX channel 1 not found when disabling RX channels\n";
+            return false;
+        }
+
+    if (!get_ad9361_stream_ch(ctx, RX, rx, 1, &rx_chan2))
+        {
+            std::cout << "RX channel 2 not found when disabling RX channels\n";
+            return false;
+        }
+
+    iio_channel_disable(rx_chan1);
+    iio_channel_disable(rx_chan2);
+    iio_context_destroy(ctx);
+    return true;
+}
+
+
+bool disable_ad9361_rx_remote(const std::string &remote_host)
+{
+    struct iio_context *ctx;
+    struct iio_device *rx;
+    struct iio_channel *rx_chan1;
+    struct iio_channel *rx_chan2;
+
+    ctx = iio_create_network_context(remote_host.c_str());
+    if (!ctx)
+        {
+            std::cout << "No context available at " << remote_host << "when disabling RX channels\n";
+            return false;
+        }
+
+    if (!get_ad9361_stream_dev(ctx, RX, &rx))
+        {
+            std::cout << "No rx streams found at " << remote_host << " when disabling RX channels\n";
+            return false;
+        }
+
+    if (!get_ad9361_stream_ch(ctx, RX, rx, 0, &rx_chan1))
+        {
+            std::cout << "RX channel 1 not found at " << remote_host << " when disabling RX channels\n";
+            return false;
+        }
+
+    if (!get_ad9361_stream_ch(ctx, RX, rx, 1, &rx_chan2))
+        {
+            std::cout << "RX channel 2 not found at " << remote_host << " when disabling RX channels\n";
+            return false;
+        }
+    iio_channel_disable(rx_chan1);
+    iio_channel_disable(rx_chan2);
+    iio_context_destroy(ctx);
+    return true;
 }

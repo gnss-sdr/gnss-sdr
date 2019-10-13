@@ -35,6 +35,7 @@
 #include "GPS_L5.h"
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for max
@@ -291,6 +292,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
     bb_dc_ = configuration->property(role + ".bb_dc", true);
+    rx1_enable_ = configuration->property(role + ".rx1_enable", true);
+    rx2_enable_ = configuration->property(role + ".rx2_enable", true);
     gain_mode_rx1_ = configuration->property(role + ".gain_mode_rx1", default_gain_mode);
     gain_mode_rx2_ = configuration->property(role + ".gain_mode_rx2", default_gain_mode);
     rf_gain_rx1_ = configuration->property(role + ".gain_rx1", default_manual_gain_rx1);
@@ -316,6 +319,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
     tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
+
+    rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
     // turn switch to A/D position
     std::string default_device_name = "/dev/uio1";
@@ -449,6 +454,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                         sample_rate_,
                         freq_,
                         rf_port_select_,
+                        rx1_enable_,
+                        rx2_enable_,
                         gain_mode_rx1_,
                         gain_mode_rx2_,
                         rf_gain_rx1_,
@@ -515,33 +522,37 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
 Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 {
     /* cleanup and exit */
-
-    // std::cout<<"* AD9361 Disabling streaming channels\n";
-    // if (rx0_i) { iio_channel_disable(rx0_i); }
-    // if (rx0_q) { iio_channel_disable(rx0_q); }
-
-    enable_DMA_ = false;  // disable the DMA
-
-    if (enable_dds_lo_)
-        {
-            try
-                {
-                    ad9361_disable_lo_local();
-                }
-            catch (const std::exception &e)
-                {
-                    LOG(WARNING) << "Problem closing the Ad9361FpgaSignalSource: " << e.what();
-                }
-        }
     if (switch_position == 0)  // read samples from a file via DMA
         {
+            enable_DMA_ = false;  // disable the DMA
             if (thread_file_to_dma.joinable())
                 {
                     thread_file_to_dma.join();
                 }
         }
-    // std::cout<<"* AD9361 Destroying context\n";
-    // if (ctx) { iio_context_destroy(ctx); }
+
+    if (switch_position == 2)  // Real-time via AD9361
+        {
+            if (rf_shutdown_)
+                {
+                    std::cout << "* AD9361 Disabling RX streaming channels\n";
+                    if (!disable_ad9361_rx_local())
+                        {
+                            LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                        }
+                    if (enable_dds_lo_)
+                        {
+                            try
+                                {
+                                    ad9361_disable_lo_local();
+                                }
+                            catch (const std::exception &e)
+                                {
+                                    LOG(WARNING) << "Problem shutting down the AD9361 TX stream: " << e.what();
+                                }
+                        }
+                }
+        }
 }
 
 

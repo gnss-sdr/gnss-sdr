@@ -34,6 +34,7 @@
 #include "GPS_L2C.h"
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <algorithm>  // for max
@@ -93,6 +94,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface *configuration
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
     tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);
+
+    rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
     item_size_ = sizeof(gr_complex);
 
@@ -343,15 +346,22 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface *configuration
 
 Fmcomms2SignalSource::~Fmcomms2SignalSource()
 {
-    if (enable_dds_lo_ == true)
+    if (rf_shutdown_)
         {
-            try
+            if (!disable_ad9361_rx_remote(uri_))
                 {
-                    ad9361_disable_lo_remote(uri_);
+                    LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
                 }
-            catch (const std::exception &e)
+            if (enable_dds_lo_ == true)
                 {
-                    LOG(WARNING) << "Exception thrown in Fmcomms2SignalSource destructor: " << e.what();
+                    try
+                        {
+                            ad9361_disable_lo_remote(uri_);
+                        }
+                    catch (const std::exception &e)
+                        {
+                            LOG(WARNING) << "Problem shutting down the AD9361 TX channel: " << e.what();
+                        }
                 }
         }
 }

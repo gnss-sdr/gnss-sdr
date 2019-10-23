@@ -125,7 +125,7 @@ const std::vector<std::pair<int32_t, int32_t> > D1_URAI({{49, 4}});
 const std::vector<std::pair<int32_t, int32_t> > D1_WN({{61, 13}});
 const std::vector<std::pair<int32_t, int32_t> > D1_TOC({{74, 9}, {91, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_TGD1({{99, 10}});
-const std::vector<std::pair<int32_t, int32_t> > D1_TGD2({{121, 6}});
+const std::vector<std::pair<int32_t, int32_t> > D1_TGD2({{109, 4}, {121, 6}});
 const std::vector<std::pair<int32_t, int32_t> > D1_ALPHA0({{127, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_ALPHA1({{135, 8}});
 const std::vector<std::pair<int32_t, int32_t> > D1_ALPHA2({{151, 8}});

@@ -494,6 +494,9 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
             d_SOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
             d_SOW = d_SOW_SF2;  // Set transmission time
 
+            d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_N));
+            d_Delta_n = d_Delta_n * D1_DELTA_N_LSB;
+
             d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D1_CUC));
             d_Cuc = d_Cuc * D1_CUC_LSB;
 

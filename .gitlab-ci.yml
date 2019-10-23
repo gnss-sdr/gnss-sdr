@@ -926,6 +926,39 @@ docker-access18:
     - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18
 
 
+fpga-binary:
+  image: ubuntu:xenial
+  stage: deploy
+  tags:
+    - kepler
+  script:
+    - apt-get update
+    - apt-get install -y build-essential xz-utils python3 curl git automake libtool g++
+    - curl -k https://sites.cttc.es/gnss_files/SDK/Thud/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
+    - echo "9bf042cc7481cb0fee9511a2c63751b2  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
+    - md5sum -c sdk.md5
+    - chmod +x ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
+    - sh ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh -y
+    - . /usr/local/oecore-x86_64/environment-setup-armv7ahf-neon-oe-linux-gnueabi
+    - cd build
+    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/oe-sdk_cross.cmake -DENABLE_FPGA=ON -DENABLE_OSMOSDR=ON -DENABLE_UNIT_TESTING_EXTRA=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON -DENABLE_RAW_UDP=ON -DENABLE_INSTALL_TESTS=ON -DCMAKE_C_FLAGS_RELEASE="-s" -DCMAKE_CXX_FLAGS_RELEASE="-s" -DENABLE_PACKAGING=ON ..
+    - make -j
+    - mkdir local_install
+    - make install DESTDIR=./local_install
+    - rm ./local_install/usr/bin/front-end-cal
+    - rm ./local_install/usr/bin/ttff
+    - cd ..
+    - mkdir binaries-fpga
+    - mkdir binaries-fpga/bin
+    - mkdir binaries-fpga/share
+    - cp build/local_install/usr/bin/* binaries-fpga/bin/
+    - cp build/local_install/usr/share/gnss-sim/* binaries-fpga/share/
+  allow_failure: true
+  artifacts:
+    paths:
+      - binaries-fpga/*
+
+
 # Stage "experiment"
 run-access18:
   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18

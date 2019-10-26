@@ -68,6 +68,7 @@
 #include <iostream>   // for cout, cerr
 #include <map>
 #include <numeric>
+#include <vector>
 
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
@@ -352,7 +353,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_tracking_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_tracking_code.resize(2 * d_code_length_chips);
     // correlator outputs (scalar)
     if (d_veml)
         {
@@ -365,9 +366,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             d_n_correlator_taps = 3;
         }
 
-    d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
-
+    d_correlator_outs.resize(d_n_correlator_taps);
+    d_local_code_shift_chips.resize(d_n_correlator_taps);
     // map memory pointers of correlator outputs
     if (d_veml)
         {
@@ -414,11 +414,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
             correlator_data_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
-            d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
-        }
-    else
-        {
-            d_data_code = nullptr;
+            d_data_code.resize(2 * d_code_length_chips);
         }
 
     // --- Initializations ---
@@ -440,13 +436,13 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = std::vector<gr_complex>(trk_parameters.cn0_samples);
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
-    d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Prompt_Data.resize(1);
     d_cn0_smoother = Exponential_Smoother();
     d_cn0_smoother.set_alpha(trk_parameters.cn0_smoother_alpha);
 
@@ -580,24 +576,24 @@ void dll_pll_veml_tracking::start_tracking()
 
     if (systemName == "GPS" and signal_type == "1C")
         {
-            gps_l1_ca_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN, 0);
+            gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
     else if (systemName == "GPS" and signal_type == "2S")
         {
-            gps_l2c_m_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+            gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
     else if (systemName == "GPS" and signal_type == "L5")
         {
             if (trk_parameters.track_pilot)
                 {
-                    gps_l5q_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
-                    gps_l5i_code_gen_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    gps_l5q_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                    gps_l5i_code_gen_float(d_data_code, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
+                    correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
-                    gps_l5i_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (systemName == "Galileo" and signal_type == "1B")
@@ -605,21 +601,21 @@ void dll_pll_veml_tracking::start_tracking()
             if (trk_parameters.track_pilot)
                 {
                     std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
-                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), pilot_signal, d_acquisition_gnss_synchro->PRN);
-                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), Signal_, d_acquisition_gnss_synchro->PRN);
+                    galileo_e1_code_gen_sinboc11_float(d_tracking_code, pilot_signal, d_acquisition_gnss_synchro->PRN);
+                    galileo_e1_code_gen_sinboc11_float(d_data_code, Signal_, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code, d_prompt_data_shift);
+                    correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
-                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), Signal_, d_acquisition_gnss_synchro->PRN);
+                    galileo_e1_code_gen_sinboc11_float(d_tracking_code, Signal_, d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (systemName == "Galileo" and signal_type == "5X")
         {
-            auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
+            volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
             std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
-            galileo_e5_a_code_gen_complex_primary(gsl::span<gr_complex>(aux_code, d_code_length_chips), d_acquisition_gnss_synchro->PRN, signal_type_);
+            galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, signal_type_);
             if (trk_parameters.track_pilot)
                 {
                     d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
@@ -629,7 +625,7 @@ void dll_pll_veml_tracking::start_tracking()
                             d_data_code[i] = aux_code[i].real();  // the same because it is generated the full signal (E5aI + E5aQ)
                         }
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                    correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
+                    correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
                 }
             else
                 {
@@ -638,11 +634,10 @@ void dll_pll_veml_tracking::start_tracking()
                             d_tracking_code[i] = aux_code[i].real();
                         }
                 }
-            volk_gnsssdr_free(aux_code);
         }
     else if (systemName == "Beidou" and signal_type == "B1")
         {
-            beidou_b1i_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN, 0);
+            beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
@@ -675,7 +670,7 @@ void dll_pll_veml_tracking::start_tracking()
 
     else if (systemName == "Beidou" and signal_type == "B3")
         {
-            beidou_b3i_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN, 0);
+            beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
             if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
@@ -706,8 +701,8 @@ void dll_pll_veml_tracking::start_tracking()
                 }
         }
 
-    multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
-    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+    multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code.data(), d_local_code_shift_chips.data());
+    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
@@ -765,7 +760,7 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
                 }
             catch (const std::exception &ex)
                 {
-                    LOG(WARNING) << "Exception in destructor " << ex.what();
+                    LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
                 }
         }
     if (d_dump_mat)
@@ -781,20 +776,15 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
         }
     try
         {
-            volk_gnsssdr_free(d_local_code_shift_chips);
-            volk_gnsssdr_free(d_correlator_outs);
-            volk_gnsssdr_free(d_tracking_code);
-            volk_gnsssdr_free(d_Prompt_Data);
             if (trk_parameters.track_pilot)
                 {
-                    volk_gnsssdr_free(d_data_code);
                     correlator_data_cpu.free();
                 }
             multicorrelator_cpu.free();
         }
     catch (const std::exception &ex)
         {
-            LOG(WARNING) << "Exception in destructor " << ex.what();
+            LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
         }
 }
 
@@ -907,7 +897,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
 {
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
-    multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
+    multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), input_samples);
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
         d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
@@ -919,7 +909,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     // DATA CORRELATOR (if tracking tracks the pilot signal)
     if (trk_parameters.track_pilot)
         {
-            correlator_data_cpu.set_input_output_vectors(d_Prompt_Data, input_samples);
+            correlator_data_cpu.set_input_output_vectors(d_Prompt_Data.data(), input_samples);
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
                 d_rem_carr_phase_rad,
                 d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
@@ -1019,7 +1009,7 @@ void dll_pll_veml_tracking::run_dll_pll()
 
 void dll_pll_veml_tracking::clear_tracking_vars()
 {
-    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
     if (trk_parameters.track_pilot)
         {
             d_Prompt_Data[0] = gr_complex(0.0, 0.0);
@@ -1166,11 +1156,11 @@ void dll_pll_veml_tracking::save_correlation_results()
                         {
                             if (d_data_secondary_code_string->at(d_current_data_symbol) == '0')
                                 {
-                                    d_P_data_accu += *d_Prompt_Data;
+                                    d_P_data_accu += d_Prompt_Data[0];
                                 }
                             else
                                 {
-                                    d_P_data_accu -= *d_Prompt_Data;
+                                    d_P_data_accu -= d_Prompt_Data[0];
                                 }
                         }
                     else
@@ -1193,7 +1183,7 @@ void dll_pll_veml_tracking::save_correlation_results()
                 {
                     if (trk_parameters.track_pilot)
                         {
-                            d_P_data_accu += *d_Prompt_Data;
+                            d_P_data_accu += d_Prompt_Data[0];
                         }
                     else
                         {
@@ -1208,7 +1198,7 @@ void dll_pll_veml_tracking::save_correlation_results()
         {
             if (trk_parameters.track_pilot)
                 {
-                    d_P_data_accu = *d_Prompt_Data;
+                    d_P_data_accu = d_Prompt_Data[0];
                 }
             else
                 {
@@ -1245,8 +1235,8 @@ void dll_pll_veml_tracking::log_data()
             uint64_t tmp_long_int;
             if (trk_parameters.track_pilot)
                 {
-                    prompt_I = d_Prompt_Data->real();
-                    prompt_Q = d_Prompt_Data->imag();
+                    prompt_I = d_Prompt_Data.data()->real();
+                    prompt_Q = d_Prompt_Data.data()->imag();
                 }
             else
                 {

@@ -32,6 +32,7 @@
 #include <armadillo>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>
 #include <chrono>
 #include <complex>
@@ -131,4 +132,23 @@ TEST(ConjugateTest, VolkComplexImplementation)
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     volk_gnsssdr_free(input);
     volk_gnsssdr_free(output);
+}
+
+
+TEST(ConjugateTest, VolkComplexImplementationAlloc)
+{
+    volk_gnsssdr::vector<std::complex<float>> input(FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
+    volk_gnsssdr::vector<std::complex<float>> output(FLAGS_size_conjugate_test);
+
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+
+    volk_32fc_conjugate_32fc(output.data(), input.data(), FLAGS_size_conjugate_test);
+
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
+              << "-length complex float vector using VOLK ALLOC finished in " << elapsed_seconds.count() * 1e6
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 }

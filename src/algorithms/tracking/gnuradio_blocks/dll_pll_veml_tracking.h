@@ -38,16 +38,16 @@
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
-#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
-#include <gnuradio/block.h>       // for block
-#include <gnuradio/gr_complex.h>  // for gr_complex
-#include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
-#include <pmt/pmt.h>              // for pmt_t
-#include <cstdint>                // for int32_t
-#include <fstream>                // for string, ofstream
+#include <boost/shared_ptr.hpp>               // for boost::shared_ptr
+#include <gnuradio/block.h>                   // for block
+#include <gnuradio/gr_complex.h>              // for gr_complex
+#include <gnuradio/types.h>                   // for gr_vector_int, gr_vector...
+#include <pmt/pmt.h>                          // for pmt_t
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
+#include <cstdint>                            // for int32_t
+#include <fstream>                            // for string, ofstream
 #include <string>
 #include <utility>  // for pair
-#include <vector>
 
 class Gnss_Synchro;
 class dll_pll_veml_tracking;
@@ -123,9 +123,9 @@ private:
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
-    float *d_tracking_code;
-    float *d_data_code;
-    float *d_local_code_shift_chips;
+    volk_gnsssdr::vector<float> d_tracking_code;
+    volk_gnsssdr::vector<float> d_data_code;
+    volk_gnsssdr::vector<float> d_local_code_shift_chips;
     float *d_prompt_data_shift;
     Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
     Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  // for data channel
@@ -135,7 +135,7 @@ private:
         Implement this functionality inside multicorrelator class
         as an enhancement to increase the performance
      */
-    gr_complex *d_correlator_outs;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
     gr_complex *d_Prompt;
@@ -155,7 +155,7 @@ private:
     gr_complex d_VL_accu;
 
     gr_complex d_P_data_accu;
-    gr_complex *d_Prompt_Data;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
 
     double d_code_phase_step_chips;
     double d_code_phase_rate_step_chips;
@@ -207,7 +207,7 @@ private:
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
-    std::vector<gr_complex> d_Prompt_buffer;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
     Exponential_Smoother d_cn0_smoother;
     Exponential_Smoother d_carrier_lock_test_smoother;
     // file dump

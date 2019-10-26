@@ -309,9 +309,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             d_n_correlator_taps = 3;
         }
 
-    d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
-
+    d_correlator_outs.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips.reserve(d_n_correlator_taps);
     // map memory pointers of correlator outputs
     if (d_veml)
         {
@@ -370,13 +369,13 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = std::vector<gr_complex>(trk_parameters.cn0_samples);
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
-    d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Prompt_Data.reserve(1);
     d_cn0_smoother = Exponential_Smoother();
     d_cn0_smoother.set_alpha(trk_parameters.cn0_smoother_alpha);
     if (d_code_period > 0.0)
@@ -458,7 +457,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     int32_t *ca_codes = trk_parameters.ca_codes;
     int32_t *data_codes = trk_parameters.data_codes;
     multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, dev_file_num, num_prev_assigned_ch, ca_codes, data_codes, d_code_length_chips, trk_parameters.track_pilot, d_code_samples_per_chip);
-    multicorrelator_fpga->set_output_vectors(d_correlator_outs, d_Prompt_Data);
+    multicorrelator_fpga->set_output_vectors(d_correlator_outs.data(), d_Prompt_Data.data());
     d_sample_counter_next = 0ULL;
 
     d_corrected_doppler = false;
@@ -531,7 +530,7 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
                 }
             catch (const std::exception &ex)
                 {
-                    LOG(WARNING) << "Exception in destructor " << ex.what();
+                    LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
                 }
         }
     if (d_dump_mat)
@@ -547,14 +546,11 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
         }
     try
         {
-            volk_gnsssdr_free(d_local_code_shift_chips);
-            volk_gnsssdr_free(d_correlator_outs);
-            volk_gnsssdr_free(d_Prompt_Data);
             multicorrelator_fpga->free();
         }
     catch (const std::exception &ex)
         {
-            LOG(WARNING) << "Exception in destructor " << ex.what();
+            LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
         }
 }
 
@@ -766,7 +762,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
 
 void dll_pll_veml_tracking_fpga::clear_tracking_vars()
 {
-    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
     if (trk_parameters.track_pilot)
         {
             d_Prompt_Data[0] = gr_complex(0.0, 0.0);
@@ -917,16 +913,16 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
                                 {
                                     if (d_data_secondary_code_string->at(d_current_data_symbol) == '0')
                                         {
-                                            d_P_data_accu += *d_Prompt_Data;
+                                            d_P_data_accu += d_Prompt_Data[0];
                                         }
                                     else
                                         {
-                                            d_P_data_accu -= *d_Prompt_Data;
+                                            d_P_data_accu -= d_Prompt_Data[0];
                                         }
                                 }
                             else
                                 {
-                                    d_P_data_accu += *d_Prompt_Data;
+                                    d_P_data_accu += d_Prompt_Data[0];
                                 }
                         }
                     else
@@ -955,7 +951,7 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
                 {
                     if (trk_parameters.track_pilot)
                         {
-                            d_P_data_accu += *d_Prompt_Data;
+                            d_P_data_accu += d_Prompt_Data[0];
                         }
                     else
                         {
@@ -970,7 +966,7 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
         {
             if (trk_parameters.track_pilot)
                 {
-                    d_P_data_accu = *d_Prompt_Data;
+                    d_P_data_accu = d_Prompt_Data[0];
                 }
             else
                 {
@@ -1007,8 +1003,8 @@ void dll_pll_veml_tracking_fpga::log_data()
             uint64_t tmp_long_int;
             if (trk_parameters.track_pilot)
                 {
-                    prompt_I = d_Prompt_Data->real();
-                    prompt_Q = d_Prompt_Data->imag();
+                    prompt_I = d_Prompt_Data.data()->real();
+                    prompt_Q = d_Prompt_Data.data()->imag();
                 }
             else
                 {
@@ -1406,7 +1402,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
                         }
                 }
 
-            std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+            std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
@@ -1441,7 +1437,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
             d_code_loop_filter.set_update_interval(d_code_period);
             d_code_loop_filter.initialize();  // initialize the code filter
 
-            multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
+            multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips.data(), d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
 
             d_pull_in_transitory = true;
 

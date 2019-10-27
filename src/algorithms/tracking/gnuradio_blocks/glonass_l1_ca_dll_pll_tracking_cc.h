@@ -44,10 +44,10 @@
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include <gnuradio/block.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
 #include <map>
 #include <string>
-#include <vector>
 
 class Glonass_L1_Ca_Dll_Pll_Tracking_cc;
 
@@ -124,9 +124,9 @@ private:
     double d_acq_carrier_doppler_hz;
     // correlator
     int32_t d_n_correlator_taps;
-    gr_complex* d_ca_code;
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
+    volk_gnsssdr::vector<gr_complex> d_ca_code;
+    volk_gnsssdr::vector<float> d_local_code_shift_chips;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
     Cpu_Multicorrelator multicorrelator_cpu;
 
     // tracking vars
@@ -148,7 +148,7 @@ private:
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
-    std::vector<gr_complex> d_Prompt_buffer;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;

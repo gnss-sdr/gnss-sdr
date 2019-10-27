@@ -21,8 +21,9 @@
 
 - Fixed PVT solution in receivers processing L1 plus L2C and/or L5 signals.
 - Added RINEX files generation for triple-band configurations (L1 + L2C + L5 and L1 + E1 + L2C + L5 + E5a).
-- Fixed a bug in the decoding of BeiDou navigation messages.
+- Fixed bugs in the decoding of BeiDou navigation messages.
 - Improved management of devices with the AD9361 RF transceiver.
+- Fixed bugs in FPGA off-loading.
 
 
 ### Improvements in Maintainability:
@@ -45,9 +46,15 @@
 
 - Decoding of navigation messages no longer rely on implementation defined behavior for shifting left a signed integer.
 - Removed usage of functions with insecure API (e.g., strcpy, sprintf).
+- New type alias volk_gnsssdr::vector allows both aligned memory allocation and automatic deallocation.
 - Added clang-tidy checks clang-analyzer-security.*, clang-analyzer-optin.portability.UnixAPI clang-tidy checks. Fixed raised warnings.
 - Fixed cpplint.py runtime/printf and runtime/explicit errors.
 - All constructors callable with one argument are marked with the keyword explicit. See MISRA C++:2008, 12-1-3 - All constructors that are callable with a single argument of fundamental type shall be declared explicit.
+
+
+### Improvements in Testability:
+
+- Add receiver runtime to position_test report.
 
 
 ### Improvements in Usability:

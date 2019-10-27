@@ -44,7 +44,7 @@
 #include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <array>
 #include <cmath>    // for round
 #include <cstring>  // for memcpy
@@ -123,21 +123,17 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
     trk_param_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0);
 
-
-    auto* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
-
+    volk_gnsssdr::vector<float> ca_codes_f(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS), 0.0);
     // ################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l2c_m_code_gen_float(gsl::span<float>(ca_codes_f, static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS)), PRN);
+            gps_l2c_m_code_gen_float(ca_codes_f, PRN);
             for (unsigned int s = 0; s < 2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)
                 {
                     d_ca_codes[static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS) * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
                 }
         }
-
-    volk_gnsssdr_free(ca_codes_f);
 
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L2_M_CODE_LENGTH_CHIPS;

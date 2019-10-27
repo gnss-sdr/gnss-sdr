@@ -43,11 +43,10 @@
 #include "gnss_synchro.h"
 #include "tcp_communication.h"
 #include <gnuradio/block.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
 #include <map>
 #include <string>
-#include <vector>
 
 
 class Galileo_E1_Tcp_Connector_Tracking_cc;
@@ -123,7 +122,7 @@ private:
     float d_early_late_spc_chips;
     float d_very_early_late_spc_chips;
 
-    gr_complex *d_ca_code;
+    volk_gnsssdr::vector<gr_complex> d_ca_code;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -141,8 +140,8 @@ private:
     float d_acq_carrier_doppler_hz;
 
     // correlator
-    float *d_local_code_shift_chips;
-    gr_complex *d_correlator_outs;
+    volk_gnsssdr::vector<float> d_local_code_shift_chips;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
     Cpu_Multicorrelator multicorrelator_cpu;
 
     // tracking vars
@@ -167,7 +166,7 @@ private:
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
-    std::vector<gr_complex> d_Prompt_buffer;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
     float d_carrier_lock_test;
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;

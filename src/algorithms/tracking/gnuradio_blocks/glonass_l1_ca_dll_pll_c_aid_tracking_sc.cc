@@ -54,12 +54,12 @@
 #include <memory>
 #include <sstream>
 #include <utility>
+#include <vector>
 
 
 #define CN0_ESTIMATION_SAMPLES 10
 
-glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
-glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
+glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -139,19 +139,15 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_ca_code_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_ca_code.resize(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), gr_complex(0.0, 0.0));
+    d_ca_code_16sc.reserve(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
 
-    d_correlator_outs_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
-    for (int32_t n = 0; n < d_n_correlator_taps; n++)
-        {
-            d_correlator_outs_16sc[n] = lv_cmake(0, 0);
-        }
+    d_correlator_outs_16sc.resize(d_n_correlator_taps, lv_cmake(0, 0));
 
-    d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_local_code_shift_chips.reserve(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -175,7 +171,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = std::vector<gr_complex>(FLAGS_cn0_samples);
+    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -269,10 +265,10 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     d_code_loop_filter.initialize();                           // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    glonass_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, GLONASS_L1_CA_CODE_LENGTH_CHIPS), 0);
-    volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc, d_ca_code, static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+    glonass_l1_ca_code_gen_complex(d_ca_code, 0);
+    volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc.data(), d_ca_code.data(), static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
-    multicorrelator_cpu_16sc.set_local_code_and_taps(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
+    multicorrelator_cpu_16sc.set_local_code_and_taps(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc.data(), d_local_code_shift_chips.data());
     for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs_16sc[n] = lv_16sc_t(0, 0);
@@ -486,7 +482,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::~glonass_l1_ca_dll_pll_c_aid_tracking_s
                 }
             catch (const std::exception &ex)
                 {
-                    LOG(WARNING) << "Exception in destructor " << ex.what();
+                    LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
                 }
         }
 
@@ -511,12 +507,14 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::~glonass_l1_ca_dll_pll_c_aid_tracking_s
                 }
         }
 
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_ca_code);
-    volk_gnsssdr_free(d_ca_code_16sc);
-    volk_gnsssdr_free(d_correlator_outs_16sc);
-
-    multicorrelator_cpu_16sc.free();
+    try
+        {
+            multicorrelator_cpu_16sc.free();
+        }
+    catch (const std::exception &ex)
+        {
+            LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
+        }
 }
 
 
@@ -594,7 +592,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            multicorrelator_cpu_16sc.set_input_output_vectors(d_correlator_outs_16sc, in);
+            multicorrelator_cpu_16sc.set_input_output_vectors(d_correlator_outs_16sc.data(), in);
             multicorrelator_cpu_16sc.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
                 d_carrier_phase_step_rad,
                 d_rem_code_phase_chips,

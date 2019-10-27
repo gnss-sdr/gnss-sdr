@@ -62,17 +62,17 @@
 #include <glog/logging.h>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
-#include <gnuradio/gr_complex.h>     // for gr_complex
-#include <gnuradio/thread/thread.h>  // for scoped_lock
-#include <gnuradio/types.h>          // for gr_vector_const_void_star
-#include <gsl/gsl>                   // for Guidelines Support Library
-#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <gnuradio/gr_complex.h>              // for gr_complex
+#include <gnuradio/thread/thread.h>           // for scoped_lock
+#include <gnuradio/types.h>                   // for gr_vector_const_void_star
+#include <gsl/gsl>                            // for Guidelines Support Library
+#include <volk/volk_complex.h>                // for lv_16sc_t
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <complex>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 class Gnss_Synchro;
 class pcps_acquisition;
@@ -243,14 +243,14 @@ private:
     float d_test_statistics;
     float d_doppler_center_step_two;
     std::string d_dump_filename;
-    std::vector<std::vector<float>> d_magnitude_grid;
-    std::vector<float> d_tmp_buffer;
-    std::vector<std::complex<float>> d_input_signal;
-    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs_step_two;
-    std::vector<std::complex<float>> d_fft_codes;
-    std::vector<std::complex<float>> d_data_buffer;
-    std::vector<lv_16sc_t> d_data_buffer_sc;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
+    volk_gnsssdr::vector<float> d_tmp_buffer;
+    volk_gnsssdr::vector<std::complex<float>> d_input_signal;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs_step_two;
+    volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
+    volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
+    volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     std::weak_ptr<ChannelFsm> d_channel_fsm;

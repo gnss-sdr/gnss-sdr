@@ -45,7 +45,7 @@
 #include "tracking_discriminators.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -53,8 +53,7 @@
 #include <utility>
 
 
-gps_l1_ca_tcp_connector_tracking_cc_sptr
-gps_l1_ca_tcp_connector_make_tracking_cc(
+gps_l1_ca_tcp_connector_tracking_cc_sptr gps_l1_ca_tcp_connector_make_tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -105,21 +104,19 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex *>(volk_gnsssdr_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code.resize(GPS_L1_CA_CODE_LENGTH_CHIPS);
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Very-Early, Early, Prompt, Late, Very-Late
-    d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    for (int32_t n = 0; n < d_n_correlator_taps; n++)
-        {
-            d_correlator_outs[n] = gr_complex(0, 0);
-        }
+    d_correlator_outs.resize(d_n_correlator_taps);
+    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
+
     // map memory pointers of correlator outputs
     d_Early = &d_correlator_outs[0];
     d_Prompt = &d_correlator_outs[1];
     d_Late = &d_correlator_outs[2];
 
-    d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_local_code_shift_chips.reserve(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -149,7 +146,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = std::vector<gr_complex>(FLAGS_cn0_samples);
+    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -224,13 +221,10 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code, (GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
 
-    multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
-    for (int32_t n = 0; n < d_n_correlator_taps; n++)
-        {
-            d_correlator_outs[n] = gr_complex(0, 0);
-        }
+    multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code.data(), d_local_code_shift_chips.data());
+    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0;
@@ -268,20 +262,17 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
                 }
             catch (const std::exception &ex)
                 {
-                    LOG(WARNING) << "Exception in destructor " << ex.what();
+                    LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
                 }
         }
     try
         {
-            volk_gnsssdr_free(d_local_code_shift_chips);
-            volk_gnsssdr_free(d_correlator_outs);
-            volk_gnsssdr_free(d_ca_code);
             d_tcp_com.close_tcp_connection(d_port);
             multicorrelator_cpu.free();
         }
     catch (const std::exception &ex)
         {
-            LOG(WARNING) << "Exception in destructor " << ex.what();
+            LOG(WARNING) << "Exception in Tracking block destructor: " << ex.what();
         }
 }
 
@@ -375,7 +366,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, in);
+            multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), in);
 
             double carr_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
             double rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_hz / d_fs_in);
@@ -491,9 +482,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
         }
     else
         {
-            *d_Early = gr_complex(0, 0);
-            *d_Prompt = gr_complex(0, 0);
-            *d_Late = gr_complex(0, 0);
+            *d_Early = gr_complex(0.0, 0.0);
+            *d_Prompt = gr_complex(0.0, 0.0);
+            *d_Late = gr_complex(0.0, 0.0);
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
             // When tracking is disabled an array of 1's is sent to maintain the TCP connection

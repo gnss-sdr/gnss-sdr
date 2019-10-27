@@ -61,9 +61,14 @@ const float PHASE_CARR_MAX_DIV_PI = 683565275.5764316;  // 2^(31)/pi
 const float TWO_PI = 6.283185307179586;
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
-    const std::string &device_name, uint32_t dev_file_num, uint32_t num_prev_assigned_ch, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
+    const std::string &device_name,
+    uint32_t dev_file_num,
+    uint32_t num_prev_assigned_ch,
+    int32_t *ca_codes,
+    int32_t *data_codes,
+    uint32_t code_length_chips,
+    bool track_pilot,
     uint32_t code_samples_per_chip)
-
 {
     d_n_correlators = n_correlators;
     d_device_name = device_name;
@@ -77,17 +82,13 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     // instantiate variable length vectors
     if (d_track_pilot)
         {
-            d_initial_index = static_cast<uint32_t *>(volk_gnsssdr_malloc(
-                (n_correlators + 1) * sizeof(uint32_t), volk_gnsssdr_get_alignment()));
-            d_initial_interp_counter = static_cast<uint32_t *>(volk_gnsssdr_malloc(
-                (n_correlators + 1) * sizeof(uint32_t), volk_gnsssdr_get_alignment()));
+            d_initial_index.reserve(n_correlators + 1);
+            d_initial_interp_counter.reserve(n_correlators + 1);
         }
     else
         {
-            d_initial_index = static_cast<uint32_t *>(volk_gnsssdr_malloc(
-                n_correlators * sizeof(uint32_t), volk_gnsssdr_get_alignment()));
-            d_initial_interp_counter = static_cast<uint32_t *>(volk_gnsssdr_malloc(
-                n_correlators * sizeof(uint32_t), volk_gnsssdr_get_alignment()));
+            d_initial_index.reserve(n_correlators);
+            d_initial_interp_counter.reserve(n_correlators);
         }
     d_shifts_chips = nullptr;
     d_prompt_data_shift = nullptr;
@@ -109,8 +110,6 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     d_data_codes = data_codes;
     d_code_samples_per_chip = code_samples_per_chip;
     d_code_length_samples = d_code_length_chips * d_code_samples_per_chip;
-
-
     d_secondary_code_enabled = false;
 
     DLOG(INFO) << "TRACKING FPGA CLASS CREATED";
@@ -120,14 +119,6 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
 Fpga_Multicorrelator_8sc::~Fpga_Multicorrelator_8sc()
 {
     close_device();
-    if (d_initial_index != nullptr)
-        {
-            volk_gnsssdr_free(d_initial_index);
-        }
-    if (d_initial_interp_counter != nullptr)
-        {
-            volk_gnsssdr_free(d_initial_interp_counter);
-        }
 }
 
 
@@ -219,20 +210,6 @@ bool Fpga_Multicorrelator_8sc::free()
 {
     // unlock the channel
     Fpga_Multicorrelator_8sc::unlock_channel();
-
-    // free the FPGA dynamically created variables
-    if (d_initial_index != nullptr)
-        {
-            volk_gnsssdr_free(d_initial_index);
-            d_initial_index = nullptr;
-        }
-
-    if (d_initial_interp_counter != nullptr)
-        {
-            volk_gnsssdr_free(d_initial_interp_counter);
-            d_initial_interp_counter = nullptr;
-        }
-
     return true;
 }
 
@@ -305,7 +282,6 @@ uint32_t Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(
 void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PRN)
 {
     uint32_t k;
-
     d_map_base[prog_mems_addr] = local_code_fpga_clear_address_counter;
     for (k = 0; k < d_code_length_samples; k++)
         {
@@ -338,7 +314,6 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
                     dec_part = dec_part + d_code_length_samples;  // % operator does not work as in Matlab with negative numbers
                 }
             d_initial_index[i] = dec_part;
-
 
             frac_part = fmod(d_shifts_chips[i] - d_rem_code_phase_chips, 1.0);
             if (frac_part < 0)
@@ -464,7 +439,6 @@ void Fpga_Multicorrelator_8sc::unlock_channel()
     // unlock the channel to let the next samples go through
     d_map_base[drop_samples_reg_addr] = drop_samples;  // unlock the channel and disable secondary codes
     d_map_base[stop_tracking_reg_addr] = 1;            // set the tracking module back to idle
-
     d_secondary_code_enabled = false;
 }
 
@@ -498,11 +472,13 @@ void Fpga_Multicorrelator_8sc::set_secondary_code_lengths(uint32_t secondary_cod
     d_map_base[secondary_code_lengths_reg_addr] = secondary_code_length_1_minus_1 * 256 + secondary_code_length_0_minus_1;
 }
 
+
 void Fpga_Multicorrelator_8sc::update_prn_code_length(uint32_t first_prn_length, uint32_t next_prn_length)
 {
     d_map_base[first_prn_length_minus_1_reg_addr] = first_prn_length - 1;
     d_map_base[next_prn_length_minus_1_reg_addr] = next_prn_length - 1;
 }
+
 
 void Fpga_Multicorrelator_8sc::initialize_secondary_code(uint32_t secondary_code, std::string *secondary_code_string)
 {
@@ -566,11 +542,13 @@ void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_leng
     d_map_base[reg_addr] = write_val;
 }
 
+
 void Fpga_Multicorrelator_8sc::enable_secondary_codes()
 {
     d_map_base[drop_samples_reg_addr] = init_secondary_code_addresses | enable_secondary_code;  // enable secondary codes and clear secondary code indices
     d_secondary_code_enabled = true;
 }
+
 
 void Fpga_Multicorrelator_8sc::disable_secondary_codes()
 {

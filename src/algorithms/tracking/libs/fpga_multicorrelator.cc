@@ -266,8 +266,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
 }
 
 
-uint32_t Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(
-    uint32_t writeval)
+uint32_t Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(uint32_t writeval)
 {
     uint32_t readval = 0;
     // write value to test register
@@ -296,7 +295,7 @@ void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
                 }
         }
 
-    d_map_base[code_length_minus_1_reg_addr] = (d_code_length_samples)-1;  // number of samples - 1
+    d_map_base[code_length_minus_1_reg_addr] = d_code_length_samples - 1;  // number of samples - 1
 }
 
 
@@ -362,8 +361,8 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga()
 {
     float d_rem_carrier_phase_in_rad_temp;
 
-    d_code_phase_step_chips_num = static_cast<uint32_t>(roundf(max_code_resampler_counter * d_code_phase_step_chips));
-    d_code_phase_rate_step_chips_num = static_cast<uint32_t>(roundf(max_code_resampler_counter * d_code_phase_rate_step_chips));
+    d_code_phase_step_chips_num = static_cast<uint32_t>(std::roundf(max_code_resampler_counter * d_code_phase_step_chips));
+    d_code_phase_rate_step_chips_num = static_cast<uint32_t>(std::roundf(max_code_resampler_counter * d_code_phase_rate_step_chips));
 
     if (d_rem_carrier_phase_in_rad > M_PI)
         {
@@ -378,9 +377,9 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga()
             d_rem_carrier_phase_in_rad_temp = d_rem_carrier_phase_in_rad;
         }
 
-    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((d_rem_carrier_phase_in_rad_temp)*PHASE_CARR_MAX_DIV_PI));
-    d_phase_step_rad_int = static_cast<int32_t>(roundf((d_phase_step_rad)*PHASE_CARR_MAX_DIV_PI));  // the FPGA accepts a range for the phase step between -pi and +pi
-    d_carrier_phase_rate_step_rad_int = static_cast<int32_t>(roundf((d_carrier_phase_rate_step_rad)*PHASE_CARR_MAX_DIV_PI));
+    d_rem_carr_phase_rad_int = static_cast<int32_t>(std::roundf(d_rem_carrier_phase_in_rad_temp * PHASE_CARR_MAX_DIV_PI));
+    d_phase_step_rad_int = static_cast<int32_t>(std::roundf(d_phase_step_rad * PHASE_CARR_MAX_DIV_PI));  // the FPGA accepts a range for the phase step between -pi and +pi
+    d_carrier_phase_rate_step_rad_int = static_cast<int32_t>(std::roundf(d_carrier_phase_rate_step_rad * PHASE_CARR_MAX_DIV_PI));
 }
 
 
@@ -519,7 +518,7 @@ void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_leng
                     pow_k = 1;
                     for (unsigned int k = 0; k < secondary_code_word_size; k++)
                         {
-                            std::string string_tmp(1, secondary_code_string->at(mem_addr * secondary_code_word_size + k));
+                            std::string string_tmp(1, (*secondary_code_string)[mem_addr * secondary_code_word_size + k]);
                             write_val = write_val | std::stoi(string_tmp) * pow_k;
                             pow_k = pow_k * 2;
                         }
@@ -533,7 +532,7 @@ void Fpga_Multicorrelator_8sc::write_secondary_code(uint32_t secondary_code_leng
 
     for (unsigned int k = 0; k < last_word_size; k++)
         {
-            std::string string_tmp(1, secondary_code_string->at(mem_addr * secondary_code_word_size + k));
+            std::string string_tmp(1, (*secondary_code_string)[mem_addr * secondary_code_word_size + k]);
             write_val = write_val | std::stoi(string_tmp) * pow_k;
             pow_k = pow_k * 2;
         }

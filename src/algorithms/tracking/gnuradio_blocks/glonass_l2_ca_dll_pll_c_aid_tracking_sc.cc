@@ -58,8 +58,7 @@
 #define CN0_ESTIMATION_SAMPLES 10
 
 
-glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
-glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
+glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -139,16 +138,16 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::glonass_l2_ca_dll_pll_c_aid_tracking_sc
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.reserve(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
-    d_ca_code_16sc.reserve(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+    d_ca_code.resize(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+    d_ca_code_16sc.resize(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
 
-    d_correlator_outs_16sc.reserve(d_n_correlator_taps);
+    d_correlator_outs_16sc.resize(d_n_correlator_taps);
     std::fill_n(d_correlator_outs_16sc.begin(), d_n_correlator_taps, lv_cmake(0, 0));
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips.resize(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -172,7 +171,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::glonass_l2_ca_dll_pll_c_aid_tracking_sc
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
+    d_Prompt_buffer.resize(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;

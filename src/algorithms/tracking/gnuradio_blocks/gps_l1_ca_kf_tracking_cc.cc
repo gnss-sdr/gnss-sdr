@@ -59,8 +59,7 @@
 #include <vector>
 
 
-gps_l1_ca_kf_tracking_cc_sptr
-gps_l1_ca_kf_make_tracking_cc(
+gps_l1_ca_kf_tracking_cc_sptr gps_l1_ca_kf_make_tracking_cc(
     uint32_t order,
     int64_t if_freq,
     int64_t fs_in,
@@ -129,14 +128,14 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.reserve(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS));
+    d_ca_code.resize(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
-    d_correlator_outs.reserve(d_n_correlator_taps);
+    d_correlator_outs.resize(d_n_correlator_taps);
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips.resize(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -163,7 +162,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
+    d_Prompt_buffer.resize(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;

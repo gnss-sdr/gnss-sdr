@@ -58,8 +58,7 @@
 #define CN0_ESTIMATION_SAMPLES 10
 
 
-glonass_l2_ca_dll_pll_tracking_cc_sptr
-glonass_l2_ca_dll_pll_make_tracking_cc(
+glonass_l2_ca_dll_pll_tracking_cc_sptr glonass_l2_ca_dll_pll_make_tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -112,14 +111,14 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.reserve(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+    d_ca_code.resize(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
-    d_correlator_outs.reserve(d_n_correlator_taps);
+    d_correlator_outs.resize(d_n_correlator_taps);
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips.resize(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -145,7 +144,7 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
+    d_Prompt_buffer.resize(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -227,7 +226,7 @@ void Glonass_L2_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize();     // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    glonass_l2_ca_code_gen_complex(d_ca_code, 0);
+    glonass_l2_ca_code_gen_complex(gsl::span<gr_complex>(d_ca_code.data(), GLONASS_L2_CA_CODE_LENGTH_CHIPS), 0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS), d_ca_code.data(), d_local_code_shift_chips.data());
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));

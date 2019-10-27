@@ -117,11 +117,11 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code.reserve(2 * GALILEO_E1_B_CODE_LENGTH_CHIPS);
+    d_ca_code.resize(2 * GALILEO_E1_B_CODE_LENGTH_CHIPS);
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 5;  // Very-Early, Early, Prompt, Late, Very-Late
-    d_correlator_outs.reserve(d_n_correlator_taps);
+    d_correlator_outs.resize(d_n_correlator_taps);
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
     // map memory pointers of correlator outputs
     d_Very_Early = &d_correlator_outs[0];
@@ -130,7 +130,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_Late = &d_correlator_outs[3];
     d_Very_Late = &d_correlator_outs[4];
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips.resize(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_very_early_late_spc_chips;
     d_local_code_shift_chips[1] = -d_early_late_spc_chips;
@@ -161,7 +161,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
+    d_Prompt_buffer.resize(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;

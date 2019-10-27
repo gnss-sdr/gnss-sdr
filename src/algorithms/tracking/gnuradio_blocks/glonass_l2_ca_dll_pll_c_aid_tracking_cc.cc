@@ -58,8 +58,7 @@
 #define CN0_ESTIMATION_SAMPLES 10
 
 
-glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr
-glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(
+glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -141,14 +140,14 @@ glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.reserve(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+    d_ca_code.resize(static_cast<int32_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
-    d_correlator_outs.reserve(d_n_correlator_taps);
+    d_correlator_outs.resize(d_n_correlator_taps);
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips.resize(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -172,7 +171,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
+    d_Prompt_buffer.resize(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -263,7 +262,6 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     d_carrier_frequency_hz = d_acq_carrier_doppler_hz + (DFRQ2_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
-
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(d_carrier_frequency_hz);  // The carrier loop filter implements the Doppler accumulator

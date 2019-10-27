@@ -144,14 +144,13 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.resize(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+    d_ca_code.resize(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), gr_complex(0.0, 0.0));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
-    d_correlator_outs.resize(d_n_correlator_taps);
-    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
+    d_correlator_outs.resize(d_n_correlator_taps, gr_complex(0.0, 0.0));
 
-    d_local_code_shift_chips.resize(d_n_correlator_taps);
+    d_local_code_shift_chips.reserve(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -175,7 +174,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.resize(FLAGS_cn0_samples);
+    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;

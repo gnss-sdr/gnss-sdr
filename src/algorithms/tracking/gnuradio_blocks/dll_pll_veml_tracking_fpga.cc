@@ -369,7 +369,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(trk_parameters.cn0_samples);
+    d_Prompt_buffer.reserve(trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;

@@ -87,9 +87,9 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_max_dwells = conf_.max_dwells;
     d_gnuradio_forecast_samples = d_fft_size;
     d_state = 0;
-    d_fft_codes.resize(d_fft_size);
-    d_magnitude.resize(d_fft_size);
-    d_10_ms_buffer.resize(50 * d_samples_per_ms);
+    d_fft_codes.reserve(d_fft_size);
+    d_magnitude.reserve(d_fft_size);
+    d_10_ms_buffer.reserve(50 * d_samples_per_ms);
     // Direct FFT
     d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
 
@@ -426,7 +426,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     // case even
     int counter = 0;
-    auto fftFreqBins = volk_gnsssdr::vector<float>(fft_size_extended);
+    volk_gnsssdr::vector<float> fftFreqBins(fft_size_extended);
 
     for (int k = 0; k < (fft_size_extended / 2); k++)
         {

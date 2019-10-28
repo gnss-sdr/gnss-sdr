@@ -48,11 +48,12 @@
 #include <unistd.h>   // for write
 #include <utility>
 #include <vector>
-
+#include <chrono>     // for std::this_thread
+#include <thread>     // for std::chrono
 
 void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
 {
-    const int MAX_INPUT_SAMPLES_TOTAL = 8192;
+    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
     int max_value = 0;
     int tx_fd;  // DMA descriptor
     std::ifstream infile1;
@@ -256,6 +257,9 @@ void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, 
                         {
                             std::cerr << "Error: DMA could not send all the required samples " << std::endl;
                         }
+
+                    // Throttle the DMA
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
 
             if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)

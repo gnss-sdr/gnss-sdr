@@ -39,20 +39,21 @@
 #include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for max
+#include <chrono>     // for std::this_thread
 #include <cmath>      // for abs
 #include <exception>  // for exceptions
 #include <fcntl.h>    // for open, O_WRONLY
 #include <fstream>    // for std::ifstream
 #include <iostream>   // for cout, endl
 #include <string>     // for string manipulation
+#include <thread>     // for std::chrono
 #include <unistd.h>   // for write
 #include <utility>
 #include <vector>
 
-
 void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
 {
-    const int MAX_INPUT_SAMPLES_TOTAL = 8192;
+    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
     int max_value = 0;
     int tx_fd;  // DMA descriptor
     std::ifstream infile1;
@@ -256,6 +257,9 @@ void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, 
                         {
                             std::cerr << "Error: DMA could not send all the required samples " << std::endl;
                         }
+
+                    // Throttle the DMA
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
 
             if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)

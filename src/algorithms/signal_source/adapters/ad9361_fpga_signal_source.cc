@@ -39,17 +39,17 @@
 #include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for max
+#include <chrono>     // for std::this_thread
 #include <cmath>      // for abs
 #include <exception>  // for exceptions
 #include <fcntl.h>    // for open, O_WRONLY
 #include <fstream>    // for std::ifstream
 #include <iostream>   // for cout, endl
 #include <string>     // for string manipulation
+#include <thread>     // for std::chrono
 #include <unistd.h>   // for write
 #include <utility>
 #include <vector>
-#include <chrono>     // for std::this_thread
-#include <thread>     // for std::chrono
 
 void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
 {

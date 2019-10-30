@@ -594,6 +594,7 @@ In a terminal, type:
 ~~~~~~
 $ sudo port selfupdate
 $ sudo port upgrade outdated
+$ sudo port install pkgconfig
 $ sudo port install gnuradio
 $ sudo port install lapack
 $ sudo port install armadillo
@@ -602,8 +603,10 @@ $ sudo port install google-glog +gflags
 $ sudo port install matio
 $ sudo port install pugixml
 $ sudo port install protobuf3-cpp
-$ sudo port install py27-mako
-$ sudo port install py27-six
+$ sudo port install libiio
+$ sudo port install libad9361-iio
+$ sudo port install py37-mako
+$ sudo port install py37-six
 $ sudo port install doxygen +docs
 ~~~~~~
 
@@ -616,7 +619,7 @@ $ port select --list python
 and you can activate a certain version by typing:
 
 ~~~~~~
-$ sudo port select --set python python27
+$ sudo port select --set python python37
 ~~~~~~
 
 #### <a name="homebrew">Homebrew</a>
@@ -639,6 +642,7 @@ Install the required dependencies:
 
 ~~~~~~
 $ brew install cmake
+$ brew install pkg-config
 $ brew install hdf5
 $ brew install lapack
 $ brew install armadillo

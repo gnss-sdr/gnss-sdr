@@ -76,12 +76,11 @@ target_link_libraries(acquisition_gr_blocks
         Gnuradio::runtime
         Gnuradio::fft
         Volk::volk
+        Volkgnsssdr::volkgnsssdr
     PRIVATE
         Gflags::gflags
         Glog::glog
         Matio::matio
-        Volkgnsssdr::volkgnsssdr
-
 )
 
 target_include_directories(acquisition_gr_blocks

@@ -325,6 +325,7 @@ install(
 )
 
 install(FILES
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_alloc.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h

@@ -37,7 +37,7 @@
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <array>
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
@@ -181,16 +181,19 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 27);
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
+    // However E5a can use the same tracking HW accelerators as L5 (but not simultaneously).
+    // Therefore for the proper assignment of the FPGA tracking device file numbers to the E5a tracking channels,
+    // the number of channels that have already been assigned to L5 must not be substracted to this channel number,
+    // so they are not counted here.
     trk_param_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
                                           configuration->property("Channels_2S.count", 0) +
-                                          configuration->property("Channels_L5.count", 0) +
                                           configuration->property("Channels_1B.count", 0);
 
     // ################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 1;
     auto code_length_chips = static_cast<uint32_t>(GALILEO_E5A_CODE_LENGTH_CHIPS);
 
-    auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * code_length_chips * code_samples_per_chip, volk_gnsssdr_get_alignment()));
+    volk_gnsssdr::vector<gr_complex> aux_code(code_length_chips * code_samples_per_chip, gr_complex(0.0, 0.0));
 
     d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips) * code_samples_per_chip * GALILEO_E5A_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
@@ -202,7 +205,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
             std::array<char, 3> sig_a = {'5', 'X', '\0'};
-            galileo_e5_a_code_gen_complex_primary(gsl::span<gr_complex>(aux_code, code_length_chips * code_samples_per_chip), PRN, sig_a);
+            galileo_e5_a_code_gen_complex_primary(aux_code, PRN, sig_a);
 
             if (trk_param_fpga.track_pilot)
                 {
@@ -242,7 +245,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
                 }
         }
 
-    volk_gnsssdr_free(aux_code);
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;

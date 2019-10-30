@@ -195,7 +195,6 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
     if (total_block_exp > d_total_block_exp)
         {
             // if the attenuation factor of the FPGA FFT-IFFT is smaller than the reference attenuation factor then we need to update the reference attenuation factor
-            std::cout << "changing blk exp..... d_total_block_exp = " << d_total_block_exp << " total_block_exp = " << total_block_exp << " chan = " << d_channel << std::endl;
             d_total_block_exp = total_block_exp;
             d_test_statistics = 0;
         }

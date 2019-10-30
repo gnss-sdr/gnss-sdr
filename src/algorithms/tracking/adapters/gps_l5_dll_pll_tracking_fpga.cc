@@ -44,7 +44,7 @@
 #include "gnss_sdr_flags.h"
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <array>
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
@@ -193,18 +193,12 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     uint32_t code_samples_per_chip = 1;
     auto code_length_chips = static_cast<uint32_t>(GPS_L5I_CODE_LENGTH_CHIPS);
 
-    float *tracking_code;
-    float *data_code = nullptr;
-
-    tracking_code = static_cast<float *>(volk_gnsssdr_malloc(code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
+    volk_gnsssdr::vector<float> data_code;
+    volk_gnsssdr::vector<float> tracking_code(code_length_chips, 0.0);
 
     if (track_pilot)
         {
-            data_code = static_cast<float *>(volk_gnsssdr_malloc(code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
-            for (uint32_t i = 0; i < code_length_chips; i++)
-                {
-                    data_code[i] = 0.0;
-                }
+            data_code.resize(code_length_chips, 0.0);
         }
 
     d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
@@ -219,8 +213,8 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
         {
             if (track_pilot)
                 {
-                    gps_l5q_code_gen_float(gsl::span<float>(tracking_code, code_length_chips), PRN);
-                    gps_l5i_code_gen_float(gsl::span<float>(data_code, code_length_chips), PRN);
+                    gps_l5q_code_gen_float(tracking_code, PRN);
+                    gps_l5i_code_gen_float(data_code, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
@@ -244,7 +238,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                 }
             else
                 {
-                    gps_l5i_code_gen_float(gsl::span<float>(tracking_code, code_length_chips), PRN);
+                    gps_l5i_code_gen_float(tracking_code, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
@@ -260,11 +254,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                 }
         }
 
-    volk_gnsssdr_free(tracking_code);
-    if (track_pilot)
-        {
-            volk_gnsssdr_free(data_code);
-        }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;

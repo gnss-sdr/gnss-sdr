@@ -33,6 +33,7 @@
 #include <armadillo>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>
 #include <chrono>
 #include <complex>
@@ -45,6 +46,10 @@ TEST(MagnitudeSquaredTest, StandardCComplexImplementation)
     auto* input = new std::complex<float>[FLAGS_size_magnitude_test];
     auto* output = new float[FLAGS_size_magnitude_test];
     unsigned int number = 0;
+    for (number = 0; number < static_cast<unsigned int>(FLAGS_size_magnitude_test); number++)
+        {
+            input[number] = std::complex<float>(0.0, 0.0);
+        }
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
@@ -56,7 +61,7 @@ TEST(MagnitudeSquaredTest, StandardCComplexImplementation)
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
-              << "-length vector in standard C computed in " << elapsed_seconds.count() * 1e6
+              << "-length complex vector in standard C computed in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
     delete[] input;
     delete[] output;
@@ -132,4 +137,24 @@ TEST(MagnitudeSquaredTest, VolkComplexImplementation)
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 }
 
-//            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+
+TEST(MagnitudeSquaredTest, VolkComplexImplementationAlloc)
+{
+    volk_gnsssdr::vector<std::complex<float>> input(FLAGS_size_magnitude_test);  // or: input(FLAGS_size_magnitude_test, std::complex<float>(0.0, 0.0));
+    std::fill_n(input.begin(), FLAGS_size_magnitude_test, std::complex<float>(0.0, 0.0));
+    volk_gnsssdr::vector<float> output(FLAGS_size_magnitude_test);
+
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+
+    volk_32fc_magnitude_squared_32f(output.data(), input.data(), static_cast<unsigned int>(FLAGS_size_magnitude_test));
+
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
+              << "-length vector using VOLK ALLOC computed in " << elapsed_seconds.count() * 1e6
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
+}
+
+//  volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);

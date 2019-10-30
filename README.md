@@ -571,7 +571,7 @@ More details can be found in our tutorial about [GNSS-SDR configuration options 
 <a name="macosx">macOS and Mac OS X</a>
 ---------
 
-GNSS-SDR can be built on MacOS or Mac OS X, starting from 10.9 (Mavericks) and including 10.14 (Mojave). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+GNSS-SDR can be built on MacOS or Mac OS X, starting from 10.9 (Mavericks) and including 10.15 (Catalina). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
 ~~~~~~
 $ xcode-select --install

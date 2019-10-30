@@ -60,12 +60,12 @@
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
 #include <fstream>
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 class pcps_acquisition_fine_doppler_cc;
 
@@ -83,7 +83,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-    ~pcps_acquisition_fine_doppler_cc();
+    ~pcps_acquisition_fine_doppler_cc() = default;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -192,8 +192,7 @@ public:
         gr_vector_void_star& output_items);
 
 private:
-    friend pcps_acquisition_fine_doppler_cc_sptr
-    pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
+    friend pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
     explicit pcps_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
 
     int compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
@@ -215,12 +214,11 @@ private:
     int d_doppler_step;
     unsigned int d_fft_size;
     uint64_t d_sample_counter;
-    gr_complex* d_carrier;
-    gr_complex* d_fft_codes;
-    gr_complex* d_10_ms_buffer;
-    float* d_magnitude;
-    std::vector<std::vector<float>> d_grid_data;
-    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    volk_gnsssdr::vector<gr_complex> d_fft_codes;
+    volk_gnsssdr::vector<gr_complex> d_10_ms_buffer;
+    volk_gnsssdr::vector<float> d_magnitude;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     std::shared_ptr<gr::fft::fft_complex> d_fft_if;
     std::shared_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;

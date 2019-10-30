@@ -42,7 +42,7 @@
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <array>
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
@@ -193,19 +193,18 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     //################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 2;
     d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip * GALILEO_E1_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-    float* ca_codes_f;
-    float* data_codes_f = nullptr;
+    volk_gnsssdr::vector<float> ca_codes_f(static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip);
+    volk_gnsssdr::vector<float> data_codes_f;
     d_data_codes = nullptr;
 
     if (d_track_pilot)
         {
             d_data_codes = static_cast<int32_t*>(volk_gnsssdr_malloc((static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * GALILEO_E1_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
         }
-    ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
 
     if (d_track_pilot)
         {
-            data_codes_f = static_cast<float*>(volk_gnsssdr_malloc((static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
+            data_codes_f.resize(static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip, 0.0);
         }
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
@@ -214,8 +213,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
             if (d_track_pilot)
                 {
                     std::array<char, 3> pilot_signal = {'1', 'C', '\0'};
-                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(ca_codes_f, static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), pilot_signal, PRN);
-                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(data_codes_f, static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), data_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(data_codes_f, data_signal, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
@@ -238,7 +237,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                 }
             else
                 {
-                    galileo_e1_code_gen_sinboc11_float(gsl::span<float>(ca_codes_f, static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip), data_signal, PRN);
+                    galileo_e1_code_gen_sinboc11_float(ca_codes_f, data_signal, PRN);
 
                     // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
@@ -254,11 +253,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                 }
         }
 
-    volk_gnsssdr_free(ca_codes_f);
-    if (d_track_pilot)
-        {
-            volk_gnsssdr_free(data_codes_f);
-        }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = GALILEO_E1_B_CODE_LENGTH_CHIPS;

@@ -41,7 +41,7 @@
 #include <gnuradio/fft/fft.h>     // for fft_complex
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>  // for copy_n
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
@@ -94,8 +94,8 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     // a channel is assigned)
     auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
-    std::vector<std::complex<float>> code(nsamples_total);  // buffer for the local code
-    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
+    volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
     d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
@@ -112,11 +112,11 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
                 {
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
-            std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                     // copy to FFT buffer
-            fft_if->execute();                                                                 // Run the FFT of local code
-            volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
-            max = 0;                                                                           // initialize maximum value
-            for (unsigned int i = 0; i < nsamples_total; i++)                                  // search for maxima
+            std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
+            fft_if->execute();                                                                        // Run the FFT of local code
+            volk_32fc_conjugate_32fc(fft_codes_padded.data(), fft_if->get_outbuf(), nsamples_total);  // conjugate values
+            max = 0;                                                                                  // initialize maximum value
+            for (unsigned int i = 0; i < nsamples_total; i++)                                         // search for maxima
                 {
                     if (std::abs(fft_codes_padded[i].real()) > max)
                         {
@@ -151,9 +151,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     gnss_synchro_ = nullptr;
 
     threshold_ = 0.0;
-
-    // temporary buffers that we can release
-    volk_gnsssdr_free(fft_codes_padded);
 
     if (in_streams_ > 1)
         {

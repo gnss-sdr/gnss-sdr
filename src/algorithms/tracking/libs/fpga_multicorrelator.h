@@ -38,6 +38,7 @@
 #define GNSS_SDR_FPGA_MULTICORRELATOR_H_
 
 #include <gnuradio/block.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <cstdint>
 #include <string>
 
@@ -86,9 +87,11 @@ public:
      * \brief Perform a multicorrelation
      */
     void Carrier_wipeoff_multicorrelator_resampler(
-        float rem_carrier_phase_in_rad, float phase_step_rad,
+        float rem_carrier_phase_in_rad,
+        float phase_step_rad,
         float carrier_phase_rate_step_rad,
-        float rem_code_phase_chips, float code_phase_step_chips,
+        float rem_code_phase_chips,
+        float code_phase_step_chips,
         float code_phase_rate_step_chips,
         int32_t signal_length_samples);
 
@@ -226,8 +229,8 @@ private:
     bool d_track_pilot;
 
     // configuration data computed in the format that the FPGA expects
-    uint32_t *d_initial_index;
-    uint32_t *d_initial_interp_counter;
+    volk_gnsssdr::vector<uint32_t> d_initial_index;
+    volk_gnsssdr::vector<uint32_t> d_initial_interp_counter;
     uint32_t d_code_phase_step_chips_num;
     uint32_t d_code_phase_rate_step_chips_num;
     int32_t d_rem_carr_phase_rad_int;

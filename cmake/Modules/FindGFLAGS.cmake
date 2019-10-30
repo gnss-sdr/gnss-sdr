@@ -48,7 +48,7 @@ if(APPLE)
 else()
     find_path(GFlags_ROOT_DIR
       libgflags.so
-      HINTS
+      PATHS
         /usr/lib
         /usr/lib64
         /usr/lib/x86_64-linux-gnu
@@ -89,7 +89,7 @@ if(GFlags_ROOT_DIR)
     # We are testing only a couple of files in the include directories
     find_path(GFlags_INCLUDE_DIRS
       gflags/gflags.h
-      HINTS
+      PATHS
         /usr/include
         /usr/local/include
         /opt/local/include

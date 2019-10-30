@@ -46,7 +46,7 @@ endif()
 
 find_library(GPERFTOOLS_TCMALLOC
   NAMES tcmalloc
-  HINTS /usr/lib
+  PATHS /usr/lib
         /usr/lib64
         /usr/local/lib
         /usr/local/lib64
@@ -61,7 +61,7 @@ find_library(GPERFTOOLS_TCMALLOC
 
 find_library(GPERFTOOLS_PROFILER
   NAMES profiler
-  HINTS /usr/lib
+  PATHS /usr/lib
         /usr/lib64
         /usr/local/lib
         /usr/local/lib64
@@ -75,7 +75,7 @@ find_library(GPERFTOOLS_PROFILER
 
 find_library(GPERFTOOLS_TCMALLOC_AND_PROFILER
   NAMES tcmalloc_and_profiler
-  HINTS /usr/lib
+  PATHS /usr/lib
         /usr/lib64
         ${Gperftools_ROOT_DIR}/lib
         ${GPERFTOOLS_ROOT}/lib
@@ -89,7 +89,7 @@ find_library(GPERFTOOLS_TCMALLOC_AND_PROFILER
 
 find_path(GPERFTOOLS_INCLUDE_DIR
   NAMES gperftools/heap-profiler.h
-  HINTS /usr/include
+  PATHS /usr/include
         /usr/local/include
         /opt/local/include
         ${Gperftools_ROOT_DIR}/include

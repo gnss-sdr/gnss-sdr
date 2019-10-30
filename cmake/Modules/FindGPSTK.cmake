@@ -27,7 +27,7 @@ if(NOT COMMAND feature_summary)
 endif()
 
 find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
-    HINTS /usr/include
+    PATHS /usr/include
           /usr/local/include
           /opt/local/include
           ${GPSTK_ROOT}/include
@@ -39,7 +39,7 @@ set(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
 include(GNUInstallDirs)
 
 find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
-    HINTS /usr/lib
+    PATHS /usr/lib
           /usr/local/lib
           /usr/${CMAKE_INSTALL_LIBDIR}
           /usr/local/${CMAKE_INSTALL_LIBDIR}

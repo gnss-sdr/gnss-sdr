@@ -21,6 +21,6 @@
 ########################################################################
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_C_COMPILER  gcc)
-set(CMAKE_CXX_FLAGS "-march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS "-march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE)  # same flags for C sources
 set(CMAKE_ASM_FLAGS "${CMAKE_CXX_FLAGS} -g" CACHE STRING "" FORCE)  # same flags for asm sources

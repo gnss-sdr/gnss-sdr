@@ -2528,7 +2528,7 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             if(IS_ARM)
                 # ARM-specific options
                 # See https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
-                if(NOT CMAKE_CROSSCOMPILING)
+                if(NOT CMAKE_CROSSCOMPILING AND NOT CMAKE_TOOLCHAIN_FILE)
                     add_compile_options(-mcpu=native)
                 endif()
             else()

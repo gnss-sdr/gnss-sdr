@@ -38,12 +38,18 @@ endfunction()
 
 message(STATUS "Checking for ARM")
 
-set(IS_ARM NO)
+set(IS_ARM FALSE)
 set(ARM_VERSION "")
+
+if(ENABLE_PACKAGING)
+    set(VERBOSE_BUILDING "-v")
+else()
+    set(VERBOSE_BUILDING "")
+endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   execute_process(COMMAND echo "int main(){}"
-                  COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dM -E -
+                  COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dM ${VERBOSE_BUILDING} -E -
                   OUTPUT_VARIABLE TEST_FOR_ARM_RESULTS)
 
   string(REGEX MATCH "__arm" ARM_FOUND "${TEST_FOR_ARM_RESULTS}")
@@ -52,7 +58,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 
   if(NOT ARM_FOUND STREQUAL "")
-    set(IS_ARM YES)
+    set(IS_ARM TRUE)
     message(STATUS "ARM system detected")
 
     # detect the version
@@ -92,10 +98,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   else()
     message(STATUS "System is not ARM")
   endif()
-
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "ARMClang")
+  set(IS_ARM TRUE)
+  set(ARM_VERSION "arm")
 else()
-  # TODO: Other compilers
-  message(STATUS "Not detecting ARM on non-GNUCXX compiler. Defaulting to false")
+  message(STATUS "Not detecting ARM on non-GNUCXX or non-ARMClang compiler. Defaulting to false")
   message(STATUS "If you are compiling for ARM, set IS_ARM=ON manually")
 endif()
 

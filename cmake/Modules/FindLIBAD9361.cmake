@@ -17,7 +17,7 @@
 
 #
 # Provides the following imported target:
-# Iio::iio
+# Iio::ad9361
 #
 
 if(NOT COMMAND feature_summary)
@@ -28,8 +28,7 @@ set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_LIBAD9361 libad9361)
 
-find_path(
-    LIBAD9361_INCLUDE_DIRS
+find_path(LIBAD9361_INCLUDE_DIRS
     NAMES ad9361.h
     HINTS ${PC_LIBAD9361_INCLUDEDIR}
     PATHS /usr/include
@@ -41,8 +40,7 @@ find_path(
           $ENV{LIBAD9361_DIR}/include
 )
 
-find_library(
-    LIBAD9361_LIBRARIES
+find_library(LIBAD9361_LIBRARIES
     NAMES ad9361
     HINTS ${PC_LIBAD9361_LIBDIR}
     PATHS /usr/lib

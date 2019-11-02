@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+#
+# Provides the following imported target:
+# Gnuradio::teleorbit
+#
+
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()

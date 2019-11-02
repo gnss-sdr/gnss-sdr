@@ -17,7 +17,7 @@
 
 #
 # Provides the following imported target:
-# Iio::iio
+# Uhd::uhd
 #
 
 ########################################################################

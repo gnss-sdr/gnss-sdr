@@ -21,6 +21,10 @@
 #  GPSTK_INCLUDE_DIR, where to find Rinex3ObsBase.hpp, etc.
 #  GPSTK_FOUND, If false, do not try to use GPSTK.
 #  GPSTK_LIBRARY, where to find the GPSTK library.
+#
+# Provides the following imported target:
+# Gpstk::gpstk
+#
 
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)

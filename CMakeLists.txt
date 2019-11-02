@@ -515,7 +515,9 @@ if(NOT OS_IS_MACOSX)
             set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
         endif()
     else()
-        include(TestForARM)
+        if(NOT IS_ARM)
+            include(TestForARM)
+        endif()
     endif()
 endif()
 
@@ -968,7 +970,6 @@ if(NOT VOLKGNSSSDR_FOUND)
         -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         -DENABLE_STATIC_LIBS=ON
         -DENABLE_PROFILING=${ENABLE_PROFILING}
-        -DCMAKE_INCLUDE_PATH=${Boost_INCLUDE_DIR}
         -DENABLE_ORC=OFF
         ${STRIP_VOLK_GNSSSDR_PROFILE}
         ${USE_THIS_PYTHON}
@@ -978,6 +979,12 @@ if(NOT VOLKGNSSSDR_FOUND)
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
             -DCROSSCOMPILE_MULTILIB=TRUE
         )
+    else()
+        if(CMAKE_TOOLCHAIN_FILE)
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+            )
+        endif()
     endif()
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(volk_gnsssdr_module
@@ -1770,6 +1777,10 @@ if(NOT PUGIXML_FOUND)
     if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(PUGIXML_COMPILER "")
         set(TOOLCHAIN_ARG "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake")
+    else()
+        if(CMAKE_TOOLCHAIN_FILE)
+            set(TOOLCHAIN_ARG "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
+        endif()
     endif()
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
@@ -2486,8 +2497,20 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0")
         add_compile_options(-Wno-missing-field-initializers)
     endif()
-    if(CMAKE_CROSSCOMPILING)
+    if(CMAKE_CROSSCOMPILING OR NOT ENABLE_PACKAGING)
         add_compile_options(-Wno-psabi)
+    endif()
+    if(IS_ARM)
+        if((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "7.1.0") AND (CMAKE_VERSION VERSION_GREATER "3.1"))
+            if(CMAKE_CXX_STANDARD VERSION_LESS 17)
+                set(CXX_ALIGN_FLAG -faligned-new)
+                if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
+                    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${CXX_ALIGN_FLAG}>")
+                else()
+                    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${CXX_ALIGN_FLAG}>")
+                endif()
+            endif()
+        endif()
     endif()
 endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -2501,23 +2524,30 @@ endif()
 # Processor-architecture related flags
 # See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    if(OS_IS_MACOSX)
-        add_compile_options(-march=corei7 -mfpmath=sse)
-    else()
-        if(NOT ENABLE_GENERIC_ARCH)
+    if(NOT ENABLE_GENERIC_ARCH)
+        if(IS_ARM)
+            # ARM-specific options
+            # See https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
+            if(NOT CMAKE_CROSSCOMPILING AND NOT CMAKE_TOOLCHAIN_FILE)
+                add_compile_options(-mtune=native)
+            endif()
+        else()
+            add_compile_options(-march=native)
+        endif()
+    endif()
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(NOT ENABLE_GENERIC_ARCH)
+        if(OS_IS_MACOSX)
+            add_compile_options(-march=native)
+        else()
             if(IS_ARM)
                 # ARM-specific options
-                # See https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
-                if(NOT CMAKE_CROSSCOMPILING)
-                    if(ARM_VERSION STREQUAL "arm")
-                        # Unknown arm version - try our best to detect
-                        add_compile_options(-mcpu=native)
-                    else()
-                        add_compile_options(-march=${ARM_VERSION})
-                    endif()
+                if(NOT CMAKE_CROSSCOMPILING AND NOT CMAKE_TOOLCHAIN_FILE)
+                    add_compile_options(-mcpu=native)
                 endif()
             else()
-                add_compile_options(-march=native -mfpmath=sse)
+                add_compile_options(-march=native)
             endif()
         endif()
     endif()

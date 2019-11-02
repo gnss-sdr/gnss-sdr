@@ -470,8 +470,7 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
     if(ASM_ARCH STREQUAL "neonv7")
       message(STATUS "---- Adding ASM files") # we always use ATT syntax
       message(STATUS "-- Detected neon architecture; enabling ASM")
-      # setup architecture specific assembler flags
-      set(ARCH_ASM_FLAGS "-mfpu=neon -g")
+      # architecture specific assembler flags are now set in the cmake toolchain file
       # then add the files
       include_directories(${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon)
       file(GLOB asm_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon/*.s)
@@ -482,7 +481,6 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
       endforeach()
     endif()
     enable_language(ASM)
-    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${ARCH_ASM_FLAGS}")
     message(STATUS "c flags: ${FULL_C_FLAGS}")
     message(STATUS "asm flags: ${CMAKE_ASM_FLAGS}")
   endforeach()

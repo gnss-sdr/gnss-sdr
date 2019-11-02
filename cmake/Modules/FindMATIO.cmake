@@ -69,7 +69,7 @@ endif()
 # Look for the header file.
 find_path(MATIO_INCLUDE_DIR
     NAMES matio.h
-    HINTS
+    PATHS
       /usr/include
       /usr/local/include
       /opt/local/include
@@ -81,7 +81,7 @@ find_path(MATIO_INCLUDE_DIR
 # Look for the library.
 find_library(MATIO_LIBRARY
     NAMES matio
-    HINTS
+    PATHS
       /usr/lib
       /usr/lib64
       /usr/lib/alpha-linux-gnu

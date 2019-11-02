@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-# Original Source: https://github.com/vector-of-bool/CMakeCM
-# Modified by C. Fernandez-Prades.
+# Original code from https://github.com/vector-of-bool/CMakeCM and modified
+# by C. Fernandez. The original code is distributed under the OSI-approved
+# BSD 3-Clause License. See https://cmake.org/licensing for details.
 
 #[=======================================================================[.rst:
 
@@ -134,6 +135,9 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSIO
     set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 endif()
 if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99"))
+    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11"))
     set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 endif()
 

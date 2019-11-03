@@ -202,6 +202,9 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
      *    608   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + BeiDou B1I
      *    609   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A
      *    610   |  BeiDou B3I + GPS L1 C/A + Galileo E1B + GLONASS L1 C/A + BeiDou B1I
+     *
+     *    1000  |  GPS L1 C/A + GPS L2C + GPS L5
+     *    1001  |  GPS L1 C/A + Galileo E1B + GPS L2C + GPS L5 + Galileo E5a
      */
     int gps_1C_count = configuration->property("Channels_1C.count", 0);
     int gps_2S_count = configuration->property("Channels_2S.count", 0);
@@ -396,7 +399,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     // Settings 1
     int positioning_mode = -1;
     std::string default_pos_mode("Single");
-    std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode);  //  (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h
+    std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode);  // (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h
     if (positioning_mode_str == "Single")
         {
             positioning_mode = PMODE_SINGLE;

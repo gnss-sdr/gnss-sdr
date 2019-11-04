@@ -28,7 +28,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
@@ -61,6 +60,7 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "rtklib_pvt_gs.h"
 #include "rtklib_solver.h"
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
@@ -4167,6 +4167,15 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
+
+                            std::cout
+                                << TEXT_BOLD_GREEN
+                                << "Velocity: " << std::fixed << std::setprecision(3)
+                                << "East: " << d_user_pvt_solver->get_rx_vel()[0] << " [m/s], North: " << d_user_pvt_solver->get_rx_vel()[1]
+                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << std::endl;
+
+                            std::cout << std::setprecision(ss);
+                            DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
 
                             // boost::posix_time::ptime p_time;
                             // gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_user_pvt_solver->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);

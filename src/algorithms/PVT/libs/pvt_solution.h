@@ -72,6 +72,9 @@ public:
     void set_rx_pos(const arma::vec &pos);  //!< Set position: Latitude [deg], longitude [deg], height [m]
     arma::vec get_rx_pos() const;
 
+    void set_rx_vel(const arma::vec &vel);  //!< Set velocity: East [m/s], North [m/s], Up [m/s]
+    arma::vec get_rx_vel() const;
+
     bool is_valid_position() const;
     void set_valid_position(bool is_valid);
 

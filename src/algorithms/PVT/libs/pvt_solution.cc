@@ -419,7 +419,7 @@ arma::vec Pvt_Solution::get_rx_pos() const
     return d_rx_pos;
 }
 
-void Pvt_Solution::set_rx_vel(arma::vec vel)
+void Pvt_Solution::set_rx_vel(const arma::vec &vel)
 {
     d_rx_vel = vel;
 }

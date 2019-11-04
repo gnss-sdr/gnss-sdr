@@ -118,7 +118,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
     //           rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     //       }
     //
-    rtklib_obs.time = gpst2time(adjgpsweek(week, pre_2009_file), gnss_synchro.RX_time);
+    if (gnss_synchro.System == 'E')
+        {
+            rtklib_obs.time = gst2time(week, gnss_synchro.RX_time);
+        }
+    else
+        {
+            rtklib_obs.time = gpst2time(adjgpsweek(week, pre_2009_file), gnss_synchro.RX_time);
+        }
     // account for the TOW crossover transitory in the first 18 seconds where the week is not yet updated!
     if (gnss_synchro.RX_time < 18.0)
         {
@@ -188,7 +195,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
     rtklib_sat.Adot = 0;  // only in CNAV;
     rtklib_sat.ndot = 0;  // only in CNAV;
 
-    rtklib_sat.week = adjgpsweek(gal_eph.WN_5); /* week of tow */
+    rtklib_sat.week = gal_eph.WN_5 + 1024; /* week of tow in GPS (not mod-1024) week scale */
     rtklib_sat.cic = gal_eph.C_ic_4;
     rtklib_sat.cis = gal_eph.C_is_4;
     rtklib_sat.cuc = gal_eph.C_uc_3;

@@ -29,9 +29,9 @@
  * -------------------------------------------------------------------------
  */
 
-#include "pvt_solution.h"
 #include "GPS_L1_CA.h"
 #include "geofunctions.h"
+#include "pvt_solution.h"
 #include <glog/logging.h>
 #include <array>
 #include <cstddef>
@@ -414,7 +414,7 @@ void Pvt_Solution::set_rx_pos(const arma::vec &pos)
 }
 
 
-const arma::vec& Pvt_Solution::get_rx_pos() const
+arma::vec Pvt_Solution::get_rx_pos() const
 {
     return d_rx_pos;
 }
@@ -425,7 +425,7 @@ void Pvt_Solution::set_rx_vel(arma::vec vel)
 }
 
 
-const arma::vec& Pvt_Solution::get_rx_vel() const
+arma::vec Pvt_Solution::get_rx_vel() const
 {
     return d_rx_vel;
 }

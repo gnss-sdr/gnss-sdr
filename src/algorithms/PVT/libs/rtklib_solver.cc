@@ -51,7 +51,6 @@
  *
  * -----------------------------------------------------------------------*/
 
-#include "rtklib_solver.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "Beidou_DNAV.h"
@@ -61,6 +60,7 @@
 #include "rtklib_conversions.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
+#include "rtklib_solver.h"
 #include <glog/logging.h>
 #include <matio.h>
 #include <exception>
@@ -1076,18 +1076,18 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     pos[0] = rx_position_and_time(0);
                     pos[1] = rx_position_and_time(1);
                     pos[2] = rx_position_and_time(2);
-                    ecef2enu( pos, &pvt_sol.rr[3], vel_enu );
+                    ecef2enu(pos, &pvt_sol.rr[3], vel_enu);
 
                     arma::vec rx_vel_enu(3);
-                    rx_vel_enu(0) = vel_enu[ 0 ];
-                    rx_vel_enu(1) = vel_enu[ 1 ];
-                    rx_vel_enu(2) = vel_enu[ 2 ];
+                    rx_vel_enu(0) = vel_enu[0];
+                    rx_vel_enu(1) = vel_enu[1];
+                    rx_vel_enu(2) = vel_enu[2];
 
-                    this->set_rx_vel( rx_vel_enu );
+                    this->set_rx_vel(rx_vel_enu);
 
-                    double clock_drift_ppm = pvt_sol.dtr[5] / GPS_C_m_s *1e6;
+                    double clock_drift_ppm = pvt_sol.dtr[5] / GPS_C_m_s * 1e6;
 
-                    this->set_clock_drift_ppm( clock_drift_ppm );
+                    this->set_clock_drift_ppm(clock_drift_ppm);
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

@@ -53,11 +53,11 @@ public:
     double get_time_offset_s() const;            //!< Get RX time offset [s]
     void set_time_offset_s(double offset);       //!< Set RX time offset [s]
 
-    double get_clock_drift_ppm() const;    //!< Get the Rx clock drift [ppm]
-    void set_clock_drift_ppm(double clock_drift_ppm ); //!< Set the Rx clock drift [ppm]
-    double get_latitude() const;   //!< Get RX position Latitude WGS84 [deg]
-    double get_longitude() const;  //!< Get RX position Longitude WGS84 [deg]
-    double get_height() const;     //!< Get RX position height WGS84 [m]
+    double get_clock_drift_ppm() const;                //!< Get the Rx clock drift [ppm]
+    void set_clock_drift_ppm(double clock_drift_ppm);  //!< Set the Rx clock drift [ppm]
+    double get_latitude() const;                       //!< Get RX position Latitude WGS84 [deg]
+    double get_longitude() const;                      //!< Get RX position Longitude WGS84 [deg]
+    double get_height() const;                         //!< Get RX position height WGS84 [m]
 
     double get_speed_over_ground() const;          //!< Get RX speed over ground [m/s]
     void set_speed_over_ground(double speed_m_s);  //!< Set RX speed over ground [m/s]
@@ -134,8 +134,8 @@ public:
 protected:
     bool d_pre_2009_file;  // Flag to correct week rollover in post processing mode for signals older than 2009
 private:
-    double d_rx_dt_s;  // RX time offset [s]
-    double d_rx_clock_drift_ppm; // RX clock drift [ppm]
+    double d_rx_dt_s;             // RX time offset [s]
+    double d_rx_clock_drift_ppm;  // RX clock drift [ppm]
 
     double d_latitude_d;             // RX position Latitude WGS84 [deg]
     double d_longitude_d;            // RX position Longitude WGS84 [deg]

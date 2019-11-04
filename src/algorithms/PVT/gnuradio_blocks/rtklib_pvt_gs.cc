@@ -1101,7 +1101,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                                     rp->log_rinex_nav(rp->navFile, new_glo_eph);
                                                 }
                                             break;
-                                        case 29:  //  GPS L1 C/A + GLONASS L2 C/A
+                                        case 29:  // GPS L1 C/A + GLONASS L2 C/A
                                             if (d_rinex_version == 3)
                                                 {
                                                     rp->log_rinex_nav(rp->navMixFile, new_eph, new_glo_eph);
@@ -1196,13 +1196,13 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                         case 7:  // GPS L1 C/A + GPS L2C
                                             rp->log_rinex_nav(rp->navFile, new_cnav_eph);
                                             break;
-                                        case 13:  //  L5+E5a
+                                        case 13:  // L5+E5a
                                             rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_gal_eph);
                                             break;
-                                        case 28:  //  GPS L2C + GLONASS L1 C/A
+                                        case 28:  // GPS L2C + GLONASS L1 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_glo_eph);
                                             break;
-                                        case 31:  //  GPS L2C + GLONASS L2 C/A
+                                        case 31:  // GPS L2C + GLONASS L2 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_glo_eph);
                                             break;
                                         default:
@@ -1458,7 +1458,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                         case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
                                             rp->log_rinex_nav(rp->navGloFile, new_glo_eph);
                                             break;
-                                        case 26:  //  GPS L1 C/A + GLONASS L1 C/A
+                                        case 26:  // GPS L1 C/A + GLONASS L1 C/A
                                             if (d_rinex_version == 3)
                                                 {
                                                     rp->log_rinex_nav(rp->navMixFile, new_eph, new_glo_eph);
@@ -1468,13 +1468,13 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                                     rp->log_rinex_nav(rp->navGloFile, new_glo_eph);
                                                 }
                                             break;
-                                        case 27:  //  Galileo E1B + GLONASS L1 C/A
+                                        case 27:  // Galileo E1B + GLONASS L1 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_gal_eph, new_glo_eph);
                                             break;
-                                        case 28:  //  GPS L2C + GLONASS L1 C/A
+                                        case 28:  // GPS L2C + GLONASS L1 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_glo_eph);
                                             break;
-                                        case 29:  //  GPS L1 C/A + GLONASS L2 C/A
+                                        case 29:  // GPS L1 C/A + GLONASS L2 C/A
                                             if (d_rinex_version == 3)
                                                 {
                                                     rp->log_rinex_nav(rp->navMixFile, new_eph, new_glo_eph);
@@ -1484,10 +1484,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                                     rp->log_rinex_nav(rp->navGloFile, new_glo_eph);
                                                 }
                                             break;
-                                        case 30:  //  Galileo E1B + GLONASS L2 C/A
+                                        case 30:  // Galileo E1B + GLONASS L2 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_gal_eph, new_glo_eph);
                                             break;
-                                        case 31:  //  GPS L2C + GLONASS L2 C/A
+                                        case 31:  // GPS L2C + GLONASS L2 C/A
                                             rp->log_rinex_nav(rp->navMixFile, new_cnav_eph, new_glo_eph);
                                             break;
                                         default:
@@ -1688,7 +1688,7 @@ bool rtklib_pvt_gs::send_sys_v_ttff_msg(ttff_msgbuf ttff)
     ttff_msgbuf msg;
     msg.ttff = ttff.ttff;
     msgsend_size = sizeof(msg.ttff);
-    msg.mtype = 1;  //  default message ID
+    msg.mtype = 1;  // default message ID
 
     // SEND SOLUTION OVER A MESSAGE QUEUE
     // non-blocking Sys V message send
@@ -2287,7 +2287,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
                                             std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
                                             std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_dnav_ephemeris_iter;
-                                            if (!b_rinex_header_written)  //  & we have utc data in nav message!
+                                            if (!b_rinex_header_written)  // & we have utc data in nav message!
                                                 {
                                                     galileo_ephemeris_iter = d_user_pvt_solver->galileo_ephemeris_map.cbegin();
                                                     gps_ephemeris_iter = d_user_pvt_solver->gps_ephemeris_map.cbegin();
@@ -2384,7 +2384,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
-                                                        case 10:  //  GPS L1 C/A + Galileo E5a
+                                                        case 10:  // GPS L1 C/A + Galileo E5a
                                                             if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_user_pvt_solver->gps_ephemeris_map.cend()))
                                                                 {
                                                                     std::string gal_signal("5X");
@@ -2394,7 +2394,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
-                                                        case 11:  //  GPS L1 C/A + Galileo E5b
+                                                        case 11:  // GPS L1 C/A + Galileo E5b
                                                             if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_user_pvt_solver->gps_ephemeris_map.cend()))
                                                                 {
                                                                     std::string gal_signal("7X");
@@ -2415,7 +2415,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
-                                                        case 14:  //  Galileo E1B + Galileo E5a
+                                                        case 14:  // Galileo E1B + Galileo E5a
                                                             if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
                                                                 {
                                                                     std::string gal_signal("1B 5X");
@@ -2425,7 +2425,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
-                                                        case 15:  //  Galileo E1B + Galileo E5b
+                                                        case 15:  // Galileo E1B + Galileo E5b
                                                             if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
                                                                 {
                                                                     std::string gal_signal("1B 7X");
@@ -2485,7 +2485,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
-                                                        case 27:  //  Galileo E1B + GLONASS L1 C/A
+                                                        case 27:  // Galileo E1B + GLONASS L1 C/A
                                                             if ((glonass_gnav_ephemeris_iter != d_user_pvt_solver->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
                                                                 {
                                                                     std::string glo_signal("1G");
@@ -2526,7 +2526,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
-                                                        case 30:  //  Galileo E1B + GLONASS L2 C/A
+                                                        case 30:  // Galileo E1B + GLONASS L2 C/A
                                                             if ((glonass_gnav_ephemeris_iter != d_user_pvt_solver->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
                                                                 {
                                                                     std::string glo_signal("2G");

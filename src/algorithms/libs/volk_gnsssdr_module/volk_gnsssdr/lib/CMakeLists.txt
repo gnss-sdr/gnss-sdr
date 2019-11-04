@@ -405,6 +405,8 @@ if(MSVC)
         set(cmake_c_compiler_version "Microsoft Visual Studio 11.0")
     elseif(MSVC12) #Visual Studio 12
         set(cmake_c_compiler_version "Microsoft Visual Studio 12.0")
+    elseif(MSVC14) #Visual Studio 14
+        set(cmake_c_compiler_version "Microsoft Visual Studio 14.0")
     endif()
 else()
     execute_process(COMMAND ${CMAKE_C_COMPILER} --version
@@ -625,12 +627,12 @@ if(ENABLE_STATIC_LIBS)
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
+    set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
+
     install(TARGETS volk_gnsssdr_static
         EXPORT VOLK_GNSSSDR-export
         ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"
     )
-
-    set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 endif()
 
 ########################################################################

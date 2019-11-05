@@ -49,9 +49,9 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <armadillo>
 #include <gnuradio/block.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
 #include <map>
 #include <string>

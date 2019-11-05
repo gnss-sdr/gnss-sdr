@@ -147,7 +147,7 @@ std::string Rtcm::add_CRC(const std::string& message_without_crc) const
 
     // 2) Computes CRC
     CRC_RTCM.process_bytes(bytes.data(), bytes.size());
-    std::bitset<24> crc_frame = std::bitset<24>(CRC_RTCM.checksum());
+    auto crc_frame = std::bitset<24>(CRC_RTCM.checksum());
 
     // 3) Builds the complete message
     std::string complete_message = message_without_crc + crc_frame.to_string();
@@ -162,7 +162,7 @@ bool Rtcm::check_CRC(const std::string& message) const
     std::string message_bin = Rtcm::binary_data_to_bin(message);
     // Check CRC
     std::string crc = message_bin.substr(message_bin.length() - 24, 24);
-    std::bitset<24> read_crc = std::bitset<24>(crc);
+    auto read_crc = std::bitset<24>(crc);
     std::string msg_without_crc = message_bin.substr(0, message_bin.length() - 24);
 
     boost::dynamic_bitset<uint8_t> frame_bits(msg_without_crc);
@@ -171,7 +171,7 @@ bool Rtcm::check_CRC(const std::string& message) const
     std::reverse(bytes.begin(), bytes.end());
 
     CRC_RTCM_CHECK.process_bytes(bytes.data(), bytes.size());
-    std::bitset<24> computed_crc = std::bitset<24>(CRC_RTCM_CHECK.checksum());
+    auto computed_crc = std::bitset<24>(CRC_RTCM_CHECK.checksum());
     if (read_crc == computed_crc)
         {
             return true;
@@ -414,7 +414,7 @@ std::string Rtcm::build_message(const std::string& data) const
 {
     uint32_t msg_length_bits = data.length();
     uint32_t msg_length_bytes = std::ceil(static_cast<float>(msg_length_bits) / 8.0);
-    std::bitset<10> message_length = std::bitset<10>(msg_length_bytes);
+    auto message_length = std::bitset<10>(msg_length_bytes);
     uint32_t zeros_to_fill = 8 * msg_length_bytes - msg_length_bits;
     std::string b(zeros_to_fill, '0');
     std::string msg_content = data + b;
@@ -691,7 +691,7 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris& ephL1, const 
     Rtcm::set_DF011(gnss_synchroL1);
     Rtcm::set_DF012(gnss_synchroL1);
     Rtcm::set_DF013(ephL1, obs_time, gnss_synchroL1);
-    std::bitset<2> DF016_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
+    auto DF016_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
     Rtcm::set_DF017(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF018(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF019(ephL2, obs_time, gnss_synchroL2);
@@ -802,7 +802,7 @@ std::bitset<125> Rtcm::get_MT1004_sat_content(const Gps_Ephemeris& ephL1, const 
     Rtcm::set_DF013(ephL1, obs_time, gnss_synchroL1);
     Rtcm::set_DF014(gnss_synchroL1);
     Rtcm::set_DF015(gnss_synchroL1);
-    std::bitset<2> DF016_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
+    auto DF016_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
     Rtcm::set_DF017(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF018(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF019(ephL2, obs_time, gnss_synchroL2);
@@ -1058,7 +1058,7 @@ std::string Rtcm::print_MT1006(uint32_t ref_id, double ecef_x, double ecef_y, do
 std::string Rtcm::print_MT1008(uint32_t ref_id, const std::string& antenna_descriptor, uint32_t antenna_setup_id, const std::string& antenna_serial_number)
 {
     uint32_t msg_number = 1008;
-    std::bitset<12> DF002_ = std::bitset<12>(msg_number);
+    auto DF002_ = std::bitset<12>(msg_number);
     Rtcm::set_DF003(ref_id);
     std::string ant_descriptor = antenna_descriptor;
     uint32_t len = ant_descriptor.length();
@@ -1072,7 +1072,7 @@ std::string Rtcm::print_MT1008(uint32_t ref_id, const std::string& antenna_descr
     std::string DF030_str_;
     for (char c : ant_descriptor)
         {
-            std::bitset<8> character = std::bitset<8>(c);
+            auto character = std::bitset<8>(c);
             DF030_str_ += character.to_string();
         }
 
@@ -1090,7 +1090,7 @@ std::string Rtcm::print_MT1008(uint32_t ref_id, const std::string& antenna_descr
     std::string DF033_str_;
     for (char c : ant_sn)
         {
-            std::bitset<8> character = std::bitset<8>(c);
+            auto character = std::bitset<8>(c);
             DF033_str_ += character.to_string();
         }
 
@@ -1375,7 +1375,7 @@ std::bitset<107> Rtcm::get_MT1011_sat_content(const Glonass_Gnav_Ephemeris& ephL
     Rtcm::set_DF041(gnss_synchroL1);
     Rtcm::set_DF042(gnss_synchroL1);
     Rtcm::set_DF043(ephL1, obs_time, gnss_synchroL1);
-    std::bitset<2> DF046_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
+    auto DF046_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
     Rtcm::set_DF047(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF048(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF049(ephL2, obs_time, gnss_synchroL2);
@@ -1488,7 +1488,7 @@ std::bitset<130> Rtcm::get_MT1012_sat_content(const Glonass_Gnav_Ephemeris& ephL
     Rtcm::set_DF043(ephL1, obs_time, gnss_synchroL1);
     Rtcm::set_DF044(gnss_synchroL1);
     Rtcm::set_DF045(gnss_synchroL1);
-    std::bitset<2> DF046_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
+    auto DF046_ = std::bitset<2>(0);  // code indicator   0: C/A or L2C code   1: P(Y) code direct  2:P(Y) code cross-correlated    3: Correlated P/Y
     Rtcm::set_DF047(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF048(gnss_synchroL1, gnss_synchroL2);
     Rtcm::set_DF049(ephL2, obs_time, gnss_synchroL2);
@@ -2039,12 +2039,12 @@ std::string Rtcm::print_MT1029(uint32_t ref_id, const Gps_Ephemeris& gps_eph, do
                             first = false;
                         }
                 }
-            std::bitset<8> character = std::bitset<8>(c);
+            auto character = std::bitset<8>(c);
             text_binary += character.to_string();
         }
 
-    std::bitset<7> DF138_ = std::bitset<7>(i);
-    std::bitset<8> DF139_ = std::bitset<8>(message.length());
+    auto DF138_ = std::bitset<7>(i);
+    auto DF139_ = std::bitset<8>(message.length());
 
     std::string data = DF002.to_string() +
                        DF003.to_string() +
@@ -2101,7 +2101,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
     Rtcm::set_DF314(gal_eph);
     Rtcm::set_DF315(gal_eph);
     uint32_t seven_zero = 0;
-    std::bitset<7> DF001_ = std::bitset<7>(seven_zero);
+    auto DF001_ = std::bitset<7>(seven_zero);
 
     std::string data;
     data.clear();
@@ -2357,7 +2357,7 @@ std::string Rtcm::get_MSM_header(uint32_t msg_number,
     Rtcm::set_DF003(ref_id);
     Rtcm::set_DF393(more_messages);
     Rtcm::set_DF409(0);  // Issue of Data Station. 0: not utilized
-    std::bitset<7> DF001_ = std::bitset<7>("0000000");
+    auto DF001_ = std::bitset<7>("0000000");
     Rtcm::set_DF411(clock_steering_indicator);
     Rtcm::set_DF412(external_clock_indicator);
     Rtcm::set_DF417(divergence_free);
@@ -2956,7 +2956,7 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
             Rtcm::set_DF397(ordered_by_PRN_pos.at(nsat).second);
             Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
             Rtcm::set_DF399(ordered_by_PRN_pos.at(nsat).second);
-            std::bitset<4> reserved = std::bitset<4>("0000");
+            auto reserved = std::bitset<4>("0000");
             first_data_type += DF397.to_string();
             second_data_type += reserved.to_string();
             third_data_type += DF398.to_string();

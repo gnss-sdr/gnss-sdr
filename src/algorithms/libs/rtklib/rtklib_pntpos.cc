@@ -972,6 +972,7 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
                         {
                             sol->rr[i + 3] = x[i];
                         }
+                    sol->dtr[5] = x[3];
                     break;
                 }
         }

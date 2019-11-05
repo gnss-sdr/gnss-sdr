@@ -89,6 +89,9 @@ public:
     double hdop;
     double vdop;
 
+    // User clock drift [ppm]
+    double user_clk_drift_ppm;
+
     /*!
      * \brief This member function serializes and restores
      * Monitor_Pvt objects from a byte stream.
@@ -134,6 +137,8 @@ public:
         ar& BOOST_SERIALIZATION_NVP(pdop);
         ar& BOOST_SERIALIZATION_NVP(hdop);
         ar& BOOST_SERIALIZATION_NVP(vdop);
+
+        ar& BOOST_SERIALIZATION_NVP(user_clk_drift_ppm);
     }
 };
 

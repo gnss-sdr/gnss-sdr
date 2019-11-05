@@ -48,7 +48,7 @@ Acq_Conf::Acq_Conf()
     doppler_step2 = 125.0;
     pfa = 0.0;
     pfa2 = 0.0;
-    fs_in = 0LL;
+    fs_in = 4000000;
     samples_per_ms = 0.0;
     samples_per_code = 0.0;
     bit_transition_flag = false;
@@ -59,7 +59,7 @@ Acq_Conf::Acq_Conf()
     dump_filename = "";
     dump_channel = 0U;
     it_size = sizeof(gr_complex);
-    item_type = "fc32";
+    item_type = "gr_complex";
     blocking_on_standby = false;
     use_automatic_resampler = false;
     resampler_ratio = 1.0;
@@ -82,7 +82,7 @@ void Acq_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
-    sampled_ms = configuration->property(role + ".sampled_ms", sampled_ms);
+    sampled_ms = configuration->property(role + ".coherent_integration_time_ms", sampled_ms);
     bit_transition_flag = configuration->property(role + ".bit_transition_flag", bit_transition_flag);
     use_CFAR_algorithm_flag = configuration->property(role + ".use_CFAR_algorithm", use_CFAR_algorithm_flag);  //will be false in future versions
     //acquire_pilot = configuration->property(role + ".acquire_pilot", acquire_pilot);  //will be true in future versions

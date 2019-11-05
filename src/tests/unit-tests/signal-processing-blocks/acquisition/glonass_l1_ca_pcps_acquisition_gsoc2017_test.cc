@@ -254,7 +254,8 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.threshold", "0.8");
+    //config->set_property("Acquisition.threshold", "0.8");
+    config->set_property("Acquisition.pfa", "0.001");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -343,7 +344,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
-    // config->set_property("Acquisition.pfa", "0.1");
+    config->set_property("Acquisition.pfa", "0.001");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -497,9 +498,9 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
         acquisition->set_doppler_step(500);
     }) << "Failure setting doppler_step.";
 
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(0.05);
-    }) << "Failure setting threshold.";
+    //ASSERT_NO_THROW({
+    //acquisition->set_threshold(0.05);
+    //}) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
@@ -585,9 +586,9 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
     }) << "Failure setting doppler_step.";
 
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold.";
+    //ASSERT_NO_THROW({
+    //acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+    //}) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

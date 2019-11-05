@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "Galileo_E1.h"
 #include "acq_conf.h"
 #include "configuration_interface.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
@@ -50,13 +50,15 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 {
     configuration_ = configuration;
     acq_parameters_.ms_per_code = 4;
-    acq_parameters_.SetFromConfiguration( configuration_, role, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS );
+    acq_parameters_.SetFromConfiguration(configuration_, role, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "role " << role;
+    doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = acq_parameters_.doppler_step;
 
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
 
-    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS )));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
     code_ = std::vector<std::complex<float>>(vector_length_);
 
@@ -76,7 +78,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     channel_ = 0;
     threshold_ = 0.0;
-    doppler_step_ = 0;
+    doppler_step_ = acq_parameters_.doppler_step;
     doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 

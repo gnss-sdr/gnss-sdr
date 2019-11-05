@@ -31,10 +31,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include "glonass_l1_ca_pcps_acquisition.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "acq_conf.h"
 #include "configuration_interface.h"
+#include "glonass_l1_ca_pcps_acquisition.h"
 #include "glonass_l1_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
@@ -113,6 +113,8 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
+    acq_parameters.pfa = configuration_->property(role + ".pfa", 0.0);
+    acq_parameters.pfa2 = configuration_->property(role + ".pfa2", 0.0);
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 

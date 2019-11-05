@@ -28,6 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
@@ -60,7 +61,6 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
-#include "rtklib_pvt_gs.h"
 #include "rtklib_solver.h"
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive

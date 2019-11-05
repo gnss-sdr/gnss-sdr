@@ -51,6 +51,7 @@
  *
  * -----------------------------------------------------------------------*/
 
+#include "rtklib_solver.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "Beidou_DNAV.h"
@@ -60,7 +61,6 @@
 #include "rtklib_conversions.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
-#include "rtklib_solver.h"
 #include <glog/logging.h>
 #include <matio.h>
 #include <exception>

@@ -116,6 +116,7 @@ public:
         monitor_.set_pdop(monitor->pdop);
         monitor_.set_hdop(monitor->hdop);
         monitor_.set_vdop(monitor->vdop);
+        monitor_.set_user_clk_drift_ppm(monitor->user_clk_drift_ppm);
 
         monitor_.SerializeToString(&data);
         return data;
@@ -153,6 +154,7 @@ public:
         monitor.pdop = mon.pdop();
         monitor.hdop = mon.hdop();
         monitor.vdop = mon.vdop();
+        monitor.user_clk_drift_ppm = mon.user_clk_drift_ppm();
 
         return monitor;
     }

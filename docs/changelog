@@ -22,6 +22,7 @@
 - Fixed PVT solution in receivers processing L1 plus L2C and/or L5 signals.
 - Added RINEX files generation for triple-band configurations (L1 + L2C + L5 and L1 + E1 + L2C + L5 + E5a).
 - Fixed bugs in the decoding of BeiDou navigation messages.
+- Fixed a bug in feeding Galileo channels' observations to RTKLIB, which was causing wrong date of PVT fixes in Galileo-only receivers and not considering Galileo observations in multi-constellation receivers when using signals after the GPS rollover on April 6, 2019.
 - Improved management of devices with the AD9361 RF transceiver.
 - Fixed bugs in FPGA off-loading.
 

@@ -1072,6 +1072,19 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     monitor_pvt.hdop = dop_[2];
                     monitor_pvt.vdop = dop_[3];
 
+                    arma::vec rx_vel_enu(3);
+                    rx_vel_enu(0) = enuv[0];
+                    rx_vel_enu(1) = enuv[1];
+                    rx_vel_enu(2) = enuv[2];
+
+                    this->set_rx_vel(rx_vel_enu);
+
+                    double clock_drift_ppm = pvt_sol.dtr[5] / GPS_C_M_S * 1e6;
+
+                    this->set_clock_drift_ppm(clock_drift_ppm);
+                    // User clock drift [ppm]
+                    monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
+
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)
                         {

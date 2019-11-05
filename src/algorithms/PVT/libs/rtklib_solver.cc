@@ -1082,6 +1082,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     double clock_drift_ppm = pvt_sol.dtr[5] / GPS_C_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
+                    // User clock drift [ppm]
+                    monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

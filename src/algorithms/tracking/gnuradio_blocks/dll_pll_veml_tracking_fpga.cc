@@ -1860,8 +1860,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // this must be computed for the secondary prn code
                         if (d_secondary)
                             {
-                            	uint32_t next_prn_length = d_current_integration_length_samples/d_fpga_integration_period;
-                            	uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length*(d_fpga_integration_period - 1);
+                                uint32_t next_prn_length = d_current_integration_length_samples / d_fpga_integration_period;
+                                uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length * (d_fpga_integration_period - 1);
 
                                 multicorrelator_fpga->update_prn_code_length(first_prn_length, next_prn_length);
                             }
@@ -1913,8 +1913,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // this must be computed for the secondary prn code
                         if (d_secondary)
                             {
-                            	uint32_t next_prn_length = d_current_integration_length_samples/d_fpga_integration_period;
-                            	uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length*(d_fpga_integration_period - 1);
+                                uint32_t next_prn_length = d_current_integration_length_samples / d_fpga_integration_period;
+                                uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length * (d_fpga_integration_period - 1);
 
                                 multicorrelator_fpga->update_prn_code_length(first_prn_length, next_prn_length);
                             }

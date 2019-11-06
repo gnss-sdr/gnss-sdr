@@ -269,7 +269,7 @@ private:
     bool start();
     void calculate_threshold(void);
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
-    float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, float input_power, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_H_*/

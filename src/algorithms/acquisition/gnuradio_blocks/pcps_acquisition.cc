@@ -527,7 +527,7 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
 }
 
 
-float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, float input_power, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
+float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
 {
     float grid_maximum = 0.0;
     uint32_t index_doppler = 0U;
@@ -712,7 +712,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             // Compute the test statistic
             if (d_use_CFAR_algorithm_flag)
                 {
-                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, d_num_doppler_bins, acq_parameters.doppler_max, d_doppler_step);
+                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_num_doppler_bins, acq_parameters.doppler_max, d_doppler_step);
                 }
             else
                 {
@@ -769,7 +769,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             // Compute the test statistic
             if (d_use_CFAR_algorithm_flag)
                 {
-                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, d_num_doppler_bins_step2, static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_num_doppler_bins_step2, static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
             else
                 {

@@ -489,10 +489,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -520,7 +516,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                 }
             else if (i == 1)
                 {
-                    gnss_synchro.PRN = 20;  // This satellite is not visible
+                    gnss_synchro.PRN = 36;  // This satellite is not visible
                 }
 
             acquisition->set_local_code();
@@ -572,10 +568,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
     ASSERT_NO_THROW({
         acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
     }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

@@ -53,10 +53,12 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters_.SetFromConfiguration(configuration_, role, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "role " << role;
+
+    if (FLAGS_doppler_max != 0) acq_parameters_.doppler_max = FLAGS_doppler_max;
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = acq_parameters_.doppler_step;
-
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    item_type_ = acq_parameters_.item_type;
+    fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
@@ -67,9 +69,6 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    item_type_ = acq_parameters_.item_type;
-    fs_in_ = acq_parameters_.fs_in;
-
     if (item_type_ == "ic8")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -78,7 +77,6 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     channel_ = 0;
     threshold_ = 0.0;
-    doppler_step_ = acq_parameters_.doppler_step;
     doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 

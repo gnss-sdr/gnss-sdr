@@ -59,7 +59,11 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     DLOG(INFO) << "role " << role;
 
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0) acq_parameters_.doppler_max = FLAGS_doppler_max;
+
+    doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = acq_parameters_.doppler_step;
+    item_type_ = acq_parameters_.item_type;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
@@ -70,8 +74,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    item_type_ = acq_parameters_.item_type;
-
     if (item_type_ == "ic8")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -80,7 +82,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     channel_ = 0;
     threshold_ = 0.0;
-    doppler_step_ = 0;
     doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 

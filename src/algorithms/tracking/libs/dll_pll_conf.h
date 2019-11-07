@@ -48,6 +48,7 @@ public:
     unsigned int bit_synchronization_time_limit_s;
     int pll_filter_order;
     int dll_filter_order;
+    int aided_dll_filter_order;
     double fs_in;
     uint32_t vector_length;
     bool dump;
@@ -78,9 +79,6 @@ public:
     int32_t max_code_lock_fail;
     int32_t max_carrier_lock_fail;
     uint32_t smoother_length;
-    int pll_order;
-    int dll_initial_order;
-    int dll_final_order;
     double carrier_lock_th;
     bool track_pilot;
     bool enable_doppler_correction;

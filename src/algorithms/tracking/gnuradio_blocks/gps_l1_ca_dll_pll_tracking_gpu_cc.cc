@@ -384,7 +384,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
 
             // ################## DLL ##########################################################
             // DLL discriminator
-            code_error_chips_Ti = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2]);  // [chips/Ti]  // early and late
+            code_error_chips_Ti = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2], d_early_late_spc_chips, 1.0);  // [chips/Ti]  // early and late
             // Code discriminator filter
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips_Ti);                      // input [chips/Ti] -> output [chips/second]
             code_error_filt_secs_Ti = code_error_filt_chips * CURRENT_INTEGRATION_TIME_S / d_code_freq_chips;  // [s/Ti]

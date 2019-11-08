@@ -32,8 +32,8 @@
  * -------------------------------------------------------------------------
  */
 
-#include "tracking_discriminators.h"
 #include "MATH_CONSTANTS.h"
+#include "tracking_discriminators.h"
 #include <cmath>
 
 //  All the outputs are in RADIANS
@@ -139,7 +139,7 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, floa
         {
             return 0.0;
         }
-    return (1-slope*spc)/slope * (P_early - P_late) / E_plus_L;
+    return (1 - slope * spc) / slope * (P_early - P_late) / E_plus_L;
 }
 
 

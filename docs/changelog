@@ -13,7 +13,7 @@
 ### Improvements in Flexibility:
 
 - New Tracking parameters allow the configuration of the C/N0 and lock detector smoothers, as well as the activation of the FLL in pull-in and steady state stages.
-- New PVT parameter enable_rx_clock_correction parameter allows to enable or disable the application of the Time solution correction to the computation of Observables.
+- New PVT parameter enable_rx_clock_correction allows to enable or disable the application of the Time solution correction to the computation of Observables.
 - Fixed L5 and E5a receiver chains when tracking the data component.
 
 
@@ -42,6 +42,7 @@
 - Enable AVX2 kernels of the volk_gnsssdr library when using the Clang compiler.
 - Fixed building in some ARM-based devices. Now Clang and ARMClang can be used for native building.
 - Added toolchain files for building gnss-sdr and the volk_gnsssdr library in several ARM processor architectures, including those in Raspberry Pi 3 and 4.
+- The software can now be built using Xcode (passing -GXcode to CMake) without previous manual installation of volk_gnsssdr.
 
 
 ### Improvements in Reliability:
@@ -65,6 +66,8 @@
 - Improved DLL-PLL binary dump MATLAB/Octave plot script. Old versions removed.
 - Simplified RTKLIB error log.
 - Added a Python 3 plotting script to show relative performance of generic volk_gnsssdr kernels wrt SIMD fastest versions.
+- Added reporting of velocity in the terminal.
+- Added reporting of user clock drift estimation, in ppm, in the Pvt_Monitor and in internal logging (debug mode).
 
 
 

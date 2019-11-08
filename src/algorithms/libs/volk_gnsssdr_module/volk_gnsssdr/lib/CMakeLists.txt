@@ -426,7 +426,9 @@ foreach(machine_name ${available_machines})
         --mode "machine_flags" --machine "${machine_name}" --compiler "${COMPILER_NAME}"
         OUTPUT_VARIABLE ${machine_name}_flags OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    message(STATUS "BUILD INFO ::: ${machine_name} ::: ${COMPILER_NAME} ::: ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}")
+    if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
+        message(STATUS "BUILD INFO ::: ${machine_name} ::: ${COMPILER_NAME} ::: ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}")
+    endif()
     set(COMPILER_INFO "${COMPILER_INFO}${machine_name}:::${COMPILER_NAME}:::${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}\n")
     if(${machine_name}_flags AND NOT MSVC)
         set_source_files_properties(${machine_source} PROPERTIES COMPILE_FLAGS "${${machine_name}_flags}")
@@ -573,18 +575,24 @@ if(MSVC)
 endif()
 
 #Create a volk_gnsssdr object library
-add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
-target_include_directories(volk_gnsssdr_obj
-    PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    PUBLIC $<INSTALL_INTERFACE:include>
-    PRIVATE ${PROJECT_SOURCE_DIR}/kernels
-    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-)
+if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
+    add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
+    target_include_directories(volk_gnsssdr_obj
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        PUBLIC $<INSTALL_INTERFACE:include>
+        PRIVATE ${PROJECT_SOURCE_DIR}/kernels
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+       PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endif()
 
 #Add dynamic library
-add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+if(CMAKE_GENERATOR STREQUAL Xcode)
+    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
+else()
+    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+endif()
 target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
 target_include_directories(volk_gnsssdr
     PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
@@ -597,7 +605,9 @@ target_include_directories(volk_gnsssdr
 
 #Configure target properties
 if(NOT MSVC)
-    set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
+    if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
+        set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
+    endif()
     target_link_libraries(volk_gnsssdr m)
 endif()
 set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
@@ -613,7 +623,11 @@ install(TARGETS volk_gnsssdr
 
 #Configure static library
 if(ENABLE_STATIC_LIBS)
-    add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+    if(CMAKE_GENERATOR STREQUAL Xcode)
+        add_library(volk_gnsssdr_static STATIC ${volk_gnsssdr_sources})
+    else()
+        add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+    endif()
     target_link_libraries(volk_gnsssdr_static ${volk_gnsssdr_libraries} pthread)
     if(NOT MSVC)
         target_link_libraries(volk_gnsssdr_static m)

@@ -73,12 +73,12 @@ public:
 
     Acq_Conf();
 
-    void SetFromConfiguration( ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq );
+    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
 
 private:
     void SetDerivedParams();
 
-    void ConfigureAutomaticResampler( double opt_freq );
+    void ConfigureAutomaticResampler(double opt_freq);
 };
 
 #endif

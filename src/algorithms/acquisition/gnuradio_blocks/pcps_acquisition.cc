@@ -33,12 +33,12 @@
  * -------------------------------------------------------------------------
  */
 
+#include "pcps_acquisition.h"
 #include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI
 #include "GPS_L1_CA.h"         // for GPS_TWO_PI
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
-#include "pcps_acquisition.h"
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
 #include <experimental/filesystem>

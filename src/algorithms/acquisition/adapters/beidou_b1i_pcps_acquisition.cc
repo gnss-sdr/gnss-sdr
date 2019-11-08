@@ -31,9 +31,9 @@
  * -------------------------------------------------------------------------
  */
 
+#include "beidou_b1i_pcps_acquisition.h"
 #include "Beidou_B1I.h"
 #include "acq_conf.h"
-#include "beidou_b1i_pcps_acquisition.h"
 #include "beidou_b1i_signal_processing.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"

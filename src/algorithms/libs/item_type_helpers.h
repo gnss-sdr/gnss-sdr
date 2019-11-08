@@ -31,17 +31,17 @@
  */
 
 #ifndef ITEM_TYPE_HELPERS_H_
-#define ITEM_TYPE_HELPERS_H_ 
+#define ITEM_TYPE_HELPERS_H_
 
 
 #include <functional>
 #include <string>
 
-using item_type_converter_t = std::function< void( void *, const void *, unsigned ) > ;
+using item_type_converter_t = std::function<void(void *, const void *, unsigned)>;
 /*!
  * \brief Convert a gnss-sdr item type string to internal 
  */
-std::string external_item_type_to_internal( const std::string &external_item_type );
+std::string external_item_type_to_internal(const std::string &external_item_type);
 
 
 /*!
@@ -53,12 +53,12 @@ std::string external_item_type_to_internal( const std::string &external_item_typ
  *  where "i" denotes integer, "f" denotes float and "c" is for complex and
  *  the number indicates the number of bits in the representation
  */
-bool item_type_valid( const std::string & item_type );
+bool item_type_valid(const std::string &item_type);
 
 /*!
  * \brief Return the size of the given item type, or zero if unknown
  */
-size_t item_type_size( const std::string & item_type );
+size_t item_type_size(const std::string &item_type);
 
 /*!
  * \brief Create a function to convert an array of input_type to an array of output_type
@@ -83,7 +83,7 @@ size_t item_type_size( const std::string & item_type );
  *
  *  
  */
-item_type_converter_t make_vector_converter( std::string input_type,
-        std::string output_type );
+item_type_converter_t make_vector_converter(std::string input_type,
+    std::string output_type);
 
 #endif

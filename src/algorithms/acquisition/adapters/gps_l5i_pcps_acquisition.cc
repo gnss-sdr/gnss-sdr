@@ -52,7 +52,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
 {
     configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration( configuration_, role, GPS_L5I_CODE_RATE_CPS, GPS_L5_OPT_ACQ_FS_SPS );
+    acq_parameters_.SetFromConfiguration(configuration_, role, GPS_L5I_CODE_RATE_CPS, GPS_L5_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "role " << role;
 

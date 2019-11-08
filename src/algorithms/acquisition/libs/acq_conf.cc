@@ -67,15 +67,15 @@ Acq_Conf::Acq_Conf()
     resampler_latency_samples = 0U;
 }
 
-void Acq_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
-        const std::string &role, double chip_rate, double opt_freq )
+void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
+    const std::string &role, double chip_rate, double opt_freq)
 {
     item_type = configuration->property(role + ".item_type", item_type);
-    item_type = external_item_type_to_internal( item_type );
-    if( !item_type_valid( item_type ) )
-    {
-        throw std::invalid_argument( "Unknown item type: " + item_type );
-    }
+    item_type = external_item_type_to_internal(item_type);
+    if (!item_type_valid(item_type))
+        {
+            throw std::invalid_argument("Unknown item type: " + item_type);
+        }
 
     chips_per_second = chip_rate;
 
@@ -97,16 +97,16 @@ void Acq_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
     if ((sampled_ms % ms_per_code) != 0)
         {
             LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of "
-                << ms_per_code << ". Setting it to " << ms_per_code;
+                         << ms_per_code << ". Setting it to " << ms_per_code;
             sampled_ms = ms_per_code;
         }
 
     resampled_fs = fs_in;
 
-    if( use_automatic_resampler )
-    {
-        ConfigureAutomaticResampler( opt_freq );
-    }
+    if (use_automatic_resampler)
+        {
+            ConfigureAutomaticResampler(opt_freq);
+        }
 
     it_size = item_type_size(item_type);
     num_doppler_bins_step2 = configuration->property(role + ".second_nbins", num_doppler_bins_step2);
@@ -114,16 +114,15 @@ void Acq_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
     doppler_step = configuration->property(role + ".doppler_step", doppler_step);
     pfa = configuration->property(role + ".pfa", pfa);
     pfa2 = configuration->property(role + ".pfa_second_step", pfa2);
-    if( pfa2 <= 0.0 )
+    if (pfa2 <= 0.0)
         pfa2 = pfa;
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
 
     SetDerivedParams();
-
 }
 
-void Acq_Conf::ConfigureAutomaticResampler( double opt_freq )
+void Acq_Conf::ConfigureAutomaticResampler(double opt_freq)
 {
     if (use_automatic_resampler)
         {
@@ -146,7 +145,6 @@ void Acq_Conf::ConfigureAutomaticResampler( double opt_freq )
 void Acq_Conf::SetDerivedParams()
 {
     samples_per_ms = static_cast<float>(resampled_fs) * 0.001;
-    samples_per_chip = static_cast<unsigned int>(ceil(static_cast<float>(resampled_fs)/chips_per_second));
+    samples_per_chip = static_cast<unsigned int>(ceil(static_cast<float>(resampled_fs) / chips_per_second));
     samples_per_code = samples_per_ms * ms_per_code;
 }
-

@@ -85,24 +85,24 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     signal[1] = 'C';
     signal[2] = '\0';
 }
-    
-void Dll_Pll_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
-        const std::string &role)
+
+void Dll_Pll_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
+    const std::string &role)
 {
     item_type = configuration->property(role + ".item_type", item_type);
     local_replica_item_type = configuration->property(role + ".local_replica_item_type", local_replica_item_type);
 
-    item_type = external_item_type_to_internal( item_type );
-    local_replica_item_type = external_item_type_to_internal( local_replica_item_type );
-    if( !item_type_valid( item_type ) )
-    {
-        throw std::invalid_argument( "Unknown item type: " + item_type );
-    }
+    item_type = external_item_type_to_internal(item_type);
+    local_replica_item_type = external_item_type_to_internal(local_replica_item_type);
+    if (!item_type_valid(item_type))
+        {
+            throw std::invalid_argument("Unknown item type: " + item_type);
+        }
 
-    if( !item_type_valid( local_replica_item_type ) )
-    {
-        throw std::invalid_argument( "Unknown item type: " + local_replica_item_type );
-    }
+    if (!item_type_valid(local_replica_item_type))
+        {
+            throw std::invalid_argument("Unknown item type: " + local_replica_item_type);
+        }
 
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
@@ -179,5 +179,4 @@ void Dll_Pll_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
     cn0_smoother_alpha = configuration->property(role + ".cn0_smoother_alpha", cn0_smoother_alpha);
     carrier_lock_test_smoother_samples = configuration->property(role + ".carrier_lock_test_smoother_samples", carrier_lock_test_smoother_samples);
     carrier_lock_test_smoother_alpha = configuration->property(role + ".carrier_lock_test_smoother_alpha", carrier_lock_test_smoother_alpha);
-
 }

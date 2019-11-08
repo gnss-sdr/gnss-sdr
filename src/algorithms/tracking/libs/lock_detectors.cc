@@ -161,19 +161,19 @@ float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
     return NBD / NBP;
 }
 
-float frequency_lock_detector( gr_complex* Prompt_buffer, int length )
+float frequency_lock_detector(gr_complex* Prompt_buffer, int length)
 {
     gr_complex sq_sum(0.0f, 0.0f);
     float abs_sq = 0.0f;
     gr_complex sq(0.0f, 0.0f);
 
-    for( int i = 0; i < length; i++ )
+    for (int i = 0; i < length; i++)
         {
             sq = Prompt_buffer[i] * Prompt_buffer[i];
 
             sq_sum += sq;
-            abs_sq += std::abs( sq );
+            abs_sq += std::abs(sq);
         }
 
-    return std::abs( sq_sum / abs_sq );
+    return std::abs(sq_sum / abs_sq);
 }

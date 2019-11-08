@@ -87,7 +87,7 @@ public:
 
     Dll_Pll_Conf();
 
-    void SetFromConfiguration( ConfigurationInterface *configuration, const std::string &role );
+    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role);
 };
 
 #endif

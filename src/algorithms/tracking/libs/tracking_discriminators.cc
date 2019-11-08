@@ -104,9 +104,9 @@ double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, doub
 double fll_two_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
     double cross, dot;
-    dot   = prompt_s1.real()*prompt_s2.real() + prompt_s1.imag()*prompt_s2.imag();
-    cross = prompt_s1.real()*prompt_s2.imag() - prompt_s2.real()*prompt_s1.imag();
-    return atan(cross/dot) / (t2-t1);
+    dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
+    cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
+    return atan(cross / dot) / (t2 - t1);
 }
 
 
@@ -157,7 +157,7 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, floa
         {
             return 0.0;
         }
-    return (1-slope*spc)/slope * (P_early - P_late) / E_plus_L;
+    return (1 - slope * spc) / slope * (P_early - P_late) / E_plus_L;
 }
 
 

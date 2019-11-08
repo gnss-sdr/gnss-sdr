@@ -34,11 +34,11 @@
  * -------------------------------------------------------------------------
  */
 
+#include "galileo_e1_dll_pll_veml_tracking.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "display.h"
 #include "dll_pll_conf.h"
-#include "galileo_e1_dll_pll_veml_tracking.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 #include <array>

@@ -28,7 +28,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
@@ -61,6 +60,7 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "rtklib_pvt_gs.h"
 #include "rtklib_solver.h"
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
@@ -1813,37 +1813,37 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
             switch (mapStringValues_[observables_iter->second.Signal])
                 {
                 case evGPS_1C:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
                     break;
                 case evGPS_L5:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * PI_2;
                     break;
                 case evSBAS_1C:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
                     break;
                 case evGAL_1B:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
                     break;
                 case evGAL_5X:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * PI_2;
                     break;
                 case evGPS_2S:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2 * PI_2;
                     break;
                 case evBDS_B3:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS * PI_2;
                     break;
                 case evGLO_1G:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO * PI_2;
                     break;
                 case evGLO_2G:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO * PI_2;
                     break;
                 case evBDS_B1:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS * PI_2;
                     break;
                 case evBDS_B2:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS * PI_2;
                     break;
                 default:
                     break;

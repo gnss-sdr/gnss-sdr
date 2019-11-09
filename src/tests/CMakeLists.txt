@@ -212,12 +212,17 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
         add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")
     else()
+        set(GNSS_SIM_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set(GNSS_SIM_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}" "-target" "gnss_sim")
+        endif()
         ExternalProject_Add(gnss-sim
             GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
             GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
+            BUILD_COMMAND ${GNSS_SIM_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
             INSTALL_COMMAND ""
@@ -580,6 +585,9 @@ if(ENABLE_SYSTEM_TESTING)
             system_testing_lib signal_processing_testing_lib
         )
         add_system_test(position_test)
+        if(NOT GNSSSIMULATOR_FOUND OR ENABLE_GNSS_SIM_INSTALL)
+            add_dependencies(position_test gnss-sim)
+        endif()
     else()
         # Avoid working with old executables if they were switched ON and then OFF
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)

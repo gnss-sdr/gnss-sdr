@@ -65,6 +65,7 @@ if(Boost_FOUND)
             Boost::serialization
             ${GPSTK_LIBRARY}
             Gflags::gflags
+            Threads::Threads
             algorithms_libs
             core_receiver
             core_system_parameters

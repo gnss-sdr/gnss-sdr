@@ -1120,7 +1120,7 @@ if(NOT GFLAGS_FOUND)
     set(GFlags_INCLUDE_DIRS
         ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"
     )
-    if(CMAKE_BUILD_TYPE MATCHES Debug)
+    if((CMAKE_BUILD_TYPE MATCHES Debug) AND (CMAKE_VERSION VERSION_GREATER "3.0.2"))
         set(GFLAGS_DEBUG_POSTFIX "_debug")
     endif()
     set(GFlags_LIBS

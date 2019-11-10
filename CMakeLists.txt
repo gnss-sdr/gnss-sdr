@@ -1181,20 +1181,138 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
     endif()
 
     if(CMAKE_VERSION VERSION_LESS 3.2)
-        ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            DEPENDS ${TARGET_GFLAGS}
-            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            GIT_REPOSITORY https://github.com/google/glog/
-            GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
-            UPDATE_COMMAND ""
-            PATCH_COMMAND ""
-            INSTALL_COMMAND ""
-        )
-    else()
+        if(CMAKE_VERSION VERSION_LESS 3.0)
+            if(${LOCAL_GFLAGS})
+                set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_SHARED_LIBS})
+                set(GFLAGS_LIBRARY_DIR_TO_LINK ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib)
+            else()
+                set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
+                set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
+            endif()
+            if(OS_IS_MACOSX)
+                set(GFLAGS_LIBRARIES_TO_LINK "${GFLAGS_LIBRARIES_TO_LINK} -lc++")
+                set(GLOG_EXPORT_CXX_LIBRARIES "export CXXFLAGS=\"-stdlib=libc++\"")
+            endif()
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                set(GLOG_EXPORT_C_COMPILER "export CC=clang")
+                set(GLOG_EXPORT_CXX_COMPILER "export CXX=clang++")
+            endif()
+            file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
+export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK}\"
+${GLOG_EXPORT_CXX_LIBRARIES}
+${GLOG_EXPORT_C_COMPILER}
+${GLOG_EXPORT_CXX_COMPILER}
+cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
+aclocal
+automake --add-missing
+autoreconf -vfi
+cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure"
+            )
+
+            file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
+                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            )
+
+            set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure_with_gflags)
+
+            # Ensure that aclocal and libtool are present
+            if(OS_IS_LINUX)
+                if(EXISTS "/usr/bin/libtoolize")
+                    if(EXISTS "/usr/bin/aclocal" OR
+                        EXISTS "/usr/bin/aclocal-1.16" OR
+                        EXISTS "/usr/bin/aclocal-1.15" OR
+                        EXISTS "/usr/bin/aclocal-1.14" OR
+                        EXISTS "/usr/bin/aclocal-1.13" OR
+                        EXISTS "/usr/bin/aclocal-1.11" OR
+                        EXISTS "/usr/bin/aclocal-1.10")
+                        # Everything ok, we can move on
+                    else()
+                        message(" aclocal has not been found.")
+                        message(" You can try to install it by typing:")
+                        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                            message(" sudo yum groupinstall 'Development Tools'")
+                        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                            message(" sudo zypper install automake")
+                        else()
+                            message(" sudo apt-get install automake")
+                        endif()
+                        message(FATAL_ERROR "aclocal is required to build glog from source")
+                    endif()
+                else()
+                    message(" libtool has not been found.")
+                    message(" You can try to install it by typing:")
+                    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                        message(" sudo yum groupinstall 'Development Tools'")
+                    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                        message(" sudo zypper install libtoool")
+                    else()
+                        message(" sudo apt-get install libtool")
+                    endif()
+                    message(FATAL_ERROR "libtool is required to build glog from source")
+                endif()
+            endif()
+
+            if(GLOG_MAKE_PROGRAM MATCHES "ninja")
+                find_program(GLOG_MAKE_EXECUTABLE make
+                    PATHS
+                        /usr/bin
+                        /usr/local/bin
+                )
+                if(NOT GLOG_MAKE_EXECUTABLE)
+                    message(FATAL_ERROR "make is required to build Glog from source.")
+                endif()
+                set(GLOG_MAKE_PROGRAM ${GLOG_MAKE_EXECUTABLE})
+            endif()
+            ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                DEPENDS ${TARGET_GFLAGS}
+                PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/google/glog/
+                GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
+                BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
+                UPDATE_COMMAND ""
+                PATCH_COMMAND ""
+                INSTALL_COMMAND ""
+            )
+            set(GLOG_LIBRARIES
+                ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+            set(GLOG_INCLUDE_DIRS
+                ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src/
+                ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+            )
+        else()  # CMake > 3.0 but < 3.2
+            ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                DEPENDS ${TARGET_GFLAGS}
+                PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/google/glog/
+                GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
+                UPDATE_COMMAND ""
+                PATCH_COMMAND ""
+                INSTALL_COMMAND ""
+            )
+            set(GLOG_LIBRARIES
+                ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+            set(GLOG_INCLUDE_DIRS
+                ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+                ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                ${GFlags_INCLUDE_DIRS}
+            )
+        endif()
+    else()  # CMake > 3.2
         ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             DEPENDS ${TARGET_GFLAGS}
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
@@ -1209,18 +1327,17 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
             PATCH_COMMAND ""
             INSTALL_COMMAND ""
         )
+        set(GLOG_LIBRARIES
+            ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+        )
+        set(GLOG_INCLUDE_DIRS
+            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+            ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+            ${GFlags_INCLUDE_DIRS}
+        )
     endif()
     add_dependencies(glog-${GNSSSDR_GLOG_LOCAL_VERSION} Gflags::gflags)
 
-    # Set up variables
-    set(GLOG_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
-        ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-        ${GFlags_INCLUDE_DIRS}
-    )
-    set(GLOG_LIBRARIES
-        ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-    )
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GLOG_LIBRARIES
             ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_BUILD_TYPE}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}

@@ -100,7 +100,7 @@ double CosBocCorrelationFunction(double offset_in_chips)
 template <typename Fun>
 double CalculateSlope(Fun &&f, double x)
 {
-    static constexpr double dx = 1e-3;
+    static constexpr double dx = 1e-6;
 
     return (f(x + dx / 2.0) - f(x - dx / 2.0)) / dx;
 }
@@ -108,9 +108,26 @@ double CalculateSlope(Fun &&f, double x)
 template <typename Fun>
 double CalculateSlopeAbs(Fun &&f, double x)
 {
-    static constexpr double dx = 1e-3;
+    static constexpr double dx = 1e-6;
 
     return (std::abs(f(x + dx / 2.0)) - std::abs(f(x - dx / 2.0))) / dx;
+}
+
+template <typename Fun>
+double GetYIntercept(Fun &&f, double x)
+{
+    double slope = CalculateSlope(f, x);
+    double y1 = f(x);
+
+    return y1 - slope * x;
+}
+
+template <typename Fun>
+double GetYInterceptAbs(Fun &&f, double x)
+{
+    double slope = CalculateSlopeAbs(f, x);
+    double y1 = std::abs(f(x));
+    return y1 - slope * x;
 }
 
 TEST(DllNcEMinusLNormalizedTest, Bpsk)
@@ -138,6 +155,13 @@ TEST(DllNcEMinusLNormalizedTest, Bpsk)
                                 {
                                     EXPECT_TRUE(err * disc_out >= 0.0);
                                 }
+
+                            if (spacing != 0.5 and err != 0.0)
+                                {
+                                    double disc_out_old = dll_nc_e_minus_l_normalized(E, L);
+
+                                    EXPECT_NE(disc_out_old, err);
+                                }
                         }
                 }
         }
@@ -146,7 +170,7 @@ TEST(DllNcEMinusLNormalizedTest, Bpsk)
 TEST(DllNcEMinusLNormalizedTest, SinBoc11)
 {
     std::vector<gr_complex> complex_amplitude_vector = {{1.0, 0.0}, {-1.0, 0.0}, {0.0, 1.0}, {1.0, 1.0}};
-    std::vector<double> spacing_vector = {0.75, 0.25, 1.0 / 6.0, 0.01};
+    std::vector<double> spacing_vector = {0.75, 0.6666, 5.0 / 12.0, 0.25, 1.0 / 6.0, 0.01};
     std::vector<double> error_vector = {0.0, 0.01, 0.1, 0.25, -0.25, -0.1, -0.01};
 
     for (auto A : complex_amplitude_vector)
@@ -154,24 +178,28 @@ TEST(DllNcEMinusLNormalizedTest, SinBoc11)
             for (auto spacing : spacing_vector)
                 {
                     double corr_slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, spacing);
+                    double y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, spacing);
+
                     for (auto err : error_vector)
                         {
                             gr_complex E = A * static_cast<float>(SinBocCorrelationFunction<1, 1>(err - spacing));
                             gr_complex L = A * static_cast<float>(SinBocCorrelationFunction<1, 1>(err + spacing));
 
-                            double disc_out = dll_nc_e_minus_l_normalized(E, L, spacing, corr_slope);
+                            double disc_out = dll_nc_e_minus_l_normalized(E, L, spacing, corr_slope, y_intercept);
                             double corr_slope_at_err = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, spacing + err);
                             double corr_slope_at_neg_err = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, spacing - err);
 
                             bool in_linear_region = (std::abs(err) < spacing) and (std::abs(corr_slope_at_err - corr_slope_at_neg_err) < 0.01);
+                            double norm_factor = (y_intercept - corr_slope * spacing) / spacing;
 
                             if (in_linear_region)
                                 {
-                                    EXPECT_NEAR(disc_out, err, 1e-4) << " Spacing: " << spacing << ", slope : " << corr_slope << ", norm: " << (1 - corr_slope * spacing) / corr_slope << " E: " << E << ", L: " << L;
-                                }
-                            else
-                                {
-                                    EXPECT_TRUE(err * disc_out >= 0.0) << " Spacing: " << spacing << ", slope : " << corr_slope;
+                                    EXPECT_NEAR(disc_out, err, 1e-4) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
+                                    if (norm_factor != 0.5 and err != 0.0)
+                                        {
+                                            double disc_out_old = dll_nc_e_minus_l_normalized(E, L);
+                                            EXPECT_NE(disc_out_old, err) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
+                                        }
                                 }
                         }
                 }
@@ -205,8 +233,7 @@ TEST(CosBocCorrelationFunction, FixedPoints)
 TEST(DllNcEMinusLNormalizedTest, CosBoc11)
 {
     std::vector<gr_complex> complex_amplitude_vector = {{1.0, 0.0}, {-1.0, 0.0}, {0.0, 1.0}, {1.0, 1.0}};
-    //std::vector<double> spacing_vector = {0.875, 0.588, 0.1, 0.01};
-    std::vector<double> spacing_vector = {0.875, 0.1, 0.01};
+    std::vector<double> spacing_vector = {0.875, 0.588, 0.1, 0.01};
     std::vector<double> error_vector = {0.0, 0.01, 0.1, 0.25, -0.25, -0.1, -0.01};
 
     for (auto A : complex_amplitude_vector)
@@ -214,20 +241,27 @@ TEST(DllNcEMinusLNormalizedTest, CosBoc11)
             for (auto spacing : spacing_vector)
                 {
                     double corr_slope = -CalculateSlopeAbs(&CosBocCorrelationFunction<1, 1>, spacing);
+                    double y_intercept = GetYInterceptAbs(&CosBocCorrelationFunction<1, 1>, spacing);
                     for (auto err : error_vector)
                         {
                             gr_complex E = A * static_cast<float>(CosBocCorrelationFunction<1, 1>(err - spacing));
                             gr_complex L = A * static_cast<float>(CosBocCorrelationFunction<1, 1>(err + spacing));
 
-                            double disc_out = dll_nc_e_minus_l_normalized(E, L, spacing, corr_slope);
+                            double disc_out = dll_nc_e_minus_l_normalized(E, L, spacing, corr_slope, y_intercept);
                             double corr_slope_at_err = -CalculateSlopeAbs(&CosBocCorrelationFunction<1, 1>, spacing + err);
                             double corr_slope_at_neg_err = -CalculateSlopeAbs(&CosBocCorrelationFunction<1, 1>, spacing - err);
 
                             bool in_linear_region = (std::abs(err) < spacing) and (std::abs(corr_slope_at_err - corr_slope_at_neg_err) < 0.01);
+                            double norm_factor = (y_intercept - corr_slope * spacing) / spacing;
 
                             if (in_linear_region)
                                 {
-                                    EXPECT_NEAR(disc_out, err, 1e-4) << " Spacing: " << spacing << ", slope : " << corr_slope << ", norm: " << (1 - corr_slope * spacing) / corr_slope << " E: " << E << ", L: " << L;
+                                    EXPECT_NEAR(disc_out, err, 1e-4) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
+                                    if (norm_factor != 0.5 and err != 0.0)
+                                        {
+                                            double disc_out_old = dll_nc_e_minus_l_normalized(E, L);
+                                            EXPECT_NE(disc_out_old, err) << " Spacing: " << spacing << ", slope : " << corr_slope << ", y_intercept: " << y_intercept << ", norm: " << norm_factor << " E: " << E << ", L: " << L;
+                                        }
                                 }
                         }
                 }

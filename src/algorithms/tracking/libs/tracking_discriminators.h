@@ -99,7 +99,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
-double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, float spc = 0.5, float slope = 1.0);
+double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, float spc = 0.5, float slope = 1.0, float y_intercept = 1.0);
 
 
 /*! \brief DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator

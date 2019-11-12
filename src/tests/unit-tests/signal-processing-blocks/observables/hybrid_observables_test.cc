@@ -1512,8 +1512,8 @@ void HybridObservablesTest::check_results_code_pseudorange(
                     ASSERT_LT(error_mean, 1.0);
                     ASSERT_GT(error_mean, -1.0);
                     ASSERT_LT(error_var, 10.0);
-                    ASSERT_LT(max_error, 10.0);
-                    ASSERT_GT(min_error, -10.0);
+                    ASSERT_LT(max_error, 15.0);
+                    ASSERT_GT(min_error, -15.0);
                 }
         }
     else

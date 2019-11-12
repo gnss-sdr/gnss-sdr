@@ -155,7 +155,7 @@ int PositionSystemTest::generate_signal()
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
-            std::cout << "Return not expected. Must be an execv error." << std::endl;
+            std::cout << "Return not expected. Must be an execv error. Does " << generator_binary << " exist?" << std::endl;
             std::terminate();
         }
 
@@ -205,6 +205,7 @@ int PositionSystemTest::configure_receiver()
             const float pll_bw_hz = 35.0;
             const float dll_bw_hz = 1.5;
             const float early_late_space_chips = 0.5;
+            const float early_late_space_narrow_chips = 0.1;
             const float pll_bw_narrow_hz = 15.0;
             const float dll_bw_narrow_hz = 1.5;
             const int extend_correlation_symbols = FLAGS_extend_correlation_symbols;  // defaults to 1
@@ -298,7 +299,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
             config->set_property("Tracking_1C.dll_bw_hz", std::to_string(dll_bw_hz));
             config->set_property("Tracking_1C.early_late_space_chips", std::to_string(early_late_space_chips));
-
+            config->set_property("Tracking_1C.early_late_space_narrow_chips", std::to_string(early_late_space_narrow_chips));
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
@@ -612,7 +613,7 @@ void PositionSystemTest::check_results()
             double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
 
             EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
-            EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
+            EXPECT_LT(static_3D_error_m, FLAGS_static_3D_error_m);
             ASSERT_LT(accuracy_CEP, FLAGS_accuracy_CEP);
             ASSERT_LT(precision_SEP, FLAGS_precision_SEP);
 

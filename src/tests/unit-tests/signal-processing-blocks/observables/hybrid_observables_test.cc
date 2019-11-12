@@ -1506,7 +1506,7 @@ void HybridObservablesTest::check_results_code_pseudorange(
                 }
 
             // check results against the test tolerance
-            if (!std::insnan(rmse))
+            if (!std::isnan(rmse))
                 {
                     ASSERT_LT(rmse, 3.0);
                     ASSERT_LT(error_mean, 1.0);

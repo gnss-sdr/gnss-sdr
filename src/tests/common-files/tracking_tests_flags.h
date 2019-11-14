@@ -58,6 +58,10 @@ DEFINE_double(DLL_bw_hz_start, 1.0, "DLL Wide configuration start sweep value [H
 DEFINE_double(DLL_bw_hz_stop, 1.0, "DLL Wide configuration stop sweep value [Hz]");
 DEFINE_double(DLL_bw_hz_step, 0.25, "DLL Wide configuration sweep step value [Hz]");
 
+DEFINE_double(fll_bw_hz, 4.0, "FLL filter bandwidth [Hz]");
+DEFINE_bool(enable_fll_pull_in, false, "Enable FLL in pull-in phase");
+DEFINE_bool(enable_fll_steady_state, false, "Enable FLL in steady-state phase");
+
 DEFINE_double(PLL_narrow_bw_hz, 5.0, "PLL Narrow configuration value [Hz]");
 DEFINE_double(DLL_narrow_bw_hz, 0.75, "DLL Narrow configuration value [Hz]");
 

@@ -74,10 +74,10 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.vector_length = vector_length;
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (trk_param.item_type != "fc32")
+    if (trk_param.item_type != "gr_complex")
         {
             LOG(WARNING) << trk_param.item_type << " unknown tracking item type changing to gr_complex";
-            trk_param.item_type = "fc32";
+            trk_param.item_type = "gr_complex";
         }
     tracking_ = dll_pll_veml_make_tracking(trk_param);
     channel_ = 0;

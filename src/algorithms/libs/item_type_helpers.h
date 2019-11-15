@@ -38,20 +38,13 @@
 #include <string>
 
 using item_type_converter_t = std::function<void(void *, const void *, unsigned)>;
-/*!
- * \brief Convert a gnss-sdr item type string to internal 
- */
-std::string external_item_type_to_internal(const std::string &external_item_type);
-
 
 /*!
  * \brief Check if a string is a valid item type
  *
  * \description Valid item types include:
- *     "i8", "ic8", "i16", "ic16", "i32", "ic32", "f32", "fc32"
+ *     "byte", "short", "float", "ibyte", "ishort", "cbyte", "cshort", "gr_complex"
  *
- *  where "i" denotes integer, "f" denotes float and "c" is for complex and
- *  the number indicates the number of bits in the representation
  */
 bool item_type_valid(const std::string &item_type);
 
@@ -59,6 +52,12 @@ bool item_type_valid(const std::string &item_type);
  * \brief Return the size of the given item type, or zero if unknown
  */
 size_t item_type_size(const std::string &item_type);
+
+/*!
+ * \brief Determine if an item_type is complex
+ */
+bool item_type_is_complex(const std::string &item_type);
+
 
 /*!
  * \brief Create a function to convert an array of input_type to an array of output_type
@@ -71,12 +70,14 @@ size_t item_type_size(const std::string &item_type);
  *
  * The item types accepted are:
  *
- *  1. "i8" for 8 bit integers
- *  2. "ic8" for complex (interleaved) 8 bit integers
- *  3. "i16" for 16 bit integers
- *  4. "ic16" for complex (interleaved) 16 bit integers
- *  5. "f32" for 32 bit floating point values
- *  6. "fc32" for complex (interleaved) 32 bit floating point values
+ *  1. "byte" for 8 bit integers
+ *  2. "cbyte" for complex (interleaved) 8 bit integers
+ *  4. "ibyte" for complex (interleaved) 8 bit integers
+ *  4. "short" for 16 bit integers
+ *  5. "cshort" for complex (interleaved) 16 bit integers
+ *  6. "ishort" for complex (interleaved) 16 bit integers
+ *  7. "float" for 32 bit floating point values
+ *  8. "gr_complex" for complex (interleaved) 32 bit floating point values
  *
  * \returns A function object with the following prototype:
  *  void convert_fun( void *dest, void *src, int num_items );

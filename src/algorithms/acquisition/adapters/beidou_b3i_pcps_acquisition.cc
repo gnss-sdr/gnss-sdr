@@ -201,15 +201,15 @@ float BeidouB3iPcpsAcquisition::calculate_threshold(float pfa)
 
 void BeidouB3iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             // nothing to connect
         }
-    else if (item_type_ == "ic16")
+    else if (item_type_ == "cshort")
         {
             // nothing to connect
         }
-    else if (item_type_ == "ic8")
+    else if (item_type_ == "cbyte")
         {
             // Since a byte-based acq implementation is not available,
             // we just convert cshorts to gr_complex
@@ -226,15 +226,15 @@ void BeidouB3iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void BeidouB3iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             // nothing to disconnect
         }
-    else if (item_type_ == "ic16")
+    else if (item_type_ == "cshort")
         {
             // nothing to disconnect
         }
-    else if (item_type_ == "ic8")
+    else if (item_type_ == "cbyte")
         {
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
@@ -249,15 +249,15 @@ void BeidouB3iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr BeidouB3iPcpsAcquisition::get_left_block()
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             return acquisition_;
         }
-    if (item_type_ == "ic16")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }
-    if (item_type_ == "ic8")
+    if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }

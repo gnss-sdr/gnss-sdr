@@ -71,7 +71,6 @@ void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     const std::string &role, double chip_rate, double opt_freq)
 {
     item_type = configuration->property(role + ".item_type", item_type);
-    item_type = external_item_type_to_internal(item_type);
     if (!item_type_valid(item_type))
         {
             throw std::invalid_argument("Unknown item type: " + item_type);

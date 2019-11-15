@@ -234,11 +234,11 @@ void GalileoE5aPcpsAcquisition::set_state(int state)
 
 void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             // nothing to connect
         }
-    else if (item_type_ == "ic16")
+    else if (item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -251,11 +251,11 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute
 
 void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             // nothing to disconnect
         }
-    else if (item_type_ == "ic16")
+    else if (item_type_ == "cshort")
         {
             // nothing to disconnect
         }

@@ -69,7 +69,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    if (item_type_ == "ic8")
+    if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
@@ -223,15 +223,15 @@ float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 
 void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             // nothing to connect
         }
-    else if (item_type_ == "ic16")
+    else if (item_type_ == "cshort")
         {
             // nothing to connect
         }
-    else if (item_type_ == "ic8")
+    else if (item_type_ == "cbyte")
         {
             // Since a byte-based acq implementation is not available,
             // we just convert cshorts to gr_complex
@@ -248,15 +248,15 @@ void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             // nothing to disconnect
         }
-    else if (item_type_ == "ic16")
+    else if (item_type_ == "cshort")
         {
             // nothing to disconnect
         }
-    else if (item_type_ == "ic8")
+    else if (item_type_ == "cbyte")
         {
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
@@ -271,15 +271,15 @@ void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
 {
-    if (item_type_ == "fc32")
+    if (item_type_ == "gr_complex")
         {
             return acquisition_;
         }
-    if (item_type_ == "ic16")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }
-    if (item_type_ == "ic8")
+    if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }

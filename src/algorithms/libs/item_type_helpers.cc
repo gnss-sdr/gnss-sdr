@@ -35,45 +35,11 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cstring>  // memcpy
 
-std::string external_item_type_to_internal(const std::string &external_item_type)
-{
-    std::string internal_item_type("");
-
-    if (external_item_type == "byte")
-        {
-            internal_item_type = "i8";
-        }
-    else if (external_item_type == "ibyte" || external_item_type == "cbyte")
-        {
-            internal_item_type = "ic8";
-        }
-    else if (external_item_type == "short")
-        {
-            internal_item_type = "i16";
-        }
-    else if (external_item_type == "ishort" || external_item_type == "cshort")
-        {
-            internal_item_type = "ic16";
-        }
-    else if (external_item_type == "float")
-        {
-            internal_item_type = "f32";
-        }
-    else if (external_item_type == "gr_complex")
-        {
-            internal_item_type = "fc32";
-        }
-
-
-    return internal_item_type;
-}
-
 bool item_type_valid(const std::string &item_type)
 {
-    if (item_type != "i8" and item_type != "ic8" and
-        item_type != "i16" and item_type != "ic16" and
-        item_type != "i32" and item_type != "ic32" and
-        item_type != "f32" and item_type != "fc32")
+    if (item_type != "byte" and item_type != "cbyte" and item_type != "ibyte" and
+        item_type != "short" and item_type != "cshort" and item_type != "ishort" and
+        item_type != "float" and item_type != "gr_complex")
         {
             return false;
         }
@@ -83,35 +49,27 @@ bool item_type_valid(const std::string &item_type)
 
 size_t item_type_size(const std::string &item_type)
 {
-    if (item_type == "i8")
+    if (item_type == "byte" or item_type == "ibyte")
         {
             return sizeof(int8_t);
         }
-    else if (item_type == "ic8")
+    else if (item_type == "cbyte")
         {
             return 2 * sizeof(int8_t);
         }
-    else if (item_type == "i16")
+    else if (item_type == "short" or item_type == "ishort" )
         {
             return sizeof(int16_t);
         }
-    else if (item_type == "ic16")
+    else if (item_type == "cshort")
         {
             return 2 * sizeof(int16_t);
         }
-    else if (item_type == "i32")
-        {
-            return sizeof(int32_t);
-        }
-    else if (item_type == "ic32")
-        {
-            return 2 * sizeof(int32_t);
-        }
-    else if (item_type == "f32")
+    else if (item_type == "float")
         {
             return sizeof(float);
         }
-    else if (item_type == "fc32")
+    else if (item_type == "gr_complex")
         {
             return 2 * sizeof(float);
         }
@@ -121,14 +79,9 @@ size_t item_type_size(const std::string &item_type)
         }
 }
 
-// VOLK doesnt do 32 bit integer converters
-template <typename OT>
-void convert_32i_generic(OT *dest, const int32_t *src, unsigned int num_items)
+bool item_type_is_complex(const std::string &item_type)
 {
-    for (unsigned int i = 0; i < num_items; ++i)
-        {
-            dest[i] = static_cast<OT>(src[i]);
-        }
+    return (item_type == "ibyte") or (item_type == "cbyte") or (item_type == "ishort") or (item_type == "cshort") or (item_type == "gr_complex");
 }
 
 void copy_converter(void *dest, const void *src, unsigned int num_items, size_t item_size)
@@ -184,42 +137,6 @@ void convert_16ic_32fc(void *dest, const void *src, unsigned int num_items)
         reinterpret_cast<const int16_t *>(src), 1.0f, 2 * num_items);
 }
 
-void convert_32i_8i(void *dest, const void *src, unsigned int num_items)
-{
-    convert_32i_generic<int8_t>(reinterpret_cast<int8_t *>(dest),
-        reinterpret_cast<const int32_t *>(src), num_items);
-}
-
-void convert_32i_16i(void *dest, const void *src, unsigned int num_items)
-{
-    convert_32i_generic<int16_t>(reinterpret_cast<int16_t *>(dest),
-        reinterpret_cast<const int32_t *>(src), num_items);
-}
-
-void convert_32i_32f(void *dest, const void *src, unsigned int num_items)
-{
-    convert_32i_generic<float>(reinterpret_cast<float *>(dest),
-        reinterpret_cast<const int32_t *>(src), num_items);
-}
-
-void convert_32ic_8ic(void *dest, const void *src, unsigned int num_items)
-{
-    convert_32i_generic<int8_t>(reinterpret_cast<int8_t *>(dest),
-        reinterpret_cast<const int32_t *>(src), 2 * num_items);
-}
-
-void convert_32ic_16ic(void *dest, const void *src, unsigned int num_items)
-{
-    convert_32i_generic<int16_t>(reinterpret_cast<int16_t *>(dest),
-        reinterpret_cast<const int32_t *>(src), 2 * num_items);
-}
-
-void convert_32ic_32fc(void *dest, const void *src, unsigned int num_items)
-{
-    convert_32i_generic<float>(reinterpret_cast<float *>(dest),
-        reinterpret_cast<const int32_t *>(src), 2 * num_items);
-}
-
 void convert_32f_8i(void *dest, const void *src, unsigned int num_items)
 {
     volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(dest),
@@ -244,29 +161,6 @@ void convert_32fc_16ic(void *dest, const void *src, unsigned int num_items)
         reinterpret_cast<const float *>(src), 1.0f, 2 * num_items);
 }
 
-/*!
- * \brief Create a function to convert an array of input_type to an array of output_type
- *
- * \description Provides a generic interface to generate conversion functions for mapping
- * arrays of items.
- *
- * \param input_type - String representation of the input item type
- * \param output_type - String representation of the output item type
- *
- * The item types accepted are:
- *
- *  1. "i8" for 8 bit integers
- *  2. "ic8" for complex (interleaved) 8 bit integers
- *  3. "i16" for 16 bit integers
- *  4. "ic16" for complex (interleaved) 16 bit integers
- *  5. "f32" for 32 bit floating point values
- *  6. "fc32" for complex (interleaved) 32 bit floating point values
- *
- * \returns A function object with the following prototype:
- *  void convert_fun( void *dest, void *src, int num_items );
- *
- *  
- */
 item_type_converter_t make_vector_converter(std::string input_type,
     std::string output_type)
 {
@@ -282,115 +176,129 @@ item_type_converter_t make_vector_converter(std::string input_type,
                 std::placeholders::_3, input_size);
         }
 
-    if (input_type == "i8")
+    if (input_type == "byte")
         {
-            if (output_type == "i16")
+            if (output_type == "short")
                 {
                     return std::bind(convert_8i_16i, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "f32")
+            else if (output_type == "float")
                 {
                     return std::bind(convert_8i_32f, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
         }
-    else if (input_type == "ic8")
+    else if (input_type == "cbyte")
         {
-            if (output_type == "ic16")
+            if (output_type == "ibyte" )
+                {
+                    size_t input_size = item_type_size(input_type);
+                    return std::bind(copy_converter, std::placeholders::_1, std::placeholders::_2,
+                        std::placeholders::_3, input_size);
+                }
+            if (output_type == "cshort" or output_type == "ishort" )
                 {
                     return std::bind(convert_8ic_16ic, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "fc32")
+            else if (output_type == "gr_complex")
                 {
                     return std::bind(convert_8ic_32fc, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
         }
-    else if (input_type == "i16")
+    else if (input_type == "ibyte")
         {
-            if (output_type == "i8")
+            if (output_type == "cbyte" )
+                {
+                    size_t input_size = item_type_size(input_type);
+                    return std::bind(copy_converter, std::placeholders::_1, std::placeholders::_2,
+                        std::placeholders::_3, input_size);
+                }
+            else if (output_type == "cshort" or output_type == "ishort")
+                {
+                    return std::bind(convert_8i_16i, std::placeholders::_1,
+                        std::placeholders::_2, std::placeholders::_3);
+                }
+            else if (output_type == "gr_complex")
+                {
+                    return std::bind(convert_8i_32f, std::placeholders::_1,
+                        std::placeholders::_2, std::placeholders::_3);
+                }
+        }
+    else if (input_type == "short")
+        {
+            if (output_type == "byte")
                 {
                     return std::bind(convert_16i_8i, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "f32")
+            else if (output_type == "float")
                 {
                     return std::bind(convert_16i_32f, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
         }
-    else if (input_type == "ic16")
+    else if (input_type == "cshort")
         {
-            if (output_type == "ic8")
+            if (output_type == "cbyte" or output_type == "ibyte" )
                 {
                     return std::bind(convert_16ic_8ic, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "fc32")
+            if (output_type == "ishort")
+                {
+                    size_t input_size = item_type_size(input_type);
+                    return std::bind(copy_converter, std::placeholders::_1, std::placeholders::_2,
+                        std::placeholders::_3, input_size);
+                }
+            else if (output_type == "gr_complex")
                 {
                     return std::bind(convert_16ic_32fc, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
         }
-    else if (input_type == "i32")
+    else if (input_type == "ishort")
         {
-            if (output_type == "i8")
+            if (output_type == "cbyte" or output_type == "ibyte" )
                 {
-                    return std::bind(convert_32i_8i, std::placeholders::_1,
+                    return std::bind(convert_16i_8i, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "i16")
+            if (output_type == "cshort")
                 {
-                    return std::bind(convert_32i_16i, std::placeholders::_1,
-                        std::placeholders::_2, std::placeholders::_3);
+                    size_t input_size = item_type_size(input_type);
+                    return std::bind(copy_converter, std::placeholders::_1, std::placeholders::_2,
+                        std::placeholders::_3, input_size);
                 }
-            else if (output_type == "f32")
+            else if (output_type == "gr_complex")
                 {
-                    return std::bind(convert_32i_32f, std::placeholders::_1,
+                    return std::bind(convert_16i_32f, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
         }
-    else if (input_type == "ic32")
+    else if (input_type == "float")
         {
-            if (output_type == "ic8")
-                {
-                    return std::bind(convert_32ic_8ic, std::placeholders::_1,
-                        std::placeholders::_2, std::placeholders::_3);
-                }
-            else if (output_type == "ic16")
-                {
-                    return std::bind(convert_32ic_16ic, std::placeholders::_1,
-                        std::placeholders::_2, std::placeholders::_3);
-                }
-            else if (output_type == "fc32")
-                {
-                    return std::bind(convert_32ic_32fc, std::placeholders::_1,
-                        std::placeholders::_2, std::placeholders::_3);
-                }
-        }
-    else if (input_type == "f32")
-        {
-            if (output_type == "i8")
+            if (output_type == "byte")
                 {
                     return std::bind(convert_32f_8i, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "i16")
+            else if (output_type == "short")
                 {
                     return std::bind(convert_32f_16i, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
         }
-    else if (input_type == "fc32")
+    else if (input_type == "gr_complex")
         {
-            if (output_type == "ic8")
+            if (output_type == "cbyte" or output_type == "ibyte")
                 {
                     return std::bind(convert_32fc_8ic, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);
                 }
-            else if (output_type == "ic16")
+            else if (output_type == "cshort" or output_type == "ishort" )
                 {
                     return std::bind(convert_32fc_16ic, std::placeholders::_1,
                         std::placeholders::_2, std::placeholders::_3);

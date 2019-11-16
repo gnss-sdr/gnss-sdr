@@ -2,12 +2,12 @@
  * \file item_type_helpers.h
  * \brief Utility functions for converting between item types
  * \authors <ul>
- *          <li> Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
+ *          <li> Cillian O'Driscoll, 2019. cillian.odriscoll(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,13 +25,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef ITEM_TYPE_HELPERS_H_
-#define ITEM_TYPE_HELPERS_H_
+#ifndef GNSS_SDR_ITEM_TYPE_HELPERS_H_
+#define GNSS_SDR_ITEM_TYPE_HELPERS_H_
 
 
 #include <functional>

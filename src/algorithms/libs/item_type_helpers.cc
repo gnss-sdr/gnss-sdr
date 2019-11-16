@@ -1,13 +1,13 @@
 /*!
- * \file item_type_helpers.h
+ * \file item_type_helpers.cc
  * \brief Utility functions for converting between item types
  * \authors <ul>
- *          <li> Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
+ *          <li> Cillian O'Driscoll, 2019. cillian.odriscoll(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -202,7 +202,7 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
                 {
 #ifdef OLDCOMPILER
                     return std::bind(convert_8i_16i, std::placeholders::_1,
-                        std::placeholders::_2, std::placeholders::_3);_2, std::placeholders::_3);
+                        std::placeholders::_2, std::placeholders::_3);
 #else
                     return [=](auto &&arg1, auto &&arg2, auto &&arg3) { return convert_8i_16i(arg1, arg2, arg3); };
 #endif
@@ -232,8 +232,8 @@ item_type_converter_t make_vector_converter(const std::string &input_type,
             if (output_type == "cshort" or output_type == "ishort")
                 {
 #ifdef OLDCOMPILER
-return std::bind(convert_8ic_16ic, std::placeholders::_1,
-                       std::placeholders::_2, std::placehold
+                    return std::bind(convert_8ic_16ic, std::placeholders::_1,
+                        std::placeholders::_2, std::placeholders::_3);
 #else
                     return [=](auto &&arg1, auto &&arg2, auto &&arg3) { return convert_8ic_16ic(arg1, arg2, arg3); };
 #endif

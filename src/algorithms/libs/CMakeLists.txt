@@ -135,6 +135,30 @@ target_compile_definitions(algorithms_libs
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        target_compile_definitions(algorithms_libs
+            PRIVATE -DOLDCOMPILER=1
+        )
+    endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        if(CLANG_VERSION VERSION_LESS "600")
+            target_compile_definitions(algorithms_libs
+                PRIVATE -DOLDCOMPILER=1
+            )
+        endif()
+    else()
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            target_compile_definitions(algorithms_libs
+                PRIVATE -DOLDCOMPILER=1
+            )
+        endif()
+    endif()
+endif()
+
 set_property(TARGET algorithms_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

@@ -133,7 +133,7 @@ file(TO_CMAKE_PATH ${VOLK_PYTHON_DIR} VOLK_PYTHON_DIR)
 function(VOLK_UNIQUE_TARGET desc)
     file(RELATIVE_PATH reldir ${PROJECT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import re, hashlib
-unique = hashlib.md5(b'${reldir}${ARGN}').hexdigest()[:5]
+unique = hashlib.sha1(b'${reldir}${ARGN}').hexdigest()[:5]
 print(re.sub('\\W', '_', '${desc} ${reldir} ' + unique))"
     OUTPUT_VARIABLE _target OUTPUT_STRIP_TRAILING_WHITESPACE)
     add_custom_target(${_target} ALL DEPENDS ${ARGN})

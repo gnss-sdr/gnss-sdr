@@ -166,7 +166,8 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     config->set_property("Acquisition_1B.item_type", "gr_complex");
     config->set_property("Acquisition_1B.coherent_integration_time_ms", "4");
     config->set_property("Acquisition_1B.dump", "false");
-    config->set_property("Acquisition_1B.threshold", "0.1");
+    //config->set_property("Acquisition_1B.threshold", "0.1");
+    config->set_property("Acquisition_1B.pfa", "0.001");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "125");
     config->set_property("Acquisition_1B.repeat_satellite", "false");
@@ -253,7 +254,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
 
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
     boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx_make(channel_internal_queue);
 

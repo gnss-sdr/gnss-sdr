@@ -249,7 +249,8 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1B.max_dwells", "1");
     config->set_property("Acquisition_1B.bit_transition_flag", "false");
-    config->set_property("Acquisition_1B.threshold", "0.1");
+    //config->set_property("Acquisition_1B.threshold", "0.1");
+    config->set_property("Acquisition_1B.pfa", "0.0001");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "250");
     config->set_property("Acquisition_1B.dump", "false");
@@ -338,7 +339,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1B.max_dwells", "1");
     config->set_property("Acquisition_1B.bit_transition_flag", "false");
-    config->set_property("Acquisition_1B.pfa", "0.1");
+    config->set_property("Acquisition_1B.pfa", "0.0001");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "250");
     config->set_property("Acquisition_1B.dump", "false");
@@ -488,10 +489,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
-    }) << "Failure setting threshold.";
-
-    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
@@ -519,7 +516,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                 }
             else if (i == 1)
                 {
-                    gnss_synchro.PRN = 20;  // This satellite is not visible
+                    gnss_synchro.PRN = 36;  // This satellite is not visible
                 }
 
             acquisition->set_local_code();
@@ -571,10 +568,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
     ASSERT_NO_THROW({
         acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
     }) << "Failure setting doppler_step.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.0));
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

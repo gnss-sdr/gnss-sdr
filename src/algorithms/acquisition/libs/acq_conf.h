@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_ACQ_CONF_H_
 #define GNSS_SDR_ACQ_CONF_H_
 
+#include "configuration_interface.h"
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -43,10 +44,15 @@ public:
     uint32_t sampled_ms;
     uint32_t ms_per_code;
     uint32_t samples_per_chip;
+    uint32_t chips_per_second;
     uint32_t max_dwells;
-    uint32_t doppler_max;
+    int32_t doppler_max;
+    int32_t doppler_min;
+    float doppler_step;
     uint32_t num_doppler_bins_step2;
     float doppler_step2;
+    float pfa;
+    float pfa2;
     int64_t fs_in;
     float samples_per_ms;
     float samples_per_code;
@@ -63,8 +69,16 @@ public:
     std::string dump_filename;
     uint32_t dump_channel;
     size_t it_size;
+    std::string item_type;
 
     Acq_Conf();
+
+    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
+
+private:
+    void SetDerivedParams();
+
+    void ConfigureAutomaticResampler(double opt_freq);
 };
 
 #endif

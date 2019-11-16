@@ -34,6 +34,7 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
 #define GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
 
+#include "acq_conf.h"
 #include "channel_fsm.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
@@ -156,6 +157,7 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
+    Acq_Conf acq_parameters_;
     pcps_acquisition_sptr acquisition_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;

@@ -40,6 +40,7 @@ set(GNSS_SPLIBS_SOURCES
     conjugate_ic.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
+    item_type_helpers.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
@@ -65,6 +66,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_sdr_create_directory.h
     gnss_circular_deque.h
     geofunctions.h
+    item_type_helpers.h
 )
 
 if(ENABLE_OPENCL)

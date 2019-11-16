@@ -49,99 +49,23 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
                                 out_streams_(out_streams)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./acquisition.mat";
+    acq_parameters_.ms_per_code = 4;
+    acq_parameters_.SetFromConfiguration(configuration_, role, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type", default_item_type);
+    if (FLAGS_doppler_max != 0) acq_parameters_.doppler_max = FLAGS_doppler_max;
+    doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = acq_parameters_.doppler_step;
+    item_type_ = acq_parameters_.item_type;
+    fs_in_ = acq_parameters_.fs_in;
 
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    acq_parameters_.fs_in = fs_in_;
-    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0)
-        {
-            doppler_max_ = FLAGS_doppler_max;
-        }
-    acq_parameters_.doppler_max = doppler_max_;
-    acq_parameters_.ms_per_code = 4;
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters_.ms_per_code);
-    acq_parameters_.sampled_ms = sampled_ms_;
-    if ((acq_parameters_.sampled_ms % acq_parameters_.ms_per_code) != 0)
-        {
-            LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of 4. Setting it to 4";
-            acq_parameters_.sampled_ms = acq_parameters_.ms_per_code;
-        }
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-    acq_parameters_.bit_transition_flag = bit_transition_flag_;
-    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  // will be false in future versions
-    acq_parameters_.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
-    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  // will be true in future versions
-    max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-    acq_parameters_.max_dwells = max_dwells_;
-    dump_ = configuration_->property(role + ".dump", false);
-    acq_parameters_.dump = dump_;
-    acq_parameters_.dump_channel = configuration_->property(role + ".dump_channel", 0);
-    blocking_ = configuration_->property(role + ".blocking", true);
-    acq_parameters_.blocking = blocking_;
-    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
-    acq_parameters_.dump_filename = dump_filename_;
-
-    acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
-        {
-            LOG(WARNING) << "Galileo E1 acqisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
-            acq_parameters_.use_automatic_resampler = false;
-        }
-    if (acq_parameters_.use_automatic_resampler)
-        {
-            if (acq_parameters_.fs_in > GALILEO_E1_OPT_ACQ_FS_SPS)
-                {
-                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / GALILEO_E1_OPT_ACQ_FS_SPS);
-                    uint32_t decimation = acq_parameters_.fs_in / GALILEO_E1_OPT_ACQ_FS_SPS;
-                    while (acq_parameters_.fs_in % decimation > 0)
-                        {
-                            decimation--;
-                        };
-                    acq_parameters_.resampler_ratio = decimation;
-                    acq_parameters_.resampled_fs = acq_parameters_.fs_in / static_cast<int>(acq_parameters_.resampler_ratio);
-                }
-            // -- Find number of samples per spreading code (4 ms)  -----------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-            acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_CPS) * static_cast<float>(acq_parameters_.resampled_fs)));
-        }
-    else
-        {
-            // -- Find number of samples per spreading code (4 ms)  -----------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-            acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_CPS) * static_cast<float>(acq_parameters_.fs_in)));
-        }
-
-    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GALILEO_E1_CODE_PERIOD_MS);
-    vector_length_ = sampled_ms_ * acq_parameters_.samples_per_ms;
-    if (bit_transition_flag_)
-        {
-            vector_length_ *= 2;
-        }
-
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
     code_ = std::vector<std::complex<float>>(vector_length_);
 
-    if (item_type_ == "cshort")
-        {
-            item_size_ = sizeof(lv_16sc_t);
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-        }
-    acq_parameters_.it_size = item_size_;
-    acq_parameters_.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
-    acq_parameters_.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
-    acq_parameters_.make_2_steps = configuration_->property(role + ".make_two_steps", false);
-    acq_parameters_.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
+    sampled_ms_ = acq_parameters_.sampled_ms;
+
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
@@ -153,7 +77,6 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     channel_ = 0;
     threshold_ = 0.0;
-    doppler_step_ = 0;
     doppler_center_ = 0;
     gnss_synchro_ = nullptr;
 

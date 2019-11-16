@@ -57,7 +57,10 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 
     LOG(INFO) << "role " << role;
 
-    if (FLAGS_doppler_max != 0) acq_parameters_.doppler_max = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            acq_parameters_.doppler_max = FLAGS_doppler_max;
+        }
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = acq_parameters_.doppler_step;
     fs_in_ = acq_parameters_.fs_in;

@@ -58,7 +58,6 @@ size_t item_type_size(const std::string &item_type);
  */
 bool item_type_is_complex(const std::string &item_type);
 
-
 /*!
  * \brief Create a function to convert an array of input_type to an array of output_type
  *
@@ -82,9 +81,8 @@ bool item_type_is_complex(const std::string &item_type);
  * \returns A function object with the following prototype:
  *  void convert_fun( void *dest, void *src, int num_items );
  *
- *  
  */
-item_type_converter_t make_vector_converter(std::string input_type,
-    std::string output_type);
+item_type_converter_t make_vector_converter(const std::string &input_type,
+    const std::string &output_type);
 
 #endif

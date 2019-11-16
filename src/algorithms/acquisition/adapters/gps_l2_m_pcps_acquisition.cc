@@ -56,7 +56,10 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     DLOG(INFO) << "Role " << role;
 
-    if (FLAGS_doppler_max != 0) acq_parameters_.doppler_max = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            acq_parameters_.doppler_max = FLAGS_doppler_max;
+        }
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = acq_parameters_.doppler_step;
     item_type_ = acq_parameters_.item_type;

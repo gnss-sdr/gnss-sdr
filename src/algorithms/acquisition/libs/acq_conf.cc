@@ -46,8 +46,8 @@ Acq_Conf::Acq_Conf()
     doppler_min = -5000;
     num_doppler_bins_step2 = 4U;
     doppler_step2 = 125.0;
-    pfa = 0.0;
-    pfa2 = 0.0;
+    pfa = 0.001;
+    pfa2 = 0.001;
     fs_in = 4000000;
     samples_per_ms = 0.0;
     samples_per_code = 0.0;
@@ -114,7 +114,9 @@ void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     pfa = configuration->property(role + ".pfa", pfa);
     pfa2 = configuration->property(role + ".pfa_second_step", pfa2);
     if (pfa2 <= 0.0)
-        pfa2 = pfa;
+        {
+            pfa2 = pfa;
+        }
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
 

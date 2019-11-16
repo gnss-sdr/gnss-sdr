@@ -193,7 +193,6 @@ int PositionSystemTest::configure_receiver()
             const int number_of_channels = 11;
             const int in_acquisition = 1;
 
-            const float threshold = 2.5;
             const float doppler_max = 5000.0;
             const float doppler_step = 250.0;
             const int max_dwells = 10;
@@ -278,7 +277,9 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
             config->set_property("Acquisition_1C.item_type", "gr_complex");
             config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
-            config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
+            //config->set_property("Acquisition_1C.use_CFAR_algorithm", "false");
+            //config->set_property("Acquisition_1C.pfa", std::to_string(0.001));
+            //config->set_property("Acquisition_1C.pfa2", std::to_string(0.001));
             config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
             config->set_property("Acquisition_1C.bit_transition_flag", "false");

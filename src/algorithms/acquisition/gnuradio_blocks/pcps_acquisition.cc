@@ -878,7 +878,9 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     bool was_step_two = d_step_two;
                     d_step_two = false;
                     if (was_step_two)
-                        calculate_threshold();
+                        {
+                            calculate_threshold();
+                        }
                     send_negative_acquisition();
                 }
         }
@@ -913,12 +915,15 @@ bool pcps_acquisition::start()
     return true;
 }
 
-void pcps_acquisition::calculate_threshold(void)
+
+void pcps_acquisition::calculate_threshold()
 {
     float pfa = (d_step_two ? acq_parameters.pfa2 : acq_parameters.pfa);
 
     if (pfa <= 0.0)
-        return;
+        {
+            return;
+        }
 
     int effective_fft_size = (acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
     int num_doppler_bins = (d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins);
@@ -927,6 +932,7 @@ void pcps_acquisition::calculate_threshold(void)
 
     d_threshold = 2.0 * boost::math::gamma_p_inv(2 * acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<double>(num_bins)));
 }
+
 
 int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int& ninput_items,

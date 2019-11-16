@@ -173,8 +173,6 @@ private:
     std::string item_type_;
     unsigned int vector_length_;
     unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     bool acquire_pilot_;
     unsigned int channel_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
@@ -183,10 +181,7 @@ private:
     unsigned int doppler_step_;
     int doppler_center_;
     unsigned int sampled_ms_;
-    unsigned int max_dwells_;
     int64_t fs_in_;
-    bool dump_;
-    bool blocking_;
     std::string dump_filename_;
     std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;

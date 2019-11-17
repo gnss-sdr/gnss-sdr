@@ -38,8 +38,9 @@ find_path(ORC_INCLUDE_DIR
     PATHS /usr/include
           /usr/local/include
           /opt/local/include
-          ${ORC_ROOT}/include/orc-0.4
-          ${CMAKE_INSTALL_PREFIX}/include/orc-0.4
+          ${ORC_ROOT}/include
+          ${CMAKE_INSTALL_PREFIX}/include
+    PATH_SUFFIXES orc-0.4
 )
 
 find_path(ORC_LIBRARY_DIR

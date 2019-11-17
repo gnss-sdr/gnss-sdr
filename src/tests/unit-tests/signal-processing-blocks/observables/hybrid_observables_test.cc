@@ -661,7 +661,6 @@ void HybridObservablesTest::configure_receiver(
     bool high_dyn)
 {
     config = std::make_shared<InMemoryConfiguration>();
-    config->set_property("Tracking.dump", "true");
     if (high_dyn)
         {
             config->set_property("Tracking.high_dyn", "true");
@@ -670,8 +669,6 @@ void HybridObservablesTest::configure_receiver(
         {
             config->set_property("Tracking.high_dyn", "false");
         }
-    config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
-    config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
     config->set_property("Tracking.item_type", "gr_complex");
     config->set_property("Tracking.pll_bw_hz", std::to_string(PLL_wide_bw_hz));
@@ -679,6 +676,12 @@ void HybridObservablesTest::configure_receiver(
     config->set_property("Tracking.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
     config->set_property("Tracking.pll_bw_narrow_hz", std::to_string(PLL_narrow_bw_hz));
     config->set_property("Tracking.dll_bw_narrow_hz", std::to_string(DLL_narrow_bw_hz));
+    config->set_property("Tracking.fll_bw_hz", std::to_string(FLAGS_fll_bw_hz));
+    config->set_property("Tracking.enable_fll_pull_in", FLAGS_enable_fll_pull_in ? "true" : "false");
+    config->set_property("Tracking.enable_fll_steady_state", FLAGS_enable_fll_steady_state ? "true" : "false");
+    config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
+    config->set_property("Tracking.dump", "true");
+    config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.dump", "true");
     config->set_property("TelemetryDecoder.dump", "true");
@@ -696,7 +699,7 @@ void HybridObservablesTest::configure_receiver(
             std::memcpy(static_cast<void*>(gnss_synchro_master.Signal), str, 3);  // copy string into synchro char array: 2 char + null
 
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.early_late_space_narrow_chips", "0.5");
+            config->set_property("Tracking.early_late_space_narrow_chips", "0.1");
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
         }
@@ -743,8 +746,8 @@ void HybridObservablesTest::configure_receiver(
                 }
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "true");
-            config->set_property("Tracking.pll_filter_order", "2");
-            config->set_property("Tracking.dll_filter_order", "2");
+            //config->set_property("Tracking.pll_filter_order", "2");
+            //config->set_property("Tracking.dll_filter_order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E5a_Telemetry_Decoder");
         }
@@ -758,8 +761,8 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "true");
-            config->set_property("Tracking.pll_filter_order", "2");
-            config->set_property("Tracking.dll_filter_order", "2");
+            //config->set_property("Tracking.pll_filter_order", "2");
+            //config->set_property("Tracking.dll_filter_order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L5_Telemetry_Decoder");
         }
@@ -776,6 +779,9 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "implementation: " << config->property("Tracking.implementation", std::string("undefined")) << " \n";
     std::cout << "pll_bw_hz: " << config->property("Tracking.pll_bw_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_hz: " << config->property("Tracking.dll_bw_hz", 0.0) << " Hz\n";
+    std::cout << "fll_bw_hz: " << config->property("Tracking.fll_bw_hz", 0.0) << " Hz\n";
+    std::cout << "enable_fll_pull_in: " << config->property("Tracking.enable_fll_pull_in", false) << "\n";
+    std::cout << "enable_fll_steady_state: " << config->property("Tracking.enable_fll_steady_state", false) << "\n";
     std::cout << "pll_bw_narrow_hz: " << config->property("Tracking.pll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_narrow_hz: " << config->property("Tracking.dll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "extend_correlation_symbols: " << config->property("Tracking.extend_correlation_symbols", 0) << " Symbols\n";
@@ -785,6 +791,7 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "*****************************************\n";
 }
 
+
 void HybridObservablesTest::check_results_carrier_phase(
     arma::mat& true_ch0,
     arma::vec& true_tow_s,
@@ -792,7 +799,6 @@ void HybridObservablesTest::check_results_carrier_phase(
     const std::string& data_title)
 {
     // 1. True value interpolation to match the measurement times
-
     double t0 = measured_ch0(0, 0);
     int size1 = measured_ch0.col(0).n_rows;
     double t1 = measured_ch0(size1 - 1, 0);
@@ -873,7 +879,6 @@ void HybridObservablesTest::check_results_carrier_phase_double_diff(
     const std::string& data_title)
 {
     // 1. True value interpolation to match the measurement times
-
     double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
@@ -969,7 +974,6 @@ void HybridObservablesTest::check_results_carrier_doppler_double_diff(
     const std::string& data_title)
 {
     // 1. True value interpolation to match the measurement times
-
     double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
@@ -1062,7 +1066,6 @@ void HybridObservablesTest::check_results_carrier_doppler(
     const std::string& data_title)
 {
     // 1. True value interpolation to match the measurement times
-
     double t0 = measured_ch0(0, 0);
     int size1 = measured_ch0.col(0).n_rows;
     double t1 = measured_ch0(size1 - 1, 0);
@@ -1136,6 +1139,7 @@ void HybridObservablesTest::check_results_carrier_doppler(
             ASSERT_LT(rmse_ch0, 30);
         }
 }
+
 
 void HybridObservablesTest::check_results_duplicated_satellite(
     arma::mat& measured_sat1,
@@ -1389,6 +1393,7 @@ void HybridObservablesTest::check_results_duplicated_satellite(
         }
 }
 
+
 bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
 {
     try
@@ -1435,7 +1440,6 @@ void HybridObservablesTest::check_results_code_pseudorange(
     const std::string& data_title)
 {
     // 1. True value interpolation to match the measurement times
-
     double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
@@ -1521,6 +1525,7 @@ void HybridObservablesTest::check_results_code_pseudorange(
             std::cout << "Problem with observables in " << data_title << std::endl;
         }
 }
+
 
 bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_Synchro gnss)
 {
@@ -1662,6 +1667,8 @@ bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_S
         }
     return true;
 }
+
+
 TEST_F(HybridObservablesTest, ValidationOfResults)
 {
     // Configure the signal generator
@@ -1699,7 +1706,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
         }
 
-
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
@@ -1707,7 +1713,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         FLAGS_extend_correlation_symbols,
         FLAGS_smoother_length,
         FLAGS_high_dyn);
-
 
     for (auto& n : gnss_synchro_vec)
         {
@@ -1813,7 +1818,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 n->connect(top_block);
             }) << "Failure connecting tracking to the top_block.";
         }
-
 
     ASSERT_NO_THROW({
         std::string file;
@@ -1982,7 +1986,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
         }
 
-
     if (FLAGS_duplicated_satellites_test)
         {
             // special test mode for duplicated satellites
@@ -2083,7 +2086,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                         << "Error finding observation time epoch in the reference data";
                 }
 
-
             for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
                 {
                     // debug save to .mat
@@ -2122,7 +2124,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     std::vector<double> tmp_vector_y6(measured_obs_vec.at(n).col(3).colptr(0),
                         measured_obs_vec.at(n).col(3).colptr(0) + measured_obs_vec.at(n).col(3).n_rows);
                     save_mat_xy(tmp_vector_x6, tmp_vector_y6, std::string("measured_cp_ch_" + std::to_string(n)));
-
 
                     if (epoch_counters_vec.at(n) > 100)  // discard non-valid channels
                         {

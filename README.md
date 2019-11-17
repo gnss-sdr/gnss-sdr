@@ -160,13 +160,13 @@ This option is adequate if you are interested in development, in working with th
 First of all, install some basic packages:
 
 ~~~~~~
-$ sudo apt-get install git python-pip
+$ sudo apt-get install git python3-pip
 ~~~~~~
 
 Download, build and install PyBOMBS:
 
 ~~~~~~
-$ sudo pip install git+https://github.com/gnuradio/pybombs.git
+$ sudo pip3 install --upgrade git+https://github.com/gnuradio/pybombs.git
 ~~~~~~
 
 Apply a configuration:
@@ -302,9 +302,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ~~~~~~
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.10.0/protobuf-cpp-3.10.0.tar.gz
-$ tar xvfz protobuf-cpp-3.10.0.tar.gz
-$ cd protobuf-3.10.0
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.10.1/protobuf-cpp-3.10.1.tar.gz
+$ tar xvfz protobuf-cpp-3.10.1.tar.gz
+$ cd protobuf-3.10.1
 $ ./autogen.sh
 $ ./configure
 $ make

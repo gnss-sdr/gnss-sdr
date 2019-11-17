@@ -27,7 +27,10 @@
 //
 // Cross-platform attribute macros not included in VOLK
 //
-#if defined __GNUC__
+#if defined __clang__
+#define __VOLK_GNSSSDR_PREFETCH(addr) __builtin_prefetch(addr)
+#define __VOLK_GNSSSDR_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
+#elif defined __GNUC__
 #define __VOLK_GNSSSDR_PREFETCH(addr) __builtin_prefetch(addr)
 #define __VOLK_GNSSSDR_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
 #elif _MSC_VER
@@ -44,7 +47,20 @@
 //
 // Cross-platform attribute macros
 //
-#if defined __GNUC__
+#if defined __clang__
+// AppleClang also defines __GNUC__, so do this check first.  These
+// will probably be the same as for __GNUC__, but let's keep them
+// separate just to be safe.
+#define __VOLK_ATTR_ALIGNED(x) __attribute__((aligned(x)))
+#define __VOLK_ATTR_UNUSED __attribute__((unused))
+#define __VOLK_ATTR_INLINE __attribute__((always_inline))
+#define __VOLK_ATTR_DEPRECATED __attribute__((deprecated))
+#define __VOLK_ASM __asm__
+#define __VOLK_VOLATILE __volatile__
+#define __VOLK_ATTR_EXPORT __attribute__((visibility("default")))
+#define __VOLK_ATTR_IMPORT __attribute__((visibility("default")))
+#define __VOLK_PREFETCH(addr) __builtin_prefetch(addr)
+#elif defined __GNUC__
 #define __VOLK_ATTR_ALIGNED(x) __attribute__((aligned(x)))
 #define __VOLK_ATTR_UNUSED __attribute__((unused))
 #define __VOLK_ATTR_INLINE __attribute__((always_inline))
@@ -58,6 +74,7 @@
 #define __VOLK_ATTR_EXPORT
 #define __VOLK_ATTR_IMPORT
 #endif
+#define __VOLK_PREFETCH(addr) __builtin_prefetch(addr)
 #elif _MSC_VER
 #define __VOLK_ATTR_ALIGNED(x) __declspec(align(x))
 #define __VOLK_ATTR_UNUSED
@@ -65,6 +82,7 @@
 #define __VOLK_ATTR_DEPRECATED __declspec(deprecated)
 #define __VOLK_ATTR_EXPORT __declspec(dllexport)
 #define __VOLK_ATTR_IMPORT __declspec(dllimport)
+#define __VOLK_PREFETCH(addr)
 #define __VOLK_ASM __asm
 #define __VOLK_VOLATILE
 #else
@@ -74,6 +92,7 @@
 #define __VOLK_ATTR_DEPRECATED
 #define __VOLK_ATTR_EXPORT
 #define __VOLK_ATTR_IMPORT
+#define __VOLK_PREFETCH(addr)
 #define __VOLK_ASM __asm__
 #define __VOLK_VOLATILE __volatile__
 #endif

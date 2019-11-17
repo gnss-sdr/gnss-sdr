@@ -970,11 +970,23 @@ if(NOT VOLKGNSSSDR_FOUND)
     else()
         set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
     endif()
+
+    find_package(ORC)
+    set_package_properties(ORC PROPERTIES
+        PURPOSE "Used by volk_gnsssdr."
+        TYPE OPTIONAL
+    )
+    if(ORC_FOUND)
+        set(ORC_ENABLED ON)
+    else()
+        set(ORC_ENABLED OFF)
+    endif()
+
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
         -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         -DENABLE_STATIC_LIBS=ON
         -DENABLE_PROFILING=${ENABLE_PROFILING}
-        -DENABLE_ORC=OFF
+        -DENABLE_ORC=${ORC_ENABLED}
         ${STRIP_VOLK_GNSSSDR_PROFILE}
         ${USE_THIS_PYTHON}
     )
@@ -1017,11 +1029,6 @@ if(NOT VOLKGNSSSDR_FOUND)
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         )
     endif()
-    find_package(ORC)
-    set_package_properties(ORC PROPERTIES
-        PURPOSE "Used by volk_gnsssdr."
-        TYPE OPTIONAL
-    )
 
     if(NOT ORC_FOUND)
         set(ORC_LIBRARIES "")

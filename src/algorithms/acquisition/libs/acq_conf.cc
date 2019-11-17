@@ -46,8 +46,8 @@ Acq_Conf::Acq_Conf()
     doppler_min = -5000;
     num_doppler_bins_step2 = 4U;
     doppler_step2 = 125.0;
-    pfa = 0.001;
-    pfa2 = 0.001;
+    pfa = 0.0;
+    pfa2 = 0.0;
     fs_in = 4000000;
     samples_per_ms = 0.0;
     samples_per_code = 0.0;
@@ -66,6 +66,7 @@ Acq_Conf::Acq_Conf()
     resampled_fs = 0LL;
     resampler_latency_samples = 0U;
 }
+
 
 void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     const std::string &role, double chip_rate, double opt_freq)
@@ -120,8 +121,15 @@ void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     make_2_steps = configuration->property(role + ".make_two_steps", make_2_steps);
     blocking_on_standby = configuration->property(role + ".blocking_on_standby", blocking_on_standby);
 
+    if (pfa <= 0.0)
+        {
+            // if pfa is not set, we use the first_vs_second_peak_statistic metric
+            use_CFAR_algorithm_flag = false;
+        }
+
     SetDerivedParams();
 }
+
 
 void Acq_Conf::ConfigureAutomaticResampler(double opt_freq)
 {
@@ -142,6 +150,7 @@ void Acq_Conf::ConfigureAutomaticResampler(double opt_freq)
             SetDerivedParams();
         }
 }
+
 
 void Acq_Conf::SetDerivedParams()
 {

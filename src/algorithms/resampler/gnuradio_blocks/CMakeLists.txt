@@ -43,6 +43,7 @@ target_link_libraries(resampler_gr_blocks
     PUBLIC
         Gnuradio::runtime
         Volk::volk
+        Boost::headers   # Fix for homebrew
 )
 
 if(ENABLE_CLANG_TIDY)

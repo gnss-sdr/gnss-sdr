@@ -63,6 +63,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = acq_parameters_.doppler_step;
     item_type_ = acq_parameters_.item_type;
+    item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L2_M_CODE_RATE_CPS / GPS_L2_M_CODE_LENGTH_CHIPS)));

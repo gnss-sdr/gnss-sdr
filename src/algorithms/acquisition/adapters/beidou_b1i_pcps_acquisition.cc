@@ -65,6 +65,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     doppler_step_ = acq_parameters_.doppler_step;
     fs_in_ = acq_parameters_.fs_in;
     item_type_ = acq_parameters_.item_type;
+    item_size_ = acq_parameters_.it_size;
 
     num_codes_ = acq_parameters_.sampled_ms;
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));

@@ -67,6 +67,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = acq_parameters_.doppler_step;
     item_type_ = acq_parameters_.item_type;
+    item_size_ = acq_parameters_.it_size;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);

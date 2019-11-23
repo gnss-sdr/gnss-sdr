@@ -44,6 +44,7 @@ Acq_Conf::Acq_Conf()
     chips_per_second = 1023000;
     doppler_max = 5000;
     doppler_min = -5000;
+    doppler_step = 0.0;
     num_doppler_bins_step2 = 4U;
     doppler_step2 = 125.0;
     pfa = 0.0;
@@ -84,8 +85,7 @@ void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
     sampled_ms = configuration->property(role + ".coherent_integration_time_ms", sampled_ms);
     bit_transition_flag = configuration->property(role + ".bit_transition_flag", bit_transition_flag);
-    use_CFAR_algorithm_flag = configuration->property(role + ".use_CFAR_algorithm", use_CFAR_algorithm_flag);  //will be false in future versions
-    //acquire_pilot = configuration->property(role + ".acquire_pilot", acquire_pilot);  //will be true in future versions
+    use_CFAR_algorithm_flag = configuration->property(role + ".use_CFAR_algorithm", use_CFAR_algorithm_flag);  // will be false in future versions
     max_dwells = configuration->property(role + ".max_dwells", max_dwells);
     dump = configuration->property(role + ".dump", dump);
     dump_channel = configuration->property(role + ".dump_channel", dump_channel);
@@ -146,7 +146,7 @@ void Acq_Conf::ConfigureAutomaticResampler(double opt_freq)
                     resampler_ratio = decimation;
                     resampled_fs = fs_in / static_cast<int>(resampler_ratio);
                 }
-            //--- Find number of samples per spreading code -------------------------
+            // --- Find number of samples per spreading code -------------------
             SetDerivedParams();
         }
 }

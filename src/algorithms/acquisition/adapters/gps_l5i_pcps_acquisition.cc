@@ -68,6 +68,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
     code_ = std::vector<std::complex<float>>(vector_length_);
+    fs_in_ = acq_parameters_.fs_in;
 
     num_codes_ = acq_parameters_.sampled_ms;
 

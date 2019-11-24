@@ -199,9 +199,6 @@ int PositionSystemTest::configure_receiver()
             const float pfa = 0.0;
             const float pfa_second_step = 0.0;
             const int max_dwells = 10;
-            const int tong_init_val = 2;
-            const int tong_max_val = 10;
-            const int tong_max_dwells = 30;
             const int coherent_integration_time_ms = 1;
 
             const float pll_bw_hz = 35.0;
@@ -287,9 +284,9 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
             config->set_property("Acquisition_1C.bit_transition_flag", "false");
             config->set_property("Acquisition_1C.max_dwells", std::to_string(max_dwells));
-            config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
-            config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
-            config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
+            config->set_property("Acquisition_1C.make_two_steps", "false");
+            config->set_property("Acquisition_1C.second_nbins", "8");
+            config->set_property("Acquisition_1C.second_doppler_step", "125");
             config->set_property("Acquisition_1C.dump", "false");
             config->set_property("Acquisition_1C.dump_filename", "./acquisition");
             config->set_property("Acquisition_1C.dump_channel", "1");

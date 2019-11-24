@@ -72,6 +72,7 @@ public:
     std::array<float, 2 * N> float_array_out;
 };
 
+
 TEST_F(ItemTypeHelpersTest, CheckValidTypes)
 {
     for (auto &valid_type : valid_item_types)
@@ -84,6 +85,7 @@ TEST_F(ItemTypeHelpersTest, CheckValidTypes)
             EXPECT_FALSE(item_type_valid(invalid_type));
         }
 }
+
 
 TEST_F(ItemTypeHelpersTest, CheckSizes)
 {
@@ -98,12 +100,12 @@ TEST_F(ItemTypeHelpersTest, CheckSizes)
     EXPECT_EQ(item_type_size("float"), 4);
     EXPECT_EQ(item_type_size("gr_complex"), 8);
 
-
     for (auto &invalid_type : invalid_item_types)
         {
             EXPECT_EQ(item_type_size(invalid_type), 0);
         }
 }
+
 
 TEST_F(ItemTypeHelpersTest, CheckMakeConverters)
 {
@@ -125,6 +127,7 @@ TEST_F(ItemTypeHelpersTest, CheckMakeConverters)
                 }
         }
 }
+
 
 TEST_F(ItemTypeHelpersTest, CheckConversionsReal)
 {
@@ -179,6 +182,7 @@ TEST_F(ItemTypeHelpersTest, CheckConversionsReal)
     converter(float_array_out.data(), float_array_in.data(), N);
     EXPECT_TRUE(std::equal(float_array_in.begin(), float_array_in.begin() + N, float_array_out.begin()));
 }
+
 
 TEST_F(ItemTypeHelpersTest, CheckConversionsComplex)
 {

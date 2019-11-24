@@ -154,7 +154,6 @@ public:
     void set_resampler_latency(uint32_t latency_samples) override;
 
 private:
-    float calculate_threshold(float pfa);
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
     Acq_Conf acq_parameters_;

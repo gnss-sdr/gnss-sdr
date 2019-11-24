@@ -665,14 +665,6 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
     lk.unlock();
 
-    //if (d_use_CFAR_algorithm_flag or acq_parameters.bit_transition_flag)
-    //{
-    //// Compute the input signal power estimation
-    //volk_32fc_magnitude_squared_32f(d_tmp_buffer.data(), in, d_fft_size);
-    //volk_32f_accumulator_s32f(&d_input_power, d_tmp_buffer.data(), d_fft_size);
-    //d_input_power /= static_cast<float>(d_fft_size);
-    //}
-
     // Doppler frequency grid loop
     if (!d_step_two)
         {
@@ -930,7 +922,7 @@ void pcps_acquisition::calculate_threshold()
 
     int num_bins = effective_fft_size * num_doppler_bins;
 
-    d_threshold = 2.0 * boost::math::gamma_p_inv(2 * acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<double>(num_bins)));
+    d_threshold = 2.0 * boost::math::gamma_p_inv(2.0 * acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins)));
 }
 
 
@@ -977,8 +969,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
                 d_gnss_synchro->Acq_doppler_step = 0U;
                 d_mag = 0.0;
-                d_input_power = 0.0;
-                d_test_statistics = 0.0;
                 d_state = 1;
                 d_buffer_count = 0U;
                 if (!acq_parameters.blocking_on_standby)

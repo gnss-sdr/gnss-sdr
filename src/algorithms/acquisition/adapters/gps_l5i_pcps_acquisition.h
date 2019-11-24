@@ -188,7 +188,6 @@ private:
     unsigned int num_codes_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    float calculate_threshold(float pfa);
 };
 
 #endif /* GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H_ */

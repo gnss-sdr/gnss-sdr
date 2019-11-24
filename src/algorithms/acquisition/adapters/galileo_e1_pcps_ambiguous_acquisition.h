@@ -188,7 +188,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    float calculate_threshold(float pfa);
 };
 
 #endif /* GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_ */

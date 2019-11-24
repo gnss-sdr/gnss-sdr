@@ -178,7 +178,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    float calculate_threshold(float pfa);
 };
 
 #endif /* GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_ */

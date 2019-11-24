@@ -37,7 +37,6 @@
 #include "configuration_interface.h"
 #include "glonass_l1_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <algorithm>
 
@@ -104,18 +103,7 @@ void GlonassL1CaPcpsAcquisition::stop_acquisition()
 
 void GlonassL1CaPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + ".pfa", 0.0);
-
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
+    threshold_ = threshold;
 
     acquisition_->set_threshold(threshold_);
 }
@@ -184,31 +172,6 @@ void GlonassL1CaPcpsAcquisition::reset()
 void GlonassL1CaPcpsAcquisition::set_state(int state)
 {
     acquisition_->set_state(state);
-}
-
-
-float GlonassL1CaPcpsAcquisition::calculate_threshold(float pfa)
-{
-    // Calculate the threshold
-    unsigned int frequency_bins = 0;
-    /*
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
-        {
-            frequency_bins++;
-        }
-     */
-
-    frequency_bins = (2 * doppler_max_ + doppler_step_) / doppler_step_;
-
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-    unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    auto lambda = static_cast<double>(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    auto threshold = static_cast<float>(quantile(mydist, val));
-
-    return threshold;
 }
 
 

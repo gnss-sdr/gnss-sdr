@@ -44,7 +44,7 @@ Acq_Conf::Acq_Conf()
     chips_per_second = 1023000;
     doppler_max = 5000;
     doppler_min = -5000;
-    doppler_step = 0.0;
+    doppler_step = 250.0;
     num_doppler_bins_step2 = 4U;
     doppler_step2 = 125.0;
     pfa = 0.0;

@@ -37,7 +37,6 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gps_l2c_signal.h"
-#include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <algorithm>
 
@@ -103,22 +102,7 @@ void GpsL2MPcpsAcquisition::stop_acquisition()
 
 void GpsL2MPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
-
-    if (pfa == 0.0)
-        {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
-        }
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
+    threshold_ = threshold;
 
     acquisition_->set_threshold(threshold_);
 }
@@ -202,26 +186,6 @@ void GpsL2MPcpsAcquisition::reset()
 void GpsL2MPcpsAcquisition::set_state(int state)
 {
     acquisition_->set_state(state);
-}
-
-
-float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
-{
-    // Calculate the threshold
-    unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
-        {
-            frequency_bins++;
-        }
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-    unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1.0 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    auto lambda = static_cast<double>(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    auto threshold = static_cast<float>(quantile(mydist, val));
-
-    return threshold;
 }
 
 

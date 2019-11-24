@@ -37,7 +37,6 @@
 #include "beidou_b1i_signal_processing.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <algorithm>
 #include <memory>
@@ -103,18 +102,7 @@ void BeidouB1iPcpsAcquisition::stop_acquisition()
 
 void BeidouB1iPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + ".pfa", 0.0);
-
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
+    threshold_ = threshold;
 
     acquisition_->set_threshold(threshold_);
 }
@@ -182,23 +170,6 @@ void BeidouB1iPcpsAcquisition::reset()
 void BeidouB1iPcpsAcquisition::set_state(int state)
 {
     acquisition_->set_state(state);
-}
-
-
-float BeidouB1iPcpsAcquisition::calculate_threshold(float pfa)
-{
-    // Calculate the threshold
-    uint32_t frequency_bins = 0;
-    frequency_bins = (2 * doppler_max_ + doppler_step_) / doppler_step_;
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-    uint32_t ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    auto lambda = static_cast<double>(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    auto threshold = static_cast<float>(quantile(mydist, val));
-
-    return threshold;
 }
 
 

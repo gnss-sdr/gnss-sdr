@@ -160,15 +160,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
 
     d_samplesPerChip = acq_parameters.samples_per_chip;
     d_buffer_count = 0U;
-    // todo: CFAR statistic not available for non-coherent integration
-    //if (acq_parameters.max_dwells == 1)
-    //{
     d_use_CFAR_algorithm_flag = acq_parameters.use_CFAR_algorithm_flag;
-    //}
-    //else
-    //{
-    //d_use_CFAR_algorithm_flag = false;
-    //}
     d_dump_number = 0LL;
     d_dump_channel = acq_parameters.dump_channel;
     d_dump = acq_parameters.dump;

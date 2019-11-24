@@ -53,6 +53,7 @@ Pvt_Solution::Pvt_Solution()
     d_valid_observations = 0;
     d_rx_pos = arma::zeros(3, 1);
     d_rx_dt_s = 0.0;
+    d_rx_clock_drift_ppm = 0.0;
     d_pre_2009_file = false;  // disabled by default
 }
 

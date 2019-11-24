@@ -28,6 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
@@ -60,7 +61,6 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
-#include "rtklib_pvt_gs.h"
 #include "rtklib_solver.h"
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
@@ -1921,11 +1921,11 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                 {
                     if (in[i][epoch].Flag_valid_pseudorange)
                         {
-                            std::map<int, Gps_Ephemeris>::const_iterator tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
-                            std::map<int, Galileo_Ephemeris>::const_iterator tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
-                            std::map<int, Gps_CNAV_Ephemeris>::const_iterator tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
-                            std::map<int, Glonass_Gnav_Ephemeris>::const_iterator tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
-                            std::map<int, Beidou_Dnav_Ephemeris>::const_iterator tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
+                            auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
+                            auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
+                            auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
+                            auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
+                            auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
 
                             bool store_valid_observable = false;
 

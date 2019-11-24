@@ -5722,7 +5722,7 @@ inline VECTOR_CLASS<char*> cl::Program::getInfo<CL_PROGRAM_BINARIES>(cl_int* err
 {
     VECTOR_CLASS< ::size_t> sizes = getInfo<CL_PROGRAM_BINARY_SIZES>();
     VECTOR_CLASS<char*> binaries;
-    for (unsigned long & size : sizes)
+    for (unsigned long& size : sizes)
         {
             char* ptr = nullptr;
             if (size != 0)

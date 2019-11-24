@@ -154,7 +154,6 @@ public:
     void set_resampler_latency(uint32_t latency_samples) override;
 
 private:
-    float calculate_threshold(float pfa);
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
     Acq_Conf acq_parameters_;
@@ -162,11 +161,7 @@ private:
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
-    bool bit_transition_flag_;
-    bool dump_;
     bool acq_pilot_;
-    bool use_CFAR_;
-    bool blocking_;
     bool acq_iq_;
     unsigned int vector_length_;
     unsigned int code_length_;
@@ -176,7 +171,6 @@ private:
     unsigned int doppler_step_;
     int doppler_center_;
     unsigned int sampled_ms_;
-    unsigned int max_dwells_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     int64_t fs_in_;

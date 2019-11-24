@@ -174,18 +174,13 @@ private:
     std::string item_type_;
     unsigned int vector_length_;
     unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     int doppler_center_;
-    unsigned int max_dwells_;
     int64_t fs_in_;
-    bool dump_;
-    bool blocking_;
     std::string dump_filename_;
     std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
@@ -193,7 +188,6 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     unsigned int num_codes_;
-    float calculate_threshold(float pfa);
 };
 
 #endif /* GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_ */

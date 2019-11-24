@@ -663,14 +663,15 @@ endif()
 if(UNIX AND EXISTS "/usr/lib64")
     list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
 endif()
+# Boost_ADDITIONAL_VERSIONS is only used internally by cmake to know the
+# formation of newer versions. No need to increase, not used anymore since newer
+# Boost provides its own CMake configuration files.
 set(Boost_ADDITIONAL_VERSIONS
     "1.53.0" "1.53" "1.54.0" "1.54"
     "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
     "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
-    "1.70.0" "1.70" "1.71.0" "1.71" "1.72.0" "1.72" "1.73.0" "1.73" "1.74.0" "1.74"
-    "1.75.0" "1.75" "1.76.0" "1.76" "1.77.0" "1.77" "1.78.0" "1.78" "1.79.0" "1.79"
-    "1.80.0" "1.80" "1.81.0" "1.81" "1.82.0" "1.82" "1.83.0" "1.83" "1.84.0" "1.84"
+    "1.70.0" "1.70" "1.71.0" "1.71"
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)

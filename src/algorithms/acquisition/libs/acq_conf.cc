@@ -85,7 +85,6 @@ void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
     sampled_ms = configuration->property(role + ".coherent_integration_time_ms", sampled_ms);
     bit_transition_flag = configuration->property(role + ".bit_transition_flag", bit_transition_flag);
-    use_CFAR_algorithm_flag = configuration->property(role + ".use_CFAR_algorithm", use_CFAR_algorithm_flag);  // will be false in future versions
     max_dwells = configuration->property(role + ".max_dwells", max_dwells);
     dump = configuration->property(role + ".dump", dump);
     dump_channel = configuration->property(role + ".dump_channel", dump_channel);
@@ -113,8 +112,13 @@ void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     doppler_step2 = configuration->property(role + ".second_doppler_step", doppler_step2);
     doppler_step = configuration->property(role + ".doppler_step", doppler_step);
     pfa = configuration->property(role + ".pfa", pfa);
+    if ((pfa < 0.0) or (pfa > 1.0))
+        {
+            LOG(WARNING) << "Parameter pfa should between 0.0 and 1.0. Setting it to 0.0";
+            pfa = 0.0;
+        }
     pfa2 = configuration->property(role + ".pfa_second_step", pfa2);
-    if (pfa2 <= 0.0)
+    if ((pfa2 <= 0.0) or (pfa2 > 1.0))
         {
             pfa2 = pfa;
         }

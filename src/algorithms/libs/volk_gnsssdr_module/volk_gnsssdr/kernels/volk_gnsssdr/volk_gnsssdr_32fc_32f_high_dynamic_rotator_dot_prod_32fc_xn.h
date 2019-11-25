@@ -103,7 +103,7 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
                 }
             tmp32_1 = *in_common++ * (*phase);
             phase_doppler *= phase_inc;
-            phase_doppler_rate = cpowf(phase_inc_rate, lv_cmake(n * n, 0.0f));
+            phase_doppler_rate = cpowf(phase_inc_rate, lv_cmake((float)(n * n), 0.0f));
             phase_doppler_rate /= hypotf(lv_creal(phase_doppler_rate), lv_cimag(phase_doppler_rate));
             (*phase) = phase_doppler * phase_doppler_rate;
 

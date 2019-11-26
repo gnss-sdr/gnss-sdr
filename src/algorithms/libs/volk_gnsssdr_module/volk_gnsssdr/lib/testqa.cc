@@ -21,7 +21,6 @@
 #include "kernel_tests.h"                       // for init_test_list
 #include "qa_utils.h"                           // for volk_gnsssdr_test_case_t, volk_gnsssdr_test_results_t
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
-#include <cstdbool>                             // for bool, false, true
 #include <fstream>                              // IWYU pragma: keep
 #include <iostream>                             // for operator<<, basic_ostream, endl, char...
 #include <map>                                  // for map, map<>::iterator, _Rb_tree_iterator

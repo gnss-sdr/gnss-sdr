@@ -80,7 +80,7 @@ if(HAVE_POSIX_MEMALIGN)
       add_definitions(-DHAVE_POSIX_MEMALIGN)
 endif()
 
-if(NOT DEFINED _XOPEN_SOURCE)
+if(NOT DEFINED _XOPEN_SOURCE AND NOT MSVC)
       add_definitions(-D_XOPEN_SOURCE=700)
 endif()
 
@@ -213,7 +213,7 @@ if(CPU_IS_x86)
     endif()
 
     # Disable SSE4a if Clang is less than version 3.2
-    if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
       # Figure out the version of Clang
       if(CMAKE_VERSION VERSION_LESS "2.8.10")
         # Extract the Clang version from the --version string.
@@ -564,7 +564,8 @@ list(APPEND volk_gnsssdr_sources
 set_source_files_properties(
     ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr.c
     ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_machines.c
-PROPERTIES COMPILE_DEFINITIONS "${machine_defs}")
+    PROPERTIES COMPILE_DEFINITIONS "${machine_defs}"
+)
 
 if(MSVC)
     #add compatibility includes for stdint types
@@ -583,7 +584,7 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PUBLIC $<INSTALL_INTERFACE:include>
         PRIVATE ${PROJECT_SOURCE_DIR}/kernels
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-       PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif()
 

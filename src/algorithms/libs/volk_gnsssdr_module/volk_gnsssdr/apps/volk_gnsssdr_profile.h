@@ -27,7 +27,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <cstdbool>  // for bool
 #include <iosfwd>    // for ofstream
 #include <string>    // for string
 #include <vector>    // for vector

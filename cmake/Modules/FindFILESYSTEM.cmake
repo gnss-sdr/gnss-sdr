@@ -140,6 +140,9 @@ endif()
 if((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11"))
     set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 endif()
+if(MSVC AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "18"))
+    set(CMAKE_REQUIRED_FLAGS "/std:c++17")
+endif()
 
 # Normalize and check the component list we were given
 set(want_components ${FILESYSTEM_FIND_COMPONENTS})

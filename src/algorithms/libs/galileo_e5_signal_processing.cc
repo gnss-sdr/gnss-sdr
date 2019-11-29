@@ -121,11 +121,7 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
             resampler(_code, _resampled_signal, _codeFreqBasis, _fs);  // resamples code to fs
             _code = std::move(_resampled_signal);
         }
-    uint32_t size_code = _codeLength;
-    if (_fs != _codeFreqBasis)
-        {
-            size_code = _samplesPerCode;
-        }
+
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i + delay) % _samplesPerCode] = _code[i];

@@ -197,11 +197,6 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
 
             _signal_E1 = std::move(_resampled_signal);
         }
-    uint32_t size_signal_E1 = _codeLength;
-    if (_fs != _samplesPerChip * _codeFreqBasis)
-        {
-            size_signal_E1 = _samplesPerCode;
-        }
 
     if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
         {
@@ -217,11 +212,6 @@ void galileo_e1_code_gen_float_sampled(gsl::span<float> _dest, const std::array<
             _samplesPerCode *= static_cast<int32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH);
 
             _signal_E1 = std::move(_signal_E1C_secondary);
-        }
-
-    if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
-        {
-            size_signal_E1 = static_cast<int32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH) * _samplesPerCode;
         }
 
     for (uint32_t i = 0; i < _samplesPerCode; i++)

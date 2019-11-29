@@ -108,9 +108,8 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
     const uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
     const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_CPS;
 
-    std::unique_ptr<std::complex<float>> _code{new std::complex<float>[_codeLength]};
-    gsl::span<std::complex<float>> _code_span(_code, _codeLength);
-    galileo_e5_a_code_gen_complex_primary(_code_span, _prn, _Signal);
+    std::vector<std::complex<float>> _code(_codeLength);
+    galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
 
     _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
@@ -118,8 +117,8 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
 
     if (_fs != _codeFreqBasis)
         {
-            std::unique_ptr<std::complex<float>> _resampled_signal{new std::complex<float>[_samplesPerCode]};
-            resampler(_code_span, gsl::span<std::complex<float>>(_resampled_signal, _samplesPerCode), _codeFreqBasis, _fs);  // resamples code to fs
+            std::vector<std::complex<float>> _resampled_signal(_samplesPerCode);
+            resampler(_code, _resampled_signal, _codeFreqBasis, _fs);  // resamples code to fs
             _code = std::move(_resampled_signal);
         }
     uint32_t size_code = _codeLength;
@@ -127,9 +126,8 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
         {
             size_code = _samplesPerCode;
         }
-    gsl::span<std::complex<float>> _code_span_aux(_code, size_code);
     for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
-            _dest[(i + delay) % _samplesPerCode] = _code_span_aux[i];
+            _dest[(i + delay) % _samplesPerCode] = _code[i];
         }
 }

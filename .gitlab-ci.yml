@@ -306,7 +306,7 @@ opensuse42.3:
     - pwd
   script:
     - zypper -n up
-    - zypper -n install cmake git gcc-c++ boost-devel log4cpp-devel gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel openssl-devel python3-Mako python3-six
+    - zypper -n install cmake git gcc-c++ boost-devel log4cpp-devel gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel openssl-devel python3-Mako python3-six python3-xml
     - cd build
     - cmake -DENABLE_PACKAGING=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

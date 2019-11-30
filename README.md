@@ -75,7 +75,7 @@ Please note that the required files from `libgtest-dev` were moved to `googletes
 
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
 
-In Ubuntu versions older than 16.04, `python3-mako` and `python3-six` must be replaced by `python-mako` and `python-six`.
+In distributions older than Ubuntu 16.04 or Debian 9, `python3-mako` and `python3-six` must be replaced by `python-mako` and `python-six`.
 
 **Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
 
@@ -121,7 +121,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six \
+       glog-devel openssl-devel libpcap-devel python3-mako python3-six \
        pugixml-devel protobuf-devel protobuf-compiler
 ~~~~~~
 
@@ -137,7 +137,7 @@ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
        libboost_thread-devel libboost_serialization-devel log4cpp-devel \
        gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
-       automake hdf5-devel openssl-devel python-Mako python-six protobuf-devel
+       automake hdf5-devel openssl-devel python3-Mako python3-six protobuf-devel
 ~~~~~~
 
 If you are using openSUSE Tumbleweed:

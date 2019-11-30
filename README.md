@@ -121,7 +121,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six \
+       glog-devel openssl-devel libpcap-devel python3-mako python3-six \
        pugixml-devel protobuf-devel protobuf-compiler
 ~~~~~~
 
@@ -137,7 +137,7 @@ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
        libboost_thread-devel libboost_serialization-devel log4cpp-devel \
        gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
-       automake hdf5-devel openssl-devel python-Mako python-six protobuf-devel
+       automake hdf5-devel openssl-devel python3-Mako python3-six protobuf-devel
 ~~~~~~
 
 If you are using openSUSE Tumbleweed:

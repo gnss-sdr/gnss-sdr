@@ -45,7 +45,7 @@ First, make sure that the required dependencies are installed in your
 machine:
 
 ~~~~~~
-$ sudo apt-get install cmake python-mako python-six libboost-dev \
+$ sudo apt-get install cmake python3-mako python3-six libboost-dev \
   libboost-filesystem-dev libboost-system-dev
 ~~~~~~
 

@@ -380,7 +380,7 @@ ubuntu16.04:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential libtool automake curl cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential libtool automake curl cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python3-mako python3-six libmatio-dev libgtest-dev
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -396,7 +396,7 @@ ubuntu18.04:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python3-mako python3-six libmatio-dev googletest libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -411,7 +411,7 @@ ubuntu19.04:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python3-mako python3-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -427,7 +427,7 @@ ubuntu19.10:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python3-mako python3-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -443,7 +443,7 @@ ubuntu20.04:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python3-mako python3-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

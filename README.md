@@ -67,13 +67,15 @@ $ sudo apt-get install build-essential cmake git pkg-config libboost-dev libboos
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libpugixml-dev \
-       libgtest-dev libprotobuf-dev protobuf-compiler
+       libgnutls-openssl-dev libpcap-dev libmatio-dev libpugixml-dev libgtest-dev \
+       libprotobuf-dev protobuf-compiler python3-mako python3-six
 ~~~~~~
 
 Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic" (and above).
 
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
+
+In Ubuntu versions older than 16.04, `python3-mako` and `python3-six` must be replaced by `python-mako` and `python-six`.
 
 **Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
 
@@ -632,10 +634,11 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 
 The script explains what it will do, and then it pauses before doing it. There are more installation options [here](https://docs.brew.sh/Installation.html).
 
-Install pip:
+Install pip3:
 
 ~~~~~~
-$ sudo easy_install pip
+$ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+$ sudo python3 get-pip.py
 ~~~~~~
 
 Install the required dependencies:
@@ -654,8 +657,8 @@ $ brew install log4cpp
 $ brew install openssl
 $ brew install pugixml
 $ brew install protobuf
-$ pip install mako
-$ pip install six
+$ pip3 install mako
+$ pip3 install six
 ~~~~~~
 
 

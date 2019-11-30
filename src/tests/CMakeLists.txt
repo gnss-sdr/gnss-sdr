@@ -838,7 +838,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     if(ARMADILLO_VERSION_STRING VERSION_GREATER 8.400)
         set(NONLINEAR_SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc
+            # ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc
         )
     endif()
     add_executable(trk_test

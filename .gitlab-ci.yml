@@ -439,7 +439,7 @@ ubuntu19.10:
 
 
 ubuntu20.04:
-  image: ubuntu:focus
+  image: ubuntu:focal
   stage: build
   script:
     - apt-get update

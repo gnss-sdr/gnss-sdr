@@ -115,11 +115,15 @@ endif()
 # Sets the python installation directory VOLK_PYTHON_DIR
 ########################################################################
 if(NOT DEFINED VOLK_PYTHON_DIR)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
-from distutils import sysconfig
-print(sysconfig.get_python_lib(plat_specific=True, prefix=''))
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
+import os
+import sys
+if os.name == 'posix':
+    print(os.path.join('lib', 'python' + sys.version[:3], 'dist-packages'))
+if os.name == 'nt':
+    print(os.path.join('Lib', 'site-packages'))
 " OUTPUT_VARIABLE VOLK_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+)
 endif()
 file(TO_CMAKE_PATH ${VOLK_PYTHON_DIR} VOLK_PYTHON_DIR)
 

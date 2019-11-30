@@ -406,22 +406,6 @@ ubuntu18.04:
     - volk_gnsssdr_profile -i 3 -v 2053
 
 
-ubuntu18.10:
-  image: ubuntu:cosmic
-  stage: build
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
-    - cd build
-    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
-    - NPROC=$(grep -c ^processor /proc/cpuinfo)
-    - make -j$(($NPROC+1))
-    - make check
-    - make install
-    - volk_gnsssdr_profile -i 3 -v 2053
-  allow_failure: true
-
-
 ubuntu19.04:
   image: ubuntu:disco
   stage: build
@@ -440,6 +424,22 @@ ubuntu19.04:
 
 ubuntu19.10:
   image: ubuntu:eoan
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev libprotobuf-dev protobuf-compiler
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+    - volk_gnsssdr_profile -i 3 -v 2053
+  allow_failure: true
+
+
+ubuntu20.04:
+  image: ubuntu:focus
   stage: build
   script:
     - apt-get update

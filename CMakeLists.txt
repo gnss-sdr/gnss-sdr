@@ -1123,7 +1123,7 @@ if(NOT GFLAGS_FOUND)
         if(CMAKE_BUILD_TYPE STREQUAL Debug)  # Workaround for Ninja generator
             set(GFLAGS_BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags_debug${CMAKE_STATIC_LIBRARY_SUFFIX})
         endif()
-        if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+        if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
             set(PARALLEL_BUILD "--parallel 2")
         endif()
         ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
@@ -1358,7 +1358,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                 ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
-        if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+        if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
             set(PARALLEL_BUILD "--parallel 2")
         endif()
         ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}

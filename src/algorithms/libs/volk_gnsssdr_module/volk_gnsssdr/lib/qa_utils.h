@@ -144,14 +144,6 @@ bool run_volk_gnsssdr_tests(
     bool benchmark_mode = false);
 
 
-#define VOLK_RUN_TESTS(func, tol, scalar, len, iter)                                  \
-    BOOST_AUTO_TEST_CASE(func##_test)                                                 \
-    {                                                                                 \
-        BOOST_CHECK_EQUAL(run_volk_gnsssdr_tests(                                     \
-                              func##_get_func_desc(), (void (*)())func##_manual,      \
-                              std::string(#func), tol, scalar, len, iter, 0, "NULL"), \
-            0);                                                                       \
-    }
 #define VOLK_PROFILE(func, test_params, results) run_volk_gnsssdr_tests(func##_get_func_desc(), (void (*)())func##_manual, std::string(#func), test_params, results, "NULL")
 #define VOLK_PUPPET_PROFILE(func, puppet_master_func, test_params, results) run_volk_gnsssdr_tests(func##_get_func_desc(), (void (*)())func##_manual, std::string(#func), test_params, results, std::string(#puppet_master_func))
 typedef void (*volk_gnsssdr_fn_1arg)(void *, unsigned int, const char *);  // one input, operate in place

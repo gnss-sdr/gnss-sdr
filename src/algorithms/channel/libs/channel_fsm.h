@@ -61,10 +61,10 @@ public:
     // FSM EVENTS
     bool Event_start_acquisition();
     bool Event_start_acquisition_fpga();
-    bool Event_valid_acquisition();
+    virtual bool Event_valid_acquisition();
     bool Event_stop_channel();
-    bool Event_failed_acquisition_repeat();
-    bool Event_failed_acquisition_no_repeat();
+    virtual bool Event_failed_acquisition_repeat();
+    virtual bool Event_failed_acquisition_no_repeat();
     bool Event_failed_tracking_standby();
 
 private:

@@ -225,12 +225,11 @@ volk_python_check_module("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" P
 volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
 volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
 
-
 if(NOT PYTHON_MIN_VER_FOUND)
     message(FATAL_ERROR "Python 2.7 or greater required to build VOLK_GNSSSDR")
 endif()
 
-#  Mako
+# Mako
 if(NOT MAKO_FOUND)
     message(FATAL_ERROR "Mako templates required to build VOLK_GNSSSDR")
 endif()
@@ -252,10 +251,7 @@ if(MSVC)
         unset(BOOST_REQUIRED_COMPONENTS) # empty components list for static link
     endif()
 endif()
-if(${FILESYSTEM_FOUND})
-    set(Boost_LIBRARIES "")
-    set(Boost_INCLUDE_DIRS "")
-else()
+if(NOT ${FILESYSTEM_FOUND})
     include(VolkBoost)
     if(NOT Boost_FOUND)
         message(FATAL_ERROR "VOLK-GNSSSDR requires Boost to build")
@@ -265,9 +261,9 @@ endif()
 # Orc
 option(ENABLE_ORC "Enable Orc" TRUE)
 if(ENABLE_ORC)
-  find_package(ORC)
+    find_package(ORC)
 else()
-  message(STATUS "Disabling use of ORC")
+    message(STATUS "Disabling use of ORC")
 endif()
 
 
@@ -279,8 +275,8 @@ if(DOXYGEN_FOUND)
     configure_file(
         ${PROJECT_SOURCE_DIR}/Doxyfile.in
         ${PROJECT_BINARY_DIR}/Doxyfile
-    @ONLY)
-
+        @ONLY
+    )
     add_custom_target(doc
         ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -313,9 +309,9 @@ install(
 ########################################################################
 # Install all headers in the include directories
 ########################################################################
-set(VOLK_RUNTIME_DIR   bin)
-set(VOLK_LIBRARY_DIR   lib${LIB_SUFFIX})
-set(VOLK_INCLUDE_DIR   include)
+set(VOLK_RUNTIME_DIR bin)
+set(VOLK_LIBRARY_DIR lib${LIB_SUFFIX})
+set(VOLK_INCLUDE_DIR include)
 
 install(
     DIRECTORY ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr
@@ -352,16 +348,19 @@ if(APPLE)
     if(NOT CMAKE_INSTALL_NAME_DIR)
         set(CMAKE_INSTALL_NAME_DIR
             ${CMAKE_INSTALL_PREFIX}/${VOLK_LIBRARY_DIR} CACHE
-            PATH "Library Install Name Destination Directory" FORCE)
+            PATH "Library Install Name Destination Directory" FORCE
+        )
     endif()
     if(NOT CMAKE_INSTALL_RPATH)
         set(CMAKE_INSTALL_RPATH
             ${CMAKE_INSTALL_PREFIX}/${VOLK_LIBRARY_DIR} CACHE
-            PATH "Library Install RPath" FORCE)
+            PATH "Library Install RPath" FORCE
+        )
     endif()
     if(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
         set(CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE
-            BOOL "Do Build Using Library Install RPath" FORCE)
+            BOOL "Do Build Using Library Install RPath" FORCE
+        )
     endif()
 endif()
 
@@ -372,7 +371,8 @@ endif()
 configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-@ONLY)
+    @ONLY
+)
 
 # Only add the target if there isn't one defined already
 if(NOT TARGET uninstall)
@@ -390,14 +390,16 @@ endif()
 ########################################################################
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake.in
-  ${CMAKE_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
-@ONLY)
+    ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+    @ONLY
+)
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
-@ONLY)
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake.in
+    ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
+    @ONLY
+)
 
 
 ########################################################################
@@ -425,9 +427,9 @@ install(EXPORT VOLK_GNSSSDR-export FILE VolkGnsssdrTargets.cmake
 ########################################################################
 option(ENABLE_TESTING "Enable QA testing" ON)
 if(ENABLE_TESTING)
-  message(STATUS "QA Testing is enabled.")
+    message(STATUS "QA Testing is enabled.")
 else()
-  message(STATUS "QA Testing is disabled.")
+    message(STATUS "QA Testing is disabled.")
 endif()
 message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 
@@ -437,24 +439,24 @@ message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 ########################################################################
 option(ENABLE_PROFILING "Launch system profiler after build" OFF)
 if(ENABLE_PROFILING)
-  set(ENABLE_STATIC_LIBS ON)
-  if(DEFINED VOLK_CONFIGPATH)
-    get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)
-    set(VOLK_CONFIGPATH "${VOLK_CONFIGPATH}/volk_gnsssdr")
-    message(STATUS "System profiling is enabled, using path: ${VOLK_CONFIGPATH}")
-  elseif(DEFINED ENV{VOLK_CONFIGPATH})
-    set(VOLK_CONFIGPATH "$ENV{VOLK_CONFIGPATH}/volk_gnsssdr")
-    message(STATUS "System profiling is enabled, using env path: $ENV{VOLK_CONFIGPATH}")
-  else()
-    message(STATUS "System profiling is enabled with default paths.")
-    if(DEFINED ENV{HOME})
-        set(VOLK_CONFIGPATH "$ENV{HOME}/.volk_gnsssdr")
-    elseif(DEFINED ENV{APPDATA})
-        set(VOLK_CONFIGPATH "$ENV{APPDATA}/.volk_gnsssdr")
+    set(ENABLE_STATIC_LIBS ON)
+    if(DEFINED VOLK_CONFIGPATH)
+        get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)
+        set(VOLK_CONFIGPATH "${VOLK_CONFIGPATH}/volk_gnsssdr")
+        message(STATUS "System profiling is enabled, using path: ${VOLK_CONFIGPATH}")
+    elseif(DEFINED ENV{VOLK_CONFIGPATH})
+        set(VOLK_CONFIGPATH "$ENV{VOLK_CONFIGPATH}/volk_gnsssdr")
+        message(STATUS "System profiling is enabled, using env path: $ENV{VOLK_CONFIGPATH}")
+    else()
+        message(STATUS "System profiling is enabled with default paths.")
+        if(DEFINED ENV{HOME})
+            set(VOLK_CONFIGPATH "$ENV{HOME}/.volk_gnsssdr")
+        elseif(DEFINED ENV{APPDATA})
+            set(VOLK_CONFIGPATH "$ENV{APPDATA}/.volk_gnsssdr")
+        endif()
     endif()
-  endif()
 else()
-  message(STATUS "System profiling is disabled.")
+    message(STATUS "System profiling is disabled.")
 endif()
 message(STATUS "  Modify using: -DENABLE_PROFILING=ON/OFF")
 ########################################################################

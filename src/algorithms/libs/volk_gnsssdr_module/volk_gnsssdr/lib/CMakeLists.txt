@@ -47,7 +47,7 @@ endif()
 # Setup the compiler name
 ########################################################################
 set(COMPILER_NAME ${CMAKE_C_COMPILER_ID})
-if(MSVC) #its not set otherwise
+if(MSVC) # its not set otherwise
     set(COMPILER_NAME MSVC)
 endif()
 
@@ -77,11 +77,11 @@ include(CheckSymbolExists)
 check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
 
 if(HAVE_POSIX_MEMALIGN)
-      add_definitions(-DHAVE_POSIX_MEMALIGN)
+    add_definitions(-DHAVE_POSIX_MEMALIGN)
 endif()
 
-if(NOT DEFINED _XOPEN_SOURCE)
-      add_definitions(-D_XOPEN_SOURCE=700)
+if(NOT DEFINED _XOPEN_SOURCE AND NOT MSVC)
+    add_definitions(-D_XOPEN_SOURCE=700)
 endif()
 
 ########################################################################
@@ -111,7 +111,7 @@ macro(check_arch arch_name)
         else()
             include(CheckCXXCompilerFlag)
             set(have_flag have${flag})
-            #make the have_flag have nice alphanum chars (just for looks/not necessary)
+            # make the have_flag have nice alphanum chars (just for looks/not necessary)
             execute_process(
                 COMMAND ${PYTHON_EXECUTABLE} -c "import re; print(re.sub('\\W', '_', '${have_flag}'))"
                 OUTPUT_VARIABLE have_flag OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -153,20 +153,22 @@ if(CPU_IS_x86)
     if(NOT MSVC)
         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c "unsigned long long _xgetbv(unsigned int index) { unsigned int eax, edx; __asm__ __volatile__(\"xgetbv\" : \"=a\"(eax), \"=d\"(edx) : \"c\"(index)); return ((unsigned long long)edx << 32) | eax; } int main (void) { (void) _xgetbv(0); return (0); }")
     else()
-        #MSVC defines an intrinsic
+        # MSVC defines an intrinsic
         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c "#include <stdio.h> \n #include <intrin.h> \n int main() { int avxSupported = 0; \n#if (_MSC_FULL_VER >= 160040219) \nint cpuInfo[4]; __cpuid(cpuInfo, 1);\nif ((cpuInfo[2] & (1 << 27) || 0) && (cpuInfo[2] & (1 << 28) || 0)) \n{\nunsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);\n   avxSupported = (xcrFeatureMask & 0x6) == 6;}\n#endif \n return 1- avxSupported; }")
     endif()
     execute_process(COMMAND ${CMAKE_C_COMPILER} -o
         ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
         ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c
         OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE avx_compile_result)
+        RESULT_VARIABLE avx_compile_result
+    )
     if(NOT ${avx_compile_result} EQUAL 0)
         overrule_arch(avx "Compiler or linker missing xgetbv instruction")
     elseif(NOT CROSSCOMPILE_MULTILIB)
         execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
             OUTPUT_QUIET ERROR_QUIET
-            RESULT_VARIABLE avx_exe_result)
+            RESULT_VARIABLE avx_exe_result
+        )
         if(NOT ${avx_exe_result} EQUAL 0)
             overrule_arch(avx "CPU missing xgetbv")
         else()
@@ -177,7 +179,8 @@ if(CPU_IS_x86)
         set(HAVE_XGETBV 1)
     endif()
     file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c)
+        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c
+    )
 
     #########################################################################
     # eliminate AVX if cvtpi32_ps intrinsic fails like some versions of clang
@@ -187,48 +190,51 @@ if(CPU_IS_x86)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c "#include <immintrin.h>\nint main (void) {__m128 __a; __m64 __b; __m128 foo = _mm_cvtpi32_ps(__a, __b); return (0); }")
         execute_process(COMMAND ${CMAKE_C_COMPILER} -mavx -o
-          ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
-          ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c
-          OUTPUT_QUIET ERROR_QUIET
-          RESULT_VARIABLE avx_compile_result)
-        if(NOT ${avx_compile_result} EQUAL 0)
-          overrule_arch(avx "Compiler missing cvtpi32_ps intrinsic")
-        elseif(NOT CROSSCOMPILE_MULTILIB)
-          execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
+            ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
+            ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c
             OUTPUT_QUIET ERROR_QUIET
-            RESULT_VARIABLE avx_exe_result)
-          if(NOT ${avx_exe_result} EQUAL 0)
-            overrule_arch(avx "CPU missing cvtpi32_ps")
-          else()
-            set(HAVE_AVX_CVTPI32_PS 1)
-          endif()
+            RESULT_VARIABLE avx_compile_result
+        )
+        if(NOT ${avx_compile_result} EQUAL 0)
+            overrule_arch(avx "Compiler missing cvtpi32_ps intrinsic")
+        elseif(NOT CROSSCOMPILE_MULTILIB)
+            execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
+                OUTPUT_QUIET ERROR_QUIET
+                RESULT_VARIABLE avx_exe_result
+            )
+            if(NOT ${avx_exe_result} EQUAL 0)
+                overrule_arch(avx "CPU missing cvtpi32_ps")
+            else()
+                set(HAVE_AVX_CVTPI32_PS 1)
+            endif()
         else()
-          set(HAVE_AVX_CVTPI32_PS 1)
+            set(HAVE_AVX_CVTPI32_PS 1)
         endif()
         file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
-          ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c)
+            ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps.c
+        )
     else()
         # 64-bit compilations won't need this command so don't overrule AVX
         set(HAVE_AVX_CVTPI32_PS 0)
     endif()
 
     # Disable SSE4a if Clang is less than version 3.2
-    if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
-      # Figure out the version of Clang
-      if(CMAKE_VERSION VERSION_LESS "2.8.10")
-        # Extract the Clang version from the --version string.
-        # In cmake 2.8.10, we can just use CMAKE_C_COMPILER_VERSION
-        # without having to go through these string manipulations
-        execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-          OUTPUT_VARIABLE clang_version)
-        string(REGEX MATCH "[0-9].[0-9]" CMAKE_C_COMPILER_VERSION ${clang_version})
-      endif()
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+        # Figure out the version of Clang
+        if(CMAKE_VERSION VERSION_LESS "2.8.10")
+            # Extract the Clang version from the --version string.
+            # In cmake 2.8.10, we can just use CMAKE_C_COMPILER_VERSION
+            # without having to go through these string manipulations
+            execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+                OUTPUT_VARIABLE clang_version
+            )
+            string(REGEX MATCH "[0-9].[0-9]" CMAKE_C_COMPILER_VERSION ${clang_version})
+        endif()
 
-      if(CMAKE_C_COMPILER_VERSION VERSION_LESS "3.2")
-        overrule_arch(sse4_a "Clang >= 3.2 required for SSE4a")
-      endif()
+        if(CMAKE_C_COMPILER_VERSION VERSION_LESS "3.2")
+            overrule_arch(sse4_a "Clang >= 3.2 required for SSE4a")
+        endif()
     endif()
-
 endif()
 
 if(${HAVE_XGETBV})
@@ -310,7 +316,7 @@ if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
         overrule_arch(64 "CPU width is 32 bits")
     endif()
 
-    #MSVC 64 bit does not have MMX, overrule it
+    # MSVC 64 bit does not have MMX, overrule it
     if(${SIZEOF_CPU} EQUAL 64 AND MSVC)
         overrule_arch(mmx "No MMX for Win64")
         if(MSVC_VERSION GREATER 1700)
@@ -361,7 +367,7 @@ message(STATUS "Available machines: ${available_machines}")
 # Create rules to run the volk_gnsssdr generator
 ########################################################################
 
-#dependencies are all python, xml, and header implementation files
+# dependencies are all python, xml, and header implementation files
 file(GLOB xml_files ${PROJECT_SOURCE_DIR}/gen/*.xml)
 list(SORT xml_files)
 file(GLOB py_files ${PROJECT_SOURCE_DIR}/gen/*.py)
@@ -397,29 +403,30 @@ message(STATUS "BUILD TYPE = ${CBTU}")
 message(STATUS "Base cflags = ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS}")
 set(COMPILER_INFO "")
 if(MSVC)
-    if(MSVC90)   #Visual Studio 9
+    if(MSVC90)   # Visual Studio 9
         set(cmake_c_compiler_version "Microsoft Visual Studio 9.0")
-    elseif(MSVC10) #Visual Studio 10
+    elseif(MSVC10) # Visual Studio 10
         set(cmake_c_compiler_version "Microsoft Visual Studio 10.0")
-    elseif(MSVC11) #Visual Studio 11
+    elseif(MSVC11) # Visual Studio 11
         set(cmake_c_compiler_version "Microsoft Visual Studio 11.0")
-    elseif(MSVC12) #Visual Studio 12
+    elseif(MSVC12) # Visual Studio 12
         set(cmake_c_compiler_version "Microsoft Visual Studio 12.0")
-    elseif(MSVC14) #Visual Studio 14
+    elseif(MSVC14) # Visual Studio 14
         set(cmake_c_compiler_version "Microsoft Visual Studio 14.0")
     endif()
 else()
     execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-            OUTPUT_VARIABLE cmake_c_compiler_version)
+        OUTPUT_VARIABLE cmake_c_compiler_version
+    )
 endif()
 set(COMPILER_INFO "${CMAKE_C_COMPILER}:::${CMAKE_C_FLAGS_${GRCBTU}} ${CMAKE_C_FLAGS}\n${CMAKE_CXX_COMPILER}:::${CMAKE_CXX_FLAGS_${GRCBTU}} ${CMAKE_CXX_FLAGS}\n")
 
 foreach(machine_name ${available_machines})
-    #generate machine source
+    # generate machine source
     set(machine_source ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_machine_${machine_name}.c)
     gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_machine_xxx.tmpl.c ${machine_source} ${machine_name})
 
-    #determine machine flags
+    # determine machine flags
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
         ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_compile_utils.py
@@ -434,7 +441,7 @@ foreach(machine_name ${available_machines})
         set_source_files_properties(${machine_source} PROPERTIES COMPILE_FLAGS "${${machine_name}_flags}")
     endif()
 
-    #add to available machine defs
+    # add to available machine defs
     string(TOUPPER LV_MACHINE_${machine_name} machine_def)
     list(APPEND machine_defs ${machine_def})
 endforeach()
@@ -446,84 +453,72 @@ message(STATUS "Compiler Version: ${cmake_c_compiler_version}")
 string(REPLACE "\n" " \\n" cmake_c_compiler_version ${cmake_c_compiler_version})
 string(REPLACE "\n" " \\n" COMPILER_INFO ${COMPILER_INFO})
 
-########################################################################
-# Set local include directories first
-########################################################################
-include_directories(
-    ${PROJECT_BINARY_DIR}/include
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/kernels
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
 ########################################################################
 # Handle ASM support
 #  on by default, but let users turn it off
 ########################################################################
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
-  set(ASM_ARCHS_AVAILABLE "neonv7" "neonv8")
+    set(ASM_ARCHS_AVAILABLE "neonv7" "neonv8")
 
-  set(FULL_C_FLAGS "${CMAKE_C_FLAGS}" "${CMAKE_CXX_COMPILER_ARG1}")
+    set(FULL_C_FLAGS "${CMAKE_C_FLAGS}" "${CMAKE_CXX_COMPILER_ARG1}")
 
-  # sort through a list of all architectures we have ASM for
-  # if we find one that matches our current system architecture
-  # set up the assembler flags and include the source files
-  foreach(ARCH ${ASM_ARCHS_AVAILABLE})
-      string(REGEX MATCH "${ARCH}" ASM_ARCH "${available_archs}")
-    if(ASM_ARCH STREQUAL "neonv7")
-      message(STATUS "---- Adding ASM files") # we always use ATT syntax
-      message(STATUS "-- Detected neon architecture; enabling ASM")
-      # architecture specific assembler flags are now set in the cmake toolchain file
-      # then add the files
-      include_directories(${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon)
-      file(GLOB asm_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon/*.s)
-      list(SORT asm_files)
-      foreach(asm_file ${asm_files})
-        list(APPEND volk_gnsssdr_sources ${asm_file})
-        message(STATUS "Adding source file: ${asm_file}")
-      endforeach()
-    endif()
-    enable_language(ASM)
-    message(STATUS "c flags: ${FULL_C_FLAGS}")
-    message(STATUS "asm flags: ${CMAKE_ASM_FLAGS}")
-  endforeach()
+    # sort through a list of all architectures we have ASM for
+    # if we find one that matches our current system architecture
+    # set up the assembler flags and include the source files
+    foreach(ARCH ${ASM_ARCHS_AVAILABLE})
+        string(REGEX MATCH "${ARCH}" ASM_ARCH "${available_archs}")
+        if(ASM_ARCH STREQUAL "neonv7")
+            message(STATUS "---- Adding ASM files") # we always use ATT syntax
+            message(STATUS "-- Detected neon architecture; enabling ASM")
+            # architecture specific assembler flags are now set in the cmake toolchain file
+            # then add the files
+            include_directories(${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon)
+            file(GLOB asm_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon/*.s)
+            list(SORT asm_files)
+            foreach(asm_file ${asm_files})
+                list(APPEND volk_gnsssdr_sources ${asm_file})
+                message(STATUS "Adding source file: ${asm_file}")
+            endforeach()
+        endif()
+        enable_language(ASM)
+        message(STATUS "c flags: ${FULL_C_FLAGS}")
+        message(STATUS "asm flags: ${CMAKE_ASM_FLAGS}")
+    endforeach()
 
 else()
-  message(STATUS "Not enabling ASM support. CMake >= 2.8.10 required.")
-  foreach(machine_name ${available_machines})
-    string(REGEX MATCH "neon" NEON_MACHINE ${machine_name})
-    if(NEON_MACHINE STREQUAL "neon")
-      message(FATAL_ERROR "CMake >= 2.8.10 is required for ARM NEON support")
-    endif()
-  endforeach()
+    message(STATUS "Not enabling ASM support. CMake >= 2.8.10 required.")
+    foreach(machine_name ${available_machines})
+        string(REGEX MATCH "neon" NEON_MACHINE ${machine_name})
+        if(NEON_MACHINE STREQUAL "neon")
+            message(FATAL_ERROR "CMake >= 2.8.10 is required for ARM NEON support")
+        endif()
+    endforeach()
 endif()
 
 ########################################################################
 # Handle orc support
 ########################################################################
 if(ORC_FOUND)
-    #setup orc library usage
+    # setup orc library usage
     include_directories(${ORC_INCLUDE_DIRS})
     link_directories(${ORC_LIBRARY_DIRS})
     list(APPEND volk_gnsssdr_libraries ${ORC_LIBRARIES})
 
-    #setup orc functions
+    # setup orc functions
     file(GLOB orc_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/orc/*.orc)
     list(SORT orc_files)
     foreach(orc_file ${orc_files})
-
-        #extract the name for the generated c source from the orc file
+        # extract the name for the generated c source from the orc file
         get_filename_component(orc_file_name_we ${orc_file} NAME_WE)
         set(orcc_gen ${CMAKE_CURRENT_BINARY_DIR}/${orc_file_name_we}.c)
 
-        #create a rule to generate the source and add to the list of sources
+        # create a rule to generate the source and add to the list of sources
         add_custom_command(
             COMMAND ${ORCC_EXECUTABLE} --include math.h --implementation -o ${orcc_gen} ${orc_file}
             DEPENDS ${orc_file} OUTPUT ${orcc_gen}
         )
         list(APPEND volk_gnsssdr_sources ${orcc_gen})
-
     endforeach()
 else()
     message(STATUS "Did not find liborc and orcc, disabling orc support...")
@@ -535,13 +530,14 @@ endif()
 
 message(STATUS "Loading version ${VERSION} into constants...")
 
-#double escape for windows backslash path separators
+# double escape for windows backslash path separators
 string(REPLACE "\\" "\\\\" prefix "${prefix}")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.c.in
     ${CMAKE_CURRENT_BINARY_DIR}/constants.c
-@ONLY)
+    @ONLY
+)
 
 list(APPEND volk_gnsssdr_sources ${CMAKE_CURRENT_BINARY_DIR}/constants.c)
 
@@ -560,60 +556,61 @@ list(APPEND volk_gnsssdr_sources
     ${volk_gnsssdr_gen_sources}
 )
 
-#set the machine definitions where applicable
+# set the machine definitions where applicable
 set_source_files_properties(
     ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr.c
     ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_machines.c
-PROPERTIES COMPILE_DEFINITIONS "${machine_defs}")
+    PROPERTIES COMPILE_DEFINITIONS "${machine_defs}"
+)
 
 if(MSVC)
-    #add compatibility includes for stdint types
+    # add compatibility includes for stdint types
     include_directories(${PROJECT_SOURCE_DIR}/cmake/msvc)
     add_definitions(-DHAVE_CONFIG_H)
-    #compile the sources as C++ due to the lack of complex.h under MSVC
+    # compile the sources as C++ due to the lack of complex.h under MSVC
     set_source_files_properties(${volk_gnsssdr_sources} PROPERTIES LANGUAGE CXX)
 endif()
 
-#Create a volk_gnsssdr object library
+# Create a volk_gnsssdr object library
 if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
     add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
     target_include_directories(volk_gnsssdr_obj
-        PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        PUBLIC $<INSTALL_INTERFACE:include>
-        PRIVATE ${PROJECT_SOURCE_DIR}/kernels
+        PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+        PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/kernels>
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-       PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    # Configure object target properties
+    if(NOT MSVC)
+        set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
+    endif()
 endif()
 
-#Add dynamic library
+# Add dynamic library
 if(CMAKE_GENERATOR STREQUAL Xcode)
     add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
 else()
     add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
 endif()
-target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
+target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
 target_include_directories(volk_gnsssdr
     PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    PUBLIC $<INSTALL_INTERFACE:include>
-    PRIVATE ${PROJECT_SOURCE_DIR}/kernels
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/kernels>
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC $<INSTALL_INTERFACE:include>
 )
 
-#Configure target properties
+# Configure target properties
 if(NOT MSVC)
-    if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
-        set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
-    endif()
-    target_link_libraries(volk_gnsssdr m)
+    target_link_libraries(volk_gnsssdr PUBLIC m)
 endif()
 set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
 set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
 
-#Install locations
+# Install locations
 install(TARGETS volk_gnsssdr
     EXPORT VOLK_GNSSSDR-export
     LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
@@ -621,22 +618,22 @@ install(TARGETS volk_gnsssdr
     RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
 )
 
-#Configure static library
+# Configure static library
 if(ENABLE_STATIC_LIBS)
     if(CMAKE_GENERATOR STREQUAL Xcode)
         add_library(volk_gnsssdr_static STATIC ${volk_gnsssdr_sources})
     else()
         add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
     endif()
-    target_link_libraries(volk_gnsssdr_static ${volk_gnsssdr_libraries} pthread)
+    target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries} pthread)
     if(NOT MSVC)
-        target_link_libraries(volk_gnsssdr_static m)
+        target_link_libraries(volk_gnsssdr_static PUBLIC m)
     endif()
     target_include_directories(volk_gnsssdr_static
         PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/kernels>
         PUBLIC $<INSTALL_INTERFACE:include>
-        PRIVATE ${PROJECT_SOURCE_DIR}/kernels
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
@@ -653,24 +650,18 @@ endif()
 # Build the QA test application
 ########################################################################
 if(ENABLE_TESTING)
-    #include Boost headers
-    include_directories(${Boost_INCLUDE_DIRS})
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/.unittest)
-    set_source_files_properties(
-        ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc PROPERTIES
-        COMPILE_DEFINITIONS "BOOST_TEST_DYN_LINK;BOOST_TEST_MAIN"
-    )
 
     include(VolkAddTest)
-    volk_gen_test("volk_gnsssdr_test_all"
+    volk_gen_test(volk_gnsssdr_test_all
         SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
         TARGET_DEPS volk_gnsssdr
     )
 
     foreach(kernel ${h_files})
-      get_filename_component(kernel ${kernel} NAME)
-      string(REPLACE ".h" "" kernel ${kernel})
-      volk_add_test(${kernel} "volk_gnsssdr_test_all")
+        get_filename_component(kernel ${kernel} NAME)
+        string(REPLACE ".h" "" kernel ${kernel})
+        volk_add_test(${kernel} volk_gnsssdr_test_all)
     endforeach()
 endif()

@@ -161,7 +161,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
     rtklib_sat.acc[2] = glonass_gnav_eph.d_AZn * 1000;                   /* satellite acceleration (ecef) (m/s^2) */
     rtklib_sat.taun = glonass_gnav_eph.d_tau_n;                          /* SV clock bias (s) */
     rtklib_sat.gamn = glonass_gnav_eph.d_gamma_n;                        /* SV relative freq bias */
-    rtklib_sat.age = static_cast<int>(glonass_gnav_eph.d_Delta_tau_n);   /* delay between L1 and L2 (s) */
+    rtklib_sat.dtaun = static_cast<int>(glonass_gnav_eph.d_Delta_tau_n); /* delay between L1 and L2 (s) */
 
     // Time expressed in GPS Time but using RTKLib format
     glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_b, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);

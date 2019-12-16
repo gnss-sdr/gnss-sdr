@@ -28,7 +28,6 @@ class volk_gnsssdr_modtool(object):
     def __init__(self, cfg):
         self.volk_gnsssdr = re.compile('volk_gnsssdr');
         self.remove_after_underscore = re.compile("_.*");
-        self.volk_gnsssdr_run_tests = re.compile(r'^\s*VOLK_RUN_TESTS.*\n', re.MULTILINE);
         self.volk_gnsssdr_profile = re.compile(r'^\s*(VOLK_PROFILE|VOLK_PUPPET_PROFILE).*\n', re.MULTILINE);
         self.my_dict = cfg;
         self.lastline = re.compile(r'\s*char path\[1024\];.*');

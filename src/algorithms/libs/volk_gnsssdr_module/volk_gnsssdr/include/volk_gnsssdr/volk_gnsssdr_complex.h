@@ -45,6 +45,9 @@
 
 #ifdef __cplusplus
 
+#ifdef _MSC_VER
+#include <complex.h>
+#endif
 #include <complex>
 #include <stdint.h>
 

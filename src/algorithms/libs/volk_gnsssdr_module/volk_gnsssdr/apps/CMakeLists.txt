@@ -20,21 +20,6 @@
 ########################################################################
 # Setup profiler
 ########################################################################
-if(MSVC)
-    include_directories(${PROJECT_SOURCE_DIR}/cmake/msvc)
-endif()
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_BINARY_DIR}/include
-    ${PROJECT_SOURCE_DIR}/lib
-    ${PROJECT_BINARY_DIR}/lib
-    ${Boost_INCLUDE_DIRS}
-)
-
-
 if(ORC_FOUND)
     set(orc_lib ${ORC_LIBRARIES})
 else()
@@ -58,6 +43,29 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc
 )
 
+if(MSVC)
+    target_include_directories(volk_gnsssdr_profile
+        PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cmake/msvc>
+    )
+endif(MSVC)
+
+target_include_directories(volk_gnsssdr_profile
+    PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/lib>
+    PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib>
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+if(NOT ${FILESYSTEM_FOUND})
+    target_include_directories(volk_gnsssdr_profile
+        PUBLIC ${Boost_INCLUDE_DIRS}
+    )
+    target_link_libraries(volk_gnsssdr_profile PRIVATE ${Boost_LIBRARIES})
+endif()
+
+
 if(${FILESYSTEM_FOUND})
     add_definitions(-DHAS_STD_FILESYSTEM=1)
     if(${find_experimental})
@@ -67,9 +75,9 @@ if(${FILESYSTEM_FOUND})
 endif()
 
 if(ENABLE_STATIC_LIBS)
-    target_link_libraries(volk_gnsssdr_profile PUBLIC volk_gnsssdr_static ${Boost_LIBRARIES} ${orc_lib})
+    target_link_libraries(volk_gnsssdr_profile PUBLIC volk_gnsssdr_static ${orc_lib})
 else()
-    target_link_libraries(volk_gnsssdr_profile PUBLIC volk_gnsssdr ${Boost_LIBRARIES} ${orc_lib})
+    target_link_libraries(volk_gnsssdr_profile PUBLIC volk_gnsssdr ${orc_lib})
     add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
 endif()
 
@@ -77,7 +85,8 @@ endif()
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         set_target_properties(volk_gnsssdr_profile
-            PROPERTIES LINK_FLAGS "-s")
+            PROPERTIES LINK_FLAGS "-s"
+        )
     endif()
 endif()
 
@@ -103,7 +112,8 @@ endif()
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         set_target_properties(volk_gnsssdr-config-info
-            PROPERTIES LINK_FLAGS "-s")
+            PROPERTIES LINK_FLAGS "-s"
+        )
     endif()
 endif()
 

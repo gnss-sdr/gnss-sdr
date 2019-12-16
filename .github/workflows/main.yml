@@ -1,0 +1,126 @@
+name: Simple CI
+
+on: [push, pull_request]
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: sudo apt-get update && sudo apt-get install ninja-build libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev python3-mako python3-six
+    - name: configure
+      run: cd build && cmake -GNinja ..
+    - name: build
+      run: cd build && ninja
+    - name: check
+      run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
+    - name: default position_test
+      run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
+
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: brew install ninja pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && pip3 install mako && pip3 install six
+    - name: configure
+      run: cd build && cmake -GNinja ..
+    - name: build
+      run: cd build && ninja
+    - name: check
+      run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
+    - name: default position_test
+      run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
+
+
+  clang-format:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: brew install llvm && ln -s /usr/local/opt/llvm/bin/clang-format /usr/local/bin
+    - name: run clang-format
+      run: find . -iname \*.h -o -iname \*.c -o -iname \*.cpp -o -iname \*.hpp | xargs clang-format -style=file -i
+    - name: check
+      run: git diff > clang_format.patch && echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
+
+
+  clang-tidy:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && ln -s /usr/local/opt/llvm/bin/clang-tidy /usr/local/bin && ln -s /usr/local/Cellar/llvm/9.*/bin/clang-apply-replacements /usr/local/bin && cp /usr/local/Cellar/llvm/9.*/share/clang/run-clang-tidy.py /usr/local/bin && pip3 install mako && pip3 install six
+    - name: Prepare run
+      run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.10.0 core_monitor pvt_libs
+    - name: run clang-tidy
+      run: cd build && run-clang-tidy.py -fix
+    - name: check
+      run: git diff > clang_tidy.patch && echo -e "if \n [ -s clang_tidy.patch ] \nthen \n echo "clang_tidy not applied:"; echo ""; more clang_tidy.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
+
+
+  volk-gnsssdr-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mako six
+    - name: configure
+      shell: powershell
+      run: cd build; cmake -G "Visual Studio 16 2019" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
+    - name: build
+      run: cmake --build build --config Release
+    - name: test
+      shell: powershell
+      run: cd build; ctest -C Release
+
+
+  volk-gnsssdr-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: sudo apt-get install build-essential python3-mako python3-six cmake
+    - name: configure
+      run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+    - name: build
+      run: cd build && make -j2
+    - name: install
+      run: cd build && sudo make install && sudo ldconfig
+    - name: test
+      run: volk_gnsssdr_profile
+
+
+  volk-gnsssdr-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: pip3 install mako && pip3 install six
+    - name: configure
+      run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+    - name: build
+      run: cd build && make -j2 && sudo make install
+    - name: test
+      run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
+
+
+  volk-gnsssdr-macos-xcode:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: pip3 install mako && pip3 install six
+    - name: configure
+      run: cd build && cmake -GXcode ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+    - name: build
+      run: cd build && xcodebuild -configuration Release
+    - name: install
+      run: cd build && sudo xcodebuild -configuration Release -target install
+    - name: test
+      run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc

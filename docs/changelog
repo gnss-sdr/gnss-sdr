@@ -40,6 +40,7 @@
 - Fixed cpplint.py build/include_what_you_use, whitespace/tab, whitespace/blank_line errors.
 - clang-format can now be applied to the whole code tree without breaking compilation.
 - Added more check options to .clang-tidy file.
+- Default Python version is now >= 3.4. Python 2.7 still can be used in systems where Python 3 is not available (e.g., CentOS 7, Debian 8, Ubuntu 10.04).
 
 
 ### Improvements in Portability:
@@ -49,6 +50,7 @@
 - Fixed building in some ARM-based devices. Now Clang and ARMClang can be used for native building.
 - Added toolchain files for building gnss-sdr and the volk_gnsssdr library in several ARM processor architectures, including those in Raspberry Pi 3 and 4.
 - The software can now be built using Xcode (passing -GXcode to CMake) without previous manual installation of volk_gnsssdr.
+- Now the volk_gnsssdr library can be built on Microsoft Windows.
 
 
 ### Improvements in Reliability:
@@ -56,6 +58,7 @@
 - Decoding of navigation messages no longer rely on implementation defined behavior for shifting left a signed integer.
 - Removed usage of functions with insecure API (e.g., strcpy, sprintf).
 - New type alias volk_gnsssdr::vector allows both aligned memory allocation and automatic deallocation.
+- Fixed a memory leak in the generation of Galileo PRN codes.
 - Added clang-tidy checks clang-analyzer-security.*, clang-analyzer-optin.portability.UnixAPI clang-tidy checks. Fixed raised warnings.
 - Fixed cpplint.py runtime/printf and runtime/explicit errors.
 - All constructors callable with one argument are marked with the keyword explicit. See MISRA C++:2008, 12-1-3 - All constructors that are callable with a single argument of fundamental type shall be declared explicit.

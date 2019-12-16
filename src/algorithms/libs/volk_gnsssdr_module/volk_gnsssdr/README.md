@@ -97,6 +97,25 @@ of a GNSS baseband processor:
 usage.](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
 
 
+### Building on Raspberry Pi and other ARM boards
+
+To build for these boards you need specify the correct CMake toolchain file for
+best performance.
+
+* Raspberry Pi 4 `arm_cortex_a72_hardfp_native.cmake`
+* Raspberry Pi 3 `arm_cortex_a53_hardfp_native.cmake`
+
+~~~~~~
+$ mkdir build && cd build
+$ cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/arm_cortex_a72_hardfp_native.cmake ..
+$ make
+$ make test
+$ sudo make install
+$ volk_gnsssdr_profile
+~~~~~~
+
+
+### References
 
 If you use VOLK_GNSSSDR in your research and/or software, please cite
 the following paper:

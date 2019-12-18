@@ -117,6 +117,7 @@ DECLARE_string(log_dir);
 
 #if FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test_fpga.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_test_fpga.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc"
 #endif
 

@@ -347,7 +347,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 
     std::shared_ptr<AcquisitionInterface> acquisition;
 
-    std::string System_and_Signal;
     std::string signal;
     struct DMA_handler_args_gps_l1_acq_test args;
     struct acquisition_handler_args_gps_l1_acq_test args_acq;
@@ -367,7 +366,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 	const char* str = signal.c_str();                                  // get a C style null terminated string
 	std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
 	tmp_gnss_synchro.PRN = SV_ID;
-	System_and_Signal = "GPS L1 CA";
 	const std::string& role = "Acquisition";
 	acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
@@ -381,13 +379,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(0.001);
 
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
-    start = std::chrono::system_clock::now();
-
     nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-
-	unsigned int PRN = SV_ID;
 
 	channel_fsm_->Event_clear_test_result();
 
@@ -430,12 +422,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 			gnss_synchro_vec.push_back(tmp_gnss_synchro);
 		}
 
-	// report the elapsed time
-    end = std::chrono::system_clock::now();
-    elapsed_seconds = end - start;
-    std::cout << "Total signal acquisition run time "
-              << elapsed_seconds.count()
-              << " [seconds]" << std::endl;
     if (!gnss_synchro_vec.empty())
         {
             return true;
@@ -470,9 +456,6 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
 
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
 {
-    // pointer to the DMA thread that sends the samples to the acquisition engine
-    pthread_t thread_DMA;
-
     struct DMA_handler_args_gps_l1_acq_test args;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -491,10 +474,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     elapsed_seconds = end - start;
 
     uint32_t n = 0; // there is only one channel
-    uint64_t nsamples = gnss_synchro_vec.at(n).Acq_samplestamp_samples;
     std::cout << "Acquired " << nsamples_to_transfer << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
-
-	double integration_period = static_cast<unsigned int>(std::round(static_cast<double>(GpsL1CaPcpsAcquisitionTestFpga::BASEBAND_SAMPLING_FREQ) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
 	double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro_vec.at(n).Acq_delay_samples);
     auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);

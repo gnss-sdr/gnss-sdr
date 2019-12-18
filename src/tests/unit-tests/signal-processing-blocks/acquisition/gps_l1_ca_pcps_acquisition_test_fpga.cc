@@ -58,7 +58,7 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-struct DMA_handler_args_acq_test
+struct DMA_handler_args_gps_l1_acq_test
 {
     std::string file;
     int32_t nsamples_tx;
@@ -66,7 +66,7 @@ struct DMA_handler_args_acq_test
     unsigned int freq_band;  // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
 };
 
-struct acquisition_handler_args_acq_test
+struct acquisition_handler_args_gps_l1_acq_test
 {
 	std::shared_ptr<AcquisitionInterface> acquisition;
 };
@@ -111,14 +111,14 @@ GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
     doppler_step = 100;
 }
 
-void* handler_DMA_acq_test(void* arguments)
+void* handler_DMA_gps_l1_acq_test(void* arguments)
 {
 	const float MAX_SAMPLE_VALUE = 0.097781330347061;
 	const int DMA_BITS_PER_SAMPLE = 8;
 	const float DMA_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
 	const int MAX_INPUT_SAMPLES_TOTAL = 16384;
 
-	auto* args = (struct DMA_handler_args_acq_test*)arguments;
+	auto* args = (struct DMA_handler_args_gps_l1_acq_test*)arguments;
 
 	std::string Filename = args->file;  // input filename
 	int32_t skip_used_samples = args->skip_used_samples;
@@ -267,11 +267,11 @@ void* handler_DMA_acq_test(void* arguments)
 
 
 
-void* handler_acquisition_acq_test(void* arguments)
+void* handler_acquisition_gps_l1_acq_test(void* arguments)
 {
 	// the acquisition is a blocking function so we have to
 	// create a thread
-	auto* args = (struct acquisition_handler_args_acq_test*)arguments;
+	auto* args = (struct acquisition_handler_args_gps_l1_acq_test*)arguments;
 	args->acquisition->reset();
 	return nullptr;
 }
@@ -286,7 +286,7 @@ void* handler_acquisition_acq_test(void* arguments)
 // of the channel state machine are modified here, in order to
 // simplify the instantiation of the acquisition class in the
 // unit test.
-class ChannelFsm_acq_test: public ChannelFsm
+class ChannelFsm_gps_l1_acq_test: public ChannelFsm
 {
 public:
 
@@ -337,8 +337,8 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     int SV_ID = 1;  // initial sv id
 
     // fsm
-    std::shared_ptr<ChannelFsm_acq_test> channel_fsm_;
-    channel_fsm_ = std::make_shared<ChannelFsm_acq_test>();
+    std::shared_ptr<ChannelFsm_gps_l1_acq_test> channel_fsm_;
+    channel_fsm_ = std::make_shared<ChannelFsm_gps_l1_acq_test>();
     bool acquisition_successful;
 
     // Satellite signal definition
@@ -349,8 +349,8 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 
     std::string System_and_Signal;
     std::string signal;
-    struct DMA_handler_args_acq_test args;
-    struct acquisition_handler_args_acq_test args_acq;
+    struct DMA_handler_args_gps_l1_acq_test args;
+    struct acquisition_handler_args_gps_l1_acq_test args_acq;
 
     std::string file = "data/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
     args.file = file; // DMA file configuration
@@ -403,7 +403,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 	// run the acquisition. The acquisition must run in a separate thread because it is a blocking function
 	args_acq.acquisition = acquisition;
 
-	if (pthread_create(&thread_acquisition, nullptr, handler_acquisition_acq_test, reinterpret_cast<void*>(&args_acq)) < 0)
+	if (pthread_create(&thread_acquisition, nullptr, handler_acquisition_gps_l1_acq_test, reinterpret_cast<void*>(&args_acq)) < 0)
 		{
 			std::cout << "ERROR cannot create acquisition Process" << std::endl;
 		}
@@ -412,7 +412,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 	usleep(1000000);
 
 	// create DMA child process
-	if (pthread_create(&thread_DMA, nullptr, handler_DMA_acq_test, reinterpret_cast<void*>(&args)) < 0)
+	if (pthread_create(&thread_DMA, nullptr, handler_DMA_gps_l1_acq_test, reinterpret_cast<void*>(&args)) < 0)
 		{
 			std::cout << "ERROR cannot create DMA Process" << std::endl;
 		}
@@ -473,7 +473,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     // pointer to the DMA thread that sends the samples to the acquisition engine
     pthread_t thread_DMA;
 
-    struct DMA_handler_args_acq_test args;
+    struct DMA_handler_args_gps_l1_acq_test args;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);

@@ -29,12 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#include "fpga_switch.h"
-
-#include <pthread.h>   // for pthread stuff
-
-
 #include "concurrent_queue.h"
+#include "fpga_switch.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -51,9 +47,11 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cstdlib>
+#include <cmath>      // for abs, pow, floor
 #include <fcntl.h>  // for O_WRONLY
 #include <unistd.h>
 #include <utility>
+#include <pthread.h>   // for pthread stuff
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -115,6 +113,9 @@ GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
 
 void* handler_DMA_acq_test(void* arguments)
 {
+	const float MAX_SAMPLE_VALUE = 0.097781330347061;
+	const int DMA_BITS_PER_SAMPLE = 8;
+	const float DMA_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
 	const int MAX_INPUT_SAMPLES_TOTAL = 16384;
 
 	auto* args = (struct DMA_handler_args_acq_test*)arguments;
@@ -123,8 +124,7 @@ void* handler_DMA_acq_test(void* arguments)
 	int32_t skip_used_samples = args->skip_used_samples;
 	int32_t nsamples_tx = args->nsamples_tx;
 
-    std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
+    std::vector<float> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
     bool file_completed = false;
     int32_t nsamples_remaining;
@@ -193,7 +193,7 @@ void* handler_DMA_acq_test(void* arguments)
                     try
                         {
                     		// 2 bytes per complex sample
-                            infile.read(reinterpret_cast<char *>(input_samples.data()), nsamples_block_size * 2);
+                            infile.read(reinterpret_cast<char *>(input_samples.data()), nsamples_block_size * 2 * sizeof(float));
                         }
                     catch (const std::ifstream::failure &e)
                         {
@@ -209,14 +209,14 @@ void* handler_DMA_acq_test(void* arguments)
 									input_samples_dma[dma_index] = 0;
 									input_samples_dma[dma_index + 1] = 0;
 									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = input_samples[index0];
-									input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
+									input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0]*DMA_SCALING_FACTOR);
+									input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1]*DMA_SCALING_FACTOR);
 								}
 							else
 								{
 									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = input_samples[index0]/16;
-									input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
+									input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*DMA_SCALING_FACTOR);
+									input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*DMA_SCALING_FACTOR);
 									// channel 0 (queue 0) -> E1/L1
 									input_samples_dma[dma_index + 2] = 0;
 									input_samples_dma[dma_index + 3] = 0;
@@ -385,8 +385,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     std::chrono::duration<double> elapsed_seconds;
     start = std::chrono::system_clock::now();
 
-    bool start_msg = true;
-
     nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
 	unsigned int PRN = SV_ID;
@@ -410,14 +408,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 			std::cout << "ERROR cannot create acquisition Process" << std::endl;
 		}
 
-	if (start_msg == true)
-		{
-			//std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
-			std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
-			std::cout << "[";
-			start_msg = false;
-		}
-
 	// wait to give time for the acquisition thread to set up the acquisition HW accelerator in the FPGA
 	usleep(1000000);
 
@@ -437,31 +427,10 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 
 	if (acquisition_successful)
 		{
-			std::cout << " " << PRN << " ";
-
 			gnss_synchro_vec.push_back(tmp_gnss_synchro);
 		}
-	else
-		{
-			std::cout << " . ";
-		}
 
-	std::cout.flush();
-
-
-    std::cout << "]" << std::endl;
-    std::cout << "-------------------------------------------\n";
-
-    for (auto& x : gnss_synchro_vec)
-        {
-            std::cout << "DETECTED SATELLITE " << System_and_Signal
-                      << " PRN: " << x.PRN
-                      << " with Doppler: " << x.Acq_doppler_hz
-                      << " [Hz], code phase: " << x.Acq_delay_samples
-                      << " [samples] at signal SampleStamp " << x.Acq_samplestamp_samples << "\n";
-        }
-
-    // report the elapsed time
+	// report the elapsed time
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
     std::cout << "Total signal acquisition run time "
@@ -496,7 +465,7 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     // to the L5/E5a frequency band in order to avoid the L1/E1 factor :4 downsampling filter
     config->set_property("Acquisition.downsampling_factor", "1");
     config->set_property("Acquisition.select_queue_Fpga", "1");
-
+    config->set_property("Acquisition.total_block_exp", "12");
 }
 
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)

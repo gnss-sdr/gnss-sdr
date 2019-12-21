@@ -2,7 +2,10 @@
  * \file gps_l1_ca_pcps_acquisition_test_fpga.cc
  * \brief  This class implements an acquisition test for
  * GpsL1CaPcpsAcquisitionFpga class based on some input parameters.
- * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * \authors <ul>
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *

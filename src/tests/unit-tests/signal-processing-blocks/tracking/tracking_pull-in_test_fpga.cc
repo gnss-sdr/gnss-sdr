@@ -2,8 +2,10 @@
  * \file tracking_pull-in_test_fpga.cc
  * \brief  This class implements a tracking Pull-In test for FPGA HW accelerator
  *  implementations based on some input parameters.
- * \author     Marc Majoral, 2019. majoralmarc(at)cttc.es
- *             Javier Arribas, 2018. jarribas(at)cttc.es
+ * \authors <ul>
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *          <li> Javier Arribas, 2018. jarribas(at)cttc.es
+ *          </ul>
  *
  *
  * -------------------------------------------------------------------------
@@ -31,20 +33,16 @@
  */
 
 #include "GPS_L1_CA.h"
-//#include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
 #include "concurrent_queue.h"
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
-//#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition_fpga.h"
 #include "gnss_block_factory.h"
 #include "gnuplot_i.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
-//#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-//#include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
@@ -173,7 +171,6 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
 	int32_t nsamples_tx = args->nsamples_tx;
 
     std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
     bool file_completed = false;
     int32_t nsamples_remaining;

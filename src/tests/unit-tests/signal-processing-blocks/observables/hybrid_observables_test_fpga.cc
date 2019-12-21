@@ -2,7 +2,10 @@
  * \file hybrid_observables_test_fpga.cc
  * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
  *  implementation based on some input parameters.
- * \author Javier Arribas, 2019. jarribas(at)cttc.es
+ * \authors <ul>
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *          <li> Javier Arribas, 2018. jarribas(at)cttc.es
+ *          </ul>
  *
  *
  * -------------------------------------------------------------------------
@@ -350,7 +353,6 @@ void* handler_DMA_obs_test(void* arguments)
 	int32_t nsamples_tx = args->nsamples_tx;
 
     std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
     bool file_completed = false;
     int32_t nsamples_remaining;

@@ -29,34 +29,43 @@
  * -------------------------------------------------------------------------
  */
 
+#include "Galileo_E1.h"
+#include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
+#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "gnss_sdr_valve.h"
+#include "gnss_signal.h"
 #include "gnss_synchro.h"
-#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
-//#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
+#include "test_flags.h"
 #include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/throttle.h>
-#include <gnuradio/top_block.h>
-#include <gtest/gtest.h>
-#include <chrono>
-#include <cstdlib>
 #include <cmath>      // for abs, pow, floor
-#include <fcntl.h>  // for O_WRONLY
-#include <unistd.h>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <pmt/pmt.h>
+#include <pthread.h>
+#include <chrono>
 #include <utility>
-#include <pthread.h>   // for pthread stuff
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
+
+#if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #endif
 
 struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test
@@ -89,11 +98,8 @@ protected:
 
     void init();
 
-    gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro;
-    size_t item_size;
+
     unsigned int doppler_max;
     unsigned int doppler_step;
     unsigned int nsamples_to_transfer;
@@ -104,17 +110,15 @@ protected:
 
 GalileoE1PcpsAmbiguousAcquisitionTestFpga::GalileoE1PcpsAmbiguousAcquisitionTestFpga()
 {
-    factory = std::make_shared<GNSSBlockFactory>();
+
     config = std::make_shared<InMemoryConfiguration>();
-    item_size = sizeof(gr_complex);
-    gnss_synchro = Gnss_Synchro();
+
     doppler_max = 5000;
     doppler_step = 100;
 }
 
 void* handler_DMA_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
 {
-	//const float MAX_SAMPLE_VALUE = 0.097781330347061;
 	const float MAX_SAMPLE_VALUE = 0.096257761120796;
 	const int DMA_BITS_PER_SAMPLE = 8;
 	const float DMA_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
@@ -349,7 +353,6 @@ bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
 
     std::shared_ptr<AcquisitionInterface> acquisition;
 
-//    std::string System_and_Signal;
     std::string signal;
     struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test args;
     struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test args_acq;
@@ -439,11 +442,6 @@ bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
 
 void GalileoE1PcpsAmbiguousAcquisitionTestFpga::init()
 {
-    gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'E';
-    std::string signal = "1B";
-    signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga");
     config->set_property("Acquisition.threshold", "0.00001");

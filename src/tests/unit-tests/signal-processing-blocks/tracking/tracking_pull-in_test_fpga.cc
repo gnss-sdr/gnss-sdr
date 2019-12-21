@@ -31,13 +31,20 @@
  */
 
 #include "GPS_L1_CA.h"
+//#include "GPS_L2C.h"
+#include "GPS_L5.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
+#include "concurrent_queue.h"
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "galileo_e5a_pcps_acquisition.h"
+//#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition_fpga.h"
 #include "gnss_block_factory.h"
+#include "gnuplot_i.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
+//#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+//#include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
@@ -52,12 +59,21 @@
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/filter/firdes.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
+#include <pthread.h>
 #include <chrono>
-#include <unistd.h>
+#include <cstdint>
 #include <utility>
 #include <vector>
+
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/fir_filter_blk.h>
+#else
+#include <gnuradio/filter/fir_filter_ccf.h>
+#endif
 
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
@@ -71,12 +87,6 @@ namespace fs = std::filesystem;
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #endif
-
-// threads
-#include <fcntl.h>     // for open, O_RDWR, O_SYNC
-#include <iostream>    // for cout, endl
-#include <pthread.h>   // for pthread stuff
-#include <sys/mman.h>  // for mmap
 
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx_Fpga;
@@ -492,7 +502,6 @@ void TrackingPullInTestFpga::configure_receiver(
     config->set_property("Tracking.dump", "true");
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
-    //config->set_property("Tracking.item_type", "gr_complex");
     config->set_property("Tracking.pll_bw_hz", std::to_string(PLL_wide_bw_hz));
     config->set_property("Tracking.dll_bw_hz", std::to_string(DLL_wide_bw_hz));
     config->set_property("Tracking.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
@@ -937,8 +946,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                       << " Acquisition SampleStamp is " << acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second << std::endl;
         }
 
-    // create the msg queue for valve
-    //queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
 
 

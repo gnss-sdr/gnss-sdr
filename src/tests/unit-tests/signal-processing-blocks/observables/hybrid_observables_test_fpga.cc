@@ -30,43 +30,23 @@
  * -------------------------------------------------------------------------
  */
 
-
-
-
-#include "gnss_sdr_fpga_sample_counter.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "fpga_switch.h"
-
-
-
-
-
-
-// threads
-#include <pthread.h>   // for pthread stuff
-
-
-
 #include "GPS_L1_CA.h"
-#include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "acquisition_msg_rx.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
+#include "fpga_switch.h"
+#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
+#include "galileo_e5a_pcps_acquisition_fpga.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
+#include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "gps_l5i_pcps_acquisition_fpga.h"
 #include "hybrid_observables.h"
 #include "in_memory_configuration.h"
 #include "observable_tests_flags.h"
@@ -97,6 +77,7 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
+#include <pthread.h>
 #include <unistd.h>
 #include <utility>
 #ifdef GR_GREATER_38
@@ -760,9 +741,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             // wait to give time for the acquisition thread to set up the acquisition HW accelerator in the FPGA
             usleep(1000000);
 
-//            args.skip_used_samples = 0;
-//            args.nsamples_tx = nsamples_to_transfer + TEST_OBS_SKIP_SAMPLES;
-
             // create DMA child process
             if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
                 {
@@ -780,11 +758,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             if (acquisition_successful)
                 {
                     std::cout << " " << PRN << " ";
-
-//                    tmp_gnss_synchro.Acq_doppler_hz = tmp_gnss_synchro.Acq_doppler_hz;
-//                    tmp_gnss_synchro.Acq_delay_samples = tmp_gnss_synchro.Acq_delay_samples;
-//                    //tmp_gnss_synchro.Acq_samplestamp_samples = 0;                                         // do not take into account the filter internal state initialisation
-//                    tmp_gnss_synchro.Acq_samplestamp_samples = tmp_gnss_synchro.Acq_samplestamp_samples;  // delay due to the downsampling filter in the acquisition
 
                     gnss_synchro_vec.push_back(tmp_gnss_synchro);
                 }
@@ -2019,7 +1992,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 top_block->connect(observables->get_right_block(), n, null_sink_vec.at(n), 0);
             }
         // connect sample counter and timmer to the last channel in observables block (extra channel)
-        // top_block->connect(samp_counter, 0, observables->get_left_block(), tracking_ch_vec.size());
         top_block->connect(ch_out_fpga_sample_counter, 0, observables->get_left_block(), tracking_ch_vec.size());  // extra port for the sample counter pulse
     }) << "Failure connecting the blocks.";
 
@@ -2063,28 +2035,9 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             }) << "Failure connecting tracking to the top_block.";
         }
 
-//    // send some samples to allow the receiver to exit the tracking loops
-//    args.file = file;
-//    args.nsamples_tx = baseband_sampling_freq * 1; // 1 s
-//    args.skip_used_samples = baseband_sampling_freq * FLAGS_duration;
-//    if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
-//        {
-//            std::cout << "ERROR cannot create DMA Process" << std::endl;
-//        }
-
-
-    // wait for the child DMA process to finish
-//    pthread_join(thread_DMA, nullptr);
-
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    // reset the HW in order to produce an interrupt to the tracking
-    // modules that are in a waiting state
     acquisition->stop_acquisition();
 
 
-//    // stop the top block
-//    top_block->stop();
     EXPECT_NO_THROW({
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;

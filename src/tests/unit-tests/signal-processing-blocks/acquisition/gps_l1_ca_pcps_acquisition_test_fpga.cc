@@ -29,33 +29,41 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
+#include "test_flags.h"
 #include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/throttle.h>
-#include <gnuradio/top_block.h>
+#include <cmath>      // for abs, pow, floor
+#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <chrono>
-#include <cstdlib>
-#include <cmath>      // for abs, pow, floor
-#include <fcntl.h>  // for O_WRONLY
-#include <unistd.h>
+#include <pthread.h>
 #include <utility>
-#include <pthread.h>   // for pthread stuff
+
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
+
+#if HAS_STD_FILESYSTEM
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #endif
 
 struct DMA_handler_args_gps_l1_acq_test
@@ -88,11 +96,8 @@ protected:
 
     void init();
 
-    gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro;
-    size_t item_size;
+
     unsigned int doppler_max;
     unsigned int doppler_step;
     unsigned int nsamples_to_transfer;
@@ -103,10 +108,9 @@ protected:
 
 GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
 {
-    factory = std::make_shared<GNSSBlockFactory>();
+
     config = std::make_shared<InMemoryConfiguration>();
-    item_size = sizeof(gr_complex);
-    gnss_synchro = Gnss_Synchro();
+
     doppler_max = 5000;
     doppler_step = 100;
 }
@@ -435,11 +439,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 
 void GpsL1CaPcpsAcquisitionTestFpga::init()
 {
-    gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'G';
-    std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition_Fpga");
     config->set_property("Acquisition.threshold", "0.00001");

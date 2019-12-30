@@ -9,6 +9,7 @@
  *
  *
  * -------------------------------------------------------------------------
+ *
  * Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
@@ -61,9 +62,9 @@
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>
-#include <pthread.h>
 #include <chrono>
 #include <cstdint>
+#include <pthread.h>
 #include <utility>
 #include <vector>
 
@@ -149,27 +150,27 @@ struct DMA_handler_args_trk_pull_in_test
 
 struct acquisition_handler_args_trk_pull_in_test
 {
-	std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
 };
 
 void* handler_acquisition_trk_pull_in_test(void* arguments)
 {
-	// the acquisition is a blocking function so we have to
-	// create a thread
-	auto* args = (struct acquisition_handler_args_trk_pull_in_test*)arguments;
-	args->acquisition->reset();
-	return nullptr;
+    // the acquisition is a blocking function so we have to
+    // create a thread
+    auto* args = (struct acquisition_handler_args_trk_pull_in_test*)arguments;
+    args->acquisition->reset();
+    return nullptr;
 }
 
 void* handler_DMA_trk_pull_in_test(void* arguments)
 {
-	const int MAX_INPUT_SAMPLES_TOTAL = 16384;
+    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
 
-	auto* args = (struct DMA_handler_args_trk_pull_in_test*)arguments;
+    auto* args = (struct DMA_handler_args_trk_pull_in_test*)arguments;
 
-	std::string Filename = args->file;  // input filename
-	int32_t skip_used_samples = args->skip_used_samples;
-	int32_t nsamples_tx = args->nsamples_tx;
+    std::string Filename = args->file;  // input filename
+    int32_t skip_used_samples = args->skip_used_samples;
+    int32_t nsamples_tx = args->nsamples_tx;
 
     std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
@@ -187,7 +188,7 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
         {
             infile.open(Filename, std::ios::binary);
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ifstream::failure& e)
         {
             std::cerr << "Exception opening file " << Filename << std::endl;
             return nullptr;
@@ -209,81 +210,75 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
 
     uint32_t skip_samples = static_cast<uint32_t>(FLAGS_skip_samples);
 
-	if (skip_samples + skip_used_samples > 0)
-	{
-		try
-			{
-				infile.ignore((skip_samples + skip_used_samples) * 2);
-			}
-		catch (const std::ifstream::failure &e)
-			{
-				std::cerr << "Exception reading file " << Filename << std::endl;
-			}
-	}
+    if (skip_samples + skip_used_samples > 0)
+        {
+            try
+                {
+                    infile.ignore((skip_samples + skip_used_samples) * 2);
+                }
+            catch (const std::ifstream::failure& e)
+                {
+                    std::cerr << "Exception reading file " << Filename << std::endl;
+                }
+        }
 
-	nsamples_remaining = nsamples_tx;
-	nsamples_block_size = 0;
+    nsamples_remaining = nsamples_tx;
+    nsamples_block_size = 0;
 
     while (file_completed == false)
         {
             dma_index = 0;
 
             if (nsamples_remaining > MAX_INPUT_SAMPLES_TOTAL)
-            {
-            	nsamples_block_size = MAX_INPUT_SAMPLES_TOTAL;
-            }
+                {
+                    nsamples_block_size = MAX_INPUT_SAMPLES_TOTAL;
+                }
             else
-            {
-            	nsamples_block_size = nsamples_remaining;
-            }
+                {
+                    nsamples_block_size = nsamples_remaining;
+                }
 
-                    try
+            try
+                {
+                    // 2 bytes per complex sample
+                    infile.read(reinterpret_cast<char*>(input_samples.data()), nsamples_block_size * 2);
+                }
+            catch (const std::ifstream::failure& e)
+                {
+                    std::cerr << "Exception reading file " << Filename << std::endl;
+                }
+
+            for (int index0 = 0; index0 < (nsamples_block_size * 2); index0 += 2)
+                {
+                    if (args->freq_band == 0)
                         {
-                    		// 2 bytes per complex sample
-                            infile.read(reinterpret_cast<char *>(input_samples.data()), nsamples_block_size * 2);
+                            // channel 1 (queue 1) -> E5/L5
+                            input_samples_dma[dma_index] = 0;
+                            input_samples_dma[dma_index + 1] = 0;
+                            // channel 0 (queue 0) -> E1/L1
+                            input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0] * args->scaling_factor);
+                            input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1] * args->scaling_factor);
                         }
-                    catch (const std::ifstream::failure &e)
+                    else
                         {
-                            std::cerr << "Exception reading file " << Filename << std::endl;
-                        }
-
-                    for (int index0 = 0; index0 < (nsamples_block_size * 2); index0 += 2)
-                        {
-
-							if (args->freq_band == 0)
-								{
-									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = 0;
-									input_samples_dma[dma_index + 1] = 0;
-									// channel 0 (queue 0) -> E1/L1
-//									input_samples_dma[dma_index + 2] = input_samples[index0];
-//									input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
-									input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
-									input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
-								}
-							else
-								{
-									// channel 1 (queue 1) -> E5/L5
-//									input_samples_dma[dma_index] = input_samples[index0];
-//									input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
-									input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
-									input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
-									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = 0;
-									input_samples_dma[dma_index + 3] = 0;
-								}
-
-                            dma_index += 4;
-
+                            // channel 1 (queue 1) -> E5/L5
+                            input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0] * args->scaling_factor);
+                            input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1] * args->scaling_factor);
+                            // channel 0 (queue 0) -> E1/L1
+                            input_samples_dma[dma_index + 2] = 0;
+                            input_samples_dma[dma_index + 3] = 0;
                         }
 
-			if (write(tx_fd, input_samples_dma.data(), nsamples_block_size * 2 * 2) != nsamples_block_size * 2 * 2)
-				{
-					std::cerr << "Error: DMA could not send all the required samples " << std::endl;
-				}
+                    dma_index += 4;
+                }
 
-			// Throttle the DMA
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            if (write(tx_fd, input_samples_dma.data(), nsamples_block_size * 2 * 2) != nsamples_block_size * 2 * 2)
+                {
+                    std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+                }
+
+            // Throttle the DMA
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 
             nsamples_remaining -= nsamples_block_size;
@@ -292,28 +287,27 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
                 {
                     file_completed = true;
                 }
-
         }
 
     try
         {
             infile.close();
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ifstream::failure& e)
         {
             std::cerr << "Exception closing files " << Filename << std::endl;
         }
 
     try
         {
-    		close(tx_fd);
+            close(tx_fd);
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ifstream::failure& e)
         {
             std::cerr << "Exception closing loop device " << std::endl;
         }
 
-	return nullptr;
+    return nullptr;
 }
 
 class TrackingPullInTestFpga : public ::testing::Test
@@ -394,9 +388,8 @@ public:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
-    static const int32_t TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES = 1024; //48
+    static const int32_t TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES = 1024;  //48
     static constexpr float DMA_SIGNAL_SCALING_FACTOR = 8.0;
-
 };
 
 int TrackingPullInTestFpga::configure_generator(double CN0_dBHz, int file_idx)
@@ -454,44 +447,41 @@ int TrackingPullInTestFpga::generate_signal()
 // of the channel state machine are modified here, in order to
 // simplify the instantiation of the acquisition class in the
 // unit test.
-class ChannelFsm_trk_pull_in_test: public ChannelFsm
+class ChannelFsm_trk_pull_in_test : public ChannelFsm
 {
 public:
-
-	bool Event_valid_acquisition() override
-	{
-		acquisition_successful = true;
-	    return true;
-	}
-
-
-	bool Event_failed_acquisition_repeat() override
-	{
-		acquisition_successful = false;
-	    return true;
-	}
+    bool Event_valid_acquisition() override
+    {
+        acquisition_successful = true;
+        return true;
+    }
 
 
-	bool Event_failed_acquisition_no_repeat() override
-	{
-		acquisition_successful = false;
-	    return true;
-	}
+    bool Event_failed_acquisition_repeat() override
+    {
+        acquisition_successful = false;
+        return true;
+    }
 
-	bool Event_check_test_result()
-	{
-		return acquisition_successful;
-	}
 
-	void Event_clear_test_result()
-	{
-		acquisition_successful = false;
-	}
+    bool Event_failed_acquisition_no_repeat() override
+    {
+        acquisition_successful = false;
+        return true;
+    }
+
+    bool Event_check_test_result()
+    {
+        return acquisition_successful;
+    }
+
+    void Event_clear_test_result()
+    {
+        acquisition_successful = false;
+    }
 
 private:
-
-	bool acquisition_successful;
-
+    bool acquisition_successful;
 };
 
 void TrackingPullInTestFpga::configure_receiver(
@@ -583,7 +573,6 @@ void TrackingPullInTestFpga::configure_receiver(
 
 bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 {
-
     pthread_t thread_DMA, thread_acquisition;
 
     // fsm
@@ -605,66 +594,62 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     struct acquisition_handler_args_trk_pull_in_test args_acq;
 
     std::string file = FLAGS_signal_file;
-    args.file = file; // DMA file configuration
+    args.file = file;  // DMA file configuration
 
     // instantiate the FPGA switch and set the
     // switch position to DMA.
     std::shared_ptr<Fpga_Switch> switch_fpga;
     switch_fpga = std::make_shared<Fpga_Switch>("/dev/uio1");
-    switch_fpga->set_switch_position(0);     // set switch position to DMA
+    switch_fpga->set_switch_position(0);  // set switch position to DMA
 
     // create the correspondign acquisition block according to the desired tracking signal
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'G';
-			signal = "1C";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "GPS L1 CA";
+            tmp_gnss_synchro.System = 'G';
+            signal = "1C";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "GPS L1 CA";
             acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 0;	// frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'E';
-			signal = "1B";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "Galileo E1B";
+            tmp_gnss_synchro.System = 'E';
+            signal = "1B";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "Galileo E1B";
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 0; // frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'E';
-			signal = "5X";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "Galileo E5a";
+            tmp_gnss_synchro.System = 'E';
+            signal = "5X";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "Galileo E5a";
             acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 1; // frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'G';
-			signal = "L5";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "GPS L5I";
+            tmp_gnss_synchro.System = 'G';
+            signal = "L5";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "GPS L5I";
             acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 1;	// frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
     else
         {
@@ -728,10 +713,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
         {
-
             tmp_gnss_synchro.PRN = PRN;
 
-			channel_fsm_->Event_clear_test_result();
+            channel_fsm_->Event_clear_test_result();
 
             acquisition->stop_acquisition();  // reset the whole system including the sample counters
             acquisition->init();
@@ -739,8 +723,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
             if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga") or (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga"))
                 {
-            		// Configure the DMA to send TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES in order to initialize the internal
-            		// states of the downsampling filter in the FPGA
+                    // Configure the DMA to send TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES in order to initialize the internal
+                    // states of the downsampling filter in the FPGA
                     args.skip_used_samples = 0;
                     args.nsamples_tx = TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES;
 
@@ -799,10 +783,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
             if (acquisition_successful)
                 {
-					std::cout << " " << PRN << " ";
-					doppler_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_doppler_hz));
-					code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples));
-					acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
+                    std::cout << " " << PRN << " ";
+                    doppler_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_doppler_hz));
+                    code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples));
+                    acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
                 }
             else
                 {
@@ -810,7 +794,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
                 }
 
             std::cout.flush();
-
         }
 
     std::cout << "]" << std::endl;
@@ -827,7 +810,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     std::cout << "Total signal acquisition run time "
               << elapsed_seconds.count()
               << " [seconds]" << std::endl;
-            return true;
+    return true;
 }
 
 
@@ -836,7 +819,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     // pointer to the DMA thread that sends the samples to the acquisition engine
     pthread_t thread_DMA;
 
-	struct DMA_handler_args_trk_pull_in_test args;
+    struct DMA_handler_args_trk_pull_in_test args;
 
     // *************************************************
     // ***** STEP 1: Prepare the parameters sweep ******
@@ -1010,7 +993,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             acquisition->stop_acquisition();  // reset the whole system including the sample counters
 
 
-
                             // create flowgraph
                             top_block = gr::make_top_block("Tracking test");
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
@@ -1043,8 +1025,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                 gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
                                 top_block->connect(tracking->get_right_block(), 0, sink, 0);
                                 top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-
-
                             }) << "Failure connecting the blocks of tracking test.";
 
 
@@ -1057,26 +1037,25 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             std::chrono::time_point<std::chrono::system_clock> start, end;
 
 
+                            top_block->start();
 
-							top_block->start();
 
-
-                            usleep(1000000); // give time for the system to start before receiving the start tracking command.
+                            usleep(1000000);  // give time for the system to start before receiving the start tracking command.
 
                             if (acq_to_trk_delay_samples > 0)
-                            {
-                            	std::cout << "--- SIMULATING A PULL-IN DELAY OF " << FLAGS_acq_to_trk_delay_s << " SECONDS ---\n";
+                                {
+                                    std::cout << "--- SIMULATING A PULL-IN DELAY OF " << FLAGS_acq_to_trk_delay_s << " SECONDS ---\n";
 
-                                args.file = file;
-                                args.nsamples_tx = acq_to_trk_delay_samples; // 150 s for now but will be all file
+                                    args.file = file;
+                                    args.nsamples_tx = acq_to_trk_delay_samples;  // 150 s for now but will be all file
 
-                                args.skip_used_samples = 0;
+                                    args.skip_used_samples = 0;
 
-                                if (pthread_create(&thread_DMA, nullptr, handler_DMA_trk_pull_in_test, reinterpret_cast<void*>(&args)) < 0)
-                                    {
-                                        std::cout << "ERROR cannot create DMA Process" << std::endl;
-                                    }
-                            }
+                                    if (pthread_create(&thread_DMA, nullptr, handler_DMA_trk_pull_in_test, reinterpret_cast<void*>(&args)) < 0)
+                                        {
+                                            std::cout << "ERROR cannot create DMA Process" << std::endl;
+                                        }
+                                }
 
 
                             std::cout << " Starting tracking...\n";
@@ -1275,8 +1254,8 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                         }
                                 }  // end plot
 
-                        }          // end acquisition Delay errors loop
-                }                  // end acquisition Doppler errors loop
+                        }  // end acquisition Delay errors loop
+                }          // end acquisition Doppler errors loop
             pull_in_results_v_v.push_back(pull_in_results_v);
         }  // end CN0 LOOP
 
@@ -1338,8 +1317,5 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                     g4.savetops("trk_pull_in_grid_external_file");
                     g4.savetopdf("trk_pull_in_grid_external_file", 12);
                 }
-
         }
-
-
 }

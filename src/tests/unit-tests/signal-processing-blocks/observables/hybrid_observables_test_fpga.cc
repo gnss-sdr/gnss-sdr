@@ -272,7 +272,6 @@ public:
 
     static const int32_t TEST_OBS_SKIP_SAMPLES = 1024;
     static constexpr float DMA_SIGNAL_SCALING_FACTOR = 8.0;
-
 };
 
 int HybridObservablesTestFpga::configure_generator()
@@ -304,9 +303,9 @@ int HybridObservablesTestFpga::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-		{
-			perror("fork err");
-		}
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -331,27 +330,27 @@ struct DMA_handler_args_obs_test
 
 struct acquisition_handler_args_obs_test
 {
-	std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
 };
 
 void* handler_acquisition_obs_test(void* arguments)
 {
-	// the acquisition is a blocking function so we have to
-	// create a thread
-	auto* args = (struct acquisition_handler_args_obs_test*)arguments;
-	args->acquisition->reset();
-	return nullptr;
+    // the acquisition is a blocking function so we have to
+    // create a thread
+    auto* args = (struct acquisition_handler_args_obs_test*)arguments;
+    args->acquisition->reset();
+    return nullptr;
 }
 
 void* handler_DMA_obs_test(void* arguments)
 {
-	const int MAX_INPUT_SAMPLES_TOTAL = 16384;
+    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
 
-	auto* args = (struct DMA_handler_args_obs_test*)arguments;
+    auto* args = (struct DMA_handler_args_obs_test*)arguments;
 
-	std::string Filename = args->file;  // input filename
-	int32_t skip_used_samples = args->skip_used_samples;
-	int32_t nsamples_tx = args->nsamples_tx;
+    std::string Filename = args->file;  // input filename
+    int32_t skip_used_samples = args->skip_used_samples;
+    int32_t nsamples_tx = args->nsamples_tx;
 
     std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
@@ -369,7 +368,7 @@ void* handler_DMA_obs_test(void* arguments)
         {
             infile.open(Filename, std::ios::binary);
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ifstream::failure& e)
         {
             std::cerr << "Exception opening file " << Filename << std::endl;
             return nullptr;
@@ -391,79 +390,76 @@ void* handler_DMA_obs_test(void* arguments)
 
     uint32_t skip_samples = static_cast<uint32_t>(FLAGS_skip_samples);
 
-	if (skip_samples + skip_used_samples > 0)
-	{
-		try
-			{
-				infile.ignore((skip_samples + skip_used_samples) * 2);
-			}
-		catch (const std::ifstream::failure &e)
-			{
-				std::cerr << "Exception reading file " << Filename << std::endl;
-			}
-	}
+    if (skip_samples + skip_used_samples > 0)
+        {
+            try
+                {
+                    infile.ignore((skip_samples + skip_used_samples) * 2);
+                }
+            catch (const std::ifstream::failure& e)
+                {
+                    std::cerr << "Exception reading file " << Filename << std::endl;
+                }
+        }
 
-	nsamples_remaining = nsamples_tx;
-	nsamples_block_size = 0;
+    nsamples_remaining = nsamples_tx;
+    nsamples_block_size = 0;
 
     while (file_completed == false)
         {
             dma_index = 0;
 
             if (nsamples_remaining > MAX_INPUT_SAMPLES_TOTAL)
-            {
-            	nsamples_block_size = MAX_INPUT_SAMPLES_TOTAL;
-            }
+                {
+                    nsamples_block_size = MAX_INPUT_SAMPLES_TOTAL;
+                }
             else
-            {
-            	nsamples_block_size = nsamples_remaining;
-            }
+                {
+                    nsamples_block_size = nsamples_remaining;
+                }
 
-                    try
+            try
+                {
+                    // 2 bytes per complex sample
+                    infile.read(reinterpret_cast<char*>(input_samples.data()), nsamples_block_size * 2);
+                }
+            catch (const std::ifstream::failure& e)
+                {
+                    std::cerr << "Exception reading file " << Filename << std::endl;
+                }
+
+            for (int index0 = 0; index0 < (nsamples_block_size * 2); index0 += 2)
+                {
+                    if (args->freq_band == 0)
                         {
-                    		// 2 bytes per complex sample
-                            infile.read(reinterpret_cast<char *>(input_samples.data()), nsamples_block_size * 2);
+                            // channel 1 (queue 1) -> E5/L5
+                            input_samples_dma[dma_index] = 0;
+                            input_samples_dma[dma_index + 1] = 0;
+                            // channel 0 (queue 0) -> E1/L1
+                            input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0] * args->scaling_factor);
+                            input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1] * args->scaling_factor);
                         }
-                    catch (const std::ifstream::failure &e)
+                    else
                         {
-                            std::cerr << "Exception reading file " << Filename << std::endl;
+                            // channel 1 (queue 1) -> E5/L5
+                            input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0] * args->scaling_factor);
+                            input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1] * args->scaling_factor);
+                            // channel 0 (queue 0) -> E1/L1
+                            input_samples_dma[dma_index + 2] = 0;
+                            input_samples_dma[dma_index + 3] = 0;
                         }
 
-                    for (int index0 = 0; index0 < (nsamples_block_size * 2); index0 += 2)
-                        {
-
-							if (args->freq_band == 0)
-								{
-									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = 0;
-									input_samples_dma[dma_index + 1] = 0;
-									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
-									input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
-
-								}
-							else
-								{
-									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
-									input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
-									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = 0;
-									input_samples_dma[dma_index + 3] = 0;
-								}
-
-                            dma_index += 4;
-
-                        }
+                    dma_index += 4;
+                }
 
             //std::cout << "DMA: sending nsamples_block_size = " << nsamples_block_size << " samples" << std::endl;
-			if (write(tx_fd, input_samples_dma.data(), (int) (nsamples_block_size * 4)) != (int) (nsamples_block_size * 4))
-				{
-					std::cerr << "Error: DMA could not send all the required samples " << std::endl;
-				}
+            if (write(tx_fd, input_samples_dma.data(), (int)(nsamples_block_size * 4)) != (int)(nsamples_block_size * 4))
+                {
+                    std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+                }
 
-			// Throttle the DMA
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // Throttle the DMA
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 
             nsamples_remaining -= nsamples_block_size;
@@ -472,33 +468,28 @@ void* handler_DMA_obs_test(void* arguments)
                 {
                     file_completed = true;
                 }
-
         }
 
     try
         {
             infile.close();
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ifstream::failure& e)
         {
             std::cerr << "Exception closing files " << Filename << std::endl;
         }
 
     try
         {
-    		close(tx_fd);
+            close(tx_fd);
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ifstream::failure& e)
         {
             std::cerr << "Exception closing loop device " << std::endl;
         }
 
-	return nullptr;
+    return nullptr;
 }
-
-
-
-
 
 
 // When using the FPGA the acquisition class calls the states
@@ -510,49 +501,45 @@ void* handler_DMA_obs_test(void* arguments)
 // of the channel state machine are modified here, in order to
 // simplify the instantiation of the acquisition class in the
 // unit test.
-class ChannelFsm_obs_test: public ChannelFsm
+class ChannelFsm_obs_test : public ChannelFsm
 {
 public:
-
-	bool Event_valid_acquisition() override
-	{
-		acquisition_successful = true;
-	    return true;
-	}
-
-
-	bool Event_failed_acquisition_repeat() override
-	{
-		acquisition_successful = false;
-	    return true;
-	}
+    bool Event_valid_acquisition() override
+    {
+        acquisition_successful = true;
+        return true;
+    }
 
 
-	bool Event_failed_acquisition_no_repeat() override
-	{
-		acquisition_successful = false;
-	    return true;
-	}
+    bool Event_failed_acquisition_repeat() override
+    {
+        acquisition_successful = false;
+        return true;
+    }
 
-	bool Event_check_test_result()
-	{
-		return acquisition_successful;
-	}
 
-	void Event_clear_test_result()
-	{
-		acquisition_successful = false;
-	}
+    bool Event_failed_acquisition_no_repeat() override
+    {
+        acquisition_successful = false;
+        return true;
+    }
+
+    bool Event_check_test_result()
+    {
+        return acquisition_successful;
+    }
+
+    void Event_clear_test_result()
+    {
+        acquisition_successful = false;
+    }
 
 private:
-
-	bool acquisition_successful;
-
+    bool acquisition_successful;
 };
 
 bool HybridObservablesTestFpga::acquire_signal()
 {
-
     pthread_t thread_DMA, thread_acquisition;
 
     // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
@@ -577,66 +564,62 @@ bool HybridObservablesTestFpga::acquire_signal()
     struct acquisition_handler_args_obs_test args_acq;
 
     std::string file = FLAGS_signal_file;
-    args.file = file; // DMA file configuration
+    args.file = file;  // DMA file configuration
 
     // instantiate the FPGA switch and set the
     // switch position to DMA.
     std::shared_ptr<Fpga_Switch> switch_fpga;
     switch_fpga = std::make_shared<Fpga_Switch>("/dev/uio1");
-    switch_fpga->set_switch_position(0);     // set switch position to DMA
+    switch_fpga->set_switch_position(0);  // set switch position to DMA
 
     // create the correspondign acquisition block according to the desired tracking signal
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'G';
-			signal = "1C";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "GPS L1 CA";
+            tmp_gnss_synchro.System = 'G';
+            signal = "1C";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "GPS L1 CA";
             acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 0;	// frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'E';
-			signal = "1B";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "Galileo E1B";
+            tmp_gnss_synchro.System = 'E';
+            signal = "1B";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "Galileo E1B";
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 0; // frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 0;  // frequency band on which the DMA has to transfer the samples
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'E';
-			signal = "5X";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "Galileo E5a";
+            tmp_gnss_synchro.System = 'E';
+            signal = "5X";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "Galileo E5a";
             acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 1; // frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking_Fpga")
         {
-			tmp_gnss_synchro.System = 'G';
-			signal = "L5";
-			const char* str = signal.c_str();                                  // get a C style null terminated string
-			std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
-			tmp_gnss_synchro.PRN = SV_ID;
-			System_and_Signal = "GPS L5I";
+            tmp_gnss_synchro.System = 'G';
+            signal = "L5";
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+            tmp_gnss_synchro.PRN = SV_ID;
+            System_and_Signal = "GPS L5I";
             acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            args.freq_band = 1;	// frequency band on which the DMA has to transfer the samples
-
+            args.freq_band = 1;  // frequency band on which the DMA has to transfer the samples
         }
     else
         {
@@ -696,10 +679,9 @@ bool HybridObservablesTestFpga::acquire_signal()
 
     for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
         {
-
             tmp_gnss_synchro.PRN = PRN;
 
-			channel_fsm_->Event_clear_test_result();
+            channel_fsm_->Event_clear_test_result();
 
             acquisition->stop_acquisition();  // reset the whole system including the sample counters
             acquisition->init();
@@ -707,9 +689,9 @@ bool HybridObservablesTestFpga::acquire_signal()
 
             if ((implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga") or (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga"))
                 {
-            		// Skip the first TEST_OBS_SKIP_SAMPLES samples
+                    // Skip the first TEST_OBS_SKIP_SAMPLES samples
                     args.skip_used_samples = 0;
-                    args.nsamples_tx = TEST_OBS_SKIP_SAMPLES; // limit is between 645 and 650 samples
+                    args.nsamples_tx = TEST_OBS_SKIP_SAMPLES;  // limit is between 645 and 650 samples
 
                     // create DMA child process
                     if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
@@ -774,7 +756,6 @@ bool HybridObservablesTestFpga::acquire_signal()
                 }
 
             std::cout.flush();
-
         }
 
     std::cout << "]" << std::endl;
@@ -1752,7 +1733,7 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
                         }
                 }  // end while
 
-        }          // End of 'try' block
+        }  // End of 'try' block
 
 
     catch (const gpstk::FFStreamError& e)
@@ -1976,7 +1957,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     std::string file;
 
     ASSERT_NO_THROW({
-
         if (!FLAGS_enable_external_signal_file)
             {
                 file = "./" + filename_raw_data;
@@ -2007,7 +1987,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
     top_block->start();
 
-    usleep(1000000); // give time for the system to start before receiving the start tracking command.
+    usleep(1000000);  // give time for the system to start before receiving the start tracking command.
 
     for (auto& n : tracking_ch_vec)
         {
@@ -2100,14 +2080,12 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         }
     else
         {
-
-			if (!FLAGS_duplicated_satellites_test)
-				{
-					ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
-						<< "Failure reading RINEX file";
-				}
+            if (!FLAGS_duplicated_satellites_test)
+                {
+                    ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
+                        << "Failure reading RINEX file";
+                }
         }
-
 
 
     // read measured values
@@ -2375,7 +2353,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                         }
                 }
         }
-
 
 
     std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;

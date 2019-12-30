@@ -144,6 +144,7 @@ struct DMA_handler_args_trk_pull_in_test
     int32_t nsamples_tx;
     int32_t skip_used_samples;
     unsigned int freq_band;  // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
+    float scaling_factor;
 };
 
 struct acquisition_handler_args_trk_pull_in_test
@@ -255,14 +256,18 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
 									input_samples_dma[dma_index] = 0;
 									input_samples_dma[dma_index + 1] = 0;
 									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = input_samples[index0];
-									input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
+//									input_samples_dma[dma_index + 2] = input_samples[index0];
+//									input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
+									input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
+									input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
 								}
 							else
 								{
 									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = input_samples[index0];
-									input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
+//									input_samples_dma[dma_index] = input_samples[index0];
+//									input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
+									input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
+									input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
 									// channel 0 (queue 0) -> E1/L1
 									input_samples_dma[dma_index + 2] = 0;
 									input_samples_dma[dma_index + 3] = 0;
@@ -390,6 +395,7 @@ public:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
     static const int32_t TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES = 1024; //48
+    static constexpr float DMA_SIGNAL_SCALING_FACTOR = 8.0;
 
 };
 
@@ -717,6 +723,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
         }
 
+    // set the scaling factor
+    args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
+
     for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
         {
 
@@ -945,6 +954,8 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
 
+    // set the scaling factor
+    args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
 
     // CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;

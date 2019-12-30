@@ -74,7 +74,7 @@ struct DMA_handler_args_gps_l1_acq_test
     std::string file;
     int32_t nsamples_tx;
     int32_t skip_used_samples;
-    unsigned int freq_band;  // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
+    float scaling_factor;
 };
 
 struct acquisition_handler_args_gps_l1_acq_test
@@ -91,6 +91,9 @@ public:
 
     static const int32_t TEST_ACQ_SKIP_SAMPLES = 1024;
     static const int BASEBAND_SAMPLING_FREQ = 4000000;
+    static constexpr float MAX_SAMPLE_VALUE = 0.096257761120796;
+	static const int DMA_BITS_PER_SAMPLE = 8;
+	static constexpr float DMA_SIGNAL_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
 
 protected:
 
@@ -120,9 +123,6 @@ GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
 
 void* handler_DMA_gps_l1_acq_test(void* arguments)
 {
-	const float MAX_SAMPLE_VALUE = 0.097781330347061;
-	const int DMA_BITS_PER_SAMPLE = 8;
-	const float DMA_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
 	const int MAX_INPUT_SAMPLES_TOTAL = 16384;
 
 	auto* args = (struct DMA_handler_args_gps_l1_acq_test*)arguments;
@@ -210,24 +210,12 @@ void* handler_DMA_gps_l1_acq_test(void* arguments)
                     for (int index0 = 0; index0 < (nsamples_block_size * 2); index0 += 2)
                         {
 
-							if (args->freq_band == 0)
-								{
-									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = 0;
-									input_samples_dma[dma_index + 1] = 0;
-									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0]*DMA_SCALING_FACTOR);
-									input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1]*DMA_SCALING_FACTOR);
-								}
-							else
-								{
-									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*DMA_SCALING_FACTOR);
-									input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*DMA_SCALING_FACTOR);
-									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = 0;
-									input_samples_dma[dma_index + 3] = 0;
-								}
+							// channel 1 (queue 1) -> E5/L5
+							input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
+							input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
+							// channel 0 (queue 0) -> E1/L1
+							input_samples_dma[dma_index + 2] = 0;
+							input_samples_dma[dma_index + 3] = 0;
 
                             dma_index += 4;
 
@@ -358,6 +346,9 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     struct DMA_handler_args_gps_l1_acq_test args;
     struct acquisition_handler_args_gps_l1_acq_test args_acq;
 
+    // set the scaling factor
+    args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
+
     std::string file = "data/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
     args.file = file; // DMA file configuration
 
@@ -375,8 +366,6 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 	tmp_gnss_synchro.PRN = SV_ID;
 	const std::string& role = "Acquisition";
 	acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
-	args.freq_band = 1;	// frequency band on which the DMA has to transfer the samples
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);

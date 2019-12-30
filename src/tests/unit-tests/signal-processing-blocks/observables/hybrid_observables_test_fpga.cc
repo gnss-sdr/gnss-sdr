@@ -270,8 +270,8 @@ public:
     size_t item_size;
     pthread_mutex_t mutex_obs_test = PTHREAD_MUTEX_INITIALIZER;
 
-private:
     static const int32_t TEST_OBS_SKIP_SAMPLES = 1024;
+    static constexpr float DMA_SIGNAL_SCALING_FACTOR = 8.0;
 
 };
 
@@ -326,6 +326,7 @@ struct DMA_handler_args_obs_test
     int32_t nsamples_tx;
     int32_t skip_used_samples;
     unsigned int freq_band;  // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
+    float scaling_factor;
 };
 
 struct acquisition_handler_args_obs_test
@@ -437,14 +438,15 @@ void* handler_DMA_obs_test(void* arguments)
 									input_samples_dma[dma_index] = 0;
 									input_samples_dma[dma_index + 1] = 0;
 									// channel 0 (queue 0) -> E1/L1
-									input_samples_dma[dma_index + 2] = input_samples[index0] << 3;
-									input_samples_dma[dma_index + 3] = input_samples[index0 + 1]  << 3;
+									input_samples_dma[dma_index + 2] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
+									input_samples_dma[dma_index + 3] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
+
 								}
 							else
 								{
 									// channel 1 (queue 1) -> E5/L5
-									input_samples_dma[dma_index] = input_samples[index0]  << 3;
-									input_samples_dma[dma_index + 1] = input_samples[index0 + 1] << 3;
+									input_samples_dma[dma_index] = static_cast<int8_t>(input_samples[index0]*args->scaling_factor);
+									input_samples_dma[dma_index + 1] = static_cast<int8_t>(input_samples[index0 + 1]*args->scaling_factor);
 									// channel 0 (queue 0) -> E1/L1
 									input_samples_dma[dma_index + 2] = 0;
 									input_samples_dma[dma_index + 3] = 0;
@@ -688,6 +690,9 @@ bool HybridObservablesTestFpga::acquire_signal()
         {
             nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_CPS / GPS_L5I_CODE_LENGTH_CHIPS)));
         }
+
+    // set the scaling factor
+    args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
 
     for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
         {
@@ -1879,6 +1884,8 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     // In order to send the reset command to the HW we instantiate the acquisition module.
     std::shared_ptr<AcquisitionInterface> acquisition;
 
+    // set the scaling factor
+    args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
 
     // reset the HW to clear the sample counters: the acquisition constructor generates a reset
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")

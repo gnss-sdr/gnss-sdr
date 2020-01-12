@@ -50,6 +50,7 @@ class ChannelFsm
 {
 public:
     ChannelFsm();
+    virtual ~ChannelFsm() = default;
     explicit ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition);
 
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);

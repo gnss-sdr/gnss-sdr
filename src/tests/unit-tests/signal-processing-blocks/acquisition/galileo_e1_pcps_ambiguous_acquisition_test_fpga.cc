@@ -48,7 +48,8 @@
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
-#include <cmath>  // for abs, pow, floor
+#include <cmath>    // for abs, pow, floor
+#include <fcntl.h>  // for O_WRONLY
 #include <pthread.h>
 #include <utility>
 
@@ -91,11 +92,11 @@ public:
     std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking_Fpga";
     std::vector<Gnss_Synchro> gnss_synchro_vec;
 
-    static const int32_t TEST_ACQ_SKIP_SAMPLES = 1024;
-    static const int BASEBAND_SAMPLING_FREQ = 4000000;
-    static constexpr float MAX_SAMPLE_VALUE = 0.096257761120796;
-    static const int DMA_BITS_PER_SAMPLE = 8;
-    static constexpr float DMA_SIGNAL_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
+    const int32_t TEST_ACQ_SKIP_SAMPLES = 1024;
+    const int BASEBAND_SAMPLING_FREQ = 4000000;
+    const float MAX_SAMPLE_VALUE = 0.096257761120796;
+    const int DMA_BITS_PER_SAMPLE = 8;
+    const float DMA_SIGNAL_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
 
 protected:
     GalileoE1PcpsAmbiguousAcquisitionTestFpga();
@@ -118,6 +119,7 @@ GalileoE1PcpsAmbiguousAcquisitionTestFpga::GalileoE1PcpsAmbiguousAcquisitionTest
     doppler_max = 5000;
     doppler_step = 100;
 }
+
 
 void* handler_DMA_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
 {
@@ -164,8 +166,7 @@ void* handler_DMA_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
     //**************************************************************************
     // Open input file
     //**************************************************************************
-
-    uint32_t skip_samples = 0;  //static_cast<uint32_t>(FLAGS_skip_samples);
+    uint32_t skip_samples = 0;  // static_cast<uint32_t>(FLAGS_skip_samples);
 
     if (skip_samples + skip_used_samples > 0)
         {
@@ -225,7 +226,6 @@ void* handler_DMA_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
             // Throttle the DMA
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-
             nsamples_remaining -= nsamples_block_size;
 
             if (nsamples_remaining == 0)
@@ -284,13 +284,11 @@ public:
         return true;
     }
 
-
     bool Event_failed_acquisition_repeat() override
     {
         acquisition_successful = false;
         return true;
     }
-
 
     bool Event_failed_acquisition_no_repeat() override
     {
@@ -353,7 +351,6 @@ bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
     const char* str = signal.c_str();                                  // get a C style null terminated string
     std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 2);  // copy string into synchro char array: 2 char + null
     tmp_gnss_synchro.PRN = SV_ID;
-    const std::string& role = "Acquisition";
     acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
@@ -433,6 +430,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTestFpga::init()
     config->set_property("Acquisition.select_queue_Fpga", "1");
     config->set_property("Acquisition.total_block_exp", "14");
 }
+
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTestFpga, ValidationOfResults)
 {

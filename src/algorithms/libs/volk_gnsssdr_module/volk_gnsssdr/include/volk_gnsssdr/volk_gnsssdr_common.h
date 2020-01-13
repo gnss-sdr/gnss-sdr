@@ -47,7 +47,7 @@
 //
 // Cross-platform attribute macros
 //
-#if defined __clang__
+#if defined(__clang__) && (!defined(_MSC_VER))
 // AppleClang also defines __GNUC__, so do this check first.  These
 // will probably be the same as for __GNUC__, but let's keep them
 // separate just to be safe.

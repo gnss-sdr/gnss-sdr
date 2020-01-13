@@ -32,19 +32,21 @@
  * -------------------------------------------------------------------------
  */
 
-#include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
 #include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
+#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
+#include "gnss_signal.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
 #include <boost/make_shared.hpp>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <cmath>    // for abs, pow, floor
 #include <fcntl.h>  // for O_WRONLY
@@ -70,7 +72,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
-struct DMA_handler_args_gps_l1_acq_test
+struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test
 {
     std::string file;
     int32_t nsamples_tx;
@@ -78,12 +80,12 @@ struct DMA_handler_args_gps_l1_acq_test
     float scaling_factor;
 };
 
-struct acquisition_handler_args_gps_l1_acq_test
+struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test
 {
     std::shared_ptr<AcquisitionInterface> acquisition;
 };
 
-class GpsL1CaPcpsAcquisitionTestFpga : public ::testing::Test
+class GalileoE1PcpsAmbiguousAcquisitionTestFpga : public ::testing::Test
 {
 public:
     bool acquire_signal();
@@ -97,8 +99,8 @@ public:
     const float DMA_SIGNAL_SCALING_FACTOR = (pow(2, DMA_BITS_PER_SAMPLE - 1) - 1) / MAX_SAMPLE_VALUE;
 
 protected:
-    GpsL1CaPcpsAcquisitionTestFpga();
-    ~GpsL1CaPcpsAcquisitionTestFpga() = default;
+    GalileoE1PcpsAmbiguousAcquisitionTestFpga();
+    ~GalileoE1PcpsAmbiguousAcquisitionTestFpga() = default;
 
     void init();
 
@@ -110,7 +112,7 @@ protected:
 };
 
 
-GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
+GalileoE1PcpsAmbiguousAcquisitionTestFpga::GalileoE1PcpsAmbiguousAcquisitionTestFpga()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -119,11 +121,11 @@ GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
 }
 
 
-void* handler_DMA_gps_l1_acq_test(void* arguments)
+void* handler_DMA_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
 {
     const int MAX_INPUT_SAMPLES_TOTAL = 16384;
 
-    auto* args = (struct DMA_handler_args_gps_l1_acq_test*)arguments;
+    auto* args = (struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test*)arguments;
 
     std::string Filename = args->file;  // input filename
     int32_t skip_used_samples = args->skip_used_samples;
@@ -254,11 +256,11 @@ void* handler_DMA_gps_l1_acq_test(void* arguments)
 }
 
 
-void* handler_acquisition_gps_l1_acq_test(void* arguments)
+void* handler_acquisition_galileo_e1_pcps_ambiguous_acq_test(void* arguments)
 {
     // the acquisition is a blocking function so we have to
     // create a thread
-    auto* args = (struct acquisition_handler_args_gps_l1_acq_test*)arguments;
+    auto* args = (struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test*)arguments;
     args->acquisition->reset();
     return nullptr;
 }
@@ -273,7 +275,7 @@ void* handler_acquisition_gps_l1_acq_test(void* arguments)
 // of the channel state machine are modified here, in order to
 // simplify the instantiation of the acquisition class in the
 // unit test.
-class ChannelFsm_gps_l1_acq_test : public ChannelFsm
+class ChannelFsm_galileo_e1_pcps_ambiguous_acq_test : public ChannelFsm
 {
 public:
     bool Event_valid_acquisition() override
@@ -309,7 +311,7 @@ private:
 };
 
 
-bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
+bool GalileoE1PcpsAmbiguousAcquisitionTestFpga::acquire_signal()
 {
     pthread_t thread_DMA, thread_acquisition;
 
@@ -317,8 +319,8 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     int SV_ID = 1;  // initial sv id
 
     // fsm
-    std::shared_ptr<ChannelFsm_gps_l1_acq_test> channel_fsm_;
-    channel_fsm_ = std::make_shared<ChannelFsm_gps_l1_acq_test>();
+    std::shared_ptr<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test> channel_fsm_;
+    channel_fsm_ = std::make_shared<ChannelFsm_galileo_e1_pcps_ambiguous_acq_test>();
     bool acquisition_successful;
 
     // Satellite signal definition
@@ -328,13 +330,13 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     std::shared_ptr<AcquisitionInterface> acquisition;
 
     std::string signal;
-    struct DMA_handler_args_gps_l1_acq_test args;
-    struct acquisition_handler_args_gps_l1_acq_test args_acq;
+    struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test args;
+    struct acquisition_handler_args_galileo_e1_pcps_ambiguous_acq_test args_acq;
 
     // set the scaling factor
     args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
 
-    std::string file = "data/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+    std::string file = "data/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
     args.file = file;  // DMA file configuration
 
     // instantiate the FPGA switch and set the
@@ -344,12 +346,12 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     switch_fpga->set_switch_position(0);  // set switch position to DMA
 
     // create the correspondign acquisition block according to the desired tracking signal
-    tmp_gnss_synchro.System = 'G';
-    signal = "1C";
+    tmp_gnss_synchro.System = 'E';
+    signal = "1B";
     const char* str = signal.c_str();                                  // get a C style null terminated string
-    std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+    std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 2);  // copy string into synchro char array: 2 char + null
     tmp_gnss_synchro.PRN = SV_ID;
-    acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
@@ -359,7 +361,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(0.001);
 
-    nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(BASEBAND_SAMPLING_FREQ) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
     channel_fsm_->Event_clear_test_result();
 
@@ -375,7 +377,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     // run the acquisition. The acquisition must run in a separate thread because it is a blocking function
     args_acq.acquisition = acquisition;
 
-    if (pthread_create(&thread_acquisition, nullptr, handler_acquisition_gps_l1_acq_test, reinterpret_cast<void*>(&args_acq)) < 0)
+    if (pthread_create(&thread_acquisition, nullptr, handler_acquisition_galileo_e1_pcps_ambiguous_acq_test, reinterpret_cast<void*>(&args_acq)) < 0)
         {
             std::cout << "ERROR cannot create acquisition Process" << std::endl;
         }
@@ -384,7 +386,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     usleep(1000000);
 
     // create DMA child process
-    if (pthread_create(&thread_DMA, nullptr, handler_DMA_gps_l1_acq_test, reinterpret_cast<void*>(&args)) < 0)
+    if (pthread_create(&thread_DMA, nullptr, handler_DMA_galileo_e1_pcps_ambiguous_acq_test, reinterpret_cast<void*>(&args)) < 0)
         {
             std::cout << "ERROR cannot create DMA Process" << std::endl;
         }
@@ -413,10 +415,10 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
 }
 
 
-void GpsL1CaPcpsAcquisitionTestFpga::init()
+void GalileoE1PcpsAmbiguousAcquisitionTestFpga::init()
 {
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition_Fpga");
+    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga");
     config->set_property("Acquisition.threshold", "0.00001");
     config->set_property("Acquisition.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition.doppler_step", std::to_string(doppler_step));
@@ -426,19 +428,19 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     // to the L5/E5a frequency band in order to avoid the L1/E1 factor :4 downsampling filter
     config->set_property("Acquisition.downsampling_factor", "1");
     config->set_property("Acquisition.select_queue_Fpga", "1");
-    config->set_property("Acquisition.total_block_exp", "12");
+    config->set_property("Acquisition.total_block_exp", "14");
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionTestFpga, ValidationOfResults)
 {
-    struct DMA_handler_args_gps_l1_acq_test args;
+    struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test args;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
 
-    double expected_delay_samples = 524;
-    double expected_doppler_hz = 1680;
+    double expected_delay_samples = 2920;  // 18250;
+    double expected_doppler_hz = -632;
 
     init();
 

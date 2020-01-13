@@ -1467,6 +1467,8 @@ void dll_pll_veml_tracking_fpga::stop_tracking()
 {
     // interrupt the tracking loops
     d_stop_tracking = true;
+    // let the samples pass through
+    multicorrelator_fpga->unlock_channel();
 }
 
 

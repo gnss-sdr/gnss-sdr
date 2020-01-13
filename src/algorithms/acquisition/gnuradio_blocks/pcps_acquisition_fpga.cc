@@ -134,7 +134,7 @@ void pcps_acquisition_fpga::send_positive_acquisition()
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << ", sample_stamp " << d_sample_counter
+               << ", sample_stamp " << d_gnss_synchro->Acq_samplestamp_samples
                << ", test statistics value " << d_test_statistics
                << ", test statistics threshold " << d_threshold
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
@@ -153,7 +153,7 @@ void pcps_acquisition_fpga::send_negative_acquisition()
     // Declare negative acquisition using a message port
     DLOG(INFO) << "negative acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << ", sample_stamp " << d_sample_counter
+               << ", sample_stamp " << d_gnss_synchro->Acq_samplestamp_samples
                << ", test statistics value " << d_test_statistics
                << ", test statistics threshold " << d_threshold
                << ", code phase " << d_gnss_synchro->Acq_delay_samples

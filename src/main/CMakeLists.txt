@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -70,7 +70,7 @@ if(ENABLE_GPERFTOOLS)
     endif()
 endif()
 
-if(OS_IS_MACOSX)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_link_libraries(gnss-sdr
             PUBLIC

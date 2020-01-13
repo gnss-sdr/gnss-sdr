@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2020 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -190,148 +190,14 @@ endif()
 
 # Detect Linux Distribution
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-    set(OperatingSystem "Linux")
-    set(OS_IS_LINUX TRUE)
-    if(ARCH_64BITS)
-        set(ARCH_ "(64 bits)")
-    else()
-        set(ARCH_ "(32 bits)")
-    endif()
-    if(EXISTS "/etc/lsb-release")
-        execute_process(COMMAND cat /etc/lsb-release
-            COMMAND grep DISTRIB_ID
-            COMMAND awk -F= "{ print $2 }"
-            COMMAND tr "\n" " "
-            COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_DISTRIBUTION
-            RESULT_VARIABLE LINUX_ID_RESULT
-        )
-        execute_process(COMMAND cat /etc/lsb-release
-            COMMAND grep DISTRIB_RELEASE
-            COMMAND awk -F= "{ print $2 }"
-            COMMAND tr "\n" " "
-            COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_VER
-            RESULT_VARIABLE LINUX_VER_RESULT
-        )
-    endif()
-    if(NOT LINUX_DISTRIBUTION)
-        if(EXISTS "/etc/linuxmint/info")
-            set(LINUX_DISTRIBUTION "LinuxMint")
-            execute_process(COMMAND cat /etc/linuxmint/info
-                COMMAND grep -m1 RELEASE
-                COMMAND awk -F= "{ print $2 }"
-                COMMAND tr "\n" " "
-                COMMAND sed "s/ //"
-                OUTPUT_VARIABLE LINUX_VER
-                RESULT_VARIABLE LINUX_VER_RESULT
-            )
-        endif()
-    endif()
-    if(NOT LINUX_DISTRIBUTION)
-        if(EXISTS "/etc/os-release")
-            execute_process(COMMAND cat /etc/os-release
-                COMMAND grep -m1 NAME
-                COMMAND awk -F= "{ print $2 }"
-                COMMAND tr "\n" " "
-                COMMAND sed "s/ //"
-                OUTPUT_VARIABLE LINUX_DISTRIBUTION
-                RESULT_VARIABLE LINUX_ID_RESULT
-            )
-            execute_process(COMMAND cat /etc/os-release
-                COMMAND grep VERSION_ID
-                COMMAND awk -F= "{ print $2 }"
-                COMMAND tr "\n" " "
-                COMMAND sed "s/ //"
-                OUTPUT_VARIABLE LINUX_VER
-                RESULT_VARIABLE LINUX_VER_RESULT
-            )
-            if(${LINUX_DISTRIBUTION} MATCHES "Debian")
-                set(LINUX_DISTRIBUTION "Debian")
-                file(READ /etc/debian_version LINUX_VER)
-            endif()
-        endif()
-    endif()
-    if(NOT LINUX_DISTRIBUTION)
-        if(EXISTS "/etc/redhat-release")
-            set(LINUX_DISTRIBUTION "Red Hat")
-            file(READ /etc/redhat-release LINUX_VER)
-        endif()
-    endif()
-    if(NOT LINUX_DISTRIBUTION)
-        if(EXISTS "/etc/debian_version")
-            set(LINUX_DISTRIBUTION "Debian")
-            file(READ /etc/debian_version LINUX_VER)
-        endif()
-    endif()
-    if(NOT LINUX_DISTRIBUTION)
-        set(LINUX_DISTRIBUTION "Generic")
-        set(LINUX_VER "Unknown")
-    endif()
+    include(DetectLinuxDistro)
     message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
-endif()
-if(NOT LINUX_DISTRIBUTION)
-    set(LINUX_DISTRIBUTION "Unknown")
 endif()
 
 # Detect macOS / Mac OS X Version
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(OperatingSystem "Mac OS X")
-    set(OS_IS_MACOSX TRUE)
-    execute_process(COMMAND uname -v OUTPUT_VARIABLE DARWIN_VERSION)
-    string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
-    if(${DARWIN_VERSION} MATCHES "19")
-        set(MACOS_CATALINA TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++17")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS Catalina 10.15")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "18")
-        set(MACOS_MOJAVE TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS Mojave 10.14")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "17")
-        set(MACOS_HIGH_SIERRA TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS High Sierra 10.13")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "16")
-        set(MACOS_SIERRA TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS Sierra 10.12")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "15")
-        set(MACOSX_EL_CAPITAN TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.11 El Capitan")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "14")
-        set(MACOSX_YOSEMITE TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.10 Yosemite")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "13")
-        set(MACOSX_MAVERICKS TRUE)
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION="com.apple.compilers.llvm.clang.1_0")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.9 Mavericks")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "12")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.8 Mountain Lion")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "11")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.7 Lion")
-    endif()
-    if(${DARWIN_VERSION} MATCHES "10")
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.6 Snow Leopard")
-    endif()
+    include(DetectMacOSVersion)
+    message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${MACOS_DISTRIBUTION}")
 endif()
 
 # Define extra build types and select Release by default to get optimization flags
@@ -410,7 +276,7 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.12")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.11.1")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.11.2")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
@@ -512,7 +378,7 @@ endif()
 ################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
-if(NOT OS_IS_MACOSX)
+if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     if(CMAKE_CROSSCOMPILING)
         set(IS_ARM TRUE)
         if(NOT CMAKE_NO_SYSTEM_FROM_IMPORTED)
@@ -960,17 +826,13 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(PYTHON_EXECUTABLE)
         set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
     endif()
-    if(OS_IS_MACOSX)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         if(CMAKE_GENERATOR STREQUAL Xcode)
             set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}" "-target")
         endif()
     endif()
 
-    if(CMAKE_CROSSCOMPILING)
-        set(VOLK_GNSSSDR_COMPILER "")
-    else()
-        set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
-    endif()
+    set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
 
     find_package(ORC)
     set_package_properties(ORC PROPERTIES
@@ -1239,7 +1101,7 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
             else()
                 set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
             endif()
-            if(OS_IS_MACOSX)
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
                 set(GFLAGS_LIBRARIES_TO_LINK "${GFLAGS_LIBRARIES_TO_LINK} -lc++")
                 set(GLOG_EXPORT_CXX_LIBRARIES "export CXXFLAGS=\"-stdlib=libc++\"")
             endif()
@@ -1272,7 +1134,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure_with_gflags)
 
             # Ensure that aclocal and libtool are present
-            if(OS_IS_LINUX)
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
                 if(EXISTS "/usr/bin/libtoolize")
                     if(EXISTS "/usr/bin/aclocal" OR
                         EXISTS "/usr/bin/aclocal-1.16" OR
@@ -1448,7 +1310,7 @@ endif()
 # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
 # See http://www.netlib.org/blas/
 ################################################################################
-if(OS_IS_MACOSX)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Avoid using the implementation that comes with the Accelerate framework
     include(AvoidAccelerate)
 else()
@@ -1466,7 +1328,7 @@ endif()
 if(NOT BLAS_FOUND)
     message(" The BLAS library has not been found.")
     message(" You can try to install it by typing:")
-    if(OS_IS_MACOSX)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         message(" 'sudo port install lapack' if you are using Macports, or")
         message(" 'brew install lapack' if you are using Homebrew.")
     else()
@@ -1485,7 +1347,7 @@ endif()
 # Check that LAPACK (Linear Algebra PACKage) is found in the system
 # See http://www.netlib.org/lapack/
 ################################################################################
-if(NOT OS_IS_MACOSX)
+if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     find_package(LAPACK)
     set_package_properties(LAPACK PROPERTIES
         URL "http://www.netlib.org/lapack/"
@@ -1550,7 +1412,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     #############################################
     # Check if GFORTRAN is found in the system
     #############################################
-    if(NOT OS_IS_MACOSX AND NOT MSVC)
+    if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND NOT MSVC)
         find_package(GFORTRAN)
         set_package_properties(GFORTRAN PROPERTIES
             PURPOSE "Required by Armadillo."
@@ -1708,7 +1570,7 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
         message(STATUS " But it was not built with openssl compatibility.")
     endif()
     message(STATUS " Looking for OpenSSL instead...")
-    if(OS_IS_MACOSX)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl) # Trick for Homebrew
     endif()
     find_package(OpenSSL)
@@ -1728,14 +1590,14 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
     else()
         message(" The GnuTLS library with openssl compatibility enabled has not been found.")
         message(" You can try to install the required libraries by typing:")
-        if(OS_IS_LINUX)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
             if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                 message(" sudo yum install openssl-devel")
             else()
                 message(" sudo apt-get install libgnutls28-dev")
             endif()
         endif()
-        if(OS_IS_MACOSX)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             message(" 'sudo port install gnutls', if you are using Macports, or")
             message(" 'brew install openssl', if you are using Homebrew.")
         endif()
@@ -1776,7 +1638,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     endif()
     if(ZLIB_FOUND)
         get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
-        if(OS_IS_LINUX)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
             if(NOT EXISTS "/usr/bin/libtoolize")
                 message(" libtool has not been found.")
                 message(" You can try to install it by typing:")
@@ -1829,7 +1691,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
             get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
             get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
-            if(OS_IS_MACOSX)
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
                 if(EXISTS /opt/local/include/hdf5.h)
                     set(HDF5_BASE_DIR /opt/local)
                 endif()
@@ -1889,12 +1751,12 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         else()
             message(STATUS " The hdf5 library has not been found in your system.")
             message(STATUS " Please try to install it by doing:")
-            if(OS_IS_MACOSX)
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
                 message(STATUS "  $ sudo port install hdf5")
                 message(STATUS " or")
                 message(STATUS "  $ brew install hdf5")
             endif()
-            if(OS_IS_LINUX)
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
                 message(STATUS "  $ sudo apt-get install libhdf5-dev")
             endif()
             message(FATAL_ERROR "*** The hdf5 library is required to build gnss-sdr")
@@ -2109,7 +1971,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
             )
         endif()
     else()
-        if(OS_IS_LINUX)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
             if(NOT EXISTS "/usr/bin/libtoolize")
                 message(" libtool has not been found.")
                 message(" You can try to install it by typing:")
@@ -2295,14 +2157,14 @@ else()
     message(STATUS " Doxygen has not been found in your system.")
     message(STATUS " You can get nice code documentation by using it!")
     message(STATUS " Get it from http://www.doxygen.nl/download.html")
-    if(OS_IS_LINUX)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " or simply by doing 'sudo yum install doxygen-latex'.")
         else()
             message(STATUS " or simply by doing 'sudo apt-get install doxygen-latex'.")
         endif()
     endif()
-    if(OS_IS_MACOSX)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         message(STATUS " or simply by doing 'sudo port install doxygen +latex'.")
     endif()
 endif()
@@ -2711,7 +2573,7 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
 endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(NOT ENABLE_GENERIC_ARCH)
-        if(OS_IS_MACOSX)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             add_compile_options(-march=native)
         else()
             if(IS_ARM)

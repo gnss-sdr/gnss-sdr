@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -82,7 +82,7 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
 endif()
 
 # Fix for Boost Asio < 1.70
-if(OS_IS_MACOSX)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (Boost_VERSION_STRING VERSION_LESS 1.70.0))
         if(${has_string_view})
             target_compile_definitions(signal_source_gr_blocks

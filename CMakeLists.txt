@@ -832,8 +832,11 @@ if(NOT VOLKGNSSSDR_FOUND)
         endif()
     endif()
 
-    set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
-
+    if(CMAKE_CROSSCOMPILING)
+        set(VOLK_GNSSSDR_COMPILER "")
+    else()
+        set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
+    endif()
     find_package(ORC)
     set_package_properties(ORC PROPERTIES
         PURPOSE "Used by volk_gnsssdr."
@@ -860,7 +863,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
     else()
         if(CMAKE_TOOLCHAIN_FILE)
-            set(VOLK_GNSSSDR_CMAKE_ARGS
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
             )
         endif()

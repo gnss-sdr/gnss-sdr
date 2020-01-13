@@ -860,7 +860,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
     else()
         if(CMAKE_TOOLCHAIN_FILE)
-            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+            set(VOLK_GNSSSDR_CMAKE_ARGS
                 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
             )
         endif()

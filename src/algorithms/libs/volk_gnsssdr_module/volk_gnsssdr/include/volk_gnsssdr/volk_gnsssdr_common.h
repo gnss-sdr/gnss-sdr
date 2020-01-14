@@ -132,7 +132,7 @@
 //
 // The bit128 union used by some
 //
-#include <inttypes.h>
+#include <stdint.h>
 
 #ifdef LV_HAVE_SSE
 #ifdef _WIN32

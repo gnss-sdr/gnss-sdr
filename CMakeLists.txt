@@ -828,7 +828,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}" "-target")
+            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target")
         endif()
     endif()
 
@@ -873,7 +873,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -885,7 +885,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""

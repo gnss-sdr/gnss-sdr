@@ -828,7 +828,10 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target")
+            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
+                "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
+                "-target"
+            )
         endif()
     endif()
 
@@ -873,7 +876,8 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -885,7 +889,8 @@ if(NOT VOLKGNSSSDR_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -957,7 +962,10 @@ if(NOT GFLAGS_FOUND)
     message(STATUS " gflags library has not been found.")
     message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
-    set(GFLAGS_BUILD_COMMAND ${CMAKE_COMMAND} "--build" "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>)
+    set(GFLAGS_BUILD_COMMAND ${CMAKE_COMMAND}
+        "--build" "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}"
+        "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+    )
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GFLAGS_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
     endif()
@@ -972,7 +980,13 @@ if(NOT GFLAGS_FOUND)
             GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_LIB=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} ${GFLAGS_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
+                -DBUILD_STATIC_LIBS=ON
+                -DBUILD_gflags_LIB=ON
+                -DBUILD_gflags_nothreads_LIB=OFF
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                ${GFLAGS_TOOLCHAIN_FILE}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${GFLAGS_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -993,7 +1007,13 @@ if(NOT GFLAGS_FOUND)
             GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_LIB=ON -DBUILD_gflags_nothreads_LIB=ON -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} ${GFLAGS_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
+                -DBUILD_STATIC_LIBS=ON
+                -DBUILD_gflags_LIB=ON
+                -DBUILD_gflags_nothreads_LIB=ON
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                ${GFLAGS_TOOLCHAIN_FILE}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}
             BUILD_BYPRODUCTS ${GFLAGS_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
@@ -1084,9 +1104,14 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
         set(GFLAGS_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
     endif()
     set(TARGET_GFLAGS gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    set(GLOG_MAKE_PROGRAM ${CMAKE_COMMAND} "--build" "${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>)
+    set(GLOG_MAKE_PROGRAM ${CMAKE_COMMAND}
+        "--build" "${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}"
+        "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+    )
     if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(GLOG_MAKE_PROGRAM "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
+        set(GLOG_MAKE_PROGRAM "xcodebuild" "-configuration"
+            $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
+        )
     endif()
     if(CMAKE_TOOLCHAIN_FILE)
         set(GLOG_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
@@ -1209,7 +1234,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                 GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-                CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH} ${GLOG_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                    -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
+                    ${GLOG_TOOLCHAIN_FILE}
+                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 BUILD_COMMAND ${GLOG_MAKE_PROGRAM}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
@@ -1241,7 +1270,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH} ${GLOG_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
+                ${GLOG_TOOLCHAIN_FILE}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}
             BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
@@ -1442,7 +1475,10 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     #############################################
     # Download and build Armadillo
     #############################################
-    set(ARMADILLO_BUILD_COMMAND ${CMAKE_COMMAND} "--build" "${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>)
+    set(ARMADILLO_BUILD_COMMAND ${CMAKE_COMMAND}
+        "--build" "${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}"
+        "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+    )
     if(CMAKE_TOOLCHAIN_FILE)
         set(ARMADILLO_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
     endif()
@@ -1454,7 +1490,11 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             GIT_TAG ${armadillo_BRANCH}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-std=c++11 ${ARMADILLO_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DBUILD_SHARED_LIBS=OFF
+                -DCMAKE_CXX_FLAGS=-std=c++11
+                ${ARMADILLO_TOOLCHAIN_FILE}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${ARMADILLO_BUILD_COMMAND}
             UPDATE_COMMAND ""
             INSTALL_COMMAND ""
@@ -1469,7 +1509,11 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             GIT_TAG ${armadillo_BRANCH}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-std=c++11 ${ARMADILLO_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DBUILD_SHARED_LIBS=OFF
+                -DCMAKE_CXX_FLAGS=-std=c++11
+                ${ARMADILLO_TOOLCHAIN_FILE}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${ARMADILLO_BUILD_COMMAND} ${PARALLEL_BUILD}
             BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}
             UPDATE_COMMAND ""
@@ -1799,7 +1843,10 @@ if(NOT PUGIXML_FOUND)
             set(PUGIXML_CMAKE_FLAGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
         endif()
     endif()
-    set(PUGIXML_BUILD_COMMAND ${CMAKE_COMMAND} "--build" "${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>)
+    set(PUGIXML_BUILD_COMMAND ${CMAKE_COMMAND}
+        "--build" "${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}"
+        "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+    )
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
@@ -1807,7 +1854,9 @@ if(NOT PUGIXML_FOUND)
             GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
-            CMAKE_ARGS ${PUGIXML_COMPILER} ${PUGIXML_CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS ${PUGIXML_COMPILER}
+                ${PUGIXML_CMAKE_FLAGS}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
             BUILD_COMMAND ${PUGIXML_BUILD_COMMAND}
@@ -1823,7 +1872,9 @@ if(NOT PUGIXML_FOUND)
             GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
-            CMAKE_ARGS ${PUGIXML_COMPILER} ${PUGIXML_CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            CMAKE_ARGS ${PUGIXML_COMPILER}
+                ${PUGIXML_CMAKE_FLAGS}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
             BUILD_COMMAND ${PUGIXML_BUILD_COMMAND} ${PARALLEL_BUILD}

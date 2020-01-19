@@ -38,12 +38,7 @@ else()
 endif()
 
 if(NOT GOOGLETEST_FOUND)
-    if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
-        set(GTEST_BUILD_COMMAND "${CMAKE_COMMAND}" "--build" "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
-    else()
-        set(GTEST_BUILD_COMMAND "${CMAKE_COMMAND}" "--build" "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}" "--config" "${CMAKE_BUILD_TYPE}")
-        set(GTEST_BUILD_CONFIG -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
-    endif()
+    set(GTEST_BUILD_COMMAND "${CMAKE_COMMAND}" "--build" "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target" "gtest_main")
     endif()
@@ -54,7 +49,7 @@ if(NOT GOOGLETEST_FOUND)
             GIT_TAG v1.10.x
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} ${GTEST_BUILD_CONFIG}
+            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             BUILD_COMMAND ${GTEST_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -76,7 +71,7 @@ if(NOT GOOGLETEST_FOUND)
             GIT_TAG v1.10.x
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} ${GTEST_BUILD_CONFIG}
+            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             BUILD_COMMAND ${GTEST_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""

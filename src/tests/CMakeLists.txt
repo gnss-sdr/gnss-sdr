@@ -38,7 +38,7 @@ else()
 endif()
 
 if(NOT GOOGLETEST_FOUND)
-    set(GTEST_BUILD_COMMAND "${CMAKE_COMMAND}" "--build" "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
+    set(GTEST_BUILD_COMMAND "${CMAKE_COMMAND}" "--build" "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}" "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>)
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target" "gtest_main")
     endif()
@@ -49,7 +49,7 @@ if(NOT GOOGLETEST_FOUND)
             GIT_TAG v1.10.x
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${GTEST_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -60,7 +60,8 @@ if(NOT GOOGLETEST_FOUND)
             ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
-        if(CMAKE_BUILD_TYPE STREQUAL Debug)  # Workaround for Ninja generator
+        if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
+            (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
             set(GOOGLETEST_BUILD_BYPRODUCTS
                 ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -71,7 +72,7 @@ if(NOT GOOGLETEST_FOUND)
             GIT_TAG v1.10.x
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF -Dgtest_hide_internal_symbols=ON ${TOOLCHAIN_ARG} -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${GTEST_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -87,7 +88,13 @@ if(NOT GOOGLETEST_FOUND)
         add_dependencies(GTest::GTest gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
         set_target_properties(GTest::GTest PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_CONFIGURATIONS "Debug;Release;RelWithDebInfo;MinSizeRel"
+            IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
+            MAP_IMPORTED_CONFIG_NOOPTWITHASM Debug
+            MAP_IMPORTED_CONFIG_COVERAGE Debug
+            MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
+            MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
+            MAP_IMPORTED_CONFIG_ASAN Debug
+            IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -113,7 +120,13 @@ if(NOT GOOGLETEST_FOUND)
         add_dependencies(GTest::Main gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
         set_target_properties(GTest::Main PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_CONFIGURATIONS "Debug;Release;RelWithDebInfo;MinSizeRel"
+            IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
+            MAP_IMPORTED_CONFIG_NOOPTWITHASM Debug
+            MAP_IMPORTED_CONFIG_COVERAGE Debug
+            MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
+            MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
+            MAP_IMPORTED_CONFIG_ASAN Debug
+            IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -123,10 +136,10 @@ if(NOT GOOGLETEST_FOUND)
         )
         if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
             set_target_properties(GTest::Main PROPERTIES
-                IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
                 INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()

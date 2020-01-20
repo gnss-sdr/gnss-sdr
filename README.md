@@ -596,20 +596,12 @@ In a terminal, type:
 ~~~~~~
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install pkgconfig
-$ sudo port install gnuradio
-$ sudo port install lapack
-$ sudo port install armadillo
-$ sudo port install gnutls
+$ sudo port install armadillo cmake gnuradio gnutls lapack libad9361-iio libiio \
+    matio pkgconfig protobuf3-cpp pugixml
 $ sudo port install google-glog +gflags
-$ sudo port install matio
-$ sudo port install pugixml
-$ sudo port install protobuf3-cpp
-$ sudo port install libiio
-$ sudo port install libad9361-iio
+$ sudo port install doxygen +docs
 $ sudo port install py37-mako
 $ sudo port install py37-six
-$ sudo port install doxygen +docs
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -644,21 +636,13 @@ $ sudo python3 get-pip.py
 Install the required dependencies:
 
 ~~~~~~
-$ brew install cmake
-$ brew install pkg-config
-$ brew install hdf5
-$ brew install lapack
-$ brew install armadillo
-$ brew install gflags
-$ brew install glog
-$ brew install gnuradio
-$ brew install libmatio
-$ brew install log4cpp
-$ brew install openssl
-$ brew install pugixml
-$ brew install protobuf
+$ brew update && brew upgrade
+$ brew install armadillo cmake hdf5 gflags glog gnuradio lapack libmatio log4cpp \
+    openssl pkg-config protobuf pugixml
 $ pip3 install mako
 $ pip3 install six
+$ brew cask install mactex  # when completed, restart Terminal
+$ brew install graphviz doxygen
 ~~~~~~
 
 

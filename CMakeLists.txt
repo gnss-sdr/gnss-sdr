@@ -2179,6 +2179,21 @@ if(DOXYGEN_FOUND)
     set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
+    set(PDFMANUAL_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+    if(PDFMANUAL_MAKE_PROGRAM MATCHES "ninja")
+        find_program(PDFMANUAL_MAKE_EXECUTABLE make
+            PATHS
+                /usr/bin
+                /usr/local/bin
+        )
+        if(NOT PDFMANUAL_MAKE_EXECUTABLE)
+            if(PDFLATEX_COMPILER)
+                message(STATUS "Warning: make is required to build the PDF manual, so target pdfmanual will not be generated.")
+            endif()
+            set(PDFLATEX_COMPILER FALSE)
+        endif()
+        set(PDFMANUAL_MAKE_PROGRAM ${PDFMANUAL_MAKE_EXECUTABLE})
+    endif()
     if(PDFLATEX_COMPILER)
         set(GENERATE_PDF_DOCUMENTATION "YES")
         set(GNSSSDR_USE_MATHJAX "NO")
@@ -2193,17 +2208,17 @@ if(DOXYGEN_FOUND)
     add_custom_target(doc
         ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/docs/doxygen/Doxyfile
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Generating source code documentation with Doxygen." VERBATIM
+        COMMENT "Generating HTML documentation from source code with Doxygen..." VERBATIM
     )
     if(PDFLATEX_COMPILER)
         message(STATUS " '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
         add_custom_target(pdfmanual
-            COMMAND ${CMAKE_MAKE_PROGRAM}
+            COMMAND ${PDFMANUAL_MAKE_PROGRAM}
             COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf
-            COMMAND ${CMAKE_MAKE_PROGRAM} clean
+            COMMAND ${PDFMANUAL_MAKE_PROGRAM} clean
             DEPENDS doc
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/docs/latex
-            COMMENT "Generating PDF manual with Doxygen." VERBATIM
+            COMMENT "Generating PDF manual with LaTeX and pdflatex..." VERBATIM
         )
     endif()
     message(STATUS " '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc-clean' will clean the documentation.")
@@ -2225,7 +2240,8 @@ else()
         endif()
     endif()
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        message(STATUS " or simply by doing 'sudo port install doxygen +latex'.")
+        message(STATUS " or simply by doing 'sudo port install doxygen +docs', if you are using Macports,")
+        message(STATUS " or 'brew cask install mactex', then restart Terminal and do 'brew install graphviz doxygen', if you use Homebrew.")
     endif()
 endif()
 

@@ -1,5 +1,5 @@
 /*!
- * \file channel_msg_receiver_cc.h
+ * \file channel_status_msg_receiver_cc.h
  * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
  * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *

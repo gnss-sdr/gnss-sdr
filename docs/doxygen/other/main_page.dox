@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -26,8 +26,8 @@ Welcome to GNSS-SDR!
 GNSS-SDR is an open-source <a href="https://en.wikipedia.org/wiki/Software_GNSS_receiver" target="_blank">GNSS software receiver</a> freely available to the research community. This project provides a common framework for GNSS signal processing which can operate in a variety of computer platforms. This tool is intended to foster collaboration, increase awareness, and reduce development costs in the field of GNSS receiver design and customized use of GNSS signals.
 
 For details about GNSS-SDR and using it, please see the <a
-href="https://gnss-sdr.org" target="_blank"><b>main project page</b></a> or browse the code at the <a
-href="https://sourceforge.net/p/gnss-sdr/cttc/ci/master/tree/" target="_blank"><b>Sourceforge project page</b></a>. You could be also interested in
+href="https://gnss-sdr.org" target="_blank"><b>main project page</b></a> or browse <a
+href="https://github.com/gnss-sdr/gnss-sdr" target="_blank"><b>the source code at GitHub</b></a>. You could be also interested in
 <a href="https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>subscribing to the mailing list</b></a>.
 
 \section toc Contents
@@ -93,6 +93,11 @@ dependencies and build process. Mainly, it consists on installing <a href="https
 \li <a href="https://github.com/gflags/gflags" target="_blank">Gflags</a>, a library that implements commandline flags processing,
 \li <a href="https://github.com/google/glog" target="_blank">Glog</a>, a library that implements application-level logging,
 \li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
+\li <a href="https://github.com/tbeu/matio" target="_blank">Matio</a>, a MATLAB MAT File I/O Library.
+\li <a href="https://pugixml.org/" target="_blank">PugiXML</a>, a light-weight, simple and fast XML parser for C++ with XPath support.
+\li <a href="https://developers.google.com/protocol-buffers" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data.
+\li <a href="https://www.makotemplates.org/" target="_blank">Mako</a>, a template library written in Python.
+\li <a href="https://pypi.org/project/six/" target="_blank">Six</a>, a Python 2 and 3 compatibility library.
 \li <a href="https://github.com/google/googletest" target="_blank">Googletest</a>, Google's framework for writing C++ tests (requires definition of the GTEST_DIR variable),
 
 and, optionally,
@@ -170,7 +175,7 @@ will remove the content of previously-generated documentation and, if a LaTeX in
 $ make pdfmanual
 \endverbatim
 will create a PDF manual at <tt>gnss-sdr/docs/GNSS-SDR_manual.pdf</tt>. Please note that the PDF generation requires some fonts to be installed on the host system.
-In Ubuntu 12.10, those fonts do not come by default. You can install them by doing:
+In Ubuntu, those fonts do not come by default. You can install them by doing:
 \verbatim
 $ sudo apt-get install texlive-fonts-recommended
 \endverbatim
@@ -213,7 +218,7 @@ This new receiver can be done by invoking gnss-sdr with the <tt>--config_file</t
 $ gnss-sdr --config_file=../conf/my_receiver.conf
 \endverbatim
 
-You can see a guide of available implementations at <tt>gnss-sdr/conf/master.conf</tt>. That folder contains other working examples as well. If you have a working
+You can see a guide of available implementations at <a href="https://gnss-sdr.org/docs/" target="_blank">the online documentation</a>. That folder contains other working examples as well. If you have a working
 configuration and want to share it will others, please email it to the <a href="https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR developers mailing list</b></a>
 and we will be happy to upload it to the server.
 
@@ -403,49 +408,24 @@ The user can select a given implementation for the algorithm to be used in each 
 \verbatim
 ;######### ACQUISITION GLOBAL CONFIG ############
 
-;#dump: Enable or disable the acquisition internal data file logging [true] or [false]
-Acquisition.dump=false
-;#filename: Log path and filename
-Acquisition.dump_filename=./acq_dump.dat
-;#item_type: Type and resolution for each of the signal samples. Use only gr_complex in this version.
-Acquisition.item_type=gr_complex
-;#if: Signal intermediate frequency in [Hz]
-Acquisition.if=0
-;#sampled_ms: Signal block duration for the acquisition signal detection [ms]
-Acquisition.sampled_ms=1
 ;#implementation: Acquisition algorithm selection for this channel:
-Acquisition.implementation=GPS_L1_CA_PCPS_Acquisition
+Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition
+;#dump: Enable or disable the acquisition internal data file logging [true] or [false]
+Acquisition_1C.dump=false
+;#filename: Log path and filename
+Acquisition_1C.dump_filename=./acq_dump.dat
+;#item_type: Type and resolution for each of the signal samples. Use only gr_complex in this version.
+Acquisition_1C.item_type=gr_complex
+;#coherent_integration_time_ms: Signal block duration for the acquisition signal detection [ms]
+Acquisition_1C.coherent_integration_time_ms=1
 ;#threshold: Acquisition threshold
-Acquisition.threshold=0.005
+Acquisition_1C.threshold=2.5
 ;#pfa: Acquisition false alarm probability. This option overrides the threshold option.
-;Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition]
-Acquisition.pfa=0.0001
+Acquisition_1C.pfa=0.0001
 ;#doppler_max: Maximum expected Doppler shift [Hz]
-Acquisition.doppler_max=10000
-;#doppler_max: Doppler step in the grid search [Hz]
-Acquisition.doppler_step=500
-
-;######### ACQUISITION CHANNELS CONFIG ######
-;#The following options are specific to each channel and overwrite the generic options
-
-
-;######### ACQUISITION CH 0 CONFIG ############
-;Acquisition0.implementation=GPS_L1_CA_PCPS_Acquisition
-;Acquisition0.threshold=0.005
-;Acquisition0.pfa=0.001
-;Acquisition0.doppler_max=10000
-;Acquisition0.doppler_step=250
-
-;#repeat_satellite: Use only jointly with the satellite PRN ID option. The default value is false
-;Acquisition0.repeat_satellite = false
-
-;######### ACQUISITION CH 1 CONFIG ############
-;Acquisition1.implementation=GPS_L1_CA_PCPS_Acquisition
-;Acquisition1.threshold=0.005
-;Acquisition1.pfa=0.001
-;Acquisition1.doppler_max=10000
-;Acquisition1.doppler_step=250
-;Acquisition1.repeat_satellite = false
+Acquisition_1C.doppler_max=5000
+;#doppler_step: Doppler step in the grid search [Hz]
+Acquisition_1C.doppler_step=250
 \endverbatim
 
 
@@ -475,33 +455,30 @@ The user can select a given implementation for the algorithm to be used in all t
 ;######### TRACKING GLOBAL CONFIG ############
 
 ;#implementation: Selected tracking algorithm
-Tracking.implementation=GPS_L1_CA_DLL_PLL_Tracking
-;#item_type: Type and resolution for each of the signal samples. Use only [gr_complex] in this version.
-Tracking.item_type=gr_complex
-
-;#sampling_frequency: Signal Intermediate Frequency in [Hz]
-Tracking.if=0
+Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking
+;#item_type: Type and resolution for each of the signal samples.
+Tracking_1C.item_type=gr_complex
 
 ;#dump: Enable or disable the Tracking internal binary data file logging [true] or [false]
-Tracking.dump=false
+Tracking_1C.dump=false
 
 ;#dump_filename: Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
-Tracking.dump_filename=./tracking_ch_
+Tracking_1C.dump_filename=./tracking_ch_
 
 ;#pll_bw_hz: PLL loop filter bandwidth [Hz]
-Tracking.pll_bw_hz=50.0;
+Tracking_1C.pll_bw_hz=50.0;
 
 ;#dll_bw_hz: DLL loop filter bandwidth [Hz]
-Tracking.dll_bw_hz=2.0;
+Tracking_1C.dll_bw_hz=2.0;
 
 ;#fll_bw_hz: FLL loop filter bandwidth [Hz]
-Tracking.fll_bw_hz=10.0;
+Tracking_1C.fll_bw_hz=10.0;
 
-;#order: PLL/DLL loop filter order [2] or [3]
-Tracking.order=3;
+Tracking_1C.pll_filter_order=3 ; PLL loop filter order [2] or [3]
+Tracking_1C.dll_filter_order=2 ; DLL loop filter order [1], [2] or [3]
 
-;#early_late_space_chips: correlator early-late space [chips]. Use [0.5]
-Tracking.early_late_space_chips=0.5;
+;#early_late_space_chips: correlator early-late space [chips].
+Tracking_1C.early_late_space_chips=0.5;
 \endverbatim
 
 \subsubsection decoding Decoding of the navigation message
@@ -517,8 +494,8 @@ for an actual implementation of a signal processing block. Configuration example
 
 \verbatim
 ;######### TELEMETRY DECODER CONFIG ############
-TelemetryDecoder.implementation=GPS_L1_CA_Telemetry_Decoder
-TelemetryDecoder.dump=false
+TelemetryDecoder_1C.implementation=GPS_L1_CA_Telemetry_Decoder
+TelemetryDecoder_1C.dump=false
 \endverbatim
 
 See the \ref reference_docs for more information about the signal format.
@@ -535,8 +512,7 @@ The common interface is ObservablesInterface.
 Configuration example:
 \verbatim
 ;######### OBSERVABLES CONFIG ############
-;#implementation: Use [GPS_L1_CA_Observables] for GPS L1 C/A.
-Observables.implementation=GPS_L1_CA_Observables
+Observables.implementation=Hybrid_Observables
 
 ;#dump: Enable or disable the Observables internal binary data file logging [true] or [false]
 Observables.dump=false
@@ -548,12 +524,12 @@ Observables.dump_filename=./observables.dat
 \subsection pvt Computation of Position, Velocity and Time
 Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
  solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
-  data such as <a href="http://www.gpstk.org" target="_blank">GPSTk</a> or <a href="http://gage14.upc.es/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
+  data such as <a href="http://www.gpstk.org" target="_blank">GPSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
 
-The common interface is PvtInterface. For instance, in order to use the implementation GpsL1CaPvt, add to the configuration file:
+The common interface is PvtInterface. For instance, in order to use the implementation RTKLIB_PVT, add to the configuration file:
 \verbatim
 ;######### PVT CONFIG ############
-PVT.implementation=GPS_L1_CA_PVT
+PVT.implementation=RTKLIB_PVT
 
 ;#nmea_dump_filename: NMEA log path and filename
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea;
@@ -570,12 +546,24 @@ PVT.dump=false
 
 This implementation allows tuning of the following parameters:
 \verbatim
-PVT.averaging_depth=10 ; Number of PVT observations in the moving average algorithm
-PVT.flag_averaging=true ; Enables the PVT averaging between output intervals (arithmetic mean) [true] or [false]
-PVT.output_rate_ms=100 ; Period in [ms] between two PVT outputs
-PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
-PVT.dump=false ; Enable or disable the PVT internal binary data file logging [true] or [false]
-PVT.dump_filename=./PVT ; Log path and filename without extension.
+PVT.implementation=RTKLIB_PVT
+PVT.positioning_mode=Single      ; options: Single, Static, Kinematic, PPP_Static, PPP_Kinematic
+PVT.iono_model=Broadcast         ; options: OFF, Broadcast
+PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen
+PVT.rinex_version=2              ; options: 2 or 3
+PVT.output_rate_ms=100           ; Period in [ms] between two PVT outputs
+PVT.display_rate_ms=500          ; Position console print (std::out) interval [ms].
+PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
+PVT.flag_nmea_tty_port=false     ; Enables the NMEA log to a serial TTY port
+PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
+PVT.flag_rtcm_server=true        ; Enables or disables a TCP/IP server dispatching RTCM messages
+PVT.flag_rtcm_tty_port=false     ; Enables the RTCM log to a serial TTY port
+PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
+PVT.rtcm_tcp_port=2101
+PVT.rtcm_MT1019_rate_ms=5000
+PVT.rtcm_MT1045_rate_ms=5000
+PVT.rtcm_MT1097_rate_ms=1000
+PVT.rtcm_MT1077_rate_ms=1000
 \endverbatim
 
 
@@ -640,8 +628,10 @@ For LaTeX users, these are the BibTeX cites for your convenience:
  YEAR = {2010},
  address = {ESTEC, Noordwijk, The Netherlands},
  month = {Dec.},
- note = {DOI:10.1109/NAVITEC.2010.5707981} }
+ note = {doi:10.1109/NAVITEC.2010.5707981} }
 \endverbatim
+
+More papers related to GNSS-SDR are available at the <a href="https://gnss-sdr.org/publications/" _target="_blank">publications page</a>.
 
 \section now_what Ok, now what?
 In order to start using GNSS-SDR, you may want to populate <tt>gnss-sdr/data</tt> folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output

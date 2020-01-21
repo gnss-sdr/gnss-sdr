@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -74,7 +74,7 @@ and civilian users on a continuous, worldwide basis. Two GPS services are provid
 the Precise Positioning Service (PPS), available primarily to the military of the United
 States and its allies, and the Standard Positioning Service (SPS) open to civilian users.
 
-\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
+\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision K</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
 \f{equation}{
 s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
 \f}
@@ -93,7 +93,7 @@ s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
   provide C/A code to ensure backward compatibility.
 
 
-\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, is only available on
+\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision K</b></a>, is only available on
 Block IIR-M and subsequent satellite blocks. Centered at \f$f_{\text{GPS L2}}=1227.60\f$ MHz, the signal structure is the same than in (\ref{eq:GPSL1}), with the precision code in the In-phase
 component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navigation message \f$D_{\text{NAV}}\f$. For the Quadrature-phase component, three options are defined:
      \f{align}{ e_{L2CQ}(t) =&  \sum_{l=-\infty}^{\infty}     D_{\text{CNAV}}  \Big[ [l]_{10230}  \Big]    \oplus      \left(  C_{\text{CL}} \Big[ |l|_{L_{\text{CL}}} \Big]  p_{\text{\tiny{1/2}}}  \left(  t - lT_{c,L2C}   \right)   +  \right.\\ {} &+ \left. C_{\text{CM}}  \Big[ |l|_{L_{\text{CM}}} \Big] p_{\text{\tiny{1/2}}}\left(t - \left(l+\frac{3}{4}\right)T_{c,L2C}\right) \right),\\
@@ -106,7 +106,7 @@ component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navi
        data than the NAV data. It is transmitted at \f$25\f$ bps with forward error correction (FEC) encoding, resulting in \f$50\f$ sps.
 
 
-\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705B.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision B</b></a>, is only available
+\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705F.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision F</b></a>, is only available
 in Block IIF (first satellite launched on May, 2010) and subsequent satellite blocks. Centered at \f$f_{\text{GPS L5}}=1176.45\f$ MHz, this signal in space can be written as:
     \f{equation}{
 s^{\text{(GPS L5)}}_{T}(t)=e_{L5I}(t) +j e_{L5Q}(t)~,
@@ -170,7 +170,7 @@ nominal constellation configuration. The Galileo satellites are placed in quasi-
 orbits with a nominal semi-major axis of about \f$30,000\f$ km and an approximate revolution
 period of \f$14\f$ hours. The Control segment full infrastructure will be composed of \f$30-40\f$ sensor stations, \f$3\f$ control centers, \f$9\f$ Mission Uplink stations, and \f$5\f$ TT\&C stations.
 
-Galileo's Open Service is defined at <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.1</b></a>, where the following signal structures are specified:
+Galileo's Open Service is defined at <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.3</b></a>, where the following signal structures are specified:
 
 
 \li <b>Galileo E1</b>. This band, centered at \f$f_{\text{Gal E1}}=1575.420\f$ MHz and with a reference bandwidth of \f$24.5520\f$ MHz, uses the so-called composite binary offset carrier
@@ -274,7 +274,7 @@ The same applies to \f$e_{E5b}(t)\f$, allowing an independent reception of two Q
 This text is an except of the following paper:
 
 \li C. Fern&aacute;ndez-Prades, L. Lo Presti, E. Falleti, <a href="https://ieeexplore.ieee.org/document/5942139/" target="_blank"><i>Satellite Radiolocalization From GPS to GNSS and Beyond: Novel Technologies and Applications for Civil Mass-Market</i></a>.
- Proceedings of the IEEE. Vol 99, No. 11, pp. 1882-1904. November, 2011. DOI: 10.1109/JPROC.2011.2158032
+ Proceedings of the IEEE. Vol 99, No. 11, pp. 1882-1904. November, 2011. doi: 10.1109/JPROC.2011.2158032
 
 
 

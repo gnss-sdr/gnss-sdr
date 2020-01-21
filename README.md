@@ -379,7 +379,7 @@ $ sudo make install
 
 This will also make a copy of the conf/ folder into /usr/local/share/gnss-sdr/conf for your reference. We suggest to create a working directory at your preferred location and store your own configuration and data files there.
 
-You could be interested in creating the documentation by doing:
+You could be interested in creating the documentation (requires: `sudo apt-get install doxygen-latex` in Ubuntu/Debian) by doing:
 
 ~~~~~~
 $ make doc
@@ -1241,7 +1241,6 @@ Acquisition_1C.item_type=gr_complex
 Acquisition_1C.coherent_integration_time_ms=1 ; Signal block duration for the acquisition signal detection [ms]
 Acquisition_1C.threshold=0.005 ; Acquisition threshold
 Acquisition_1C.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option.
-;                        Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition]
 Acquisition_1C.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
 Acquisition_1C.doppler_step=500 ; Doppler step in the grid search [Hz]
 Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false]
@@ -1255,7 +1254,7 @@ and, for Galileo E1B channels:
 Acquisition_1B.implementation=Galileo_E1_PCPS_Ambiguous_Acquisition
 Acquisition_1B.item_type=gr_complex
 Acquisition_1B.coherent_integration_time_ms=4
-Acquisition_1B.pfa=0.0000008
+Acquisition_1B.pfa=0.008
 Acquisition_1B.doppler_max=15000
 Acquisition_1B.doppler_step=125
 Acquisition_1B.dump=false

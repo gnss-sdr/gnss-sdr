@@ -1,5 +1,6 @@
 /*!
  * \file swift_common.h
+ * \brief Common definitions used throughout the libswiftnav library
  * \author Henry Hallam <henry@swift-nav.com>
  *         Fergus Noble <fergus@swift-nav.com>
  *

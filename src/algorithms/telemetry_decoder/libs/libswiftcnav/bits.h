@@ -1,5 +1,6 @@
 /*!
  * \file bits.h
+ * \brief Utilities for bit manipulation of the libswiftnav library
  * \author Fergus Noble <fergus@swift-nav.com>
  *
  * -------------------------------------------------------------------------

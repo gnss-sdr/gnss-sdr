@@ -1,5 +1,6 @@
 /*!
  * \file fec.h
+ * \brief Utilities for the convolutional encoder of the libswiftnav library
  * \author Phil Karn, KA9Q
  *
  * -------------------------------------------------------------------------

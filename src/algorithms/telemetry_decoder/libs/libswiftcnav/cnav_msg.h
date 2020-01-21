@@ -1,5 +1,6 @@
 /*!
  * \file cnav_msg.h
+ * \brief Utilities for CNAV message manipulation of the libswiftnav library
  * \author Valeri Atamaniouk <valeri@swift-nav.com>
  *
  * -------------------------------------------------------------------------

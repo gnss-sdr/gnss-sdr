@@ -1,5 +1,6 @@
 /*!
  * \file edc.h
+ * \brief Utilities for CRC computation of the libswiftnav library
  * \author Fergus Noble <fergus@swift-nav.com>
  *
  * -------------------------------------------------------------------------

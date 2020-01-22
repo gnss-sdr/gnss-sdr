@@ -195,8 +195,11 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     double new_rx_clock_offset_s;
                     new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
                     T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
-                    //compute the required T_rx_TOW adjustment to match integer multiple of 20 ms
-                    adjust_next_20ms = 20 - T_rx_TOW_ms % 20;
+                    //align the receiver clock to integer multiple of 20 ms
+                    if (T_rx_TOW_ms % 20)
+                        {
+                            T_rx_TOW_ms += 20 - T_rx_TOW_ms % 20;
+                        }
                     // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
@@ -485,6 +488,11 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                         }
                 }
             T_rx_TOW_ms = TOW_ref;
+            //align the receiver clock to integer multiple of 20 ms
+            if (T_rx_TOW_ms % 20)
+                {
+                    T_rx_TOW_ms += 20 - T_rx_TOW_ms % 20;
+                }
         }
     else
         {
@@ -576,8 +584,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
-                    //align the receiver clock to integer multiple of 20 ms and interpolate observables at current receiver clock
-                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() + adjust_next_20ms))
+                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front()))
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();

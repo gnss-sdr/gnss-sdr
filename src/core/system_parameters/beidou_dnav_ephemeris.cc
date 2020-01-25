@@ -63,8 +63,7 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
     d_AODC = 0;  // Issue of Data, Clock
     i_AODO = 0;  // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
     d_AODC = 0;
-    b_fit_interval_flag = false;  // indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0  =  4 hours, 1  =  greater than 4 hours.
-    d_spare1 = 0;
+    b_fit_interval_flag = false;
     d_spare2 = 0;
 
     i_sig_type = 0;
@@ -113,7 +112,6 @@ double Beidou_Dnav_Ephemeris::check_t(double time)
 }
 
 
-// 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
 double Beidou_Dnav_Ephemeris::sv_clock_drift(double transmitTime)
 {
     double dt;

@@ -368,13 +368,13 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
     rtklib_sat.sat = gps_cnav_eph.i_satellite_PRN;
-    const double A_REF = 26559710.0;  // See IS-GPS-200H,  pp. 170
+    const double A_REF = 26559710.0;  // See IS-GPS-200K,  pp. 170
     rtklib_sat.A = A_REF + gps_cnav_eph.d_DELTA_A;
     rtklib_sat.M0 = gps_cnav_eph.d_M_0;
     rtklib_sat.deln = gps_cnav_eph.d_Delta_n;
     rtklib_sat.OMG0 = gps_cnav_eph.d_OMEGA0;
     // Compute the angle between the ascending node and the Greenwich meridian
-    const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200H pp. 164
+    const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200K pp. 164
     double d_OMEGA_DOT = OMEGA_DOT_REF * PI + gps_cnav_eph.d_DELTA_OMEGA_DOT;
     rtklib_sat.OMGd = d_OMEGA_DOT;
     rtklib_sat.omg = gps_cnav_eph.d_OMEGA;

@@ -2,7 +2,7 @@
  * \file gps_cnav_ephemeris.cc
  * \brief  Interface of a GPS CNAV EPHEMERIS storage and orbital model functions
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -142,7 +142,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     double M;
     const double GM = 3.986005e14;      // Universal gravitational constant times the mass of the Earth, [m^3/s^2]
     const double F = -4.442807633e-10;  // Constant, [s/(m)^(1/2)]
-    const double A_REF = 26559710.0;    // See IS-GPS-200H,  pp. 163
+    const double A_REF = 26559710.0;    // See IS-GPS-200K,  pp. 163
     double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 
     // Restore semi-major axis
@@ -200,11 +200,11 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     double i;
     double Omega;
 
-    const double A_REF = 26559710.0;  // See IS-GPS-200H,  pp. 170
+    const double A_REF = 26559710.0;  // See IS-GPS-200K,  pp. 170
     double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 
     const double GM = 3.986005e14;                   // Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-    const double OMEGA_DOT_REF = -2.6e-9;            // semicircles / s, see IS-GPS-200H pp. 164
+    const double OMEGA_DOT_REF = -2.6e-9;            // semicircles / s, see IS-GPS-200K pp. 164
     const double OMEGA_EARTH_DOT = 7.2921151467e-5;  // Earth rotation rate, [rad/s]
     // Find satellite's position ----------------------------------------------
 

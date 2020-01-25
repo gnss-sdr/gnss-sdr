@@ -37,9 +37,9 @@
 
 
 /*!
- * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200H
+ * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200K
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
  */
 class Gps_CNAV_Ephemeris
 {
@@ -64,8 +64,8 @@ public:
     double d_e_eccentricity;   //!< Eccentricity
     double d_OMEGA;            //!< Argument of Perigee [semi-cicles]
     double d_OMEGA0;           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
-    int32_t d_Toe1;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-    int32_t d_Toe2;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t d_Toe1;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
+    int32_t d_Toe2;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
     double d_DELTA_OMEGA_DOT;  //!< Rate of Right Ascension  difference [semi-circles/s]
     double d_i_0;              //!< Inclination Angle at Reference Time [semi-circles]
     double d_IDOT;             //!< Rate of Inclination Angle [semi-circles/s]
@@ -77,7 +77,7 @@ public:
     double d_Cuc;              //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
 
     // Clock Correction and Accuracy Parameters
-    int32_t d_Toc;  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+    int32_t d_Toc;  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
     double d_A_f0;  //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;  //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
@@ -126,19 +126,19 @@ public:
 
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Table 20-IV (IS-GPS-200E)
+     * Implementation of Table 20-IV (IS-GPS-200K)
      */
     double satellitePosition(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
      */
     double sv_clock_drift(double transmitTime);
 
     /*!
      * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
      */
     double sv_clock_relativistic_term(double transmitTime);
 
@@ -161,9 +161,9 @@ public:
         archive& make_nvp("d_Cuc", d_Cuc);                        //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
         archive& make_nvp("d_e_eccentricity", d_e_eccentricity);  //!< Eccentricity [dimensionless]
         archive& make_nvp("d_Cus", d_Cus);                        //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
-        archive& make_nvp("d_Toe1", d_Toe1);                      //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-        archive& make_nvp("d_Toe2", d_Toe2);                      //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-        archive& make_nvp("d_Toc", d_Toc);                        //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+        archive& make_nvp("d_Toe1", d_Toe1);                      //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
+        archive& make_nvp("d_Toe2", d_Toe2);                      //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
+        archive& make_nvp("d_Toc", d_Toc);                        //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
         archive& make_nvp("d_Cic", d_Cic);                        //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
         archive& make_nvp("d_OMEGA0", d_OMEGA0);                  //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
         archive& make_nvp("d_Cis", d_Cis);                        //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]

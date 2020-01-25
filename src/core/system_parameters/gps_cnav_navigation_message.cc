@@ -1,8 +1,8 @@
 /*!
  * \file gps_cnav_navigation_message.cc
- * \brief Implementation of a GPS CNAV Data message decoder as described in IS-GPS-200H
+ * \brief Implementation of a GPS CNAV Data message decoder as described in IS-GPS-200K
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------

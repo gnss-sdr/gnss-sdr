@@ -54,7 +54,7 @@ gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
     bool dump);
 
 /*!
- * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
+ * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200K
  */
 class gps_l1_ca_telemetry_decoder_gs : public gr::block
 {

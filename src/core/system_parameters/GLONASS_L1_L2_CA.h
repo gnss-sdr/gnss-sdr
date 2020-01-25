@@ -44,8 +44,8 @@
 // Physical constants
 const double GLONASS_C_M_S = SPEED_OF_LIGHT;                   //!< The speed of light, [m/s]
 const double GLONASS_C_M_MS = 299792.4580;                     //!< The speed of light, [m/ms]
-const double GLONASS_PI = 3.1415926535898;                     //!< Pi as defined in IS-GPS-200E
-const double GLONASS_TWO_PI = 6.283185307179586;               //!< 2Pi as defined in IS-GPS-200E
+const double GLONASS_PI = 3.1415926535898;                     //!< Pi as defined in IS-GPS-200K
+const double GLONASS_TWO_PI = 6.283185307179586;               //!< 2Pi as defined in IS-GPS-200K
 const double GLONASS_OMEGA_EARTH_DOT = 7.292115e-5;            //!< Earth rotation rate, [rad/s]
 const double GLONASS_GM = 398600.4418e9;                       //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double GLONASS_F_M_A = 0.35e9;                           //!< Gravitational constant of atmosphere [m^3/s^2]
@@ -258,7 +258,7 @@ const std::vector<int32_t> GLONASS_GNAV_CRC_P_INDEX{66, 67, 68, 69, 70, 71, 72, 
 const std::vector<int32_t> GLONASS_GNAV_CRC_Q_INDEX{9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85};
 
 // GLONASS GNAV NAVIGATION MESSAGE STRUCTURE
-// NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix II)
+// NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200K Appendix II)
 
 // FRAME 1-4
 // COMMON FIELDS

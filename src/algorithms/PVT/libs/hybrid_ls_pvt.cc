@@ -202,7 +202,7 @@ bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
 
                                         // 4- fill the observations vector with the corrected pseudoranges
                                         // compute code bias: TGD for single frequency
-                                        // See IS-GPS-200E section 20.3.3.3.3.2
+                                        // See IS-GPS-200K section 20.3.3.3.3.2
                                         double sqrt_Gamma = GPS_L1_FREQ_HZ / GPS_L2_FREQ_HZ;
                                         double Gamma = sqrt_Gamma * sqrt_Gamma;
                                         double P1_P2 = (1.0 - Gamma) * (gps_ephemeris_iter->second.d_TGD * GPS_C_M_S);

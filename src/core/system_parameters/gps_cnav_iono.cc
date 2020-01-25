@@ -2,7 +2,7 @@
  * \file gps_cnav_iono.cc
  * \brief  Interface of a GPS CNAV IONOSPHERIC MODEL storage
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------

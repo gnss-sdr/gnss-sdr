@@ -36,16 +36,16 @@
 #include <cstdint>
 
 /*!
- * \brief This class is a storage for the GPS SV ALMANAC data as described in IS-GPS-200E
+ * \brief This class is a storage for the GPS SV ALMANAC data as described in IS-GPS-200K
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix II
  */
 class Gps_Almanac
 {
 public:
     uint32_t i_satellite_PRN;  //!< SV PRN NUMBER
     double d_Delta_i;          //!< Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)
-    int32_t i_Toa;             //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t i_Toa;             //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
     int32_t i_WNa;             //!< Almanac week number
     double d_M_0;              //!< Mean Anomaly at Reference Time [semi-circles]
     double d_e_eccentricity;   //!< Eccentricity [dimensionless]

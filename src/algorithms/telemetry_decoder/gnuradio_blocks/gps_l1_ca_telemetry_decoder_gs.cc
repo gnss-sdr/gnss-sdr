@@ -146,7 +146,7 @@ bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
     uint32_t parity;
     // XOR as many bits in parallel as possible.  The magic constants pick
     //   up bits which are to be XOR'ed together to implement the GPS parity
-    //   check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
+    //   check algorithm described in IS-GPS-200K.  This avoids lengthy shift-
     //   and-xor loops.
     d1 = gpsword & 0xFBFFBF00U;
     d2 = _rotl(gpsword, 1U) & 0x07FFBF01U;

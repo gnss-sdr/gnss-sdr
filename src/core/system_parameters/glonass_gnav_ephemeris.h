@@ -97,7 +97,7 @@ public:
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
      */
     double sv_clock_drift(double transmitTime, double timeCorrUTC);
 
@@ -176,7 +176,7 @@ private:
     /*
      * Accounts for the beginning or end of week crossover
      *
-     * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
+     * See paragraph 20.3.3.3.3.1 (IS-GPS-200K)
      * \param[in]  -  time in seconds
      * \param[out] -  corrected time, in seconds
      */

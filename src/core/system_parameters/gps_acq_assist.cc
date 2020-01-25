@@ -1,8 +1,8 @@
 /*!
  * \file gps_acq_assist.cc
-  * \brief  Interface of a GPS RRLL ACQUISITION ASSISTACE storage
+ * \brief  Interface of a GPS RRLL ACQUISITION ASSISTACE storage
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix II
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------

@@ -39,7 +39,7 @@
 /*!
  * \brief This class is a storage for the GPS IONOSPHERIC data as described in IS-GPS-200H
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
  */
 class Gps_CNAV_Iono
 {

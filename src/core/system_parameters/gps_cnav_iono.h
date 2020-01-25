@@ -37,7 +37,7 @@
 
 
 /*!
- * \brief This class is a storage for the GPS IONOSPHERIC data as described in IS-GPS-200H
+ * \brief This class is a storage for the GPS IONOSPHERIC data as described in IS-GPS-200K
  *
  * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
  */

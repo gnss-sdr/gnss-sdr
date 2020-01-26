@@ -187,6 +187,8 @@ int main(int argc, char *argv[])
         {
             std::cout << "Warning: this was a dry-run. Config not generated" << std::endl;
         }
+
+    return 0;
 }
 
 
@@ -216,9 +218,8 @@ void read_results(std::vector<volk_gnsssdr_test_results_t> *results, std::string
                     std::vector<std::string> single_kernel_result;
                     std::string config_str(config_line);
                     std::size_t str_size = config_str.size();
-                    std::size_t found = 1;
+                    std::size_t found = config_str.find(' ');
 
-                    found = config_str.find(' ');
                     // Split line by spaces
                     while (found && found < str_size)
                         {

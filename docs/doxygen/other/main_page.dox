@@ -163,7 +163,7 @@ You can create the documentation by doing:
 $ make doc
 \endverbatim
 
-from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> will generate HTML documentation that can be
+from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="http://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
 There are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
@@ -524,7 +524,7 @@ Observables.dump_filename=./observables.dat
 \subsection pvt Computation of Position, Velocity and Time
 Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
  solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
-  data such as <a href="http://www.gpstk.org" target="_blank">GPSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
+  data such as <a href="https://github.com/SGL-UT/GPSTk" target="_blank">GPSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
 
 The common interface is PvtInterface. For instance, in order to use the implementation RTKLIB_PVT, add to the configuration file:
 \verbatim

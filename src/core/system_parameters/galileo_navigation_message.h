@@ -296,4 +296,4 @@ private:
     int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
 };
 
-#endif // GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H_
+#endif  // GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H_

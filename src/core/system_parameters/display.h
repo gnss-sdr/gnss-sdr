@@ -78,5 +78,6 @@ const std::string TEXT_BOLD_MAGENTA = "";
 const std::string TEXT_BOLD_CYAN = "";
 const std::string TEXT_BOLD_WHITE = "";
 
-#endif /* DISPLAY_COLORS      */
+#endif  // DISPLAY_COLORS
+
 #endif  // GNSS_SDR_DISPLAY_H_

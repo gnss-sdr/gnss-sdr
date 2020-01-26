@@ -861,9 +861,13 @@ if(NOT VOLKGNSSSDR_FOUND)
     )
     if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
             -DCROSSCOMPILE_MULTILIB=TRUE
         )
+        if(NOT CMAKE_TOOLCHAIN_FILE)
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
+            )
+        endif()
     else()
         if(CMAKE_TOOLCHAIN_FILE)
             set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}

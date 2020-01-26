@@ -35,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
-#define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
+#ifndef GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
+#define GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
 #include "channel_fsm.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
@@ -183,4 +183,5 @@ private:
     unsigned int out_streams_;
     float calculate_threshold(float pfa);
 };
-#endif /* GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_ */
+
+#endif  // GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_

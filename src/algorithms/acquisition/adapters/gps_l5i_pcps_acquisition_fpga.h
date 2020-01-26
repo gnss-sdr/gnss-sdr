@@ -216,4 +216,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H_ */
+#endif  // GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H_

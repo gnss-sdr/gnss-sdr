@@ -86,4 +86,4 @@ private:
     gr::block_sptr file_sink_;
 };
 
-#endif /* GNSS_SDR_BEAMFORMER_FILTER_H_ */
+#endif  // GNSS_SDR_BEAMFORMER_FILTER_H_

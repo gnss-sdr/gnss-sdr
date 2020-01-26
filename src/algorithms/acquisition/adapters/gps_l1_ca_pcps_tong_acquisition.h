@@ -180,4 +180,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_

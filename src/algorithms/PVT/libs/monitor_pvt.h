@@ -142,4 +142,4 @@ public:
     }
 };
 
-#endif /* GNSS_SDR_MONITOR_PVT_H_ */
+#endif  // GNSS_SDR_MONITOR_PVT_H_

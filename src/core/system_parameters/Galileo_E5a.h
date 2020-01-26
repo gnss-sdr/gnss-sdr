@@ -388,4 +388,4 @@ const std::string GALILEO_E5A_Q_SECONDARY_CODE[GALILEO_E5A_NUMBER_OF_CODES] = {
 };
 
 
-#endif /* GNSS_SDR_GALILEO_E5A_H_ */
+#endif  // GNSS_SDR_GALILEO_E5A_H_

@@ -181,4 +181,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_

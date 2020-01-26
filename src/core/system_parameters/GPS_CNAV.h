@@ -179,4 +179,4 @@ const int32_t CNAV_DELTA_TLSF_LSB = 1;
 // TODO: Add more frames (Almanac, etc...)
 
 
-#endif /* GNSS_SDR_GPS_CNAV_H_ */
+#endif  // GNSS_SDR_GPS_CNAV_H_

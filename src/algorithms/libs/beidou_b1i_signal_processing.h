@@ -52,4 +52,4 @@ void beidou_b1i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
 //! Generates complex GPS L1 C/A code for the desired SV ID and code shift
 void beidou_b1i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
-#endif /* BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_ */
+#endif  // GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_

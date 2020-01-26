@@ -175,4 +175,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GALILEO_E1_PCPS_CCCWSR_AMBIGUOUS_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GALILEO_E1_PCPS_CCCWSR_AMBIGUOUS_ACQUISITION_H_

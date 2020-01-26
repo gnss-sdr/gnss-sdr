@@ -104,4 +104,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_ */
+#endif  // GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_

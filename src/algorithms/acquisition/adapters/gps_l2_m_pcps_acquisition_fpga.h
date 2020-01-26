@@ -180,4 +180,4 @@ private:
     std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
-#endif /* GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_FPGA_H_ */
+#endif  // GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_FPGA_H_

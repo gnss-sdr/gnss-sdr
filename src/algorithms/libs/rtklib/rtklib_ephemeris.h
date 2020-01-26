@@ -92,4 +92,4 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     int ephopt, double *rs, double *dts, double *var, int *svh);
 
 
-#endif /* GNSS_SDR_RTKLIB_EPHEMERIS_H_ */
+#endif  // GNSS_SDR_RTKLIB_EPHEMERIS_H_

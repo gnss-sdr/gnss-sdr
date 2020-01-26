@@ -55,4 +55,4 @@ public:
 };
 
 
-#endif /* GNSS_SDR_SBAS_EPHEMERIS_H_ */
+#endif  // GNSS_SDR_SBAS_EPHEMERIS_H_

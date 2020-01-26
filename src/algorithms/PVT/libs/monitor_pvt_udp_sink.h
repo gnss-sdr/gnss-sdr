@@ -61,4 +61,4 @@ private:
 };
 
 
-#endif /* GNSS_SDR_MONITOR_PVT_UDP_SINK_H_ */
+#endif  // GNSS_SDR_MONITOR_PVT_UDP_SINK_H_

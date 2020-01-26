@@ -67,4 +67,4 @@ private:
 };
 
 
-#endif /* GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_ */
+#endif  // GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_

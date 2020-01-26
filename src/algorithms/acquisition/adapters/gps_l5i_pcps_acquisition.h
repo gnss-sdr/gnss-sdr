@@ -190,4 +190,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif /* GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H_

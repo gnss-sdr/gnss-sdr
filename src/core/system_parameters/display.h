@@ -79,4 +79,4 @@ const std::string TEXT_BOLD_CYAN = "";
 const std::string TEXT_BOLD_WHITE = "";
 
 #endif /* DISPLAY_COLORS      */
-#endif /* GNSS_SDR_DISPLAY_H_ */
+#endif  // GNSS_SDR_DISPLAY_H_

@@ -61,4 +61,4 @@ public:
     virtual void set_channel(unsigned int channel) = 0;
 };
 
-#endif /* GNSS_SDR_TRACKING_INTERFACE_H_ */
+#endif  // GNSS_SDR_TRACKING_INTERFACE_H_

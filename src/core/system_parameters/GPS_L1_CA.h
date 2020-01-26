@@ -253,4 +253,4 @@ const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV22({{247, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV23({{253, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV24({{259, 6}});
 
-#endif /* GNSS_SDR_GPS_L1_CA_H_ */
+#endif  // GNSS_SDR_GPS_L1_CA_H_

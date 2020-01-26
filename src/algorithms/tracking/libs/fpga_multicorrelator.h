@@ -265,4 +265,4 @@ private:
     void write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr);
 };
 
-#endif /* GNSS_SDR_FPGA_MULTICORRELATOR_H_ */
+#endif  // GNSS_SDR_FPGA_MULTICORRELATOR_H_

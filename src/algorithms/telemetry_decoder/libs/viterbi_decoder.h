@@ -125,4 +125,4 @@ private:
     int parity_counter(int symbol, int length);
 };
 
-#endif /* GNSS_SDR_VITERBI_DECODER_H_ */
+#endif  // GNSS_SDR_VITERBI_DECODER_H_

@@ -160,4 +160,4 @@ int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
     sbsmsg_t *sbsmsg);
 
 
-#endif /* GNSS_SDR_RTKLIB_SBAS_H_ */
+#endif  // GNSS_SDR_RTKLIB_SBAS_H_

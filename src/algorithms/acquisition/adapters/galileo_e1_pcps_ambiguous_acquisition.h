@@ -190,4 +190,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif /* GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_

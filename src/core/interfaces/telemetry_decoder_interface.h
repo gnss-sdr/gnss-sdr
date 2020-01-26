@@ -56,4 +56,4 @@ public:
     virtual void set_channel(int channel) = 0;
 };
 
-#endif /* GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_ */
+#endif  // GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_

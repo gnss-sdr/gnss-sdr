@@ -168,4 +168,4 @@ private:
 };
 
 
-#endif /* GNSS_SDR_CUDA_MULTICORRELATOR_H_ */
+#endif  // GNSS_SDR_CUDA_MULTICORRELATOR_H_

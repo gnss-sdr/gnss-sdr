@@ -209,4 +209,4 @@ private:
     // bool omega_flag;
 };
 
-#endif /* GNSS_SDR_GALILEO_FNAV_MESSAGE_H_ */
+#endif  // GNSS_SDR_GALILEO_FNAV_MESSAGE_H_

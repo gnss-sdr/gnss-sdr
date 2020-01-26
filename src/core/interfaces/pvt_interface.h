@@ -71,4 +71,4 @@ public:
         time_t* UTC_time) = 0;
 };
 
-#endif /* GNSS_SDR_PVT_INTERFACE_H_ */
+#endif  // GNSS_SDR_PVT_INTERFACE_H_

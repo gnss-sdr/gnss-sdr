@@ -65,4 +65,4 @@ private:
 };
 
 
-#endif /* GNSS_SDR_CPU_MULTICORRELATOR_H_ */
+#endif  // GNSS_SDR_CPU_MULTICORRELATOR_H_

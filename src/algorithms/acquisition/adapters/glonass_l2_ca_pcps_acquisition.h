@@ -179,4 +179,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif /* GNSS_SDR_GLONASS_L2_CA_PCPS_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GLONASS_L2_CA_PCPS_ACQUISITION_H_

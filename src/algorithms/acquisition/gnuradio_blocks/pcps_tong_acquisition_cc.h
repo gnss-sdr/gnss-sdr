@@ -244,4 +244,4 @@ private:
     std::string d_dump_filename;
 };
 
-#endif /* GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H_ */
+#endif  // GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H_

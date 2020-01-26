@@ -233,4 +233,4 @@ private:
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/
+#endif  // GNSS_SDR_PCPS_ACQUISITION_FPGA_H_

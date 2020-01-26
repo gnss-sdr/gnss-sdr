@@ -81,4 +81,4 @@ public:
     }
 };
 
-#endif /*GNSS_SDR_GNSS_BLOCK_INTERFACE_H_*/
+#endif  // GNSS_SDR_GNSS_BLOCK_INTERFACE_H_

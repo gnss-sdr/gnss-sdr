@@ -87,4 +87,4 @@ int iondelay(gtime_t time, const tec_t *tec, const double *pos,
 int iontec(gtime_t time, const nav_t *nav, const double *pos,
     const double *azel, int opt, double *delay, double *var);
 
-#endif /* GNSS_SDR_RTKLIB_IONEX_H_ */
+#endif  // GNSS_SDR_RTKLIB_IONEX_H_

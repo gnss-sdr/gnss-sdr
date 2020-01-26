@@ -101,4 +101,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_ */
+#endif  // GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_

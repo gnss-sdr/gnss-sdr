@@ -62,4 +62,4 @@ public:
     virtual void set_signal(const Gnss_Signal&) = 0;
 };
 
-#endif /* GNSS_SDR_CHANNEL_INTERFACE_H_ */
+#endif  // GNSS_SDR_CHANNEL_INTERFACE_H_

@@ -54,4 +54,4 @@ public:
     virtual void reset() = 0;
 };
 
-#endif /* GNSS_SDR_OBSERVABLES_INTERFACE_H_ */
+#endif  // GNSS_SDR_OBSERVABLES_INTERFACE_H_

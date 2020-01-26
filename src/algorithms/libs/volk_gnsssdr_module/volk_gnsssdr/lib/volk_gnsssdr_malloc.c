@@ -126,4 +126,4 @@ void volk_gnsssdr_free(void *ptr)
 
 #endif  // _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600 || HAVE_POSIX_MEMALIGN
 
-//#endif // _ISOC11_SOURCE
+//#endif  //_ISOC11_SOURCE

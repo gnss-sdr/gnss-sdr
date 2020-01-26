@@ -87,4 +87,4 @@ private:
     gr::block_sptr file_sink_;
 };
 
-#endif /*GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_*/
+#endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_

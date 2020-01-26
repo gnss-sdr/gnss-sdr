@@ -72,4 +72,4 @@ void resampler(const gsl::span<float> _from, gsl::span<float> _dest,
 void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::complex<float>> _dest,
     float _fs_in, float _fs_out);
 
-#endif /* GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_ */
+#endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_

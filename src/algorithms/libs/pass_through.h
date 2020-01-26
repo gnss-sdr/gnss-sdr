@@ -97,4 +97,4 @@ private:
     bool inverted_spectrum;
 };
 
-#endif /*GNSS_SDR_PASS_THROUGH_H_*/
+#endif  // GNSS_SDR_PASS_THROUGH_H_

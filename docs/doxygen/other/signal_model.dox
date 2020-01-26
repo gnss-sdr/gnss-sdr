@@ -34,7 +34,7 @@ we can compute our location, just as mariners do when they see a couple of light
   and \f$\sigma_e\f$ gathers other sources of error. Since the receiver needs to estimate its own 3D position (three spatial unknowns) and its clock deviation with respect to
   the satellites' time basis, at least \f$3+N_s\f$ satellites must be seen by the receiver at the same time, where \f$N_s\f$ is the number of different navigation systems available
   (in-view) at a given time. Each received satellite signal, once synchronized and demodulated at the receiver, defines one equation such as the one defined above,
-  forming a set of nonlinear equations that can be solved algebraically by means of the <a href="http://navipedia.org/index.php/Bancroft_Method" target="_blank">Bancroft algorithm</a> or
+  forming a set of nonlinear equations that can be solved algebraically by means of the <a href="https://gssc.esa.int/navipedia/index.php/Bancroft_Method" target="_blank">Bancroft algorithm</a> or
   numerically, resorting to multidimensional Newton-Raphson and weighted least square methods. When <i>a priori</i> information is added we resort to Bayesian estimation, a problem
   that can be solved recursively by a Kalman filter or any of its variants. The problem can be further expanded by adding other unknowns (for instance, parameters of ionospheric and
   tropospheric models), sources of information from other systems, mapping information, and even motion models of the receiver. In the design of multi-constellation GNSS receivers,
@@ -57,7 +57,7 @@ in the time frame of the receiver) and the time of transmission (expressed in th
 
 <i>ii)</i> the carrier-phase measurement, actually being a measurement on the beat frequency between the received carrier of the satellite signal and a receiver-generated reference frequency.
 Carrier phase measurements are ambiguous, in the sense that the integer number of carrier wavelengths between satellite and the receiver's antenna is unknown.
-Techniques such as <a href="http://www.citg.tudelft.nl/en/about-faculty/departments/geoscience-and-remote-sensing/research-themes/gps/lambda-method/" target="_blank">Least-square AMBiguity Decorrelation Approach (LAMBDA)</a> or
+Techniques such as <a href="https://www.tudelft.nl/en/ceg/about-faculty/departments/geoscience-remote-sensing/research/lambda/lambda/" target="_blank">Least-square AMBiguity Decorrelation Approach (LAMBDA)</a> or
 Multi Carrier Ambiguity Resolution (MCAR) can be applied to resolve such ambiguity and provide an accurate estimation of the distance between the satellite and the receiver.
 
 Then, depending on the required accuracy, the navigation solution can range from pseudorange-only, computationally low demanding, and limited accuracy least squares methods to sophisticated combinations of code and
@@ -88,7 +88,7 @@ s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
   \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter.
   According to the chip rate, the binary phase-shift keying modulations in the equations above are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever
   the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it
-  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-800B.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision B</b></a>,
+  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-800F.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision F</b></a>,
   to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will
   provide C/A code to ensure backward compatibility.
 
@@ -129,7 +129,7 @@ Eight satellites are equally spaced in each plane with \f$45^o\f$ argument of la
 the orbital planes have an argument of latitude displacement of \f$15^o\f$ relative to each other.
 
 
-GLONASS civil signal-in-space is defined at <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank"><b>Interface Control Document. Navigational radiosignal in bands L1, L2. Edition 5.1</b></a>.
+GLONASS civil signal-in-space is defined at <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf" target="_blank"><b>Interface Control Document. Navigational radiosignal in bands L1, L2. Edition 5.1</b></a>.
 This system makes use of a frequency-division multiple access (FDMA) signal structure, transmitting in two bands: \f$f^{(k)}_{GLO L1}=1602+k \cdot 0.5625\f$ MHz and \f$f^{(k)}_{GLO L2}=1246+k \cdot 0.4375\f$ MHz,
 where \f$k\in \left\{ -7,-6,\cdots,5,6\right\}\f$ is the channel number. Satellites in opposite points of an orbit plane transmit signals on equal frequencies, as these satellites will never be
 in view simultaneously by a ground-based user.
@@ -146,7 +146,7 @@ s^{\text{(GLO L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
 \f}
   where  \f$T_{c,\text{HP}}=\frac{1}{5.11}\f$ \f$\mu\f$s, \f$T_{c,\text{SP}}=\frac{1}{0.511}\f$ \f$\mu\f$s, and \f$L_{\text{HP}}=3.3554\cdot 10^7\f$. The navigation
   message \f$D_{\text{GNAV}}\f$ is transmitted at \f$50\f$ bps. Details of its content and structure, as well as the generation of the \f$C_{\text{SP}}\f$ code, can be found at
-  the <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank">ICD</a>. The usage of the HP signal should be agreed with the Russian Federation Defense
+  the <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf" target="_blank">ICD</a>. The usage of the HP signal should be agreed with the Russian Federation Defense
   Ministry, and no more details have been disclosed.
 
 
@@ -193,7 +193,7 @@ In case of channel \f$C\f$, it is a pilot (dataless) channel with a secondary co
 \nonumber e_{E1C}(t)&= \sum_{m=-\infty}^{+\infty}C_{E1Cs}\Big[|m|_{25}\Big] \oplus \sum_{l=1}^{4092}C_{E1Cp}\Big[ l \Big] \cdot \\ {}& \; \; \cdot p(t-mT_{c,E1Cs}-lT_{c,E1Cp})~,\label{eq:E1C}
 \f}
   with \f$T_{c,E1B}=T_{c,E1Cp}=\frac{1}{1.023}\f$ \f$\mu\f$s and \f$T_{c,E1Cs}=4\f$ ms. The \f$C_{E1B}\f$ and \f$C_{E1Cp}\f$ primary codes are pseudorandom memory code sequences defined at
-  Annex C.7 and C.8 of <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank">OS SIS ICD</a>. The binary
+  Annex C.7 and C.8 of <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank">OS SIS ICD</a>. The binary
   sequence of the secondary code \f$C_{E1Cs}\f$ is 0011100000001010110110010. This band also contains another component, Galileo E1A, intended for the Public Regulated Service (PRS).
  It uses a BOC(15,2.5) modulation with cosine-shaped subcarrier \f$f_{s,E1A}=15.345\f$ MHz and \f$T_{c, E1A}=\frac{1}{2.5575}\f$ \f$\mu\f$s.
 The PRS spreading codes and the structure of the navigation message have not been made public.
@@ -209,7 +209,7 @@ s_{T}^{\text{(Gal E6)}}(t) = \frac{1}{\sqrt{2}}\left(e_{E6B}(t)-e_{E6C}(t)\right
 \f}
   where \f$D_{\text{C/NAV}}\f$ is the C/NAV navigation data stream, which is modulated with the encrypted ranging code \f$C_{E6B}\f$ with chip period \f$T_{c,E6}=\frac{1}{5.115}\f$ \f$\mu\f$s, thus
   being a BPSK(5) modulation. Codes \f$C_{E6B}\f$ and primary codes \f$C_{E6Cs}\f$ and their respective lengths, \f$L_{E6B}\f$ and \f$L_{E6C}\f$, have not been published. The secondary codes
-  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank">OS SIS ICD</a>.
+  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank">OS SIS ICD</a>.
   The receiver reference bandwidth for this signal is \f$40.920\f$ MHz. This band also contains another component, Galileo E6A, intended for PRS.
 
 \li <b>Galileo E5</b>. Centered at \f$f_{\text{Gal E5}}=1191.795\f$ MHz and with a total bandwidth of \f$51.150\f$ MHz, its signal structure deserves some analysis. The AltBOC modulation can be generically expressed as

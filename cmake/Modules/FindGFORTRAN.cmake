@@ -203,6 +203,26 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/x86_64-linux-gnux32/9
         /usr/lib/gcc/x86_64-kfreebsd-gnu/9
         /usr/lib/gcc/i686-kfreebsd-gnu/9
+        /usr/lib/gcc/alpha-linux-gnu/10    # libgfortran-10
+        /usr/lib/gcc/x86_64-linux-gnu/10
+        /usr/lib/gcc/aarch64-linux-gnu/10
+        /usr/lib/gcc/arm-linux-gnueabi/10
+        /usr/lib/gcc/arm-linux-gnueabihf/10
+        /usr/lib/gcc/i686-linux-gnu/10
+        /usr/lib/gcc/powerpc64le-linux-gnu/10
+        /usr/lib/gcc/powerpc64-linux-gnu/10
+        /usr/lib/gcc/s390x-linux-gnu/10
+        /usr/lib/gcc/hppa-linux-gnu/10
+        /usr/lib/gcc/m68k-linux-gnu/10
+        /usr/lib/gcc/mips-linux-gnu/10
+        /usr/lib/gcc/mips64el-linux-gnuabi64/10
+        /usr/lib/gcc/mipsel-linux-gnu/10
+        /usr/lib/gcc/riscv64-linux-gnu/10
+        /usr/lib/gcc/sh4-linux-gnu/10
+        /usr/lib/gcc/sparc64-linux-gnu/10
+        /usr/lib/gcc/x86_64-linux-gnux32/10
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/10
+        /usr/lib/gcc/i686-kfreebsd-gnu/10
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386

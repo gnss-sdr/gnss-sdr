@@ -247,10 +247,12 @@ if(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
 endif()
 
 if(CMAKE_VERSION VERSION_LESS 3.12)
-    if(POLICY CMP0057) # required by FindDoxygen.cmake module
-        cmake_policy(SET CMP0057 NEW)
+    if(POLICY CMP0057)  # required by FindDoxygen.cmake module
+        cmake_policy(SET CMP0057 NEW)  # Support if() IN_LIST operator, added in CMake 3.3
     endif()
 endif()
+
+
 
 ################################################################################
 # Minimum required versions

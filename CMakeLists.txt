@@ -246,7 +246,11 @@ if(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "${CMAKE_MAKE_PROGRAM}")
 endif()
 
-
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(POLICY CMP0057) # required by FindDoxygen.cmake module
+        cmake_policy(SET CMP0057 NEW)
+    endif()
+endif()
 
 ################################################################################
 # Minimum required versions

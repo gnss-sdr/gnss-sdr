@@ -5784,7 +5784,7 @@ int32_t Rtcm::set_DF418(int32_t carrier_smoothing_interval_s)
 int32_t Rtcm::set_DF420(const Gnss_Synchro& gnss_synchro __attribute__((unused)))
 {
     // todo: read the value from gnss_synchro
-    bool half_cycle_ambiguity_indicator = true;
+    bool half_cycle_ambiguity_indicator = false;
     DF420 = std::bitset<1>(half_cycle_ambiguity_indicator);
     return 0;
 }

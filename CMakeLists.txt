@@ -246,6 +246,12 @@ if(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "${CMAKE_MAKE_PROGRAM}")
 endif()
 
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(POLICY CMP0057)  # required by FindDoxygen.cmake module
+        cmake_policy(SET CMP0057 NEW)  # Support if() IN_LIST operator, added in CMake 3.3
+    endif()
+endif()
+
 
 
 ################################################################################
@@ -1841,7 +1847,11 @@ if(NOT PUGIXML_FOUND)
     set(PUGIXML_CMAKE_FLAGS "")
     if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(PUGIXML_COMPILER "")
-        set(PUGIXML_CMAKE_FLAGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake")
+        if(NOT CMAKE_TOOLCHAIN_FILE)
+            set(PUGIXML_CMAKE_FLAGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake")
+        else()
+            set(PUGIXML_CMAKE_FLAGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
+        endif()
     else()
         if(CMAKE_TOOLCHAIN_FILE)
             set(PUGIXML_CMAKE_FLAGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
@@ -2154,7 +2164,11 @@ endif()
 ################################################################################
 # Doxygen - http://www.doxygen.nl (OPTIONAL, used if found)
 ################################################################################
-find_package(Doxygen)
+if(CMAKE_VERSION VERSION_LESS 3.6.9)
+    find_package(Doxygen)
+else()
+    find_package(Doxygen OPTIONAL_COMPONENTS dot)
+endif()
 set_package_properties(Doxygen PROPERTIES
     URL "http://www.doxygen.nl"
     PURPOSE "Used to generate code documentation by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'"
@@ -2169,7 +2183,11 @@ else()
         DESCRIPTION "Generates documentation from annotated C++ sources"
     )
 endif()
-find_package(LATEX)
+if(CMAKE_VERSION VERSION_LESS 3.2.3)
+    find_package(LATEX)
+else()
+    find_package(LATEX COMPONENTS PDFLATEX)
+endif()
 set_package_properties(LATEX PROPERTIES
     URL "https://www.latex-project.org"
     DESCRIPTION "High-quality typesetting system"
@@ -2180,7 +2198,19 @@ if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
     message(STATUS " You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
     message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
-    set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
+    if(CMAKE_VERSION VERSION_LESS 3.9.6)
+        if(DOXYGEN_DOT_FOUND)
+            set(HAVE_DOT "YES")
+        endif()
+        if(NOT TARGET Doxygen::doxygen)
+            add_executable(Doxygen::doxygen IMPORTED GLOBAL)
+            set_target_properties(Doxygen::doxygen PROPERTIES
+                IMPORTED_LOCATION "${DOXYGEN_EXECUTABLE}"
+            )
+        endif()
+    else()
+        set(HAVE_DOT ${DOXYGEN_HAVE_DOT})
+    endif()
     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
     set(PDFMANUAL_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
@@ -2210,7 +2240,7 @@ if(DOXYGEN_FOUND)
         @ONLY
     )
     add_custom_target(doc
-        ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/docs/doxygen/Doxyfile
+        Doxygen::doxygen ${CMAKE_BINARY_DIR}/docs/doxygen/Doxyfile
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Generating HTML documentation from source code with Doxygen..." VERBATIM
     )

@@ -22,7 +22,7 @@ The building requires two extra dependencies: the Boost Iostreams library and th
      - In Fedora / CentOS: `sudo yum install boost-iostreams`
      - In OpenSUSE: `sudo zypper install libboost_iostreams-devel`
      - In Arch Linux: included in `boost-libs` package.
-     - In MacOS: included in Macports / Homebrew `boost` package.
+     - In macOS: included in Macports / Homebrew `boost` package.
   * The program `uncompress` is available by default in most UNIX and GNU/Linux systems.
      - In Fedora / CentOS: `sudo yum install ncompress`
      - In OpenSUSE: `sudo zypper install ncompress`

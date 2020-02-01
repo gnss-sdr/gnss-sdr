@@ -644,7 +644,7 @@ if(ENABLE_SYSTEM_TESTING)
         string(REPLACE "\"" "" HOST_SYSTEM "${HOST_SYSTEM}")
     endif()
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        set(HOST_SYSTEM "MacOS")
+        set(HOST_SYSTEM "macOS")
     endif()
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
 

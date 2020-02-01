@@ -570,10 +570,10 @@ Using this option, all SIMD instructions are exclusively accessed via VOLK, whic
 More details can be found in our tutorial about [GNSS-SDR configuration options at building time](https://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
 
 
-<a name="macosx">macOS and Mac OS X</a>
+<a name="macosx">macOS</a>
 ---------
 
-GNSS-SDR can be built on MacOS or Mac OS X, starting from 10.9 (Mavericks) and including 10.15 (Catalina). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+GNSS-SDR can be built on macOS (or the former Mac OS X), starting from 10.9 (Mavericks) and including 10.15 (Catalina). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
 ~~~~~~
 $ xcode-select --install
@@ -597,11 +597,9 @@ In a terminal, type:
 $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install armadillo cmake gnuradio gnutls lapack libad9361-iio libiio \
-    matio pkgconfig protobuf3-cpp pugixml
-$ sudo port install google-glog +gflags
+    matio pkgconfig protobuf3-cpp pugixml google-glog +gflags
+$ sudo port install py37-mako py37-six
 $ sudo port install doxygen +docs
-$ sudo port install py37-mako
-$ sudo port install py37-six
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:

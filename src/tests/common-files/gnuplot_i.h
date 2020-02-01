@@ -67,7 +67,7 @@ DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive
 #include <io.h>              // for _access(), _mktemp()
 #define GP_MAX_TMP_FILES 27  // 27 temporary files it's Microsoft restriction
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-// all UNIX-like OSs (Linux, *BSD, MacOSX, Solaris, ...)
+// all UNIX-like OSs (Linux, *BSD, macOS, Solaris, ...)
 #include <unistd.h>  // for access(), mkstemp()
 #define GP_MAX_TMP_FILES 1024
 #else

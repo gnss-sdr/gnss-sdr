@@ -74,5 +74,5 @@ if(${DARWIN_VERSION} MATCHES "10")
 endif()
 
 if(NOT MACOS_DISTRIBUTION)
-    set(MACOS_DISTRIBUTION "MacOS (Unknown version)")
+    set(MACOS_DISTRIBUTION "macOS (Unknown version)")
 endif()

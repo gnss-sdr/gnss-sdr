@@ -1,3 +1,5 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 # Welcome to VOLK_GNSSSDR, the Vector-Optimized Library of Kernels for GNSS-SDR
 
 VOLK_GNSSSDR is a sub-project of GNSS-SDR. This library provides a set
@@ -108,6 +110,7 @@ best performance.
 * Raspberry Pi 3: `arm_cortex_a53_hardfp_native.cmake`
 
 Example for Raspberry Pi 4:
+
 ~~~~~~
 $ mkdir build && cd build
 $ cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/arm_cortex_a72_hardfp_native.cmake ..
@@ -124,9 +127,25 @@ If you use VOLK_GNSSSDR in your research and/or software, please cite
 the following paper:
 
  * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, [*Accelerating
-GNSS Software Receivers*](https://zenodo.org/record/266493), in Proc. of
-the ION GNSS+ 2016 Conference, pp. 44-61, Portland, Oregon, Sept. 12-16, 2016.
+GNSS Software Receivers*](https://zenodo.org/record/266493), in Proc. of the
+29th International Technical Meeting of the Satellite Division of The Institute
+of Navigation (ION GNSS+ 2016), pp. 44-61, Portland, Oregon, Sept. 12-16, 2016.
 doi: 10.33012/2016.14576
+
+BibTeX entry:
+
+```
+@inproceedings{Fernandez16-ion,
+author  = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas},
+title   = {Accelerating {GNSS} Software Receivers},
+booktitle = {Proc. 29th Int. Tech. Meeting Sat. Div. Inst. Navig.},
+pages   = {44--61},
+year    = {2016},
+address = {Portland, OR},
+month   = {Sep.},
+note    = {{doi}: 10.33012/2016.14576}
+}
+```
 
 Citations are useful for the continued development and maintenance of
 the library.

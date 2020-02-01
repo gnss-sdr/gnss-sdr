@@ -38,7 +38,7 @@
 
 /*!
  * \brief This class is a storage for the GALILEO UTC MODEL data as described in Galileo ICD
- * https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf
+ * https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf
  * paragraph 5.1.7
  */
 class Galileo_Utc_Model

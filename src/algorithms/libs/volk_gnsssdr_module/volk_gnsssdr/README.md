@@ -130,8 +130,8 @@ the following paper:
  * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, [*Accelerating
 GNSS Software Receivers*](https://zenodo.org/record/266493), in Proc. of the
 29th International Technical Meeting of the Satellite Division of The Institute
-of Navigation (ION GNSS+ 2016), pp. 44-61, Portland, Oregon, September 12-16,
-2016. doi: [10.33012/2016.14576](https://doi.org/10.33012/2016.14576)
+of Navigation (ION GNSS+ 2016), pp. 44-61, Portland, Oregon, September 12-16, 2016.
+doi: [10.33012/2016.14576](https://doi.org/10.33012/2016.14576)
 
 BibTeX entry:
 

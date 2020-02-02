@@ -227,6 +227,16 @@ endif()
 gnsssdr_check_build_type(${CMAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
+# Enable optimization options in GCC for Release and RelWithDebInfo build types
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # flag -O3 enables tree vectorization
+    # See https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
+endif()
+
 # allow 'large' files in 32 bit builds
 if(UNIX)
     add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)

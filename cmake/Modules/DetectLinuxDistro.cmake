@@ -16,9 +16,9 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCH_ "(64 bits)")
+    set(ARCHITECTURE_STRING "(64 bits)")
 else()
-    set(ARCH_ "(32 bits)")
+    set(ARCHITECTURE_STRING "(32 bits)")
 endif()
 
 if(EXISTS "/etc/lsb-release")
@@ -61,7 +61,7 @@ if(NOT LINUX_DISTRIBUTION)
             COMMAND awk -F= "{ print $2 }"
             COMMAND tr "\n" " "
             COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_DISTRIBUTION
+            OUTPUT_VARIABLE LINUX_DISTRIBUTION_
             RESULT_VARIABLE LINUX_ID_RESULT
         )
         execute_process(COMMAND cat /etc/os-release
@@ -69,12 +69,19 @@ if(NOT LINUX_DISTRIBUTION)
             COMMAND awk -F= "{ print $2 }"
             COMMAND tr "\n" " "
             COMMAND sed "s/ //"
-            OUTPUT_VARIABLE LINUX_VER
+            OUTPUT_VARIABLE LINUX_VER_
             RESULT_VARIABLE LINUX_VER_RESULT
         )
+        if(LINUX_DISTRIBUTION_)
+            string(REPLACE "\"" "" LINUX_DISTRIBUTION ${LINUX_DISTRIBUTION_})
+        endif()
+        if(LINUX_VER_)
+            string(REPLACE "\"" "" LINUX_VER ${LINUX_VER_})
+        endif()
         if(${LINUX_DISTRIBUTION} MATCHES "Debian")
             set(LINUX_DISTRIBUTION "Debian")
-            file(READ /etc/debian_version LINUX_VER)
+            file(READ /etc/debian_version LINUX_VER_)
+            string(REPLACE "\n" "" LINUX_VER ${LINUX_VER_})
         endif()
     endif()
 endif()
@@ -82,14 +89,23 @@ endif()
 if(NOT LINUX_DISTRIBUTION)
     if(EXISTS "/etc/redhat-release")
         set(LINUX_DISTRIBUTION "Red Hat")
-        file(READ /etc/redhat-release LINUX_VER)
+        file(READ /etc/redhat-release LINUX_VER_)
+        string(REPLACE "\n" "" LINUX_VER ${LINUX_VER_})
     endif()
 endif()
 
 if(NOT LINUX_DISTRIBUTION)
     if(EXISTS "/etc/debian_version")
         set(LINUX_DISTRIBUTION "Debian")
-        file(READ /etc/debian_version LINUX_VER)
+        file(READ /etc/debian_version LINUX_VER_)
+        string(REPLACE "\n" "" LINUX_VER ${LINUX_VER_})
+    endif()
+endif()
+
+if(NOT LINUX_DISTRIBUTION)
+    if(EXISTS "/etc/arch-release")
+        set(LINUX_DISTRIBUTION "Arch Linux")
+        set(LINUX_VER "")
     endif()
 endif()
 

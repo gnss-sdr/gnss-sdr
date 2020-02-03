@@ -2801,9 +2801,33 @@ message(STATUS "***************************************")
 message(STATUS "*           SUMMARY REPORT            *")
 message(STATUS "***************************************")
 message(STATUS "")
+message(STATUS "CMake version: ${CMAKE_VERSION}")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+    message(STATUS "Building on GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
+endif()
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    message(STATUS "Building on ${MACOS_DISTRIBUTION}")
+endif()
+message(STATUS "The CXX compiler identification is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "The C compiler identification is ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "")
+file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/features.log)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/features.log "**********************************\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "* BUILDING CONFIGURATION SUMMARY *\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "**********************************\n\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "GNSS-SDR version: ${VERSION}\n")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "Building on GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}\n")
+endif()
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "Building on ${MACOS_DISTRIBUTION}\n")
+endif()
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "CMake version: ${CMAKE_VERSION}\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "The CXX compiler identification is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/features.log "The C compiler identification is ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}\n\n")
 if(CMAKE_VERSION VERSION_LESS 3.4)
     feature_summary(WHAT ALL)
-    feature_summary(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/features.log WHAT ALL)
+    feature_summary(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/features.log APPEND WHAT ALL)
 else()
     feature_summary(WHAT
         REQUIRED_PACKAGES_FOUND
@@ -2813,7 +2837,7 @@ else()
         ENABLED_FEATURES
         DISABLED_FEATURES
     )
-    feature_summary(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/features.log WHAT
+    feature_summary(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/features.log APPEND WHAT
         REQUIRED_PACKAGES_FOUND
         REQUIRED_PACKAGES_NOT_FOUND
         OPTIONAL_PACKAGES_FOUND

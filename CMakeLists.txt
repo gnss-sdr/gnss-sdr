@@ -1773,7 +1773,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             endif()
 
             set(MATIO_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
-            if(PROTOBUF_MAKE_PROGRAM MATCHES "ninja" OR CMAKE_GENERATOR STREQUAL Xcode)
+            if(MATIO_MAKE_PROGRAM MATCHES "ninja" OR CMAKE_GENERATOR STREQUAL Xcode)
                 find_program(MATIO_MAKE_EXECUTABLE make
                     PATHS
                         /usr/bin

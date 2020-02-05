@@ -3,7 +3,7 @@
  * \brief Implementation of a NMEA 2.1 printer for GNSS-SDR
  * This class provides a implementation of a subset of the NMEA-0183 standard for interfacing
  * marine electronic devices as defined by the National Marine Electronics Association (NMEA).
- * See http://www.nmea.org/ for the NMEA 183 standard
+ * See https://www.nmea.org/ for the NMEA 183 standard
  *
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
  *

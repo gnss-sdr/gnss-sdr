@@ -4,7 +4,7 @@
 
 VOLK_GNSSSDR is a sub-project of GNSS-SDR. This library provides a set
 of extra kernels that can be used stand-alone or in combination with
-VOLK's. Please see http://libvolk.org for documentation, source code,
+VOLK's. Please see https://www.libvolk.org for documentation, source code,
 and contact information about the original VOLK library.
 
 The boilerplate of this code was initially generated with

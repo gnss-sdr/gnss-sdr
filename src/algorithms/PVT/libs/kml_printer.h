@@ -42,7 +42,7 @@ class Rtklib_Solver;
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
  *
- * See http://www.opengeospatial.org/standards/kml
+ * See https://www.opengeospatial.org/standards/kml
  */
 class Kml_Printer
 {

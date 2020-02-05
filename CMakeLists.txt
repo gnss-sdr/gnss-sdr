@@ -776,7 +776,7 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     #  Mako
     if(NOT MAKO_FOUND)
-        message(STATUS "Mako template library not found. See http://www.makotemplates.org/")
+        message(STATUS "Mako template library not found. See https://www.makotemplates.org/")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install ${PYTHON_NAME}-mako")

@@ -104,7 +104,7 @@ if(NOT VOLK_VERSION)
 endif()
 
 set_package_properties(VOLK PROPERTIES
-    URL "http://libvolk.org"
+    URL "https://www.libvolk.org"
 )
 
 if(VOLK_FOUND AND VOLK_VERSION)

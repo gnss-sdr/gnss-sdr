@@ -43,7 +43,7 @@ class Rtklib_Solver;
 /*!
  * \brief Prints PVT information to GPX format file
  *
- * See http://www.topografix.com/gpx.asp
+ * See https://www.topografix.com/gpx.asp
  */
 class Gpx_Printer
 {

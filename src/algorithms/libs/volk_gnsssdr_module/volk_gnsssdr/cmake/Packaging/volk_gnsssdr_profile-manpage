@@ -36,7 +36,7 @@ Processors providing SIMD instruction sets compute with multiple processing elem
 \.TP
 Check https://gnss\-sdr.org for more information.
 .SH HISTORY
-This library was originally developed by Andres Cecilia Luque in the framework of the Summer of Code in Space program (SOCIS 2014) by the European Space Agency (ESA), and then integrated into \fBgnss-sdr\fR. This software is based on the VOLK library http://libvolk.org/
+This library was originally developed by Andres Cecilia Luque in the framework of the Summer of Code in Space program (SOCIS 2014) by the European Space Agency (ESA), and then integrated into \fBgnss-sdr\fR. This software is based on the VOLK library https://www.libvolk.org/
 .SH BUGS
 No known bugs.
 .SH AUTHOR

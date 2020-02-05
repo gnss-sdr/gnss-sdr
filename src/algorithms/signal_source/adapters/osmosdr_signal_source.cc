@@ -1,7 +1,7 @@
 /*!
  * \file osmosdr_signal_source.cc
  * \brief Signal source for the Realtek RTL2832U USB dongle DVB-T receiver
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki for more information)
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------

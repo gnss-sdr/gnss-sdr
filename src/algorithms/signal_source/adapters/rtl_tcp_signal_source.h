@@ -1,7 +1,7 @@
 /*!
  * \file rtl_tcp_signal_source.h
  * \brief Signal source which reads from rtl_tcp.
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki for more information)
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
  * -------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads from rtl_tcp, which streams interleaved
  * I/Q samples over TCP.
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki)
  */
 class RtlTcpSignalSource : public GNSSBlockInterface
 {

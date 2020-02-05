@@ -4,7 +4,7 @@
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
  * This module contains logic taken from gr-omsosdr
- * <http://git.osmocom.org/gr-osmosdr>
+ * <https://git.osmocom.org/gr-osmosdr>
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)

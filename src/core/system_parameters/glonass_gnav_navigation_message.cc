@@ -92,7 +92,7 @@ void Glonass_Gnav_Navigation_Message::reset()
             i = 0.0;
         }
 
-    std::map<int, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system("GLONASS");

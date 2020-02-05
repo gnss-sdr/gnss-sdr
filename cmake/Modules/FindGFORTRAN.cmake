@@ -231,7 +231,7 @@ find_library(GFORTRAN NAMES gfortran
 )
 
 set_package_properties(GFORTRAN PROPERTIES
-    URL "http://gcc.gnu.org/wiki/GFortran"
+    URL "https://gcc.gnu.org/fortran/"
     DESCRIPTION "GNU Fortran library"
 )
 

@@ -86,7 +86,7 @@ endif()
 
 if(ENABLE_OSMOSDR)
     ################################################################################
-    # OsmoSDR - http://sdr.osmocom.org/trac/
+    # OsmoSDR - https://osmocom.org/projects/gr-osmosdr/
     ################################################################################
     if(GROSMOSDR_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)

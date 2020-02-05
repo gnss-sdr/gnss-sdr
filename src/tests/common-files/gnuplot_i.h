@@ -1061,8 +1061,7 @@ inline void Gnuplot::set_terminal_std(const std::string &type)
 
 // ----------------------------------------------------------------------------
 //
-// A string tokenizer taken from http://www.sunsite.ualberta.ca/Documentation/
-// /Gnu/libstdc++-2.90.8/html/21_strings/stringtok_std_h.txt
+// A string tokenizer taken
 //
 template <typename Container>
 void stringtok(Container &container,

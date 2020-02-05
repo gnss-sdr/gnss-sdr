@@ -65,7 +65,7 @@ function(VOLK_ADD_TEST test_name executable_name)
   file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR} srcdir)
   list(APPEND environs "srcdir=\"${srcdir}\"")
 
-  #http://www.cmake.org/pipermail/cmake/2009-May/029464.html
+  #https://www.cmake.org/pipermail/cmake/2009-May/029464.html
   #Replaced this add test + set environs code with the shell script generation.
   #Its nicer to be able to manually run the shell script to diagnose problems.
   if(UNIX)

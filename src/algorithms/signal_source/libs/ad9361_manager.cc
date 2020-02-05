@@ -4,7 +4,7 @@
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * This file contains information taken from librtlsdr:
- *  http://git.osmocom.org/rtl-sdr/
+ *  https://git.osmocom.org/rtl-sdr
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)

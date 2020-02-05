@@ -121,7 +121,7 @@
 
 //
 // Define VOLK_API for library symbols
-// http://gcc.gnu.org/wiki/Visibility
+// https://gcc.gnu.org/wiki/Visibility
 //
 #ifdef volk_gnsssdr_EXPORTS
 #define VOLK_API __VOLK_ATTR_EXPORT

@@ -2,7 +2,7 @@
  * \file rtl_tcp_signal_source.cc
  * \brief Signal source for the Realtek RTL2832U USB dongle DVB-T receiver
  *        over TCP.
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki for more information)
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
  * -------------------------------------------------------------------------

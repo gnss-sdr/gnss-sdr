@@ -16,8 +16,6 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 #
-# This file taken from FindOpenCL project @ http://gitorious.com/findopencl
-#
 # - Try to find OpenCL
 # This module tries to find an OpenCL implementation on your system. It supports
 # AMD / ATI, Apple and NVIDIA implementations.

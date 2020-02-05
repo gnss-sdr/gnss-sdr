@@ -53,7 +53,7 @@
  * \li out:            Vector of the form lv_32fc_t out[n] = lv_cmake(cos(in[n]), sin(in[n]))
  *
  * Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier
- * Based on algorithms from the cephes library http://www.netlib.org/cephes/
+ * Based on algorithms from the cephes library https://www.netlib.org/cephes/
  */
 
 #ifndef INCLUDED_volk_gnsssdr_32f_sincos_32fc_H

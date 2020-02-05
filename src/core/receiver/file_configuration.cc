@@ -6,7 +6,7 @@
  *
  * This implementation has a text file as the source for the values of the parameters.
  * The file is in the INI format, containing sections and pairs of names and values.
- * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
+ * For more information about the INI format, see https://en.wikipedia.org/wiki/INI_file
  *
  * -------------------------------------------------------------------------
  *

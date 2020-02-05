@@ -111,7 +111,7 @@ public:
     int32_t i_WN_A;                            //!< Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
     std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
 
-    std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 
     // Flags
 

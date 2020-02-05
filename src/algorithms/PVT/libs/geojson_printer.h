@@ -43,7 +43,7 @@ class Pvt_Solution;
 /*!
  * \brief Prints PVT solutions in GeoJSON format file
  *
- * See http://geojson.org/geojson-spec.html
+ * See https://tools.ietf.org/html/rfc7946
  */
 class GeoJSON_Printer
 {

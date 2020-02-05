@@ -42,6 +42,7 @@
 - Added more check options to .clang-tidy file.
 - Default Python version is now >= 3.4. Python 2.7 still can be used in systems where Python 3 is not available (e.g., CentOS 7, Debian 8, Ubuntu 10.04).
 - CMake now passes the CMAKE_BUILD_TYPE (or configuration in multi-configuration generators like Xcode) to modules built along gnss-sdr (e.g, the volk_gnsssdr library and googletest). Build types available: None, Release (by default), Debug, RelWithDebInfo, MinSizeRel, Coverage, NoOptWithASM, O2WithASM, O3WithASM, ASAN.
+- Updated links along the source code.
 
 
 ### Improvements in Portability:
@@ -493,7 +494,7 @@ This release has several improvements, addition of new features and bug fixes:
 - The software can link either against OpenSSL or against GnuTLS with openssl extensions, whatever it is available. This allows buildings in distributions such as Fedora or ArchLinux, while being compatible with binary distribution through Debian packages.
 - Fixed a number of defects detected by Coverity Scan.
 - Some fixes required by Debian licensing and packaging system.
-- Added a CGRAN (http://www.cgran.org/) manifest
+- Added a CGRAN (https://www.cgran.org/) manifest
 - Lots of code cleaning and fixes of typos and small bugs.
 
 

@@ -80,7 +80,7 @@ else()
 endif()
 
 set_package_properties(GPSTK PROPERTIES
-    URL "http://www.gpstk.org"
+    URL "https://github.com/SGL-UT/GPSTk"
 )
 
 if(GPSTK_FOUND AND NOT ENABLE_OWN_GPSTK AND NOT TARGET Gpstk::gpstk)

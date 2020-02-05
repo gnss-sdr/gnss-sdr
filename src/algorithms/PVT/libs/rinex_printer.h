@@ -1,7 +1,7 @@
 /*!
  * \file rinex_printer.h
  * \brief Interface of a RINEX 2.11 / 3.01 printer
- * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf
+ * See ftp://igs.org/pub/data/format/rinex301.pdf
  *
  * Receiver Independent EXchange Format (RINEX):
  * The first proposal for the Receiver Independent Exchange Format RINEX
@@ -21,7 +21,7 @@
  * 3) The observation time being the reading of the receiver clock at the
  * instant of validity of the carrier-phase and/or the code measurements.
  * Note: A collection of the formats currently used by the IGS can be found
- * here: http://igscb.jpl.nasa.gov/components/formats.html
+ * here: https://kb.igs.org/hc/en-us/articles/201096516-IGS-Formats
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -462,7 +462,7 @@ private:
 
     /* Creates RINEX file names according to the naming convention
      *
-     * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf
+     * See ftp://igs.org/pub/data/format/rinex301.pdf
      * Section 4, page 6
      *
      * \param[in] type of RINEX file. Can be:
@@ -667,7 +667,7 @@ private:
 };
 
 
-// Implementation of inline functions (modified versions from GPSTk http://www.gpstk.org)
+// Implementation of inline functions (modified versions from GPSTk https://github.com/SGL-UT/GPSTk)
 
 inline std::string& Rinex_Printer::leftJustify(std::string& s,
     const std::string::size_type length,

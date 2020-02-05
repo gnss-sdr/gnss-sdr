@@ -432,7 +432,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
     if (system_ == "Glonass")
         {
             // Info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
-            // See also http://www.glonass-center.ru/en/GLONASS/
+            // See also https://www.glonass-iac.ru/en/GLONASS/
             switch (PRN_)
                 {
                 case 1:
@@ -563,7 +563,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
         }
     if (system_ == "Galileo")
         {
-            // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites and https://www.gsc-europa.eu/system-status/Constellation-Information
+            // Check https://en.wikipedia.org/wiki/List_of_Galileo_satellites and https://www.gsc-europa.eu/system-status/Constellation-Information
             switch (PRN_)
                 {
                 case 1:

@@ -1,7 +1,7 @@
 /*!
  * \file rinex_printer.cc
  * \brief Implementation of a RINEX 2.11 / 3.02 printer
- * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf
+ * See ftp://igs.org/pub/data/format/rinex302.pdf
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -770,7 +770,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LSF), 6);
@@ -894,7 +894,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LSF), 6);
@@ -1008,7 +1008,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(galileo_utc_model.Delta_tLS_6), 6);
     line += Rinex_Printer::rightJustify(std::to_string(galileo_utc_model.Delta_tLSF_6), 6);
@@ -1114,7 +1114,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.Delta_tLS_6), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.Delta_tLSF_6), 6);
@@ -1230,7 +1230,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& ion
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
@@ -1362,7 +1362,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& ion
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
@@ -1602,7 +1602,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
     if (version == 2)
@@ -1775,7 +1775,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LSF), 6);
@@ -1886,7 +1886,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
@@ -2037,7 +2037,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_DeltaT_LSF), 6);
@@ -2168,7 +2168,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(gps_cnav_utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(gps_cnav_utc_model.d_DeltaT_LSF), 6);
@@ -2284,7 +2284,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.d_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.d_DeltaT_LSF), 6);
@@ -2415,7 +2415,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
     out << line << std::endl;
 
     // -------- Line 6 leap seconds
-    // For leap second information, see http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(galileo_utc_model.Delta_tLS_6), 6);
     line += Rinex_Printer::rightJustify(std::to_string(galileo_utc_model.Delta_tLSF_6), 6);
@@ -3944,7 +3944,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                         }
                     else
                         {
-                            GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
+                            GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019
                         }
                 }
             else
@@ -11892,7 +11892,7 @@ int32_t Rinex_Printer::signalStrength(const double snr)
 boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Message& nav_msg)
 {
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
-    // idea: resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
+    // idea: resolve the ambiguity with the leap second
     const double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000));
     // Handle week rollover
@@ -11919,8 +11919,8 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
 boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Dnav_Ephemeris& eph, const double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
-    // (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
-    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
+    // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
+    // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     const double bds_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.i_BEIDOU_week % 8192)) * 1000));
@@ -11932,8 +11932,8 @@ boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Dnav_Ephem
 boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& eph, const double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
-    // (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
-    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
+    // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
+    // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // No time correction here, since it will be done in the PVT processor
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     // Handle TOW rollover
@@ -11966,8 +11966,8 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
 boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, const double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
-    // (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
-    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
+    // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
+    // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
@@ -11978,7 +11978,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeri
 boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(const Galileo_Ephemeris& eph, const double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses Galileo time for the observations epoch, not UTC time, thus, no leap seconds needed here.
-    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf)
+    // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex301.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     double galileo_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  //

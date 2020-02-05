@@ -61,7 +61,7 @@
  * For detail documentation on the bindings see:
  *
  * The OpenCL C++ Wrapper API 1.2 (revision 09)
- *  http://www.khronos.org/registry/cl/specs/opencl-cplusplus-1.2.pdf
+ *  https://www.khronos.org/registry/OpenCL/specs/opencl-cplusplus-1.2.pdf
  *
  * \section example Example
  *

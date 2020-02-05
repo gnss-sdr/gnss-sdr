@@ -106,7 +106,7 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             endif()
         endif()
     endif()
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  # Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  # Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -386,7 +386,7 @@ endif()
 ########################################################################
 # Install our Cmake modules into $prefix/lib/cmake/volk_gnsssdr
 # See "Package Configuration Files" on page:
-#    http://www.cmake.org/Wiki/CMake/Tutorials/Packaging
+#    https://www.cmake.org/Wiki/CMake/Tutorials/Packaging
 ########################################################################
 
 configure_file(

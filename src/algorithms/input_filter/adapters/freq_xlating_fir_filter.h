@@ -59,7 +59,7 @@ class ConfigurationInterface;
  * translation that shifts intermediate_freq_ down to zero Hz. The frequency
  * translation logically comes before the filtering operation.
  *
- * See Parks-McClellan FIR filter design, http://en.wikipedia.org/wiki/Parks-McClellan_filter_design_algorithm
+ * See Parks-McClellan FIR filter design, https://en.wikipedia.org/wiki/Parks-McClellan_filter_design_algorithm
  * Calculates the optimal (in the Chebyshev/minimax sense) FIR filter impulse response
  * given a set of band edges, the desired response on those bands, and the weight given
  * to the error in those bands.

@@ -46,7 +46,7 @@ class signal_generator_c;
 * us transparent reference counting, which greatly simplifies storage
 * management issues.
 *
-* See http://www.boost.org/libs/smart_ptr/smart_ptr.htm
+* See https://www.boost.org/doc/libs/release/libs/smart_ptr/doc/html/smart_ptr.html
 *
 * As a convention, the _sptr suffix indicates a boost::shared_ptr
 */

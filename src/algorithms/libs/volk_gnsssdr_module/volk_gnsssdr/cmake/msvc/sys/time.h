@@ -9,7 +9,7 @@
 #define NOMINMAX
 #endif
 
-// http://social.msdn.microsoft.com/Forums/en/vcgeneral/thread/430449b3-f6dd-4e18-84de-eebd26a8d668
+// https://social.msdn.microsoft.com/Forums/vstudio/en-US/430449b3-f6dd-4e18-84de-eebd26a8d668/gettimeofday?forum=vcgeneral
 #include < time.h >
 #include <windows.h>  // I've omitted this line.
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)

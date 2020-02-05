@@ -253,7 +253,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
     switch (subframe_ID)
         {
         // --- Decode the sub-frame id -----------------------------------------
-        // ICD (IS-GPS-200K Appendix II). http://www.losangeles.af.mil/shared/media/document/AFD-100813-045.pdf
+        // ICD (IS-GPS-200K Appendix II). https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf
         case 1:
             // --- It is subframe 1 -------------------------------------
             // Compute the time of week (TOW) of the first sub-frames in the array ====

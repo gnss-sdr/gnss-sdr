@@ -47,7 +47,7 @@ class Rtklib_Solver;
  * \brief This class provides a implementation of a subset of the NMEA-0183 standard for interfacing
  * marine electronic devices as defined by the National Marine Electronics Association (NMEA).
  *
- * See http://en.wikipedia.org/wiki/NMEA_0183
+ * See https://en.wikipedia.org/wiki/NMEA_0183
  */
 class Nmea_Printer
 {

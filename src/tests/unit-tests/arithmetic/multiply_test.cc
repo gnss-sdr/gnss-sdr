@@ -197,7 +197,7 @@ TEST(MultiplyTest, VolkComplexImplementation)
     volk_32f_accumulator_s32f(result, mag, FLAGS_size_multiply_test);
     // Comparing floating-point numbers is tricky.
     // Due to round-off errors, it is very unlikely that two floating-points will match exactly.
-    // See http://code.google.com/p/googletest/wiki/AdvancedGuide#Floating-Point_Comparison
+    // See https://github.com/google/googletest/blob/master/googletest/docs/advanced.md#floating-point-comparison
     float expected = 0.0;
     ASSERT_FLOAT_EQ(expected, result[0]);
     volk_gnsssdr_free(input);
@@ -229,7 +229,7 @@ TEST(MultiplyTest, VolkComplexImplementationAlloc)
     volk_32f_accumulator_s32f(result, mag.data(), FLAGS_size_multiply_test);
     // Comparing floating-point numbers is tricky.
     // Due to round-off errors, it is very unlikely that two floating-points will match exactly.
-    // See http://code.google.com/p/googletest/wiki/AdvancedGuide#Floating-Point_Comparison
+    // See https://github.com/google/googletest/blob/master/googletest/docs/advanced.md#floating-point-comparison
     float expected = 0.0;
     ASSERT_FLOAT_EQ(expected, result[0]);
 }

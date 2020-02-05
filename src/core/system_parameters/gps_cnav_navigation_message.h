@@ -64,7 +64,7 @@ public:
     bool b_flag_iono_valid;  //!< If set, it indicates that the ionospheric parameters are filled and are not yet read by the get_iono
     bool b_flag_utc_valid;   //!< If set, it indicates that the utc parameters are filled and are not yet read by the get_utc_model
 
-    std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 
     // satellite positions
     double d_satpos_X;  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.

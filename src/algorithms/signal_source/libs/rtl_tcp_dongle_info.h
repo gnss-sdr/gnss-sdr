@@ -4,7 +4,7 @@
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
  * This file contains information taken from librtlsdr:
- *  http://git.osmocom.org/rtl-sdr/
+ *  https://git.osmocom.org/rtl-sdr
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)

@@ -120,7 +120,7 @@ public:
     double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
-    std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity

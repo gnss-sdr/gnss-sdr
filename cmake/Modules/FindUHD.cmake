@@ -104,7 +104,7 @@ if(NOT PC_UHD_VERSION)
 endif()
 
 set_package_properties(UHD PROPERTIES
-    URL "https://www.ettus.com/sdr-software/detail/usrp-hardware-driver"
+    URL "https://www.ettus.com/sdr-software/uhd-usrp-hardware-driver/"
 )
 
 if(UHD_FOUND AND UHD_VERSION)

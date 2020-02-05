@@ -2,7 +2,7 @@
  * \file osmosdr_signal_source.h
  * \brief Signal source wrapper for OsmoSDR-compatible front-ends, such as
  * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki for more information)
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples OsmoSDR-compatible front-ends, such as
  * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
+ * (see https://osmocom.org/projects/rtl-sdr/wiki)
  */
 class OsmosdrSignalSource : public GNSSBlockInterface
 {

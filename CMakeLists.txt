@@ -477,7 +477,7 @@ endif()
 
 
 ################################################################################
-# GNU Radio - https://gnuradio.org
+# GNU Radio - https://www.gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 
@@ -1372,7 +1372,7 @@ endif()
 
 ################################################################################
 # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
-# See http://www.netlib.org/blas/
+# See https://www.netlib.org/blas/
 ################################################################################
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Avoid using the implementation that comes with the Accelerate framework
@@ -1383,7 +1383,7 @@ else()
     endif()
     find_package(BLAS)
     set_package_properties(BLAS PROPERTIES
-        URL "http://www.netlib.org/blas/"
+        URL "https://www.netlib.org/blas/"
         DESCRIPTION "Basic Linear Algebra Subprograms"
         PURPOSE "Used for matrix algebra computations."
         TYPE REQUIRED
@@ -1409,12 +1409,12 @@ endif()
 
 ################################################################################
 # Check that LAPACK (Linear Algebra PACKage) is found in the system
-# See http://www.netlib.org/lapack/
+# See https://www.netlib.org/lapack/
 ################################################################################
 if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     find_package(LAPACK)
     set_package_properties(LAPACK PROPERTIES
-        URL "http://www.netlib.org/lapack/"
+        URL "https://www.netlib.org/lapack/"
         DESCRIPTION "Linear Algebra PACKage"
         PURPOSE "Used for matrix algebra computations."
         TYPE REQUIRED

@@ -57,7 +57,7 @@
  * \li phase:          Pointer to a float containing the final phase, in radians.
  *
  * Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier
- * Based on algorithms from the cephes library http://www.netlib.org/cephes/
+ * Based on algorithms from the cephes library https://www.netlib.org/cephes/
  */
 
 

@@ -102,7 +102,7 @@ typedef double complex lv_64fc_t;
 
 // When GNUC is available, use the complex extensions.
 // The extensions always return the correct value type.
-// http://gcc.gnu.org/onlinedocs/gcc/Complex.html
+// https://gcc.gnu.org/onlinedocs/gcc/Complex.html
 #ifdef __GNUC__
 
 #define lv_creal(x) (__real__(x))

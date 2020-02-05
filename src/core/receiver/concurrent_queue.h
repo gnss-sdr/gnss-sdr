@@ -44,7 +44,7 @@ template <typename Data>
  *
  * Thread-safe object queue which uses the library
  * boost_thread to perform MUTEX based on the code available at
- * http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
+ * https://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
  */
 class Concurrent_Queue
 {

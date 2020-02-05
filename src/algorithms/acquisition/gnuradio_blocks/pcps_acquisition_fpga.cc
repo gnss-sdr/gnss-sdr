@@ -244,9 +244,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << " ,sample stamp: " << d_sample_counter << ", threshold: "
                << d_threshold << ", doppler_max: " << d_doppler_max
-               << ", doppler_step: " << d_doppler_step
-               // no CFAR algorithm in the FPGA
-               << ", use_CFAR_algorithm_flag: false";
+               << ", doppler_step: " << d_doppler_step;
 
     acquisition_fpga->open_device();
     acquisition_fpga->configure_acquisition();

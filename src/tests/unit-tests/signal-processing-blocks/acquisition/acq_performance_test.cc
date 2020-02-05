@@ -82,7 +82,6 @@ DEFINE_int32(acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
 DEFINE_int32(acq_test_doppler_step, 125, "Doppler step, in Hz.");
 DEFINE_int32(acq_test_coherent_time_ms, 1, "Acquisition coherent time, in ms");
 DEFINE_int32(acq_test_max_dwells, 1, "Number of non-coherent integrations.");
-DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm.");
 DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag.");
 DEFINE_bool(acq_test_make_two_steps, false, "Perform second step in a thinner grid.");
 DEFINE_int32(acq_test_second_nbins, 4, "If --acq_test_make_two_steps is set to true, this parameter sets the number of bins done in the acquisition refinement stage.");
@@ -519,14 +518,6 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             if (FLAGS_acq_test_pfa_init > 0.0)
                 {
                     config->supersede_property("Acquisition.pfa", std::to_string(pfa));
-                }
-            if (FLAGS_acq_test_use_CFAR_algorithm)
-                {
-                    config->set_property("Acquisition.use_CFAR_algorithm", "true");
-                }
-            else
-                {
-                    config->set_property("Acquisition.use_CFAR_algorithm", "false");
                 }
 
             config->set_property("Acquisition.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));

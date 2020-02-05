@@ -1237,8 +1237,8 @@ The user can select a given implementation for the algorithm to be used in each 
 Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
 Acquisition_1C.item_type=gr_complex
 Acquisition_1C.coherent_integration_time_ms=1 ; Signal block duration for the acquisition signal detection [ms]
-Acquisition_1C.threshold=0.005 ; Acquisition threshold
-Acquisition_1C.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option.
+Acquisition_1C.threshold=2.5 ; Acquisition threshold
+Acquisition_1C.pfa=0.01 ; Acquisition false alarm probability. This option overrides the threshold option.
 Acquisition_1C.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
 Acquisition_1C.doppler_step=500 ; Doppler step in the grid search [Hz]
 Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false]

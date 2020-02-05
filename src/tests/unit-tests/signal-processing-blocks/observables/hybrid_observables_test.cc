@@ -366,7 +366,6 @@ bool HybridObservablesTest::acquire_signal()
     config->set_property("Acquisition.blocking", "true");
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
-    config->set_property("Acquisition.use_CFAR_algorithm", "false");
 
     std::shared_ptr<AcquisitionInterface> acquisition;
 

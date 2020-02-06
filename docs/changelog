@@ -13,20 +13,24 @@
 ### Improvements in Efficiency:
 
 - Faster implementation of the Viterbi decoder for Galileo navigation messages.
+- The -O3 flag is now passed to GCC in Release and RelWithDebInfo build types (instead of -O2), thus enabling tree vectorization.
 
 
 ### Improvements in Flexibility:
 
 - New Tracking parameters allow the configuration of the C/N0 and lock detector smoothers, as well as the activation of the FLL in pull-in and steady state stages.
-- New PVT parameter enable_rx_clock_correction allows to enable or disable the application of the Time solution correction (clock steering) to the computation of Observables. By default is set to false (that is, disabled).
+- New PVT parameter enable_rx_clock_correction allows to enable or disable the continuous application of the Time solution correction (clock steering) to the computation of Observables. By default is set to false (that is, disabled).
+- New PVT parameter max_clock_offset_ms: if PVT.enable_rx_clock_correction is set to false, this parameter sets the maximum allowed local clock offset with respect to the Time solution. If the estimated offset exceeds this parameter, a clock correction is applied to the computation of Observables.
 - Fixed L5 and E5a receiver chains when tracking the data component.
 
 
 ### Improvements in Interoperability:
 
 - Fixed PVT solution in receivers processing L1 plus L2C and/or L5 signals.
+- Added carrier phase observable initialization to match the pseudorange length.
 - Added RINEX files generation for triple-band configurations (L1 + L2C + L5 and L1 + E1 + L2C + L5 + E5a).
 - Fixed bugs in the decoding of BeiDou navigation messages.
+- Fixed bugs in the generation of RTCM messages.
 - Fixed a bug in feeding Galileo channels' observations to RTKLIB, which was causing wrong date of PVT fixes in Galileo-only receivers and not considering Galileo observations in multi-constellation receivers when using signals after the GPS rollover on April 6, 2019.
 - Improved management of devices with the AD9361 RF transceiver.
 - Fixed bugs in FPGA off-loading.
@@ -42,7 +46,7 @@
 - Added more check options to .clang-tidy file.
 - Default Python version is now >= 3.4. Python 2.7 still can be used in systems where Python 3 is not available (e.g., CentOS 7, Debian 8, Ubuntu 10.04).
 - CMake now passes the CMAKE_BUILD_TYPE (or configuration in multi-configuration generators like Xcode) to modules built along gnss-sdr (e.g, the volk_gnsssdr library and googletest). Build types available: None, Release (by default), Debug, RelWithDebInfo, MinSizeRel, Coverage, NoOptWithASM, O2WithASM, O3WithASM, ASAN.
-- Updated links along the source code.
+- Updated links in comments along the source code and in CMake scripts.
 
 
 ### Improvements in Portability:

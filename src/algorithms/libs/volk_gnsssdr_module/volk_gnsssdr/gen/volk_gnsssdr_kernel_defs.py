@@ -29,7 +29,7 @@ import glob
 ########################################################################
 # Strip comments from a c/cpp file.
 # Input is code string, output is code string without comments.
-# http://stackoverflow.com/questions/241327/python-snippet-to-remove-c-and-c-comments
+# https://stackoverflow.com/questions/241327/remove-c-and-c-comments-using-python
 ########################################################################
 def comment_remover(text):
     def replacer(match):

@@ -110,7 +110,7 @@ and specific sentence formats for a 4800-baud serial data bus. The standard is <
 KML is an XML language focused on geographic visualization, including annotation of maps and images. Geographic visualization includes not only the presentation of graphical data on the globe, but also the control of the user's navigation in the sense of where to go and where to look.
 Google submitted KML (formerly Keyhole Markup Language) to the Open Geospatial Consortium (OGC) to be evolved within the OGC consensus process with the following goal: KML Version 2.2 has been adopted as an OGC implementation standard.
 
-\li Open Geospatial Consortium, Inc., <a href="http://portal.opengeospatial.org/files/?artifact_id=27810" target="_blank"><b>OGC KML Version 2.2.0</b></a>, April 2008.
+\li Open Geospatial Consortium, Inc., <a href="https://portal.opengeospatial.org/files/?artifact_id=27810" target="_blank"><b>OGC KML Version 2.2.0</b></a>, April 2008.
 
 
 \subsection cxx C++ Standards

@@ -142,7 +142,13 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     mapStringValues_["B2"] = evBDS_B2;
     mapStringValues_["B3"] = evBDS_B3;
 
+
+    initial_carrier_phase_offset_estimation_rads = std::vector<double>(nchannels, 0.0);
+    channel_initialized = std::vector<bool>(nchannels, false);
+
     max_obs_block_rx_clock_offset_ms = conf_.max_obs_block_rx_clock_offset_ms;
+
+
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
     d_report_rate_ms = 1000;  // report every second PVT to gnss_synchro
@@ -1900,6 +1906,63 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(std::map<int,
     return interp_observables_map;
 }
 
+void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
+{
+    //we have a valid PVT. First check if we need to reset the initial carrier phase offsets to match their pseudoranges
+    std::map<int, Gnss_Synchro>::iterator observables_iter;
+    for (observables_iter = gnss_observables_map.begin(); observables_iter != gnss_observables_map.end(); observables_iter++)
+        {
+            //check if an initialization is required (new satellite or loss of lock)
+            //it is set to false by the work function if the gnss_synchro is not valid
+            if (channel_initialized.at(observables_iter->second.Channel_ID) == false)
+                {
+                    double wavelength_m = 0;
+                    switch (mapStringValues_[observables_iter->second.Signal])
+                        {
+                        case evGPS_1C:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            break;
+                        case evGPS_L5:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            break;
+                        case evSBAS_1C:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            break;
+                        case evGAL_1B:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            break;
+                        case evGAL_5X:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            break;
+                        case evGPS_2S:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ2;
+                            break;
+                        case evBDS_B3:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ3_BDS;
+                            break;
+                        case evGLO_1G:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1_GLO;
+                            break;
+                        case evGLO_2G:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ2_GLO;
+                            break;
+                        case evBDS_B1:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1_BDS;
+                            break;
+                        case evBDS_B2:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ2_BDS;
+                            break;
+                        default:
+                            break;
+                        }
+                    initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = (PI_2 * observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads;
+                    channel_initialized.at(observables_iter->second.Channel_ID) = true;
+                    DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
+                }
+            //apply the carrier phase offset to this satellite
+            observables_iter->second.Carrier_phase_rads = observables_iter->second.Carrier_phase_rads + initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID);
+        }
+}
 
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
@@ -2021,6 +2084,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                 }
                         }
+                    else
+                        {
+                            channel_initialized.at(i) = false;  //the current channel is not reporting valid observable
+                        }
                 }
 
             // ############ 2 COMPUTE THE PVT ################################
@@ -2103,6 +2170,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                     if (flag_pvt_valid == true)
                         {
+                            //initialize (if needed) the accumulated phase offset and apply it to the active channels
+                            //required to report accumulated phase cycles comparable to pseudoranges
+                            initialize_and_apply_carrier_phase_offset();
+
                             double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
                             if (d_enable_rx_clock_correction == true and fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
                                 {

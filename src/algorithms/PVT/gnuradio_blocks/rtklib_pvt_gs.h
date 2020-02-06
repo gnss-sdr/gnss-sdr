@@ -218,6 +218,9 @@ private:
     std::map<int, Gnss_Synchro> gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> gnss_observables_map_t1;
 
+    std::vector<double> initial_carrier_phase_offset_estimation_rads;
+    std::vector<bool> channel_initialized;
+
     uint32_t type_of_rx;
 
     bool first_fix;
@@ -231,8 +234,8 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
+    void initialize_and_apply_carrier_phase_offset();
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
-
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
     bool d_xml_storage;

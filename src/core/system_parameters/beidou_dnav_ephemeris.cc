@@ -64,7 +64,8 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
     i_AODO = 0;  // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
     d_AODC = 0;
     b_fit_interval_flag = false;
-    d_spare2 = 0;
+    d_spare1 = 0.0;
+    d_spare2 = 0.0;
 
     i_sig_type = 0;
     i_nav_type = 0;

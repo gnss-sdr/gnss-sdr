@@ -784,7 +784,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.show_local_time_zone = configuration->property(role + ".show_local_time_zone", false);
 
     // Enable or disable rx clock correction in observables
-    pvt_output_parameters.enable_rx_clock_correction = configuration->property(role + ".enable_rx_clock_correction", true);
+    pvt_output_parameters.enable_rx_clock_correction = configuration->property(role + ".enable_rx_clock_correction", false);
+
+    // Set maximum clock offset allowed if pvt_output_parameters.enable_rx_clock_correction = false
+    pvt_output_parameters.max_obs_block_rx_clock_offset_ms = configuration->property(role + ".max_clock_offset_ms", pvt_output_parameters.max_obs_block_rx_clock_offset_ms);
 
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);

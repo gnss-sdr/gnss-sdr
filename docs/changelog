@@ -18,7 +18,7 @@
 ### Improvements in Flexibility:
 
 - New Tracking parameters allow the configuration of the C/N0 and lock detector smoothers, as well as the activation of the FLL in pull-in and steady state stages.
-- New PVT parameter enable_rx_clock_correction allows to enable or disable the application of the Time solution correction to the computation of Observables.
+- New PVT parameter enable_rx_clock_correction allows to enable or disable the application of the Time solution correction (clock steering) to the computation of Observables. By default is set to false (that is, disabled).
 - Fixed L5 and E5a receiver chains when tracking the data component.
 
 

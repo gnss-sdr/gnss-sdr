@@ -142,6 +142,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     trk_parameters.track_pilot = false;
                     trk_parameters.slope = 1.0;
                     trk_parameters.spc = trk_parameters.early_late_space_chips;
+                    trk_parameters.y_intercept = 1.0;
                     // symbol integration: 20 trk symbols (20 ms) = 1 tlm bit
                     // set the preamble in the secondary code acquisition to obtain tlm symbol synchronization
                     d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
@@ -158,6 +159,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_correlation_length_ms = 20;
                     trk_parameters.slope = 1.0;
                     trk_parameters.spc = trk_parameters.early_late_space_chips;
+                    trk_parameters.y_intercept = 1.0;
                     // GPS L2 does not have pilot component nor secondary code
                     d_secondary = false;
                     trk_parameters.track_pilot = false;
@@ -173,6 +175,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_secondary = true;
                     trk_parameters.slope = 1.0;
                     trk_parameters.spc = trk_parameters.early_late_space_chips;
+                    trk_parameters.y_intercept = 1.0;
                     if (d_extended_correlation_in_fpga == true)
                         {
                             if (trk_parameters.extend_correlation_symbols > 1)
@@ -224,8 +227,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_symbols_per_bit = 1;
                     d_correlation_length_ms = 4;
                     d_veml = true;
-                    trk_parameters.slope = 3.0;
                     trk_parameters.spc = trk_parameters.early_late_space_chips;
+                    trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                    trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary = true;
@@ -250,6 +254,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_secondary = true;
                     trk_parameters.slope = 1.0;
                     trk_parameters.spc = trk_parameters.early_late_space_chips;
+                    trk_parameters.y_intercept = 1.0;
                     if (d_extended_correlation_in_fpga == true)
                         {
                             if (trk_parameters.extend_correlation_symbols > 1)
@@ -739,7 +744,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
         }
     else
         {
-            d_code_error_chips = dll_nc_e_minus_l_normalized(d_E_accu, d_L_accu, trk_parameters.spc, trk_parameters.slope);  // [chips/Ti]
+            d_code_error_chips = dll_nc_e_minus_l_normalized(d_E_accu, d_L_accu, trk_parameters.spc, trk_parameters.slope, trk_parameters.y_intercept);  // [chips/Ti]
         }
     // Code discriminator filter
     d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
@@ -1603,6 +1608,11 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_P_accu = *d_Prompt;
                         d_L_accu = *d_Late;
                         trk_parameters.spc = trk_parameters.early_late_space_chips;
+                        if (std::string(trk_parameters.signal) == "E1")
+                            {
+                                trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                                trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                            }
 
                         // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                         if (trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
@@ -1746,6 +1756,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                                         d_local_code_shift_chips[3] = trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
                                                         d_local_code_shift_chips[4] = trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
                                                         trk_parameters.spc = trk_parameters.early_late_space_narrow_chips;
+                                                        trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                                                        trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
                                                     }
                                                 else
                                                     {

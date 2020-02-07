@@ -34,7 +34,6 @@
 
 #include "tracking_discriminators.h"
 #include "MATH_CONSTANTS.h"
-#include <cmath>
 
 //  All the outputs are in RADIANS
 
@@ -130,7 +129,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
-double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
+double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, float spc, float slope, float y_intercept)
 {
     double P_early = std::abs(early_s1);
     double P_late = std::abs(late_s1);
@@ -139,7 +138,7 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
         {
             return 0.0;
         }
-    return 0.5 * (P_early - P_late) / E_plus_L;
+    return ((y_intercept - slope * spc) / slope) * (P_early - P_late) / E_plus_L;
 }
 
 

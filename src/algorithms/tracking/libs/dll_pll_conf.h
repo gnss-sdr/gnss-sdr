@@ -65,6 +65,7 @@ public:
     float very_early_late_space_narrow_chips;
     float slope;
     float spc;
+    float y_intercept;
     int32_t extend_correlation_symbols;
     bool high_dyn;
     int32_t cn0_samples;

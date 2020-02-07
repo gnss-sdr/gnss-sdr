@@ -39,6 +39,7 @@
 #define GNSS_SDR_TRACKING_DISCRIMINATORS_H_
 
 #include <gnuradio/gr_complex.h>
+#include <cmath>
 
 /*! brief FLL four quadrant arctan discriminator
  *
@@ -99,7 +100,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
-double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
+double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, float spc = 0.5, float slope = 1.0, float y_intercept = 1.0);
 
 
 /*! \brief DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator
@@ -114,5 +115,92 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
  */
 double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr_complex late_s1, gr_complex very_late_s1);
 
+
+template <typename Fun>
+double CalculateSlope(Fun &&f, double x)
+{
+    static constexpr double dx = 1e-6;
+
+    return (f(x + dx / 2.0) - f(x - dx / 2.0)) / dx;
+}
+
+template <typename Fun>
+double CalculateSlopeAbs(Fun &&f, double x)
+{
+    static constexpr double dx = 1e-6;
+
+    return (std::abs(f(x + dx / 2.0)) - std::abs(f(x - dx / 2.0))) / dx;
+}
+
+template <typename Fun>
+double GetYIntercept(Fun &&f, double x)
+{
+    double slope = CalculateSlope(f, x);
+    double y1 = f(x);
+
+    return y1 - slope * x;
+}
+
+template <typename Fun>
+double GetYInterceptAbs(Fun &&f, double x)
+{
+    double slope = CalculateSlopeAbs(f, x);
+    double y1 = std::abs(f(x));
+    return y1 - slope * x;
+}
+
+// SinBocCorrelationFunction and CosBocCorrelationFunction from
+// Sousa, F. and Nunes, F., "New Expressions for the Autocorrelation
+// Function of BOC GNSS Signals", NAVIGATION - Journal of the Institute
+// of Navigation, March 2013.
+//
+template <int M = 1, int N = M>
+double SinBocCorrelationFunction(double offset_in_chips)
+{
+    static constexpr int TWO_P = 2 * M / N;
+
+    double abs_tau = std::abs(offset_in_chips);
+
+    if (abs_tau > 1.0)
+        {
+            return 0.0;
+        }
+
+    int k = static_cast<int>(std::ceil(TWO_P * abs_tau));
+
+    double sgn = ((k & 0x01) == 0 ? 1.0 : -1.0);  // (-1)^k
+
+    return sgn * (2.0 * (k * k - k * TWO_P - k) / TWO_P + 1.0 +
+                     (2 * TWO_P - 2 * k + 1) * abs_tau);
+}
+
+
+template <int M = 1, int N = M>
+double CosBocCorrelationFunction(double offset_in_chips)
+{
+    static constexpr int TWO_P = 2 * M / N;
+
+    double abs_tau = std::abs(offset_in_chips);
+
+    if (abs_tau > 1.0)
+        {
+            return 0.0;
+        }
+
+    int k = static_cast<int>(std::floor(2.0 * TWO_P * abs_tau));
+
+    if ((k & 0x01) == 0)  // k is even
+        {
+            double sgn = ((k >> 1) & 0x01 ? -1.0 : 1.0);  // (-1)^(k/2)
+
+            return sgn * ((2 * k * TWO_P + 2 * TWO_P - k * k) / (2.0 * TWO_P) + (-2 * TWO_P + k - 1) * abs_tau);
+        }
+    else
+        {
+            double sgn = (((k + 1) >> 1) & 0x01 ? -1.0 : 1.0);  // (-1)^((k+1)/2)
+
+            return sgn * ((k * k + 2 * k - 2 * k * TWO_P + 1) / (2.0 * TWO_P) + (2 * TWO_P - k - 2) * abs_tau);
+        }
+}
 
 #endif

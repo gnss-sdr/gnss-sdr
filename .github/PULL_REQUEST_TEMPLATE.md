@@ -1,8 +1,12 @@
-{::comment}
-SPDX-License-Identifier: GPL-3.0-or-later
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
-{:/comment}
 :+1::tada: Hello, and thanks for contributing to [GNSS-SDR](https://gnss-sdr.org)! :tada::+1:
+
+[comment]: # (
+SPDX-License-Identifier: GPL-3.0-or-later
+)
+
+[comment]: # (
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+)
 
 Before submitting your pull request, please make sure the following is done:
  1. You undertake the [Contributor Covenant Code of Conduct](https://github.com/gnss-sdr/gnss-sdr/blob/master/CODE_OF_CONDUCT.md).

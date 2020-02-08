@@ -1,9 +1,13 @@
-{::comment}
-SPDX-License-Identifier: GPL-3.0-or-later
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
-{:/comment}
 Rinex2assist
 ------------
+
+[comment]: # (
+SPDX-License-Identifier: GPL-3.0-or-later
+)
+
+[comment]: # (
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+)
 
 This program reads data from RINEX navigation files and generates XML files that can be read by GNSS-SDR as Assisted GNSS data.
 

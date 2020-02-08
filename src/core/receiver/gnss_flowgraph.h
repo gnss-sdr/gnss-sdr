@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
-#define GNSS_SDR_GNSS_FLOWGRAPH_H_
+#ifndef GNSS_SDR_GNSS_FLOWGRAPH_H
+#define GNSS_SDR_GNSS_FLOWGRAPH_H
 
 #include "channel_status_msg_receiver.h"
 #include "concurrent_queue.h"
@@ -233,4 +233,4 @@ private:
     std::vector<std::string> split_string(const std::string& s, char delim);
 };
 
-#endif  // GNSS_SDR_GNSS_FLOWGRAPH_H_
+#endif  // GNSS_SDR_GNSS_FLOWGRAPH_H

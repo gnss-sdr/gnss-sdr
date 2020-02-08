@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _PER_DECODER_H_
-#define _PER_DECODER_H_
+#ifndef _PER_DECODER_H
+#define _PER_DECODER_H
 
 #include <asn_application.h>
 #include <per_support.h>

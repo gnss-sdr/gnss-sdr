@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SystemInfoIndex_H_
-#define _SystemInfoIndex_H_
+#ifndef _SystemInfoIndex_H
+#define _SystemInfoIndex_H
 
 #include <asn_application.h>
 

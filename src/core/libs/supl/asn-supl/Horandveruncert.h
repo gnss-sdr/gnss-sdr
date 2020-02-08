@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Horandveruncert_H_
-#define _Horandveruncert_H_
+#ifndef _Horandveruncert_H
+#define _Horandveruncert_H
 
 #include <asn_application.h>
 

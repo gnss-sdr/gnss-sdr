@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H_
-#define GNSS_SDR_UHD_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H
+#define GNSS_SDR_UHD_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
@@ -101,4 +101,4 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif  // GNSS_SDR_UHD_SIGNAL_SOURCE_H_
+#endif  // GNSS_SDR_UHD_SIGNAL_SOURCE_H

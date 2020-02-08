@@ -22,8 +22,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_ACQUISITION_H_
-#define GNSS_SDR_FPGA_ACQUISITION_H_
+#ifndef GNSS_SDR_FPGA_ACQUISITION_H
+#define GNSS_SDR_FPGA_ACQUISITION_H
 
 #include <cstdint>
 #include <string>
@@ -167,4 +167,4 @@ private:
     void read_result_valid(uint32_t *result_valid);
 };
 
-#endif  // GNSS_SDR_FPGA_ACQUISITION_H_
+#endif  // GNSS_SDR_FPGA_ACQUISITION_H

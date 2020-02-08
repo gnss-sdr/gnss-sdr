@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _SLPMode_H_
-#define _SLPMode_H_
+#ifndef _SLPMode_H
+#define _SLPMode_H
 
 #include <asn_application.h>
 

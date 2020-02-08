@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSClockModel_H_
-#define _GANSSClockModel_H_
+#ifndef _GANSSClockModel_H
+#define _GANSSClockModel_H
 
 #include <asn_application.h>
 

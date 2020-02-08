@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BLOCK_FACTORY_H_
-#define GNSS_SDR_BLOCK_FACTORY_H_
+#ifndef GNSS_SDR_BLOCK_FACTORY_H
+#define GNSS_SDR_BLOCK_FACTORY_H
 
 #include "concurrent_queue.h"
 #include <pmt/pmt.h>
@@ -124,4 +124,4 @@ private:
         unsigned int out_streams);
 };
 
-#endif  // GNSS_SDR_BLOCK_FACTORY_H_
+#endif  // GNSS_SDR_BLOCK_FACTORY_H

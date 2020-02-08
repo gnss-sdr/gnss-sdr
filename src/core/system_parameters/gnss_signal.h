@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SIGNAL_H_
-#define GNSS_SDR_GNSS_SIGNAL_H_
+#ifndef GNSS_SDR_GNSS_SIGNAL_H
+#define GNSS_SDR_GNSS_SIGNAL_H
 
 #include "gnss_satellite.h"
 #include <ostream>

@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
-#define GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
+#ifndef GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H
+#define GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H
 
 #include "gnss_block_interface.h"
 #ifdef GR_GREATER_38
@@ -88,4 +88,4 @@ private:
     gr::block_sptr file_sink_;
 };
 
-#endif  // GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H_
+#endif  // GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfGANSSTimeModel_H_
-#define _SeqOfGANSSTimeModel_H_
+#ifndef _SeqOfGANSSTimeModel_H
+#define _SeqOfGANSSTimeModel_H
 
 #include <asn_application.h>
 

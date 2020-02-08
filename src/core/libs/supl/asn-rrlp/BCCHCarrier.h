@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _BCCHCarrier_H_
-#define _BCCHCarrier_H_
+#ifndef _BCCHCarrier_H
+#define _BCCHCarrier_H
 
 #include <asn_application.h>
 

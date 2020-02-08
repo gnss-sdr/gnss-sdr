@@ -6,8 +6,8 @@
  *     found in "../supl-response.asn"
  */
 
-#ifndef _SETAuthKey_H_
-#define _SETAuthKey_H_
+#ifndef _SETAuthKey_H
+#define _SETAuthKey_H
 
 #include <asn_application.h>
 

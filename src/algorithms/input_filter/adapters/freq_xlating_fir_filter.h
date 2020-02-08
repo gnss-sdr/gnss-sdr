@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_
-#define GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_
+#ifndef GNSS_SDR_FREQ_XLATING_FIR_FILTER_H
+#define GNSS_SDR_FREQ_XLATING_FIR_FILTER_H
 
 #include "complex_float_to_complex_byte.h"
 #include "gnss_block_interface.h"
@@ -110,4 +110,4 @@ private:
     complex_float_to_complex_byte_sptr complex_to_complex_byte_;
 };
 
-#endif  // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_
+#endif  // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H

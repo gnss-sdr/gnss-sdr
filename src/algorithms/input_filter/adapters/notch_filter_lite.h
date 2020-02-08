@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NOTCH_FILTER_LITE_H_
-#define GNSS_SDR_NOTCH_FILTER_LITE_H_
+#ifndef GNSS_SDR_NOTCH_FILTER_LITE_H
+#define GNSS_SDR_NOTCH_FILTER_LITE_H
 
 #include "gnss_block_interface.h"
 #include "notch_lite_cc.h"
@@ -68,4 +68,4 @@ private:
     notch_lite_sptr notch_filter_lite_;
 };
 
-#endif  // GNSS_SDR_NOTCH_FILTER_LITE_H_
+#endif  // GNSS_SDR_NOTCH_FILTER_LITE_H

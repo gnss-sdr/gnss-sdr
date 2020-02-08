@@ -23,8 +23,8 @@
  */
 
 
-#ifndef GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_
-#define GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_
+#ifndef GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H
+#define GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H
 
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
@@ -45,4 +45,4 @@ public:
     virtual void set_channel(int channel) = 0;
 };
 
-#endif  // GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_
+#endif  // GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H

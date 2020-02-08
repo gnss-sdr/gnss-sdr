@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSRealTimeIntegrity_H_
-#define _GANSSRealTimeIntegrity_H_
+#ifndef _GANSSRealTimeIntegrity_H
+#define _GANSSRealTimeIntegrity_H
 
 #include <asn_application.h>
 

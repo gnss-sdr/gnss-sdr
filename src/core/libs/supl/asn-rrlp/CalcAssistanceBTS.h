@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _CalcAssistanceBTS_H_
-#define _CalcAssistanceBTS_H_
+#ifndef _CalcAssistanceBTS_H
+#define _CalcAssistanceBTS_H
 
 #include <asn_application.h>
 

@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ACQ_CONF_H_
-#define GNSS_SDR_ACQ_CONF_H_
+#ifndef GNSS_SDR_ACQ_CONF_H
+#define GNSS_SDR_ACQ_CONF_H
 
 #include "configuration_interface.h"
 #include <cstddef>

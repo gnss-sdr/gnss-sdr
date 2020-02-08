@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _UseMultipleSets_H_
-#define _UseMultipleSets_H_
+#ifndef _UseMultipleSets_H
+#define _UseMultipleSets_H
 
 #include <asn_application.h>
 

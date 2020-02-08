@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _DGPSCorrections_H_
-#define _DGPSCorrections_H_
+#ifndef _DGPSCorrections_H
+#define _DGPSCorrections_H
 
 #include <asn_application.h>
 

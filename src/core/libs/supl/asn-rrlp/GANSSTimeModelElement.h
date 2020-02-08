@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSTimeModelElement_H_
-#define _GANSSTimeModelElement_H_
+#ifndef _GANSSTimeModelElement_H
+#define _GANSSTimeModelElement_H
 
 #include <asn_application.h>
 

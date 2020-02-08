@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _CellID_H_
-#define _CellID_H_
+#ifndef _CellID_H
+#define _CellID_H
 
 #include <asn_application.h>
 

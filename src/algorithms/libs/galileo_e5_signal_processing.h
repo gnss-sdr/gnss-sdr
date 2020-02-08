@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
-#define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
+#define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
 
 #include <gsl/gsl>
 #include <array>
@@ -42,4 +42,4 @@ void galileo_e5_a_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest,
     const std::array<char, 3>& _Signal, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 
-#endif  // GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
+#endif  // GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H

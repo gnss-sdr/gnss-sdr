@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H_
-#define GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H_
+#ifndef GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H
+#define GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
@@ -81,4 +81,4 @@ private:
     bool is_open;
 };
 
-#endif  // GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H_
+#endif  // GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ErrorCodes_H_
-#define _ErrorCodes_H_
+#ifndef _ErrorCodes_H
+#define _ErrorCodes_H
 
 #include <asn_application.h>
 

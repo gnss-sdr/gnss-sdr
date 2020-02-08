@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DISPLAY_H_
-#define GNSS_SDR_DISPLAY_H_
+#ifndef GNSS_SDR_DISPLAY_H
+#define GNSS_SDR_DISPLAY_H
 
 #include <string>
 
@@ -69,4 +69,4 @@ const std::string TEXT_BOLD_WHITE = "";
 
 #endif  // DISPLAY_COLORS
 
-#endif  // GNSS_SDR_DISPLAY_H_
+#endif  // GNSS_SDR_DISPLAY_H

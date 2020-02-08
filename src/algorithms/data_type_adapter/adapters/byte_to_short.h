@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BYTE_TO_SHORT_H_
-#define GNSS_SDR_BYTE_TO_SHORT_H_
+#ifndef GNSS_SDR_BYTE_TO_SHORT_H
+#define GNSS_SDR_BYTE_TO_SHORT_H
 
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_short.h>

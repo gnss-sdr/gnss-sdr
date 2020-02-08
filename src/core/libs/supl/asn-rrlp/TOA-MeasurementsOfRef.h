@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _TOA_MeasurementsOfRef_H_
-#define _TOA_MeasurementsOfRef_H_
+#ifndef _TOA_MeasurementsOfRef_H
+#define _TOA_MeasurementsOfRef_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfOTD_MsrsOfOtherSets_H_
-#define _SeqOfOTD_MsrsOfOtherSets_H_
+#ifndef _SeqOfOTD_MsrsOfOtherSets_H
+#define _SeqOfOTD_MsrsOfOtherSets_H
 
 #include <asn_application.h>
 

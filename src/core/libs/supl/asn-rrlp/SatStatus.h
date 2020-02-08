@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SatStatus_H_
-#define _SatStatus_H_
+#ifndef _SatStatus_H
+#define _SatStatus_H
 
 #include <asn_application.h>
 

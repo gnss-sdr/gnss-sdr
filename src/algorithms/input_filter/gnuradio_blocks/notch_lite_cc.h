@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NOTCH_LITE_H_
-#define GNSS_SDR_NOTCH_LITE_H_
+#ifndef GNSS_SDR_NOTCH_LITE_H
+#define GNSS_SDR_NOTCH_LITE_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
@@ -77,4 +77,4 @@ private:
     std::unique_ptr<gr::fft::fft_complex> d_fft;
 };
 
-#endif  // GNSS_SDR_NOTCH_LITE_H_
+#endif  // GNSS_SDR_NOTCH_LITE_H

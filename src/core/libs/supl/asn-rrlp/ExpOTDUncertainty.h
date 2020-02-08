@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ExpOTDUncertainty_H_
-#define _ExpOTDUncertainty_H_
+#ifndef _ExpOTDUncertainty_H
+#define _ExpOTDUncertainty_H
 
 #include <asn_application.h>
 

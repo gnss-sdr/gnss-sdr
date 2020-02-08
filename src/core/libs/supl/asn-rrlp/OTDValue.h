@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _OTDValue_H_
-#define _OTDValue_H_
+#ifndef _OTDValue_H
+#define _OTDValue_H
 
 #include <asn_application.h>
 

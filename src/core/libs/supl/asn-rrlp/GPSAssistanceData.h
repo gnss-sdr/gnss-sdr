@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPSAssistanceData_H_
-#define _GPSAssistanceData_H_
+#ifndef _GPSAssistanceData_H
+#define _GPSAssistanceData_H
 
 #include <asn_application.h>
 

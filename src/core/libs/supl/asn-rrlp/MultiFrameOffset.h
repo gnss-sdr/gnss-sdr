@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _MultiFrameOffset_H_
-#define _MultiFrameOffset_H_
+#ifndef _MultiFrameOffset_H
+#define _MultiFrameOffset_H
 
 #include <asn_application.h>
 

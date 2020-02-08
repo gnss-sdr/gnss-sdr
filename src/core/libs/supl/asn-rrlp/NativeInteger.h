@@ -9,8 +9,8 @@
  * will do).
  * This type may be used when integer range is limited by subtype constraints.
  */
-#ifndef _NativeInteger_H_
-#define _NativeInteger_H_
+#ifndef _NativeInteger_H
+#define _NativeInteger_H
 
 #include <INTEGER.h>
 #include <asn_application.h>

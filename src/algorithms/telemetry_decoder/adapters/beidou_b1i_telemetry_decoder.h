@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H
+#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H
 
 #include "beidou_b1i_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"  // for Gnss_Satellite

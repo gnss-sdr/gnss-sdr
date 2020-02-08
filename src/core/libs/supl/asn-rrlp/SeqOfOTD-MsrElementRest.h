@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfOTD_MsrElementRest_H_
-#define _SeqOfOTD_MsrElementRest_H_
+#ifndef _SeqOfOTD_MsrElementRest_H
+#define _SeqOfOTD_MsrElementRest_H
 
 #include <asn_application.h>
 

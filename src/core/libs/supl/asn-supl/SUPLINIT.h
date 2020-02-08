@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _SUPLINIT_H_
-#define _SUPLINIT_H_
+#ifndef _SUPLINIT_H
+#define _SUPLINIT_H
 
 #include <asn_application.h>
 

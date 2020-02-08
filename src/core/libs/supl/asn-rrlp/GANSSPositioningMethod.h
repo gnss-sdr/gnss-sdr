@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSPositioningMethod_H_
-#define _GANSSPositioningMethod_H_
+#ifndef _GANSSPositioningMethod_H
+#define _GANSSPositioningMethod_H
 
 #include <asn_application.h>
 

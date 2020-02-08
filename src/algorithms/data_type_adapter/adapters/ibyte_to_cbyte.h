@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_IBYTE_TO_CBYTE_H_
-#define GNSS_SDR_IBYTE_TO_CBYTE_H_
+#ifndef GNSS_SDR_IBYTE_TO_CBYTE_H
+#define GNSS_SDR_IBYTE_TO_CBYTE_H
 
 #include "conjugate_ic.h"
 #include "gnss_block_interface.h"

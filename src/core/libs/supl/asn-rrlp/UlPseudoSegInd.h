@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _UlPseudoSegInd_H_
-#define _UlPseudoSegInd_H_
+#ifndef _UlPseudoSegInd_H
+#define _UlPseudoSegInd_H
 
 #include <asn_application.h>
 

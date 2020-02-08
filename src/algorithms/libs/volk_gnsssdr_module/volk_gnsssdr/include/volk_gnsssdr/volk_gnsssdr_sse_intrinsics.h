@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#ifndef INCLUDED_VOLK_VOLK_SSE_INTRINSICS_H_
-#define INCLUDED_VOLK_VOLK_SSE_INTRINSICS_H_
+#ifndef INCLUDED_VOLK_VOLK_SSE_INTRINSICS_H
+#define INCLUDED_VOLK_VOLK_SSE_INTRINSICS_H
 #include <xmmintrin.h>
 
 static inline __m128

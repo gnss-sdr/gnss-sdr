@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _MAC_H_
-#define _MAC_H_
+#ifndef _MAC_H
+#define _MAC_H
 
 #include <asn_application.h>
 

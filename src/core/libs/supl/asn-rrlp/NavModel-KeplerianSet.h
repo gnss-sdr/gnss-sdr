@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _NavModel_KeplerianSet_H_
-#define _NavModel_KeplerianSet_H_
+#ifndef _NavModel_KeplerianSet_H
+#define _NavModel_KeplerianSet_H
 
 #include <asn_application.h>
 

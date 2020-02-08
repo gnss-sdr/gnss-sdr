@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _UTRA_CarrierRSSI_H_
-#define _UTRA_CarrierRSSI_H_
+#ifndef _UTRA_CarrierRSSI_H
+#define _UTRA_CarrierRSSI_H
 
 #include <asn_application.h>
 

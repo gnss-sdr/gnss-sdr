@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ACQUISITION_INTERFACE_H_
-#define GNSS_SDR_ACQUISITION_INTERFACE_H_
+#ifndef GNSS_SDR_ACQUISITION_INTERFACE_H
+#define GNSS_SDR_ACQUISITION_INTERFACE_H
 
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"

@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_H_
-#define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_H_
+#ifndef GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_H
+#define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_H
 
 
 #include "gnss_block_interface.h"
@@ -70,4 +70,4 @@ private:
     bool connected_;
 };
 
-#endif  // GNSS_SDR_SIGNAL_CONDITIONER_H_
+#endif  // GNSS_SDR_SIGNAL_CONDITIONER_H

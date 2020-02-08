@@ -22,8 +22,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
 
 #include "cuda_multicorrelator.h"
 #include "gnss_synchro.h"
@@ -164,4 +164,4 @@ private:
     std::string sys;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H

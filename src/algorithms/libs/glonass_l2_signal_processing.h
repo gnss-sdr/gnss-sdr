@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H_
-#define GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H
+#define GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H
 
 #include <gsl/gsl>
 #include <complex>
@@ -35,4 +35,4 @@ void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest
 //! Generates complex GLONASS L2 C/A code for the desired SV ID and code shift
 void glonass_l2_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift);
 
-#endif  // GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H_
+#endif  // GNSS_SDR_GLONASS_L2_SIGNAL_PROCESSING_H

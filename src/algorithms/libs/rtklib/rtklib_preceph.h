@@ -39,8 +39,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_PRECEPH_H_
-#define GNSS_SDR_RTKLIB_PRECEPH_H_
+#ifndef GNSS_SDR_RTKLIB_PRECEPH_H
+#define GNSS_SDR_RTKLIB_PRECEPH_H
 
 #include "rtklib.h"
 
@@ -86,4 +86,4 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
 int peph2pos(gtime_t time, int sat, const nav_t *nav, int opt,
     double *rs, double *dts, double *var);
 
-#endif  // GNSS_SDR_RTKLIB_PRECEPH_H_
+#endif  // GNSS_SDR_RTKLIB_PRECEPH_H

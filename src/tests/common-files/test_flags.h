@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TEST_FLAGS_H_
-#define GNSS_SDR_TEST_FLAGS_H_
+#ifndef GNSS_SDR_TEST_FLAGS_H
+#define GNSS_SDR_TEST_FLAGS_H
 
 #include <gflags/gflags.h>
 #include <string>

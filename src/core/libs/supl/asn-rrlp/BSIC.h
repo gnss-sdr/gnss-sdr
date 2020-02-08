@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _BSIC_H_
-#define _BSIC_H_
+#ifndef _BSIC_H
+#define _BSIC_H
 
 #include <asn_application.h>
 

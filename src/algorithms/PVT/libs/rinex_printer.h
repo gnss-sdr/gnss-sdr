@@ -37,8 +37,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RINEX_PRINTER_H_
-#define GNSS_SDR_RINEX_PRINTER_H_
+#ifndef GNSS_SDR_RINEX_PRINTER_H
+#define GNSS_SDR_RINEX_PRINTER_H
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstdint>  // for int32_t

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _TimeRelation_H_
-#define _TimeRelation_H_
+#ifndef _TimeRelation_H
+#define _TimeRelation_H
 
 #include <asn_application.h>
 

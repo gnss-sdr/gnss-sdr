@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _TimeSlotScheme_H_
-#define _TimeSlotScheme_H_
+#ifndef _TimeSlotScheme_H
+#define _TimeSlotScheme_H
 
 #include <asn_application.h>
 

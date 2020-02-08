@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SystemInfoAssistBTS_R98_ExpOTD_H_
-#define _SystemInfoAssistBTS_R98_ExpOTD_H_
+#ifndef _SystemInfoAssistBTS_R98_ExpOTD_H
+#define _SystemInfoAssistBTS_R98_ExpOTD_H
 
 #include <asn_application.h>
 

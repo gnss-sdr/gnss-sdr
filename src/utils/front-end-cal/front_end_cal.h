@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FRONT_END_CAL_H_
-#define GNSS_SDR_FRONT_END_CAL_H_
+#ifndef GNSS_SDR_FRONT_END_CAL_H
+#define GNSS_SDR_FRONT_END_CAL_H
 
 #include <armadillo>
 #include <memory>

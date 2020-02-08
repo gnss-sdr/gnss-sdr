@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _FrameNumber_H_
-#define _FrameNumber_H_
+#ifndef _FrameNumber_H
+#define _FrameNumber_H
 
 #include <asn_application.h>
 

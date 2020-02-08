@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _Almanac_KeplerianSet_H_
-#define _Almanac_KeplerianSet_H_
+#ifndef _Almanac_KeplerianSet_H
+#define _Almanac_KeplerianSet_H
 
 #include <asn_application.h>
 

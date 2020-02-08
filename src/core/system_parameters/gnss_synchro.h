@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SYNCHRO_H_
-#define GNSS_SDR_GNSS_SYNCHRO_H_
+#ifndef GNSS_SDR_GNSS_SYNCHRO_H
+#define GNSS_SDR_GNSS_SYNCHRO_H
 
 #include "gnss_signal.h"
 #include <boost/serialization/nvp.hpp>

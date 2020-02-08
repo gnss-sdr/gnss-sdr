@@ -25,8 +25,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H_
-#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H_
+#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H
+#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H
 
 #include <gnuradio/block.h>
 #include <volk/volk.h>
@@ -80,4 +80,4 @@ private:
     uint32_t d_phase_step;
 };
 
-#endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H_
+#endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H

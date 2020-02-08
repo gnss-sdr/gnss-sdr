@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
-#define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
+#define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
@@ -117,4 +117,4 @@ private:
     bool rf_shutdown_;
 };
 
-#endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
+#endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

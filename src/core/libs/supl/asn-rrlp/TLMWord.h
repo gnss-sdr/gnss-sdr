@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _TLMWord_H_
-#define _TLMWord_H_
+#ifndef _TLMWord_H
+#define _TLMWord_H
 
 #include <asn_application.h>
 

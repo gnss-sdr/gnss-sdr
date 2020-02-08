@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
-#define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
+#define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
@@ -126,4 +126,4 @@ private:
     size_t item_size_;
 };
 
-#endif  // GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
+#endif  // GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H

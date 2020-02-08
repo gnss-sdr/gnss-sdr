@@ -21,8 +21,8 @@
  *.
  */
 
-#ifndef GNSS_SDR_BITS_H_
-#define GNSS_SDR_BITS_H_
+#ifndef GNSS_SDR_BITS_H
+#define GNSS_SDR_BITS_H
 
 #include "swift_common.h"
 

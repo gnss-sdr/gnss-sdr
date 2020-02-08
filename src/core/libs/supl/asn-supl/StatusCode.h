@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _StatusCode_H_
-#define _StatusCode_H_
+#ifndef _StatusCode_H
+#define _StatusCode_H
 
 #include <asn_application.h>
 

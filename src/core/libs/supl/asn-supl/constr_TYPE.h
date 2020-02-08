@@ -8,8 +8,8 @@
  * This structure even contains pointer to these encoding and decoding routines
  * for each defined ASN.1 type.
  */
-#ifndef _CONSTR_TYPE_H_
-#define _CONSTR_TYPE_H_
+#ifndef _CONSTR_TYPE_H
+#define _CONSTR_TYPE_H
 
 #include <ber_tlv_length.h>
 #include <ber_tlv_tag.h>

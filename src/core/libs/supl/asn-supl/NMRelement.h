@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _NMRelement_H_
-#define _NMRelement_H_
+#ifndef _NMRelement_H
+#define _NMRelement_H
 
 #include <asn_application.h>
 

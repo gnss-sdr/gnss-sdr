@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GLONASS_L1_L2_CA_H_
-#define GNSS_SDR_GLONASS_L1_L2_CA_H_
+#ifndef GNSS_SDR_GLONASS_L1_L2_CA_H
+#define GNSS_SDR_GLONASS_L1_L2_CA_H
 
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
@@ -316,4 +316,4 @@ const std::vector<std::pair<int32_t, int32_t>> H_N_A({{72, 5}});
 const std::vector<std::pair<int32_t, int32_t>> B1({{6, 11}});
 const std::vector<std::pair<int32_t, int32_t>> B2({{17, 10}});
 
-#endif  // GNSS_SDR_GLONASS_L1_L2_CA_H_
+#endif  // GNSS_SDR_GLONASS_L1_L2_CA_H

@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CONTROL_THREAD_H_
-#define GNSS_SDR_CONTROL_THREAD_H_
+#ifndef GNSS_SDR_CONTROL_THREAD_H
+#define GNSS_SDR_CONTROL_THREAD_H
 
 #include "agnss_ref_location.h"    // for Agnss_Ref_Location
 #include "agnss_ref_time.h"        // for Agnss_Ref_Time
@@ -199,4 +199,4 @@ private:
 #endif
 };
 
-#endif  // GNSS_SDR_CONTROL_THREAD_H_
+#endif  // GNSS_SDR_CONTROL_THREAD_H

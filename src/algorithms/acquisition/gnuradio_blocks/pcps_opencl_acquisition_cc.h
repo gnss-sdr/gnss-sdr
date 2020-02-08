@@ -37,8 +37,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H
+#define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H
 
 #define CL_SILENCE_DEPRECATION
 #include "channel_fsm.h"

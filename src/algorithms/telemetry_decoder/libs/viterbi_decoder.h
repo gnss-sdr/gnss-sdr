@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_VITERBI_DECODER_H_
-#define GNSS_SDR_VITERBI_DECODER_H_
+#ifndef GNSS_SDR_VITERBI_DECODER_H
+#define GNSS_SDR_VITERBI_DECODER_H
 
 #include <cstddef>  // for size_t
 #include <deque>
@@ -114,4 +114,4 @@ private:
     int parity_counter(int symbol, int length);
 };
 
-#endif  // GNSS_SDR_VITERBI_DECODER_H_
+#endif  // GNSS_SDR_VITERBI_DECODER_H

@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CONJUGATE_SC_H_
-#define GNSS_SDR_CONJUGATE_SC_H_
+#ifndef GNSS_SDR_CONJUGATE_SC_H
+#define GNSS_SDR_CONJUGATE_SC_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>

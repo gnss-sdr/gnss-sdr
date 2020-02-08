@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _TGSN_H_
-#define _TGSN_H_
+#ifndef _TGSN_H
+#define _TGSN_H
 
 #include <asn_application.h>
 

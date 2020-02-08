@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_RTKLIB_PVT_H_
-#define GNSS_SDR_RTKLIB_PVT_H_
+#ifndef GNSS_SDR_RTKLIB_PVT_H
+#define GNSS_SDR_RTKLIB_PVT_H
 
 #include "pvt_interface.h"           // for PvtInterface
 #include "rtklib.h"                  // for rtk_t

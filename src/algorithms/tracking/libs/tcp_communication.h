@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TCP_COMMUNICATION_H_
-#define GNSS_SDR_TCP_COMMUNICATION_H_
+#ifndef GNSS_SDR_TCP_COMMUNICATION_H
+#define GNSS_SDR_TCP_COMMUNICATION_H
 
 #include "tcp_packet_data.h"
 #include <boost/array.hpp>

@@ -33,8 +33,8 @@
  */
 
 
-#ifndef GNSS_SDR_GNUPLOT_I_H_
-#define GNSS_SDR_GNUPLOT_I_H_
+#ifndef GNSS_SDR_GNUPLOT_I_H
+#define GNSS_SDR_GNUPLOT_I_H
 
 #include <gflags/gflags.h>
 #include <cmath>

@@ -22,8 +22,8 @@
  */
 
 
-#ifndef GNSS_SDR_EDC_H_
-#define GNSS_SDR_EDC_H_
+#ifndef GNSS_SDR_EDC_H
+#define GNSS_SDR_EDC_H
 
 #include "swift_common.h"
 

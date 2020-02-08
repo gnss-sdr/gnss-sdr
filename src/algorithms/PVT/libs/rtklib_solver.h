@@ -30,8 +30,8 @@
  *
  * -------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_SOLVER_H_
-#define GNSS_SDR_RTKLIB_SOLVER_H_
+#ifndef GNSS_SDR_RTKLIB_SOLVER_H
+#define GNSS_SDR_RTKLIB_SOLVER_H
 
 
 #include "beidou_dnav_almanac.h"
@@ -118,4 +118,4 @@ private:
     bool save_matfile();
 };
 
-#endif  // GNSS_SDR_RTKLIB_SOLVER_H_
+#endif  // GNSS_SDR_RTKLIB_SOLVER_H

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _OTD_MsrsOfOtherSets_H_
-#define _OTD_MsrsOfOtherSets_H_
+#ifndef _OTD_MsrsOfOtherSets_H
+#define _OTD_MsrsOfOtherSets_H
 
 #include <asn_application.h>
 

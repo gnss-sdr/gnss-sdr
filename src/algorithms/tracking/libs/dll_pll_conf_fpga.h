@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DLL_PLL_CONF_FPGA_H_
-#define GNSS_SDR_DLL_PLL_CONF_FPGA_H_
+#ifndef GNSS_SDR_DLL_PLL_CONF_FPGA_H
+#define GNSS_SDR_DLL_PLL_CONF_FPGA_H
 
 #include <cstdint>
 #include <string>

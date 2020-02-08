@@ -6,8 +6,8 @@
  *     found in "../supl-start.asn"
  */
 
-#ifndef _PrefMethod_H_
-#define _PrefMethod_H_
+#ifndef _PrefMethod_H
+#define _PrefMethod_H
 
 #include <asn_application.h>
 

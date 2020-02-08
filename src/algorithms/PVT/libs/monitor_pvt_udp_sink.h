@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
-#define GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
+#ifndef GNSS_SDR_MONITOR_PVT_UDP_SINK_H
+#define GNSS_SDR_MONITOR_PVT_UDP_SINK_H
 
 #include "monitor_pvt.h"
 #include "serdes_monitor_pvt.h"
@@ -50,4 +50,4 @@ private:
 };
 
 
-#endif  // GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
+#endif  // GNSS_SDR_MONITOR_PVT_UDP_SINK_H

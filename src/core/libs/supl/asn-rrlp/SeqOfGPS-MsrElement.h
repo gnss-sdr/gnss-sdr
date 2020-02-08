@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfGPS_MsrElement_H_
-#define _SeqOfGPS_MsrElement_H_
+#ifndef _SeqOfGPS_MsrElement_H
+#define _SeqOfGPS_MsrElement_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _QoP_H_
-#define _QoP_H_
+#ifndef _QoP_H
+#define _QoP_H
 
 #include <asn_application.h>
 

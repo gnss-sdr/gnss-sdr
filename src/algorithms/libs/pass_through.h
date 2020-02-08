@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PASS_THROUGH_H_
-#define GNSS_SDR_PASS_THROUGH_H_
+#ifndef GNSS_SDR_PASS_THROUGH_H
+#define GNSS_SDR_PASS_THROUGH_H
 
 #include "conjugate_cc.h"
 #include "conjugate_ic.h"
@@ -86,4 +86,4 @@ private:
     bool inverted_spectrum;
 };
 
-#endif  // GNSS_SDR_PASS_THROUGH_H_
+#endif  // GNSS_SDR_PASS_THROUGH_H

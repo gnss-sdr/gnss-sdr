@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ControlHeader_H_
-#define _ControlHeader_H_
+#ifndef _ControlHeader_H
+#define _ControlHeader_H
 
 #include <asn_application.h>
 

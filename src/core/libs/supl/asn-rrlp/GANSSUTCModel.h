@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSUTCModel_H_
-#define _GANSSUTCModel_H_
+#ifndef _GANSSUTCModel_H
+#define _GANSSUTCModel_H
 
 #include <asn_application.h>
 

@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_HYBRID_OBSERVABLES_H_
-#define GNSS_SDR_HYBRID_OBSERVABLES_H_
+#ifndef GNSS_SDR_HYBRID_OBSERVABLES_H
+#define GNSS_SDR_HYBRID_OBSERVABLES_H
 
 #include "hybrid_observables_gs.h"
 #include "observables_interface.h"

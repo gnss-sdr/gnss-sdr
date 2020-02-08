@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _EncodingType_H_
-#define _EncodingType_H_
+#ifndef _EncodingType_H
+#define _EncodingType_H
 
 #include <asn_application.h>
 

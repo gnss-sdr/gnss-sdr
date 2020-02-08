@@ -23,8 +23,8 @@
  */
 
 
-#ifndef GNSS_SDR_PVT_INTERFACE_H_
-#define GNSS_SDR_PVT_INTERFACE_H_
+#ifndef GNSS_SDR_PVT_INTERFACE_H
+#define GNSS_SDR_PVT_INTERFACE_H
 
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
@@ -60,4 +60,4 @@ public:
         time_t* UTC_time) = 0;
 };
 
-#endif  // GNSS_SDR_PVT_INTERFACE_H_
+#endif  // GNSS_SDR_PVT_INTERFACE_H

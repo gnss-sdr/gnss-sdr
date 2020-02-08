@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SUPL_CLIENT_H_
-#define GNSS_SDR_SUPL_CLIENT_H_
+#ifndef GNSS_SDR_SUPL_CLIENT_H
+#define GNSS_SDR_SUPL_CLIENT_H
 
 extern "C"
 {
@@ -264,4 +264,4 @@ private:
     bool read_gal_almanac_from_gsa(const std::string& file_name);
 };
 
-#endif  // GNSS_SDR_SUPL_CLIENT_H_
+#endif  // GNSS_SDR_SUPL_CLIENT_H

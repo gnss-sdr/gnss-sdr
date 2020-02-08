@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _OTD_MeasureInfo_5_Ext_H_
-#define _OTD_MeasureInfo_5_Ext_H_
+#ifndef _OTD_MeasureInfo_5_Ext_H
+#define _OTD_MeasureInfo_5_Ext_H
 
 #include <asn_application.h>
 

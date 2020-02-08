@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H_
-#define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H_
+#ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H
 
 
 #include "GLONASS_L1_L2_CA.h"
@@ -110,4 +110,4 @@ private:
     std::ofstream d_dump_file;
 };
 
-#endif  // GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H_
+#endif  // GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H

@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5_SIGNAL_H_
-#define GNSS_SDR_GPS_L5_SIGNAL_H_
+#ifndef GNSS_SDR_GPS_L5_SIGNAL_H
+#define GNSS_SDR_GPS_L5_SIGNAL_H
 
 #include <gsl/gsl>
 #include <complex>
@@ -45,4 +45,4 @@ void gps_l5i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint
 void gps_l5q_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
 
 
-#endif  // GNSS_SDR_GPS_L5_SIGNAL_H_
+#endif  // GNSS_SDR_GPS_L5_SIGNAL_H

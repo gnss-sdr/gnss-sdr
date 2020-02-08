@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ModuloTimeSlot_H_
-#define _ModuloTimeSlot_H_
+#ifndef _ModuloTimeSlot_H
+#define _ModuloTimeSlot_H
 
 #include <asn_application.h>
 

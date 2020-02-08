@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _FixType_H_
-#define _FixType_H_
+#ifndef _FixType_H
+#define _FixType_H
 
 #include <asn_application.h>
 

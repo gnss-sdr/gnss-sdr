@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H_
-#define GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H_
+#ifndef GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H
+#define GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_decimator.h>
@@ -45,4 +45,4 @@ private:
     interleaved_short_to_complex_short();
 };
 
-#endif  // GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H_
+#endif  // GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H

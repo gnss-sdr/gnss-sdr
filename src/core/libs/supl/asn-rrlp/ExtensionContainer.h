@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ExtensionContainer_H_
-#define _ExtensionContainer_H_
+#ifndef _ExtensionContainer_H
+#define _ExtensionContainer_H
 
 #include <asn_application.h>
 

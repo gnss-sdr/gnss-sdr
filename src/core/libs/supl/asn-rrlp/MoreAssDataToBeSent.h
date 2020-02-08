@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _MoreAssDataToBeSent_H_
-#define _MoreAssDataToBeSent_H_
+#ifndef _MoreAssDataToBeSent_H
+#define _MoreAssDataToBeSent_H
 
 #include <asn_application.h>
 

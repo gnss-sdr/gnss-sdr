@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _UncompressedEphemeris_H_
-#define _UncompressedEphemeris_H_
+#ifndef _UncompressedEphemeris_H
+#define _UncompressedEphemeris_H
 
 #include <asn_application.h>
 

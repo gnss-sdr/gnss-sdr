@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FIR_FILTER_H_
-#define GNSS_SDR_FIR_FILTER_H_
+#ifndef GNSS_SDR_FIR_FILTER_H
+#define GNSS_SDR_FIR_FILTER_H
 
 #include "byte_x2_to_complex_byte.h"
 #include "complex_byte_to_float_x2.h"

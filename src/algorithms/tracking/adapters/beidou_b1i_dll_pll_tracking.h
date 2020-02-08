@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H_
-#define GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H_
+#ifndef GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H
+#define GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H
 
 #include "dll_pll_veml_tracking.h"
 #include "tracking_interface.h"
@@ -92,4 +92,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H_
+#endif  // GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H

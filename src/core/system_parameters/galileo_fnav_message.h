@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
-#define GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
+#ifndef GNSS_SDR_GALILEO_FNAV_MESSAGE_H
+#define GNSS_SDR_GALILEO_FNAV_MESSAGE_H
 
 
 #include "Galileo_E5a.h"
@@ -198,4 +198,4 @@ private:
     // bool omega_flag;
 };
 
-#endif  // GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
+#endif  // GNSS_SDR_GALILEO_FNAV_MESSAGE_H

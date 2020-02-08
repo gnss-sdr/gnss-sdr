@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _PER_OPENTYPE_H_
-#define _PER_OPENTYPE_H_
+#ifndef _PER_OPENTYPE_H
+#define _PER_OPENTYPE_H
 
 #ifdef __cplusplus
 extern "C"

@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
-#define GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
+#ifndef GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H
+#define GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H
 
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
@@ -246,4 +246,4 @@ private:
     unsigned int d_gr_stream_buffer;
 };
 
-#endif  // GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
+#endif  // GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H

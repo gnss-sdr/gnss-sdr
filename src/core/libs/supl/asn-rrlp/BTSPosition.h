@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _BTSPosition_H_
-#define _BTSPosition_H_
+#ifndef _BTSPosition_H
+#define _BTSPosition_H
 
 #include <asn_application.h>
 

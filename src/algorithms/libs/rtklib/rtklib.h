@@ -29,8 +29,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_H_
-#define GNSS_SDR_RTKLIB_H_
+#ifndef GNSS_SDR_RTKLIB_H
+#define GNSS_SDR_RTKLIB_H
 
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
@@ -1307,4 +1307,4 @@ const int STRFMT_NMEA = 19;   /* stream format: NMEA 0183 */
 const int MAXSTRRTK = 8; /* max number of stream in RTK server */
 
 
-#endif  // GNSS_SDR_RTKLIB_H_
+#endif  // GNSS_SDR_RTKLIB_H

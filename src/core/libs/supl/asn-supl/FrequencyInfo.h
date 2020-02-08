@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _FrequencyInfo_H_
-#define _FrequencyInfo_H_
+#ifndef _FrequencyInfo_H
+#define _FrequencyInfo_H
 
 #include <asn_application.h>
 

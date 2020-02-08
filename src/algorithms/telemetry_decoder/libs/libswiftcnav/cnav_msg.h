@@ -22,8 +22,8 @@
  */
 
 
-#ifndef GNSS_SDR_CNAV_MSG_H_
-#define GNSS_SDR_CNAV_MSG_H_
+#ifndef GNSS_SDR_CNAV_MSG_H
+#define GNSS_SDR_CNAV_MSG_H
 
 #include "fec.h"
 #include "swift_common.h"

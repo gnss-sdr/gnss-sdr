@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _StdResolution_H_
-#define _StdResolution_H_
+#ifndef _StdResolution_H
+#define _StdResolution_H
 
 #include <asn_application.h>
 

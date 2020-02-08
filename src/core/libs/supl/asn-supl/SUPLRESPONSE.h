@@ -6,8 +6,8 @@
  *     found in "../supl-response.asn"
  */
 
-#ifndef _SUPLRESPONSE_H_
-#define _SUPLRESPONSE_H_
+#ifndef _SUPLRESPONSE_H
+#define _SUPLRESPONSE_H
 
 #include <asn_application.h>
 

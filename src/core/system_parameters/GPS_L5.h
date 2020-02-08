@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_L5_H_
-#define GNSS_SDR_GPS_L5_H_
+#ifndef GNSS_SDR_GPS_L5_H
+#define GNSS_SDR_GPS_L5_H
 
 #include "GPS_CNAV.h"
 #include "MATH_CONSTANTS.h"
@@ -182,4 +182,4 @@ const int32_t GPS_L5Q_NH_CODE_LENGTH = 20;
 const int32_t GPS_L5Q_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
 const std::string GPS_L5Q_NH_CODE_STR = "00000100110101001110";
 
-#endif  // GNSS_SDR_GPS_L5_H_
+#endif  // GNSS_SDR_GPS_L5_H

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ReferenceTime_H_
-#define _ReferenceTime_H_
+#ifndef _ReferenceTime_H
+#define _ReferenceTime_H
 
 #include <asn_application.h>
 

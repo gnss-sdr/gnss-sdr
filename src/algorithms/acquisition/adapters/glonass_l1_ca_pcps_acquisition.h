@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
-#define GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H
+#define GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H
 
 #include "acq_conf.h"
 #include "channel_fsm.h"
@@ -169,4 +169,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
+#endif  // GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H

@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GALILEO_UTC_MODEL_H_
-#define GNSS_SDR_GALILEO_UTC_MODEL_H_
+#ifndef GNSS_SDR_GALILEO_UTC_MODEL_H
+#define GNSS_SDR_GALILEO_UTC_MODEL_H
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>

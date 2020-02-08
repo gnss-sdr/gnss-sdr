@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H_
-#define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H_
+#ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
+#define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
 #include "exponential_smoother.h"
@@ -241,4 +241,4 @@ private:
     bool d_stop_tracking;
 };
 
-#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H_
+#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

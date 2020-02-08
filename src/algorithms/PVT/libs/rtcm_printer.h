@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTCM_PRINTER_H_
-#define GNSS_SDR_RTCM_PRINTER_H_
+#ifndef GNSS_SDR_RTCM_PRINTER_H
+#define GNSS_SDR_RTCM_PRINTER_H
 
 #include <cstdint>  // for int32_t
 #include <fstream>  // for std::ofstream

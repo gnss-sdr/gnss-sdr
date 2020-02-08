@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _EnvironmentCharacter_H_
-#define _EnvironmentCharacter_H_
+#ifndef _EnvironmentCharacter_H
+#define _EnvironmentCharacter_H
 
 #include <asn_application.h>
 

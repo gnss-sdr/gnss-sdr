@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Horvel_H_
-#define _Horvel_H_
+#ifndef _Horvel_H
+#define _Horvel_H
 
 #include <asn_application.h>
 

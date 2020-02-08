@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CUDA_MULTICORRELATOR_H_
-#define GNSS_SDR_CUDA_MULTICORRELATOR_H_
+#ifndef GNSS_SDR_CUDA_MULTICORRELATOR_H
+#define GNSS_SDR_CUDA_MULTICORRELATOR_H
 
 
 #ifdef __CUDACC__
@@ -157,4 +157,4 @@ private:
 };
 
 
-#endif  // GNSS_SDR_CUDA_MULTICORRELATOR_H_
+#endif  // GNSS_SDR_CUDA_MULTICORRELATOR_H

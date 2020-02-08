@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSAssistanceData_H_
-#define _GANSSAssistanceData_H_
+#ifndef _GANSSAssistanceData_H
+#define _GANSSAssistanceData_H
 
 #include <asn_application.h>
 

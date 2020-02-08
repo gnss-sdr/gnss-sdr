@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SERDES_GNSS_SYNCHRO_H_
-#define GNSS_SDR_SERDES_GNSS_SYNCHRO_H_
+#ifndef GNSS_SDR_SERDES_GNSS_SYNCHRO_H
+#define GNSS_SDR_SERDES_GNSS_SYNCHRO_H
 
 #include "gnss_synchro.h"
 #include "gnss_synchro.pb.h"  // file created by Protocol Buffers at compile time
@@ -167,4 +167,4 @@ private:
     gnss_sdr::Observables observables{};
 };
 
-#endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H_
+#endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H

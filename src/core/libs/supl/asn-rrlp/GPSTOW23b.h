@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPSTOW23b_H_
-#define _GPSTOW23b_H_
+#ifndef _GPSTOW23b_H
+#define _GPSTOW23b_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RoughRTD_H_
-#define _RoughRTD_H_
+#ifndef _RoughRTD_H
+#define _RoughRTD_H
 
 #include <asn_application.h>
 

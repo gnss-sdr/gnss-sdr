@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RelativeAlt_H_
-#define _RelativeAlt_H_
+#ifndef _RelativeAlt_H
+#define _RelativeAlt_H
 
 #include <asn_application.h>
 

@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_GNSS_SDR_VALVE_H_
-#define GNSS_SDR_GNSS_SDR_VALVE_H_
+#ifndef GNSS_SDR_GNSS_SDR_VALVE_H
+#define GNSS_SDR_GNSS_SDR_VALVE_H
 
 #include "concurrent_queue.h"
 #include <boost/shared_ptr.hpp>
@@ -81,4 +81,4 @@ private:
     bool d_open_valve;
 };
 
-#endif  // GNSS_SDR_GNSS_SDR_VALVE_H_
+#endif  // GNSS_SDR_GNSS_SDR_VALVE_H

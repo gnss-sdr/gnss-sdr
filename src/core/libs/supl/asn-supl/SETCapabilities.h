@@ -6,8 +6,8 @@
  *     found in "../supl-start.asn"
  */
 
-#ifndef _SETCapabilities_H_
-#define _SETCapabilities_H_
+#ifndef _SETCapabilities_H
+#define _SETCapabilities_H
 
 #include <asn_application.h>
 

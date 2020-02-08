@@ -6,8 +6,8 @@
  *     found in "../supl-posinit.asn"
  */
 
-#ifndef _XNavigationModel_H_
-#define _XNavigationModel_H_
+#ifndef _XNavigationModel_H
+#define _XNavigationModel_H
 
 #include <asn_application.h>
 

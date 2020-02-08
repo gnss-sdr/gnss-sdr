@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CHANNEL_EVENT_H_
-#define GNSS_SDR_CHANNEL_EVENT_H_
+#ifndef GNSS_SDR_CHANNEL_EVENT_H
+#define GNSS_SDR_CHANNEL_EVENT_H
 
 #include <memory>
 
@@ -39,4 +39,4 @@ private:
     Channel_Event(int channel_id_, int event_type_);
 };
 
-#endif  // GNSS_SDR_CHANNEL_EVENT_H_
+#endif  // GNSS_SDR_CHANNEL_EVENT_H

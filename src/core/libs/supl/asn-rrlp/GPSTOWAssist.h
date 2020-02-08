@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPSTOWAssist_H_
-#define _GPSTOWAssist_H_
+#ifndef _GPSTOWAssist_H
+#define _GPSTOWAssist_H
 
 #include <asn_application.h>
 

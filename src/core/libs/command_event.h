@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_COMMAND_EVENT_H_
-#define GNSS_SDR_COMMAND_EVENT_H_
+#ifndef GNSS_SDR_COMMAND_EVENT_H
+#define GNSS_SDR_COMMAND_EVENT_H
 
 #include <memory>
 
@@ -39,4 +39,4 @@ private:
     Command_Event(int command_id_, int event_type_);
 };
 
-#endif  // GNSS_SDR_COMMAND_EVENT_H_
+#endif  // GNSS_SDR_COMMAND_EVENT_H

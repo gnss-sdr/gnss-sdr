@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _FormatIndicator_H_
-#define _FormatIndicator_H_
+#ifndef _FormatIndicator_H
+#define _FormatIndicator_H
 
 #include <asn_application.h>
 

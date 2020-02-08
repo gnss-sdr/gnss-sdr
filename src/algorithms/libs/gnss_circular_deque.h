@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CIRCULAR_DEQUE_H_
-#define GNSS_SDR_CIRCULAR_DEQUE_H_
+#ifndef GNSS_SDR_CIRCULAR_DEQUE_H
+#define GNSS_SDR_CIRCULAR_DEQUE_H
 
 #include <boost/circular_buffer.hpp>
 #include <vector>
@@ -138,4 +138,4 @@ void Gnss_circular_deque<T>::push_back(unsigned int ch, const T& new_data)
     d_data[ch].push_back(new_data);
 }
 
-#endif  // GNSS_SDR_CIRCULAR_DEQUE_H_
+#endif  // GNSS_SDR_CIRCULAR_DEQUE_H

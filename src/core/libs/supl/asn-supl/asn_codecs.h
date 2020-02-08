@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _ASN_CODECS_H_
-#define _ASN_CODECS_H_
+#ifndef _ASN_CODECS_H
+#define _ASN_CODECS_H
 
 #ifdef __cplusplus
 extern "C"

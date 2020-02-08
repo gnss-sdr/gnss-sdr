@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_LS_PVT_H_
-#define GNSS_SDR_LS_PVT_H_
+#ifndef GNSS_SDR_LS_PVT_H
+#define GNSS_SDR_LS_PVT_H
 
 
 #include "pvt_solution.h"

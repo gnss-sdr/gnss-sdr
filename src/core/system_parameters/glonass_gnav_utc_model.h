@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H_
-#define GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H_
+#ifndef GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H
+#define GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>

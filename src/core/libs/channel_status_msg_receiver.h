@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H_
-#define GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H_
+#ifndef GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H
+#define GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H
 
 #include "gnss_synchro.h"
 #include "monitor_pvt.h"
@@ -59,4 +59,4 @@ private:
     void msg_handler_events(const pmt::pmt_t& msg);
 };
 
-#endif  // GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H_
+#endif  // GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H

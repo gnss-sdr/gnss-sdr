@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _BIT_STRING_H_
-#define _BIT_STRING_H_
+#ifndef _BIT_STRING_H
+#define _BIT_STRING_H
 
 #include <OCTET_STRING.h> /* Some help from OCTET STRING */
 

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _CellIDAndLAC_H_
-#define _CellIDAndLAC_H_
+#ifndef _CellIDAndLAC_H
+#define _CellIDAndLAC_H
 
 #include <asn_application.h>
 

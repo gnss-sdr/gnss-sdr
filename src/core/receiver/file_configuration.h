@@ -22,8 +22,8 @@
  */
 
 
-#ifndef GNSS_SDR_FILE_CONFIGURATION_H_
-#define GNSS_SDR_FILE_CONFIGURATION_H_
+#ifndef GNSS_SDR_FILE_CONFIGURATION_H
+#define GNSS_SDR_FILE_CONFIGURATION_H
 
 #include "configuration_interface.h"
 #include <cstdint>
@@ -71,4 +71,4 @@ private:
     int error_{};
 };
 
-#endif  // GNSS_SDR_FILE_CONFIGURATION_H_
+#endif  // GNSS_SDR_FILE_CONFIGURATION_H

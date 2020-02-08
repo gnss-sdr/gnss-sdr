@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSSatelliteElement_H_
-#define _GANSSSatelliteElement_H_
+#ifndef _GANSSSatelliteElement_H
+#define _GANSSSatelliteElement_H
 
 #include <asn_application.h>
 

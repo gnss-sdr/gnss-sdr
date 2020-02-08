@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _MultiFrameCarrier_H_
-#define _MultiFrameCarrier_H_
+#ifndef _MultiFrameCarrier_H
+#define _MultiFrameCarrier_H
 
 #include <asn_application.h>
 

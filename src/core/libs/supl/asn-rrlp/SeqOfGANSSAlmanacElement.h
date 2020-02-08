@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfGANSSAlmanacElement_H_
-#define _SeqOfGANSSAlmanacElement_H_
+#ifndef _SeqOfGANSSAlmanacElement_H
+#define _SeqOfGANSSAlmanacElement_H
 
 #include <asn_application.h>
 

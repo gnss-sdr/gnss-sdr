@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
-#define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H
+#define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H
 
 #include "galileo_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"  // for Gnss_Satellite
@@ -90,4 +90,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
+#endif  // GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H

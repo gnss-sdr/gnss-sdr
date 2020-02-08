@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SatElement_H_
-#define _SatElement_H_
+#ifndef _SatElement_H
+#define _SatElement_H
 
 #include <asn_application.h>
 

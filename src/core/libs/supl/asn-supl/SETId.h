@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _SETId_H_
-#define _SETId_H_
+#ifndef _SETId_H
+#define _SETId_H
 
 #include <asn_application.h>
 

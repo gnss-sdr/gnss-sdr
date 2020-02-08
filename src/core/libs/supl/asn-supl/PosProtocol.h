@@ -6,8 +6,8 @@
  *     found in "../supl-start.asn"
  */
 
-#ifndef _PosProtocol_H_
-#define _PosProtocol_H_
+#ifndef _PosProtocol_H
+#define _PosProtocol_H
 
 #include <asn_application.h>
 

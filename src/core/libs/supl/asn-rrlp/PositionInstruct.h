@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _PositionInstruct_H_
-#define _PositionInstruct_H_
+#ifndef _PositionInstruct_H
+#define _PositionInstruct_H
 
 #include <asn_application.h>
 

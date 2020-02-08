@@ -6,8 +6,8 @@
  *     found in "../supl-end.asn"
  */
 
-#ifndef _SUPLEND_H_
-#define _SUPLEND_H_
+#ifndef _SUPLEND_H
+#define _SUPLEND_H
 
 #include <asn_application.h>
 

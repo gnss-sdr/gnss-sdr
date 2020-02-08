@@ -6,8 +6,8 @@
  *     found in "../rrlp-messages.asn"
  */
 
-#ifndef _PDU_H_
-#define _PDU_H_
+#ifndef _PDU_H
+#define _PDU_H
 
 #include <asn_application.h>
 

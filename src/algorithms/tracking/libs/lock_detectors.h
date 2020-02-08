@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_LOCK_DETECTORS_H_
-#define GNSS_SDR_LOCK_DETECTORS_H_
+#ifndef GNSS_SDR_LOCK_DETECTORS_H
+#define GNSS_SDR_LOCK_DETECTORS_H
 
 #include <gnuradio/gr_complex.h>
 

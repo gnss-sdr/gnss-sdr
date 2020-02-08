@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _EphemerisSubframe1Reserved_H_
-#define _EphemerisSubframe1Reserved_H_
+#ifndef _EphemerisSubframe1Reserved_H
+#define _EphemerisSubframe1Reserved_H
 
 #include <asn_application.h>
 

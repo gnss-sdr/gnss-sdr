@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PULSE_BLANKING_H_
-#define GNSS_SDR_PULSE_BLANKING_H_
+#ifndef GNSS_SDR_PULSE_BLANKING_H
+#define GNSS_SDR_PULSE_BLANKING_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
@@ -59,4 +59,4 @@ private:
     gr_complex *zeros_;
 };
 
-#endif  // GNSS_SDR_PULSE_BLANKING_H_
+#endif  // GNSS_SDR_PULSE_BLANKING_H

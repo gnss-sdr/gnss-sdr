@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E1_H_
-#define GNSS_SDR_GALILEO_E1_H_
+#ifndef GNSS_SDR_GALILEO_E1_H
+#define GNSS_SDR_GALILEO_E1_H
 
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
@@ -398,4 +398,4 @@ const std::string GALILEO_E1_C_PRIMARY_CODE[GALILEO_E1_NUMBER_OF_CODES] = {
 
 const std::string GALILEO_E1_C_SECONDARY_CODE = "0011100000001010110110010";
 
-#endif  // GNSS_SDR_GALILEO_E1_H_
+#endif  // GNSS_SDR_GALILEO_E1_H

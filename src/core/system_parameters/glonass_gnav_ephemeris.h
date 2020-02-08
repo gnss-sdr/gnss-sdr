@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H_
-#define GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H_
+#ifndef GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H
+#define GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H
 
 
 #include <boost/date_time/posix_time/ptime.hpp>  // for ptime

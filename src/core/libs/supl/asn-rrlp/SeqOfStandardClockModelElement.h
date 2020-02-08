@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfStandardClockModelElement_H_
-#define _SeqOfStandardClockModelElement_H_
+#ifndef _SeqOfStandardClockModelElement_H
+#define _SeqOfStandardClockModelElement_H
 
 #include <asn_application.h>
 

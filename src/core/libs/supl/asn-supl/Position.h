@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Position_H_
-#define _Position_H_
+#ifndef _Position_H
+#define _Position_H
 
 #include <asn_application.h>
 

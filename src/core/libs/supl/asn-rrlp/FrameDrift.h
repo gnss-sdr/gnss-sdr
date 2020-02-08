@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _FrameDrift_H_
-#define _FrameDrift_H_
+#ifndef _FrameDrift_H
+#define _FrameDrift_H
 
 #include <asn_application.h>
 

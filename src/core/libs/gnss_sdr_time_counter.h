@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SDR_TIME_COUNTER_H_
-#define GNSS_SDR_GNSS_SDR_TIME_COUNTER_H_
+#ifndef GNSS_SDR_GNSS_SDR_TIME_COUNTER_H
+#define GNSS_SDR_GNSS_SDR_TIME_COUNTER_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
@@ -55,4 +55,4 @@ private:
     friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 };
 
-#endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_
+#endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _LAC_H_
-#define _LAC_H_
+#ifndef _LAC_H
+#define _LAC_H
 
 #include <asn_application.h>
 

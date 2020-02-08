@@ -6,8 +6,8 @@
  *     found in "../supl-response.asn"
  */
 
-#ifndef _KeyIdentity4_H_
-#define _KeyIdentity4_H_
+#ifndef _KeyIdentity4_H
+#define _KeyIdentity4_H
 
 #include <asn_application.h>
 

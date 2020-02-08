@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _PrimaryCCPCH_RSCP_H_
-#define _PrimaryCCPCH_RSCP_H_
+#ifndef _PrimaryCCPCH_RSCP_H
+#define _PrimaryCCPCH_RSCP_H
 
 #include <asn_application.h>
 

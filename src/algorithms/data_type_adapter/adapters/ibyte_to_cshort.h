@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_IBYTE_TO_CSHORT_H_
-#define GNSS_SDR_IBYTE_TO_CSHORT_H_
+#ifndef GNSS_SDR_IBYTE_TO_CSHORT_H
+#define GNSS_SDR_IBYTE_TO_CSHORT_H
 
 #include "conjugate_sc.h"
 #include "gnss_block_interface.h"

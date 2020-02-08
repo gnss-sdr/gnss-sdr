@@ -6,8 +6,8 @@
  *     found in "../rrlp-messages.asn"
  */
 
-#ifndef _RRLP_Component_H_
-#define _RRLP_Component_H_
+#ifndef _RRLP_Component_H
+#define _RRLP_Component_H
 
 #include <asn_application.h>
 

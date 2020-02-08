@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PVT_SOLUTION_H_
-#define GNSS_SDR_PVT_SOLUTION_H_
+#ifndef GNSS_SDR_PVT_SOLUTION_H
+#define GNSS_SDR_PVT_SOLUTION_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1

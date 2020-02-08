@@ -54,8 +54,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_RTKCMN_H_
-#define GNSS_SDR_RTKLIB_RTKCMN_H_
+#ifndef GNSS_SDR_RTKLIB_RTKCMN_H
+#define GNSS_SDR_RTKLIB_RTKCMN_H
 
 #include "rtklib.h"
 #include <string>
@@ -265,4 +265,4 @@ int rtk_uncompress(const char *file, char *uncfile);
 int expath(const char *path, char *paths[], int nmax);
 void windupcorr(gtime_t time, const double *rs, const double *rr, double *phw);
 
-#endif  // GNSS_SDR_RTKLIB_RTKCMN_H_
+#endif  // GNSS_SDR_RTKLIB_RTKCMN_H

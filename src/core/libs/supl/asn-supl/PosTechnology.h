@@ -6,8 +6,8 @@
  *     found in "../supl-start.asn"
  */
 
-#ifndef _PosTechnology_H_
-#define _PosTechnology_H_
+#ifndef _PosTechnology_H
+#define _PosTechnology_H
 
 #include <asn_application.h>
 

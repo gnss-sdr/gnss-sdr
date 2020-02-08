@@ -5,8 +5,8 @@
 /*
  * Declarations internally useful for the ASN.1 support code.
  */
-#ifndef _ASN_INTERNAL_H_
-#define _ASN_INTERNAL_H_
+#ifndef _ASN_INTERNAL_H
+#define _ASN_INTERNAL_H
 
 #include "asn_application.h" /* Application-visible API */
 

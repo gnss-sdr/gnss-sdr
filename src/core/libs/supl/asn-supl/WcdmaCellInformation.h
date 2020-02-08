@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _WcdmaCellInformation_H_
-#define _WcdmaCellInformation_H_
+#ifndef _WcdmaCellInformation_H
+#define _WcdmaCellInformation_H
 
 #include <asn_application.h>
 

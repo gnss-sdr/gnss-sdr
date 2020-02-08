@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_SWITCH_H_
-#define GNSS_SDR_FPGA_SWITCH_H_
+#ifndef GNSS_SDR_FPGA_SWITCH_H
+#define GNSS_SDR_FPGA_SWITCH_H
 
 #include <string>
 
@@ -63,4 +63,4 @@ private:
     void close_device(void);
 };
 
-#endif  // GNSS_SDR_FPGA_SWITCH_H_
+#endif  // GNSS_SDR_FPGA_SWITCH_H

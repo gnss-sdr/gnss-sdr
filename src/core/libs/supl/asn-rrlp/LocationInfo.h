@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _LocationInfo_H_
-#define _LocationInfo_H_
+#ifndef _LocationInfo_H
+#define _LocationInfo_H
 
 #include <asn_application.h>
 

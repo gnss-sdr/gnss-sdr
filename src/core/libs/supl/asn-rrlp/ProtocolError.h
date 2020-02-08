@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ProtocolError_H_
-#define _ProtocolError_H_
+#ifndef _ProtocolError_H
+#define _ProtocolError_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _NavigationModel_H_
-#define _NavigationModel_H_
+#ifndef _NavigationModel_H
+#define _NavigationModel_H
 
 #include <asn_application.h>
 

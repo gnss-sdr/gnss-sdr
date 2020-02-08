@@ -38,8 +38,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_SBAS_H_
-#define GNSS_SDR_RTKLIB_SBAS_H_
+#ifndef GNSS_SDR_RTKLIB_SBAS_H
+#define GNSS_SDR_RTKLIB_SBAS_H
 
 #include "rtklib.h"
 
@@ -139,4 +139,4 @@ int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
     sbsmsg_t *sbsmsg);
 
 
-#endif  // GNSS_SDR_RTKLIB_SBAS_H_
+#endif  // GNSS_SDR_RTKLIB_SBAS_H

@@ -22,8 +22,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NMEA_PRINTER_H_
-#define GNSS_SDR_NMEA_PRINTER_H_
+#ifndef GNSS_SDR_NMEA_PRINTER_H
+#define GNSS_SDR_NMEA_PRINTER_H
 
 #include <boost/date_time/posix_time/ptime.hpp>  // for ptime
 #include <fstream>                               // for ofstream

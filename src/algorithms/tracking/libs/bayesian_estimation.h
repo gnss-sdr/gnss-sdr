@@ -31,8 +31,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BAYESIAN_ESTIMATION_H_
-#define GNSS_SDR_BAYESIAN_ESTIMATION_H_
+#ifndef GNSS_SDR_BAYESIAN_ESTIMATION_H
+#define GNSS_SDR_BAYESIAN_ESTIMATION_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1

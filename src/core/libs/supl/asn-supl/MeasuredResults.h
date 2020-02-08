@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _MeasuredResults_H_
-#define _MeasuredResults_H_
+#ifndef _MeasuredResults_H
+#define _MeasuredResults_H
 
 #include <asn_application.h>
 

@@ -16,8 +16,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H_
-#define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H_
+#ifndef GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H
 
 
 #include "GPS_L5.h"                       // for GPS_L5I_NH_CODE_LENGTH
@@ -87,4 +87,4 @@ private:
 };
 
 
-#endif  // GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H_
+#endif  // GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H

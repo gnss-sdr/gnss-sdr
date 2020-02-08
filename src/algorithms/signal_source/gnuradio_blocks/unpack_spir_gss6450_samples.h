@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H_
-#define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H_
+#ifndef GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
+#define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
 
@@ -45,4 +45,4 @@ private:
     unsigned int samples_per_int;
 };
 
-#endif  // GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H_
+#endif  // GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H

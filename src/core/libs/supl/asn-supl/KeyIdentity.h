@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _KeyIdentity_H_
-#define _KeyIdentity_H_
+#ifndef _KeyIdentity_H
+#define _KeyIdentity_H
 
 #include <asn_application.h>
 

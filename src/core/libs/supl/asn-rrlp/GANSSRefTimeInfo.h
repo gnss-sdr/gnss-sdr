@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSRefTimeInfo_H_
-#define _GANSSRefTimeInfo_H_
+#ifndef _GANSSRefTimeInfo_H
+#define _GANSSRefTimeInfo_H
 
 #include <asn_application.h>
 

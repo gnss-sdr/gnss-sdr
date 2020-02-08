@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CONCURRENT_MAP_H_
-#define GNSS_SDR_CONCURRENT_MAP_H_
+#ifndef GNSS_SDR_CONCURRENT_MAP_H
+#define GNSS_SDR_CONCURRENT_MAP_H
 
 #include <map>
 #include <mutex>
@@ -88,4 +88,4 @@ private:
     mutable std::mutex the_mutex;
 };
 
-#endif  // GNSS_SDR_CONCURRENT_MAP_H_
+#endif  // GNSS_SDR_CONCURRENT_MAP_H

@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_AD9361_MANAGER_H_
-#define GNSS_SDR_AD9361_MANAGER_H_
+#ifndef GNSS_SDR_AD9361_MANAGER_H
+#define GNSS_SDR_AD9361_MANAGER_H
 
 #include <iio.h>
 #include <cstdint>
@@ -135,4 +135,4 @@ bool disable_ad9361_rx_local();
 
 bool disable_ad9361_rx_remote(const std::string &remote_host);
 
-#endif  // GNSS_SDR_AD9361_MANAGER_H_
+#endif  // GNSS_SDR_AD9361_MANAGER_H

@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _INTEGER_H_
-#define _INTEGER_H_
+#ifndef _INTEGER_H
+#define _INTEGER_H
 
 #include <asn_application.h>
 #include <asn_codecs_prim.h>

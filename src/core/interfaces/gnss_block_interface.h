@@ -23,8 +23,8 @@
  */
 
 
-#ifndef GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
-#define GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
+#ifndef GNSS_SDR_GNSS_BLOCK_INTERFACE_H
+#define GNSS_SDR_GNSS_BLOCK_INTERFACE_H
 
 #include <gnuradio/top_block.h>
 #include <cassert>
@@ -70,4 +70,4 @@ public:
     }
 };
 
-#endif  // GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
+#endif  // GNSS_SDR_GNSS_BLOCK_INTERFACE_H

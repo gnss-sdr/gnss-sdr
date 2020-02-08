@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GALILEO_EPHEMERIS_H_
-#define GNSS_SDR_GALILEO_EPHEMERIS_H_
+#ifndef GNSS_SDR_GALILEO_EPHEMERIS_H
+#define GNSS_SDR_GALILEO_EPHEMERIS_H
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>

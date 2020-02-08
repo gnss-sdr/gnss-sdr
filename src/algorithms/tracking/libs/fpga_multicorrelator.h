@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_MULTICORRELATOR_H_
-#define GNSS_SDR_FPGA_MULTICORRELATOR_H_
+#ifndef GNSS_SDR_FPGA_MULTICORRELATOR_H
+#define GNSS_SDR_FPGA_MULTICORRELATOR_H
 
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
@@ -254,4 +254,4 @@ private:
     void write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr);
 };
 
-#endif  // GNSS_SDR_FPGA_MULTICORRELATOR_H_
+#endif  // GNSS_SDR_FPGA_MULTICORRELATOR_H

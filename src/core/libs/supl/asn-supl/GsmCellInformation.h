@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _GsmCellInformation_H_
-#define _GsmCellInformation_H_
+#ifndef _GsmCellInformation_H
+#define _GsmCellInformation_H
 
 #include <asn_application.h>
 

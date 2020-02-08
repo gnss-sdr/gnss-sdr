@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AntiSpoofFlag_H_
-#define _AntiSpoofFlag_H_
+#ifndef _AntiSpoofFlag_H
+#define _AntiSpoofFlag_H
 
 #include <asn_application.h>
 

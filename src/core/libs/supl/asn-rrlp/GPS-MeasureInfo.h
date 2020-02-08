@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPS_MeasureInfo_H_
-#define _GPS_MeasureInfo_H_
+#ifndef _GPS_MeasureInfo_H
+#define _GPS_MeasureInfo_H
 
 #include <asn_application.h>
 

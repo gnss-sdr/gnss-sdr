@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ReferenceWGS84_H_
-#define _ReferenceWGS84_H_
+#ifndef _ReferenceWGS84_H
+#define _ReferenceWGS84_H
 
 #include <asn_application.h>
 

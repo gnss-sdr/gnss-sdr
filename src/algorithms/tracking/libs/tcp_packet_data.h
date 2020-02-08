@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TCP_PACKET_DATA_H_
-#define GNSS_SDR_TCP_PACKET_DATA_H_
+#ifndef GNSS_SDR_TCP_PACKET_DATA_H
+#define GNSS_SDR_TCP_PACKET_DATA_H
 
 /*!
  * \brief Class that implements a TCP data packet

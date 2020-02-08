@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H_
-#define GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H
+#define GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H
 
 #include "channel_fsm.h"
 #include "complex_byte_to_float_x2.h"
@@ -179,4 +179,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H_
+#endif  // GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_H

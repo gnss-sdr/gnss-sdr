@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SERDES_MONITOR_PVT_H_
-#define GNSS_SDR_SERDES_MONITOR_PVT_H_
+#ifndef GNSS_SDR_SERDES_MONITOR_PVT_H
+#define GNSS_SDR_SERDES_MONITOR_PVT_H
 
 #include "monitor_pvt.h"
 #include "monitor_pvt.pb.h"  // file created by Protocol Buffers at compile time
@@ -152,4 +152,4 @@ private:
     gnss_sdr::MonitorPvt monitor_{};
 };
 
-#endif  // GNSS_SDR_SERDES_MONITOR_PVT_H_
+#endif  // GNSS_SDR_SERDES_MONITOR_PVT_H

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfGANSSRefMeasurementElement_H_
-#define _SeqOfGANSSRefMeasurementElement_H_
+#ifndef _SeqOfGANSSRefMeasurementElement_H
+#define _SeqOfGANSSRefMeasurementElement_H
 
 #include <asn_application.h>
 

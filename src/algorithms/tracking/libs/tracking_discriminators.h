@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TRACKING_DISCRIMINATORS_H_
-#define GNSS_SDR_TRACKING_DISCRIMINATORS_H_
+#ifndef GNSS_SDR_TRACKING_DISCRIMINATORS_H
+#define GNSS_SDR_TRACKING_DISCRIMINATORS_H
 
 #include <gnuradio/gr_complex.h>
 

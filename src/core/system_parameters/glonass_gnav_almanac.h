@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_GLONASS_ALMANAC_H_
-#define GNSS_SDR_GLONASS_ALMANAC_H_
+#ifndef GNSS_SDR_GLONASS_ALMANAC_H
+#define GNSS_SDR_GLONASS_ALMANAC_H
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>

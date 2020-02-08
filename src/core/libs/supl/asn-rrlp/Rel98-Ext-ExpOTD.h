@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _Rel98_Ext_ExpOTD_H_
-#define _Rel98_Ext_ExpOTD_H_
+#ifndef _Rel98_Ext_ExpOTD_H
+#define _Rel98_Ext_ExpOTD_H
 
 #include <asn_application.h>
 

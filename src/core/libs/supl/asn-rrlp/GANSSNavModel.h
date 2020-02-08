@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSNavModel_H_
-#define _GANSSNavModel_H_
+#ifndef _GANSSNavModel_H
+#define _GANSSNavModel_H
 
 #include <asn_application.h>
 

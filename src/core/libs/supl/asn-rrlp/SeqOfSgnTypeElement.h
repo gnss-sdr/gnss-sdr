@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfSgnTypeElement_H_
-#define _SeqOfSgnTypeElement_H_
+#ifndef _SeqOfSgnTypeElement_H
+#define _SeqOfSgnTypeElement_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _AltitudeInfo_H_
-#define _AltitudeInfo_H_
+#ifndef _AltitudeInfo_H
+#define _AltitudeInfo_H
 
 #include <asn_application.h>
 

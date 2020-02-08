@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _BOOLEAN_H_
-#define _BOOLEAN_H_
+#ifndef _BOOLEAN_H
+#define _BOOLEAN_H
 
 #include <asn_application.h>
 

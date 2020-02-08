@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AdditionalAssistanceData_H_
-#define _AdditionalAssistanceData_H_
+#ifndef _AdditionalAssistanceData_H
+#define _AdditionalAssistanceData_H
 
 #include <asn_application.h>
 

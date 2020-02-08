@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
-#define GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
+#ifndef GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H
+#define GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H
 
 #include "gnss_synchro.h"
 #include "serdes_gnss_synchro.h"
@@ -56,4 +56,4 @@ private:
 };
 
 
-#endif  // GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
+#endif  // GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H

@@ -25,8 +25,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H_
-#define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H_
+#ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
 #include "cpu_multicorrelator_16sc.h"
 #include "glonass_l1_signal_processing.h"
@@ -190,4 +190,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H_
+#endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

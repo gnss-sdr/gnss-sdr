@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H_
-#define GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H_
+#ifndef GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H
+#define GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>

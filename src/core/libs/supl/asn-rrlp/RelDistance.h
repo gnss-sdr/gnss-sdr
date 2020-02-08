@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RelDistance_H_
-#define _RelDistance_H_
+#ifndef _RelDistance_H
+#define _RelDistance_H
 
 #include <asn_application.h>
 

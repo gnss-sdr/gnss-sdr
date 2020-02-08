@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _CPICH_Ec_N0_H_
-#define _CPICH_Ec_N0_H_
+#ifndef _CPICH_Ec_N0_H
+#define _CPICH_Ec_N0_H
 
 #include <asn_application.h>
 

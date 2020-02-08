@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSDataBit_H_
-#define _GANSSDataBit_H_
+#ifndef _GANSSDataBit_H
+#define _GANSSDataBit_H
 
 #include <asn_application.h>
 

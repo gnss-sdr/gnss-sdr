@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AddionalAngleFields_H_
-#define _AddionalAngleFields_H_
+#ifndef _AddionalAngleFields_H
+#define _AddionalAngleFields_H
 
 #include <asn_application.h>
 

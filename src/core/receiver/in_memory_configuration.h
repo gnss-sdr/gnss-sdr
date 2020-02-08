@@ -21,8 +21,8 @@
  */
 
 
-#ifndef GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
-#define GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
+#ifndef GNSS_SDR_IN_MEMORY_CONFIGURATION_H
+#define GNSS_SDR_IN_MEMORY_CONFIGURATION_H
 
 #include "configuration_interface.h"
 #include <cstdint>
@@ -63,4 +63,4 @@ private:
     std::unique_ptr<StringConverter> converter_;
 };
 
-#endif  // GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
+#endif  // GNSS_SDR_IN_MEMORY_CONFIGURATION_H

@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PULSE_BLANKING_FILTER_H_
-#define GNSS_SDR_PULSE_BLANKING_FILTER_H_
+#ifndef GNSS_SDR_PULSE_BLANKING_FILTER_H
+#define GNSS_SDR_PULSE_BLANKING_FILTER_H
 
 #include "gnss_block_interface.h"
 #include "pulse_blanking_cc.h"
@@ -79,4 +79,4 @@ private:
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_;
 };
 
-#endif  // GNSS_SDR_PULSE_BLANKING_FILTER_H_
+#endif  // GNSS_SDR_PULSE_BLANKING_FILTER_H

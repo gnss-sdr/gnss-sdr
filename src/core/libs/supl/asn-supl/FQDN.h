@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _FQDN_H_
-#define _FQDN_H_
+#ifndef _FQDN_H
+#define _FQDN_H
 
 #include <asn_application.h>
 

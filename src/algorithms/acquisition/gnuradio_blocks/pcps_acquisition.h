@@ -38,8 +38,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_H_
-#define GNSS_SDR_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_PCPS_ACQUISITION_H
+#define GNSS_SDR_PCPS_ACQUISITION_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
@@ -261,4 +261,4 @@ private:
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 
-#endif  // GNSS_SDR_PCPS_ACQUISITION_H_
+#endif  // GNSS_SDR_PCPS_ACQUISITION_H

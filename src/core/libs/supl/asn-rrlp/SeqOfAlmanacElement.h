@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfAlmanacElement_H_
-#define _SeqOfAlmanacElement_H_
+#ifndef _SeqOfAlmanacElement_H
+#define _SeqOfAlmanacElement_H
 
 #include <asn_application.h>
 

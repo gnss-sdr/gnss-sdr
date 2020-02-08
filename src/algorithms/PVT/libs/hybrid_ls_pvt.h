@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_HYBRID_LS_PVT_H_
-#define GNSS_SDR_HYBRID_LS_PVT_H_
+#ifndef GNSS_SDR_HYBRID_LS_PVT_H
+#define GNSS_SDR_HYBRID_LS_PVT_H
 
 #include "galileo_almanac.h"
 #include "galileo_navigation_message.h"

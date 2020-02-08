@@ -6,8 +6,8 @@
  *     found in "../supl-pos.asn"
  */
 
-#ifndef _SUPLPOS_H_
-#define _SUPLPOS_H_
+#ifndef _SUPLPOS_H
+#define _SUPLPOS_H
 
 #include <asn_application.h>
 

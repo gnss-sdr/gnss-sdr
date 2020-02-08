@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Horveluncert_H_
-#define _Horveluncert_H_
+#ifndef _Horveluncert_H
+#define _Horveluncert_H
 
 #include <asn_application.h>
 

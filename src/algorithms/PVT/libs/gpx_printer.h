@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPX_PRINTER_H_
-#define GNSS_SDR_GPX_PRINTER_H_
+#ifndef GNSS_SDR_GPX_PRINTER_H
+#define GNSS_SDR_GPX_PRINTER_H
 
 
 #include <fstream>

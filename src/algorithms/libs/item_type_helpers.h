@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ITEM_TYPE_HELPERS_H_
-#define GNSS_SDR_ITEM_TYPE_HELPERS_H_
+#ifndef GNSS_SDR_ITEM_TYPE_HELPERS_H
+#define GNSS_SDR_ITEM_TYPE_HELPERS_H
 
 
 #include <functional>

@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _FineRTD_H_
-#define _FineRTD_H_
+#ifndef _FineRTD_H
+#define _FineRTD_H
 
 #include <asn_application.h>
 

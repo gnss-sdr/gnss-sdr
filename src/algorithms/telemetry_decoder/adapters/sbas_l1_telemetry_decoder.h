@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H_
-#define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H
+#define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H
 
 
 #include "gnss_satellite.h"  // for Gnss_Satellite

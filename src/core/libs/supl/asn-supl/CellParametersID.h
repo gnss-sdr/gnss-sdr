@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _CellParametersID_H_
-#define _CellParametersID_H_
+#ifndef _CellParametersID_H
+#define _CellParametersID_H
 
 #include <asn_application.h>
 

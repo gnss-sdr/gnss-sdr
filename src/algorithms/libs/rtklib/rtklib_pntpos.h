@@ -29,8 +29,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_PNTPOS_H_
-#define GNSS_SDR_RTKLIB_PNTPOS_H_
+#ifndef GNSS_SDR_RTKLIB_PNTPOS_H
+#define GNSS_SDR_RTKLIB_PNTPOS_H
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
@@ -141,4 +141,4 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
     char *msg);
 
-#endif  // GNSS_SDR_RTKLIB_PNTPOS_H_
+#endif  // GNSS_SDR_RTKLIB_PNTPOS_H

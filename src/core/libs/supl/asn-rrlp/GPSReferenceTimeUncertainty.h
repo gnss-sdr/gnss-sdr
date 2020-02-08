@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPSReferenceTimeUncertainty_H_
-#define _GPSReferenceTimeUncertainty_H_
+#ifndef _GPSReferenceTimeUncertainty_H
+#define _GPSReferenceTimeUncertainty_H
 
 #include <asn_application.h>
 

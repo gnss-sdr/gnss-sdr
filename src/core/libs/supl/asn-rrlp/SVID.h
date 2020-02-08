@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SVID_H_
-#define _SVID_H_
+#ifndef _SVID_H
+#define _SVID_H
 
 #include <asn_application.h>
 

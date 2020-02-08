@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _BitNumber_H_
-#define _BitNumber_H_
+#ifndef _BitNumber_H
+#define _BitNumber_H
 
 #include <asn_application.h>
 

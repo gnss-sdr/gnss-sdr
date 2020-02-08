@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _PosMethod_H_
-#define _PosMethod_H_
+#ifndef _PosMethod_H
+#define _PosMethod_H
 
 #include <asn_application.h>
 

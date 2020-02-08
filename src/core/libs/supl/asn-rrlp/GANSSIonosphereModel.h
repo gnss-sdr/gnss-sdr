@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSIonosphereModel_H_
-#define _GANSSIonosphereModel_H_
+#ifndef _GANSSIonosphereModel_H
+#define _GANSSIonosphereModel_H
 
 #include <asn_application.h>
 

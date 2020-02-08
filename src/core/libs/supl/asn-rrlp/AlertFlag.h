@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AlertFlag_H_
-#define _AlertFlag_H_
+#ifndef _AlertFlag_H
+#define _AlertFlag_H
 
 #include <asn_application.h>
 

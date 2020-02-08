@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _IonosphericModel_H_
-#define _IonosphericModel_H_
+#ifndef _IonosphericModel_H
+#define _IonosphericModel_H
 
 #include <asn_application.h>
 

@@ -35,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
+#ifndef GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H
+#define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1

@@ -6,8 +6,8 @@
  *     found in "../supl-start.asn"
  */
 
-#ifndef _SUPLSTART_H_
-#define _SUPLSTART_H_
+#ifndef _SUPLSTART_H
+#define _SUPLSTART_H
 
 #include <asn_application.h>
 

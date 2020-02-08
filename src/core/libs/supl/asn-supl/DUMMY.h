@@ -6,8 +6,8 @@
  *     found in "../supl-ulp.asn"
  */
 
-#ifndef _DUMMY_H_
-#define _DUMMY_H_
+#ifndef _DUMMY_H
+#define _DUMMY_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _SlpSessionID_H_
-#define _SlpSessionID_H_
+#ifndef _SlpSessionID_H
+#define _SlpSessionID_H
 
 #include <asn_application.h>
 

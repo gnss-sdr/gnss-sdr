@@ -4,8 +4,8 @@
 #error "Use this header only with Microsoft Visual C++ compilers!"
 #endif  // _MSC_VER ]
 
-#ifndef _MSC_SYS_TIME_H_
-#define _MSC_SYS_TIME_H_
+#ifndef _MSC_SYS_TIME_H
+#define _MSC_SYS_TIME_H
 
 #ifndef NOMINMAX
 #define NOMINMAX

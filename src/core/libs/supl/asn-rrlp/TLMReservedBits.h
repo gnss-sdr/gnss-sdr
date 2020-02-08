@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _TLMReservedBits_H_
-#define _TLMReservedBits_H_
+#ifndef _TLMReservedBits_H
+#define _TLMReservedBits_H
 
 #include <asn_application.h>
 

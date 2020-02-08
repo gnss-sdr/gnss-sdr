@@ -11,7 +11,7 @@
 #endif  // _MSC_VER ]
 
 #ifndef _MSC_CONFIG_H_  // [
-#define _MSC_CONFIG_H_
+#define _MSC_CONFIG_H
 
 ////////////////////////////////////////////////////////////////////////
 // enable inline functions for C code

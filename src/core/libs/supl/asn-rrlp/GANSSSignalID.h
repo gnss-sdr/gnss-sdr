@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSSignalID_H_
-#define _GANSSSignalID_H_
+#ifndef _GANSSSignalID_H
+#define _GANSSSignalID_H
 
 #include <asn_application.h>
 

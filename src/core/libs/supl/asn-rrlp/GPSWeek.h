@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPSWeek_H_
-#define _GPSWeek_H_
+#ifndef _GPSWeek_H
+#define _GPSWeek_H
 
 #include <asn_application.h>
 

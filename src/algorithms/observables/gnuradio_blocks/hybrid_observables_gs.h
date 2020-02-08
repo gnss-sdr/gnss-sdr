@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H_
-#define GNSS_SDR_HYBRID_OBSERVABLES_GS_H_
+#ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H
+#define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <boost/shared_ptr.hpp>       // for boost::shared_ptr
@@ -94,4 +94,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_HYBRID_OBSERVABLES_GS_H_
+#endif  // GNSS_SDR_HYBRID_OBSERVABLES_GS_H

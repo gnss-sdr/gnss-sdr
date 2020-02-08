@@ -5,8 +5,8 @@
 /*
  * Miscellaneous system-dependent types.
  */
-#ifndef _ASN_SYSTEM_H_
-#define _ASN_SYSTEM_H_
+#ifndef _ASN_SYSTEM_H
+#define _ASN_SYSTEM_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

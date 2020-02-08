@@ -40,8 +40,8 @@
  *----------------------------------------------------------------------------*/
 
 
-#ifndef GNSS_SDR_RTKLIB_TIDES_H_
-#define GNSS_SDR_RTKLIB_TIDES_H_
+#ifndef GNSS_SDR_RTKLIB_TIDES_H
+#define GNSS_SDR_RTKLIB_TIDES_H
 
 
 #include "rtklib.h"

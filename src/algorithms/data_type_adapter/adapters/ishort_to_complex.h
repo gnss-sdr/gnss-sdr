@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ISHORT_TO_COMPLEX_H_
-#define GNSS_SDR_ISHORT_TO_COMPLEX_H_
+#ifndef GNSS_SDR_ISHORT_TO_COMPLEX_H
+#define GNSS_SDR_ISHORT_TO_COMPLEX_H
 
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"

@@ -6,8 +6,8 @@
  *     found in "../supl-posinit.asn"
  */
 
-#ifndef _SatelliteInfoElement_H_
-#define _SatelliteInfoElement_H_
+#ifndef _SatelliteInfoElement_H
+#define _SatelliteInfoElement_H
 
 #include <asn_application.h>
 

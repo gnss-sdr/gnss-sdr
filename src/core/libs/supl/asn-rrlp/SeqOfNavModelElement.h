@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfNavModelElement_H_
-#define _SeqOfNavModelElement_H_
+#ifndef _SeqOfNavModelElement_H
+#define _SeqOfNavModelElement_H
 
 #include <asn_application.h>
 

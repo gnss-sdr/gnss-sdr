@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AccuracyOpt_H_
-#define _AccuracyOpt_H_
+#ifndef _AccuracyOpt_H
+#define _AccuracyOpt_H
 
 #include <asn_application.h>
 

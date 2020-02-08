@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H_
-#define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H
+#define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H
 
 #include "glonass_l2_ca_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"  // for Gnss_Satellite

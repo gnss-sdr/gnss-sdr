@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H_
-#define GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H
+#define GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H
 
 
 #include "channel_fsm.h"
@@ -168,4 +168,4 @@ private:
     Gnss_Synchro* gnss_synchro_;
 };
 
-#endif  // GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H_
+#endif  // GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H

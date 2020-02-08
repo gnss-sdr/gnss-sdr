@@ -6,8 +6,8 @@
  *     found in "../supl-ulp.asn"
  */
 
-#ifndef _UlpMessage_H_
-#define _UlpMessage_H_
+#ifndef _UlpMessage_H
+#define _UlpMessage_H
 
 #include <asn_application.h>
 

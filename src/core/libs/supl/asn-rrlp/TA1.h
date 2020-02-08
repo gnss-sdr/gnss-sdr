@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _TA1_H_
-#define _TA1_H_
+#ifndef _TA1_H
+#define _TA1_H
 
 #include <asn_application.h>
 

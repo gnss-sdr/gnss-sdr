@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _OTD_MeasurementWithID_H_
-#define _OTD_MeasurementWithID_H_
+#ifndef _OTD_MeasurementWithID_H
+#define _OTD_MeasurementWithID_H
 
 #include <asn_application.h>
 

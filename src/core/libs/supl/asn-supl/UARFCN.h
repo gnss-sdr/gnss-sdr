@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _UARFCN_H_
-#define _UARFCN_H_
+#ifndef _UARFCN_H
+#define _UARFCN_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../supl-pos.asn"
  */
 
-#ifndef _PosPayLoad_H_
-#define _PosPayLoad_H_
+#ifndef _PosPayLoad_H
+#define _PosPayLoad_H
 
 #include <asn_application.h>
 

@@ -9,8 +9,8 @@
  * will do).
  * This type may be used when integer range is limited by subtype constraints.
  */
-#ifndef _NativeEnumerated_H_
-#define _NativeEnumerated_H_
+#ifndef _NativeEnumerated_H
+#define _NativeEnumerated_H
 
 #include <NativeInteger.h>
 

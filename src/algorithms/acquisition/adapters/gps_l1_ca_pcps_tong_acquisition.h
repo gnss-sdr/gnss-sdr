@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_
-#define GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_
+#ifndef GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H
+#define GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H
 
 #include "channel_fsm.h"
 #include "configuration_interface.h"
@@ -169,4 +169,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_
+#endif  // GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H

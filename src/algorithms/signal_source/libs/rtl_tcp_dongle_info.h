@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTL_TCP_DONGLE_INFO_H_
-#define GNSS_SDR_RTL_TCP_DONGLE_INFO_H_
+#ifndef GNSS_SDR_RTL_TCP_DONGLE_INFO_H
+#define GNSS_SDR_RTL_TCP_DONGLE_INFO_H
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -69,4 +69,4 @@ private:
 };
 
 
-#endif  // GNSS_SDR_RTL_TCP_DONGLE_INFO_H_
+#endif  // GNSS_SDR_RTL_TCP_DONGLE_INFO_H

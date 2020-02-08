@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BYTE_X2_TO_COMPLEX_BYTE_H_
-#define GNSS_SDR_BYTE_X2_TO_COMPLEX_BYTE_H_
+#ifndef GNSS_SDR_BYTE_X2_TO_COMPLEX_BYTE_H
+#define GNSS_SDR_BYTE_X2_TO_COMPLEX_BYTE_H
 
 
 #include <boost/shared_ptr.hpp>

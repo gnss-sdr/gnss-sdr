@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DLL_PLL_CONF_H_
-#define GNSS_SDR_DLL_PLL_CONF_H_
+#ifndef GNSS_SDR_DLL_PLL_CONF_H
+#define GNSS_SDR_DLL_PLL_CONF_H
 
 #include <cstdint>
 #include <string>

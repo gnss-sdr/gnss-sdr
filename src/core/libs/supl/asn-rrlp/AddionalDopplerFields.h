@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AddionalDopplerFields_H_
-#define _AddionalDopplerFields_H_
+#ifndef _AddionalDopplerFields_H
+#define _AddionalDopplerFields_H
 
 #include <asn_application.h>
 

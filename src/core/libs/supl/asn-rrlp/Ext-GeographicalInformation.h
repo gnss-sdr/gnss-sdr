@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _Ext_GeographicalInformation_H_
-#define _Ext_GeographicalInformation_H_
+#ifndef _Ext_GeographicalInformation_H
+#define _Ext_GeographicalInformation_H
 
 #include <asn_application.h>
 

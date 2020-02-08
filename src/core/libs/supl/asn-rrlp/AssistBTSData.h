@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AssistBTSData_H_
-#define _AssistBTSData_H_
+#ifndef _AssistBTSData_H
+#define _AssistBTSData_H
 
 #include <asn_application.h>
 

@@ -6,8 +6,8 @@
  *     found in "../supl-posinit.asn"
  */
 
-#ifndef _SUPLPOSINIT_H_
-#define _SUPLPOSINIT_H_
+#ifndef _SUPLPOSINIT_H
+#define _SUPLPOSINIT_H
 
 #include <asn_application.h>
 

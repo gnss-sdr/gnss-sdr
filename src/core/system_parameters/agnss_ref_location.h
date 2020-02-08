@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_AGNSS_REF_LOCATION_H_
-#define GNSS_SDR_AGNSS_REF_LOCATION_H_
+#ifndef GNSS_SDR_AGNSS_REF_LOCATION_H
+#define GNSS_SDR_AGNSS_REF_LOCATION_H
 
 #include <boost/serialization/nvp.hpp>
 

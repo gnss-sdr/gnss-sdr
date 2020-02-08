@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSTODUncertainty_H_
-#define _GANSSTODUncertainty_H_
+#ifndef _GANSSTODUncertainty_H
+#define _GANSSTODUncertainty_H
 
 #include <asn_application.h>
 

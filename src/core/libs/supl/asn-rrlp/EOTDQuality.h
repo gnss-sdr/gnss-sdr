@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _EOTDQuality_H_
-#define _EOTDQuality_H_
+#ifndef _EOTDQuality_H
+#define _EOTDQuality_H
 
 #include <asn_application.h>
 

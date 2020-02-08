@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SVIDMASK_H_
-#define _SVIDMASK_H_
+#ifndef _SVIDMASK_H
+#define _SVIDMASK_H
 
 #include <asn_application.h>
 

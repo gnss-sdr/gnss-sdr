@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _Extended_reference_H_
-#define _Extended_reference_H_
+#ifndef _Extended_reference_H
+#define _Extended_reference_H
 
 #include <asn_application.h>
 

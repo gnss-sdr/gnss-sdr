@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _TimeslotISCP_List_H_
-#define _TimeslotISCP_List_H_
+#ifndef _TimeslotISCP_List_H
+#define _TimeslotISCP_List_H
 
 #include <asn_application.h>
 

@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H_
-#define GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H_
+#ifndef GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H
+#define GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H
 
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
@@ -205,4 +205,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif  // GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H_
+#endif  // GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H

@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_GNSS_SATELLITE_H_
-#define GNSS_SDR_GNSS_SATELLITE_H_
+#ifndef GNSS_SDR_GNSS_SATELLITE_H
+#define GNSS_SDR_GNSS_SATELLITE_H
 
 #include <cstdint>
 #include <map>

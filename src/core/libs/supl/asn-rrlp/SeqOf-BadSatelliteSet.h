@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOf_BadSatelliteSet_H_
-#define _SeqOf_BadSatelliteSet_H_
+#ifndef _SeqOf_BadSatelliteSet_H
+#define _SeqOf_BadSatelliteSet_H
 
 #include <asn_application.h>
 

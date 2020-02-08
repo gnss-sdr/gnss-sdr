@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H
+#define GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H
 
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
@@ -217,4 +217,4 @@ private:
     std::string d_dump_filename;
 };
 
-#endif  // GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_
+#endif  // GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H

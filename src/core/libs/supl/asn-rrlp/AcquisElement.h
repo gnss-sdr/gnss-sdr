@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _AcquisElement_H_
-#define _AcquisElement_H_
+#ifndef _AcquisElement_H
+#define _AcquisElement_H
 
 #include <asn_application.h>
 

@@ -33,8 +33,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_INI_H_
-#define GNSS_SDR_INI_H_
+#ifndef GNSS_SDR_INI_H
+#define GNSS_SDR_INI_H
 
 
 /* Parse given INI-style file. May have [section]s, name=value pains
@@ -61,4 +61,4 @@ int ini_parse(const char* filename,
 #endif
 
 
-#endif  // GNSS_SDR_INI_H_
+#endif  // GNSS_SDR_INI_H

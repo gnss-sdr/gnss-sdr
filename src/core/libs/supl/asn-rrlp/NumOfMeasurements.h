@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _NumOfMeasurements_H_
-#define _NumOfMeasurements_H_
+#ifndef _NumOfMeasurements_H
+#define _NumOfMeasurements_H
 
 #include <asn_application.h>
 

@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_
-#define GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_
+#ifndef GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H
+#define GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_decimator.h>
@@ -71,4 +71,4 @@ private:
     bool flag_enable_send_msg;
 };
 
-#endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_
+#endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H

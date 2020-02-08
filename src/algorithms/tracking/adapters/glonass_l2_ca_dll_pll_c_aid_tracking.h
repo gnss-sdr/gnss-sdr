@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_H_
-#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_H_
+#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_H
+#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_H
 
 #include "glonass_l2_ca_dll_pll_c_aid_tracking_cc.h"
 #include "glonass_l2_ca_dll_pll_c_aid_tracking_sc.h"
@@ -97,4 +97,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_H_
+#endif  // GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_H

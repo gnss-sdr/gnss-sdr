@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H_
-#define GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
+#define GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
 
 #include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
@@ -108,4 +108,4 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
-#endif  // GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H_
+#endif  // GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H

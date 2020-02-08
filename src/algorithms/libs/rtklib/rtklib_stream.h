@@ -29,8 +29,8 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_STREAM_H_
-#define GNSS_SDR_RTKLIB_STREAM_H_
+#ifndef GNSS_SDR_RTKLIB_STREAM_H
+#define GNSS_SDR_RTKLIB_STREAM_H
 
 #include "rtklib.h"
 

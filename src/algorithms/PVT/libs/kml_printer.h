@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_KML_PRINTER_H_
-#define GNSS_SDR_KML_PRINTER_H_
+#ifndef GNSS_SDR_KML_PRINTER_H
+#define GNSS_SDR_KML_PRINTER_H
 
 #include <fstream>  // for ofstream
 #include <memory>   // for shared_ptr

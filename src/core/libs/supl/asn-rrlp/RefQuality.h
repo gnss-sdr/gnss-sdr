@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RefQuality_H_
-#define _RefQuality_H_
+#ifndef _RefQuality_H
+#define _RefQuality_H
 
 #include <asn_application.h>
 

@@ -31,8 +31,8 @@
  *----------------------------------------------------------------------------*/
 
 
-#ifndef GNSS_SDR_RTKLIB_RTCM_H_
-#define GNSS_SDR_RTKLIB_RTCM_H_
+#ifndef GNSS_SDR_RTKLIB_RTCM_H
+#define GNSS_SDR_RTKLIB_RTCM_H
 
 #include "rtklib.h"
 #include "rtklib_rtcm2.h"
@@ -52,4 +52,4 @@ int gen_rtcm2(rtcm_t *rtcm, int type, int sync);
 // int gen_rtcm3(rtcm_t *rtcm, int type, int sync);
 
 
-#endif  // GNSS_SDR_RTKLIB_RTCM_H_
+#endif  // GNSS_SDR_RTKLIB_RTCM_H

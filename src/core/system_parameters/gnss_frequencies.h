@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GNSS_FREQUENCIES_H_
-#define GNSS_SDR_GNSS_FREQUENCIES_H_
+#ifndef GNSS_SDR_GNSS_FREQUENCIES_H
+#define GNSS_SDR_GNSS_FREQUENCIES_H
 
 const double FREQ1 = 1.57542e9;       //!<  L1/E1  frequency (Hz)
 const double FREQ2 = 1.22760e9;       //!<  L2     frequency (Hz)

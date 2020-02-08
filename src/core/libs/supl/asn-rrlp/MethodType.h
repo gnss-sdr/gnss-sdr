@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _MethodType_H_
-#define _MethodType_H_
+#ifndef _MethodType_H
+#define _MethodType_H
 
 #include <asn_application.h>
 

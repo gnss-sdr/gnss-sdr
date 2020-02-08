@@ -35,8 +35,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef GNSS_SDR_CONVOLUTIONAL_H_
-#define GNSS_SDR_CONVOLUTIONAL_H_
+#ifndef GNSS_SDR_CONVOLUTIONAL_H
+#define GNSS_SDR_CONVOLUTIONAL_H
 
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <vector>

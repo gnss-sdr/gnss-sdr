@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSIonoStormFlags_H_
-#define _GANSSIonoStormFlags_H_
+#ifndef _GANSSIonoStormFlags_H
+#define _GANSSIonoStormFlags_H
 
 #include <asn_application.h>
 

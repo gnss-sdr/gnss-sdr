@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RequestIndex_H_
-#define _RequestIndex_H_
+#ifndef _RequestIndex_H
+#define _RequestIndex_H
 
 #include <asn_application.h>
 

@@ -24,8 +24,8 @@
  */
 
 
-#ifndef GNSS_SDR_SWIFT_COMMON_H_
-#define GNSS_SDR_SWIFT_COMMON_H_
+#ifndef GNSS_SDR_SWIFT_COMMON_H
+#define GNSS_SDR_SWIFT_COMMON_H
 
 /** \defgroup common Common definitions
  * Common definitions used throughout the library.

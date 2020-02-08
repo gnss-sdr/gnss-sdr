@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H_
-#define GNSS_SDR_SIGNAL_GENERATOR_C_H_
+#ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
+#define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
 #include "gnss_signal.h"
 #include <gnuradio/block.h>
@@ -143,4 +143,4 @@ private:
     std::normal_distribution<float> normal_dist;
 };
 
-#endif  // GNSS_SDR_SIGNAL_GENERATOR_C_H_
+#endif  // GNSS_SDR_SIGNAL_GENERATOR_C_H

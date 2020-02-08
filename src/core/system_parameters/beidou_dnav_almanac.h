@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_DNAV_ALMANAC_H_
-#define GNSS_SDR_BEIDOU_DNAV_ALMANAC_H_
+#ifndef GNSS_SDR_BEIDOU_DNAV_ALMANAC_H
+#define GNSS_SDR_BEIDOU_DNAV_ALMANAC_H
 
 #include <boost/serialization/nvp.hpp>
 

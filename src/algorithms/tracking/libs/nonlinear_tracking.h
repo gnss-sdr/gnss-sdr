@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NONLINEAR_TRACKING_H_
-#define GNSS_SDR_NONLINEAR_TRACKING_H_
+#ifndef GNSS_SDR_NONLINEAR_TRACKING_H
+#define GNSS_SDR_NONLINEAR_TRACKING_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1

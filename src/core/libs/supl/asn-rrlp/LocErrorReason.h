@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _LocErrorReason_H_
-#define _LocErrorReason_H_
+#ifndef _LocErrorReason_H
+#define _LocErrorReason_H
 
 #include <asn_application.h>
 

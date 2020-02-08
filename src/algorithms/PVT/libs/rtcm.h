@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_RTCM_H_
-#define GNSS_SDR_RTCM_H_
+#ifndef GNSS_SDR_RTCM_H
+#define GNSS_SDR_RTCM_H
 
 
 #include "concurrent_queue.h"

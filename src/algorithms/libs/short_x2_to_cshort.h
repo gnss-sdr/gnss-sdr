@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SHORT_X2_TO_CSHORT_H_
-#define GNSS_SDR_SHORT_X2_TO_CSHORT_H_
+#ifndef GNSS_SDR_SHORT_X2_TO_CSHORT_H
+#define GNSS_SDR_SHORT_X2_TO_CSHORT_H
 
 
 #include <boost/shared_ptr.hpp>

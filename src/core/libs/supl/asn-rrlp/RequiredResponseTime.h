@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RequiredResponseTime_H_
-#define _RequiredResponseTime_H_
+#ifndef _RequiredResponseTime_H
+#define _RequiredResponseTime_H
 
 #include <asn_application.h>
 

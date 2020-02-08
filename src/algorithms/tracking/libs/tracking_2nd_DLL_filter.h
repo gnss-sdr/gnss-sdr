@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TRACKING_2ND_DLL_FILTER_H_
-#define GNSS_SDR_TRACKING_2ND_DLL_FILTER_H_
+#ifndef GNSS_SDR_TRACKING_2ND_DLL_FILTER_H
+#define GNSS_SDR_TRACKING_2ND_DLL_FILTER_H
 
 /*!
  * \brief This class implements a 2nd order DLL filter for code tracking loop.

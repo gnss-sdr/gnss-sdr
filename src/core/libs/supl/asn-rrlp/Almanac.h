@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _Almanac_H_
-#define _Almanac_H_
+#ifndef _Almanac_H
+#define _Almanac_H
 
 #include <asn_application.h>
 

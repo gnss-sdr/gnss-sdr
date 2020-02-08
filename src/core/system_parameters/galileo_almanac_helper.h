@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_ALMANAC_HELPER_H_
-#define GNSS_SDR_GALILEO_ALMANAC_HELPER_H_
+#ifndef GNSS_SDR_GALILEO_ALMANAC_HELPER_H
+#define GNSS_SDR_GALILEO_ALMANAC_HELPER_H
 
 #include "galileo_almanac.h"
 #include <cstdint>

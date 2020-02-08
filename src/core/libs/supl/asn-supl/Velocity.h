@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Velocity_H_
-#define _Velocity_H_
+#ifndef _Velocity_H
+#define _Velocity_H
 
 #include <asn_application.h>
 

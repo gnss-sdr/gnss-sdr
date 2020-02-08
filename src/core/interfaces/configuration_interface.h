@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CONFIGURATION_INTERFACE_H_
-#define GNSS_SDR_CONFIGURATION_INTERFACE_H_
+#ifndef GNSS_SDR_CONFIGURATION_INTERFACE_H
+#define GNSS_SDR_CONFIGURATION_INTERFACE_H
 
 #include <cstdint>
 #include <string>
@@ -55,4 +55,4 @@ public:
     virtual void set_property(std::string property_name, std::string value) = 0;
 };
 
-#endif  // GNSS_SDR_CONFIGURATION_INTERFACE_H_
+#endif  // GNSS_SDR_CONFIGURATION_INTERFACE_H

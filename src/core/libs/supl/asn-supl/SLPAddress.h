@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _SLPAddress_H_
-#define _SLPAddress_H_
+#ifndef _SLPAddress_H
+#define _SLPAddress_H
 
 #include <asn_application.h>
 

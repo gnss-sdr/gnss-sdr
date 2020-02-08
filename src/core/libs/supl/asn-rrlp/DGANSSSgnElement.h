@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _DGANSSSgnElement_H_
-#define _DGANSSSgnElement_H_
+#ifndef _DGANSSSgnElement_H
+#define _DGANSSSgnElement_H
 
 #include <asn_application.h>
 

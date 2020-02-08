@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _NMR_H_
-#define _NMR_H_
+#ifndef _NMR_H
+#define _NMR_H
 
 #include <asn_application.h>
 

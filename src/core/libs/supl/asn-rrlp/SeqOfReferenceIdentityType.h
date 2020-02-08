@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfReferenceIdentityType_H_
-#define _SeqOfReferenceIdentityType_H_
+#ifndef _SeqOfReferenceIdentityType_H
+#define _SeqOfReferenceIdentityType_H
 
 #include <asn_application.h>
 

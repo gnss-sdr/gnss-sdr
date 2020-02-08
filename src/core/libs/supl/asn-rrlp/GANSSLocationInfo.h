@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSLocationInfo_H_
-#define _GANSSLocationInfo_H_
+#ifndef _GANSSLocationInfo_H
+#define _GANSSLocationInfo_H
 
 #include <asn_application.h>
 

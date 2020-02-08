@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_MATH_CONSTANTS_H_
-#define GNSS_SDR_MATH_CONSTANTS_H_
+#ifndef GNSS_SDR_MATH_CONSTANTS_H
+#define GNSS_SDR_MATH_CONSTANTS_H
 
 #include <string>
 
@@ -108,4 +108,4 @@ const double SPEED_OF_LIGHT = 299792458.0;               //!<  [m/s]
 const double SPEED_OF_LIGHT_MS = 299792.4580;            //!<  [m/ms]
 const double AU = 149597870691.0;                        //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
 
-#endif  // GNSS_SDR_MATH_CONSTANTS_H_
+#endif  // GNSS_SDR_MATH_CONSTANTS_H

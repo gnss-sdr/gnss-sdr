@@ -23,8 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
@@ -132,4 +132,4 @@ private:
     int32_t* d_ca_codes;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H

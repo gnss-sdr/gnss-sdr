@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CPU_MULTICORRELATOR_H_
-#define GNSS_SDR_CPU_MULTICORRELATOR_H_
+#ifndef GNSS_SDR_CPU_MULTICORRELATOR_H
+#define GNSS_SDR_CPU_MULTICORRELATOR_H
 
 
 #include <complex>
@@ -54,4 +54,4 @@ private:
 };
 
 
-#endif  // GNSS_SDR_CPU_MULTICORRELATOR_H_
+#endif  // GNSS_SDR_CPU_MULTICORRELATOR_H

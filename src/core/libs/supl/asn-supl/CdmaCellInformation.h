@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _CdmaCellInformation_H_
-#define _CdmaCellInformation_H_
+#ifndef _CdmaCellInformation_H
+#define _CdmaCellInformation_H
 
 #include <asn_application.h>
 

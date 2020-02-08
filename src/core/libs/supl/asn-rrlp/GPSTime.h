@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GPSTime_H_
-#define _GPSTime_H_
+#ifndef _GPSTime_H
+#define _GPSTime_H
 
 #include <asn_application.h>
 

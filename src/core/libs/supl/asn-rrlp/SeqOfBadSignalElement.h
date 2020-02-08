@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SeqOfBadSignalElement_H_
-#define _SeqOfBadSignalElement_H_
+#ifndef _SeqOfBadSignalElement_H
+#define _SeqOfBadSignalElement_H
 
 #include <asn_application.h>
 

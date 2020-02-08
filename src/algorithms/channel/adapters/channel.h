@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CHANNEL_H_
-#define GNSS_SDR_CHANNEL_H_
+#ifndef GNSS_SDR_CHANNEL_H
+#define GNSS_SDR_CHANNEL_H
 
 #include "channel_fsm.h"
 #include "channel_interface.h"
@@ -101,4 +101,4 @@ private:
     std::mutex mx;
 };
 
-#endif  // GNSS_SDR_CHANNEL_H_
+#endif  // GNSS_SDR_CHANNEL_H

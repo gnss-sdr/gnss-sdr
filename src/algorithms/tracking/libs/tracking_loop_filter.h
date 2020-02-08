@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TRACKING_LOOP_FILTER_H_
-#define GNSS_SDR_TRACKING_LOOP_FILTER_H_
+#ifndef GNSS_SDR_TRACKING_LOOP_FILTER_H
+#define GNSS_SDR_TRACKING_LOOP_FILTER_H
 
 #include <vector>
 

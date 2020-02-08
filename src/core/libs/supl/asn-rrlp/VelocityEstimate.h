@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _VelocityEstimate_H_
-#define _VelocityEstimate_H_
+#ifndef _VelocityEstimate_H
+#define _VelocityEstimate_H
 
 #include <asn_application.h>
 

@@ -26,8 +26,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H_
-#define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H_
+#ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
@@ -212,4 +212,4 @@ private:
     int32_t save_matfile();
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H_
+#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H

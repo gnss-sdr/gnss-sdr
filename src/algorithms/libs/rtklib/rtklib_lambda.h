@@ -36,8 +36,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_LAMBDA_H_
-#define GNSS_SDR_RTKLIB_LAMBDA_H_
+#ifndef GNSS_SDR_RTKLIB_LAMBDA_H
+#define GNSS_SDR_RTKLIB_LAMBDA_H
 
 
 #include "rtklib.h"

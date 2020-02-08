@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSDiffCorrections_H_
-#define _GANSSDiffCorrections_H_
+#ifndef _GANSSDiffCorrections_H
+#define _GANSSDiffCorrections_H
 
 #include <asn_application.h>
 

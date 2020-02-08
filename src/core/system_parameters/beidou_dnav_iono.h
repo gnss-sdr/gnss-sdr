@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_DNAV_IONO_H_
-#define GNSS_SDR_BEIDOU_DNAV_IONO_H_
+#ifndef GNSS_SDR_BEIDOU_DNAV_IONO_H
+#define GNSS_SDR_BEIDOU_DNAV_IONO_H
 
 #include <boost/serialization/nvp.hpp>
 

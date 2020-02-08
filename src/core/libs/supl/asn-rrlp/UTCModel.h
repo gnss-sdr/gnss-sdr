@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _UTCModel_H_
-#define _UTCModel_H_
+#ifndef _UTCModel_H
+#define _UTCModel_H
 
 #include <asn_application.h>
 

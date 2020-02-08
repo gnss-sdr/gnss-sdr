@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Horandvervel_H_
-#define _Horandvervel_H_
+#ifndef _Horandvervel_H
+#define _Horandvervel_H
 
 #include <asn_application.h>
 

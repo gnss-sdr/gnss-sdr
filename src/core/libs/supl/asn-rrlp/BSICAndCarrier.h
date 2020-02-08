@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _BSICAndCarrier_H_
-#define _BSICAndCarrier_H_
+#ifndef _BSICAndCarrier_H
+#define _BSICAndCarrier_H
 
 #include <asn_application.h>
 

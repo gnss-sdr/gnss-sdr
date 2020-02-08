@@ -5,8 +5,8 @@
 /*
  * Application-level ASN.1 callbacks.
  */
-#ifndef _ASN_APPLICATION_H_
-#define _ASN_APPLICATION_H_
+#ifndef _ASN_APPLICATION_H
+#define _ASN_APPLICATION_H
 
 // clang-format off
 #include "asn_system.h" /* for platform-dependent types */

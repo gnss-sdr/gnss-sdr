@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
-#define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H
+#define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H
 
 #include <gsl/gsl>
 #include <complex>
@@ -41,4 +41,4 @@ void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
 //! Generates complex GPS L1 C/A code for the desired SV ID and code shift
 void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
-#endif  // GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
+#endif  // GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H

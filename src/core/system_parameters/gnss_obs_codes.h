@@ -19,8 +19,8 @@
  */
 
 
-#ifndef GNSS_SDR_GNSS_OBS_CODES_H_
-#define GNSS_SDR_GNSS_OBS_CODES_H_
+#ifndef GNSS_SDR_GNSS_OBS_CODES_H
+#define GNSS_SDR_GNSS_OBS_CODES_H
 
 #include <cstdint>
 

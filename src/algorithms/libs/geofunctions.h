@@ -18,8 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GEOFUNCTIONS_H_
-#define GNSS_SDR_GEOFUNCTIONS_H_
+#ifndef GNSS_SDR_GEOFUNCTIONS_H
+#define GNSS_SDR_GEOFUNCTIONS_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
@@ -174,4 +174,4 @@ double clsin(const arma::colvec &ar, int degree, double argument);
  */
 void clksin(const arma::colvec &ar, int degree, double arg_real, double arg_imag, double *re, double *im);
 
-#endif  // GNSS_SDR_GEOFUNCTIONS_H_
+#endif  // GNSS_SDR_GEOFUNCTIONS_H

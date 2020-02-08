@@ -17,8 +17,8 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GNSS_SDR_TCP_CMD_INTERFACE_H_
-#define GNSS_SDR_TCP_CMD_INTERFACE_H_
+#ifndef GNSS_SDR_TCP_CMD_INTERFACE_H
+#define GNSS_SDR_TCP_CMD_INTERFACE_H
 
 
 #include "concurrent_queue.h"
@@ -79,4 +79,4 @@ private:
     std::shared_ptr<PvtInterface> PVT_sptr_;
 };
 
-#endif  // GNSS_SDR_TCP_CMD_INTERFACE_H_
+#endif  // GNSS_SDR_TCP_CMD_INTERFACE_H

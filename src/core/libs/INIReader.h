@@ -25,8 +25,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_INIREADER_H_
-#define GNSS_SDR_INIREADER_H_
+#ifndef GNSS_SDR_INIREADER_H
+#define GNSS_SDR_INIREADER_H
 
 #include <cstdint>
 #include <map>
@@ -60,4 +60,4 @@ private:
         const char* value);
 };
 
-#endif  // GNSS_SDR_INIREADER_H_
+#endif  // GNSS_SDR_INIREADER_H

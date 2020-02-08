@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_ACQ_ASSIST_H_
-#define GNSS_SDR_GPS_ACQ_ASSIST_H_
+#ifndef GNSS_SDR_GPS_ACQ_ASSIST_H
+#define GNSS_SDR_GPS_ACQ_ASSIST_H
 
 #include <cstdint>
 

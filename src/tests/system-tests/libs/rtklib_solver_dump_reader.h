@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTKLIB_SOLVER_DUMP_READER_H_
-#define GNSS_SDR_RTKLIB_SOLVER_DUMP_READER_H_
+#ifndef GNSS_SDR_RTKLIB_SOLVER_DUMP_READER_H
+#define GNSS_SDR_RTKLIB_SOLVER_DUMP_READER_H
 
 #include <cstdint>
 #include <fstream>
@@ -74,4 +74,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif  // GNSS_SDR_RTKLIB_SOLVER_DUMP_READER_H_
+#endif  // GNSS_SDR_RTKLIB_SOLVER_DUMP_READER_H

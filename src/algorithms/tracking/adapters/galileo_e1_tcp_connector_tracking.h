@@ -25,8 +25,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
-#define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
+#ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H
+#define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H
 
 #include "galileo_e1_tcp_connector_tracking_cc.h"
 #include "tracking_interface.h"
@@ -96,4 +96,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
+#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H

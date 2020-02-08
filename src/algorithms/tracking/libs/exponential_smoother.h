@@ -20,8 +20,8 @@
  */
 
 
-#ifndef GNSS_SDR_EXPONENTIAL_SMOOTHER_H_
-#define GNSS_SDR_EXPONENTIAL_SMOOTHER_H_
+#ifndef GNSS_SDR_EXPONENTIAL_SMOOTHER_H
+#define GNSS_SDR_EXPONENTIAL_SMOOTHER_H
 
 #include <vector>
 
@@ -59,4 +59,4 @@ private:
     std::vector<float> init_buffer_;
 };
 
-#endif  // GNSS_SDR_EXPONENTIAL_SMOOTHER_H_
+#endif  // GNSS_SDR_EXPONENTIAL_SMOOTHER_H

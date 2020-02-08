@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _SatelliteID_H_
-#define _SatelliteID_H_
+#ifndef _SatelliteID_H
+#define _SatelliteID_H
 
 #include <asn_application.h>
 

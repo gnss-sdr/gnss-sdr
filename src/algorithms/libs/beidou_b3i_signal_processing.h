@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_
-#define GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H
+#define GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H
 
 #include <gsl/gsl>
 #include <complex>
@@ -41,4 +41,4 @@ void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, u
 //! Generates complex BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int _fs, uint32_t _chip_shift);
 
-#endif  // GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_
+#endif  // GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H

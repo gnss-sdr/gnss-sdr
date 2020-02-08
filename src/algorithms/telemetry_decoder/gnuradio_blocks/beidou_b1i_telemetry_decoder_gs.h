@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H_
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H_
+#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
 
 
 #include "beidou_dnav_navigation_message.h"
@@ -113,4 +113,4 @@ private:
     std::ofstream d_dump_file;
 };
 
-#endif  // GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H_
+#endif  // GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H

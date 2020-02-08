@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GSMTime_H_
-#define _GSMTime_H_
+#ifndef _GSMTime_H
+#define _GSMTime_H
 
 #include <asn_application.h>
 

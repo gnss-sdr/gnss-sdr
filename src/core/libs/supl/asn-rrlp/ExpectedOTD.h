@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _ExpectedOTD_H_
-#define _ExpectedOTD_H_
+#ifndef _ExpectedOTD_H
+#define _ExpectedOTD_H
 
 #include <asn_application.h>
 

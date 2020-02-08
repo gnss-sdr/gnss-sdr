@@ -6,8 +6,8 @@
  *     found in "../supl-init.asn"
  */
 
-#ifndef _Notification_H_
-#define _Notification_H_
+#ifndef _Notification_H
+#define _Notification_H
 
 #include <asn_application.h>
 

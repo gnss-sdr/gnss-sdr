@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _MpathIndic_H_
-#define _MpathIndic_H_
+#ifndef _MpathIndic_H
+#define _MpathIndic_H
 
 #include <asn_application.h>
 

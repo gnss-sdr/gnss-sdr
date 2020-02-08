@@ -6,8 +6,8 @@
  *     found in "../supl-posinit.asn"
  */
 
-#ifndef _RequestedAssistData_H_
-#define _RequestedAssistData_H_
+#ifndef _RequestedAssistData_H
+#define _RequestedAssistData_H
 
 #include <asn_application.h>
 

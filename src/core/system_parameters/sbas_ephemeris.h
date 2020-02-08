@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_SBAS_EPHEMERIS_H_
-#define GNSS_SDR_SBAS_EPHEMERIS_H_
+#ifndef GNSS_SDR_SBAS_EPHEMERIS_H
+#define GNSS_SDR_SBAS_EPHEMERIS_H
 
 #include <ostream>
 
@@ -44,4 +44,4 @@ public:
 };
 
 
-#endif  // GNSS_SDR_SBAS_EPHEMERIS_H_
+#endif  // GNSS_SDR_SBAS_EPHEMERIS_H

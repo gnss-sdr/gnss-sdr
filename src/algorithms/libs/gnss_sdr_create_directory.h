@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H_
-#define GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H_
+#ifndef GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H
+#define GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H
 
 #include <string>
 

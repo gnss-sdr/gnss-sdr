@@ -21,8 +21,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
-#define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H
+#define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
@@ -119,4 +119,4 @@ private:
     bool enable_throttle_control_;
 };
 
-#endif  // GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
+#endif  // GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H

@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _PositionEstimate_H_
-#define _PositionEstimate_H_
+#ifndef _PositionEstimate_H
+#define _PositionEstimate_H
 
 #include <asn_application.h>
 

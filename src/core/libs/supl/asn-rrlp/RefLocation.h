@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _RefLocation_H_
-#define _RefLocation_H_
+#ifndef _RefLocation_H
+#define _RefLocation_H
 
 #include <asn_application.h>
 

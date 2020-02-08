@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_L2C_H_
-#define GNSS_SDR_GPS_L2C_H_
+#ifndef GNSS_SDR_GPS_L2C_H
+#define GNSS_SDR_GPS_L2C_H
 
 
 #include "GPS_CNAV.h"
@@ -93,4 +93,4 @@ const int32_t GPS_L2_SAMPLES_PER_SYMBOL = 1;
 const int32_t GPS_L2_CNAV_DATA_PAGE_SYMBOLS = 600;
 const int32_t GPS_L2_CNAV_DATA_PAGE_DURATION_S = 12;
 
-#endif  // GNSS_SDR_GPS_L2C_H_
+#endif  // GNSS_SDR_GPS_L2C_H

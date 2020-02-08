@@ -6,8 +6,8 @@
  *     found in "../supl-common.asn"
  */
 
-#ifndef _Version_H_
-#define _Version_H_
+#ifndef _Version_H
+#define _Version_H
 
 #include <asn_application.h>
 

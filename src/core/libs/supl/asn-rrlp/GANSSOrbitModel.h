@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _GANSSOrbitModel_H_
-#define _GANSSOrbitModel_H_
+#ifndef _GANSSOrbitModel_H
+#define _GANSSOrbitModel_H
 
 #include <asn_application.h>
 

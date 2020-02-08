@@ -30,8 +30,8 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_RKTSVR_H_
-#define GNSS_SDR_RTKLIB_RKTSVR_H_
+#ifndef GNSS_SDR_RTKLIB_RKTSVR_H
+#define GNSS_SDR_RTKLIB_RKTSVR_H
 
 #include "rtklib.h"
 

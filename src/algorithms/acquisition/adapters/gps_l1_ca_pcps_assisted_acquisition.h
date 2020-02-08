@@ -20,8 +20,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
-#define GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
+#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H
+#define GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H
 
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
@@ -157,4 +157,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
+#endif  // GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H

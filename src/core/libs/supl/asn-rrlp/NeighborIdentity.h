@@ -6,8 +6,8 @@
  *     found in "../rrlp-components.asn"
  */
 
-#ifndef _NeighborIdentity_H_
-#define _NeighborIdentity_H_
+#ifndef _NeighborIdentity_H
+#define _NeighborIdentity_H
 
 #include <asn_application.h>
 

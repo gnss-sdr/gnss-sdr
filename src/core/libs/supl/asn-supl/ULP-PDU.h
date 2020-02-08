@@ -6,8 +6,8 @@
  *     found in "../supl-ulp.asn"
  */
 
-#ifndef _ULP_PDU_H_
-#define _ULP_PDU_H_
+#ifndef _ULP_PDU_H
+#define _ULP_PDU_H
 
 #include <asn_application.h>
 

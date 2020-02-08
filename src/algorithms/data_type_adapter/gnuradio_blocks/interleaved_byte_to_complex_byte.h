@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H_
-#define GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H_
+#ifndef GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H
+#define GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H
 
 
 #include <boost/shared_ptr.hpp>
@@ -46,4 +46,4 @@ private:
     interleaved_byte_to_complex_byte();
 };
 
-#endif  // GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H_
+#endif  // GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H

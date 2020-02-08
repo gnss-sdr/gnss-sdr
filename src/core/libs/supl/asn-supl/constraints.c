@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
+ */
+
 // clang-format off
 #include "asn_internal.h"
 #include "constraints.h"

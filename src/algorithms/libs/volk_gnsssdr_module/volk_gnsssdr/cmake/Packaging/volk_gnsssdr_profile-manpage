@@ -1,4 +1,6 @@
 .\" Manpage for volk_gnsssdr_profile
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.\" SPDX-FileCopyrightText: Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
 .TH volk_gnsssdr_profile 1 "29 Jul 2019" "0.0.11" "volk_gnsssdr_profile man page"
 .SH NAME

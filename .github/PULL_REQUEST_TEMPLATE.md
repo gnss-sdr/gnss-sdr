@@ -1,5 +1,13 @@
 :+1::tada: Hello, and thanks for contributing to [GNSS-SDR](https://gnss-sdr.org)! :tada::+1:
 
+[comment]: # (
+SPDX-License-Identifier: GPL-3.0-or-later
+)
+
+[comment]: # (
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+)
+
 Before submitting your pull request, please make sure the following is done:
  1. You undertake the [Contributor Covenant Code of Conduct](https://github.com/gnss-sdr/gnss-sdr/blob/master/CODE_OF_CONDUCT.md).
  2. If you are a first-time contributor, after your pull request you will be asked to sign an Individual Contributor License Agreement ([CLA](https://en.wikipedia.org/wiki/Contributor_License_Agreement)) before your code gets accepted into `master`. This license is for your protection as a Contributor as well as for the protection of [CTTC](http://www.cttc.es/); it does not change your rights to use your own contributions for any other purpose. Except for the license granted therein to CTTC and recipients of software distributed by CTTC, you reserve all right, title, and interest in and to your contributions. The information you provide in that CLA will be maintained in accordance with [CTTC's privacy policy](http://www.cttc.es/privacy/).

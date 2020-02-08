@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
+ */
+
 #include <asn_application.h>
 #include <asn_internal.h>
 #include <per_decoder.h>

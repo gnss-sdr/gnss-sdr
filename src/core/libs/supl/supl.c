@@ -1,12 +1,21 @@
-/*
-** SUPL library with some RRLP
-**
-** Copyright (c) 2007 Tatu Mannisto <tatu a-t tajuma d-o-t com>
-** All rights reserved.
-** Redistribution and modifications are permitted subject to BSD license.
-** Modifified by Carles Fernandez <carles d-o-t fernandez a-t cttc d-o-t es>
-** to make use of the gnutls library.
-*/
+/*!
+ * \file supl.c
+ * \brief SUPL library with some RRLP
+ * \author Carles Fernandez, 2017 cfernandez(at)cttc.es
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (c) 2007 Tatu Mannisto <tatu a-t tajuma d-o-t com>
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-License-Identifier: BSD-1-Clause
+ *
+ * -------------------------------------------------------------------------
+ */
 
 #include "supl.h"
 #include <errno.h>

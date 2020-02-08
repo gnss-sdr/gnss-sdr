@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007 Lev Walkin <vlm@lionet.info>. All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
 #include <asn_internal.h>
 #include <constr_TYPE.h>

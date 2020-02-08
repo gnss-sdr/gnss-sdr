@@ -1,3 +1,9 @@
+# Copyright (C) 2010-2020 (see AUTHORS file for a list of contributors)
+#
+# This file is part of GNSS-SDR.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 The volk_gnsssdr_modtool tool is installed along with VOLK as a way of helping
 to construct, add to, and interogate the VOLK library or companion
 libraries.
@@ -110,4 +116,3 @@ Options for Listing Kernels:
   -r, --remote-list
        Lists all kernels in another VOLK module that is specified
        using the -b option.
-

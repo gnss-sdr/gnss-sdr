@@ -16,6 +16,13 @@ function [Az, El, D] = topocent(X, dx)
 
 % Kai Borre 11-24-96
 % Copyright (c) by Kai Borre
+%
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 
 dtr = pi/180;

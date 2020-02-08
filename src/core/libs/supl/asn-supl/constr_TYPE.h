@@ -1,7 +1,6 @@
 /*-
- * Copyright (c) 2003, 2004, 2005, 2006 Lev Walkin <vlm@lionet.info>.
- * All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
 /*
  * This file contains the declaration structure called "ASN.1 Type Definition",
@@ -9,8 +8,8 @@
  * This structure even contains pointer to these encoding and decoding routines
  * for each defined ASN.1 type.
  */
-#ifndef _CONSTR_TYPE_H_
-#define _CONSTR_TYPE_H_
+#ifndef _CONSTR_TYPE_H
+#define _CONSTR_TYPE_H
 
 #include <ber_tlv_length.h>
 #include <ber_tlv_tag.h>

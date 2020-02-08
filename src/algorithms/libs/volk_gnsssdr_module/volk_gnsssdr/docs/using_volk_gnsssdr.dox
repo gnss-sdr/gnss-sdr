@@ -1,3 +1,9 @@
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# This file is part of GNSS-SDR.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 /*! \page using_volk_gnsssdr Using VOLK_GNSSSDR
 
 Using VOLK_GNSSSDR in your code requires proper linking and including the correct headers.

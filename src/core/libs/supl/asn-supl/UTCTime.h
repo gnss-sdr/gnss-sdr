@@ -1,9 +1,9 @@
 /*-
- * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _UTCTime_H_
-#define _UTCTime_H_
+#ifndef _UTCTime_H
+#define _UTCTime_H
 
 #include <OCTET_STRING.h>
 

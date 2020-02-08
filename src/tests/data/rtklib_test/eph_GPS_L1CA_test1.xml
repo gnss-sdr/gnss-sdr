@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2018 Javier Arribas <javier.arribas@cttc.es> -->
 <!DOCTYPE boost_serialization>
 <boost_serialization signature="serialization::archive" version="12">
 <GNSS-SDR_ephemeris_map class_id="0" tracking_level="0" version="0">

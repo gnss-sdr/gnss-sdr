@@ -1,8 +1,6 @@
 /*
- * Copyright (c) 2003, 2004 X/IO Labs, xiolabs.com.
- * Copyright (c) 2003, 2004, 2005 Lev Walkin <vlm@lionet.info>.
- *     All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
 #include <asn_system.h>
 #include <xer_support.h>

@@ -1,5 +1,13 @@
 # XML Schemas for Assisted GNSS-SDR
 
+[comment]: # (
+SPDX-License-Identifier: GPL-3.0-or-later
+)
+
+[comment]: # (
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+)
+
 GNSS-SDR can read assistance data from [Extensible Markup Language (XML)](https://www.w3.org/XML/) files for faster [Time-To-First-Fix](https://gnss-sdr.org/design-forces/availability/#time-to-first-fix-ttff), and can store navigation data decoded from GNSS signals in the same format. This folder provides XML Schemas which describe those XML files structure.
 
 [XSD (XML Schema Definition)](https://www.w3.org/XML/Schema) is a World Wide Web Consortium (W3C) recommendation that specifies how to formally describe the elements in an XML document.

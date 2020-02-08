@@ -20,6 +20,13 @@ function [satPositions, satClkCorr] = satpos(transmitTime, prnList, ...
 %--------------------------------------------------------------------------
 % Based on Kai Borre 04-09-96
 % Copyright (c) by Kai Borre
+%
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 % Updated by Darius Plausinaitis, Peter Rinder and Nicolaj Bertelsen
 
 %% Initialize constants ===================================================

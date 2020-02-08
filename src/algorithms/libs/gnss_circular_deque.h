@@ -15,24 +15,13 @@
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CIRCULAR_DEQUE_H_
-#define GNSS_SDR_CIRCULAR_DEQUE_H_
+#ifndef GNSS_SDR_CIRCULAR_DEQUE_H
+#define GNSS_SDR_CIRCULAR_DEQUE_H
 
 #include <boost/circular_buffer.hpp>
 #include <vector>
@@ -149,4 +138,4 @@ void Gnss_circular_deque<T>::push_back(unsigned int ch, const T& new_data)
     d_data[ch].push_back(new_data);
 }
 
-#endif  // GNSS_SDR_CIRCULAR_DEQUE_H_
+#endif  // GNSS_SDR_CIRCULAR_DEQUE_H

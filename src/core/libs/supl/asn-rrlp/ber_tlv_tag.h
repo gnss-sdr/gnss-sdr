@@ -1,9 +1,9 @@
 /*-
- * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _BER_TLV_TAG_H_
-#define _BER_TLV_TAG_H_
+#ifndef _BER_TLV_TAG_H
+#define _BER_TLV_TAG_H
 
 #ifdef __cplusplus
 extern "C"

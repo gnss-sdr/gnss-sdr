@@ -16,24 +16,13 @@
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_
-#define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
+#define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
 
 #include <gsl/gsl>
 #include <complex>
@@ -72,4 +61,4 @@ void resampler(const gsl::span<float> _from, gsl::span<float> _dest,
 void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::complex<float>> _dest,
     float _fs_in, float _fs_out);
 
-#endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_
+#endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H

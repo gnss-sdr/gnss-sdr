@@ -2,11 +2,17 @@ function [re, im] = clksin(ar, degree, arg_real, arg_imag)
 % Clenshaw summation of sinus with complex argument
 % [re, im] = clksin(ar, degree, arg_real, arg_imag);
 
-% Written by Kai Borre
+% Copyright (C) Kai Borre
 % December 20, 1995
 %
 % See also WGS2UTM or CART2UTM
 %
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 
 sin_arg_r   = sin(arg_real);

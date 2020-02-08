@@ -1,7 +1,11 @@
 # Doxyfile 1.8.6
 
+#
+# SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # This file describes the settings to be used by the documentation system
-# doxygen (www.doxygen.org) for a project.
+# doxygen (www.doxygen.nl) for a project.
 #
 # All text after a double hash (##) is considered a comment and is placed in
 # front of the TAG it is preceding.

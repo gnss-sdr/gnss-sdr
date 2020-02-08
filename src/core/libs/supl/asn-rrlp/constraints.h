@@ -1,9 +1,9 @@
 /*-
- * Copyright (c) 2004, 2006 Lev Walkin <vlm@lionet.info>. All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
-#ifndef _ASN1_CONSTRAINTS_VALIDATOR_H_
-#define _ASN1_CONSTRAINTS_VALIDATOR_H_
+#ifndef _ASN1_CONSTRAINTS_VALIDATOR_H
+#define _ASN1_CONSTRAINTS_VALIDATOR_H
 
 #include <asn_system.h> /* Platform-dependent types */
 

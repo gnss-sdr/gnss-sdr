@@ -1,4 +1,7 @@
-; Sample for a configuration file for GNS-SDR
+; SPDX-FileCopyrightText: Javier Arribas <javier.arribas(at)cttc.es>
+; SPDX-License-Identifier: GPL-3.0-or-later
+;
+; Sample for a configuration file for GNSS-SDR
 
 [GNSS-SDR]
 Foo.param1=value

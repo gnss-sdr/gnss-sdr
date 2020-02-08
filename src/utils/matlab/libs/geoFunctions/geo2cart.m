@@ -25,6 +25,13 @@ function [X, Y, Z] = geo2cart(phi, lambda, h, i)
 
 % Kai Borre 10-13-98
 % Copyright (c) by Kai Borre
+%
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 
 b   = phi(1) + phi(2)/60 + phi(3)/3600;

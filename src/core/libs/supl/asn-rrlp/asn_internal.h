@@ -1,13 +1,12 @@
 /*-
- * Copyright (c) 2003, 2004, 2005, 2007 Lev Walkin <vlm@lionet.info>.
- * All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
 /*
  * Declarations internally useful for the ASN.1 support code.
  */
-#ifndef _ASN_INTERNAL_H_
-#define _ASN_INTERNAL_H_
+#ifndef _ASN_INTERNAL_H
+#define _ASN_INTERNAL_H
 
 #include "asn_application.h" /* Application-visible API */
 

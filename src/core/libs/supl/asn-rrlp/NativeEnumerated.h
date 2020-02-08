@@ -1,7 +1,6 @@
 /*-
- * Copyright (c) 2004, 2005, 2006 Lev Walkin <vlm@lionet.info>.
- * All rights reserved.
- * Redistribution and modifications are permitted subject to BSD license.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  */
 /*
  * This type differs from the standard ENUMERATED in that it is modelled using
@@ -10,8 +9,8 @@
  * will do).
  * This type may be used when integer range is limited by subtype constraints.
  */
-#ifndef _NativeEnumerated_H_
-#define _NativeEnumerated_H_
+#ifndef _NativeEnumerated_H
+#define _NativeEnumerated_H
 
 #include <NativeInteger.h>
 

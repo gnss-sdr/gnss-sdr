@@ -2,9 +2,13 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-[License_ID]: SPDX-License-Identifier: GPL-3.0-or-later
+[comment]: # (
+SPDX-License-Identifier: GPL-3.0-or-later
+)
 
-[Copyright_Text]: SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+[comment]: # (
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+)
 
 **Welcome to GNSS-SDR!**
 

@@ -13,18 +13,7 @@
 %
 % This file is part of GNSS-SDR.
 %
-% GNSS-SDR is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% at your option) any later version.
-%
-% GNSS-SDR is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+% SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
 %
@@ -136,7 +125,7 @@ else
     fseek(f,bytes_shift,'bof'); % move to next unsigned int
     v22 = fread (f, count, 'uint', skip_bytes_each_read - unsigned_int_size_bytes);
     fclose (f);
-    
+
     GNSS_tracking.VE = v1;
     GNSS_tracking.E = v2;
     GNSS_tracking.P = v3;
@@ -160,4 +149,3 @@ else
     GNSS_tracking.var2 = v21;
     GNSS_tracking.PRN = v22;
 end
-

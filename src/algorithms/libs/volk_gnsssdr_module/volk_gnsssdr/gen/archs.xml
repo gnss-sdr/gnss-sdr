@@ -1,4 +1,6 @@
 <!-- archs appear in order of significance for blind, de-facto version ordering -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2014-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
 <grammar>
 
 <arch name="generic"> <!-- name is required-->

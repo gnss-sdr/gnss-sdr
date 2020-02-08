@@ -1,4 +1,6 @@
 .\" Manpage for front\-end\-cal.
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.\" SPDX-FileCopyrightText: Javier Arribas <javier.arribas(at)cttc.es>
 .\" Contact javier.arribas@cttc.es to correct errors or typos.
 .TH front\-end\-cal 1 "15 Dec 2014" "0.0.1" "front\-end\-cal man page"
 .SH NAME

@@ -1,52 +1,41 @@
 /*!
-* \file pcps_quicksync_acquisition_cc.h
-* \brief This class implements a Parallel Code Phase Search Acquisition with the
-* QuickSync Algorithm
-*
-*  Acquisition strategy (Kay Borre book CFAR + threshold).
-*  <ol>
-*  <li> Compute the input signal power estimation
-*  <li> Doppler serial search loop
-*  <li> Perform folding of the incoming signal and local generated code
-*  <li> Perform the FFT-based circular convolution (parallel time search)
-*  <li> Record the maximum peak and the associated synchronization parameters
-*  <li> Compute the test statistics and compare to the threshold
-*  <li> Declare positive or negative acquisition using a message port
-*  <li> Obtain the adequate acquisition parameters by correlating the incoming
-*       signal shifted by the possible folded delays
-*  </ol>
-*
-* Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
-* "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
-* Approach", Birkha user, 2007. pp 81-84
-*
-* \date Jun2 2014
-* \author Damian Miralles Sanchez, dmiralles2009@gmail.com
-*
-* -------------------------------------------------------------------------
-*
-* Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-*
-* GNSS-SDR is a software defined Global Navigation
-*          Satellite Systems receiver
-*
-* This file is part of GNSS-SDR.
-*
-* GNSS-SDR is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* GNSS-SDR is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
-*
-* -------------------------------------------------------------------------
-*/
+ * \file pcps_quicksync_acquisition_cc.h
+ * \brief This class implements a Parallel Code Phase Search Acquisition with the
+ * QuickSync Algorithm
+ *
+ *  Acquisition strategy (Kay Borre book CFAR + threshold).
+ *  <ol>
+ *  <li> Compute the input signal power estimation
+ *  <li> Doppler serial search loop
+ *  <li> Perform folding of the incoming signal and local generated code
+ *  <li> Perform the FFT-based circular convolution (parallel time search)
+ *  <li> Record the maximum peak and the associated synchronization parameters
+ *  <li> Compute the test statistics and compare to the threshold
+ *  <li> Declare positive or negative acquisition using a message port
+ *  <li> Obtain the adequate acquisition parameters by correlating the incoming
+ *       signal shifted by the possible folded delays
+ *  </ol>
+ *
+ * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach", Birkha user, 2007. pp 81-84
+ *
+ * \date Jun2 2014
+ * \author Damian Miralles Sanchez, dmiralles2009@gmail.com
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -------------------------------------------------------------------------
+ */
 
 #ifndef GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H_

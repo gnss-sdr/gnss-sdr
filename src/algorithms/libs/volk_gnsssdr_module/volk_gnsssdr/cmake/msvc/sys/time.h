@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
 #ifndef _MSC_VER  // [
 #error "Use this header only with Microsoft Visual C++ compilers!"
 #endif  // _MSC_VER ]

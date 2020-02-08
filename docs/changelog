@@ -1,3 +1,6 @@
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
+SPDX-License-Identifier: GPL-3.0-or-later
+
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
 ### Improvements in Accuracy:
@@ -47,6 +50,12 @@
 - Default Python version is now >= 3.4. Python 2.7 still can be used in systems where Python 3 is not available (e.g., CentOS 7, Debian 8, Ubuntu 10.04).
 - CMake now passes the CMAKE_BUILD_TYPE (or configuration in multi-configuration generators like Xcode) to modules built along gnss-sdr (e.g, the volk_gnsssdr library and googletest). Build types available: None, Release (by default), Debug, RelWithDebInfo, MinSizeRel, Coverage, NoOptWithASM, O2WithASM, O3WithASM, ASAN.
 - Updated links in comments along the source code and in CMake scripts.
+- Create a CI job in GitHub to ensure compliance with REUSE Specification (see https://reuse.software)
+
+
+### Improvements in Openness:
+
+- Make software compliant with REUSE Specification – Version 3.0 (see https://reuse.software/spec/).
 
 
 ### Improvements in Portability:

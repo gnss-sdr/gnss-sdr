@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 name: Simple CI
 
 on: [push, pull_request]
@@ -124,3 +126,13 @@ jobs:
       run: cd build && sudo xcodebuild -configuration Release -target install
     - name: test
       run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
+
+
+  REUSE-compliance:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Check REUSE compliance
+      uses: docker://fsfe/reuse
+      with:
+        args: reuse lint

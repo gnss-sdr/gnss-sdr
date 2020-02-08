@@ -1,55 +1,42 @@
-% /*! 
-%  * \file gnss_sdr_tcp_connector_tracking_start.m
-%  * \brief This MATLAB function builds and configures a Simulink model 
-%  * for interacting with the GNSS-SDR platform through a TCP
-%  * communication. Parallel Computing version.
-%  * \author David Pubill, 2012. dpubill(at)cttc.es
-%  *
-%  * ----------------------------------------------------------------------
-%  *
-%  * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
-%  *
-%  * GNSS-SDR is a software defined Global Navigation
-%  *          Satellite Systems receiver
-%  *
-%  * This file is part of GNSS-SDR.
-%  *
-%  * GNSS-SDR is free software: you can redistribute it and/or modify
-%  * it under the terms of the GNU General Public License as published by
-%  * the Free Software Foundation, either version 3 of the License, or
-%  * at your option) any later version.
-%  *
-%  * GNSS-SDR is distributed in the hope that it will be useful,
-%  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-%  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%  * GNU General Public License for more details.
-%  *
-%  * You should have received a copy of the GNU General Public License
-%  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
-%  *
-%  * ----------------------------------------------------------------------
-%  */
+% This MATLAB function builds and configures a Simulink model
+% for interacting with the GNSS-SDR platform through a TCP
+% communication. Parallel Computing version.
+% \author David Pubill, 2012. dpubill(at)cttc.es
+%
+% ----------------------------------------------------------------------
+%
+% Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+%
+% GNSS-SDR is a software defined Global Navigation
+%          Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
+%
+% ----------------------------------------------------------------------
+%/
 
 function gnss_sdr_tcp_connector_parallel_tracking_start(num_channels, num_cores)
-    
+
     %The parallel for (parfor) loop allows to build and run a Simulink
     %model in parallel mode, programming different threads
     parfor i = 0:num_cores-1;
-    
+
         %Open and close the Simulink Library
         simulink('open');
         simulink('close');
-        
-        %User parameters 
+
+        %User parameters
         host = '84.88.61.86'; %Remote IP address (GNSS-SDR computer IP)
         port = 2070;          %Remote port (GNSS-SDR computer port for Ch0)
         num_vars_rx = 9;      %Number of variables expected from GNSS-SDR
         num_vars_tx = 4;      %Number of variable to be transmitted to GNSS-SDR
         timeout = '40';       %Timeout [s]
-            
+
         %Name of the tracking block, it must match the Simulink model name
         tracking_block_name = 'gnss_sdr_tcp_connector_tracking';
-    
+
         % Layout coordinates for the gnss_sdr_tcp_connector_tracking blocks
         X0 = 20;
         X1 = 170;
@@ -57,21 +44,21 @@ function gnss_sdr_tcp_connector_parallel_tracking_start(num_channels, num_cores)
         Y1 = 140;
         X_offset = 200;
         Y_offset = 160;
-    
-        %Calculate the size of the data received from GNSS-SDR 
+
+        %Calculate the size of the data received from GNSS-SDR
         %(float = 4 bytes each variable)
         datasize_RX = num_vars_rx*4;
-        
+
         %Create a Simulink model
         model_name = ['gnss_sdr_tcp_connector_parallel_tracking_aux_', num2str(i)];
         new_system(model_name);
         open_system(model_name);
-                
+
         %Set parameters to avoid warnings in the Command Window
         set_param(model_name,...
         'InheritedTsInSrcMsg', 'none');
         warning('off', 'Simulink:Commands:SetParamLinkChangeWarn');
-        
+
         %Assign values to the variables used by Simulink in the base workspace
         assignin('base', 'Ti', 1e-3);
         assignin('base', 'f0', 1.57542e9);
@@ -80,26 +67,26 @@ function gnss_sdr_tcp_connector_parallel_tracking_start(num_channels, num_cores)
         assignin('base', 'T', 1e-3);
         assignin('base', 'B_PLL', 50);
         assignin('base', 'B_DLL', 2);
-                
-        %Calculate some variables to control the number of blocks that 
+
+        %Calculate some variables to control the number of blocks that
         %should content each Simulink model in function of the number of
         %cores specified
         min_num_blocks_per_model = floor(num_channels/num_cores);
         id = rem(num_channels,num_cores);
-        
+
         if(i<id)
             aux=1;
         else
             aux=0;
         end
-        
+
         %Build the Simulink model for the core 'i'
         for m = 0:min_num_blocks_per_model+aux-1
-        
+
             index = m + min_num_blocks_per_model*i + min(id,i);
-            
+
             %Add and prepare an empty block to become the TCP connector block
-            tcp_connector_block=[model_name, '/gnss_sdr_tcp_connector_tracking_', num2str(index)]; 
+            tcp_connector_block=[model_name, '/gnss_sdr_tcp_connector_tracking_', num2str(index)];
 
             add_block('simulink/Ports & Subsystems/Subsystem', tcp_connector_block);
             delete_line(tcp_connector_block, 'In1/1', 'Out1/1')
@@ -173,29 +160,29 @@ function gnss_sdr_tcp_connector_parallel_tracking_start(num_channels, num_cores)
             X3 = X1 + floor(m/4)*X_offset;
             Y2 = Y0 + (m-4*floor(m/4))*Y_offset;
             Y3 = Y1 + (m-4*floor(m/4))*Y_offset;
-            
+
             %Place the block in the layout
             set_param(tcp_connector_block, 'Position', [X2 Y2 X3 Y3]);
         end
-        
+
         %Set parameters to configure the model Solver
         set_param(model_name,...
             'SolverType', 'Fixed-step', 'Solver', 'FixedStepDiscrete',...
             'FixedStep', 'auto', 'StopTime', 'inf');
-            
+
         %Save the model with a definitive name
-        model_name_ready = ['gnss_sdr_tcp_connector_parallel_tracking_ready_', num2str(i)]; 
+        model_name_ready = ['gnss_sdr_tcp_connector_parallel_tracking_ready_', num2str(i)];
         save_system(model_name, model_name_ready);
-        
+
         %Pause the thread 'i*5' seconds in function of the number of core.
         %This allows the system to establish the TCP connections in the
         %correct order
         if (aux == 0)
                pause(i*5);
         end
-               
+
         %Run the Simulink model
         set_param(model_name_ready,'simulationcommand','start');
-                
-    end    
+
+    end
 end

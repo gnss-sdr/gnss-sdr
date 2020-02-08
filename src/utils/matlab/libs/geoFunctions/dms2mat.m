@@ -20,6 +20,12 @@ function [dout,mout,sout] = dms2mat(dms,n)
 %  Copyright 1996-2002 Systems Planning and Analysis, Inc. and The MathWorks, Inc.
 %  Written by:  E. Byrns, E. Brown
 %  Revision: 1.10    $Date: 2002/03/20 21:25:06
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 
 
 if nargin == 0
@@ -71,7 +77,7 @@ if ~isempty(indx);   d(indx) = d(indx) + 1;   m(indx) =  m(indx) - 60;   end
 
 if any(m > 59) | any (m < 0)
     error('Minutes must be >= 0 and <= 59')
-    
+
 elseif any(s >= 60) | any( s < 0)
     error('Seconds must be >= 0 and < 60')
 end

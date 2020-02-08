@@ -13,6 +13,13 @@ function X_sat_rot = e_r_corr(traveltime, X_sat)
 
 % Written by Kai Borre
 % Copyright (c) by Kai Borre
+%
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 
 Omegae_dot = 7.292115147e-5;           %  rad/sec

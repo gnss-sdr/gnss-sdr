@@ -1,11 +1,17 @@
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# This file is part of GNSS-SDR.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 /*! \page extending_volk Extending VOLK
 
 There are two primary routes for extending VOLK for your own use. The
 preferred route is by writing kernels and proto-kernels as part of this
 repository and sending patches upstream. The alternative is creating your
 own VOLK module, as it is the case of VOLK_GNSSSDR ;-). There is a good reason
-for that: to provide GNSS-SDR users with adequate protokernels as soon as possible, 
-without needing to upgrade to the latest VOLK version to enjoy the benefits. 
+for that: to provide GNSS-SDR users with adequate protokernels as soon as possible,
+without needing to upgrade to the latest VOLK version to enjoy the benefits.
 Notwithstanding, some of VOLK_GNSSSDR can be integrated into VOLK in the future,
 if other users find them useful.
 
@@ -89,4 +95,3 @@ added to this repository, which was described in the previous section.
 VOLK_GNSSSDR is a VOLK Module.
 
 */
-

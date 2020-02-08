@@ -1,3 +1,7 @@
+{::comment}
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+{:/comment}
 # Contributing to GNSS-SDR
 
 :+1::tada: Thanks for taking the time to contribute! :tada::+1:

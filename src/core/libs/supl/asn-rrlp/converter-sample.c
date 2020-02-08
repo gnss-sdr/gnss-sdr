@@ -1,7 +1,7 @@
 /*
  * Generic converter template for a selected ASN.1 type.
- * Copyright (c) 2005, 2006, 2007 Lev Walkin <vlm@lionet.info>.
- * All rights reserved.
+ * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * SPDX-License-Identifier: BSD-1-Clause
  *
  * To compile with your own ASN.1 type, please redefine the PDU as shown:
  *

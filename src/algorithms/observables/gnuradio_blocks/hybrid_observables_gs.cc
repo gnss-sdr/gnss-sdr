@@ -55,19 +55,15 @@ namespace errorlib = boost::system;
 #endif
 
 
-hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, const std::string &dump_filename)
+hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf &conf_)
 {
-    return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, dump_filename));
+    return hybrid_observables_gs_sptr(new hybrid_observables_gs(conf_));
 }
 
 
-hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
-    uint32_t nchannels_out,
-    bool dump,
-    bool dump_mat,
-    const std::string &dump_filename) : gr::block("hybrid_observables_gs",
-                                            gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
-                                            gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
+hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block("hybrid_observables_gs",
+                                                                          gr::io_signature::make(conf_.nchannels_in, conf_.nchannels_in, sizeof(Gnss_Synchro)),
+                                                                          gr::io_signature::make(conf_.nchannels_out, conf_.nchannels_out, sizeof(Gnss_Synchro)))
 {
     // PVT input message port
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
@@ -75,12 +71,12 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
 
     // Send Channel status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
-
-    d_dump = dump;
-    d_dump_mat = dump_mat and d_dump;
-    d_dump_filename = dump_filename;
-    d_nchannels_out = nchannels_out;
-    d_nchannels_in = nchannels_in;
+    d_conf = conf_;
+    d_dump = conf_.dump;
+    d_dump_mat = conf_.dump_mat and d_dump;
+    d_dump_filename = conf_.dump_filename;
+    d_nchannels_out = conf_.nchannels_out;
+    d_nchannels_in = conf_.nchannels_in;
     d_gnss_synchro_history = std::make_shared<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
@@ -134,6 +130,12 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     // rework
     d_Rx_clock_buffer.set_capacity(10);  // 10*20 ms = 200 ms of data in buffer
     d_Rx_clock_buffer.clear();           // Clear all the elements in the buffer
+
+    d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
+    d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
+    d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
+
+    d_smooth_filter_M = conf_.smoothing_factor;
 }
 
 
@@ -525,6 +527,75 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
         }
 }
 
+void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
+{
+    std::vector<Gnss_Synchro>::iterator it;
+    for (it = data.begin(); it != data.end(); it++)
+        {
+            if (it->Flag_valid_pseudorange)
+                {
+                    //0. get wavelength for the current signal
+                    double wavelength_m = 0;
+                    switch (mapStringValues_[it->Signal])
+                        {
+                        case evGPS_1C:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            break;
+                        case evGPS_L5:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            break;
+                        case evSBAS_1C:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            break;
+                        case evGAL_1B:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            break;
+                        case evGAL_5X:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            break;
+                        case evGPS_2S:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ2;
+                            break;
+                        case evBDS_B3:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ3_BDS;
+                            break;
+                        case evGLO_1G:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1_GLO;
+                            break;
+                        case evGLO_2G:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ2_GLO;
+                            break;
+                        case evBDS_B1:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ1_BDS;
+                            break;
+                        case evBDS_B2:
+                            wavelength_m = SPEED_OF_LIGHT / FREQ2_BDS;
+                            break;
+                        default:
+                            break;
+                        }
+
+                    //todo: propagate the PLL lock status in Gnss_Synchro
+                    //1. check if last PLL lock status was false and initialize last d_channel_last_pseudorange_smooth
+                    if (d_channel_last_pll_lock.at(it->Channel_ID) == true)
+                        {
+                            //2. Compute the smoothed pseudorange for this channel
+                            // Hatch filter algorithm (https://insidegnss.com/can-you-list-all-the-properties-of-the-carrier-smoothing-filter/)
+                            double r_sm = d_channel_last_pseudorange_smooth.at(it->Channel_ID);
+                            double factor = ((d_smooth_filter_M - 1.0) / d_smooth_filter_M);
+                            it->Pseudorange_m = factor * r_sm + (1.0 / d_smooth_filter_M) * it->Pseudorange_m + wavelength_m * (factor / PI_2) * (it->Carrier_phase_rads - d_channel_last_carrier_phase_rads.at(it->Channel_ID));
+                        }
+                    d_channel_last_pseudorange_smooth.at(it->Channel_ID) = it->Pseudorange_m;
+                    d_channel_last_carrier_phase_rads.at(it->Channel_ID) = it->Carrier_phase_rads;
+                    d_channel_last_pll_lock.at(it->Channel_ID) = it->Flag_valid_pseudorange;
+                }
+            else
+                {
+                    d_channel_last_pll_lock.at(it->Channel_ID) = false;
+                }
+        }
+}
+
 
 int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -607,11 +678,16 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     compute_pranges(epoch_data);
                 }
 
+            //Carrier smoothing (optional)
+            if (d_conf.enable_carrier_smoothing == true)
+                {
+                    smooth_pseudoranges(epoch_data);
+                }
+            //output the observables set to the PVT block
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     out[n][0] = epoch_data[n];
                 }
-
             // report channel status every second
             T_status_report_timer_ms += T_rx_step_ms;
             if (T_status_report_timer_ms >= 1000)

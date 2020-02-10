@@ -27,6 +27,7 @@ target_link_libraries(obs_adapters
     PUBLIC
         obs_gr_blocks
         algorithms_libs
+        observables_libs
     PRIVATE
         Gflags::gflags
         Glog::glog

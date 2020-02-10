@@ -5,5 +5,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+add_subdirectory(libs)
 add_subdirectory(adapters)
 add_subdirectory(gnuradio_blocks)

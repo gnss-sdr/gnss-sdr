@@ -18,9 +18,9 @@
  * -------------------------------------------------------------------------
  */
 
-
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
+#include "obs_conf.h"
 #include <glog/logging.h>
 #include <ostream>  // for operator<<
 
@@ -34,7 +34,21 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     dump_mat_ = configuration->property(role + ".dump_mat", true);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    observables_ = hybrid_observables_gs_make(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
+    Obs_Conf conf;
+
+    conf.dump = dump_;
+    conf.dump_mat = dump_mat_;
+    conf.dump_filename = dump_filename_;
+    conf.nchannels_in = in_streams_;
+    conf.nchannels_out = out_streams_;
+
+    conf.enable_carrier_smoothing = configuration->property(role + ".enable_carrier_smoothing", false);
+    conf.smoothing_factor = configuration->property(role + ".smoothing_factor", 200.0);
+    if (conf.enable_carrier_smoothing == true)
+        {
+            LOG(INFO) << "Observables carrier smoothing enabled with smoothing factor " << conf.smoothing_factor;
+        }
+    observables_ = hybrid_observables_gs_make(conf);
     DLOG(INFO) << "Observables block ID (" << observables_->unique_id() << ")";
 }
 

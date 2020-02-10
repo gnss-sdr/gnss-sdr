@@ -18,14 +18,6 @@ add_library(observables_libs
     ${OBSERVABLES_LIB_HEADERS}
 )
 
-target_link_libraries(observables_libs
-    PRIVATE
-        Gflags::gflags
-        Glog::glog
-        algorithms_libs
-        core_system_parameters
-)
-
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(observables_libs

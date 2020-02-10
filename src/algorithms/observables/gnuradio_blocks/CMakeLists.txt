@@ -36,8 +36,8 @@ target_link_libraries(obs_gr_blocks
     PUBLIC
         Boost::headers
         Gnuradio::blocks
-    PRIVATE
         observables_libs
+    PRIVATE
         algorithms_libs
         core_system_parameters
         Gflags::gflags

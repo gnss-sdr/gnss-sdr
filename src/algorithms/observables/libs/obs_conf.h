@@ -18,11 +18,9 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_OBS_CONF_H_
-#define GNSS_SDR_OBS_CONF_H_
+#ifndef GNSS_SDR_OBS_CONF_H
+#define GNSS_SDR_OBS_CONF_H
 
-#include "configuration_interface.h"
-#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -31,12 +29,11 @@ class Obs_Conf
 public:
     bool enable_carrier_smoothing;
     double smoothing_factor;
-    unsigned int nchannels_in;
-    unsigned int nchannels_out;
+    uint32_t nchannels_in;
+    uint32_t nchannels_out;
     bool dump;
     bool dump_mat;
     std::string dump_filename;
-
 
     Obs_Conf();
 };

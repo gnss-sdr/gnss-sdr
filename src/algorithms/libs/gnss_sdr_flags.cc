@@ -71,6 +71,7 @@ DEFINE_double(dll_bw_hz, 0.0, "If defined, bandwidth of the DLL low pass filter,
 
 DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).");
 
+DEFINE_double(carrier_smoothing_factor, DEFAULT_CARRIER_SMOOTHING_FACTOR, "Sets carrier smoothing factor M");
 
 #if GFLAGS_GREATER_2_0
 

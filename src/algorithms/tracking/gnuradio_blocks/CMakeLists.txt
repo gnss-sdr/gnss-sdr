@@ -82,9 +82,10 @@ target_link_libraries(tracking_gr_blocks
         Gnuradio::blocks
         Matio::matio
         Volkgnsssdr::volkgnsssdr
-        gnss_sdr_flags
         algorithms_libs
         tracking_libs
+    PRIVATE
+        gnss_sdr_flags
 )
 
 if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)

@@ -649,13 +649,13 @@ if(ENABLE_SYSTEM_TESTING)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         #### POSITION_TEST
-        set(OPT_LIBS_ Boost::thread
-            Threads::Threads Gflags::gflags Glog::glog
+        set(OPT_LIBS_
+            algorithms_libs core_receiver core_system_parameters gnss_sdr_flags
+            system_testing_lib signal_processing_testing_lib
+            Boost::thread Threads::Threads Gflags::gflags Glog::glog
             GTest::GTest GTest::Main Gnuradio::runtime
             Gnuradio::blocks Gnuradio::filter
             Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
-            algorithms_libs core_receiver core_system_parameters
-            system_testing_lib signal_processing_testing_lib
         )
         add_system_test(position_test)
         if(NOT GNSSSIMULATOR_FOUND OR ENABLE_GNSS_SIM_INSTALL)

@@ -84,6 +84,7 @@ target_link_libraries(tracking_libs
         algorithms_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
+        gnss_sdr_flags
         Gflags::gflags
         Glog::glog
 )

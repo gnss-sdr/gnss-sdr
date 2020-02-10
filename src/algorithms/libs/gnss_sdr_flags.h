@@ -46,6 +46,10 @@ DECLARE_double(carrier_lock_th);       //!< Carrier lock threshold (in rad).
 DECLARE_double(dll_bw_hz);             //!< Bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).
 DECLARE_double(pll_bw_hz);             //!< Bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).
 
+// Declare flags for observables block
+DECLARE_double(carrier_smoothing_factor);  //!< Sets carrier smoothing factor M (overrides the configuration file).
+const double DEFAULT_CARRIER_SMOOTHING_FACTOR = 200.0;
+
 // Declare flags for PVT
 DECLARE_string(RINEX_version);  //!< If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.
 

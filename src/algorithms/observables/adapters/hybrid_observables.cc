@@ -20,10 +20,12 @@
 
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include "obs_conf.h"
 #include <glog/logging.h>
+#include <cmath>    // for std::fabs
+#include <limits>   // for epsilon()
 #include <ostream>  // for operator<<
-
 
 HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -41,9 +43,13 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     conf.dump_filename = dump_filename_;
     conf.nchannels_in = in_streams_;
     conf.nchannels_out = out_streams_;
+    conf.enable_carrier_smoothing = configuration->property(role + ".enable_carrier_smoothing", conf.enable_carrier_smoothing);
 
-    conf.enable_carrier_smoothing = configuration->property(role + ".enable_carrier_smoothing", false);
-    conf.smoothing_factor = configuration->property(role + ".smoothing_factor", 200.0);
+    if (std::fabs(FLAGS_carrier_smoothing_factor - DEFAULT_CARRIER_SMOOTHING_FACTOR) <= std::numeric_limits<double>::epsilon())  // compare doubles
+        {
+            conf.smoothing_factor = configuration->property(role + ".smoothing_factor", conf.smoothing_factor);
+        }
+
     if (conf.enable_carrier_smoothing == true)
         {
             LOG(INFO) << "Observables carrier smoothing enabled with smoothing factor " << conf.smoothing_factor;

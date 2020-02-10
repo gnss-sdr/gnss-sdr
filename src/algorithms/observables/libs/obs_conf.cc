@@ -19,11 +19,12 @@
  */
 
 #include "obs_conf.h"
+#include "gnss_sdr_flags.h"
 
 Obs_Conf::Obs_Conf()
 {
     enable_carrier_smoothing = false;
-    smoothing_factor = 200;
+    smoothing_factor = FLAGS_carrier_smoothing_factor;
     nchannels_in = 0;
     nchannels_out = 0;
     dump = false;

@@ -28,6 +28,7 @@
 #include "control_thread.h"
 #include "file_configuration.h"
 #include "geofunctions.h"
+#include "gnss_sdr_flags.h"
 #include "gnuplot_i.h"
 #include "in_memory_configuration.h"
 #include "position_test_flags.h"
@@ -302,6 +303,8 @@ int PositionSystemTest::configure_receiver()
 
             // Set Observables
             config->set_property("Observables.implementation", "Hybrid_Observables");
+            config->set_property("Observables.enable_carrier_smoothing", FLAGS_enable_carrier_smoothing ? "true" : "false");
+            config->set_property("Observables.smoothing_factor", std::to_string(FLAGS_carrier_smoothing_factor));
             config->set_property("Observables.dump", "false");
             config->set_property("Observables.dump_filename", "./observables.dat");
 

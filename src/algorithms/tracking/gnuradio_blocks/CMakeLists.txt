@@ -80,11 +80,11 @@ target_link_libraries(tracking_gr_blocks
         Boost::headers
         Armadillo::armadillo
         Gnuradio::blocks
-        Matio::matio
         Volkgnsssdr::volkgnsssdr
         algorithms_libs
         tracking_libs
     PRIVATE
+        Matio::matio
         gnss_sdr_flags
 )
 

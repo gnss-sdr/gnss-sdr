@@ -85,7 +85,6 @@ add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 target_link_libraries(acquisition_adapters
     PUBLIC
         algorithms_libs
-        gnss_sdr_flags
         acquisition_gr_blocks
         acquisition_libs
         channel_libs
@@ -93,6 +92,7 @@ target_link_libraries(acquisition_adapters
         Gnuradio::blocks
         Volk::volk
     PRIVATE
+        gnss_sdr_flags
         Boost::headers
         Gflags::gflags
         Glog::glog

@@ -92,13 +92,13 @@ target_link_libraries(algorithms_libs
     PUBLIC
         Armadillo::armadillo
         Boost::headers
-        Gflags::gflags
         Gnuradio::runtime
         Gnuradio::blocks
     PRIVATE
         core_system_parameters
         Volk::volk ${ORC_LIBRARIES}
         Volkgnsssdr::volkgnsssdr
+        Gflags::gflags
         Glog::glog
 )
 

@@ -80,6 +80,24 @@ double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, doub
     return phase_unwrap(diff_atan) / (t2 - t1);
 }
 
+/*
+ * FLL two quadrant arctan discriminator:
+ * \f{equation}
+ * 	\frac{\phi_2-\phi_1}{t_2-t1}=\frac{ATAN(cross,dot)}{t_1-t_2},
+ * \f}
+ * where \f$cross=I_{PS1}Q_{PS2}-I_{PS2}Q_{PS1}\f$ and \f$dot=I_{PS1}I_{PS2}+Q_{PS1}Q_{PS2}\f$,
+ * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
+ * \f$I_{PS2},Q_{PS2}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_2\f$. The output is in [radians/second].
+ */
+
+double fll_two_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
+{
+    double cross, dot;
+    dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
+    cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
+    return atan(cross / dot) / (t2 - t1);
+}
+
 
 /*
  * PLL four quadrant arctan discriminator:
@@ -119,7 +137,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
-double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
+double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1, float spc, float slope)
 {
     double P_early = std::abs(early_s1);
     double P_late = std::abs(late_s1);
@@ -128,7 +146,7 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
         {
             return 0.0;
         }
-    return 0.5 * (P_early - P_late) / E_plus_L;
+    return (1 - slope * spc) / slope * (P_early - P_late) / E_plus_L;
 }
 
 

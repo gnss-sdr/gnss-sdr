@@ -24,7 +24,7 @@
 #include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
-#include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
+#include "tracking_FLL_PLL_filter.h"  // for carrier filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>               // for boost::shared_ptr
@@ -73,7 +73,9 @@ private:
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
     void update_tracking_vars();
+    void update_correlator_spacing(float early_late_space_chips, float very_early_late_space_chips);
     void clear_tracking_vars();
+    void propagate_signal_parameters(int64_t num_samples);
     void save_correlation_results();
     void log_data();
     int32_t save_matfile();
@@ -157,6 +159,7 @@ private:
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
+    // PLL and DLL filter library
     Tracking_loop_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
@@ -187,6 +190,10 @@ private:
     // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
+    float d_early_late_space;
+    float d_very_early_late_space;
+    float d_early_late_slope;
+    bool d_carrier_aiding;
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;

@@ -32,7 +32,6 @@ target_link_libraries(data_type_gr_blocks
     PUBLIC
         Gnuradio::runtime
         Boost::headers
-        algorithms_libs
     PRIVATE
         Volk::volk
 )

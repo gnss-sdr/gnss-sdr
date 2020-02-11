@@ -119,11 +119,11 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     //
     // We can avoid this by doing linear correlation, effectively doubling the
     // size of the input buffer and padding the code with zeros.
-    //if (acq_parameters.bit_transition_flag)
-    //{
-    //d_fft_size = d_consumed_samples * 2;
-    //acq_parameters.max_dwells = 1;  // Activation of acq_parameters.bit_transition_flag invalidates the value of acq_parameters.max_dwells
-    //}
+    // if (acq_parameters.bit_transition_flag)
+    // {
+    //  d_fft_size = d_consumed_samples * 2;
+    //  acq_parameters.max_dwells = 1;  // Activation of acq_parameters.bit_transition_flag invalidates the value of acq_parameters.max_dwells
+    // }
 
     d_tmp_buffer = volk_gnsssdr::vector<float>(d_fft_size);
     d_fft_codes = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);

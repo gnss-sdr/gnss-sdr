@@ -241,7 +241,7 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition_1C.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1C.max_dwells", "1");
-    //config->set_property("Acquisition_1C.threshold", "0.8");
+    // config->set_property("Acquisition_1C.threshold", "2.5");
     config->set_property("Acquisition_1C.pfa", "0.001");
     config->set_property("Acquisition_1C.doppler_max", "10000");
     config->set_property("Acquisition_1C.doppler_step", "250");
@@ -480,10 +480,6 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
         acquisition->set_doppler_step(500);
     }) << "Failure setting doppler_step.";
 
-    //ASSERT_NO_THROW({
-    //acquisition->set_threshold(0.5);
-    //}) << "Failure setting threshold.";
-
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -568,10 +564,6 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
     ASSERT_NO_THROW({
         acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
     }) << "Failure setting doppler_step.";
-
-    //ASSERT_NO_THROW({
-    //acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));
-    //}) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);

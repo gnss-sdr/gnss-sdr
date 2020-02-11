@@ -186,7 +186,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     double new_rx_clock_offset_s;
                     new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
                     T_rx_TOW_ms = T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
-                    //align the receiver clock to integer multiple of 20 ms
+                    // align the receiver clock to integer multiple of 20 ms
                     if (T_rx_TOW_ms % 20)
                         {
                             T_rx_TOW_ms += 20 - T_rx_TOW_ms % 20;
@@ -479,7 +479,7 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
                         }
                 }
             T_rx_TOW_ms = TOW_ref;
-            //align the receiver clock to integer multiple of 20 ms
+            // align the receiver clock to integer multiple of 20 ms
             if (T_rx_TOW_ms % 20)
                 {
                     T_rx_TOW_ms += 20 - T_rx_TOW_ms % 20;
@@ -527,6 +527,7 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
         }
 }
 
+
 void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
 {
     std::vector<Gnss_Synchro>::iterator it;
@@ -534,7 +535,7 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
         {
             if (it->Flag_valid_pseudorange)
                 {
-                    //0. get wavelength for the current signal
+                    // 0. get wavelength for the current signal
                     double wavelength_m = 0;
                     switch (mapStringValues_[it->Signal])
                         {
@@ -575,11 +576,11 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
                             break;
                         }
 
-                    //todo: propagate the PLL lock status in Gnss_Synchro
-                    //1. check if last PLL lock status was false and initialize last d_channel_last_pseudorange_smooth
+                    // todo: propagate the PLL lock status in Gnss_Synchro
+                    // 1. check if last PLL lock status was false and initialize last d_channel_last_pseudorange_smooth
                     if (d_channel_last_pll_lock.at(it->Channel_ID) == true)
                         {
-                            //2. Compute the smoothed pseudorange for this channel
+                            // 2. Compute the smoothed pseudorange for this channel
                             // Hatch filter algorithm (https://insidegnss.com/can-you-list-all-the-properties-of-the-carrier-smoothing-filter/)
                             double r_sm = d_channel_last_pseudorange_smooth.at(it->Channel_ID);
                             double factor = ((d_smooth_filter_M - 1.0) / d_smooth_filter_M);
@@ -678,12 +679,12 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     compute_pranges(epoch_data);
                 }
 
-            //Carrier smoothing (optional)
+            // Carrier smoothing (optional)
             if (d_conf.enable_carrier_smoothing == true)
                 {
                     smooth_pseudoranges(epoch_data);
                 }
-            //output the observables set to the PVT block
+            // output the observables set to the PVT block
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     out[n][0] = epoch_data[n];

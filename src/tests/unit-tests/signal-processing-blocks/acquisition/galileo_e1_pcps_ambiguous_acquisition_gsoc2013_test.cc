@@ -238,7 +238,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1B.max_dwells", "1");
     config->set_property("Acquisition_1B.bit_transition_flag", "false");
-    //config->set_property("Acquisition_1B.threshold", "0.1");
+    // config->set_property("Acquisition_1B.threshold", "2.5");
     config->set_property("Acquisition_1B.pfa", "0.0001");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "250");

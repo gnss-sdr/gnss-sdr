@@ -129,7 +129,6 @@ HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx() = default;
 
 // ###########################################################
 
-
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
 class HybridObservablesTest_tlm_msg_rx;
 
@@ -149,10 +148,12 @@ public:
     ~HybridObservablesTest_tlm_msg_rx();  //!< Default destructor
 };
 
+
 HybridObservablesTest_tlm_msg_rx_sptr HybridObservablesTest_tlm_msg_rx_make()
 {
     return HybridObservablesTest_tlm_msg_rx_sptr(new HybridObservablesTest_tlm_msg_rx());
 }
+
 
 void HybridObservablesTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
@@ -168,12 +169,14 @@ void HybridObservablesTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t msg)
         }
 }
 
+
 HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() : gr::block("HybridObservablesTest_tlm_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_tlm_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
+
 
 HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx() = default;
 
@@ -288,6 +291,7 @@ public:
     std::vector<Gnss_Synchro> gnss_synchro_vec;
     size_t item_size;
 };
+
 
 int HybridObservablesTest::configure_generator()
 {
@@ -538,7 +542,6 @@ bool HybridObservablesTest::acquire_signal()
             // top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
         }
 
-
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
         {
@@ -734,8 +737,8 @@ void HybridObservablesTest::configure_receiver(
                 }
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "true");
-            //config->set_property("Tracking.pll_filter_order", "2");
-            //config->set_property("Tracking.dll_filter_order", "2");
+            // config->set_property("Tracking.pll_filter_order", "2");
+            // config->set_property("Tracking.dll_filter_order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E5a_Telemetry_Decoder");
         }
@@ -749,8 +752,8 @@ void HybridObservablesTest::configure_receiver(
 
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "true");
-            //config->set_property("Tracking.pll_filter_order", "2");
-            //config->set_property("Tracking.dll_filter_order", "2");
+            // config->set_property("Tracking.pll_filter_order", "2");
+            // config->set_property("Tracking.dll_filter_order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L5_Telemetry_Decoder");
         }
@@ -2016,7 +2019,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                             if (sat1_ch_id != -1 and sat2_ch_id != -1)
                                 {
                                     // compute single differences for the duplicated satellite
-
                                     check_results_duplicated_satellite(
                                         measured_obs_vec.at(sat1_ch_id),
                                         measured_obs_vec.at(sat2_ch_id),

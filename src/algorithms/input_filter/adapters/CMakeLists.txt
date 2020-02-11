@@ -38,7 +38,6 @@ target_link_libraries(input_filter_adapters
         Gnuradio::blocks
         Gnuradio::filter
         input_filter_gr_blocks
-        algorithms_libs
     PRIVATE
         Gflags::gflags
         Glog::glog

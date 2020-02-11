@@ -33,8 +33,8 @@ target_link_libraries(input_filter_gr_blocks
     PUBLIC
         Gnuradio::blocks
         Gnuradio::filter
-        Volkgnsssdr::volkgnsssdr
     PRIVATE
+        Volk::volk
         Log4cpp::log4cpp
 )
 

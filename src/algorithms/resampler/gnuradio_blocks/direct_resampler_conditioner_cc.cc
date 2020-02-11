@@ -23,7 +23,8 @@
 
 #include "direct_resampler_conditioner_cc.h"
 #include <gnuradio/io_signature.h>
-#include <algorithm>  // for min
+#include <volk/volk.h>  // for gr_complex
+#include <algorithm>    // for min
 
 direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
     double sample_freq_in, double sample_freq_out)

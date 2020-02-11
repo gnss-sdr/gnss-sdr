@@ -21,8 +21,9 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H
 
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
-#include <volk/volk.h>
+#include <cstdint>
 
 class direct_resampler_conditioner_cb;
 using direct_resampler_conditioner_cb_sptr = boost::shared_ptr<direct_resampler_conditioner_cb>;

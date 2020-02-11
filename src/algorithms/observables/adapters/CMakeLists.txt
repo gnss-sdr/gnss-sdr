@@ -1,4 +1,6 @@
-# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
@@ -19,14 +21,12 @@ add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
 
 target_include_directories(obs_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 target_link_libraries(obs_adapters
     PUBLIC
         obs_gr_blocks
-        algorithms_libs
     PRIVATE
         gnss_sdr_flags
         observables_libs

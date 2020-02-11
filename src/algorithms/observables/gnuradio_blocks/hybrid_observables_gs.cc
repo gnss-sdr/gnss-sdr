@@ -135,7 +135,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
     d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
 
-    d_smooth_filter_M = conf_.smoothing_factor;
+    d_smooth_filter_M = static_cast<double>(conf_.smoothing_factor);
 }
 
 

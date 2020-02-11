@@ -28,7 +28,7 @@ class Obs_Conf
 {
 public:
     bool enable_carrier_smoothing;
-    double smoothing_factor;
+    int32_t smoothing_factor;
     uint32_t nchannels_in;
     uint32_t nchannels_out;
     bool dump;

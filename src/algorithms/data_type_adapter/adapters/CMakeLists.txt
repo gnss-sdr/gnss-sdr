@@ -38,7 +38,6 @@ target_link_libraries(data_type_adapters
     PUBLIC
         Gnuradio::blocks
         data_type_gr_blocks
-        algorithms_libs
     PRIVATE
         Gflags::gflags
         Glog::glog

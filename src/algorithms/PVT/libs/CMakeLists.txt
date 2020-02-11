@@ -65,10 +65,10 @@ target_link_libraries(pvt_libs
         Armadillo::armadillo
         Boost::date_time
         protobuf::libprotobuf
-        algorithms_libs_rtklib
         core_system_parameters
     PRIVATE
         algorithms_libs
+        algorithms_libs_rtklib
         Gflags::gflags
         Glog::glog
         Matio::matio

@@ -28,7 +28,6 @@
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include <gnuradio/blocks/float_to_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <memory>
 #include <string>
 #include <vector>

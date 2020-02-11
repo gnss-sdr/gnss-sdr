@@ -90,15 +90,21 @@ target_link_libraries(acquisition_adapters
         channel_libs
         core_system_parameters
         Gnuradio::blocks
-        Volk::volk
     PRIVATE
         gnss_sdr_flags
         Boost::headers
         Gflags::gflags
         Glog::glog
         Gnuradio::fft
-        Volkgnsssdr::volkgnsssdr
 )
+
+if(ENABLE_FPGA)
+    target_link_libraries(acquisition_adapters
+        PRIVATE
+            Volk::volk
+            Volkgnsssdr::volkgnsssdr
+    )
+endif()
 
 target_include_directories(acquisition_adapters
     PUBLIC

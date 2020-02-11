@@ -24,8 +24,6 @@ add_library(acquisition_libs
 )
 
 target_link_libraries(acquisition_libs
-    PUBLIC
-        Volk::volk
     PRIVATE
         Gflags::gflags
         Glog::glog

@@ -26,7 +26,6 @@
 #include "channel_fsm.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <volk/volk_complex.h>       // for lv_16sc_t
 #include <cstddef>                   // for size_t
 #include <memory>                    // for weak_ptr
 #include <string>                    // for string
@@ -64,7 +63,7 @@ public:
 
     inline size_t item_size() override
     {
-        return sizeof(lv_16sc_t);
+        return sizeof(float);
     }
 
     void connect(gr::top_block_sptr top_block) override;

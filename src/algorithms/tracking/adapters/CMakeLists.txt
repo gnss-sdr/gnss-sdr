@@ -91,6 +91,7 @@ target_link_libraries(tracking_adapters
         Gnuradio::runtime
     PRIVATE
         gnss_sdr_flags
+        Glog::glog
         Volkgnsssdr::volkgnsssdr
 )
 

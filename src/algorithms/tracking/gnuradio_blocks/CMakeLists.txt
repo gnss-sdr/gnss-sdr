@@ -88,6 +88,7 @@ target_link_libraries(tracking_gr_blocks
     PRIVATE
         Matio::matio
         gnss_sdr_flags
+        Glog::glog
 )
 
 if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)

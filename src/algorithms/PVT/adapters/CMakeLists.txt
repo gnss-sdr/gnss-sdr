@@ -26,6 +26,7 @@ target_link_libraries(pvt_adapters
         algorithms_libs_rtklib
     PRIVATE
         gnss_sdr_flags
+        Glog::glog
         pvt_libs
 )
 

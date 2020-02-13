@@ -1597,11 +1597,11 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_P_accu = *d_Prompt;
                         d_L_accu = *d_Late;
                         trk_parameters.spc = trk_parameters.early_late_space_chips;
-                        if (std::string(trk_parameters.signal) == "E1")
-                            {
-                                trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
-                                trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
-                            }
+                        // if (std::string(trk_parameters.signal) == "E1")
+                        //    {
+                        //        trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                        //        trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                        //    }
 
                         // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                         if (trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(trk_parameters.fs_in))
@@ -1745,8 +1745,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                                         d_local_code_shift_chips[3] = trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
                                                         d_local_code_shift_chips[4] = trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
                                                         trk_parameters.spc = trk_parameters.early_late_space_narrow_chips;
-                                                        trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
-                                                        trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                                                        // trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
+                                                        // trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, trk_parameters.spc);
                                                     }
                                                 else
                                                     {

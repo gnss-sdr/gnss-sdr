@@ -7,43 +7,34 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(OBS_ADAPTER_SOURCES
-    hybrid_observables.cc
+set(OBSERVABLES_LIB_HEADERS ${OBSERVABLES_LIB_HEADERS} obs_conf.h)
+set(OBSERVABLES_LIB_SOURCES ${OBSERVABLES_LIB_SOURCES} obs_conf.cc)
+
+list(SORT OBSERVABLES_LIB_HEADERS)
+list(SORT OBSERVABLES_LIB_SOURCES)
+
+source_group(Headers FILES ${OBSERVABLES_LIB_HEADERS})
+
+add_library(observables_libs
+    ${OBSERVABLES_LIB_SOURCES}
+    ${OBSERVABLES_LIB_HEADERS}
 )
 
-set(OBS_ADAPTER_HEADERS
-    hybrid_observables.h
-)
-
-source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
-
-add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
-
-target_include_directories(obs_adapters
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
-)
-
-target_link_libraries(obs_adapters
-    PUBLIC
-        obs_gr_blocks
+target_link_libraries(observables_libs
     PRIVATE
         gnss_sdr_flags
-        observables_libs
-        Gflags::gflags
-        Glog::glog
 )
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
-        set_target_properties(obs_adapters
+        set_target_properties(observables_libs
             PROPERTIES
                 CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
         )
     endif()
 endif()
 
-set_property(TARGET obs_adapters
+set_property(TARGET observables_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

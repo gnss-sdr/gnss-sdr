@@ -19,7 +19,6 @@
 
 
 #include "gnss_sdr_flags.h"
-#include <cstdint>
 #include <iostream>
 #include <string>
 
@@ -71,6 +70,7 @@ DEFINE_double(dll_bw_hz, 0.0, "If defined, bandwidth of the DLL low pass filter,
 
 DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).");
 
+DEFINE_int32(carrier_smoothing_factor, DEFAULT_CARRIER_SMOOTHING_FACTOR, "Sets carrier smoothing factor M (overrides the configuration file)");
 
 #if GFLAGS_GREATER_2_0
 
@@ -214,6 +214,19 @@ static bool ValidatePllBw(const char* flagname, double value)
     return false;
 }
 
+static bool ValidateCarrierSmoothingFactor(const char* flagname, int32_t value)
+{
+    const int32_t min_value = 1;
+    if (value >= min_value)
+        {  // value is ok
+            return true;
+        }
+    std::cout << "Invalid value for flag -" << flagname << ": " << value << ". Allowed range is 1 <= " << flagname << "." << std::endl;
+    std::cout << "GNSS-SDR program ended." << std::endl;
+    return false;
+}
+
+
 DEFINE_validator(c, &ValidateC);
 DEFINE_validator(config_file, &ValidateConfigFile);
 DEFINE_validator(s, &ValidateS);
@@ -226,6 +239,6 @@ DEFINE_validator(max_lock_fail, &ValidateMaxLockFail);
 DEFINE_validator(carrier_lock_th, &ValidateCarrierLockTh);
 DEFINE_validator(dll_bw_hz, &ValidateDllBw);
 DEFINE_validator(pll_bw_hz, &ValidatePllBw);
-
+DEFINE_validator(carrier_smoothing_factor, &ValidateCarrierSmoothingFactor);
 
 #endif

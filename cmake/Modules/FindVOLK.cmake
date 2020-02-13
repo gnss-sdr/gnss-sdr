@@ -1,4 +1,6 @@
-# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
@@ -84,6 +86,7 @@ if(NOT VOLK_VERSION)
     list(GET VOLK_LIBRARIES 0 FIRST_DIR)
     get_filename_component(VOLK_LIB_DIR ${FIRST_DIR} DIRECTORY)
     if(EXISTS ${VOLK_LIB_DIR}/cmake/volk/VolkConfigVersion.cmake)
+        set(PACKAGE_FIND_VERSION_MAJOR 0)
         include(${VOLK_LIB_DIR}/cmake/volk/VolkConfigVersion.cmake)
     endif()
     if(PACKAGE_VERSION)

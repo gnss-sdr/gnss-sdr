@@ -155,7 +155,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     config->set_property("Acquisition_1B.item_type", "gr_complex");
     config->set_property("Acquisition_1B.coherent_integration_time_ms", "4");
     config->set_property("Acquisition_1B.dump", "false");
-    //config->set_property("Acquisition_1B.threshold", "0.1");
+    // config->set_property("Acquisition_1B.threshold", "2.5");
     config->set_property("Acquisition_1B.pfa", "0.001");
     config->set_property("Acquisition_1B.doppler_max", "10000");
     config->set_property("Acquisition_1B.doppler_step", "125");

@@ -1895,14 +1895,15 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(std::map<int,
     return interp_observables_map;
 }
 
+
 void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
 {
-    //we have a valid PVT. First check if we need to reset the initial carrier phase offsets to match their pseudoranges
+    // we have a valid PVT. First check if we need to reset the initial carrier phase offsets to match their pseudoranges
     std::map<int, Gnss_Synchro>::iterator observables_iter;
     for (observables_iter = gnss_observables_map.begin(); observables_iter != gnss_observables_map.end(); observables_iter++)
         {
-            //check if an initialization is required (new satellite or loss of lock)
-            //it is set to false by the work function if the gnss_synchro is not valid
+            // check if an initialization is required (new satellite or loss of lock)
+            // it is set to false by the work function if the gnss_synchro is not valid
             if (channel_initialized.at(observables_iter->second.Channel_ID) == false)
                 {
                     double wavelength_m = 0;
@@ -1948,10 +1949,11 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                     channel_initialized.at(observables_iter->second.Channel_ID) = true;
                     DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
                 }
-            //apply the carrier phase offset to this satellite
+            // apply the carrier phase offset to this satellite
             observables_iter->second.Carrier_phase_rads = observables_iter->second.Carrier_phase_rads + initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID);
         }
 }
+
 
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
@@ -2075,7 +2077,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                     else
                         {
-                            channel_initialized.at(i) = false;  //the current channel is not reporting valid observable
+                            channel_initialized.at(i) = false;  // the current channel is not reporting valid observable
                         }
                 }
 
@@ -2159,8 +2161,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                     if (flag_pvt_valid == true)
                         {
-                            //initialize (if needed) the accumulated phase offset and apply it to the active channels
-                            //required to report accumulated phase cycles comparable to pseudoranges
+                            // initialize (if needed) the accumulated phase offset and apply it to the active channels
+                            // required to report accumulated phase cycles comparable to pseudoranges
                             initialize_and_apply_carrier_phase_offset();
 
                             double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();

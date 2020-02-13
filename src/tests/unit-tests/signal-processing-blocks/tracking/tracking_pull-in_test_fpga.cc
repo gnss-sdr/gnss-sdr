@@ -142,6 +142,7 @@ struct acquisition_handler_args_trk_pull_in_test
     std::shared_ptr<AcquisitionInterface> acquisition;
 };
 
+
 void* handler_acquisition_trk_pull_in_test(void* arguments)
 {
     // the acquisition is a blocking function so we have to
@@ -150,6 +151,7 @@ void* handler_acquisition_trk_pull_in_test(void* arguments)
     args->acquisition->reset();
     return nullptr;
 }
+
 
 void* handler_DMA_trk_pull_in_test(void* arguments)
 {
@@ -196,7 +198,6 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
     //**************************************************************************
     // Open input file
     //**************************************************************************
-
     uint32_t skip_samples = static_cast<uint32_t>(FLAGS_skip_samples);
 
     if (skip_samples + skip_used_samples > 0)
@@ -299,6 +300,7 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
     return nullptr;
 }
 
+
 class TrackingPullInTestFpga : public ::testing::Test
 {
 public:
@@ -377,9 +379,10 @@ public:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
 
-    static const int32_t TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES = 1024;  //48
+    static const int32_t TEST_TRK_PULL_IN_TEST_SKIP_SAMPLES = 1024;  // 48
     static constexpr float DMA_SIGNAL_SCALING_FACTOR = 8.0;
 };
+
 
 int TrackingPullInTestFpga::configure_generator(double CN0_dBHz, int file_idx)
 {
@@ -401,6 +404,7 @@ int TrackingPullInTestFpga::configure_generator(double CN0_dBHz, int file_idx)
     p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                          // Signal generator CN0
     return 0;
 }
+
 
 int TrackingPullInTestFpga::generate_signal()
 {
@@ -472,6 +476,7 @@ public:
 private:
     bool acquisition_successful;
 };
+
 
 void TrackingPullInTestFpga::configure_receiver(
     double PLL_wide_bw_hz,
@@ -572,7 +577,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     // Satellite signal definition
     Gnss_Synchro tmp_gnss_synchro;
     tmp_gnss_synchro.Channel_ID = 0;
-    //config = std::make_shared<InMemoryConfiguration>();
+    // config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     std::shared_ptr<AcquisitionInterface> acquisition;
@@ -924,7 +929,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                       << " Acquisition SampleStamp is " << acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second << std::endl;
         }
 
-    long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
+    int64_t acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
 
     // set the scaling factor
     args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
@@ -945,12 +950,10 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             // simulate Code Delay error in acquisition
                             gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_CPS) * static_cast<double>(baseband_sampling_freq);
 
-
                             // We need to reset the HW again in order to reset the sample counter.
                             // The HW is reset by sending a command to the acquisition HW accelerator
                             // In order to send the reset command to the HW we instantiate the acquisition module.
                             std::shared_ptr<AcquisitionInterface> acquisition;
-
 
                             // reset the HW to clear the sample counters: the acquisition constructor generates a reset
                             if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
@@ -980,7 +983,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                 }
 
                             acquisition->stop_acquisition();  // reset the whole system including the sample counters
-
 
                             // create flowgraph
                             top_block = gr::make_top_block("Tracking test");
@@ -1016,7 +1018,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                 top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
                             }) << "Failure connecting the blocks of tracking test.";
 
-
                             // initialize the internal status of the LPF in the FPGA in the L1/E1 frequency band
 
                             // ********************************************************************
@@ -1025,9 +1026,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             std::cout << "--- START TRACKING WITH PULL-IN ERROR: " << acq_doppler_error_hz_values.at(current_acq_doppler_error_idx) << " [Hz] and " << acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) << " [Chips] ---" << std::endl;
                             std::chrono::time_point<std::chrono::system_clock> start, end;
 
-
                             top_block->start();
-
 
                             usleep(1000000);  // give time for the system to start before receiving the start tracking command.
 
@@ -1045,7 +1044,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                             std::cout << "ERROR cannot create DMA Process" << std::endl;
                                         }
                                 }
-
 
                             std::cout << " Starting tracking...\n";
 

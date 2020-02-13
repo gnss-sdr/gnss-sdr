@@ -1,5 +1,7 @@
 # Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
+#
 # This file is part of GNSS-SDR.
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -123,9 +125,9 @@ endif()
 target_link_libraries(core_receiver
     PUBLIC
         core_libs
-        core_monitor
         Gnuradio::runtime
     PRIVATE
+        core_monitor
         signal_source_adapters
         data_type_adapters
         input_filter_adapters

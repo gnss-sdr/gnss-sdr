@@ -25,22 +25,20 @@ __VOLK_DECL_BEGIN
  * \brief Allocate \p size bytes of data aligned to \p alignment.
  *
  * \details
- * Because we don't have a standard method to allocate buffers in
- * memory that are guaranteed to be on an alignment, VOLK handles this
- * itself. The volk_gnsssdr_malloc function behaves like malloc in that it
- * returns a pointer to the allocated memory. However, it also takes
- * in an alignment specification, which is usually something like 16 or
- * 32 to ensure that the aligned memory is located on a particular
- * byte boundary for use with SIMD.
+ * We use C11 and want to rely on C11 library features,
+ * namely we use `aligned_alloc` to allocate aligned memory.
+ * see: https://en.cppreference.com/w/c/memory/aligned_alloc
  *
- * Internally, the volk_gnsssdr_malloc first checks if the compiler is C11
- * compliant and uses the new aligned_alloc method. If not, it checks
- * if the system is POSIX compliant and uses posix_memalign. If that
- * fails, volk_gnsssdr_malloc handles the memory allocation and alignment
- * internally.
+ * Not all platforms support this feature.
+ * For Apple Clang, we fall back to `posix_memalign`.
+ * see: https://linux.die.net/man/3/aligned_alloc
+ * For MSVC, we fall back to `_aligned_malloc`.
+ * see: https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-malloc?view=vs-2019
  *
  * Because of the ways in which volk_gnsssdr_malloc may allocate memory, it is
  * important to always free volk_gnsssdr_malloc pointers using volk_gnsssdr_free.
+ * Mainly, in case MSVC is used. Consult corresponding documentation
+ * in case you use MSVC.
  *
  * \param size The number of bytes to allocate.
  * \param alignment The byte alignment of the allocated memory.
@@ -50,7 +48,13 @@ VOLK_API void *volk_gnsssdr_malloc(size_t size, size_t alignment);
 
 /*!
  * \brief Free's memory allocated by volk_gnsssdr_malloc.
- * \param aptr The aligned pointer allocaed by volk_gnsssdr_malloc.
+ *
+ * \details
+ * We rely on C11 syntax and compilers and just call `free`
+ * on memory that was allocated with `aligned_alloc`.
+ * Thus, `volk_gnsssdr_free` inherits the same behavoir `free` exhibits.
+ *
+ * \param aptr The aligned pointer allocated by volk_gnsssdr_malloc.
  */
 VOLK_API void volk_gnsssdr_free(void *aptr);
 

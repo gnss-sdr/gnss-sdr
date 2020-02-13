@@ -1,5 +1,7 @@
 # Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
+#
 # This file is part of GNSS-SDR.
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -84,6 +86,7 @@ target_link_libraries(tracking_libs
         algorithms_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
+        gnss_sdr_flags
         Gflags::gflags
         Glog::glog
 )

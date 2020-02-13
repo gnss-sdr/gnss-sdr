@@ -1,4 +1,6 @@
-# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
@@ -85,20 +87,26 @@ add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 target_link_libraries(acquisition_adapters
     PUBLIC
         algorithms_libs
-        gnss_sdr_flags
         acquisition_gr_blocks
         acquisition_libs
         channel_libs
         core_system_parameters
         Gnuradio::blocks
-        Volk::volk
     PRIVATE
+        gnss_sdr_flags
         Boost::headers
         Gflags::gflags
         Glog::glog
         Gnuradio::fft
-        Volkgnsssdr::volkgnsssdr
 )
+
+if(ENABLE_FPGA)
+    target_link_libraries(acquisition_adapters
+        PRIVATE
+            Volk::volk
+            Volkgnsssdr::volkgnsssdr
+    )
+endif()
 
 target_include_directories(acquisition_adapters
     PUBLIC

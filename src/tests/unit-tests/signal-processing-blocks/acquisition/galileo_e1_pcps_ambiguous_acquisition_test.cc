@@ -166,7 +166,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
             config->set_property("Acquisition_1B.dump", "false");
         }
     config->set_property("Acquisition_1B.dump_filename", "./tmp-acq-gal1/acquisition");
-    //config->set_property("Acquisition_1B.threshold", "0.0001");
+    // config->set_property("Acquisition_1B.threshold", "2.5");
     config->set_property("Acquisition_1B.pfa", "0.001");
     config->set_property("Acquisition_1B.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1B.doppler_step", std::to_string(doppler_step));

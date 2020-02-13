@@ -1,4 +1,6 @@
-# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
@@ -36,7 +38,6 @@ target_link_libraries(pvt_gr_blocks
         Gnuradio::runtime
     PRIVATE
         pvt_libs
-        algorithms_libs
         Gflags::gflags
         Glog::glog
         Boost::serialization

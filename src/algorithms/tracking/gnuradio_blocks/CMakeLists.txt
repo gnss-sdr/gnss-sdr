@@ -1,4 +1,6 @@
-# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
@@ -80,11 +82,13 @@ target_link_libraries(tracking_gr_blocks
         Boost::headers
         Armadillo::armadillo
         Gnuradio::blocks
-        Matio::matio
         Volkgnsssdr::volkgnsssdr
-        gnss_sdr_flags
         algorithms_libs
         tracking_libs
+    PRIVATE
+        Matio::matio
+        gnss_sdr_flags
+        Glog::glog
 )
 
 if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)

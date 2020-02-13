@@ -265,9 +265,9 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                 {
                     throw std::runtime_error("Unable to set BB rate");
                     // set bw
-                    //params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
+                    // params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
                 }
-            //wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
+            // wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
             ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
             if (ret)
                 {
@@ -514,9 +514,9 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
                 {
                     throw std::runtime_error("Unable to set BB rate");
                     // set bw
-                    //params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
+                    // params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
                 }
-            //wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
+            // wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
             ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
             if (ret)
                 {

@@ -23,6 +23,7 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 
+#include "obs_conf.h"
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <boost/shared_ptr.hpp>       // for boost::shared_ptr
 #include <gnuradio/block.h>           // for block
@@ -41,12 +42,7 @@ class Gnss_circular_deque;
 
 using hybrid_observables_gs_sptr = boost::shared_ptr<hybrid_observables_gs>;
 
-hybrid_observables_gs_sptr hybrid_observables_gs_make(
-    unsigned int nchannels_in,
-    unsigned int nchannels_out,
-    bool dump,
-    bool dump_mat,
-    const std::string& dump_filename);
+hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 
 /*!
  * \brief This class implements a block that computes observables
@@ -60,19 +56,33 @@ public:
         gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
 private:
-    friend hybrid_observables_gs_sptr hybrid_observables_gs_make(
-        uint32_t nchannels_in,
-        uint32_t nchannels_out,
-        bool dump,
-        bool dump_mat,
-        const std::string& dump_filename);
+    friend hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 
-    hybrid_observables_gs(
-        uint32_t nchannels_in,
-        uint32_t nchannels_out,
-        bool dump,
-        bool dump_mat,
-        const std::string& dump_filename);
+    hybrid_observables_gs(const Obs_Conf& conf_);
+
+    Obs_Conf d_conf;
+
+    enum StringValue
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G,
+        evBDS_B1,
+        evBDS_B2,
+        evBDS_B3
+    };
+
+    std::map<std::string, StringValue> mapStringValues_;
+    std::vector<bool> d_channel_last_pll_lock;
+    std::vector<double> d_channel_last_pseudorange_smooth;
+    std::vector<double> d_channel_last_carrier_phase_rads;
+    double d_smooth_filter_M;
+    void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
 
     bool T_rx_TOW_set;  // rx time follow GPST
     bool d_dump;

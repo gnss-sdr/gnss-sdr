@@ -22,7 +22,6 @@
 
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"
-#include "gnss_synchro.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <string>

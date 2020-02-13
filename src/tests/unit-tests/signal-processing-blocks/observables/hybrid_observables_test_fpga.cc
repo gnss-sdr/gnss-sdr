@@ -441,7 +441,7 @@ void* handler_DMA_obs_test(void* arguments)
                     dma_index += 4;
                 }
 
-            //std::cout << "DMA: sending nsamples_block_size = " << nsamples_block_size << " samples" << std::endl;
+            // std::cout << "DMA: sending nsamples_block_size = " << nsamples_block_size << " samples" << std::endl;
             if (write(tx_fd, input_samples_dma.data(), (int)(nsamples_block_size * 4)) != (int)(nsamples_block_size * 4))
                 {
                     std::cerr << "Error: DMA could not send all the required samples " << std::endl;
@@ -527,6 +527,7 @@ private:
     bool acquisition_successful;
 };
 
+
 bool HybridObservablesTestFpga::acquire_signal()
 {
     pthread_t thread_DMA, thread_acquisition;
@@ -542,7 +543,7 @@ bool HybridObservablesTestFpga::acquire_signal()
     // Satellite signal definition
     Gnss_Synchro tmp_gnss_synchro;
     tmp_gnss_synchro.Channel_ID = 0;
-    //config = std::make_shared<InMemoryConfiguration>();
+
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     std::shared_ptr<AcquisitionInterface> acquisition;
@@ -1228,6 +1229,7 @@ void HybridObservablesTestFpga::check_results_carrier_doppler(
     ASSERT_LT(rmse_ch0, 30);
 }
 
+
 void HybridObservablesTestFpga::check_results_duplicated_satellite(
     arma::mat& measured_sat1,
     arma::mat& measured_sat2,
@@ -1724,7 +1726,6 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
 
         }  // End of 'try' block
 
-
     catch (const gpstk::FFStreamError& e)
         {
             std::cout << e;
@@ -1845,7 +1846,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                     std::cout << "Estimated Initial Doppler " << n.Acq_doppler_hz
                               << " [Hz], estimated Initial code delay " << n.Acq_delay_samples << " [Samples]"
                               << " Acquisition SampleStamp is " << n.Acq_samplestamp_samples << std::endl;
-                    //n.Acq_samplestamp_samples = 0;
+                    // n.Acq_samplestamp_samples = 0;
                 }
         }
 
@@ -1896,7 +1897,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             gnss_synchro_vec.at(n).Channel_ID = n;
 
             // create the tracking channels and create the telemetry decoders
-
             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
             tracking_ch_vec.push_back(std::dynamic_pointer_cast<TrackingInterface>(trk_));
             std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config, "TelemetryDecoder", config->property("TelemetryDecoder.implementation", std::string("undefined")), 1, 1);
@@ -1973,7 +1973,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         top_block->connect(ch_out_fpga_sample_counter, 0, observables->get_left_block(), tracking_ch_vec.size());  // extra port for the sample counter pulse
     }) << "Failure connecting the blocks.";
 
-
     top_block->start();
 
     usleep(1000000);  // give time for the system to start before receiving the start tracking command.
@@ -2014,7 +2013,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         }
 
     acquisition->stop_acquisition();
-
 
     EXPECT_NO_THROW({
         end = std::chrono::system_clock::now();
@@ -2342,7 +2340,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                         }
                 }
         }
-
 
     std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
 }

@@ -84,7 +84,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
  *
  * DLL Noncoherent Early minus Late envelope normalized discriminator:
  * \f{equation}
- *     error=\frac{E-L}{E+L},
+ *     error = \frac{y_{intercept} - \text{slope} * \epsilon}{\text{slope}} \frac{E-L}{E+L},
  * \f}
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].

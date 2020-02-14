@@ -98,16 +98,32 @@ int Gnss_Sdr_Valve::work(int noutput_items,
                     return 0;
                 }
             // multichannel support
-            for (unsigned int ch = 0; ch < output_items.size(); ch++)
-                {
-                    memcpy(output_items[ch], input_items[ch], n * input_signature()->sizeof_stream_item(ch));
-                }
+            if (input_items.size() > output_items.size()) {
+                LOG(WARNING) << "Number of output channels (" << output_items.size() << ") of a signal source is smaller than the number of its inputs (" << input_items.size() << ")" << std::endl;
+                for (size_t ch = 0; ch < output_items.size(); ch++)
+                    {
+                        memcpy(output_items[ch], input_items[ch], n * input_signature()->sizeof_stream_item(ch));
+                    }
+            } else {
+                for (size_t ch = 0; ch < output_items.size(); ch++)
+                    {
+                        memcpy(output_items[ch], input_items[ch % input_items.size()], n * input_signature()->sizeof_stream_item(ch));
+                    }
+            }
             d_ncopied_items += n;
             return n;
         }
-    for (unsigned int ch = 0; ch < output_items.size(); ch++)
-        {
-            memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
-        }
+    if (input_items.size() > output_items.size()) {
+        LOG(WARNING) << "Number of output channels (" << output_items.size() << ") of a signal source is smaller than the number of its inputs (" << input_items.size() << ")" << std::endl;
+        for (size_t ch = 0; ch < output_items.size(); ch++)
+            {
+                memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
+            }
+    } else {
+        for (size_t ch = 0; ch < output_items.size(); ch++)
+            {
+                memcpy(output_items[ch], input_items[ch % input_items.size()], noutput_items * input_signature()->sizeof_stream_item(ch));
+            }
+    }
     return noutput_items;
 }

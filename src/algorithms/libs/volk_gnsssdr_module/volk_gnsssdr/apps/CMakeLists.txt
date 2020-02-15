@@ -17,7 +17,6 @@ else()
     set(orc_lib "")
 endif()
 
-
 # allow 'large' files in 32 bit builds
 if(UNIX)
     add_definitions(-D_LARGEFILE_SOURCE
@@ -26,6 +25,11 @@ if(UNIX)
     )
 endif()
 
+# POSIX_MEMALIGN: If we have to fall back to `posix_memalign`.
+if(HAVE_POSIX_MEMALIGN)
+    message(STATUS "Use `posix_memalign` for aligned malloc!")
+    add_definitions(-DHAVE_POSIX_MEMALIGN)
+endif(HAVE_POSIX_MEMALIGN)
 
 # MAKE volk_gnsssdr_profile
 add_executable(volk_gnsssdr_profile

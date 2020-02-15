@@ -28,12 +28,12 @@ void print_malloc()
     // You don't want to change the volk_malloc code, so just copy the if/else
     // structure from there and give an explanation for the implementations
     std::cout << "Used malloc implementation: ";
-#if _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600 || HAVE_POSIX_MEMALIGN
+#if HAVE_POSIX_MEMALIGN
     std::cout << "posix_memalign" << std::endl;
-#elif _MSC_VER >= 1400
-    std::cout << "aligned_malloc" << std::endl;
+#elif defined(_MSC_VER)
+    std::cout << "_aligned_malloc" << std::endl;
 #else
-    std::cout << "No standard handler available, using own implementation." << std::endl;
+    std::cout << "C11 aligned_alloc." << std::endl;
 #endif
 }
 

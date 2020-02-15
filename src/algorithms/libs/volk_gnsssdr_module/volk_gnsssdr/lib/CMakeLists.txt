@@ -60,19 +60,12 @@ if(COMPILER_NAME MATCHES "GNU")
 endif()
 
 ########################################################################
-# check for posix_memalign, since some OSs do not internally define
-# _XOPEN_SOURCE or _POSIX_C_SOURCE; they leave this to the user.
+# POSIX_MEMALIGN: If we have to fall back to `posix_memalign`,
+# make it known to the compiler.
 ########################################################################
-
-include(CheckSymbolExists)
-check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
-
 if(HAVE_POSIX_MEMALIGN)
+    message(STATUS "Use `posix_memalign` for aligned malloc!")
     add_definitions(-DHAVE_POSIX_MEMALIGN)
-endif()
-
-if(NOT DEFINED _XOPEN_SOURCE AND NOT MSVC)
-    add_definitions(-D_XOPEN_SOURCE=700)
 endif()
 
 ########################################################################

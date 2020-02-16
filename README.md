@@ -311,9 +311,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ~~~~~~
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.3/protobuf-cpp-3.11.3.tar.gz
-$ tar xvfz protobuf-cpp-3.11.3.tar.gz
-$ cd protobuf-3.11.3
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protobuf-cpp-3.11.4.tar.gz
+$ tar xvfz protobuf-cpp-3.11.4.tar.gz
+$ cd protobuf-3.11.4
 $ ./autogen.sh
 $ ./configure
 $ make

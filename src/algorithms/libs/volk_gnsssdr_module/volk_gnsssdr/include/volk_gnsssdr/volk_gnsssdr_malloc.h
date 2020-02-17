@@ -4,7 +4,7 @@
  * returns a pointer to the allocated memory.
  * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
  *
@@ -46,13 +46,17 @@ __VOLK_DECL_BEGIN
  */
 VOLK_API void *volk_gnsssdr_malloc(size_t size, size_t alignment);
 
+
 /*!
  * \brief Free's memory allocated by volk_gnsssdr_malloc.
  *
  * \details
- * We rely on C11 syntax and compilers and just call `free`
- * on memory that was allocated with `aligned_alloc`.
- * Thus, `volk_gnsssdr_free` inherits the same behavoir `free` exhibits.
+ * We rely on C11 syntax and compilers and just call `free` in case
+ * memory was allocated with `aligned_alloc` or `posix_memalign`.
+ * Thus, in this case `volk_gnsssdr_free` inherits the same behavior `free` exhibits.
+ * see: https://en.cppreference.com/w/c/memory/free
+ * In case `_aligned_malloc` was used, we call `_aligned_free`.
+ * see: https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-free?view=vs-2019
  *
  * \param aptr The aligned pointer allocated by volk_gnsssdr_malloc.
  */

@@ -102,7 +102,13 @@ size_t volk_gnsssdr_load_preferences(volk_gnsssdr_arch_pref_t **prefs_res)
     // reset the file pointer and write the prefs into volk_gnsssdr_arch_prefs
     while (fgets(line, sizeof(line), config_file) != NULL)
         {
-            prefs = (volk_gnsssdr_arch_pref_t *)realloc(prefs, (n_arch_prefs + 1) * sizeof(*prefs));
+            void *new_prefs = realloc(prefs, (n_arch_prefs + 1) * sizeof(*prefs));
+            if (!new_prefs)
+                {
+                    printf("volk_gnsssdr_load_preferences: bad malloc\n");
+                    break;
+                }
+            prefs = (volk_gnsssdr_arch_pref_t *)new_prefs;
             volk_gnsssdr_arch_pref_t *p = prefs + n_arch_prefs;
             if (sscanf(line, "%s %s %s", p->name, p->impl_a, p->impl_u) == 3 && !strncmp(p->name, "volk_gnsssdr_", 5))
                 {

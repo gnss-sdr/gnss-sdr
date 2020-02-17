@@ -171,7 +171,7 @@ volk_gnsssdr_type_t volk_gnsssdr_type_from_string(std::string name)
                     type.is_signed = false;
                     break;
                 default:
-                    throw;
+                    throw std::string("Error: no such type: '") + name[i] + "'";
                 }
         }
 
@@ -238,7 +238,7 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
                 }
             catch (...)
                 {
-                    if (token[0] == 'x' && (token.size() > 1) && (token[1] > '0' || token[1] < '9'))
+                    if (token[0] == 'x' && (token.size() > 1) && (token[1] > '0' && token[1] < '9'))
                         {
                             if (side == SIDE_INPUT)
                                 assert(inputsig.size() > 0);

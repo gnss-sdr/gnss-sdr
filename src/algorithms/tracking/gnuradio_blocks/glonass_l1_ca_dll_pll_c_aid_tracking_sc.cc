@@ -694,7 +694,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
 
                     // ################## DLL ##########################################################
                     // DLL discriminator
-                    d_code_error_chips_Ti = dll_nc_e_minus_l_normalized(std::complex<float>(d_correlator_outs_16sc[0].real(), d_correlator_outs_16sc[0].imag()), std::complex<float>(d_correlator_outs_16sc[2].real(), d_correlator_outs_16sc[2].imag()));  // [chips/Ti] //early and late
+                    d_code_error_chips_Ti = dll_nc_e_minus_l_normalized(std::complex<float>(d_correlator_outs_16sc[0].real(), d_correlator_outs_16sc[0].imag()), std::complex<float>(d_correlator_outs_16sc[2].real(), d_correlator_outs_16sc[2].imag()), d_early_late_spc_chips, 1.0);  // [chips/Ti] //early and late
                     // Code discriminator filter
                     d_code_error_filt_chips_s = d_code_loop_filter.get_code_nco(d_code_error_chips_Ti);  // input [chips/Ti] -> output [chips/second]
                     d_code_error_filt_chips_Ti = d_code_error_filt_chips_s * CURRENT_INTEGRATION_TIME_S;

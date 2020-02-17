@@ -50,6 +50,9 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     very_early_late_space_chips = 0.5;
     early_late_space_narrow_chips = 0.1;
     very_early_late_space_narrow_chips = 0.1;
+    slope = 1.0;
+    spc = 0.5;
+    y_intercept = 1.0;
     extend_correlation_symbols = 5;
     cn0_samples = FLAGS_cn0_samples;
     cn0_smoother_samples = 200;

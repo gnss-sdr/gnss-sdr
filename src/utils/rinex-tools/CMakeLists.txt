@@ -22,11 +22,17 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk
     target_include_directories(obsdiff PUBLIC ${CMAKE_SOURCE_DIR}/src/tests/common-files)
 
+    if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
+        add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
+    endif()
+    if(NOT GFLAGS_FOUND)
+        add_dependencies(obsdiff gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+    endif()
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
         add_dependencies(obsdiff gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
     endif()
-    if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
-        add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
+    if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
+        add_dependencies(obsdiff matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif()
 
     target_link_libraries(obsdiff

@@ -13,6 +13,11 @@ This program computes single-differences and double-differences from RINEX obser
 
 ### Building
 
+Requirements:
+ * [GPSTK](https://github.com/SGL-UT/GPSTk): The GPS Toolkit. If not found in your system, the latest version will be downloaded, built and linked for you at building time.
+ * [Armadillo](http://arma.sourceforge.net/): A C++ library for linear algebra and scientific computing. This program requires version 9.800 or higher. If your installed Armadillo version is older, see below.
+
+
 This program is built along with GNSS-SDR if the options `ENABLE_UNIT_TESTING_EXTRA` or `ENABLE_SYSTEM_TESTING_EXTRA` are set to `ON` when calling CMake:
 
 ```
@@ -23,6 +28,13 @@ $ sudo make install
 
 The last step is optional. Without it, you still will get the executable at `../install/obsdiff`.
 
+This program requires Armadillo 9.800 or higher. If the available Armadillo version is older, this program will not be built. If your local Armadillo installed version is older, you can force CMake to download, build and link a recent one:
+
+```
+$ cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_OWN_ARMADILLO=ON ..
+$ make obsdiff
+$ sudo make install
+```
 
 ### Usage
 

@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: Javier Arribas, 2020. <jarribas@cttc.es>
 
 This program computes single-differences and double-differences from RINEX observation files.
 
-## Building
+### Building
 
 This program is built along with GNSS-SDR if the options `ENABLE_UNIT_TESTING_EXTRA` or `ENABLE_SYSTEM_TESTING_EXTRA` are set to `ON` when calling CMake:
 
@@ -24,7 +24,7 @@ $ sudo make install
 The last step is optional. Without it, you still will get the executable at `../install/obsdiff`.
 
 
-## Usage
+### Usage
 
 ```
 $ obsdiff --ref_rinex_obs=reference.20o --test_rinex_obs=rover.20o

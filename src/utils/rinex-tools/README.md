@@ -19,7 +19,8 @@ Requirements:
  * [GPSTK](https://github.com/SGL-UT/GPSTk): The GPS Toolkit, used for RINEX files reading. If not found in your system, the latest version will be downloaded, built and linked for you at building time.
  * [Matio](https://github.com/tbeu/matio): A MATLAB MAT File I/O Library, version >= 1.5.3. If it is not found, or an older version is found, CMake will download, build and link a recent version for you at building time.
 
-
+Optional:
+ * [Gnuplot](http://www.gnuplot.info/): a portable command-line driven graphing utility.
 
 This program is built along with GNSS-SDR if the options `ENABLE_UNIT_TESTING_EXTRA` or `ENABLE_SYSTEM_TESTING_EXTRA` are set to `ON` when calling CMake:
 

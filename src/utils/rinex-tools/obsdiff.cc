@@ -1,6 +1,6 @@
 /*!
  * \file obsdiff.cc
- * \brief  This class implements a single difference and double difference
+ * \brief This program implements a single difference and double difference
  * comparison algorithm to evaluate receiver's performance at observable level
  * \authors <ul>
  *          <li> Javier Arribas, 2020. jarribas(at)cttc.es
@@ -21,7 +21,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include "MATH_CONSTANTS.h"
 #include "gnuplot_i.h"
 #include "obsdiff_flags.h"
 #include <armadillo>
@@ -33,13 +32,10 @@
 #include <matio.h>
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <map>
-#include <numeric>
 #include <set>
-#include <thread>
 
 
 // Create the lists of GNSS satellites

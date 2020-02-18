@@ -22,7 +22,6 @@
 #define GNSS_SDR_OBSDIFF_FLAGS_H
 
 #include <gflags/gflags.h>
-#include <limits>
 
 DEFINE_double(skip_obs_transitory_s, 30.0, "Skip the initial observable outputs to avoid transitory results [s]");
 DEFINE_double(skip_obs_ends_s, 5.0, "Skip the lasts observable outputs to avoid transitory results [s]");

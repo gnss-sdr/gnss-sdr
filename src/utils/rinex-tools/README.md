@@ -34,12 +34,12 @@ Available command-line flags:
 
 | **flag**                 | **Default value** | **Description**  |
 |:------------------------:|:-----------------:|:-----------------|
-| `skip_obs_transitory_s`  | `30.0`            | Skip the initial observable outputs to avoid transitory results [s]. |
-| `skip_obs_ends_s`        | `5.0`             | Skip the lasts observable outputs to avoid transitory results [s]. |
-| `single_diffs`           | `false`           | [`true`, `false`]: If `true`, the program also computes the single difference errors for [Carrier Phase](https://gnss-sdr.org/docs/sp-blocks/observables/#carrier-phase-measurement) and [Doppler](https://gnss-sdr.org/docs/sp-blocks/observables/#doppler-shift-measurement) measurements (requires LO synchronization between receivers). |
-| `compare_with_5X`        | `false`           | [`true`, `false`]: If `true`, compares the E5a Doppler and Carrier Phases with the E5 full Bw in RINEX (expect discrepancy due to the center frequencies difference). |
-| `dupli_sat`              | `false`           | [`true`, `false`]: If `true`, enables special observable test mode where the scenario contains duplicated satellite orbits. |
-| `dupli_sat_prns`         | `1,2,3,4`         | List of duplicated satellites PRN pairs (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4). |
-| `ref_rinex_obs`          | `reference.obs`   | Filename of reference RINEX observation file. |
-| `test_rinex_obs`         | `test.obs`        | Filename of tested RINEX observation file. |
-| `show_plots`             | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |
+| `--skip_obs_transitory_s`  | `30.0`            | Skip the initial observable outputs to avoid transitory results [s]. |
+| `--skip_obs_ends_s`        | `5.0`             | Skip the lasts observable outputs to avoid transitory results [s]. |
+| `--single_diffs`           | `false`           | [`true`, `false`]: If `true`, the program also computes the single difference errors for [Carrier Phase](https://gnss-sdr.org/docs/sp-blocks/observables/#carrier-phase-measurement) and [Doppler](https://gnss-sdr.org/docs/sp-blocks/observables/#doppler-shift-measurement) measurements (requires LO synchronization between receivers). |
+| `--compare_with_5X`        | `false`           | [`true`, `false`]: If `true`, the program compares the E5a Doppler and Carrier Phases with the E5 full Bw in RINEX (expect discrepancy due to the center frequencies difference). |
+| `--dupli_sat`              | `false`           | [`true`, `false`]: If `true`, this flag enables special observable test mode where the scenario contains duplicated satellite orbits. |
+| `--dupli_sat_prns`         | `1,2,3,4`         | List of duplicated satellites PRN pairs (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4). |
+| `--ref_rinex_obs`          | `reference.obs`   | Filename of reference RINEX observation file. |
+| `--test_rinex_obs`         | `test.obs`        | Filename of tested RINEX observation file. |
+| `--show_plots`             | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |

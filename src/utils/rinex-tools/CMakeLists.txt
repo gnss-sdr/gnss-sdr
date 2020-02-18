@@ -34,10 +34,6 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
         add_dependencies(obsdiff matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif()
-    find_package(Gnuplot QUIET)
-    if(GNUPLOT_FOUND)
-        add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
-    endif()
 
     target_link_libraries(obsdiff
         PUBLIC

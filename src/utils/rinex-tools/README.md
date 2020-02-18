@@ -43,9 +43,9 @@ $ obsdiff --ref_rinex_obs reference.20o
 
 Available command-line flags:
 
-| **flag**                  | **Default value** | **Description**  |
+| **Command-line flag**  | **Default value** | **Description**  |
 |:-------------------------:|:-----------------:|:-----------------|
-| `-skip_obs_transitory_s`  | `30.0`            | Skip the initial observable outputs to avoid transitory results [s]. |
+| `&#8209;skip_obs_transitory_s`  | `30.0`            | Skip the initial observable outputs to avoid transitory results [s]. |
 | `-skip_obs_ends_s`        | `5.0`             | Skip the lasts observable outputs to avoid transitory results [s]. |
 | `-single_diffs`           | `false`           | [`true`, `false`]: If `true`, the program also computes the single difference errors for [Carrier Phase](https://gnss-sdr.org/docs/sp-blocks/observables/#carrier-phase-measurement) and [Doppler](https://gnss-sdr.org/docs/sp-blocks/observables/#doppler-shift-measurement) measurements (requires LO synchronization between receivers). |
 | `-compare_with_5X`        | `false`           | [`true`, `false`]: If `true`, the program compares the E5a Doppler and Carrier Phases with the E5 full Bw in RINEX (expect discrepancy due to the center frequencies difference). |

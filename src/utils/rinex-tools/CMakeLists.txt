@@ -1,0 +1,52 @@
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
+#
+# This file is part of GNSS-SDR.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+find_package(GPSTK QUIET)
+if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+    include(GNUInstallDirs)
+    set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
+endif()
+
+set(obsdiff_HEADERS obsdiff_flags.h)
+source_group(Headers FILES ${obsdiff_HEADERS})
+
+add_executable(obsdiff ${CMAKE_CURRENT_SOURCE_DIR}/obsdiff.cc ${obsdiff_HEADERS})
+set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk
+target_include_directories(obsdiff PUBLIC ${CMAKE_SOURCE_DIR}/src/tests/common-files)
+
+if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+    add_dependencies(obsdiff gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+endif()
+
+target_link_libraries(obsdiff
+    PUBLIC
+        Armadillo::armadillo
+        Threads::Threads
+        Gflags::gflags
+        Matio::matio
+        core_system_parameters
+        ${GPSTK_LIBRARY}
+)
+
+target_include_directories(obsdiff
+    PUBLIC
+        ${GPSTK_INCLUDE_DIR}/gpstk
+        ${GPSTK_INCLUDE_DIR}
+)
+
+add_custom_command(TARGET obsdiff POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obsdiff>
+    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>
+)
+
+install(TARGETS obsdiff
+    RUNTIME DESTINATION bin
+    COMPONENT "obsdiff"
+)

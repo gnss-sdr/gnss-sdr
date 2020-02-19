@@ -24,21 +24,24 @@
 #ifndef GNSS_SDR_DLL_PLL_CONF_FPGA_H
 #define GNSS_SDR_DLL_PLL_CONF_FPGA_H
 
+#include "configuration_interface.h"
 #include <cstdint>
 #include <string>
 
 class Dll_Pll_Conf_Fpga
 {
 public:
-    /* DLL/PLL tracking configuration */
+    Dll_Pll_Conf_Fpga();
+    void SetFromConfiguration(ConfigurationInterface* configuration, const std::string& role);
 
-    int fll_filter_order;
+    /* DLL/PLL tracking configuration */
+    int32_t fll_filter_order;
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
-    unsigned int pull_in_time_s;  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
-    unsigned int bit_synchronization_time_limit_s;
-    int pll_filter_order;
-    int dll_filter_order;
+    uint32_t pull_in_time_s;  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
+    uint32_t bit_synchronization_time_limit_s;
+    int32_t pll_filter_order;
+    int32_t dll_filter_order;
 
     double fs_in;
     uint32_t vector_length;
@@ -88,8 +91,6 @@ public:
     bool extended_correlation_in_fpga;
     uint32_t extend_fpga_integration_periods;
     uint32_t fpga_integration_period;
-
-    Dll_Pll_Conf_Fpga();
 };
 
 #endif

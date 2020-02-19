@@ -132,6 +132,11 @@ if(ENABLE_ARMA_NO_DEBUG)
     )
 endif()
 
+target_include_directories(tracking_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(tracking_libs

@@ -30,12 +30,13 @@
 #include <gpstk/Rinex3ObsStream.hpp>
 #include <gpstk/RinexUtilities.hpp>
 #include <matio.h>
-#include <algorithm>
 #include <array>
-#include <cmath>
 #include <fstream>
 #include <map>
 #include <set>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 
 // Create the lists of GNSS satellites

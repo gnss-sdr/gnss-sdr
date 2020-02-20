@@ -22,20 +22,24 @@
 #ifndef GNSS_SDR_DLL_PLL_CONF_H
 #define GNSS_SDR_DLL_PLL_CONF_H
 
+#include "configuration_interface.h"
 #include <cstdint>
 #include <string>
 
 class Dll_Pll_Conf
 {
 public:
+    Dll_Pll_Conf();
+    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role);
+
     /* DLL/PLL tracking configuration */
-    int fll_filter_order;
+    int32_t fll_filter_order;
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
-    unsigned int pull_in_time_s;
-    unsigned int bit_synchronization_time_limit_s;
-    int pll_filter_order;
-    int dll_filter_order;
+    uint32_t pull_in_time_s;
+    uint32_t bit_synchronization_time_limit_s;
+    int32_t pll_filter_order;
+    int32_t dll_filter_order;
     double fs_in;
     uint32_t vector_length;
     bool dump;
@@ -57,6 +61,7 @@ public:
     float y_intercept;
     int32_t extend_correlation_symbols;
     bool high_dyn;
+    std::string item_type;
     int32_t cn0_samples;
     int32_t cn0_smoother_samples;
     float cn0_smoother_alpha;
@@ -71,8 +76,6 @@ public:
     bool enable_doppler_correction;
     char system;
     char signal[3]{};
-
-    Dll_Pll_Conf();
 };
 
 #endif

@@ -85,6 +85,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ### Improvements in Repeatability:
 
 - Added the option to apply carrier smoothing of code pseudoranges with new Observables parameter enable_carrier_smoothing.
+- Fixed normalization of DLL discriminator in BPSK modulations when the spacing between correlators was not 0.5.
 
 
 ### Improvements in Testability:

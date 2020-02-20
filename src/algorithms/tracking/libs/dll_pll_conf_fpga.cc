@@ -30,7 +30,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     /* DLL/PLL tracking configuration */
     high_dyn = false;
     smoother_length = 10;
-    fs_in = 0.0;
+    fs_in = 12500000.0;
     vector_length = 0U;
     dump = false;
     dump_mat = true;
@@ -89,7 +89,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 void Dll_Pll_Conf_Fpga::SetFromConfiguration(ConfigurationInterface *configuration,
     const std::string &role)
 {
-    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12500000);
+    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
     smoother_length = configuration->property(role + ".smoother_length", smoother_length);

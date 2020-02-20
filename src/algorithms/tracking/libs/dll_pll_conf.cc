@@ -29,7 +29,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     /* DLL/PLL tracking configuration */
     high_dyn = false;
     smoother_length = 10;
-    fs_in = 0.0;
+    fs_in = 2000000.0;
     vector_length = 0U;
     dump = false;
     dump_mat = true;
@@ -81,7 +81,8 @@ void Dll_Pll_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     item_type = configuration->property(role + ".item_type", item_type);
     if (!item_type_valid(item_type))
         {
-            throw std::invalid_argument("Unknown item type: " + item_type);
+            LOG(WARNING) << "Unknown item type: " + item_type << ". Set to gr_complex";
+            item_type = "gr_complex";
         }
 
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);

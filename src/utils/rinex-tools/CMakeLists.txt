@@ -59,4 +59,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         RUNTIME DESTINATION bin
         COMPONENT "obsdiff"
     )
+else()
+    message(STATUS "The Armadillo library version found (${ARMADILLO_VERSION_STRING}) is older than 9.800.")
+    message(STATUS " obsdiff will not be built.")
 endif()

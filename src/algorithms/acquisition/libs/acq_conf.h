@@ -22,13 +22,16 @@
 #define GNSS_SDR_ACQ_CONF_H
 
 #include "configuration_interface.h"
-#include <cstddef>
 #include <cstdint>
 #include <string>
 
 class Acq_Conf
 {
 public:
+    Acq_Conf();
+
+    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
+
     /* PCPS Acquisition configuration */
     uint32_t sampled_ms;
     uint32_t ms_per_code;
@@ -59,10 +62,6 @@ public:
     uint32_t dump_channel;
     size_t it_size;
     std::string item_type;
-
-    Acq_Conf();
-
-    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
 
 private:
     void SetDerivedParams();

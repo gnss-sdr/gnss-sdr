@@ -22,6 +22,7 @@
 #include "item_type_helpers.h"
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
+#include <cmath>
 
 Acq_Conf::Acq_Conf()
 {
@@ -148,6 +149,6 @@ void Acq_Conf::ConfigureAutomaticResampler(double opt_freq)
 void Acq_Conf::SetDerivedParams()
 {
     samples_per_ms = static_cast<float>(resampled_fs) * 0.001;
-    samples_per_chip = static_cast<unsigned int>(ceil(static_cast<float>(resampled_fs) / chips_per_second));
+    samples_per_chip = static_cast<unsigned int>(std::ceil(static_cast<float>(resampled_fs) / chips_per_second));
     samples_per_code = samples_per_ms * ms_per_code;
 }

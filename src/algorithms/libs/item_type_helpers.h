@@ -23,8 +23,8 @@
 #define GNSS_SDR_ITEM_TYPE_HELPERS_H
 
 
-#include <functional>
 #include <cstdint>
+#include <functional>
 #include <string>
 
 using item_type_converter_t = std::function<void(void *, const void *, uint32_t)>;

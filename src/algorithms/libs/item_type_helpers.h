@@ -24,9 +24,10 @@
 
 
 #include <functional>
+#include <cstdint>
 #include <string>
 
-using item_type_converter_t = std::function<void(void *, const void *, unsigned)>;
+using item_type_converter_t = std::function<void(void *, const void *, uint32_t)>;
 
 /*!
  * \brief Check if a string is a valid item type

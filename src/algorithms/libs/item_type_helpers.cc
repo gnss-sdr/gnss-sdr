@@ -76,90 +76,90 @@ bool item_type_is_complex(const std::string &item_type)
 }
 
 
-void copy_converter(void *dest, const void *src, unsigned int num_items, size_t item_size)
+void copy_converter(void *dest, const void *src, uint32_t num_items, size_t item_size)
 {
     std::memcpy(dest, src, num_items * item_size);
 }
 
 
-void convert_8i_16i(void *dest, const void *src, unsigned int num_items)
+void convert_8i_16i(void *dest, const void *src, uint32_t num_items)
 {
     volk_8i_convert_16i(reinterpret_cast<int16_t *>(dest),
         reinterpret_cast<const int8_t *>(src), num_items);
 }
 
 
-void convert_8i_32f(void *dest, const void *src, unsigned int num_items)
+void convert_8i_32f(void *dest, const void *src, uint32_t num_items)
 {
     volk_8i_s32f_convert_32f(reinterpret_cast<float *>(dest),
         reinterpret_cast<const int8_t *>(src), 1.0F, num_items);
 }
 
 
-void convert_8ic_16ic(void *dest, const void *src, unsigned int num_items)
+void convert_8ic_16ic(void *dest, const void *src, uint32_t num_items)
 {
     volk_8i_convert_16i(reinterpret_cast<int16_t *>(dest),
         reinterpret_cast<const int8_t *>(src), 2 * num_items);
 }
 
 
-void convert_8ic_32fc(void *dest, const void *src, unsigned int num_items)
+void convert_8ic_32fc(void *dest, const void *src, uint32_t num_items)
 {
     volk_8i_s32f_convert_32f(reinterpret_cast<float *>(dest),
         reinterpret_cast<const int8_t *>(src), 1.0F, 2 * num_items);
 }
 
 
-void convert_16i_8i(void *dest, const void *src, unsigned int num_items)
+void convert_16i_8i(void *dest, const void *src, uint32_t num_items)
 {
     volk_16i_convert_8i(reinterpret_cast<int8_t *>(dest),
         reinterpret_cast<const int16_t *>(src), num_items);
 }
 
 
-void convert_16i_32f(void *dest, const void *src, unsigned int num_items)
+void convert_16i_32f(void *dest, const void *src, uint32_t num_items)
 {
     volk_16i_s32f_convert_32f(reinterpret_cast<float *>(dest),
         reinterpret_cast<const int16_t *>(src), 1.0F, num_items);
 }
 
 
-void convert_16ic_8ic(void *dest, const void *src, unsigned int num_items)
+void convert_16ic_8ic(void *dest, const void *src, uint32_t num_items)
 {
     volk_16i_convert_8i(reinterpret_cast<int8_t *>(dest),
         reinterpret_cast<const int16_t *>(src), 2 * num_items);
 }
 
 
-void convert_16ic_32fc(void *dest, const void *src, unsigned int num_items)
+void convert_16ic_32fc(void *dest, const void *src, uint32_t num_items)
 {
     volk_16i_s32f_convert_32f(reinterpret_cast<float *>(dest),
         reinterpret_cast<const int16_t *>(src), 1.0F, 2 * num_items);
 }
 
 
-void convert_32f_8i(void *dest, const void *src, unsigned int num_items)
+void convert_32f_8i(void *dest, const void *src, uint32_t num_items)
 {
     volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(dest),
         reinterpret_cast<const float *>(src), 1.0F, num_items);
 }
 
 
-void convert_32f_16i(void *dest, const void *src, unsigned int num_items)
+void convert_32f_16i(void *dest, const void *src, uint32_t num_items)
 {
     volk_32f_s32f_convert_16i(reinterpret_cast<int16_t *>(dest),
         reinterpret_cast<const float *>(src), 1.0F, num_items);
 }
 
 
-void convert_32fc_8ic(void *dest, const void *src, unsigned int num_items)
+void convert_32fc_8ic(void *dest, const void *src, uint32_t num_items)
 {
     volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(dest),
         reinterpret_cast<const float *>(src), 1.0F, 2 * num_items);
 }
 
 
-void convert_32fc_16ic(void *dest, const void *src, unsigned int num_items)
+void convert_32fc_16ic(void *dest, const void *src, uint32_t num_items)
 {
     volk_32f_s32f_convert_16i(reinterpret_cast<int16_t *>(dest),
         reinterpret_cast<const float *>(src), 1.0F, 2 * num_items);

@@ -15,8 +15,6 @@
 # Gnuradio::gn3s
 #
 
-set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
-include(FindPkgConfig)
 pkg_check_modules(PC_GR_GN3S gr-gn3s)
 
 find_path(

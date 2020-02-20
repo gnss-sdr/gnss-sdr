@@ -15,8 +15,6 @@
 # Gnuradio::dbfcttc
 #
 
-set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
-include(FindPkgConfig)
 pkg_check_modules(PC_GR_DBFCTTC gr-dbfcttc)
 
 find_path(

@@ -15,8 +15,6 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
-include(FindPkgConfig)
 pkg_check_modules(PC_IIO gnuradio-iio)
 
 find_path(IIO_INCLUDE_DIRS

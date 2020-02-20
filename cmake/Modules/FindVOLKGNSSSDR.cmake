@@ -19,8 +19,6 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
-include(FindPkgConfig)
 pkg_check_modules(PC_VOLK_GNSSSDR QUIET volk_gnsssdr)
 
 find_path(VOLK_GNSSSDR_INCLUDE_DIRS

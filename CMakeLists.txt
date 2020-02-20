@@ -402,6 +402,11 @@ if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     endif()
 endif()
 
+################################################################################
+# pkg-config - Helper tool used when compiling applications and libraries.
+################################################################################
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+find_package(PkgConfig)
 
 
 ################################################################################

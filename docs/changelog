@@ -69,6 +69,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 - Now the volk_gnsssdr library can be built on Microsoft Windows.
 - Now the volk_gnsssdr library makes use of C11 aligned_alloc where available.
 - Improved CMake script for cross-compilation and for the detection of AVX, AVX2 and NEON (v7 and v8) instructions.
+- Fixed warnings raised by CMake 3.17.
 
 
 ### Improvements in Reliability:

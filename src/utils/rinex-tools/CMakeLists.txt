@@ -35,7 +35,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
                 -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder
         )
     endif()
-    
+
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
     endif()
@@ -75,5 +75,6 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     )
 else()
     message(STATUS "The Armadillo library version found (${ARMADILLO_VERSION_STRING}) is older than 9.800.")
-    message(STATUS "The obsdiff utility tool will not be built.")
+    message(STATUS " The obsdiff utility tool will not be built.")
+    message(STATUS " You could build it by setting -DENABLE_OWN_ARMADILLO=ON")
 endif()

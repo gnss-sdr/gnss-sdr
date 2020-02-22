@@ -1,16 +1,15 @@
-#Copyright(C) 2012 - 2020(see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
 #
-#GNSS - SDR is a software - defined Global Navigation Satellite Systems receiver
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
-#This file is part of GNSS - SDR.
+# This file is part of GNSS-SDR.
 #
-#SPDX - License - Identifier : GPL - 3.0 - or -later
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 find_package(GPSTK QUIET)
 if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     include(GNUInstallDirs)
-#string(REGEX REPLACE / [^ / ] * $ "" LIBDIR ${CMAKE_INSTALL_LIBDIR})
     set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
 endif()
@@ -113,4 +112,4 @@ else()
     endif()
 endif()
 
-set(Boost_FOUND TRUE) # trick for summary report
+set(Boost_FOUND TRUE)  # trick for summary report

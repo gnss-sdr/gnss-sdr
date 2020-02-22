@@ -62,6 +62,15 @@ jobs:
     - name: check
       run: git diff > clang_tidy.patch && echo -e "if \n [ -s clang_tidy.patch ] \nthen \n echo "clang_tidy not applied:"; echo ""; more clang_tidy.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
 
+  cpplint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install-dependencies
+      run: apt-get install python3-pip && pip3 install cpplint
+    - name: run checks
+      run: find ./src/ -iname *.h -o -iname *.cc | xargs cpplint --filter=-,+build/include_what_you_use,+build/printf_format,+readability/constructors,+readability/namespace,+readability/newline,+readability/utf8,+runtime/casting,+runtime/explicit,+runtime/printf,+whitespace/blank_line,+whitespace/comments,+whitespace/tab
+
 
   volk-gnsssdr-windows:
     runs-on: windows-latest

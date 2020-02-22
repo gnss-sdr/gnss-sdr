@@ -8,6 +8,7 @@
 #
 
 if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND) OR ENABLE_OWN_ARMADILLO)  # requires back(), introduced in Armadillo 9.800
+    message(STATUS "The obsdiff utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     find_package(GPSTK QUIET)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
         include(GNUInstallDirs)
@@ -19,8 +20,13 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     source_group(Headers FILES ${obsdiff_HEADERS})
 
     add_executable(obsdiff ${CMAKE_CURRENT_SOURCE_DIR}/obsdiff.cc ${obsdiff_HEADERS})
-    set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk
     target_include_directories(obsdiff PUBLIC ${CMAKE_SOURCE_DIR}/src/tests/common-files)
+    set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    # Do not show warnings raised by GPSTk v3.0.0
+    target_compile_options(obsdiff
+        PUBLIC
+            -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder
+    )
 
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
@@ -61,5 +67,5 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     )
 else()
     message(STATUS "The Armadillo library version found (${ARMADILLO_VERSION_STRING}) is older than 9.800.")
-    message(STATUS " obsdiff will not be built.")
+    message(STATUS "The obsdiff utility tool will not be built.")
 endif()

@@ -46,10 +46,14 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
 )
 
 if(Boost_FOUND)
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+    message(STATUS "The rinex2assist utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-
+    set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk
+    # Do not show warnings raised by GPSTk v3.0.0
+    target_compile_options(rinex2assist
+        PUBLIC
+            -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare
+    )
     target_link_libraries(rinex2assist
         PUBLIC
             Boost::iostreams
@@ -89,7 +93,7 @@ if(Boost_FOUND)
     )
 else()
     message(STATUS "Boost Iostreams library not found.")
-    message(STATUS " rinex2assist will not be built.")
+    message(STATUS "The rinex2assist utility tool will not be built.")
 endif()
 
 set(Boost_FOUND TRUE) # trick for summary report

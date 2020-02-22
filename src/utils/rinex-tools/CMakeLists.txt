@@ -23,11 +23,19 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     target_include_directories(obsdiff PUBLIC ${CMAKE_SOURCE_DIR}/src/tests/common-files)
     set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     # Do not show warnings raised by GPSTk v3.0.0
-    target_compile_options(obsdiff
-        PUBLIC
-            -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder
-    )
-
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+       target_compile_options(obsdiff
+           PUBLIC
+               -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder -Wno-deprecated-copy -Wno-extra -Wno-unused-but-set-variable -Wno-unknown-pragmas
+       )
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(obsdiff
+            PUBLIC
+                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder
+        )
+    endif()
+    
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
     endif()

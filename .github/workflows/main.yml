@@ -67,7 +67,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: install-dependencies
-      run: sudo apt-get install python3-pip && pip3 install cpplint
+      run: sudo apt-get install python3-pip && sudo pip3 install cpplint
     - name: run checks
       run: find ./src/ -iname *.h -o -iname *.cc | xargs cpplint --filter=-,+build/include_what_you_use,+build/printf_format,+readability/constructors,+readability/namespace,+readability/newline,+readability/utf8,+runtime/casting,+runtime/explicit,+runtime/printf,+whitespace/blank_line,+whitespace/comments,+whitespace/tab
 

@@ -1723,8 +1723,7 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
                                 }
                         }
                 }  // end while
-
-        }  // End of 'try' block
+        }          // End of 'try' block
 
     catch (const gpstk::FFStreamError& e)
         {

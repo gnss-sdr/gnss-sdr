@@ -1002,35 +1002,35 @@ void detslp_gf_L1L5(rtk_t *rtk, const obsd_t *obs, int i, int j,
 void detslp_dop(rtk_t *rtk __attribute__((unused)), const obsd_t *obs __attribute__((unused)), int i __attribute__((unused)), int rcv __attribute__((unused)),
     const nav_t *nav __attribute__((unused)))
 {
-/* detection with doppler disabled because of clock-jump issue (v.2.3.0) */
+    /* detection with doppler disabled because of clock-jump issue (v.2.3.0) */
 #if 0
-    int f,sat = obs[i].sat;
-    double tt,dph,dpt,lam,thres;
+    int f, sat = obs[i].sat;
+    double tt, dph, dpt, lam, thres;
 
-    trace(3,"detslp_dop: i=%d rcv=%d\n",i,rcv);
+    trace(3, "detslp_dop: i=%d rcv=%d\n", i, rcv);
 
-    for (f = 0;f<rtk->opt.nf;f++)
+    for (f = 0; f < rtk->opt.nf; f++)
         {
-            if (obs[i].L[f] == 0.0 || obs[i].D[f] == 0.0 || rtk->ph[rcv-1][sat-1][f] == 0.0)
+            if (obs[i].L[f] == 0.0 || obs[i].D[f] == 0.0 || rtk->ph[rcv - 1][sat - 1][f] == 0.0)
                 {
                     continue;
                 }
-            if (fabs(tt = timediff(obs[i].time,rtk->pt[rcv-1][sat-1][f]))<DTTOL) continue;
-            if ((lam = nav->lam[sat-1][f])<=0.0) continue;
+            if (fabs(tt = timediff(obs[i].time, rtk->pt[rcv - 1][sat - 1][f])) < DTTOL) continue;
+            if ((lam = nav->lam[sat - 1][f]) <= 0.0) continue;
 
             /* cycle slip threshold (cycle) */
-            thres = MAXACC*tt*tt/2.0/lam+rtk->opt.err[4]*fabs(tt)*4.0;
+            thres = MAXACC * tt * tt / 2.0 / lam + rtk->opt.err[4] * fabs(tt) * 4.0;
 
             /* phase difference and doppler x time (cycle) */
-            dph = obs[i].L[f]-rtk->ph[rcv-1][sat-1][f];
-            dpt = -obs[i].D[f]*tt;
+            dph = obs[i].L[f] - rtk->ph[rcv - 1][sat - 1][f];
+            dpt = -obs[i].D[f] * tt;
 
-            if (fabs(dph-dpt)<=thres) continue;
+            if (fabs(dph - dpt) <= thres) continue;
 
-            rtk->slip[sat-1][f]| = 1;
+            rtk->slip[sat - 1][f] | = 1;
 
-            errmsg(rtk,"slip detected (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
-                    sat,rcv,f+1,dph,dpt,thres);
+            errmsg(rtk, "slip detected (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
+                sat, rcv, f + 1, dph, dpt, thres);
         }
 #endif
 }
@@ -1814,26 +1814,26 @@ int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
                             nb[b]++;
                         }
 #if 0 /* residuals referenced to reference satellite (2.4.2 p11) */
-                /* restore single-differenced residuals assuming sum equal zero */
-                if (f<nf)
-                    {
-                        for (j=0,s=0.0;j<MAXSAT;j++) s+=rtk->ssat[j].resc[f];
-                        s/=nb[b]+1;
-                        for (j=0;j<MAXSAT;j++)
-                            {
-                                if (j == sat[i]-1||rtk->ssat[j].resc[f]!=0.0) rtk->ssat[j].resc[f]-=s;
-                            }
-                    }
-                else
-                    {
-                        for (j=0,s=0.0;j<MAXSAT;j++) s+=rtk->ssat[j].resp[f-nf];
-                        s/=nb[b]+1;
-                        for (j=0;j<MAXSAT;j++)
-                            {
-                                if (j == sat[i]-1||rtk->ssat[j].resp[f-nf]!=0.0)
-                                    rtk->ssat[j].resp[f-nf]-=s;
-                            }
-                    }
+                    /* restore single-differenced residuals assuming sum equal zero */
+                    if (f < nf)
+                        {
+                            for (j = 0, s = 0.0; j < MAXSAT; j++) s += rtk->ssat[j].resc[f];
+                            s /= nb[b] + 1;
+                            for (j = 0; j < MAXSAT; j++)
+                                {
+                                    if (j == sat[i] - 1 || rtk->ssat[j].resc[f] != 0.0) rtk->ssat[j].resc[f] -= s;
+                                }
+                        }
+                    else
+                        {
+                            for (j = 0, s = 0.0; j < MAXSAT; j++) s += rtk->ssat[j].resp[f - nf];
+                            s /= nb[b] + 1;
+                            for (j = 0; j < MAXSAT; j++)
+                                {
+                                    if (j == sat[i] - 1 || rtk->ssat[j].resp[f - nf] != 0.0)
+                                        rtk->ssat[j].resp[f - nf] -= s;
+                                }
+                        }
 #endif
                     b++;
                 }
@@ -2323,21 +2323,21 @@ int valpos(rtk_t *rtk, const double *v, const double *R, const int *vflg,
                 sat1, sat2, stype, freq + 1, v[i], std::sqrt(R[i + i * nv]));
         }
 #if 0 /* omitted v.2.4.0 */
-    if (stat&&nv>NP(opt))
+    if (stat && nv > NP(opt))
         {
             /* chi-square validation */
-            for (i = 0; i<nv; i++) vv += v[i]*v[i]/R[i+i*nv];
+            for (i = 0; i < nv; i++) vv += v[i] * v[i] / R[i + i * nv];
 
-            if (vv > chisqr[nv-NP(opt)-1])
+            if (vv > chisqr[nv - NP(opt) - 1])
                 {
-                    errmsg(rtk,"residuals validation failed (nv=%d np=%d vv=%.2f cs=%.2f)\n",
-                            nv, NP(opt), vv, chisqr[nv-NP(opt)-1]);
+                    errmsg(rtk, "residuals validation failed (nv=%d np=%d vv=%.2f cs=%.2f)\n",
+                        nv, NP(opt), vv, chisqr[nv - NP(opt) - 1]);
                     stat = 0;
                 }
             else
                 {
-                    trace(3,"valpos : validation ok (%s nv=%d np=%d vv=%.2f cs=%.2f)\n",
-                            rtk->tstr, nv, NP(opt), vv, chisqr[nv-NP(opt)-1]);
+                    trace(3, "valpos : validation ok (%s nv=%d np=%d vv=%.2f cs=%.2f)\n",
+                        rtk->tstr, nv, NP(opt), vv, chisqr[nv - NP(opt) - 1]);
                 }
         }
 #endif
@@ -2790,11 +2790,9 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     /* count rover/base station observations */
     for (nu = 0; nu < n && obs[nu].rcv == 1; nu++)
         {
-            ;
         }
     for (nr = 0; nu + nr < n && obs[nu + nr].rcv == 2; nr++)
         {
-            ;
         }
 
     time = rtk->sol.time; /* previous epoch */

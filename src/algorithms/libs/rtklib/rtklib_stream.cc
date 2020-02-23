@@ -1157,7 +1157,6 @@ int waittcpsvr(tcpsvr_t *tcpsvr, char *msg)
         }
     while (accsock(tcpsvr, msg))
         {
-            ;
         }
     updatetcpsvr(tcpsvr, msg);
     return tcpsvr->svr.state == 2;
@@ -2848,7 +2847,6 @@ void strsendcmd(stream_t *str, const char *cmd)
 
             if (!*msg || *msg == '#')
                 { /* null or comment */
-                    ;
                 }
             else if (*msg == '!')
                 { /* binary escape */

@@ -3142,7 +3142,6 @@ int readblq(const char *file, const char *sta, double *odisp)
     sscanf(sta, "%16s", staname);
     for (p = staname; (*p = static_cast<char>(toupper(static_cast<int>(*p)))); p++)
         {
-            ;
         }
 
     if (!(fp = fopen(file, "re")))
@@ -3163,7 +3162,6 @@ int readblq(const char *file, const char *sta, double *odisp)
                 }
             for (p = name; (*p = static_cast<char>(toupper(static_cast<int>(*p)))); p++)
                 {
-                    ;
                 }
             if (strcmp(name, staname) != 0)
                 {

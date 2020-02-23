@@ -315,7 +315,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180�
+    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180 degrees
     for (int32_t i = 0; i < frame_length; i++)
         {
             if ((i + 1) % 2 == 0)

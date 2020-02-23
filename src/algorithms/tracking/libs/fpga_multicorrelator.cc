@@ -205,7 +205,7 @@ bool Fpga_Multicorrelator_8sc::free()
 
 void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
 {
-    char device_io_name[max_length_deviceio_name];  // driver io name
+    char device_io_name[max_length_deviceio_name] = "";  // driver io name
     d_channel = channel;
 
     // open the device corresponding to the assigned channel

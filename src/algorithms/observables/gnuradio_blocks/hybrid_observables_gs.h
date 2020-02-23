@@ -29,10 +29,11 @@
 #include <gnuradio/block.h>           // for block
 #include <gnuradio/types.h>           // for gr_vector_int
 #include <cstdint>                    // for int32_t
-#include <fstream>                    // for string, ofstream
-#include <memory>                     // for shared_ptr
-#include <string>
-#include <vector>
+#include <fstream>                    // for std::ofstream
+#include <map>                        // for std::map
+#include <memory>                     // for std:shared_ptr
+#include <string>                     // for std::string
+#include <vector>                     // for std::vector
 
 class Gnss_Synchro;
 class hybrid_observables_gs;
@@ -58,7 +59,7 @@ public:
 private:
     friend hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 
-    hybrid_observables_gs(const Obs_Conf& conf_);
+    explicit hybrid_observables_gs(const Obs_Conf& conf_);
 
     Obs_Conf d_conf;
 

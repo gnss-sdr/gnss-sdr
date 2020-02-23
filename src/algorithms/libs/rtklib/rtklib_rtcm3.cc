@@ -158,7 +158,6 @@ double adjcp(rtcm_t *rtcm, int sat, int freq, double cp)
 {
     if (rtcm->cp[sat - 1][freq] == 0.0)
         {
-            ;
         }
     else if (cp < rtcm->cp[sat - 1][freq] - 750.0)
         {
@@ -1860,7 +1859,6 @@ int decode_type1047(rtcm_t *rtcm)
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
-    ;
     double toc;
     double sqrtA;
     char *msg;

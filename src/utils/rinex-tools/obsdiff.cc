@@ -125,11 +125,11 @@ std::map<int, arma::mat> ReadRinexObs(std::string rinex_file, char system, std::
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  //C1C P1 (psudorange L1)
+                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  // C1C P1 (pseudorange L1)
                                             dataobj = r_ref_data.getObs(prn, "D1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  //D1C Carrier Doppler
+                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  // D1C Carrier Doppler
                                             dataobj = r_ref_data.getObs(prn, "L1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  //L1C Carrier Phase
+                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  // L1C Carrier Phase
                                         }
                                     else if (strcmp("1B\0", signal.c_str()) == 0)
                                         {
@@ -141,7 +141,7 @@ std::map<int, arma::mat> ReadRinexObs(std::string rinex_file, char system, std::
                                             dataobj = r_ref_data.getObs(prn, "L1B", r_ref_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
-                                    else if (strcmp("2S\0", signal.c_str()) == 0)  //L2M
+                                    else if (strcmp("2S\0", signal.c_str()) == 0)  // L2M
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C2S", r_ref_header);

@@ -49,7 +49,6 @@
 
 // Class for handling RAIM
 #include <gpstk/PRSolution.hpp>
-#include <gpstk/PRSolution2.hpp>
 
 // Class defining GPS system constants
 #include <gpstk/GNSSconstants.hpp>
@@ -149,11 +148,11 @@ std::map<int, arma::mat> ReadRinexObs(std::string rinex_file, char system, std::
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  //C1C P1 (psudorange L1)
+                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  // C1C P1 (psudorange L1)
                                             dataobj = r_ref_data.getObs(prn, "D1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  //D1C Carrier Doppler
+                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  // D1C Carrier Doppler
                                             dataobj = r_ref_data.getObs(prn, "L1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  //L1C Carrier Phase
+                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  // L1C Carrier Phase
                                         }
                                     else if (strcmp("1B\0", signal.c_str()) == 0)
                                         {
@@ -165,7 +164,7 @@ std::map<int, arma::mat> ReadRinexObs(std::string rinex_file, char system, std::
                                             dataobj = r_ref_data.getObs(prn, "L1B", r_ref_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
-                                    else if (strcmp("2S\0", signal.c_str()) == 0)  //L2M
+                                    else if (strcmp("2S\0", signal.c_str()) == 0)  // L2M
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C2S", r_ref_header);
@@ -305,7 +304,7 @@ void carrier_phase_double_diff(
 
     arma::vec true_ch0_carrier_phase_interp;
     arma::vec true_ch1_carrier_phase_interp;
-    //interpolate measured observables accounting with the receiver clock differences
+    // interpolate measured observables accounting with the receiver clock differences
     arma::interp1(true_ch0.col(0), true_ch0.col(3), measurement_time - common_rx_clock_error_s, true_ch0_carrier_phase_interp);
     arma::interp1(true_ch1.col(0), true_ch1.col(3), measurement_time - common_rx_clock_error_s, true_ch1_carrier_phase_interp);
 
@@ -489,7 +488,7 @@ void carrier_doppler_double_diff(
 
     arma::vec true_ch0_carrier_doppler_interp;
     arma::vec true_ch1_carrier_doppler_interp;
-    //interpolate measured observables accounting with the receiver clock differences
+    // interpolate measured observables accounting with the receiver clock differences
     arma::interp1(true_ch0.col(0), true_ch0.col(2), measurement_time - common_rx_clock_error_s, true_ch0_carrier_doppler_interp);
     arma::interp1(true_ch1.col(0), true_ch1.col(2), measurement_time - common_rx_clock_error_s, true_ch1_carrier_doppler_interp);
 
@@ -670,7 +669,7 @@ void code_pseudorange_double_diff(
     arma::vec measurement_time = measured_ch0.col(0);
     arma::vec true_ch0_obs_interp;
     arma::vec true_ch1_obs_interp;
-    //interpolate measured observables accounting with the receiver clock differences
+    // interpolate measured observables accounting with the receiver clock differences
     arma::interp1(true_ch0.col(0), true_ch0.col(1), measurement_time - common_rx_clock_error_s, true_ch0_obs_interp);
     arma::interp1(true_ch1.col(0), true_ch1.col(1), measurement_time - common_rx_clock_error_s, true_ch1_obs_interp);
 
@@ -955,7 +954,6 @@ double compute_rx_clock_error(std::string rinex_nav_filename, std::string rinex_
                                     // WARNING: Please note that so far no further correction
                                     // is done on data: Relativistic effects, tropospheric
                                     // correction, instrumental delays, etc.
-
                                 }  // End of 'for( it = rod.obs.begin(); it!= rod.obs.end(); ...'
 
                             // The default constructor for PRSolution2 objects (like
@@ -1040,14 +1038,12 @@ double compute_rx_clock_error(std::string rinex_nav_filename, std::string rinex_
                                               << std::setw(12) << lon_deg << ","
                                               << std::setw(12) << Alt_m << " [deg],[deg],[m]\n";
 
-                                    //set computed RX clock error and stop iterating obs epochs
+                                    // set computed RX clock error and stop iterating obs epochs
                                     rx_clock_error_s = raimSolver.Solution(3) / gpstk::C_MPS;
                                     break;
                                 }  // End of 'if( raimSolver.isValid() )'
-
-                        }  // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
-
-                }  // End of 'while( roffs >> rod )'
+                        }          // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
+                }                  // End of 'while( roffs >> rod )'
         }
     catch (gpstk::Exception& e)
         {
@@ -1143,7 +1139,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
             return;
         }
 
-    //compute rx clock errors
+    // compute rx clock errors
     double ref_rx_clock_error_s = 0.0;
     double test_rx_clock_error_s = 0.0;
     if (remove_rx_clock_error == true)

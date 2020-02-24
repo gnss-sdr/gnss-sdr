@@ -89,18 +89,18 @@
 #define __VOLK_VOLATILE __volatile__
 #endif
 
-////////////////////////////////////////////////////////////////////////
+//
 // Ignore annoying warnings in MSVC
-////////////////////////////////////////////////////////////////////////
+//
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244)  //'conversion' conversion from 'type1' to 'type2', possible loss of data
 #pragma warning(disable : 4305)  //'identifier' : truncation from 'type1' to 'type2'
 #endif
 
-////////////////////////////////////////////////////////////////////////
+//
 // C-linkage declaration macros
 // FIXME: due to the usage of complex.h, require gcc for c-linkage
-////////////////////////////////////////////////////////////////////////
+//
 #if defined(__cplusplus) && (defined(__GNUC__) || defined(__clang__))
 #define __VOLK_DECL_BEGIN \
     extern "C"            \

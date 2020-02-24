@@ -24,11 +24,35 @@
 #include "gnuplot_i.h"
 #include "obsdiff_flags.h"
 #include <armadillo>
-#include <gpstk/Rinex3ObsBase.hpp>
+// Classes for handling observations RINEX files (data)
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
 #include <gpstk/Rinex3ObsStream.hpp>
-#include <gpstk/RinexUtilities.hpp>
+
+// Classes for handling satellite navigation parameters RINEX
+// files (ephemerides)
+#include <gpstk/Rinex3NavData.hpp>
+#include <gpstk/Rinex3NavHeader.hpp>
+#include <gpstk/Rinex3NavStream.hpp>
+
+// Classes for handling RINEX files with meteorological parameters
+#include <gpstk/RinexMetBase.hpp>
+#include <gpstk/RinexMetData.hpp>
+#include <gpstk/RinexMetHeader.hpp>
+#include <gpstk/RinexMetStream.hpp>
+
+// Class for handling tropospheric model
+#include <gpstk/GGTropModel.hpp>
+
+// Class for storing >broadcast-type> ephemerides
+#include <gpstk/GPSEphemerisStore.hpp>
+
+// Class for handling RAIM
+#include <gpstk/PRSolution.hpp>
+#include <gpstk/PRSolution2.hpp>
+
+// Class defining GPS system constants
+#include <gpstk/GNSSconstants.hpp>
 #include <matio.h>
 #include <array>
 #include <fstream>
@@ -125,11 +149,11 @@ std::map<int, arma::mat> ReadRinexObs(std::string rinex_file, char system, std::
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  // C1C P1 (pseudorange L1)
+                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  //C1C P1 (psudorange L1)
                                             dataobj = r_ref_data.getObs(prn, "D1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  // D1C Carrier Doppler
+                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  //D1C Carrier Doppler
                                             dataobj = r_ref_data.getObs(prn, "L1C", r_ref_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  // L1C Carrier Phase
+                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  //L1C Carrier Phase
                                         }
                                     else if (strcmp("1B\0", signal.c_str()) == 0)
                                         {
@@ -141,7 +165,7 @@ std::map<int, arma::mat> ReadRinexObs(std::string rinex_file, char system, std::
                                             dataobj = r_ref_data.getObs(prn, "L1B", r_ref_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
-                                    else if (strcmp("2S\0", signal.c_str()) == 0)  // L2M
+                                    else if (strcmp("2S\0", signal.c_str()) == 0)  //L2M
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C2S", r_ref_header);
@@ -269,20 +293,21 @@ bool save_mat_x(std::vector<double>* x, std::string filename)
 }
 
 
-void check_results_carrier_phase_double_diff(
+void carrier_phase_double_diff(
     arma::mat& true_ch0,
     arma::mat& true_ch1,
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
-    const std::string& data_title)
+    const std::string& data_title, double common_rx_clock_error_s)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec measurement_time = measured_ch0.col(0);
 
     arma::vec true_ch0_carrier_phase_interp;
     arma::vec true_ch1_carrier_phase_interp;
-    arma::interp1(true_ch0.col(0), true_ch0.col(3), measurement_time, true_ch0_carrier_phase_interp);
-    arma::interp1(true_ch1.col(0), true_ch1.col(3), measurement_time, true_ch1_carrier_phase_interp);
+    //interpolate measured observables accounting with the receiver clock differences
+    arma::interp1(true_ch0.col(0), true_ch0.col(3), measurement_time - common_rx_clock_error_s, true_ch0_carrier_phase_interp);
+    arma::interp1(true_ch1.col(0), true_ch1.col(3), measurement_time - common_rx_clock_error_s, true_ch1_carrier_phase_interp);
 
     arma::vec meas_ch1_carrier_phase_interp;
     arma::interp1(measured_ch1.col(0), measured_ch1.col(3), measurement_time, meas_ch1_carrier_phase_interp);
@@ -364,13 +389,6 @@ void check_results_carrier_phase_double_diff(
 
                     g3.showonscreen();  // window output
                 }
-            // check results against the test tolerance
-            //            ASSERT_LT(rmse, 0.25);
-            //            ASSERT_LT(error_mean, 0.2);
-            //            ASSERT_GT(error_mean, -0.2);
-            //            ASSERT_LT(error_var, 0.5);
-            //            ASSERT_LT(max_error, 0.5);
-            //            ASSERT_GT(min_error, -0.5);
         }
     else
         {
@@ -379,7 +397,7 @@ void check_results_carrier_phase_double_diff(
 }
 
 
-void check_results_carrier_phase_single_diff(
+void carrier_phase_single_diff(
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
     const std::string& data_title)
@@ -459,20 +477,21 @@ void check_results_carrier_phase_single_diff(
 }
 
 
-void check_results_carrier_doppler_double_diff(
+void carrier_doppler_double_diff(
     arma::mat& true_ch0,
     arma::mat& true_ch1,
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
-    const std::string& data_title)
+    const std::string& data_title, double common_rx_clock_error_s)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec measurement_time = measured_ch0.col(0);
 
     arma::vec true_ch0_carrier_doppler_interp;
     arma::vec true_ch1_carrier_doppler_interp;
-    arma::interp1(true_ch0.col(0), true_ch0.col(2), measurement_time, true_ch0_carrier_doppler_interp);
-    arma::interp1(true_ch1.col(0), true_ch1.col(2), measurement_time, true_ch1_carrier_doppler_interp);
+    //interpolate measured observables accounting with the receiver clock differences
+    arma::interp1(true_ch0.col(0), true_ch0.col(2), measurement_time - common_rx_clock_error_s, true_ch0_carrier_doppler_interp);
+    arma::interp1(true_ch1.col(0), true_ch1.col(2), measurement_time - common_rx_clock_error_s, true_ch1_carrier_doppler_interp);
 
     arma::vec meas_ch1_carrier_doppler_interp;
     arma::interp1(measured_ch1.col(0), measured_ch1.col(2), measurement_time, meas_ch1_carrier_doppler_interp);
@@ -553,15 +572,6 @@ void check_results_carrier_doppler_double_diff(
 
                     g3.showonscreen();  // window output
                 }
-
-            // check results against the test tolerance
-            //            ASSERT_LT(error_mean, 5);
-            //            ASSERT_GT(error_mean, -5);
-            //            // assuming PLL BW=35
-            //            ASSERT_LT(error_var, 250);
-            //            ASSERT_LT(max_error, 100);
-            //            ASSERT_GT(min_error, -100);
-            //            ASSERT_LT(rmse, 30);
         }
     else
         {
@@ -570,7 +580,7 @@ void check_results_carrier_doppler_double_diff(
 }
 
 
-void check_results_carrier_doppler_single_diff(
+void carrier_doppler_single_diff(
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
     const std::string& data_title)
@@ -649,19 +659,20 @@ void check_results_carrier_doppler_single_diff(
 }
 
 
-void check_results_code_pseudorange_double_diff(
+void code_pseudorange_double_diff(
     arma::mat& true_ch0,
     arma::mat& true_ch1,
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
-    const std::string& data_title)
+    const std::string& data_title, double common_rx_clock_error_s)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec measurement_time = measured_ch0.col(0);
     arma::vec true_ch0_obs_interp;
     arma::vec true_ch1_obs_interp;
-    arma::interp1(true_ch0.col(0), true_ch0.col(1), measurement_time, true_ch0_obs_interp);
-    arma::interp1(true_ch1.col(0), true_ch1.col(1), measurement_time, true_ch1_obs_interp);
+    //interpolate measured observables accounting with the receiver clock differences
+    arma::interp1(true_ch0.col(0), true_ch0.col(1), measurement_time - common_rx_clock_error_s, true_ch0_obs_interp);
+    arma::interp1(true_ch1.col(0), true_ch1.col(1), measurement_time - common_rx_clock_error_s, true_ch1_obs_interp);
 
     arma::vec meas_ch1_obs_interp;
     arma::interp1(measured_ch1.col(0), measured_ch1.col(1), measurement_time, meas_ch1_obs_interp);
@@ -744,14 +755,6 @@ void check_results_code_pseudorange_double_diff(
 
                     g3.showonscreen();  // window output
                 }
-
-            // check results against the test tolerance
-            //            ASSERT_LT(rmse, 3.0);
-            //            ASSERT_LT(error_mean, 1.0);
-            //            ASSERT_GT(error_mean, -1.0);
-            //            ASSERT_LT(error_var, 10.0);
-            //            ASSERT_LT(max_error, 10.0);
-            //            ASSERT_GT(min_error, -10.0);
         }
     else
         {
@@ -760,7 +763,7 @@ void check_results_code_pseudorange_double_diff(
 }
 
 
-void check_results_code_pseudorange_single_diff(
+void code_pseudorange_single_diff(
     arma::mat& measured_ch0,
     arma::mat& measured_ch1,
     const std::string& data_title)
@@ -841,6 +844,224 @@ void check_results_code_pseudorange_single_diff(
 }
 
 
+double compute_rx_clock_error(std::string rinex_nav_filename, std::string rinex_obs_file)
+{
+    std::cout << "Computing receiver's clock error..." << std::endl;
+    if (not file_exist(rinex_nav_filename.c_str()))
+        {
+            std::cout << "Warning: RINEX Nav file " << rinex_nav_filename << " does not exist, receiver's clock error could not be computed!\n";
+            return 0.0;
+        }
+    // Declaration of objects for storing ephemerides and handling RAIM
+    gpstk::GPSEphemerisStore bcestore;
+    gpstk::PRSolution raimSolver;
+
+    // Object for void-type tropospheric model (in case no meteorological
+    // RINEX is available)
+    gpstk::ZeroTropModel noTropModel;
+
+    // Object for GG-type tropospheric model (Goad and Goodman, 1974)
+    // Default constructor => default values for model
+    gpstk::GGTropModel ggTropModel;
+
+    // Pointer to one of the two available tropospheric models. It points
+    // to the void model by default
+    gpstk::TropModel* tropModelPtr = &noTropModel;
+
+    double rx_clock_error_s = 0.0;
+    try
+        {
+            // Read nav file and store unique list of ephemerides
+            gpstk::Rinex3NavStream rnffs(rinex_nav_filename.c_str());  // Open ephemerides data file
+            gpstk::Rinex3NavData rne;
+            gpstk::Rinex3NavHeader hdr;
+
+            // Let's read the header (may be skipped)
+            rnffs >> hdr;
+
+            // Storing the ephemeris in "bcstore"
+            while (rnffs >> rne) bcestore.addEphemeris(rne);
+
+            // Setting the criteria for looking up ephemeris
+            bcestore.SearchNear();
+
+            // Open and read the observation file one epoch at a time.
+            // For each epoch, compute and print a position solution
+            gpstk::Rinex3ObsStream roffs(rinex_obs_file.c_str());  // Open observations data file
+
+            // In order to throw exceptions, it is necessary to set the failbit
+            roffs.exceptions(std::ios::failbit);
+
+            gpstk::Rinex3ObsHeader roh;
+            gpstk::Rinex3ObsData rod;
+
+            // Let's read the header
+            roffs >> roh;
+
+            int indexC1;
+            try
+                {
+                    indexC1 = roh.getObsIndex("C1");
+                }
+            catch (...)
+                {
+                    std::cerr << "The observation file doesn't have C1 pseudoranges, RX clock error could not be computed!" << std::endl;
+                    return (0.0);
+                }
+
+            // Let's process all lines of observation data, one by one
+            while (roffs >> rod)
+                {
+                    // Apply editing criteria
+                    if (rod.epochFlag == 0 || rod.epochFlag == 1)  // Begin usable data
+                        {
+                            std::vector<gpstk::SatID> prnVec;
+                            std::vector<double> rangeVec;
+
+                            // Define the "it" iterator to visit the observations PRN map.
+                            // Rinex3ObsData::DataMap is a map from RinexSatID to
+                            // vector<RinexDatum>:
+                            //      std::map<RinexSatID, vector<RinexDatum> >
+                            gpstk::Rinex3ObsData::DataMap::const_iterator it;
+
+                            // This part gets the PRN numbers and ionosphere-corrected
+                            // pseudoranges for the current epoch. They are correspondly fed
+                            // into "prnVec" and "rangeVec"; "obs" is a public attribute of
+                            // Rinex3ObsData to get the map of observations
+                            for (it = rod.obs.begin(); it != rod.obs.end(); it++)
+                                {
+                                    // The RINEX file may have P1 observations, but the current
+                                    // satellite may not have them.
+                                    double C1(0.0);
+                                    try
+                                        {
+                                            C1 = rod.getObs((*it).first, indexC1).data;
+                                        }
+                                    catch (...)
+                                        {
+                                            // Ignore this satellite if P1 is not found
+                                            continue;
+                                        }
+                                    // Now, we include the current PRN number in the first part
+                                    // of "it" iterator into the vector holding the satellites.
+                                    // All satellites in view at this epoch that have P1 or P1+P2
+                                    // observations will be included.
+                                    prnVec.push_back((*it).first);
+
+                                    // The same is done for the vector of doubles holding the
+                                    // corrected ranges
+                                    rangeVec.push_back(C1);
+
+                                    // WARNING: Please note that so far no further correction
+                                    // is done on data: Relativistic effects, tropospheric
+                                    // correction, instrumental delays, etc.
+
+                                }  // End of 'for( it = rod.obs.begin(); it!= rod.obs.end(); ...'
+
+                            // The default constructor for PRSolution2 objects (like
+                            // "raimSolver") is to set a RMSLimit of 6.5. We change that
+                            // here. With this value of 3e6 the solution will have a lot
+                            // more dispersion.
+                            raimSolver.RMSLimit = 3e6;
+
+                            // In order to compute positions we need the current time, the
+                            // vector of visible satellites, the vector of corresponding
+                            // ranges, the object containing satellite ephemerides, and a
+                            // pointer to the tropospheric model to be applied
+
+                            try
+                                {
+                                    std::vector<gpstk::SatID::SatelliteSystem> Syss;
+                                    gpstk::Matrix<double> invMC;
+                                    int iret;
+                                    // Call RAIMCompute.
+
+                                    iret = raimSolver.RAIMCompute(rod.time, prnVec, Syss, rangeVec, invMC,
+                                        &bcestore, tropModelPtr);
+                                    switch (iret)
+                                        {
+                                        /// @return Return values:
+                                        ///  1  solution is ok, but may be degraded; check TropFlag,
+                                        ///  RMSFlag, SlopeFlag 0  ok
+                                        case -1:
+
+                                            std::cout << " algorithm failed to converge at time: " << rod.time
+                                                      << " \n";
+                                            break;
+                                        case -2:
+                                            std::cout
+                                                << " singular problem, no solution is possible at time: "
+                                                << rod.time << " \n";
+                                            break;
+                                        case -3:
+                                            std::cout << " not enough good data (> 4) to form a (RAIM) "
+                                                         "solution at time: "
+                                                      << rod.time << " \n";
+                                            break;
+                                        case -4:
+                                            std::cout
+                                                << "ephemeris not found for all the satellites at time: "
+                                                << rod.time << " \n";
+                                            break;
+                                        default:
+                                            break;
+                                        }
+
+                                    // return iret;
+                                }
+                            catch (gpstk::Exception& e)
+                                {
+                                }
+
+                            // If we got a valid solution, let's print it
+
+                            if (raimSolver.isValid())
+                                {
+                                    std::cout << "RX POS ECEF [XYZ] " << std::fixed << std::setprecision(3) << " "
+                                              << std::setw(12) << raimSolver.Solution(0) << " "
+                                              << std::setw(12) << raimSolver.Solution(1) << " "
+                                              << std::setw(12) << raimSolver.Solution(2) << "\n";
+
+                                    std::cout << "RX CLK " << std::fixed << std::setprecision(16)
+                                              << raimSolver.Solution(3) / gpstk::C_MPS << " [s] \n";
+
+                                    std::cout << "NSATS, DOPs " << std::setw(2) << raimSolver.Nsvs << std::fixed
+                                              << std::setprecision(2) << " "
+                                              << std::setw(4) << raimSolver.PDOP << " " << std::setw(4) << raimSolver.GDOP
+                                              << " " << std::setw(8) << raimSolver.RMSResidual << "\n";
+                                    gpstk::Position rx_pos;
+                                    rx_pos.setECEF(gpstk::Triple(raimSolver.Solution(0), raimSolver.Solution(1), raimSolver.Solution(2)));
+
+                                    double lat_deg = rx_pos.geodeticLatitude();
+                                    double lon_deg = rx_pos.longitude();
+                                    double Alt_m = rx_pos.getAltitude();
+                                    std::cout << "RX POS GEO [Lat,Long,H]" << std::fixed << std::setprecision(10) << " "
+                                              << std::setw(12) << lat_deg << ","
+                                              << std::setw(12) << lon_deg << ","
+                                              << std::setw(12) << Alt_m << " [deg],[deg],[m]\n";
+
+                                    //set computed RX clock error and stop iterating obs epochs
+                                    rx_clock_error_s = raimSolver.Solution(3) / gpstk::C_MPS;
+                                    break;
+                                }  // End of 'if( raimSolver.isValid() )'
+
+                        }  // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
+
+                }  // End of 'while( roffs >> rod )'
+        }
+    catch (gpstk::Exception& e)
+        {
+            std::cout << "GPSTK exception: " << e << std::endl;
+        }
+    catch (...)
+        {
+            std::cout << "Caught an unexpected exception." << std::endl;
+        }
+
+    return rx_clock_error_s;
+}
+
+
 void RINEX_doublediff_dupli_sat()
 {
     // special test mode for duplicated satellites
@@ -889,15 +1110,15 @@ void RINEX_doublediff_dupli_sat()
                             std::cout << "Computing single difference observables for duplicated SV pairs..." << std::endl;
                             std::cout << "SD = OBS_ROVER(SV" << prn_pairs.at(n) << ") - OBS_ROVER(SV" << prn_pairs.at(n + 1) << ")" << std::endl;
 
-                            check_results_code_pseudorange_single_diff(test_obs.at(prn_pairs.at(n)),
+                            code_pseudorange_single_diff(test_obs.at(prn_pairs.at(n)),
                                 test_obs.at(prn_pairs.at(n + 1)),
                                 "SD = OBS(SV" + std::to_string(prn_pairs.at(n)) + ") - OBS(SV" + std::to_string(prn_pairs.at(n + 1)) + ") ");
 
-                            check_results_carrier_phase_single_diff(test_obs.at(prn_pairs.at(n)),
+                            carrier_phase_single_diff(test_obs.at(prn_pairs.at(n)),
                                 test_obs.at(prn_pairs.at(n + 1)),
                                 "SD = OBS(SV" + std::to_string(prn_pairs.at(n)) + ") - OBS(SV" + std::to_string(prn_pairs.at(n + 1)) + ") ");
 
-                            check_results_carrier_doppler_single_diff(test_obs.at(prn_pairs.at(n)),
+                            carrier_doppler_single_diff(test_obs.at(prn_pairs.at(n)),
                                 test_obs.at(prn_pairs.at(n + 1)),
                                 "SD = OBS(SV" + std::to_string(prn_pairs.at(n)) + ") - OBS(SV" + std::to_string(prn_pairs.at(n + 1)) + ") ");
                         }
@@ -910,7 +1131,7 @@ void RINEX_doublediff_dupli_sat()
 }
 
 
-void RINEX_doublediff()
+void RINEX_doublediff(bool remove_rx_clock_error)
 {
     // read rinex reference observations
     std::map<int, arma::mat> ref_obs = ReadRinexObs(FLAGS_ref_rinex_obs, 'G', std::string("1C\0"));
@@ -921,6 +1142,19 @@ void RINEX_doublediff()
         {
             return;
         }
+
+    //compute rx clock errors
+    double ref_rx_clock_error_s = 0.0;
+    double test_rx_clock_error_s = 0.0;
+    if (remove_rx_clock_error == true)
+        {
+            ref_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_ref_rinex_obs);
+            test_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_test_rinex_obs);
+        }
+
+    double common_clock_error_s = test_rx_clock_error_s - ref_rx_clock_error_s;
+
+
     // Cut measurement initial transitory of the measurements
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]" << std::endl;
@@ -997,36 +1231,50 @@ void RINEX_doublediff()
         {
             //            std::cout << it->first << " => " << it->second.n_rows << '\n';
             //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
-            // debug
             std::vector<double> tmp_time_vec(it->second.col(0).colptr(0),
                 it->second.col(0).colptr(0) + it->second.n_rows);
-            std::vector<double> tmp_vector_y6(it->second.col(2).colptr(0),
+            std::vector<double> tmp_vector(it->second.col(2).colptr(0),
                 it->second.col(2).colptr(0) + it->second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector_y6, std::string("ref_doppler_sat" + std::to_string(it->first)));
+            save_mat_xy(tmp_time_vec, tmp_vector, std::string("ref_doppler_sat" + std::to_string(it->first)));
+
+            std::vector<double> tmp_vector2(it->second.col(3).colptr(0),
+                it->second.col(3).colptr(0) + it->second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("ref_carrier_phase_sat" + std::to_string(it->first)));
+
+            std::vector<double> tmp_vector3(it->second.col(1).colptr(0),
+                it->second.col(1).colptr(0) + it->second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("ref_pseudorange_sat" + std::to_string(it->first)));
         }
     for (std::map<int, arma::mat>::iterator it = test_obs.begin(); it != test_obs.end(); ++it)
         {
             //            std::cout << it->first << " => " << it->second.n_rows << '\n';
             //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
-            // debug
             std::vector<double> tmp_time_vec(it->second.col(0).colptr(0),
                 it->second.col(0).colptr(0) + it->second.n_rows);
-            std::vector<double> tmp_vector_y6(it->second.col(2).colptr(0),
+            std::vector<double> tmp_vector(it->second.col(2).colptr(0),
                 it->second.col(2).colptr(0) + it->second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector_y6, std::string("measured_doppler_sat" + std::to_string(it->first)));
+            save_mat_xy(tmp_time_vec, tmp_vector, std::string("measured_doppler_sat" + std::to_string(it->first)));
+
+            std::vector<double> tmp_vector2(it->second.col(3).colptr(0),
+                it->second.col(3).colptr(0) + it->second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("measured_carrier_phase_sat" + std::to_string(it->first)));
+
+            std::vector<double> tmp_vector3(it->second.col(1).colptr(0),
+                it->second.col(1).colptr(0) + it->second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("measured_pseudorange_sat" + std::to_string(it->first)));
         }
 
     // select reference satellite
     std::set<int> PRN_set = available_gps_prn;
-    double abs_min_doppler = 1e6;
+    double min_range = std::numeric_limits<double>::max();
     int ref_sat_id = 1;
     for (std::set<int>::iterator ref_prn_it = PRN_set.begin(); ref_prn_it != PRN_set.end(); ++ref_prn_it)
         {
             if (ref_obs.find(*ref_prn_it) != ref_obs.end() and test_obs.find(*ref_prn_it) != test_obs.end())
                 {
-                    if (fabs(test_obs.at(*ref_prn_it).at(0, 2)) < abs_min_doppler)
+                    if (test_obs.at(*ref_prn_it).at(0, 1) < min_range)
                         {
-                            abs_min_doppler = fabs(test_obs.at(*ref_prn_it).at(0, 2));
+                            min_range = test_obs.at(*ref_prn_it).at(0, 1);
                             ref_sat_id = *ref_prn_it;
                         }
                 }
@@ -1035,7 +1283,7 @@ void RINEX_doublediff()
     // compute double differences
     if (ref_obs.find(ref_sat_id) != ref_obs.end() and test_obs.find(ref_sat_id) != test_obs.end())
         {
-            std::cout << "Using reference satellite SV " << ref_sat_id << " with minimum abs Doppler of " << abs_min_doppler << " [Hz]" << std::endl;
+            std::cout << "Using reference satellite SV " << ref_sat_id << " with minimum range of " << min_range << " [meters]" << std::endl;
             for (std::set<int>::iterator current_prn_it = PRN_set.begin(); current_prn_it != PRN_set.end(); ++current_prn_it)
                 {
                     int current_sat_id = *current_prn_it;
@@ -1047,23 +1295,23 @@ void RINEX_doublediff()
                                     std::cout << "DD = (OBS_ROVER(SV" << current_sat_id << ") - OBS_ROVER(SV" << ref_sat_id << "))"
                                               << " - (OBS_BASE(SV" << current_sat_id << ") - OBS_BASE(SV" << ref_sat_id << "))" << std::endl;
 
-                                    check_results_code_pseudorange_double_diff(ref_obs.at(ref_sat_id),
+                                    code_pseudorange_double_diff(ref_obs.at(ref_sat_id),
                                         ref_obs.at(current_sat_id),
                                         test_obs.at(ref_sat_id),
                                         test_obs.at(current_sat_id),
-                                        "PRN " + std::to_string(current_sat_id) + " ");
+                                        "PRN " + std::to_string(current_sat_id) + " ", common_clock_error_s);
 
-                                    check_results_carrier_phase_double_diff(ref_obs.at(ref_sat_id),
+                                    carrier_phase_double_diff(ref_obs.at(ref_sat_id),
                                         ref_obs.at(current_sat_id),
                                         test_obs.at(ref_sat_id),
                                         test_obs.at(current_sat_id),
-                                        "PRN " + std::to_string(current_sat_id) + " ");
+                                        "PRN " + std::to_string(current_sat_id) + " ", common_clock_error_s);
 
-                                    check_results_carrier_doppler_double_diff(ref_obs.at(ref_sat_id),
+                                    carrier_doppler_double_diff(ref_obs.at(ref_sat_id),
                                         ref_obs.at(current_sat_id),
                                         test_obs.at(ref_sat_id),
                                         test_obs.at(current_sat_id),
-                                        "PRN " + std::to_string(current_sat_id) + " ");
+                                        "PRN " + std::to_string(current_sat_id) + " ", common_clock_error_s);
                                 }
                         }
                 }
@@ -1085,8 +1333,9 @@ int main(int argc, char** argv)
         }
     else
         {
-            RINEX_doublediff();
+            RINEX_doublediff(FLAGS_remove_rx_clock_error);
         }
+
     google::ShutDownCommandLineFlags();
     return 0;
 }

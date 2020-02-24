@@ -223,13 +223,15 @@ gnsssdr_check_build_type(${CMAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
 # Enable optimization options in GCC for Release and RelWithDebInfo build types
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # flag -O3 enables tree vectorization
-    # See https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
+if((${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU") AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+    if(NOT (${LINUX_DISTRIBUTION} MATCHES "Fedora") AND NOT (${LINUX_DISTRIBUTION} MATCHES "Gentoo"))
+        # flag -O3 enables tree vectorization
+        # See https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
+    endif()
 endif()
 
 # allow 'large' files in 32 bit builds

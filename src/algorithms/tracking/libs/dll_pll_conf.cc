@@ -50,7 +50,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     dll_bw_narrow_hz = 0.75;
     early_late_space_chips = 0.25;
     very_early_late_space_chips = 0.5;
-    early_late_space_narrow_chips = 0.1;
+    early_late_space_narrow_chips = 0.15;
     very_early_late_space_narrow_chips = 0.5;
     slope = 1.0;
     spc = 0.5;

@@ -63,6 +63,7 @@ public:
     float spc;
     float y_intercept;
     int32_t extend_correlation_symbols;
+    bool carrier_aiding;
     bool high_dyn;
     int32_t cn0_samples;
     int32_t cn0_min;

@@ -55,6 +55,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     slope = 1.0;
     spc = 0.5;
     y_intercept = 1.0;
+    carrier_aiding = true;
     extend_correlation_symbols = 1;
     cn0_samples = FLAGS_cn0_samples;
     cn0_smoother_samples = 200;
@@ -152,6 +153,7 @@ void Dll_Pll_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
     max_code_lock_fail = configuration->property(role + ".max_lock_fail", max_code_lock_fail);
     max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", max_carrier_lock_fail);
     carrier_lock_th = configuration->property(role + ".carrier_lock_th", carrier_lock_th);
+    carrier_aiding = configuration->property(role + ".carrier_aiding", carrier_aiding);
 
     // tracking lock tests smoother parameters
     cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", cn0_smoother_samples);

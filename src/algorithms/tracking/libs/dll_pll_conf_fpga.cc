@@ -56,6 +56,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     slope = 1.0;
     spc = 0.5;
     y_intercept = 1.0;
+    carrier_aiding = true;
     extend_correlation_symbols = 1;
     cn0_samples = FLAGS_cn0_samples;
     cn0_smoother_samples = 200;
@@ -157,6 +158,7 @@ void Dll_Pll_Conf_Fpga::SetFromConfiguration(ConfigurationInterface *configurati
     very_early_late_space_narrow_chips = configuration->property(role + ".very_early_late_space_narrow_chips", very_early_late_space_narrow_chips);
     extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", extend_correlation_symbols);
     cn0_samples = configuration->property(role + ".cn0_samples", cn0_samples);
+    carrier_aiding = configuration->property(role + ".carrier_aiding", carrier_aiding);
 
     // tracking lock tests smoother parameters
     cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", cn0_smoother_samples);

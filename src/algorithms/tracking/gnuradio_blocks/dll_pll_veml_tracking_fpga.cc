@@ -738,7 +738,11 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
     // Code discriminator filter
     d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
     // New code Doppler frequency estimation
-    d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
+    d_code_freq_chips = d_code_chip_rate - d_code_error_filt_chips;
+    if (trk_parameters.carrier_aiding)
+        {
+            d_code_freq_chips += d_carrier_doppler_hz * d_code_chip_rate / d_signal_carrier_freq;
+        }
 
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
     if (trk_parameters.enable_doppler_correction == true)

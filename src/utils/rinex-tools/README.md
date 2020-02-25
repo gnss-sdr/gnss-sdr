@@ -71,8 +71,8 @@ Despite this flexibility, we recommend using only a single form: `--variable=val
 
 Available command-line flags:
 
-| **Command-line flag**          | **Default value** | **Description**  |
-|:------------------------------:|:-----------------:|:-----------------|
+| **Command-line flag**     | **Default value** | **Description**  |
+|:-------------------------:|:-----------------:|:-----------------|
 | `--skip_obs_transitory_s` | `30.0`            | Skip the initial observable outputs to avoid transitory results [s]. |
 | `--skip_obs_ends_s`       | `5.0`             | Skip the lasts observable outputs to avoid transitory results [s]. |
 | `--single_diffs`          | `false`           | [`true`, `false`]: If `true`, the program also computes the single difference errors for [Carrier Phase](https://gnss-sdr.org/docs/sp-blocks/observables/#carrier-phase-measurement) and [Doppler](https://gnss-sdr.org/docs/sp-blocks/observables/#doppler-shift-measurement) measurements (requires LO synchronization between receivers). |
@@ -81,4 +81,6 @@ Available command-line flags:
 | `--dupli_sat_prns`        | `1,2,3,4`         | List of duplicated satellites PRN pairs (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4). |
 | `--ref_rinex_obs`         | `reference.obs`   | Filename of reference RINEX observation file. |
 | `--test_rinex_obs`        | `test.obs`        | Filename of tested RINEX observation file. |
+| `--remove_rx_clock_error` | `false`           | Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers) |
+| `--rinex_nav`             | `reference.nav` | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
 | `--show_plots`            | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |

@@ -28,6 +28,7 @@ DEFINE_double(skip_obs_ends_s, 5.0, "Skip the lasts observable outputs to avoid 
 DEFINE_bool(single_diffs, false, "Compute also the single difference errors for Accumulated Carrier Phase and Carrier Doppler (requires LO synchronization between receivers)");
 DEFINE_bool(compare_with_5X, false, "Compare the E5a Doppler and Carrier Phases with the E5 full bw in RINEX (expect discrepancy due to the center frequencies difference)");
 DEFINE_bool(dupli_sat, false, "Enable special observable test mode where the scenario contains duplicated satellite orbits");
+DEFINE_bool(single_diff, false, "Enable special observable test mode using only rover observables");
 DEFINE_string(dupli_sat_prns, "1,2,3,4", "List of duplicated satellites PRN pairs (i.e. 1,2,3,4 indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4)");
 DEFINE_string(ref_rinex_obs, "reference.obs", "Filename of reference RINEX observation file");
 DEFINE_string(rinex_nav, "reference.nav", "Filename of reference RINEX navigation file");

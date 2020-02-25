@@ -311,9 +311,9 @@ void carrier_phase_double_diff(
     arma::vec meas_ch1_carrier_phase_interp;
     arma::interp1(measured_ch1.col(0), measured_ch1.col(3), measurement_time, meas_ch1_carrier_phase_interp);
     // generate double difference accumulated carrier phases
-    // compute error without the accumulated carrier phase offsets (which depends on the receiver starting time)
-    arma::vec delta_true_carrier_phase_cycles = (true_ch0_carrier_phase_interp - true_ch0_carrier_phase_interp(0)) - (true_ch1_carrier_phase_interp - true_ch1_carrier_phase_interp(0));
-    arma::vec delta_measured_carrier_phase_cycles = (measured_ch0.col(3) - measured_ch0.col(3)(0)) - (meas_ch1_carrier_phase_interp - meas_ch1_carrier_phase_interp(0));
+
+    arma::vec delta_true_carrier_phase_cycles = true_ch0_carrier_phase_interp - true_ch1_carrier_phase_interp;
+    arma::vec delta_measured_carrier_phase_cycles = measured_ch0.col(3) - meas_ch1_carrier_phase_interp;
 
     // remove NaN
     arma::uvec NaN_in_true_data = arma::find_nonfinite(delta_true_carrier_phase_cycles);
@@ -349,6 +349,10 @@ void carrier_phase_double_diff(
             // 2. RMSE
             arma::vec err;
             err = delta_measured_carrier_phase_cycles - delta_true_carrier_phase_cycles;
+
+            // compute error without the accumulated carrier phase offsets (which depends on the receiver starting time)
+            err = err - arma::mean(err);
+
             arma::vec err2 = arma::square(err);
             double rmse = sqrt(arma::mean(err2));
 
@@ -408,8 +412,8 @@ void carrier_phase_single_diff(
     arma::interp1(measured_ch1.col(0), measured_ch1.col(3), measurement_time, meas_ch1_carrier_phase_interp);
     // generate single difference accumulated carrier phases
     // compute error without the accumulated carrier phase offsets (which depends on the receiver starting time)
-    arma::vec delta_measured_carrier_phase_cycles = (measured_ch0.col(3) - measured_ch0.col(3)(0)) - (meas_ch1_carrier_phase_interp - meas_ch1_carrier_phase_interp(0));
-
+    arma::vec delta_measured_carrier_phase_cycles = measured_ch0.col(3) - meas_ch1_carrier_phase_interp;
+    delta_measured_carrier_phase_cycles = delta_measured_carrier_phase_cycles - arma::mean(delta_measured_carrier_phase_cycles);
     // remove NaN
     arma::uvec NaN_in_measured_data = arma::find_nonfinite(delta_measured_carrier_phase_cycles);
 
@@ -832,6 +836,225 @@ void code_pseudorange_single_diff(
                         "Single diff Pseudorrange error");
                     g3.set_legend();
                     g3.savetops(data_title + "Single_diff_pseudorrange_error");
+
+                    g3.showonscreen();  // window output
+                }
+        }
+    else
+        {
+            std::cout << "No valid data\n";
+        }
+}
+
+
+void coderate_phaserate_consistence(
+    arma::mat& measured_ch0,
+    const std::string& data_title)
+{
+    arma::vec measurement_time = measured_ch0.col(0);
+    arma::vec delta_time = measurement_time.subvec(1, measurement_time.n_elem - 1) - measurement_time.subvec(0, measurement_time.n_elem - 2);
+    //Test 4 is for the pseudorange phase consistency
+    //
+    //1) Checks for the value of the pseudoranges to be within a certain threshold.
+    arma::vec prange = measured_ch0.col(1);
+    //todo: This code is only valid for L1/E1 carrier frequency.
+    arma::vec phase = measured_ch0.col(3) * (gpstk::C_MPS / gpstk::L1_FREQ_GPS);
+
+    double mincodeval = 5000000.0;
+    double maxcodeval = 40000000.0;
+    arma::uvec idx = arma::find(prange < mincodeval);
+    if (idx.n_elem > 0)
+        {
+            std::cout << "Warning: Pseudorange measurement is less than minimum acceptable value of " << mincodeval << " meters.\n";
+        }
+
+    idx = arma::find(prange > maxcodeval);
+    if (idx.n_elem > 0)
+        {
+            std::cout << "Warning: Pseudorange measurement is above than maximum acceptable value of " << maxcodeval << " meters.\n";
+        }
+
+    //2) It checks that the pseduorange rate is within a certain threshold
+    //    % check code rate
+    arma::vec coderate = prange.subvec(1, prange.n_elem - 1) - prange.subvec(0, prange.n_elem - 2) / delta_time;
+
+    // remove NaN
+    arma::uvec NaN_in_measured_data = arma::find_nonfinite(coderate);
+
+    if (NaN_in_measured_data.n_elem > 0)
+        {
+            std::cout << "Warning: Pseudorange rate have NaN values. \n";
+        }
+
+    double mincoderate = 0.001;
+    double maxcoderate = 5000.0;
+
+    idx = arma::find(coderate > maxcoderate and coderate < mincoderate);
+    if (idx.n_elem > 0)
+        {
+            std::cout << "Warning: bad code reate \n";
+        }
+
+    //3) It checks that the phase rate is within a certain threshold
+
+    arma::vec phaserate = phase.subvec(1, prange.n_elem - 1) - phase.subvec(0, prange.n_elem - 2) / delta_time;
+
+    // remove NaN
+    NaN_in_measured_data = arma::find_nonfinite(phase);
+
+    if (NaN_in_measured_data.n_elem > 0)
+        {
+            std::cout << "Warning: Carrier phase rate have NaN values. \n";
+        }
+
+    double minphaserate = 0.001;
+    double maxphaserate = 5000.0;
+
+    idx = arma::find(phaserate > maxphaserate and phaserate < minphaserate);
+    if (idx.n_elem > 0)
+        {
+            std::cout << "Warning: bad phase reate \n";
+        }
+
+
+    //4) It checks the difference between code and phase rates
+    //    % check difference between code and phase rates
+    arma::vec ratediff = phaserate - coderate;
+
+
+    double maxratediff = 5;
+
+    idx = arma::find(phaserate > maxratediff);
+    if (idx.n_elem > 0)
+        {
+            std::cout << "Warning: bad code and phase reate difference \n";
+        }
+
+    std::vector<double>
+        time_vector(measurement_time.colptr(0) + 1, measurement_time.colptr(0) + measurement_time.n_rows);
+
+    // 2. RMSE
+    arma::vec err;
+
+    err = ratediff;
+
+    arma::vec err2 = arma::square(err);
+    double rmse = sqrt(arma::mean(err2));
+
+    // 3. Mean err and variance
+    double error_mean = arma::mean(err);
+    double error_var = arma::var(err);
+
+    // 4. Peaks
+    double max_error = arma::max(err);
+    double min_error = arma::min(err);
+
+    // 5. report
+    std::streamsize ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << " RMSE = "
+              << rmse << ", mean = " << error_mean
+              << ", stdev = " << sqrt(error_var)
+              << " (max,min) = " << max_error
+              << "," << min_error
+              << " [meters]" << std::endl;
+    std::cout.precision(ss);
+
+    // plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Code rate - phase rate [m]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Code rate - phase rate [m]");
+            // conversion between arma::vec and std:vector
+            std::vector<double> range_error_m(err.colptr(0), err.colptr(0) + err.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, range_error_m,
+                "Code rate - phase rate");
+            g3.set_legend();
+            g3.savetops(data_title + "Code_rate_minus_phase_rate");
+
+            g3.showonscreen();  // window output
+        }
+}
+
+
+void code_phase_diff(
+    arma::mat& measured_ch0,
+    arma::mat& measured_ch1,
+    const std::string& data_title)
+{
+    // 1. True value interpolation to match the measurement times
+    arma::vec measurement_time = measured_ch0.col(0);
+
+    arma::vec code_range_ch1_obs_interp;
+    arma::interp1(measured_ch1.col(0), measured_ch1.col(1), measurement_time, code_range_ch1_obs_interp);
+    arma::vec carrier_phase_ch1_obs_interp;
+    arma::interp1(measured_ch1.col(0), measured_ch1.col(3), measurement_time, carrier_phase_ch1_obs_interp);
+
+    // generate Code - Phase vector
+    arma::vec code_minus_phase = (measured_ch0.col(1) - code_range_ch1_obs_interp) - (measured_ch0.col(3) - carrier_phase_ch1_obs_interp) * (gpstk::C_MPS / gpstk::L1_FREQ_GPS);
+
+    // remove NaN
+    arma::uvec NaN_in_measured_data = arma::find_nonfinite(code_minus_phase);
+
+    arma::mat tmp_mat = arma::conv_to<arma::mat>::from(code_minus_phase);
+    tmp_mat.shed_rows(NaN_in_measured_data);
+    code_minus_phase = tmp_mat.col(0);
+
+    code_minus_phase = code_minus_phase - code_minus_phase(0);
+
+    tmp_mat = arma::conv_to<arma::mat>::from(measurement_time);
+    tmp_mat.shed_rows(NaN_in_measured_data);
+    measurement_time = tmp_mat.col(0);
+
+    std::vector<double>
+        time_vector(measurement_time.colptr(0), measurement_time.colptr(0) + measurement_time.n_rows);
+
+    if (measurement_time.size() > 0)
+        {
+            // 2. RMSE
+            arma::vec err;
+
+            err = code_minus_phase;
+
+            arma::vec err2 = arma::square(err);
+            double rmse = sqrt(arma::mean(err2));
+
+            // 3. Mean err and variance
+            double error_mean = arma::mean(err);
+            double error_var = arma::var(err);
+
+            // 4. Peaks
+            double max_error = arma::max(err);
+            double min_error = arma::min(err);
+
+            // 5. report
+            std::streamsize ss = std::cout.precision();
+            std::cout << std::setprecision(10) << data_title << " RMSE = "
+                      << rmse << ", mean = " << error_mean
+                      << ", stdev = " << sqrt(error_var)
+                      << " (max,min) = " << max_error
+                      << "," << min_error
+                      << " [meters]" << std::endl;
+            std::cout.precision(ss);
+
+            // plots
+            if (FLAGS_show_plots)
+                {
+                    Gnuplot g3("linespoints");
+                    g3.set_title(data_title + "Code range - Carrier phase range [m]");
+                    g3.set_grid();
+                    g3.set_xlabel("Time [s]");
+                    g3.set_ylabel("Code range - Carrier phase range [m]");
+                    // conversion between arma::vec and std:vector
+                    std::vector<double> range_error_m(err.colptr(0), err.colptr(0) + err.n_rows);
+                    g3.cmd("set key box opaque");
+                    g3.plot_xy(time_vector, range_error_m,
+                        "Code range - Carrier phase range");
+                    g3.set_legend();
+                    g3.savetops(data_title + "Code_range_Carrier_phase_range");
 
                     g3.showonscreen();  // window output
                 }
@@ -1320,14 +1543,93 @@ void RINEX_doublediff(bool remove_rx_clock_error)
         }
 }
 
+void RINEX_singlediff()
+{
+    // read rinex receiver-under-test observations
+    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, 'G', std::string("1C\0"));
+
+    if (test_obs.empty())
+        {
+            return;
+        }
+
+    // Cut measurement initial transitory of the measurements
+    double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+    std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]" << std::endl;
+    arma::uvec index;
+    for (auto& test_ob : test_obs)
+        {
+            index = arma::find(test_ob.second.col(0) >= (test_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
+            if ((!index.empty()) and (index(0) > 0))
+                {
+                    test_ob.second.shed_rows(0, index(0));
+                }
+        }
+
+    // also skip last seconds of the observations (some artifacts are present in some RINEX endings)
+    arma::colvec test_obs_time = test_obs.begin()->second.col(0);
+
+    double skip_ends_s = FLAGS_skip_obs_ends_s;
+    std::cout << "Skipping last " << skip_ends_s << " [s] of observations" << std::endl;
+    for (auto& test_ob : test_obs)
+        {
+            index = arma::find(test_ob.second.col(0) >= (test_obs_time.back() - skip_ends_s), 1, "first");
+            if ((!index.empty()) and (index(0) > 0))
+                {
+                    test_ob.second.shed_rows(index(0), test_ob.second.n_rows - 1);
+                }
+        }
+
+    // Save observations in .mat files
+    std::cout << "Saving RAW observables inputs to .mat files...\n";
+
+    for (auto& test_ob : test_obs)
+        {
+            //            std::cout << it->first << " => " << it->second.n_rows << '\n';
+            //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
+            std::vector<double> tmp_time_vec(test_ob.second.col(0).colptr(0),
+                test_ob.second.col(0).colptr(0) + test_ob.second.n_rows);
+            std::vector<double> tmp_vector(test_ob.second.col(2).colptr(0),
+                test_ob.second.col(2).colptr(0) + test_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector, std::string("measured_doppler_sat" + std::to_string(test_ob.first)));
+
+            std::vector<double> tmp_vector2(test_ob.second.col(3).colptr(0),
+                test_ob.second.col(3).colptr(0) + test_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("measured_carrier_phase_sat" + std::to_string(test_ob.first)));
+
+            std::vector<double> tmp_vector3(test_ob.second.col(1).colptr(0),
+                test_ob.second.col(1).colptr(0) + test_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("measured_pseudorange_sat" + std::to_string(test_ob.first)));
+        }
+
+    // compute single differences
+    std::set<int> PRN_set = available_gps_prn;
+    std::cout << "Computing Code Pseudorange rate vs. Carrier phase rate difference..." << std::endl;
+    for (auto& current_sat_id : PRN_set)
+        {
+            if (test_obs.find(current_sat_id) != test_obs.end())
+                {
+                    std::cout << "RateError = PR_rate(SV" << current_sat_id << ") - Phase_rate(SV" << current_sat_id << ")" << std::endl;
+                    coderate_phaserate_consistence(test_obs.at(current_sat_id), "PRN " + std::to_string(current_sat_id) + " ");
+                }
+        }
+}
+
 
 int main(int argc, char** argv)
 {
     std::cout << "Running RINEX observables difference tool..." << std::endl;
     google::ParseCommandLineFlags(&argc, &argv, true);
-    if (FLAGS_dupli_sat)
+    if (FLAGS_single_diff)
         {
-            RINEX_doublediff_dupli_sat();
+            if (FLAGS_dupli_sat)
+                {
+                    RINEX_doublediff_dupli_sat();
+                }
+            else
+                {
+                    RINEX_singlediff();
+                }
         }
     else
         {

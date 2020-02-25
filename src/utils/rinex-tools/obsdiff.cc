@@ -853,11 +853,11 @@ void coderate_phaserate_consistence(
 {
     arma::vec measurement_time = measured_ch0.col(0);
     arma::vec delta_time = measurement_time.subvec(1, measurement_time.n_elem - 1) - measurement_time.subvec(0, measurement_time.n_elem - 2);
-    //Test 4 is for the pseudorange phase consistency
+    // Test 4 is for the pseudorange phase consistency
     //
-    //1) Checks for the value of the pseudoranges to be within a certain threshold.
+    // 1) Checks for the value of the pseudoranges to be within a certain threshold.
     arma::vec prange = measured_ch0.col(1);
-    //todo: This code is only valid for L1/E1 carrier frequency.
+    // todo: This code is only valid for L1/E1 carrier frequency.
     arma::vec phase = measured_ch0.col(3) * (gpstk::C_MPS / gpstk::L1_FREQ_GPS);
 
     double mincodeval = 5000000.0;
@@ -874,8 +874,8 @@ void coderate_phaserate_consistence(
             std::cout << "Warning: Pseudorange measurement is above than maximum acceptable value of " << maxcodeval << " meters.\n";
         }
 
-    //2) It checks that the pseduorange rate is within a certain threshold
-    //    % check code rate
+    // 2) It checks that the pseduorange rate is within a certain threshold
+    // check code rate
     arma::vec coderate = prange.subvec(1, prange.n_elem - 1) - prange.subvec(0, prange.n_elem - 2) / delta_time;
 
     // remove NaN
@@ -895,8 +895,7 @@ void coderate_phaserate_consistence(
             std::cout << "Warning: bad code reate \n";
         }
 
-    //3) It checks that the phase rate is within a certain threshold
-
+    // 3) It checks that the phase rate is within a certain threshold
     arma::vec phaserate = phase.subvec(1, prange.n_elem - 1) - phase.subvec(0, prange.n_elem - 2) / delta_time;
 
     // remove NaN
@@ -916,11 +915,9 @@ void coderate_phaserate_consistence(
             std::cout << "Warning: bad phase reate \n";
         }
 
-
-    //4) It checks the difference between code and phase rates
-    //    % check difference between code and phase rates
+    // 4) It checks the difference between code and phase rates
+    // check difference between code and phase rates
     arma::vec ratediff = phaserate - coderate;
-
 
     double maxratediff = 5;
 

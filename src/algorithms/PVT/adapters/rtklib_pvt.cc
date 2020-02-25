@@ -98,6 +98,11 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
             pvt_output_parameters.rinex_version = 2;
         }
     pvt_output_parameters.rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), pvt_output_parameters.output_rate_ms);
+    pvt_output_parameters.rinex_name = configuration->property(role + ".rinex_name", std::string("-"));
+    if (FLAGS_RINEX_name != "-")
+        {
+            pvt_output_parameters.rinex_name = FLAGS_RINEX_name;
+        }
 
     // RTCM Printer settings
     pvt_output_parameters.flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);

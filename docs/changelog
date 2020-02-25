@@ -26,6 +26,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 - New PVT parameter enable_rx_clock_correction allows to enable or disable the continuous application of the Time solution correction (clock steering) to the computation of Observables. By default is set to false (that is, disabled).
 - New PVT parameter max_clock_offset_ms: if PVT.enable_rx_clock_correction is set to false, this parameter sets the maximum allowed local clock offset with respect to the Time solution. If the estimated offset exceeds this parameter, a clock correction is applied to the computation of Observables.
 - Fixed L5 and E5a receiver chains when tracking the data component.
+- Added new PVT parameter rinex_name to specify a custom name of the generated RINEX files. A commandline flag --RINEX_name is also available, and overrides the configuration.
 
 
 ### Improvements in Interoperability:

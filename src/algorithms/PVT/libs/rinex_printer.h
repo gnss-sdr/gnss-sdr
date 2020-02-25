@@ -78,7 +78,7 @@ public:
     /*!
      * \brief Default constructor. Creates GNSS Navigation and Observables RINEX files and their headers
      */
-    explicit Rinex_Printer(int version = 0, const std::string& base_path = ".");
+    explicit Rinex_Printer(int version = 0, const std::string& base_path = ".", const std::string& base_name = "-");
 
     /*!
      * \brief Default destructor. Closes GNSS Navigation and Observables RINEX files
@@ -465,7 +465,7 @@ private:
      * "RINEX_FILE_TYPE_SBAS" - SBAS broadcast data file.
      * "RINEX_FILE_TYPE_CLK" - Clock file.
      */
-    std::string createFilename(const std::string& type);
+    std::string createFilename(const std::string& type, const std::string& base_name);
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line

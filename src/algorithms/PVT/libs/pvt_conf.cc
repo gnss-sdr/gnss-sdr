@@ -32,6 +32,7 @@ Pvt_Conf::Pvt_Conf()
     max_obs_block_rx_clock_offset_ms = 40;
     rinex_version = 0;
     rinexobs_rate_ms = 0;
+    rinex_name = "-";
 
     dump = false;
     dump_mat = true;

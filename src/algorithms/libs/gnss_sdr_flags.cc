@@ -64,13 +64,15 @@ DEFINE_int32(max_lock_fail, 50, "Maximum number of code lock failures before dro
 // cos(2xError_angle)=0.7 -> Error_angle=22 deg
 DEFINE_double(carrier_lock_th, 0.7, "Carrier lock threshold (in rad).");
 
-DEFINE_string(RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");
-
 DEFINE_double(dll_bw_hz, 0.0, "If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).");
 
 DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).");
 
 DEFINE_int32(carrier_smoothing_factor, DEFAULT_CARRIER_SMOOTHING_FACTOR, "Sets carrier smoothing factor M (overrides the configuration file)");
+
+DEFINE_string(RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");
+
+DEFINE_string(RINEX_name, "-", "If defined, specifies the RINEX files base name");
 
 #if GFLAGS_GREATER_2_0
 

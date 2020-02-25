@@ -341,7 +341,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_rinex_version = conf_.rinex_version;
     if (b_rinex_output_enabled)
         {
-            rp = std::make_shared<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path);
+            rp = std::make_shared<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path, conf_.rinex_name);
             rp->set_pre_2009_file(conf_.pre_2009_file);
         }
     else

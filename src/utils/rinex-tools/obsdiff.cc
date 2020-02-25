@@ -1009,7 +1009,7 @@ void code_phase_diff(
     std::vector<double>
         time_vector(measurement_time.colptr(0), measurement_time.colptr(0) + measurement_time.n_rows);
 
-    if (measurement_time.size() > 0)
+    if (!measurement_time.empty())
         {
             // 2. RMSE
             arma::vec err;

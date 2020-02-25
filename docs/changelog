@@ -16,12 +16,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ### Improvements in Efficiency:
 
 - Faster implementation of the Viterbi decoder for Galileo navigation messages.
-- The -O3 flag is now passed to GCC in Release and RelWithDebInfo build types (instead of -O2), thus enabling tree vectorization.
+- The -O3 flag is now passed to GCC in Release and RelWithDebInfo build types (instead of -O2), thus enabling tree vectorization. Disabled if building for Fedora or Gentoo.
 
 
 ### Improvements in Flexibility:
 
 - New Tracking parameters allow the configuration of the C/N0 and lock detector smoothers, as well as the activation of the FLL in pull-in and steady state stages.
+- Added new Tracking parameter carrier_aiding, allowing enabling/disabling of carrier aiding to the code tracking loop.
 - New PVT parameter enable_rx_clock_correction allows to enable or disable the continuous application of the Time solution correction (clock steering) to the computation of Observables. By default is set to false (that is, disabled).
 - New PVT parameter max_clock_offset_ms: if PVT.enable_rx_clock_correction is set to false, this parameter sets the maximum allowed local clock offset with respect to the Time solution. If the estimated offset exceeds this parameter, a clock correction is applied to the computation of Observables.
 - Fixed L5 and E5a receiver chains when tracking the data component.
@@ -50,6 +51,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 - Default Python version is now >= 3.4. Python 2.7 still can be used in systems where Python 3 is not available (e.g., CentOS 7, Debian 8, Ubuntu 10.04).
 - CMake now passes the CMAKE_BUILD_TYPE (or configuration in multi-configuration generators like Xcode) to modules built along gnss-sdr (e.g, the volk_gnsssdr library and googletest). Build types available: None, Release (by default), Debug, RelWithDebInfo, MinSizeRel, Coverage, NoOptWithASM, O2WithASM, O3WithASM, ASAN.
 - Updated links in comments along the source code and in CMake scripts.
+- Update GSL implementation to 0.36.0. See https://github.com/gsl-lite/gsl-lite/releases/tag/v0.36.0
 - Create a CI job in GitHub to ensure that clang-tidy has been applied in most of the source code (some optional blocks and tests are left apart).
 - Create a CI job in GitHub to ensure that clang-format has been applied.
 - Create a CI job in GitHub to ensure that cpplint filters have been applied.
@@ -96,6 +98,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 - Add receiver runtime to position_test report.
 - Improvements in FPGA unit tests.
+- Add new utility tool obsdiff to perform single and double differences computations from observation RINEX files. Requires GPSTk and Armadillo >= 9.800.
 
 
 ### Improvements in Usability:

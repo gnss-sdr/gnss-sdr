@@ -45,6 +45,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 - Rewriting of acquisition and tracking adapters, thus avoiding a lot of code duplication.
 - New CMake option ENABLE_ARMA_NO_DEBUG defines the macro ARMA_NO_DEBUG, which disables all run-time checks, such as bounds checking, in the Armadillo library. This will result in faster code. This option is disabled by default during development, but automatically set to ON if the option ENABLE_PACKAGING is set to ON.
+- All shadowed variables detected by passing -Wshadow to the compiler have been fixed (see https://rules.sonarsource.com/cpp/RSPEC-1117?search=shadow).
 - Apply more clang-tidy checks related to readability: readability-avoid-const-params-in-decls, readability-braces-around-statements, readability-isolate-declaration, readability-redundant-control-flow, readability-uppercase-literal-suffix. Fixed raised warnings.
 - Fixed a number of defects detected by cpplint.py. Filters applied: +build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,+build/include_what_you_use,+build/printf_format,+build/storage_class,+readability/constructors,+readability/namespace,+readability/newline,+readability/utf8,+runtime/casting,+runtime/explicit,+runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,+runtime/member_string_references,+runtime/memset,+runtime/operator,+runtime/printf,+runtime/printf_format,+whitespace/blank_line.
 - clang-format can now be applied to the whole code tree without breaking compilation.

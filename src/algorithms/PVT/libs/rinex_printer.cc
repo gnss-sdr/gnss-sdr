@@ -3769,7 +3769,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                     std::string decimal = std::string("0");
                     if (timestring.size() > 16)
                         {
-                            std::string decimal(timestring, 16, 1);
+                            decimal = std::string(timestring, 16, 1);
                         }
                     line += decimal;
                     line += std::string(1, ' ');
@@ -4184,8 +4184,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_OMEGA, 18, 2);
             line += std::string(1, ' ');
             const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200K pp. 164
-            double OMEGA_DOT = OMEGA_DOT_REF + gps_ephemeris_iter->second.d_DELTA_OMEGA_DOT;
-            line += Rinex_Printer::doub2for(OMEGA_DOT, 18, 2);
+            double OMEGA_DOT_aux = OMEGA_DOT_REF + gps_ephemeris_iter->second.d_DELTA_OMEGA_DOT;
+            line += Rinex_Printer::doub2for(OMEGA_DOT_aux, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
 
@@ -4528,7 +4528,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
                     std::string decimal = std::string("0");
                     if (timestring.size() > 16)
                         {
-                            std::string decimal(timestring, 16, 1);
+                            decimal = std::string(timestring, 16, 1);
                         }
                     line += decimal;
                     line += std::string(1, ' ');

@@ -43,7 +43,7 @@ class InMemoryConfiguration : public ConfigurationInterface
 {
 public:
     InMemoryConfiguration();
-    virtual ~InMemoryConfiguration();
+    ~InMemoryConfiguration();
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
     int64_t property(std::string property_name, int64_t default_value);

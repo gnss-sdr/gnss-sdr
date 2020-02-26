@@ -224,10 +224,10 @@ void read_results(std::vector<volk_gnsssdr_test_results_t> *results, std::string
                                     found = 127;
                                 }
                             str_size = config_str.size();
-                            char buffer[128] = {'\0'};
-                            config_str.copy(buffer, found + 1, 0);
-                            buffer[found] = '\0';
-                            single_kernel_result.push_back(std::string(buffer));
+                            char buffer_aux[128] = {'\0'};
+                            config_str.copy(buffer_aux, found + 1, 0);
+                            buffer_aux[found] = '\0';
+                            single_kernel_result.push_back(std::string(buffer_aux));
                             config_str.erase(0, found + 1);
                         }
 

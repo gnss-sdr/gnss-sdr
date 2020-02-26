@@ -359,17 +359,17 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0
                         {
                             _mm_store_si128((__m128i*)&currentValuesBuffer, currentValues);
                             mask = ~mask;
-                            int i = 0;
+                            int i32 = 0;
                             while (mask > 0)
                                 {
                                     if ((mask & 1) == 1)
                                         {
-                                            if (currentValuesBuffer[i] > max)
+                                            if (currentValuesBuffer[i32] > max)
                                                 {
-                                                    max = currentValuesBuffer[i];
+                                                    max = currentValuesBuffer[i32];
                                                 }
                                         }
-                                    i++;
+                                    i32++;
                                     mask >>= 1;
                                 }
                             maxValues = _mm_set1_epi8(max);

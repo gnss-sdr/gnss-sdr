@@ -212,7 +212,7 @@ public:
         int extend_correlation_symbols);
 
     bool acquire_signal(int SV_ID);
-    gr::top_block_sptr top_block;
+
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
@@ -369,8 +369,8 @@ void TrackingPullInTest::configure_receiver(
 bool TrackingPullInTest::acquire_signal(int SV_ID)
 {
     // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
-    gr::top_block_sptr top_block;
-    top_block = gr::make_top_block("Acquisition test");
+    gr::top_block_sptr top_block_acq;
+    top_block_acq = gr::make_top_block("Acquisition test");
 
     // Satellite signal definition
     Gnss_Synchro tmp_gnss_synchro;
@@ -479,7 +479,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     acquisition->init();
     acquisition->set_local_code();
     acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
-    acquisition->connect(top_block);
+    acquisition->connect(top_block_acq);
 
     gr::blocks::file_source::sptr file_source;
     std::string file = FLAGS_signal_file;
@@ -489,7 +489,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
     // gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
 
-    top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
+    top_block_acq->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
 
     // Enable automatic resampler for the acquisition, if required
     if (FLAGS_use_acquisition_resampler == true)
@@ -548,27 +548,26 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                             std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
                             acquisition->set_resampler_latency((taps.size() - 1) / 2);
                             gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
-                            top_block->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
-                            top_block->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
+                            top_block_acq->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
+                            top_block_acq->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
                         }
                     else
                         {
                             std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
-                            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                            top_block_acq->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
                         }
                 }
             else
                 {
                     std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
-                    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                    top_block_acq->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
                 }
         }
     else
         {
-            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
-            // top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+            top_block_acq->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+            // top_block_acq->connect(head_samples, 0, acquisition->get_left_block(), 0);
         }
-
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -581,8 +580,8 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             exit(0);
         }
 
-    msg_rx->top_block = top_block;
-    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    msg_rx->top_block = top_block_acq;
+    top_block_acq->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
     // 5. Run the flowgraph
     // Get visible GPS satellites (positive acquisitions with Doppler measurements)
@@ -620,7 +619,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             acquisition->reset();
             acquisition->set_state(1);
             msg_rx->rx_message = 0;
-            top_block->run();
+            top_block_acq->run();
             if (start_msg == true)
                 {
                     std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
@@ -643,7 +642,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                 {
                     std::cout << " . ";
                 }
-            top_block->stop();
+            top_block_acq->stop();
             file_source->seek(2 * FLAGS_skip_samples, SEEK_SET);  // skip head. ibyte, two bytes per complex sample
             std::cout.flush();
         }
@@ -663,6 +662,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
               << " [seconds]" << std::endl;
     return true;
 }
+
 
 TEST_F(TrackingPullInTest, ValidationOfResults)
 {
@@ -684,7 +684,6 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                 }
             acq_delay_error_chips_values.push_back(tmp_vector);
         }
-
 
     // ***********************************************************
     // ***** STEP 2: Generate the input signal (if required) *****
@@ -734,7 +733,6 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                         }
                 }
         }
-
 
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
@@ -802,7 +800,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_CPS) * static_cast<double>(baseband_sampling_freq);
 
                             // create flowgraph
-                            top_block = gr::make_top_block("Tracking test");
+                            auto top_block_trk = gr::make_top_block("Tracking test");
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             boost::shared_ptr<TrackingPullInTest_msg_rx> msg_rx = TrackingPullInTest_msg_rx_make();
@@ -816,7 +814,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             }) << "Failure setting gnss_synchro.";
 
                             ASSERT_NO_THROW({
-                                tracking->connect(top_block);
+                                tracking->connect(top_block_trk);
                             }) << "Failure connecting tracking to the top_block.";
 
                             std::string file;
@@ -834,22 +832,21 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                 gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
                                 gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
                                 gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
-                                top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-                                top_block->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
+                                top_block_trk->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
+                                top_block_trk->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
                                 if (acq_to_trk_delay_samples > 0)
                                     {
-                                        top_block->connect(head_samples, 0, resetable_valve_, 0);
-                                        top_block->connect(resetable_valve_, 0, tracking->get_left_block(), 0);
+                                        top_block_trk->connect(head_samples, 0, resetable_valve_, 0);
+                                        top_block_trk->connect(resetable_valve_, 0, tracking->get_left_block(), 0);
                                     }
                                 else
                                     {
-                                        top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
+                                        top_block_trk->connect(head_samples, 0, tracking->get_left_block(), 0);
                                     }
-                                top_block->connect(tracking->get_right_block(), 0, sink, 0);
-                                top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+                                top_block_trk->connect(tracking->get_right_block(), 0, sink, 0);
+                                top_block_trk->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
                                 file_source->seek(2 * FLAGS_skip_samples, 0);  // skip head. ibyte, two bytes per complex sample
                             }) << "Failure connecting the blocks of tracking test.";
-
 
                             // ********************************************************************
                             // ***** STEP 5: Perform the signal tracking and read the results *****
@@ -861,7 +858,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                     EXPECT_NO_THROW({
                                         start = std::chrono::system_clock::now();
                                         std::cout << "--- SIMULATING A PULL-IN DELAY OF " << FLAGS_acq_to_trk_delay_s << " SECONDS ---\n";
-                                        top_block->start();
+                                        top_block_trk->start();
                                         std::cout << " Waiting for valve...\n";
                                         // wait the valve message indicating the circulation of the amount of samples of the delay
                                         pmt::pmt_t msg;
@@ -870,17 +867,16 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                         tracking->start_tracking();
                                         resetable_valve_->open_valve();
                                         std::cout << " Waiting flowgraph..\n";
-                                        top_block->wait();
+                                        top_block_trk->wait();
                                         end = std::chrono::system_clock::now();
                                     }) << "Failure running the top_block.";
                                 }
                             else
                                 {
                                     tracking->start_tracking();
-                                    std::chrono::time_point<std::chrono::system_clock> start, end;
                                     EXPECT_NO_THROW({
                                         start = std::chrono::system_clock::now();
-                                        top_block->run();  // Start threads and wait
+                                        top_block_trk->run();  // Start threads and wait
                                         end = std::chrono::system_clock::now();
                                     }) << "Failure running the top_block.";
                                 }

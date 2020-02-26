@@ -21,13 +21,13 @@
 
 #include "in_memory_configuration.h"
 #include "string_converter.h"
-#include <memory>
 #include <utility>
 
 
 InMemoryConfiguration::InMemoryConfiguration()
 {
-    std::unique_ptr<StringConverter> converter_(new StringConverter);
+    std::unique_ptr<StringConverter> converter_aux(new StringConverter);
+    converter_ = std::move(converter_aux);
 }
 
 

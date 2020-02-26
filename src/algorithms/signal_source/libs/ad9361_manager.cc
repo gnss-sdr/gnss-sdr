@@ -1061,7 +1061,9 @@ bool load_fir_filter(
 
         std::string line(buf);
         if (line.find(',') == std::string::npos)
-            throw std::runtime_error("Incompatible filter file");
+            {
+                throw std::runtime_error("Incompatible filter file");
+            }
     }
 
     ifs.seekg(0, ifs.end);

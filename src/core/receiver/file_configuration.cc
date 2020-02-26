@@ -27,7 +27,6 @@
 #include "in_memory_configuration.h"
 #include "string_converter.h"
 #include <glog/logging.h>
-#include <string>
 #include <utility>
 
 
@@ -42,12 +41,6 @@ FileConfiguration::FileConfiguration()
 {
     filename_ = "./default_config_file.txt";
     init();
-}
-
-
-FileConfiguration::~FileConfiguration()
-{
-    LOG(INFO) << "Destructor called";
 }
 
 
@@ -168,7 +161,7 @@ void FileConfiguration::set_property(std::string property_name, std::string valu
 
 void FileConfiguration::init()
 {
-    std::unique_ptr<StringConverter> converter_(new StringConverter);
+    converter_ = std::make_shared<StringConverter>();
     overrided_ = std::make_shared<InMemoryConfiguration>();
     ini_reader_ = std::make_shared<INIReader>(filename_);
     error_ = ini_reader_->ParseError();

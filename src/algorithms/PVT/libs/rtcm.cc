@@ -3388,15 +3388,15 @@ std::map<std::string, int> Rtcm::galileo_signal_map = [] {
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week)) * 1000));  // NOLINT(google-runtime-int)
+    boost::posix_time::time_duration t_duration = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week)) * 1000));  // NOLINT(google-runtime-int)
 
     if (eph.i_GPS_week < 512)
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t_duration);
             return p_time;
         }
 
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t_duration);
     return p_time;
 }
 
@@ -3404,8 +3404,8 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week)) * 1000));  // NOLINT(google-runtime-int)
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    boost::posix_time::time_duration t_duration = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week)) * 1000));  // NOLINT(google-runtime-int)
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t_duration);
     return p_time;
 }
 
@@ -3413,8 +3413,8 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, d
 boost::posix_time::ptime Rtcm::compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const
 {
     double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  // NOLINT(google-runtime-int)
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    boost::posix_time::time_duration t_duration = boost::posix_time::milliseconds(static_cast<long>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  // NOLINT(google-runtime-int)
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t_duration);
     return p_time;
 }
 
@@ -4206,16 +4206,16 @@ int32_t Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
 int32_t Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week)) * 1000));
+    boost::posix_time::time_duration t_duration = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week)) * 1000));
     std::string now_ptime;
     if (gps_eph.i_GPS_week < 512)
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t_duration);
             now_ptime = to_iso_string(p_time);
         }
     else
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t_duration);
             now_ptime = to_iso_string(p_time);
         }
     std::string today_ptime = now_ptime.substr(0, 8);
@@ -4229,16 +4229,16 @@ int32_t Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 int32_t Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week)) * 1000));
+    boost::posix_time::time_duration t_duration = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week)) * 1000));
     std::string now_ptime;
     if (gps_eph.i_GPS_week < 512)
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t_duration);
             now_ptime = to_iso_string(p_time);
         }
     else
         {
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t_duration);
             now_ptime = to_iso_string(p_time);
         }
     std::string hours = now_ptime.substr(9, 2);
@@ -4649,8 +4649,8 @@ int32_t Rtcm::set_DF119(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF120(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t P3 = static_cast<int32_t>(std::round(glonass_gnav_eph.d_P_3));
-    DF120 = std::bitset<1>(P3);
+    auto P3_aux = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_3));
+    DF120 = std::bitset<1>(P3_aux);
     return 0;
 }
 
@@ -4668,8 +4668,8 @@ int32_t Rtcm::set_DF121(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF122(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    auto P = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P));
-    DF122 = std::bitset<2>(P);
+    auto P_aux = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P));
+    DF122 = std::bitset<2>(P_aux);
     return 0;
 }
 
@@ -4714,8 +4714,8 @@ int32_t Rtcm::set_DF126(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF127(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    auto P4 = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_4));
-    DF127 = std::bitset<1>(P4);
+    auto P4_aux = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_4));
+    DF127 = std::bitset<1>(P4_aux);
     return 0;
 }
 
@@ -4738,8 +4738,8 @@ int32_t Rtcm::set_DF129(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF130(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    auto M = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_M));
-    DF130 = std::bitset<2>(M);
+    auto M_aux = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_M));
+    DF130 = std::bitset<2>(M_aux);
     return 0;
 }
 
@@ -4754,8 +4754,8 @@ int32_t Rtcm::set_DF131(uint32_t fifth_str_additional_data_ind)
 
 int32_t Rtcm::set_DF132(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    auto N_A = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_A));
-    DF132 = std::bitset<11>(N_A);
+    auto N_A_aux = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_A));
+    DF132 = std::bitset<11>(N_A_aux);
     return 0;
 }
 
@@ -4770,8 +4770,8 @@ int32_t Rtcm::set_DF133(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 
 int32_t Rtcm::set_DF134(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    auto N_4 = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_4));
-    DF134 = std::bitset<5>(N_4);
+    auto N_4_aux = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_4));
+    DF134 = std::bitset<5>(N_4_aux);
     return 0;
 }
 

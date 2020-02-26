@@ -802,16 +802,16 @@ bool Gnss_Sdr_Supl_Client::load_gps_almanac_xml(const std::string& file_name)
 }
 
 
-bool Gnss_Sdr_Supl_Client::save_gps_almanac_xml(const std::string& file_name, std::map<int, Gps_Almanac> gps_almanac_map)
+bool Gnss_Sdr_Supl_Client::save_gps_almanac_xml(const std::string& file_name, std::map<int, Gps_Almanac> gps_almanac_map_to_save)
 {
-    if (gps_almanac_map.empty() == false)
+    if (gps_almanac_map_to_save.empty() == false)
         {
             std::ofstream ofs;
             try
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", gps_almanac_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", gps_almanac_map_to_save);
                     LOG(INFO) << "Saved GPS almanac data";
                 }
             catch (std::exception& e)
@@ -899,16 +899,16 @@ bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_nam
 }
 
 
-bool Gnss_Sdr_Supl_Client::save_gal_almanac_xml(const std::string& file_name, std::map<int, Galileo_Almanac> gal_almanac_map)
+bool Gnss_Sdr_Supl_Client::save_gal_almanac_xml(const std::string& file_name, std::map<int, Galileo_Almanac> galileo_almanac_map_to_save)
 {
-    if (gal_almanac_map.empty() == false)
+    if (galileo_almanac_map_to_save.empty() == false)
         {
             std::ofstream ofs;
             try
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", gal_almanac_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", galileo_almanac_map_to_save);
                     LOG(INFO) << "Saved Galileo almanac data";
                 }
             catch (std::exception& e)

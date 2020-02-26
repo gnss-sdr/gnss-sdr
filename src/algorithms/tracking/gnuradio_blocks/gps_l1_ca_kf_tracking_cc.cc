@@ -432,8 +432,8 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     auto carr_error_hz = std::vector<float>(num_epoch);
     auto carr_noise_sigma2 = std::vector<float>(num_epoch);
     auto carr_error_filt_hz = std::vector<float>(num_epoch);
-    auto code_error_chips = std::vector<float>(num_epoch);
-    auto code_error_filt_chips = std::vector<float>(num_epoch);
+    auto code_error_chips_aux = std::vector<float>(num_epoch);
+    auto code_error_filt_chips_aux = std::vector<float>(num_epoch);
     auto CN0_SNV_dB_Hz = std::vector<float>(num_epoch);
     auto carrier_lock_test = std::vector<float>(num_epoch);
     auto aux1 = std::vector<float>(num_epoch);
@@ -461,8 +461,8 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_noise_sigma2[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(float));
-                            dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(float));
-                            dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_error_chips_aux[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips_aux[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&CN0_SNV_dB_Hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(float));
@@ -548,11 +548,11 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_error_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), code_error_chips.data(), 0);
+            matvar = Mat_VarCreate("code_error_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), code_error_chips_aux.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_error_filt_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), code_error_filt_chips.data(), 0);
+            matvar = Mat_VarCreate("code_error_filt_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims.data(), code_error_filt_chips_aux.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -619,8 +619,8 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
 {
     // process vars
     d_carr_phase_error_rad = 0.0;
-    double code_error_chips = 0.0;
-    double code_error_filt_chips = 0.0;
+    code_error_chips = 0.0;
+    code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);

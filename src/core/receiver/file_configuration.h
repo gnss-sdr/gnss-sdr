@@ -48,8 +48,7 @@ class FileConfiguration : public ConfigurationInterface
 public:
     explicit FileConfiguration(std::string filename);
     FileConfiguration();
-    //! Virtual destructor
-    ~FileConfiguration();
+    ~FileConfiguration() = default;
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
     int64_t property(std::string property_name, int64_t default_value);
@@ -67,7 +66,7 @@ private:
     std::string filename_;
     std::shared_ptr<INIReader> ini_reader_;
     std::shared_ptr<InMemoryConfiguration> overrided_;
-    std::unique_ptr<StringConverter> converter_;
+    std::shared_ptr<StringConverter> converter_;
     int error_{};
 };
 

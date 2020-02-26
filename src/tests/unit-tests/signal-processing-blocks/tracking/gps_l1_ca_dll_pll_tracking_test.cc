@@ -708,7 +708,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                     arma::vec true_prn_delay_chips = arma::zeros(n_true_epochs, 1);
                                     arma::vec true_tow_s = arma::zeros(n_true_epochs, 1);
 
-                                    int64_t epoch_counter = 0;
+                                    epoch_counter = 0;
                                     while (true_obs_data.read_binary_obs())
                                         {
                                             true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;

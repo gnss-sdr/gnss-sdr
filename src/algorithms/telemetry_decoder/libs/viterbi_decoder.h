@@ -69,8 +69,8 @@ private:
     private:
         int t;
         std::vector<int> state;
-        std::vector<int> bit;
-        std::vector<float> metric;
+        std::vector<int> v_bit;
+        std::vector<float> v_metric;
         int refcount;
     };
 

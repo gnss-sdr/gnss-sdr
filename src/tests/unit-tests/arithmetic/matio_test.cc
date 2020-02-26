@@ -152,18 +152,18 @@ TEST(MatioTest, WriteAndReadGrComplex)
     auto *x_read_real = reinterpret_cast<float *>(x_read_st->Re);
     auto *x_read_imag = reinterpret_cast<float *>(x_read_st->Im);
     std::vector<gr_complex> x_v_read;
-    for (unsigned int i = 0; i < size; i++)
+    for (unsigned int k = 0; k < size; k++)
         {
-            x_v_read.emplace_back(x_read_real[i], x_read_imag[i]);
+            x_v_read.emplace_back(x_read_real[k], x_read_imag[k]);
         }
 
     Mat_Close(matfp_read);
     Mat_VarFree(matvar_read);
 
-    for (unsigned int i = 0; i < size; i++)
+    for (unsigned int k = 0; k < size; k++)
         {
-            EXPECT_FLOAT_EQ(x_v[i].real(), x_v_read[i].real());
-            EXPECT_FLOAT_EQ(x_v[i].imag(), x_v_read[i].imag());
+            EXPECT_FLOAT_EQ(x_v[k].real(), x_v_read[k].real());
+            EXPECT_FLOAT_EQ(x_v[k].imag(), x_v_read[k].imag());
         }
     errorlib::error_code ec;
     ASSERT_EQ(fs::remove(fs::path(filename), ec), true);

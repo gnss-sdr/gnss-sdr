@@ -45,7 +45,6 @@ public:
     Galileo_Navigation_Message();
 
     int32_t Page_type_time_stamp;
-    int32_t flag_even_word;
     std::string page_Even;
     bool flag_CRC_test;
     bool flag_all_ephemeris;  //!< Flag indicating that all words containing ephemeris have been received

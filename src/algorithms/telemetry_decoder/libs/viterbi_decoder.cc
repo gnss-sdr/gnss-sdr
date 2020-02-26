@@ -442,12 +442,12 @@ Viterbi_Decoder::Prev::Prev(int states, int t)
     this->t = t;
     num_states = states;
     state.reserve(num_states);
-    bit.reserve(num_states);
-    metric.reserve(num_states);
+    v_bit.reserve(num_states);
+    v_metric.reserve(num_states);
     refcount = 1;
     std::fill_n(state.begin(), num_states, 0);
-    std::fill_n(bit.begin(), num_states, 0);
-    std::fill_n(metric.begin(), num_states, 0.0F);
+    std::fill_n(v_bit.begin(), num_states, 0);
+    std::fill_n(v_metric.begin(), num_states, 0.0F);
 }
 
 
@@ -459,8 +459,8 @@ Viterbi_Decoder::Prev::Prev(const Prev& prev)
     t = prev.t;
     state = prev.state;
     num_states = prev.num_states;
-    bit = prev.bit;
-    metric = prev.metric;
+    v_bit = prev.v_bit;
+    v_metric = prev.v_metric;
     VLOG(LMORE) << "Prev("
                 << "?"
                 << ", " << t << ")"
@@ -490,8 +490,8 @@ Viterbi_Decoder::Prev& Viterbi_Decoder::Prev::operator=(const Prev& other)
     // take over resources
     t = other.t;
     state = other.state;
-    bit = other.bit;
-    metric = other.metric;
+    v_bit = other.v_bit;
+    v_metric = other.v_metric;
 
     VLOG(LMORE) << "Prev("
                 << "?"
@@ -532,7 +532,7 @@ int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
     // std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << std::endl;
     if (num_states > current_state)
         {
-            return bit[current_state];
+            return v_bit[current_state];
         }
     return 0;
 }
@@ -542,7 +542,7 @@ float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state)
 {
     if (num_states > current_state)
         {
-            return metric[current_state];
+            return v_metric[current_state];
         }
     return 0;
 }
@@ -567,7 +567,7 @@ void Viterbi_Decoder::Prev::set_decoded_bit_for_next_state(int next_state, int b
 {
     if (num_states > next_state)
         {
-            this->bit[next_state] = bit;
+            this->v_bit[next_state] = bit;
         }
 }
 
@@ -576,6 +576,6 @@ void Viterbi_Decoder::Prev::set_survivor_branch_metric_of_next_state(int next_st
 {
     if (num_states > next_state)
         {
-            this->metric[next_state] = metric;
+            this->v_metric[next_state] = metric;
         }
 }

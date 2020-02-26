@@ -133,8 +133,6 @@ void signal_generator_c::init()
                         }
                 }
         }
-
-    std::uniform_int_distribution<int> uniform_dist(0, RAND_MAX);
 }
 
 

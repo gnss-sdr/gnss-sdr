@@ -50,7 +50,6 @@ private:
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    std::vector<Gnss_Synchro> stocks;
     Serdes_Gnss_Synchro serdes;
     bool use_protobuf;
 };

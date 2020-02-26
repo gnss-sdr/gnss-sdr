@@ -313,7 +313,7 @@ void Gnss_Sdr_Supl_Client::read_supl_data()
                     gps_eph_iterator->second.d_Delta_n = static_cast<double>(e->delta_n) * DELTA_N_LSB;
                     gps_eph_iterator->second.d_M_0 = static_cast<double>(e->M0) * M_0_LSB;
                     gps_eph_iterator->second.d_Cuc = static_cast<double>(e->Cuc) * C_UC_LSB;
-                    gps_eph_iterator->second.d_e_eccentricity = static_cast<double>(e->e) * E_LSB;
+                    gps_eph_iterator->second.d_e_eccentricity = static_cast<double>(e->e) * ECCENTRICITY_LSB;
                     gps_eph_iterator->second.d_Cus = static_cast<double>(e->Cus) * C_US_LSB;
                     gps_eph_iterator->second.d_sqrt_A = static_cast<double>(e->A_sqrt) * SQRT_A_LSB;
                     gps_eph_iterator->second.d_Toe = static_cast<double>(e->toe) * T_OE_LSB;

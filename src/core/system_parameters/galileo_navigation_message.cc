@@ -33,7 +33,6 @@ using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false
 
 void Galileo_Navigation_Message::reset()
 {
-    flag_even_word = 0;
     Page_type_time_stamp = 0;
 
     flag_CRC_test = false;

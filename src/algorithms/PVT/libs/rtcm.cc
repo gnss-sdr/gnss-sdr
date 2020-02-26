@@ -1673,7 +1673,7 @@ int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
     gps_eph.d_Cuc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_UC_LSB;
     index += 16;
 
-    gps_eph.d_e_eccentricity = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * E_LSB;
+    gps_eph.d_e_eccentricity = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * ECCENTRICITY_LSB;
     index += 32;
 
     gps_eph.d_Cus = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_US_LSB;
@@ -4372,7 +4372,7 @@ int32_t Rtcm::set_DF089(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF090(const Gps_Ephemeris& gps_eph)
 {
-    auto ecc = static_cast<uint64_t>(std::round(gps_eph.d_e_eccentricity / E_LSB));
+    auto ecc = static_cast<uint64_t>(std::round(gps_eph.d_e_eccentricity / ECCENTRICITY_LSB));
     DF090 = std::bitset<32>(ecc);
     return 0;
 }

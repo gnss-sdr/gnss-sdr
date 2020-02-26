@@ -431,7 +431,7 @@ void GNSSFlowgraph::connect()
                                                 {
                                                     decimation--;
                                                 };
-                                            double acq_fs = static_cast<double>(fs) / static_cast<double>(decimation);
+                                            double acq_fs_decimated = static_cast<double>(fs) / static_cast<double>(decimation);
 
                                             if (decimation > 1)
                                                 {
@@ -455,8 +455,8 @@ void GNSSFlowgraph::connect()
 
                                                     taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
-                                                        acq_fs / 2.1,
-                                                        acq_fs / 2,
+                                                        acq_fs_decimated / 2.1,
+                                                        acq_fs_decimated / 2,
                                                         gr::filter::firdes::win_type::WIN_HAMMING);
 
                                                     gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
@@ -1361,8 +1361,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     if (channels_state_[n] == 1 or channels_state_[n] == 2)  // channel in acquisition or in tracking
                         {
                             // recover the satellite assigned
-                            Gnss_Signal gs = channels_[n]->get_signal();
-                            push_back_signal(gs);
+                            Gnss_Signal gs_assigned = channels_[n]->get_signal();
+                            push_back_signal(gs_assigned);
 
                             channels_[n]->stop_channel();  // stop the acquisition or tracking operation
                             channels_state_[n] = 0;
@@ -1950,7 +1950,6 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     // 1. Get the current channel status map
                     std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
                     // 2. search the currently tracked GPS L1 satellites and assist the GPS L2 acquisition if the satellite is not tracked on L2
-                    bool found_signal = false;
                     for (auto& current_status : current_channels_status)
                         {
                             if (std::string(current_status.second->Signal) == "1C")

@@ -120,7 +120,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
     std::string s_aux = "/dev/" + std::string(port);
     s_aux.resize(128, '\0');
     int n = s_aux.length();
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
         {
             dev[i] = s_aux[i];
         }
@@ -695,7 +695,7 @@ void syncfile(file_t *file1, file_t *file2)
 void decodetcppath(const char *path, char *addr, char *port, char *user,
     char *passwd, char *mntpnt, char *str)
 {
-    char buff[MAXSTRPATH];
+    char buff[MAXSTRPATH] = "";
     char *p;
     char *q;
 
@@ -1556,7 +1556,7 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
             // strncpy(msg, (char *)ntrip->buff, nb); This line triggers a warning. Replaced by;
             std::string s_aux(reinterpret_cast<char *>(ntrip->buff));
             s_aux.resize(nb, '\0');
-            for (int i = 0; i < nb; i++)
+            for (i = 0; i < nb; i++)
                 {
                     msg[i] = s_aux[i];
                 }
@@ -1815,7 +1815,7 @@ int statentrip(ntrip_t *ntrip)
 void decodeftppath(const char *path, char *addr, char *file, char *user,
     char *passwd, int *topts)
 {
-    char buff[MAXSTRPATH];
+    char buff[MAXSTRPATH] = "";
     char *p;
     char *q;
 
@@ -2006,9 +2006,9 @@ void *ftpthread(void *arg)
     /* download command (ref [2]) */
     if (ftp->proto == 0)
         { /* ftp */
-            std::string s_aux = "--ftp-user=" + std::string(ftp->user) + " --ftp-password=" + std::string(ftp->passwd) +
-                                " --glob=off --passive-ftp " + std::string(proxyopt) + "s-t 1 -T " + std::to_string(FTP_TIMEOUT) +
-                                " -O \"" + std::string(local) + "\"";
+            s_aux = "--ftp-user=" + std::string(ftp->user) + " --ftp-password=" + std::string(ftp->passwd) +
+                    " --glob=off --passive-ftp " + std::string(proxyopt) + "s-t 1 -T " + std::to_string(FTP_TIMEOUT) +
+                    " -O \"" + std::string(local) + "\"";
             int k = s_aux.length();
             if (k < 1024)
                 {
@@ -2018,8 +2018,8 @@ void *ftpthread(void *arg)
                         }
                 }
 
-            std::string s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
-                                 "\"ftp://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
+            s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
+                     "\"ftp://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
             k = s_aux2.length();
             for (int i = 0; (i < k) && (i < 1024); i++)
                 {
@@ -2028,15 +2028,15 @@ void *ftpthread(void *arg)
         }
     else
         { /* http */
-            std::string s_aux = std::string(proxyopt) + " -t 1 -T " + std::to_string(FTP_TIMEOUT) + " -O \"" + std::string(local) + "\"";
+            s_aux = std::string(proxyopt) + " -t 1 -T " + std::to_string(FTP_TIMEOUT) + " -O \"" + std::string(local) + "\"";
             int l = s_aux.length();
             for (int i = 0; (i < l) && (i < 1024); i++)
                 {
                     opt[i] = s_aux[i];
                 }
 
-            std::string s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
-                                 "\"http://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
+            s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
+                     "\"http://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
             l = s_aux2.length();
             for (int i = 0; (i < l) && (i < 1024); i++)
                 {
@@ -2680,15 +2680,15 @@ void strsetopt(const int *opt)
 /* set timeout time ------------------------------------------------------------
  * set timeout time
  * args   : stream_t *stream I   stream (STR_TCPCLI, STR_NTRIPCLI, STR_NTRIPSVR)
- *          int     toinact  I   inactive timeout (ms) (0: no timeout)
+ *          int     inactive_timeout  I   inactive timeout (ms) (0: no timeout)
  *          int     tirecon  I   reconnect interval (ms) (0: no reconnect)
  * return : none
  *-----------------------------------------------------------------------------*/
-void strsettimeout(stream_t *stream, int toinact, int tirecon)
+void strsettimeout(stream_t *stream, int inactive_timeout, int tirecon)
 {
     tcpcli_t *tcpcli;
 
-    tracet(3, "strsettimeout: toinact=%d tirecon=%d\n", toinact, tirecon);
+    tracet(3, "strsettimeout: toinact=%d tirecon=%d\n", inactive_timeout, tirecon);
 
     if (stream->type == STR_TCPCLI)
         {
@@ -2703,7 +2703,7 @@ void strsettimeout(stream_t *stream, int toinact, int tirecon)
             return;
         }
 
-    tcpcli->toinact = toinact;
+    tcpcli->toinact = inactive_timeout;
     tcpcli->tirecon = tirecon;
 }
 

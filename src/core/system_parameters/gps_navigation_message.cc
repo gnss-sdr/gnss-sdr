@@ -290,8 +290,8 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             d_M_0 = d_M_0 * M_0_LSB;
             d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, C_UC));
             d_Cuc = d_Cuc * C_UC_LSB;
-            d_e_eccentricity = static_cast<double>(read_navigation_unsigned(subframe_bits, E));
-            d_e_eccentricity = d_e_eccentricity * E_LSB;
+            d_e_eccentricity = static_cast<double>(read_navigation_unsigned(subframe_bits, ECCENTRICITY));
+            d_e_eccentricity = d_e_eccentricity * ECCENTRICITY_LSB;
             d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, C_US));
             d_Cus = d_Cus * C_US_LSB;
             d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, SQRT_A));

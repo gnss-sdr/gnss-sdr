@@ -54,7 +54,7 @@ public:
      * 3- Approximate receiver Latitude and Longitude (WGS-84)
      *
      */
-    double estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height) noexcept(false);
+    double estimate_doppler_from_eph(unsigned int PRN, double tow, double lat, double lon, double height) noexcept(false);
 
     /*!
      * \brief This function models the Elonics E4000 + RTL2832 front-end

@@ -489,11 +489,11 @@ void PositionSystemTest::check_results()
 
     Rtklib_Solver_Dump_Reader pvt_reader;
     pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
-    int64_t n_epochs = pvt_reader.num_epochs();
-    R_eb_e = arma::zeros(3, n_epochs);
-    V_eb_e = arma::zeros(3, n_epochs);
-    LLH = arma::zeros(3, n_epochs);
-    receiver_time_s = arma::zeros(n_epochs, 1);
+    int64_t n_epochs_pvt = pvt_reader.num_epochs();
+    R_eb_e = arma::zeros(3, n_epochs_pvt);
+    V_eb_e = arma::zeros(3, n_epochs_pvt);
+    LLH = arma::zeros(3, n_epochs_pvt);
+    receiver_time_s = arma::zeros(n_epochs_pvt, 1);
     int64_t current_epoch = 0;
     while (pvt_reader.read_binary_obs())
         {
@@ -620,25 +620,25 @@ void PositionSystemTest::check_results()
             // dynamic position
             Spirent_Motion_Csv_Dump_Reader ref_reader;
             ref_reader.open_obs_file(FLAGS_ref_motion_filename);
-            int64_t n_epochs = ref_reader.num_epochs();
-            ref_R_eb_e = arma::zeros(3, n_epochs);
-            ref_V_eb_e = arma::zeros(3, n_epochs);
-            ref_LLH = arma::zeros(3, n_epochs);
-            ref_time_s = arma::zeros(n_epochs, 1);
-            int64_t current_epoch = 0;
+            int64_t n_epochs_ref = ref_reader.num_epochs();
+            ref_R_eb_e = arma::zeros(3, n_epochs_ref);
+            ref_V_eb_e = arma::zeros(3, n_epochs_ref);
+            ref_LLH = arma::zeros(3, n_epochs_ref);
+            ref_time_s = arma::zeros(n_epochs_ref, 1);
+            int64_t current_epoch_index = 0;
             while (ref_reader.read_csv_obs())
                 {
-                    ref_time_s(current_epoch) = ref_reader.TOW_ms / 1000.0;
-                    ref_R_eb_e(0, current_epoch) = ref_reader.Pos_X;
-                    ref_R_eb_e(1, current_epoch) = ref_reader.Pos_Y;
-                    ref_R_eb_e(2, current_epoch) = ref_reader.Pos_Z;
-                    ref_V_eb_e(0, current_epoch) = ref_reader.Vel_X;
-                    ref_V_eb_e(1, current_epoch) = ref_reader.Vel_Y;
-                    ref_V_eb_e(2, current_epoch) = ref_reader.Vel_Z;
-                    ref_LLH(0, current_epoch) = ref_reader.Lat;
-                    ref_LLH(1, current_epoch) = ref_reader.Long;
-                    ref_LLH(2, current_epoch) = ref_reader.Height;
-                    current_epoch++;
+                    ref_time_s(current_epoch_index) = ref_reader.TOW_ms / 1000.0;
+                    ref_R_eb_e(0, current_epoch_index) = ref_reader.Pos_X;
+                    ref_R_eb_e(1, current_epoch_index) = ref_reader.Pos_Y;
+                    ref_R_eb_e(2, current_epoch_index) = ref_reader.Pos_Z;
+                    ref_V_eb_e(0, current_epoch_index) = ref_reader.Vel_X;
+                    ref_V_eb_e(1, current_epoch_index) = ref_reader.Vel_Y;
+                    ref_V_eb_e(2, current_epoch_index) = ref_reader.Vel_Z;
+                    ref_LLH(0, current_epoch_index) = ref_reader.Lat;
+                    ref_LLH(1, current_epoch_index) = ref_reader.Long;
+                    ref_LLH(2, current_epoch_index) = ref_reader.Height;
+                    current_epoch_index++;
                 }
             // interpolation of reference data to receiver epochs timestamps
             arma::mat ref_interp_R_eb_e = arma::zeros(3, R_eb_e.n_cols);

@@ -579,20 +579,14 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                                    {
-                                                        d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                                    }
+                                                d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
                                             }
                                     }
                                 else  // 180 deg. inverted carrier phase PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                                    {
-                                                        d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                                    }
+                                                d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
                                             }
                                     }
                                 decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);

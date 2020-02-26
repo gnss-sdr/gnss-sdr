@@ -293,7 +293,7 @@ arma::vec FrontEndCal::geodetic2ecef(double phi, double lambda, double h, const 
 }
 
 
-double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, double lat, double lon, double height) noexcept(false)
+double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double tow, double lat, double lon, double height) noexcept(false)
 {
     int num_secs = 10;
     double step_secs = 0.5;
@@ -318,8 +318,8 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
             arma::vec SV_pos_ecef = "0.0 0.0 0.0 0.0";
             double obs_time_start;
             double obs_time_stop;
-            obs_time_start = TOW - static_cast<double>(num_secs) / 2.0;
-            obs_time_stop = TOW + static_cast<double>(num_secs) / 2.0;
+            obs_time_start = tow - static_cast<double>(num_secs) / 2.0;
+            obs_time_stop = tow + static_cast<double>(num_secs) / 2.0;
             int n_points = round((obs_time_stop - obs_time_start) / step_secs);
             arma::vec ranges = arma::zeros(n_points, 1);
             double obs_time = obs_time_start;

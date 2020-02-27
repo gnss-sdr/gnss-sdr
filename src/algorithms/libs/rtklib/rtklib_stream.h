@@ -199,7 +199,7 @@ void strsum(stream_t *stream, int *inb, int *inr, int *outb, int *outr);
 
 void strsetopt(const int *opt);
 
-void strsettimeout(stream_t *stream, int toinact, int tirecon);
+void strsettimeout(stream_t *stream, int inactive_timeout, int tirecon);
 
 void strsetdir(const char *dir);
 

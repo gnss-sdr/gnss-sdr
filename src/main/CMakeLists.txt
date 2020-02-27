@@ -130,7 +130,7 @@ if(NOT GZIP_NOTFOUND)
         DESTINATION share/man/man1
     )
 
-    execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/changelog
+    execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/changelog.md
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.gz"
     )

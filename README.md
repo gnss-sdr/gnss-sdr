@@ -2,6 +2,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+<!-- prettier-ignore-start -->
 [comment]: # (
 SPDX-License-Identifier: GPL-3.0-or-later
 )
@@ -9,6 +10,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 [comment]: # (
 SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
+<!-- prettier-ignore-end -->
 
 **Welcome to GNSS-SDR!**
 
@@ -41,7 +43,6 @@ allows for the full inspection of the whole signal processing chain, and offers
 a framework for the development of new features. Please visit
 [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more
 information about this open source software-defined GNSS receiver.
-
 
 # How to build GNSS-SDR
 
@@ -703,7 +704,6 @@ substitutes a generic, non-SIMD implementation.
 More details can be found in our tutorial about
 [GNSS-SDR configuration options at building time](https://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
 
-
 ## <a name="macosx">macOS</a>
 
 GNSS-SDR can be built on macOS (or the former Mac OS X), starting from 10.9
@@ -858,7 +858,6 @@ The CMake script will create Makefiles that download, build and link Armadillo,
 Gflags, Glog, Matio, Protocol Buffers, PugiXML and Google Test on the fly at
 compile time if they are not detected in your machine.
 
-
 ## Other builds
 
 - **Docker image**: A technology providing operating-system-level virtualization
@@ -887,7 +886,6 @@ compile time if they are not detected in your machine.
   Raspberry Pi 3. Visit
   [Cross-compiling GNSS-SDR](https://gnss-sdr.org/docs/tutorials/cross-compiling/)
   for instructions.
-
 
 # Updating GNSS-SDR
 
@@ -927,7 +925,6 @@ check out
 There is a more controlled way to upgrade your repository, which is to use the
 Git commands `fetch` and `merge`, as described in our
 [Git Tutorial](https://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
-
 
 # Getting started
 

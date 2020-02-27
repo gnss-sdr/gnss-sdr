@@ -1,5 +1,6 @@
 # XML Schemas for Assisted GNSS-SDR
 
+<!-- prettier-ignore-start -->
 [comment]: # (
 SPDX-License-Identifier: GPL-3.0-or-later
 )
@@ -7,6 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 [comment]: # (
 SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
+<!-- prettier-ignore-end -->
 
 GNSS-SDR can read assistance data from
 [Extensible Markup Language (XML)](https://www.w3.org/XML/) files for faster

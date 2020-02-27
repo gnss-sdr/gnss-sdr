@@ -80,7 +80,7 @@ jobs:
       - name: install-dependencies
         run: sudo npm install --global prettier
       - name: check markdown
-        run: find . -iname "*.md" -o -iname "README" | xargs prettier --parser markdown --print-width 80 --prose-wrap always --list-different    
+        run: find . -iname "*.md" | xargs prettier --parser markdown --print-width 80 --prose-wrap always --list-different    
 
 
   volk-gnsssdr-windows:

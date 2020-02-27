@@ -1,12 +1,14 @@
 ## obsdiff
 
+<!-- prettier-ignore-start -->
 [comment]: # (
 SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: Javier Arribas, 2020. <jarribas@cttc.es>
+SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
+<!-- prettier-ignore-end -->
 
 This program computes single-differences and double-differences from RINEX
 observation files.
@@ -94,6 +96,7 @@ boolean flags.
 
 Available command-line flags:
 
+<!-- prettier-ignore-start -->
 | **Command-line flag**     | **Default value** | **Description**  |
 |:-------------------------:|:-----------------:|:-----------------|
 | `--skip_obs_transitory_s` | `30.0`            | Skip the initial observable outputs to avoid transitory results [s]. |
@@ -107,3 +110,4 @@ Available command-line flags:
 | `--remove_rx_clock_error` | `false`           | Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers) |
 | `--rinex_nav`             | `reference.nav` | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
 | `--show_plots`            | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |
+<!-- prettier-ignore-end -->

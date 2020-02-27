@@ -18,8 +18,9 @@ modules.  If you need to design or work with VOLK kernels away from
 the canonical VOLK library, this is the tool.  If you need to tailor
 your own VOLK library for whatever reason, this is the tool.
 
-The canonical VOLK library installs a volk.h and a libvolk.so. Your own library
-will install volk_$name.h and libvolk_$name.so.
+The canonical VOLK-GNSSSDR library installs a volk_gnsssdr.h and a
+libvolk_gnsssdr.so. Your own library will install volk_gnsssdr_$name.h
+and libvolk_gnsssdr_$name.so.
 Ya Gronk?
 Good.
 

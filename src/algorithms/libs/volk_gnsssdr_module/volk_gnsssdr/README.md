@@ -1,5 +1,6 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+<!-- prettier-ignore-start -->
 [comment]: # (
 SPDX-License-Identifier: GPL-3.0-or-later
 )
@@ -7,6 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 [comment]: # (
 SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
+<!-- prettier-ignore-end -->
 
 # Welcome to VOLK_GNSSSDR, the Vector-Optimized Library of Kernels for GNSS-SDR
 
@@ -47,7 +49,6 @@ baseband processor:
 ![Example of VOLK_GNSSSDR
 usage.](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
 
-
 ## How to build VOLK_GNSSSDR:
 
 This library is automatically built and installed along with GNSS-SDR if it is
@@ -68,7 +69,6 @@ instance, gcc >= 8.0), specifically the std::filesystem library, packages
 `libboost-dev`, `libboost-filesystem-dev` and `libboost-system-dev` are no
 longer required dependencies. The CMake script will detect that availability for
 you.
-
 
 ### Building on most x86 (32-bit and 64-bit) platforms
 

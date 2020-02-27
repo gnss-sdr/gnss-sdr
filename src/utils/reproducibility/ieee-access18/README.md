@@ -1,12 +1,14 @@
 ## Continuous Reproducibility in GNSS Signal Processing
 
+<!-- prettier-ignore-start -->
 [comment]: # (
 SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2018 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
+<!-- prettier-ignore-end -->
 
 This folder contains files required for the reproduction of the experiment
 proposed in:

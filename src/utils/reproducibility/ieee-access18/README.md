@@ -1,5 +1,4 @@
-Continuous Reproducibility in GNSS Signal Processing
-----------------------------------------------------
+## Continuous Reproducibility in GNSS Signal Processing
 
 [comment]: # (
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -9,25 +8,40 @@ SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 
-This folder contains files required for the reproduction of the experiment proposed in:
+This folder contains files required for the reproduction of the experiment
+proposed in:
 
-C. Fern&aacute;ndez-Prades, J. Vil&agrave;-Valls, J. Arribas and A. Ramos, [*Continuous Reproducibility in GNSS Signal Processing*](https://ieeexplore.ieee.org/document/8331069/), IEEE Access, Vol. 6, No. 1, pp. 20451-20463, April 2018. DOI: [10.1109/ACCESS.2018.2822835](https://doi.org/10.1109/ACCESS.2018.2822835)
+C. Fern&aacute;ndez-Prades, J. Vil&agrave;-Valls, J. Arribas and A. Ramos,
+[_Continuous Reproducibility in GNSS Signal Processing_](https://ieeexplore.ieee.org/document/8331069/),
+IEEE Access, Vol. 6, No. 1, pp. 20451-20463, April 2018. DOI:
+[10.1109/ACCESS.2018.2822835](https://doi.org/10.1109/ACCESS.2018.2822835)
 
-The data set used in this paper is available at https://zenodo.org/record/1184601
+The data set used in this paper is available at
+https://zenodo.org/record/1184601
 
-The sample format is `ibyte`: Interleaved (I&Q) stream of samples of type signed integer, 8-bit two’s complement number ranging from -128 to 127. The sampling rate is 3 MSps.
+The sample format is `ibyte`: Interleaved (I&Q) stream of samples of type signed
+integer, 8-bit two’s complement number ranging from -128 to 127. The sampling
+rate is 3 MSps.
 
-The figure appearing in that paper can be automatically generated with the pipeline available at https://gitlab.com/gnss-sdr/gnss-sdr/pipelines
+The figure appearing in that paper can be automatically generated with the
+pipeline available at https://gitlab.com/gnss-sdr/gnss-sdr/pipelines
 
-After the **Build** stage, which compiles the source code in several versions of the most popular GNU/Linux distributions, and the **Test** stage, which executes GNSS-SDR’s QA code, the **Deploy** stage creates and publishes an image of a software container ready to execute the experiment. This container is available by doing:
+After the **Build** stage, which compiles the source code in several versions of
+the most popular GNU/Linux distributions, and the **Test** stage, which executes
+GNSS-SDR’s QA code, the **Deploy** stage creates and publishes an image of a
+software container ready to execute the experiment. This container is available
+by doing:
 
 ```
 $ docker pull carlesfernandez/docker-gnsssdr:access18
 ```
 
-Then, in the **Experiment** stage, a job installs the image created in the previous step, grabs the data file, executes the experiment and produces a figure with the obtained results.
+Then, in the **Experiment** stage, a job installs the image created in the
+previous step, grabs the data file, executes the experiment and produces a
+figure with the obtained results.
 
-The steps to reproduce the experiment in your own machine (with [Docker](https://www.docker.com) already installed and running) are:
+The steps to reproduce the experiment in your own machine (with
+[Docker](https://www.docker.com) already installed and running) are:
 
 ```
 $ docker pull carlesfernandez/docker-gnsssdr:access18
@@ -52,4 +66,5 @@ $ cp Figure2.pdf /home/access18/
 $ exit
 ```
 
-You will find the file `Figure2.pdf` in a newly created folder called `access18`.
+You will find the file `Figure2.pdf` in a newly created folder called
+`access18`.

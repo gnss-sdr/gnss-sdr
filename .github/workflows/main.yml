@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: sudo apt-get update && sudo apt-get install ninja-build libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev python3-mako python3-six
     - name: configure
       run: cd build && cmake -GNinja ..
@@ -25,7 +25,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: brew install ninja pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && pip3 install mako && pip3 install six
     - name: configure
       run: cd build && cmake -GNinja ..
@@ -41,7 +41,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: brew install llvm && ln -s /usr/local/opt/llvm/bin/clang-format /usr/local/bin
     - name: run clang-format
       run: find . -iname \*.h -o -iname \*.c -o -iname \*.cpp -o -iname \*.hpp | xargs clang-format -style=file -i
@@ -53,7 +53,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && ln -s /usr/local/opt/llvm/bin/clang-tidy /usr/local/bin && ln -s /usr/local/Cellar/llvm/9.*/bin/clang-apply-replacements /usr/local/bin && cp /usr/local/Cellar/llvm/9.*/share/clang/run-clang-tidy.py /usr/local/bin && pip3 install mako && pip3 install six
     - name: Prepare run
       run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.10.0 core_monitor pvt_libs
@@ -67,10 +67,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: sudo apt-get install python3-pip && sudo pip3 install cpplint
     - name: run checks
       run: find ./src/ -iname *.h -o -iname *.cc | xargs cpplint --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,+build/include_what_you_use,+build/printf_format,+build/storage_class,+readability/constructors,+readability/namespace,+readability/newline,+readability/utf8,+runtime/casting,+runtime/explicit,+runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,+runtime/member_string_references,+runtime/memset,+runtime/operator,+runtime/printf,+runtime/printf_format,+whitespace/blank_line,+whitespace/comma,+whitespace/comments,+whitespace/empty_conditional_body,+whitespace/end-of-line,+whitespace/ending-newline,+whitespace/semicolon,+whitespace/tab
+
+
+  prettier-markdown:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v1
+      - name: install dependencies
+        run: sudo npm install --global prettier
+      - name: check markdown
+        run: find . -iname "*.md" | xargs prettier --parser markdown --print-width 80 --prose-wrap always --list-different
 
 
   volk-gnsssdr-windows:
@@ -96,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: sudo apt-get install build-essential python3-mako python3-six cmake
     - name: configure
       run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -112,7 +122,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: pip3 install mako && pip3 install six
     - name: configure
       run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -126,7 +136,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install-dependencies
+    - name: install dependencies
       run: pip3 install mako && pip3 install six
     - name: configure
       run: cd build && cmake -GXcode ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr

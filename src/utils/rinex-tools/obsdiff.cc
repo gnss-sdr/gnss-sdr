@@ -93,7 +93,7 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
     try
         {
             gpstk::Rinex3ObsStream r_ref(rinex_file);
-            r_ref.exceptions(std::ios::failbit);
+
             gpstk::Rinex3ObsData r_ref_data;
             gpstk::Rinex3ObsHeader r_ref_header;
 
@@ -219,7 +219,12 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
             std::cout << "unknown error.  I don't feel so well..." << std::endl;
             return obs_map;
         }
-
+    if (obs_map.empty())
+        {
+            std::cout << "Warning: file "
+                      << rinex_file
+                      << " contains no data." << std::endl;
+        }
     return obs_map;
 }
 
@@ -892,7 +897,7 @@ void coderate_phaserate_consistence(
     idx = arma::find(coderate > maxcoderate and coderate < mincoderate);
     if (idx.n_elem > 0)
         {
-            std::cout << "Warning: bad code reate \n";
+            std::cout << "Warning: bad code rate \n";
         }
 
     // 3) It checks that the phase rate is within a certain threshold
@@ -912,7 +917,7 @@ void coderate_phaserate_consistence(
     idx = arma::find(phaserate > maxphaserate and phaserate < minphaserate);
     if (idx.n_elem > 0)
         {
-            std::cout << "Warning: bad phase reate \n";
+            std::cout << "Warning: bad phase rate \n";
         }
 
     // 4) It checks the difference between code and phase rates
@@ -921,10 +926,10 @@ void coderate_phaserate_consistence(
 
     double maxratediff = 5;
 
-    idx = arma::find(phaserate > maxratediff);
+    idx = arma::find(ratediff > maxratediff);
     if (idx.n_elem > 0)
         {
-            std::cout << "Warning: bad code and phase reate difference \n";
+            std::cout << "Warning: bad code and phase rate difference \n";
         }
 
     std::vector<double>
@@ -960,10 +965,10 @@ void coderate_phaserate_consistence(
     if (FLAGS_show_plots)
         {
             Gnuplot g3("linespoints");
-            g3.set_title(data_title + "Code rate - phase rate [m]");
+            g3.set_title(data_title + "Code rate - phase rate [m/s]");
             g3.set_grid();
             g3.set_xlabel("Time [s]");
-            g3.set_ylabel("Code rate - phase rate [m]");
+            g3.set_ylabel("Code rate - phase rate [m/s]");
             // conversion between arma::vec and std:vector
             std::vector<double> range_error_m(err.colptr(0), err.colptr(0) + err.n_rows);
             g3.cmd("set key box opaque");
@@ -1111,9 +1116,6 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
             // For each epoch, compute and print a position solution
             gpstk::Rinex3ObsStream roffs(rinex_obs_file.c_str());  // Open observations data file
 
-            // In order to throw exceptions, it is necessary to set the failbit
-            roffs.exceptions(std::ios::failbit);
-
             gpstk::Rinex3ObsHeader roh;
             gpstk::Rinex3ObsData rod;
 
@@ -1230,7 +1232,7 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
 
                                     // return iret;
                                 }
-                            catch (gpstk::Exception& e)
+                            catch (const gpstk::Exception& e)
                                 {
                                 }
 
@@ -1268,7 +1270,11 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                         }          // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
                 }                  // End of 'while( roffs >> rod )'
         }
-    catch (gpstk::Exception& e)
+    catch (const gpstk::FFStreamError& e)
+        {
+            std::cout << "GPSTK exception: " << e << std::endl;
+        }
+    catch (const gpstk::Exception& e)
         {
             std::cout << "GPSTK exception: " << e << std::endl;
         }
@@ -1372,7 +1378,6 @@ void RINEX_doublediff(bool remove_rx_clock_error)
         }
 
     double common_clock_error_s = test_rx_clock_error_s - ref_rx_clock_error_s;
-
 
     // Cut measurement initial transitory of the measurements
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;

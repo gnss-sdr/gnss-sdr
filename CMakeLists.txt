@@ -233,6 +233,18 @@ if((${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU") AND (CMAKE_CXX_COMPILER_I
         set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
     endif()
 endif()
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # Fix for Debug mode in macOS
+        include(CheckCXXCompilerFlag)
+        check_cxx_compiler_flag(-fstandalone-debug HAVE_STANDALONE_DEBUG)
+        check_cxx_compiler_flag(-Og HAVE_OG_FLAG)
+        if(HAVE_STANDALONE_DEBUG AND HAVE_OG_FLAG)
+            set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -fstandalone-debug")
+            set(CMAKE_C_FLAGS_DEBUG "-Og -g -fstandalone-debug")
+        endif()
+    endif()
+endif()
 
 # allow 'large' files in 32 bit builds
 if(UNIX)

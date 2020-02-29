@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 )
 <!-- prettier-ignore-end -->
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR (unreleased)](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
 ### Improvements in Accuracy:
 
@@ -136,6 +136,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Improved CMake script for cross-compilation and for the detection of AVX, AVX2
   and NEON (v7 and v8) instructions.
 - Fixed warnings raised by CMake 3.17.
+- Fixed warnings raised by cmake --warn-uninitialized ..
 
 ### Improvements in Reliability:
 

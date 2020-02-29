@@ -17,35 +17,49 @@
 
 pkg_check_modules(PC_GR_GN3S gr-gn3s)
 
+if(NOT GRGN3S_ROOT)
+    set(GRGN3S_ROOT_USER_DEFINED /usr/local)
+else()
+    set(GRGN3S_ROOT_USER_DEFINED ${GRGN3S_ROOT})
+endif()
+if(DEFINED ENV{GRGN3S_ROOT})
+    set(GRGN3S_ROOT_USER_DEFINED
+        ${GRGN3S_ROOT_USER_DEFINED}
+        $ENV{GRGN3S_ROOT}
+    )
+endif()
+if(DEFINED ENV{GR_GN3S_DIR})
+    set(GRGN3S_ROOT_USER_DEFINED
+        ${GRGN3S_ROOT_USER_DEFINED}
+        $ENV{GR_GN3S_DIR}
+    )
+endif()
+set(GRGN3S_ROOT_USER_DEFINED
+    ${GRGN3S_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(
     GR_GN3S_INCLUDE_DIRS
     NAMES gn3s/gn3s_api.h
     HINTS ${PC_GR_GN3S_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${GRGN3S_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${GRGN3S_ROOT}/include
-          $ENV{GRGN3S_ROOT}/include
-          $ENV{GR_GN3S_DIR}/include
 )
 
 find_library(
     GR_GN3S_LIBRARIES
     NAMES gr-gn3s
     HINTS ${PC_GR_GN3S_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${GRGN3S_ROOT_USER_DEFINED}/lib
+          ${GRGN3S_ROOT_USER_DEFINED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          ${GRGN3S_ROOT}/lib
-          $ENV{GRGN3S_ROOT}/lib
-          ${GRGN3S_ROOT}/lib64
-          $ENV{GRGN3S_ROOT}/lib64
-          $ENV{GR_GN3S_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

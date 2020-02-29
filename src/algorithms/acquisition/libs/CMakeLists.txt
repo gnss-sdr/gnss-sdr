@@ -7,13 +7,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-if(ENABLE_FPGA)
-    set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc)
-    set(ACQUISITION_LIB_HEADERS fpga_acquisition.h)
-endif()
+set(ACQUISITION_LIB_HEADERS acq_conf.h)
+set(ACQUISITION_LIB_SOURCES acq_conf.cc)
 
-set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
-set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
+if(ENABLE_FPGA)
+    set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} fpga_acquisition.cc)
+    set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} fpga_acquisition.h)
+endif()
 
 list(SORT ACQUISITION_LIB_HEADERS)
 list(SORT ACQUISITION_LIB_SOURCES)

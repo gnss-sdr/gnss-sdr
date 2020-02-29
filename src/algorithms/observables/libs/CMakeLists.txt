@@ -7,17 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(OBSERVABLES_LIB_HEADERS ${OBSERVABLES_LIB_HEADERS} obs_conf.h)
-set(OBSERVABLES_LIB_SOURCES ${OBSERVABLES_LIB_SOURCES} obs_conf.cc)
-
-list(SORT OBSERVABLES_LIB_HEADERS)
-list(SORT OBSERVABLES_LIB_SOURCES)
-
-source_group(Headers FILES ${OBSERVABLES_LIB_HEADERS})
+source_group(Headers FILES obs_conf.h)
 
 add_library(observables_libs
-    ${OBSERVABLES_LIB_SOURCES}
-    ${OBSERVABLES_LIB_HEADERS}
+    obs_conf.cc
+    obs_conf.h
 )
 
 target_link_libraries(observables_libs

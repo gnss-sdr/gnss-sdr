@@ -16,6 +16,7 @@ set(SUPL_SOURCES
     supl.c
 )
 
+set(MY_C_FLAGS "")
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         set(MY_C_FLAGS "${MY_C_FLAGS} -Wno-parentheses-equality")

@@ -21,32 +21,49 @@ endif()
 
 pkg_check_modules(PC_VOLK_GNSSSDR QUIET volk_gnsssdr)
 
+if(NOT VOLKGNSSSDR_ROOT)
+    set(VOLKGNSSSDR_ROOT_USER_PROVIDED /usr/local)
+else()
+    set(VOLKGNSSSDR_ROOT_USER_PROVIDED ${VOLKGNSSSDR_ROOT})
+endif()
+if(DEFINED ENV{VOLKGNSSSDR_ROOT})
+    set(VOLKGNSSSDR_ROOT_USER_PROVIDED
+        ${VOLKGNSSSDR_ROOT_USER_PROVIDED}
+        $ENV{VOLKGNSSSDR_ROOT}
+    )
+endif()
+if(DEFINED ENV{VOLK_GNSSSDR_DIR})
+    set(VOLKGNSSSDR_ROOT_USER_PROVIDED
+        ${VOLKGNSSSDR_ROOT_USER_PROVIDED}
+        $ENV{VOLK_GNSSSDR_DIR}
+    )
+endif()
+if(GNURADIO_INSTALL_PREFIX)
+    set(VOLKGNSSSDR_ROOT_USER_PROVIDED
+        ${VOLKGNSSSDR_ROOT_USER_PROVIDED}
+        ${GNURADIO_INSTALL_PREFIX}
+    )
+endif()
+
 find_path(VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
     HINTS ${PC_VOLK_GNSSSDR_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${VOLKGNSSSDR_ROOT_USER_PROVIDED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${GNURADIO_INSTALL_PREFIX}/include
-          ${VOLKGNSSSDR_ROOT}/include
-          $ENV{VOLKGNSSSDR_ROOT}/include
-          $ENV{VOLK_GNSSSDR_DIR}/include
 )
 
 find_library(VOLK_GNSSSDR_LIBRARIES
     NAMES volk_gnsssdr
     HINTS ${PC_VOLK_GNSSSDR_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${VOLKGNSSSDR_ROOT_USER_PROVIDED}/lib
+          ${VOLKGNSSSDR_ROOT_USER_PROVIDED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${GNURADIO_INSTALL_PREFIX}/lib
-          ${VOLKGNSSSDR_ROOT}/lib
-          $ENV{VOLKGNSSSDR_ROOT}/lib
-          ${VOLKGNSSSDR_ROOT}/lib64
-          $ENV{VOLKGNSSSDR_ROOT}/lib64
-          $ENV{VOLK_GNSSSDR_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

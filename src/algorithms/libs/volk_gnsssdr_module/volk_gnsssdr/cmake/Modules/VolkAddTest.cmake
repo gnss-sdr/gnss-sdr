@@ -145,6 +145,9 @@ function(VOLK_ADD_TEST test_name executable_name)
     string(REPLACE ";" " " VOLK_TEST_ARGS "${VOLK_TEST_ARGS}")
 
     #finally: append the test name to execute
+    if(NOT CMAKE_CROSSCOMPILING_EMULATOR)
+        set(CMAKE_CROSSCOMPILING_EMULATOR "")
+    endif()
     file(APPEND ${sh_file} "${CMAKE_CROSSCOMPILING_EMULATOR} ${executable_name} ${VOLK_TEST_ARGS}\n")
 
     #make the shell file executable

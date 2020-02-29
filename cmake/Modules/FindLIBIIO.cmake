@@ -17,24 +17,39 @@ endif()
 
 pkg_check_modules(PC_LIBIIO libiio)
 
+if(NOT LIBIIO_ROOT)
+    set(LIBIIO_ROOT_USER_DEFINED /usr)
+else()
+    set(LIBIIO_ROOT_USER_DEFINED ${LIBIIO_ROOT})
+endif()
+if(DEFINED ENV{LIBIIO_ROOT})
+    set(LIBIIO_ROOT_USER_DEFINED
+        ${LIBIIO_ROOT_USER_DEFINED}
+        $ENV{LIBIIO_ROOT}
+    )
+endif()
+set(LIBIIO_ROOT_USER_DEFINED
+    ${LIBIIO_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(
     LIBIIO_INCLUDE_DIRS
     NAMES iio.h
     HINTS ${PC_LIBIIO_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${LIBIIO_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${LIBIIO_ROOT}/include
-          $ENV{LIBIIO_ROOT}/include
-          $ENV{LIBIIO_DIR}/include
 )
 
 find_library(
     LIBIIO_LIBRARIES
     NAMES iio libiio.so.0
     HINTS ${PC_LIBIIO_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${LIBIIO_ROOT_USER_DEFINED}/lib
+          ${LIBIIO_ROOT_USER_DEFINED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -64,13 +79,6 @@ find_library(
           /usr/local/lib64
           /opt/local/lib
           /Library/Frameworks/iio.framework/
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          ${LIBIIO_ROOT}/lib
-          $ENV{LIBIIO_ROOT}/lib
-          ${LIBIIO_ROOT}/lib64
-          $ENV{LIBIIO_ROOT}/lib64
-          $ENV{LIBIIO_DIR}/lib
 )
 
 if(LIBIIO_LIBRARIES AND APPLE)

@@ -20,22 +20,43 @@ endif()
 
 pkg_check_modules(PC_VOLK volk QUIET)
 
+if(NOT VOLK_ROOT)
+    set(VOLK_ROOT_USER_PROVIDED /usr)
+else()
+    set(VOLK_ROOT_USER_PROVIDED ${VOLK_ROOT})
+endif()
+if(DEFINED ENV{VOLK_ROOT})
+    set(VOLK_ROOT_USER_PROVIDED
+        ${VOLK_ROOT_USER_PROVIDED}
+        $ENV{VOLK_ROOT}
+    )
+endif()
+if(DEFINED ENV{VOLK_DIR})
+    set(VOLK_ROOT_USER_PROVIDED
+        ${VOLK_ROOT_USER_PROVIDED}
+        $ENV{VOLK_DIR}
+    )
+endif()
+set(VOLK_ROOT_USER_PROVIDED
+    ${VOLK_ROOT_USER_PROVIDED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(VOLK_INCLUDE_DIRS
     NAMES volk/volk.h
     HINTS ${PC_VOLK_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${VOLK_ROOT_USER_PROVIDED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${VOLK_ROOT}/include
-          $ENV{VOLK_ROOT}/include
-          $ENV{VOLK_DIR}/include
 )
 
 find_library(VOLK_LIBRARIES
     NAMES volk
     HINTS ${PC_VOLK_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${VOLK_ROOT_USER_PROVIDED}/lib
+          ${VOLK_ROOT_USER_PROVIDED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -63,12 +84,6 @@ find_library(VOLK_LIBRARIES
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${VOLK_ROOT}/lib
-          $ENV{VOLK_ROOT}/lib
-          ${VOLK_ROOT}/lib64
-          $ENV{VOLK_ROOT}/lib64
-          $ENV{VOLK_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

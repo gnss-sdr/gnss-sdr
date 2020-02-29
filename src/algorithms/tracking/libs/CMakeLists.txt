@@ -42,7 +42,8 @@ set(TRACKING_LIB_HEADERS
     exponential_smoother.h
 )
 
-
+set(OPT_TRACKING_LIBRARIES "")
+set(OPT_TRACKING_INCLUDES "")
 if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} cuda_multicorrelator.cu)

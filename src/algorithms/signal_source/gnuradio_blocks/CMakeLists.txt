@@ -7,10 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-
+set(OPT_DRIVER_SOURCES "")
+set(OPT_DRIVER_HEADERS "")
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gr_complex_ip_packet_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gr_complex_ip_packet_source.h)
+    set(OPT_DRIVER_SOURCES gr_complex_ip_packet_source.cc)
+    set(OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
 endif()
 
 

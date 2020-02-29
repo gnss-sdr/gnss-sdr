@@ -10,8 +10,20 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GFORTRAN_ROOT)
+    set(GFORTRAN_ROOT_USER_DEFINED /usr/lib)
+else()
+    set(GFORTRAN_ROOT_USER_DEFINED ${GFORTRAN_ROOT})
+endif()
+if(DEFINED ENV{GFORTRAN_ROOT})
+    set(GFORTRAN_ROOT_USER_DEFINED
+        ${GFORTRAN_ROOT_USER_DEFINED}
+        $ENV{GFORTRAN_ROOT}
+    )
+endif()
+
 find_library(GFORTRAN NAMES gfortran
-    PATHS /usr/lib
+    PATHS ${GFORTRAN_ROOT_USER_DEFINED}
         /usr/lib64
         /usr/lib/gcc/x86_64-linux-gnu
         /usr/lib/gcc/i686-linux-gnu
@@ -217,8 +229,6 @@ find_library(GFORTRAN NAMES gfortran
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386
-        ${GFORTRAN_ROOT}/lib
-        $ENV{GFORTRAN_ROOT}/lib
 )
 
 set_package_properties(GFORTRAN PROPERTIES

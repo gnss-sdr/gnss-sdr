@@ -586,6 +586,12 @@ endif()
 function(add_system_test executable)
     ## Please call this function with variables OPT_INCLUDES_ and OPT_LIBS_
     ## already defined.
+    if(NOT OPT_INCLUDES_)
+        set(OPT_INCLUDES_ "")
+    endif()
+    if(NOT OPT_LIBS_)
+        set(OPT_LIBS_ "")
+    endif()
     set(SYSTEM_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/${executable}.cc)
     # Ensure that executable is rebuilt if it was previously built and then removed
     if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
@@ -602,7 +608,7 @@ function(add_system_test executable)
         target_link_libraries(${executable} PRIVATE Boost::filesystem Boost::system)
     endif()
 
-    target_include_directories(${executable} PUBLIC ${OPT_INCLUDES_} ${CMAKE_SOURCES_DIR}/src/algorithms/libs)
+    target_include_directories(${executable} PUBLIC ${OPT_INCLUDES_} ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
     target_link_libraries(${executable} PUBLIC ${OPT_LIBS_} algorithms_libs)
 
     if(ENABLE_INSTALL_TESTS)

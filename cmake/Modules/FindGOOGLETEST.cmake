@@ -23,11 +23,23 @@ endif()
 
 pkg_check_modules(PC_GTEST gtest)
 
+if(NOT GTEST_DIR)
+    set(GTEST_DIR_USER_PROVIDED /usr/local)
+else()
+    set(GTEST_DIR_USER_PROVIDED ${GTEST_DIR})
+endif()
+if(DEFINED ENV{GTEST_DIR})
+    set(GTEST_DIR_USER_PROVIDED
+        ${GTEST_DIR_USER_PROVIDED}
+        $ENV{GTEST_DIR}
+    )
+endif()
+
 find_path(LIBGTEST_DEV_DIR
     NAMES src/gtest-all.cc
     PATHS
-        ${GTEST_DIR}
-        ${GTEST_DIR}/googletest
+        ${GTEST_DIR_USER_PROVIDED}
+        ${GTEST_DIR_USER_PROVIDED}/googletest
         /usr/src/googletest/googletest
         /usr/src/gtest
         /usr/include/gtest
@@ -39,7 +51,7 @@ find_path(GTEST_INCLUDE_DIRS
     NAMES gtest/gtest.h
     HINTS ${PC_GTEST_INCLUDEDIR}
     PATHS
-        ${GTEST_DIR}/googletest/include
+        ${GTEST_DIR_USER_PROVIDED}/googletest/include
         /usr/include
         /usr/local/include
         /opt/local/src/gtest-1.7.0/include

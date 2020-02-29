@@ -9,6 +9,8 @@
 
 
 # Optional drivers
+set(OPT_DRIVER_SOURCES "")
+set(OPT_DRIVER_HEADERS "")
 
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)

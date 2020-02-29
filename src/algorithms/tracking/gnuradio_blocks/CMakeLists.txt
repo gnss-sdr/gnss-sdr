@@ -7,13 +7,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+set(OPT_TRACKING_BLOCKS_SOURCES "")
+set(OPT_TRACKING_BLOCKS_HEADERS "")
+
 if(ENABLE_CUDA)
     set(OPT_TRACKING_BLOCKS_SOURCES
-        ${OPT_TRACKING_BLOCKS_SOURCES}
         gps_l1_ca_dll_pll_tracking_gpu_cc.cc
     )
     set(OPT_TRACKING_BLOCKS_HEADERS
-        ${OPT_TRACKING_BLOCKS_HEADERS}
         gps_l1_ca_dll_pll_tracking_gpu_cc.h
     )
 endif()

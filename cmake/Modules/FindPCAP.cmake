@@ -29,94 +29,107 @@ endif()
 
 pkg_check_modules(PC_PCAP libpcap QUIET)
 
-if(EXISTS $ENV{PCAPDIR})
-  find_path(PCAP_INCLUDE_DIR
-    NAMES
-      pcap/pcap.h
-      pcap.h
-    HINTS
-      ${PC_PCAP_INCLUDEDIR}
-    PATHS
-      $ENV{PCAPDIR}
-      ${PCAP_ROOT}/include
-      $ENV{PCAP_ROOT}/include
-    NO_DEFAULT_PATH
-  )
-  find_library(PCAP_LIBRARY
-    NAMES
-      pcap
-    HINTS
-      ${PC_PCAP_LIBDIR}
-    PATHS
-      $ENV{PCAPDIR}
-      ${PCAP_ROOT}/lib
-      $ENV{PCAP_ROOT}/lib
-    NO_DEFAULT_PATH
-  )
+if(NOT PCAP_ROOT)
+    set(PCAP_ROOT_USER_PROVIDED /usr)
 else()
-  find_path(PCAP_INCLUDE_DIR
-    NAMES
-      pcap/pcap.h
-      pcap.h
-    HINTS
-      ${PC_PCAP_INCLUDEDIR}
-    PATHS
-      /usr/include
-      /usr/local/include
-      /opt/local/include
-      ${PCAP_ROOT}/include
-      $ENV{PCAP_ROOT}/include
-  )
-  find_library(PCAP_LIBRARY
-    NAMES
-      pcap
-    HINTS
-      ${PC_PCAP_LIBDIR}
-    PATHS
-      /usr/lib
-      /usr/lib64
-      /usr/lib/alpha-linux-gnu
-      /usr/lib/x86_64-linux-gnu
-      /usr/lib/aarch64-linux-gnu
-      /usr/lib/arm-linux-gnueabi
-      /usr/lib/arm-linux-gnueabihf
-      /usr/lib/hppa-linux-gnu
-      /usr/lib/i386-linux-gnu
-      /usr/lib/m68k-linux-gnu
-      /usr/lib/mips-linux-gnu
-      /usr/lib/mips64el-linux-gnuabi64
-      /usr/lib/mipsel-linux-gnu
-      /usr/lib/powerpc-linux-gnuspe
-      /usr/lib/powerpc64-linux-gnu
-      /usr/lib/powerpc64le-linux-gnu
-      /usr/lib/riscv64-linux-gnu
-      /usr/lib/s390x-linux-gnu
-      /usr/lib/sh4-linux-gnu
-      /usr/lib/sparc64-linux-gnu
-      /usr/lib/x86_64-linux-gnux32
-      /usr/lib/x86_64-kfreebsd-gnu
-      /usr/lib/i386-kfreebsd-gnu
-      /usr/local/lib
-      /usr/local/lib64
-      /opt/local/lib
-      ${PCAP_ROOT}/lib
-      $ENV{PCAP_ROOT}/lib
-  )
+    set(PCAP_ROOT_USER_PROVIDED ${PCAP_ROOT})
+endif()
+if(DEFINED ENV{PCAP_ROOT})
+    set(PCAP_ROOT_USER_PROVIDED
+        ${PCAP_ROOT_USER_PROVIDED}
+        $ENV{PCAP_ROOT}
+    )
+endif()
+if(DEFINED ENV{PCAPDIR})
+    set(PCAP_ROOT_USER_PROVIDED
+        ${PCAP_ROOT_USER_PROVIDED}
+        $ENV{PCAPDIR})
+endif()
+
+if(DEFINED ENV{PCAPDIR})
+    find_path(PCAP_INCLUDE_DIR
+        NAMES
+            pcap/pcap.h
+            pcap.h
+        HINTS
+            ${PC_PCAP_INCLUDEDIR}
+        PATHS
+            ${PCAP_ROOT_USER_PROVIDED}
+            ${PCAP_ROOT_USER_PROVIDED}/include
+        NO_DEFAULT_PATH
+    )
+    find_library(PCAP_LIBRARY
+        NAMES
+            pcap
+        HINTS
+            ${PC_PCAP_LIBDIR}
+        PATHS
+            ${PCAP_ROOT_USER_PROVIDED}
+            ${PCAP_ROOT_USER_PROVIDED}/lib
+        NO_DEFAULT_PATH
+    )
+else()
+    find_path(PCAP_INCLUDE_DIR
+        NAMES
+            pcap/pcap.h
+            pcap.h
+        HINTS
+            ${PC_PCAP_INCLUDEDIR}
+        PATHS
+            ${PCAP_ROOT_USER_PROVIDED}/include
+            /usr/include
+            /usr/local/include
+            /opt/local/include
+    )
+    find_library(PCAP_LIBRARY
+        NAMES
+            pcap
+        HINTS
+            ${PC_PCAP_LIBDIR}
+        PATHS
+            ${PCAP_ROOT_USER_PROVIDED}/lib
+            /usr/lib
+            /usr/lib64
+            /usr/lib/alpha-linux-gnu
+            /usr/lib/x86_64-linux-gnu
+            /usr/lib/aarch64-linux-gnu
+            /usr/lib/arm-linux-gnueabi
+            /usr/lib/arm-linux-gnueabihf
+            /usr/lib/hppa-linux-gnu
+            /usr/lib/i386-linux-gnu
+            /usr/lib/m68k-linux-gnu
+            /usr/lib/mips-linux-gnu
+            /usr/lib/mips64el-linux-gnuabi64
+            /usr/lib/mipsel-linux-gnu
+            /usr/lib/powerpc-linux-gnuspe
+            /usr/lib/powerpc64-linux-gnu
+            /usr/lib/powerpc64le-linux-gnu
+            /usr/lib/riscv64-linux-gnu
+            /usr/lib/s390x-linux-gnu
+            /usr/lib/sh4-linux-gnu
+            /usr/lib/sparc64-linux-gnu
+            /usr/lib/x86_64-linux-gnux32
+            /usr/lib/x86_64-kfreebsd-gnu
+            /usr/lib/i386-kfreebsd-gnu
+            /usr/local/lib
+            /usr/local/lib64
+            /opt/local/lib
+    )
 endif()
 
 set(PCAP_INCLUDE_DIRS ${PCAP_INCLUDE_DIR})
 set(PCAP_LIBRARIES ${PCAP_LIBRARY})
 
 if(PCAP_INCLUDE_DIRS)
-  message(STATUS "Pcap include dirs set to ${PCAP_INCLUDE_DIRS}")
+    message(STATUS "Pcap include dirs set to ${PCAP_INCLUDE_DIRS}")
 else()
-  message(STATUS "Pcap include dirs cannot be found.")
+    message(STATUS "Pcap include dirs cannot be found.")
 endif()
 
 if(PCAP_LIBRARIES)
-  message(STATUS "Pcap library set to ${PCAP_LIBRARIES}")
+    message(STATUS "Pcap library set to ${PCAP_LIBRARIES}")
 else()
-  message(STATUS "Pcap library cannot be found.")
+    message(STATUS "Pcap library cannot be found.")
 endif()
 
 #Functions
@@ -170,7 +183,4 @@ if(PCAP_FOUND AND NOT TARGET Pcap::pcap)
     )
 endif()
 
-mark_as_advanced(
-  PCAP_LIBRARIES
-  PCAP_INCLUDE_DIRS
-)
+mark_as_advanced(PCAP_LIBRARIES PCAP_INCLUDE_DIRS)

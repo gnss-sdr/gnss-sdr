@@ -12,6 +12,9 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.12)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose build type: None Debug Release RelWithDebInfo MinSizeRel")
 project(volk_gnsssdr)
 enable_language(CXX)
@@ -74,6 +77,7 @@ else()
     find_package(FILESYSTEM COMPONENTS Final Experimental)
 endif()
 
+set(MY_CXX_FLAGS "")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
         if(CMAKE_VERSION VERSION_LESS "3.1")
@@ -310,6 +314,9 @@ endif()
 # Setup the package config file
 ########################################################################
 # set variables found in the pc.in file
+if(NOT LIB_SUFFIX)
+    set(LIB_SUFFIX "")
+endif()
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")

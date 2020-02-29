@@ -17,35 +17,49 @@
 
 pkg_check_modules(PC_GR_DBFCTTC gr-dbfcttc)
 
+if(NOT GRDBFCTTC_ROOT)
+    set(GRDBFCTTC_ROOT_USER_DEFINED /usr/local)
+else()
+    set(GRDBFCTTC_ROOT_USER_DEFINED ${GRDBFCTTC_ROOT})
+endif()
+if(DEFINED ENV{GRDBFCTTC_ROOT})
+    set(GRDBFCTTC_ROOT_USER_DEFINED
+        ${GRDBFCTTC_ROOT_USER_DEFINED}
+        $ENV{GRDBFCTTC_ROOT}
+    )
+endif()
+if(DEFINED ENV{GR_DBFCTTC_DIR})
+    set(GRDBFCTTC_ROOT_USER_DEFINED
+        ${GRDBFCTTC_ROOT_USER_DEFINED}
+        $ENV{GR_DBFCTTC_DIR}
+    )
+endif()
+set(GRDBFCTTC_ROOT_USER_DEFINED
+    ${GRDBFCTTC_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(
     GR_DBFCTTC_INCLUDE_DIRS
     NAMES dbfcttc/api.h
     HINTS ${PC_GR_DBFCTTC_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${GRDBFCTTC_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${GRDBFCTTC_ROOT}/include
-          $ENV{GRDBFCTTC_ROOT}/include
-          $ENV{GR_DBFCTTC_DIR}/include
 )
 
 find_library(
     GR_DBFCTTC_LIBRARIES
     NAMES gnuradio-dbfcttc
     HINTS ${PC_GR_DBFCTTC_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${GRDBFCTTC_ROOT_USER_DEFINED}/lib
+          ${GRDBFCTTC_ROOT_USER_DEFINED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          ${GRDBFCTTC_ROOT}/lib
-          $ENV{GRDBFCTTC_ROOT}/lib
-          ${GRDBFCTTC_ROOT}/lib64
-          $ENV{GRDBFCTTC_ROOT}/lib64
-          $ENV{GR_DBFCTTC_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

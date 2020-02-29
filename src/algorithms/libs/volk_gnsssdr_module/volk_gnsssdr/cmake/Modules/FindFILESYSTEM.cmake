@@ -117,7 +117,9 @@ include(CheckCXXSourceCompiles)
 
 cmake_push_check_state()
 
-set(CMAKE_REQUIRED_QUIET ${FILESYSTEM_FIND_QUIETLY})
+if(FILESYSTEM_FIND_QUIETLY)
+    set(CMAKE_REQUIRED_QUIET ${FILESYSTEM_FIND_QUIETLY})
+endif()
 
 # All of our tests require C++17 or later
 set(CMAKE_CXX_STANDARD 17)

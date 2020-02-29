@@ -17,22 +17,37 @@ endif()
 
 pkg_check_modules(PC_LIBAD9361 libad9361)
 
+if(NOT LIBAD9361_ROOT)
+    set(LIBAD9361_ROOT_USER_DEFINED /usr/local)
+else()
+    set(LIBAD9361_ROOT_USER_DEFINED ${LIBAD9361_ROOT})
+endif()
+if(DEFINED ENV{LIBAD9361_ROOT})
+    set(LIBAD9361_ROOT_USER_DEFINED
+        ${LIBAD9361_ROOT_USER_DEFINED}
+        $ENV{LIBAD9361_ROOT}
+    )
+endif()
+set(LIBAD9361_ROOT_USER_DEFINED
+    ${LIBAD9361_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(LIBAD9361_INCLUDE_DIRS
     NAMES ad9361.h
     HINTS ${PC_LIBAD9361_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${LIBAD9361_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${LIBAD9361_ROOT}/include
-          $ENV{LIBAD9361_ROOT}/include
-          $ENV{LIBAD9361_DIR}/include
 )
 
 find_library(LIBAD9361_LIBRARIES
     NAMES ad9361
     HINTS ${PC_LIBAD9361_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${LIBAD9361_ROOT_USER_DEFINED}/lib
+          ${LIBAD9361_ROOT_USER_DEFINED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -62,13 +77,6 @@ find_library(LIBAD9361_LIBRARIES
           /usr/local/lib64
           /opt/local/lib
           /Library/Frameworks/ad9361.framework
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          ${LIBAD9361_ROOT}/lib
-          $ENV{LIBAD9361_ROOT}/lib
-          ${LIBAD9361_ROOT}/lib64
-          $ENV{LIBAD9361_ROOT}/lib64
-          $ENV{LIBAD9361_DIR}/lib
 )
 
 if(LIBAD9361_LIBRARIES AND APPLE)

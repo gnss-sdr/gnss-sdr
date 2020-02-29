@@ -17,16 +17,36 @@ endif()
 
 pkg_check_modules(PC_IIO gnuradio-iio)
 
+if(NOT GRIIO_ROOT)
+    set(GRIIO_ROOT_USER_DEFINED /usr)
+else()
+    set(GRIIO_ROOT_USER_DEFINED ${GRIIO_ROOT})
+endif()
+if(DEFINED ENV{GRIIO_ROOT})
+    set(GRIIO_ROOT_USER_DEFINED
+        ${GRIIO_ROOT_USER_DEFINED}
+        $ENV{GRIIO_ROOT}
+    )
+endif()
+if(DEFINED ENV{IIO_DIR})
+    set(GRIIO_ROOT_USER_DEFINED
+        ${GRIIO_ROOT_USER_DEFINED}
+        $ENV{IIO_DIR}
+    )
+endif()
+set(GRIIO_ROOT_USER_DEFINED
+    ${GRIIO_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
+
 find_path(IIO_INCLUDE_DIRS
     NAMES gnuradio/iio/api.h
     HINTS ${PC_IIO_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${GRIIO_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${GRIIO_ROOT}/include
-          $ENV{GRIIO_ROOT}/include
-          $ENV{IIO_DIR}/include
 )
 
 if(IIO_INCLUDE_DIRS)
@@ -35,13 +55,10 @@ else()
     find_path(IIO_INCLUDE_DIRS
         NAMES iio/api.h
         HINTS ${PC_IIO_INCLUDEDIR}
-        PATHS /usr/include
+        PATHS ${GRIIO_ROOT_USER_DEFINED}/include
+              /usr/include
               /usr/local/include
               /opt/local/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GRIIO_ROOT}/include
-              $ENV{GRIIO_ROOT}/include
-              $ENV{IIO_DIR}/include
     )
     set(GR_IIO_INCLUDE_HAS_GNURADIO FALSE)
 endif()
@@ -49,7 +66,9 @@ endif()
 find_library(IIO_LIBRARIES
     NAMES gnuradio-iio
     HINTS ${PC_IIO_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${GRIIO_ROOT_USER_DEFINED}/lib
+          ${GRIIO_ROOT_USER_DEFINED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -78,13 +97,6 @@ find_library(IIO_LIBRARIES
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          ${GRIIO_ROOT}/lib
-          $ENV{GRIIO_ROOT}/lib
-          ${GRIIO_ROOT}/lib64
-          $ENV{GRIIO_ROOT}/lib64
-          $ENV{IIO_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

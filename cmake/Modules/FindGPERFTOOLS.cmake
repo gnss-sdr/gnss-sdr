@@ -35,70 +35,76 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
-find_library(GPERFTOOLS_TCMALLOC
-  NAMES tcmalloc
-  PATHS /usr/lib
-        /usr/lib64
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
-        ${Gperftools_ROOT_DIR}/lib
-        ${GPERFTOOLS_ROOT}/lib
-        $ENV{GPERFTOOLS_ROOT}/lib
-        ${GPERFTOOLS_ROOT}/lib64
-        $ENV{GPERFTOOLS_ROOT}/lib64
+if(NOT GPERFTOOLS_ROOT)
+    set(GPERFTOOLS_ROOT_USER_DEFINED /usr/local)
+else()
+    set(GPERFTOOLS_ROOT_USER_DEFINED ${GPERFTOOLS_ROOT})
+endif()
+if(DEFINED ENV{GPERFTOOLS_ROOT})
+    set(GPERFTOOLS_ROOT_USER_DEFINED
+        ${GPERFTOOLS_ROOT_USER_DEFINED}
+        $ENV{GPERFTOOLS_ROOT}
+    )
+endif()
+if(Gperftools_ROOT_DIR)
+    set(GPERFTOOLS_ROOT_USER_DEFINED
+        ${GPERFTOOLS_ROOT_USER_DEFINED}
+        ${Gperftools_ROOT_DIR}
+    )
+endif()
 
+
+find_library(GPERFTOOLS_TCMALLOC
+    NAMES tcmalloc
+    PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/lib
+          ${GPERFTOOLS_ROOT_USER_DEFINED}/lib64
+          /usr/lib
+          /usr/lib64
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
 )
 
 find_library(GPERFTOOLS_PROFILER
-  NAMES profiler
-  PATHS /usr/lib
-        /usr/lib64
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
-        ${Gperftools_ROOT_DIR}/lib
-        ${GPERFTOOLS_ROOT}/lib
-        $ENV{GPERFTOOLS_ROOT}/lib
-        ${GPERFTOOLS_ROOT}/lib64
-        $ENV{GPERFTOOLS_ROOT}/lib64
+    NAMES profiler
+    PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/lib
+          ${GPERFTOOLS_ROOT_USER_DEFINED}/lib64
+          /usr/lib
+          /usr/lib64
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
 )
 
 find_library(GPERFTOOLS_TCMALLOC_AND_PROFILER
-  NAMES tcmalloc_and_profiler
-  PATHS /usr/lib
-        /usr/lib64
-        ${Gperftools_ROOT_DIR}/lib
-        ${GPERFTOOLS_ROOT}/lib
-        $ENV{GPERFTOOLS_ROOT}/lib
-        ${GPERFTOOLS_ROOT}/lib64
-        $ENV{GPERFTOOLS_ROOT}/lib64
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
+    NAMES tcmalloc_and_profiler
+    PATHS ${GPERFTOOLS_ROOT_USER_DEFINED}/lib
+          ${GPERFTOOLS_ROOT_USER_DEFINED}/lib64
+          /usr/lib
+          /usr/lib64
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
 )
 
 find_path(GPERFTOOLS_INCLUDE_DIR
-  NAMES gperftools/heap-profiler.h
-  PATHS /usr/include
-        /usr/local/include
-        /opt/local/include
-        ${Gperftools_ROOT_DIR}/include
-        ${GPERFTOOLS_ROOT}/include
-        $ENV{GPERFTOOLS_ROOT}/include
+    NAMES gperftools/heap-profiler.h
+    PATHS /usr/include
+          /usr/local/include
+          /opt/local/include
+          ${GPERFTOOLS_ROOT_USER_DEFINED}/include
 )
 
 set(GPERFTOOLS_LIBRARIES ${GPERFTOOLS_TCMALLOC_AND_PROFILER})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-  GPERFTOOLS
-  DEFAULT_MSG
-  GPERFTOOLS_LIBRARIES
-  GPERFTOOLS_INCLUDE_DIR
-  GPERFTOOLS_TCMALLOC
-  GPERFTOOLS_PROFILER
-
+    GPERFTOOLS
+    DEFAULT_MSG
+    GPERFTOOLS_LIBRARIES
+    GPERFTOOLS_INCLUDE_DIR
+    GPERFTOOLS_TCMALLOC
+    GPERFTOOLS_PROFILER
 )
 
 if(GPERFTOOLS_FOUND AND NOT TARGET Gperftools::tcmalloc)
@@ -137,8 +143,9 @@ set_package_properties(GPERFTOOLS PROPERTIES
 )
 
 mark_as_advanced(
-  GPERFTOOLS_TCMALLOC
-  GPERFTOOLS_PROFILER
-  GPERFTOOLS_TCMALLOC_AND_PROFILER
-  GPERFTOOLS_LIBRARIES
-  GPERFTOOLS_INCLUDE_DIR)
+    GPERFTOOLS_TCMALLOC
+    GPERFTOOLS_PROFILER
+    GPERFTOOLS_TCMALLOC_AND_PROFILER
+    GPERFTOOLS_LIBRARIES
+    GPERFTOOLS_INCLUDE_DIR
+)

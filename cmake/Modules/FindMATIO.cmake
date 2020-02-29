@@ -57,15 +57,26 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT MATIO_ROOT)
+    set(MATIO_ROOT_USER_DEFINED /usr)
+else()
+    set(MATIO_ROOT_USER_DEFINED ${MATIO_ROOT})
+endif()
+if(DEFINED ENV{MATIO_ROOT})
+    set(MATIO_ROOT_USER_DEFINED
+        ${MATIO_ROOT_USER_DEFINED}
+        $ENV{MATIO_ROOT}
+    )
+endif()
+
 # Look for the header file.
 find_path(MATIO_INCLUDE_DIR
     NAMES matio.h
     PATHS
-      /usr/include
-      /usr/local/include
-      /opt/local/include
-      ${MATIO_ROOT}/include
-      $ENV{MATIO_ROOT}/include
+        ${MATIO_ROOT_USER_DEFINED}/include
+        /usr/include
+        /usr/local/include
+        /opt/local/include
     DOC "The MATIO include directory"
 )
 
@@ -73,6 +84,8 @@ find_path(MATIO_INCLUDE_DIR
 find_library(MATIO_LIBRARY
     NAMES matio
     PATHS
+      ${MATIO_ROOT_USER_DEFINED}/lib
+      ${MATIO_ROOT_USER_DEFINED}/lib64
       /usr/lib
       /usr/lib64
       /usr/lib/alpha-linux-gnu
@@ -99,10 +112,6 @@ find_library(MATIO_LIBRARY
       /usr/local/lib
       /usr/local/lib64
       /opt/local/lib
-      ${MATIO_ROOT}/lib
-      $ENV{MATIO_ROOT}/lib
-      ${MATIO_ROOT}/lib64
-      $ENV{MATIO_ROOT}/lib64
     DOC "The MATIO library"
 )
 

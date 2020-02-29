@@ -24,27 +24,47 @@ endif()
 
 pkg_check_modules(PC_PUGIXML pugixml QUIET)
 
+if(NOT PUGIXML_ROOT)
+    set(PUGIXML_ROOT_USER_DEFINED /usr)
+else()
+    set(PUGIXML_ROOT_USER_DEFINED ${PUGIXML_ROOT})
+endif()
+if(DEFINED ENV{PUGIXML_ROOT})
+    set(PUGIXML_ROOT_USER_DEFINED
+        ${PUGIXML_ROOT_USER_DEFINED}
+        $ENV{PUGIXML_ROOT}
+    )
+endif()
+if(PUGIXML_HOME)
+    set(PUGIXML_ROOT_USER_DEFINED
+        ${PUGIXML_ROOT_USER_DEFINED}
+        ${PUGIXML_HOME}
+    )
+endif()
+
 find_path(PUGIXML_INCLUDE_DIR
     NAMES pugixml.hpp
     HINTS ${PC_PUGIXML_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${PUGIXML_ROOT_USER_DEFINED}/include
+          ${PUGIXML_ROOT_USER_DEFINED}/include/pugixml-${PC_PUGIXML_VERSION}
+          ${PUGIXML_ROOT_USER_DEFINED}/include/pugixml-1.9
+          /usr/include
           /usr/local/include
           /usr/local/include/pugixml-${PC_PUGIXML_VERSION}
           /usr/local/include/pugixml-1.9
           /opt/local/include
-          ${PUGIXML_HOME}/include
-          ${PUGIXML_ROOT}/include
-          $ENV{PUGIXML_ROOT}/include
-          ${PUGIXML_ROOT}/include/pugixml-${PC_PUGIXML_VERSION}
-          $ENV{PUGIXML_ROOT}/include/pugixml-${PC_PUGIXML_VERSION}
-          ${PUGIXML_ROOT}/include/pugixml-1.9
-          $ENV{PUGIXML_ROOT}/include/pugixml-1.9
 )
 
 find_library(PUGIXML_LIBRARY
     NAMES pugixml
     HINTS ${PC_PUGIXML_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${PUGIXML_ROOT_USER_DEFINED}/lib
+          ${PUGIXML_ROOT_USER_DEFINED}/lib64
+          ${PUGIXML_ROOT_USER_DEFINED}/lib/pugixml-${PC_PUGIXML_VERSION}
+          ${PUGIXML_ROOT_USER_DEFINED}/lib64/pugixml-${PC_PUGIXML_VERSION}
+          ${PUGIXML_ROOT_USER_DEFINED}}/lib/pugixml-1.9
+          ${PUGIXML_ROOT_USER_DEFINED}/lib64/pugixml-1.9
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/aarch64-linux-gnu
@@ -73,19 +93,6 @@ find_library(PUGIXML_LIBRARY
           /usr/local/lib/pugixml-${PC_PUGIXML_VERSION}
           /usr/local/lib/pugixml-1.9
           /opt/local/lib
-          ${PUGIXML_HOME}/lib
-          ${PUGIXML_ROOT}/lib
-          $ENV{PUGIXML_ROOT}/lib
-          ${PUGIXML_ROOT}/lib64
-          $ENV{PUGIXML_ROOT}/lib64
-          ${PUGIXML_ROOT}/lib/pugixml-${PC_PUGIXML_VERSION}
-          $ENV{PUGIXML_ROOT}/lib/pugixml-${PC_PUGIXML_VERSION}
-          ${PUGIXML_ROOT}/lib64/pugixml-${PC_PUGIXML_VERSION}
-          $ENV{PUGIXML_ROOT}/lib64/pugixml-${PC_PUGIXML_VERSION}
-          ${PUGIXML_ROOT}/lib/pugixml-1.9
-          $ENV{PUGIXML_ROOT}/lib/pugixml-1.9
-          ${PUGIXML_ROOT}/lib64/pugixml-1.9
-          $ENV{PUGIXML_ROOT}/lib64/pugixml-1.9
 )
 
 # Support the REQUIRED and QUIET arguments, and set PUGIXML_FOUND if found.

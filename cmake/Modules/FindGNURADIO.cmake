@@ -27,13 +27,41 @@ set(GNURADIO_ALL_LIBRARIES "")
 set(GNURADIO_ALL_INCLUDE_DIRS "")
 
 macro(LIST_CONTAINS var value)
-  set(${var})
-  foreach(value2 ${ARGN})
-    if(${value} STREQUAL ${value2})
-      set(${var} TRUE)
-    endif()
-  endforeach()
+    set(${var})
+    foreach(value2 ${ARGN})
+        if(${value} STREQUAL ${value2})
+            set(${var} TRUE)
+        endif()
+    endforeach()
 endmacro()
+
+if(NOT GNURADIO_INSTALL_PREFIX)
+    set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED /usr)
+else()
+    set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED ${GNURADIO_INSTALL_PREFIX})
+endif()
+if(GNURADIO_ROOT)
+    set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED
+        ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}
+        ${GNURADIO_ROOT}
+    )
+endif()
+if(DEFINED ENV{GNURADIO_ROOT})
+    set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED
+        ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}
+        $ENV{GNURADIO_ROOT}
+    )
+endif()
+if(DEFINED ENV{GNURADIO_RUNTIME_DIR})
+    set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED
+        ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}
+        $ENV{GNURADIO_RUNTIME_DIR}
+    )
+endif()
+set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED
+    ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}
+    ${CMAKE_INSTALL_PREFIX}
+)
 
 function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     list_contains(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
@@ -60,14 +88,10 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     find_path(${INCVAR_NAME}
         NAMES ${INCFILE}
         HINTS ${PC_INCDIR}
-        PATHS /usr/include
+        PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
+              /usr/include
               /usr/local/include
               /opt/local/include
-              ${GNURADIO_ROOT}/include
-              $ENV{GNURADIO_ROOT}/include
-              $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
     )
 
     # look for libs
@@ -75,7 +99,9 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
         find_library(${LIBVAR_NAME}_${libname}
             NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
             HINTS ${PC_LIBDIR}
-            PATHS /usr/lib
+            PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
+                  ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
+                  /usr/lib
                   /usr/lib64
                   /usr/lib/x86_64-linux-gnu
                   /usr/lib/i386-linux-gnu
@@ -104,15 +130,6 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/local/lib
                   /usr/local/lib64
                   /opt/local/lib
-                  ${GNURADIO_ROOT}/lib
-                  $ENV{GNURADIO_ROOT}/lib
-                  ${GNURADIO_ROOT}/lib64
-                  $ENV{GNURADIO_ROOT}/lib64
-                  $ENV{GNURADIO_RUNTIME_DIR}/lib
-                  ${CMAKE_INSTALL_PREFIX}/lib
-                  ${CMAKE_INSTALL_PREFIX}/lib64
-                  ${GNURADIO_INSTALL_PREFIX}/lib
-                  ${GNURADIO_INSTALL_PREFIX}/lib64
         )
         list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
     endforeach()
@@ -198,15 +215,10 @@ endif()
 if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
         NAMES gnuradio/blocks/tsb_vector_sink_f.h
-        PATHS /usr/include
+        PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
+              /usr/include
               /usr/local/include
               /opt/local/include
-              ${GNURADIO_INSTALL_PREFIX}/include
-              ${GNURADIO_ROOT}/include
-              $ENV{GNURADIO_ROOT}/include
-              $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
     )
     if(GNURADIO_VERSION_GREATER_THAN_373)
         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
@@ -214,15 +226,10 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
 
     find_file(GNURADIO_VERSION_GREATER_THAN_38
         NAMES gnuradio/filter/mmse_resampler_cc.h
-        PATHS /usr/include
+        PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
+              /usr/include
               /usr/local/include
               /opt/local/include
-              ${GNURADIO_INSTALL_PREFIX}/include
-              ${GNURADIO_ROOT}/include
-              $ENV{GNURADIO_ROOT}/include
-              $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
     )
     if(GNURADIO_VERSION_GREATER_THAN_38)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
@@ -273,22 +280,19 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
     find_path(GNURADIO_IIO_INCLUDE_DIRS
         NAMES gnuradio/iio/api.h
         HINTS ${PC_GNURADIO_IIO_INCLUDEDIR}
-        PATHS /usr/include
+        PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/include
+              /usr/include
               /usr/local/include
               /opt/local/include
-              ${GNURADIO_INSTALL_PREFIX}/include
-              ${GNURADIO_ROOT}/include
-              $ENV{GNURADIO_ROOT}/include
-              $ENV{GNURADIO_RUNTIME_DIR}/include
-              ${CMAKE_INSTALL_PREFIX}/include
-              ${GNURADIO_INSTALL_PREFIX}/include
     )
 
     # look for libs
     find_library(GNURADIO_IIO_LIBRARIES
         NAMES gnuradio-iio gnuradio-iio-${GNURADIO_VERSION}
         HINTS ${PC_GNURADIO_IIO_LIBDIR}
-        PATHS /usr/lib
+        PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
+              ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
+              /usr/lib
               /usr/lib64
               /usr/lib/x86_64-linux-gnu
               /usr/lib/i386-linux-gnu
@@ -317,15 +321,6 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
               /usr/local/lib
               /usr/local/lib64
               /opt/local/lib
-              ${GNURADIO_ROOT}/lib
-              $ENV{GNURADIO_ROOT}/lib
-              ${GNURADIO_ROOT}/lib64
-              $ENV{GNURADIO_ROOT}/lib64
-              $ENV{GNURADIO_RUNTIME_DIR}/lib
-              ${CMAKE_INSTALL_PREFIX}/lib
-              ${CMAKE_INSTALL_PREFIX}/lib64
-              ${GNURADIO_INSTALL_PREFIX}/lib
-              ${GNURADIO_INSTALL_PREFIX}/lib64
     )
 
     if(GNURADIO_IIO_LIBRARIES)

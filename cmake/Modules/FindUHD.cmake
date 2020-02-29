@@ -20,22 +20,45 @@ endif()
 
 pkg_check_modules(PC_UHD uhd)
 
+if(NOT UHD_ROOT)
+    set(UHD_ROOT_USER_PROVIDED /usr/local)
+else()
+    set(UHD_ROOT_USER_PROVIDED ${UHD_ROOT})
+endif()
+if(GNURADIO_INSTALL_PREFIX)
+    set(UHD_ROOT_USER_PROVIDED
+        ${UHD_ROOT_USER_PROVIDED}
+        ${GNURADIO_INSTALL_PREFIX}
+    )
+endif()
+if(DEFINED ENV{UHD_ROOT})
+    set(UHD_ROOT_USER_PROVIDED
+        ${UHD_ROOT_USER_PROVIDED}
+        $ENV{UHD_ROOT}
+    )
+endif()
+if(DEFINED ENV{UHD_DIR})
+    set(UHD_ROOT_USER_PROVIDED
+        ${UHD_ROOT_USER_PROVIDED}
+        $ENV{UHD_DIR}
+    )
+endif()
+
 find_path(UHD_INCLUDE_DIRS
     NAMES uhd/config.hpp
     HINTS ${PC_UHD_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${UHD_ROOT_USER_PROVIDED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${GNURADIO_INSTALL_PREFIX}/include
-          ${UHD_ROOT}/include
-          $ENV{UHD_ROOT}/include
-          $ENV{UHD_DIR}/include
 )
 
 find_library(UHD_LIBRARIES
     NAMES uhd
     HINTS ${PC_UHD_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${UHD_ROOT_USER_PROVIDED}/lib
+          ${UHD_ROOT_USER_PROVIDED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -64,12 +87,6 @@ find_library(UHD_LIBRARIES
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${GNURADIO_INSTALL_PREFIX}/lib
-          ${UHD_ROOT}/lib
-          $ENV{UHD_ROOT}/lib
-          ${UHD_ROOT}/lib64
-          $ENV{UHD_ROOT}/lib64
-          $ENV{UHD_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

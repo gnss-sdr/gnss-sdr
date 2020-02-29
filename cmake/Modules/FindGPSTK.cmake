@@ -21,26 +21,36 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GPSTK_ROOT)
+    set(GPSTK_ROOT_USER_DEFINED /usr/local)
+else()
+    set(GPSTK_ROOT_USER_DEFINED ${GPSTK_ROOT})
+endif()
+if(DEFINED ENV{GPSTK_ROOT})
+    set(GPSTK_ROOT_USER_DEFINED
+        ${GPSTK_ROOT_USER_DEFINED}
+        $ENV{GPSTK_ROOT}
+    )
+endif()
+
 find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
-    PATHS /usr/include
+    PATHS ${GPSTK_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${GPSTK_ROOT}/include
-          $ENV{GPSTK_ROOT}/include
 )
 
-set(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
+set(GPSTK_NAMES gpstk libgpstk)
 
 include(GNUInstallDirs)
 
 find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
-    PATHS /usr/lib
+    PATHS ${GPSTK_ROOT_USER_DEFINED}/lib
+          ${GPSTK_ROOT_USER_DEFINED}/${CMAKE_INSTALL_LIBDIR}
           /usr/local/lib
           /usr/${CMAKE_INSTALL_LIBDIR}
           /usr/local/${CMAKE_INSTALL_LIBDIR}
           /opt/local/lib
-          ${GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
-          $ENV{GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
 )
 
 # handle the QUIET and REQUIRED arguments and set GPSTK_FOUND to TRUE if

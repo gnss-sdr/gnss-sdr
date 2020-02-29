@@ -6,13 +6,28 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+if(GNSSSIMULATOR_ROOT)
+    set(GNSSSIMULATOR_ROOT_USER_DEFINED ${GNSSSIMULATOR_ROOT})
+else()
+    set(GNSSSIMULATOR_ROOT_USER_DEFINED /usr/local/bin)
+endif()
+if(DEFINED ENV{GNSSSIMULATOR_ROOT})
+    set(GNSSSIMULATOR_ROOT_USER_DEFINED
+        ${GNSSSIMULATOR_ROOT_USER_DEFINED}
+        $ENV{GNSSSIMULATOR}
+    )
+endif()
+set(GNSSSIMULATOR_ROOT_USER_DEFINED
+    ${GNSSSIMULATOR_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_program(SW_GENERATOR_BIN gnss_sim
-    PATHS /usr/bin
-          /usr/local/bin
-          /opt/local/bin
-          ${CMAKE_INSTALL_PREFIX}/bin
-          ${GNSSSIMULATOR_ROOT}/bin
-          $ENV{GNSSSIMULATOR_ROOT}/bin
+    PATHS
+        ${GNSSSIMULATOR_ROOT_USER_DEFINED}
+        /usr
+        /usr/local
+        /opt/local
     PATH_SUFFIXES bin
 )
 

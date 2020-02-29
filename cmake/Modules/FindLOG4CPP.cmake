@@ -28,13 +28,28 @@ if(LOG4CPP_INCLUDE_DIR)
   set(LOG4CPP_FIND_QUIETLY TRUE)
 endif()
 
+if(LOG4CPP_ROOT)
+    set(LOG4CPP_ROOT_USER_PROVIDED ${LOG4CPP_ROOT})
+else()
+    set(LOG4CPP_ROOT_USER_PROVIDED /usr)
+endif()
+if(DEFINED ENV{LOG4CPP_ROOT})
+    set(LOG4CPP_ROOT_USER_PROVIDED
+        ${LOG4CPP_ROOT_USER_PROVIDED}
+        $ENV{LOG4CPP_ROOT}
+    )
+endif()
+set(LOG4CPP_ROOT_USER_PROVIDED
+    ${LOG4CPP_ROOT_USER_PROVIDED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
-  /usr/include
-  /usr/local/include
-  /opt/local/include
-  ${LOG4CPP_ROOT}/include
-  $ENV{LOG4CPP_ROOT}/include
-  ${PC_LOG4CPP_INCLUDEDIR}
+    ${LOG4CPP_ROOT_USER_PROVIDED}/include
+    /usr/include
+    /usr/local/include
+    /opt/local/include
+    ${PC_LOG4CPP_INCLUDEDIR}
 )
 
 if(LOG4CPP_INCLUDE_DIR)
@@ -53,9 +68,11 @@ endif()
 
 set(LOG4CPP_NAMES log4cpp)
 find_library(LOG4CPP_LIBRARY
-  NAMES ${LOG4CPP_NAMES}
-  HINTS ${PC_LOG4CPP_LIBDIR}
-  PATHS /usr/lib
+    NAMES ${LOG4CPP_NAMES}
+    HINTS ${PC_LOG4CPP_LIBDIR}
+    PATHS ${LOG4CPP_ROOT_USER_PROVIDED}/lib
+        ${LOG4CPP_ROOT_USER_PROVIDED}/lib64
+        /usr/lib
         /usr/lib64
         /usr/lib/x86_64-linux-gnu
         /usr/lib/i386-linux-gnu
@@ -84,24 +101,18 @@ find_library(LOG4CPP_LIBRARY
         /usr/local/lib
         /usr/local/lib64
         /opt/local/lib
-        ${LOG4CPP_ROOT}/lib
-        $ENV{LOG4CPP_ROOT}/lib
-        ${LOG4CPP_ROOT}/lib64
-        $ENV{LOG4CPP_ROOT}/lib64
-        $ENV{GNURADIO_RUNTIME_DIR}/lib
-        ${CMAKE_INSTALL_PREFIX}/lib
 )
 
 if(LOG4CPP_INCLUDE_DIR AND LOG4CPP_LIBRARY)
-  set(LOG4CPP_FOUND TRUE)
-  set(LOG4CPP_LIBRARIES ${LOG4CPP_LIBRARY} CACHE INTERNAL "" FORCE)
-  set(LOG4CPP_INCLUDE_DIRS ${LOG4CPP_INCLUDE_DIR} CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_FOUND TRUE)
+    set(LOG4CPP_LIBRARIES ${LOG4CPP_LIBRARY} CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_INCLUDE_DIRS ${LOG4CPP_INCLUDE_DIR} CACHE INTERNAL "" FORCE)
 else()
-  set(LOG4CPP_FOUND FALSE CACHE INTERNAL "" FORCE)
-  set(LOG4CPP_LIBRARY "" CACHE INTERNAL "" FORCE)
-  set(LOG4CPP_LIBRARIES "" CACHE INTERNAL "" FORCE)
-  set(LOG4CPP_INCLUDE_DIR "" CACHE INTERNAL "" FORCE)
-  set(LOG4CPP_INCLUDE_DIRS "" CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_FOUND FALSE CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_LIBRARY "" CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_LIBRARIES "" CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_INCLUDE_DIR "" CACHE INTERNAL "" FORCE)
+    set(LOG4CPP_INCLUDE_DIRS "" CACHE INTERNAL "" FORCE)
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -141,7 +152,4 @@ if (LOG4CPP_FOUND AND NOT TARGET Log4cpp::log4cpp)
   )
 endif()
 
-mark_as_advanced(
-  LOG4CPP_LIBRARIES
-  LOG4CPP_INCLUDE_DIRS
-)
+mark_as_advanced(LOG4CPP_LIBRARIES LOG4CPP_INCLUDE_DIRS)

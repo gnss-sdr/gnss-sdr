@@ -17,33 +17,41 @@ endif()
 
 pkg_check_modules(PC_TELEORBIT teleorbit QUIET)
 
+if(NOT TELEORBIT_ROOT)
+    set(TELEORBIT_ROOT_USER_DEFINED /usr/local)
+else()
+    set(TELEORBIT_ROOT_USER_DEFINED ${TELEORBIT_ROOT})
+endif()
+if(DEFINED ENV{TELEORBIT_ROOT})
+    set(TELEORBIT_ROOT_USER_DEFINED
+        ${TELEORBIT_ROOT_USER_DEFINED}
+        $ENV{TELEORBIT_ROOT}
+    )
+endif()
+set(TELEORBIT_ROOT_USER_DEFINED
+    ${TELEORBIT_ROOT_USER_DEFINED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+
 find_path(TELEORBIT_INCLUDE_DIRS
     NAMES teleorbit/api.h
     HINTS ${PC_TELEORBIT_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${TELEORBIT_ROOT_USER_DEFINED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${CMAKE_INSTALL_PREFIX}/include
-          ${TELEORBIT_ROOT}/include
-          $ENV{TELEORBIT_ROOT}/include
-          $ENV{TELEORBIT_DIR}/include
 )
 
 find_library(TELEORBIT_LIBRARIES
     NAMES gnuradio-teleorbit
     HINTS ${PC_TELEORBIT_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${TELEORBIT_ROOT_USER_DEFINED}/lib
+          ${TELEORBIT_ROOT_USER_DEFINED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          ${TELEORBIT_ROOT}/lib
-          $ENV{TELEORBIT_ROOT}/lib
-          ${TELEORBIT_ROOT}/lib64
-          $ENV{TELEORBIT_ROOT}/lib64
-          $ENV{TELEORBIT_DIR}/lib
 )
 
 include(FindPackageHandleStandardArgs)

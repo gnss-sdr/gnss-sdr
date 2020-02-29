@@ -11,30 +11,51 @@ set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 include(FindPkgConfig)
 pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
 
+if(NOT ORC_ROOT)
+    set(ORC_ROOT_USER_PROVIDED /usr/local)
+else()
+    set(ORC_ROOT_USER_PROVIDED ${ORC_ROOT})
+endif()
+if(DEFINED ENV{ORC_ROOT})
+    set(ORC_ROOT_USER_PROVIDED
+        ${ORC_ROOT_USER_PROVIDED}
+        $ENV{ORC_ROOT}
+    )
+endif()
+set(ORC_ROOT_USER_PROVIDED
+    ${ORC_ROOT_USER_PROVIDED}
+    ${CMAKE_INSTALL_PREFIX}
+)
+if(PC_ORC_TOOLSDIR)
+    set(ORC_ROOT_USER_PROVIDED
+        ${ORC_ROOT_USER_PROVIDED}
+        ${PC_ORC_TOOLSDIR}
+    )
+endif()
+
 find_program(ORCC_EXECUTABLE orcc
-    HINTS ${PC_ORC_TOOLSDIR}
+    HINTS ${ORC_ROOT_USER_PROVIDED}/bin
     PATHS /usr/bin
           /usr/local/bin
           /opt/local/bin
-          ${ORC_ROOT}/bin
-          ${CMAKE_INSTALL_PREFIX}/bin
 )
 
 find_path(ORC_INCLUDE_DIR
     NAMES orc/orc.h
     HINTS ${PC_ORC_INCLUDEDIR}
-    PATHS /usr/include
+    PATHS ${ORC_ROOT_USER_PROVIDED}/include
+          /usr/include
           /usr/local/include
           /opt/local/include
-          ${ORC_ROOT}/include
-          ${CMAKE_INSTALL_PREFIX}/include
     PATH_SUFFIXES orc-0.4
 )
 
 find_path(ORC_LIBRARY_DIR
     NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}orc-0.4${CMAKE_SHARED_LIBRARY_SUFFIX}
     HINTS ${PC_ORC_LIBDIR}
-    PATHS /usr/lib
+    PATHS ${ORC_ROOT_USER_PROVIDED}/lib
+          ${ORC_ROOT_USER_PROVIDED}/lib64
+          /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -52,22 +73,19 @@ find_path(ORC_LIBRARY_DIR
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
-          ${ORC_ROOT}/lib
-          $ENV{ORC_ROOT}/lib
-          ${ORC_ROOT}/lib${LIB_SUFFIX}
-          ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}
 )
 
 find_library(ORC_LIB orc-0.4
     HINTS ${PC_ORC_LIBRARY_DIRS}
-    PATHS ${ORC_ROOT}/lib${LIB_SUFFIX}
-          ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}
+    PATHS ${ORC_ROOT_USER_PROVIDED}/lib
+          ${ORC_ROOT_USER_PROVIDED}/lib64
 )
 
-list(APPEND ORC_LIBRARY
-    ${ORC_LIB}
-)
+if(PC_ORC_VERSION)
+    set(ORC_VERSION ${PC_ORC_VERSION})
+endif()
 
+list(APPEND ORC_LIBRARY ${ORC_LIB})
 
 set(ORC_INCLUDE_DIRS ${ORC_INCLUDE_DIR})
 set(ORC_LIBRARIES ${ORC_LIBRARY})

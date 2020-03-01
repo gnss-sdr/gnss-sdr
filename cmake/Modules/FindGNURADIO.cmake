@@ -13,6 +13,7 @@
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
+include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
@@ -240,6 +241,9 @@ endif()
 if(NOT DEFINED GNURADIO_FOUND)
     set(GNURADIO_FOUND TRUE)
 endif()
+
+find_package_handle_standard_args(GNURADIO DEFAULT_MSG GNURADIO_FOUND)
+
 set(GNURADIO_VERSION ${PC_GNURADIO_RUNTIME_VERSION})
 
 if(NOT GNSSSDR_GNURADIO_MIN_VERSION)
@@ -328,7 +332,7 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
         message(STATUS " * LIBS=${GNURADIO_IIO_LIBRARIES}")
     endif()
     if(GNURADIO_IIO_LIBRARIES AND GNURADIO_IIO_INCLUDE_DIRS)
-       set(GNURADIO_IIO_FOUND TRUE)
+        set(GNURADIO_IIO_FOUND TRUE)
     endif()
     if(GNURADIO_IIO_FOUND)
         message(STATUS "GNURADIO_IIO_FOUND = ${GNURADIO_IIO_FOUND}")

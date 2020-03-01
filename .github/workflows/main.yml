@@ -92,7 +92,7 @@ jobs:
           sudo python -m pip install --upgrade pip
           sudo pip install cmakelint
       - name: check CMake scripts
-        run: find . -iname "CMakeLists.txt" | xargs cmakelint --filter=-linelength,-readability/wonkycase
+        run: find . -iname "CMakeLists.txt" -o -iname "*.cmake" | xargs cmakelint --filter=-linelength,-readability/wonkycase
 
 
   volk-gnsssdr-windows:

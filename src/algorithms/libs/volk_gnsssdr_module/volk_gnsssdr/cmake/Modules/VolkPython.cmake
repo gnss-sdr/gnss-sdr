@@ -34,7 +34,7 @@ macro(VOLK_PYTHON_CHECK_MODULE_RAW desc python_code have)
 endmacro()
 
 macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
-    VOLK_PYTHON_CHECK_MODULE_RAW(
+    volk_python_check_module_raw(
         "${desc}" "
 #########################################
 try:

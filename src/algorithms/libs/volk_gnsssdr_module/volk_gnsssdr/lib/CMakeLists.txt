@@ -309,7 +309,7 @@ if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
     if(${SIZEOF_CPU} EQUAL 64 AND MSVC)
         overrule_arch(mmx "No MMX for Win64")
         if(MSVC_VERSION GREATER 1700)
-            OVERRULE_ARCH(sse "No SSE for Win64 Visual Studio 2013")
+            overrule_arch(sse "No SSE for Win64 Visual Studio 2013")
         endif()
     endif()
 

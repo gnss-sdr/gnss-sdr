@@ -50,10 +50,10 @@ if(Boost_FOUND)
     set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-       target_compile_options(rinex2assist
-           PUBLIC
-               -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-type-limits -Wno-unused-but-set-variable -Wno-deprecated-copy -Wno-extra
-       )
+        target_compile_options(rinex2assist
+            PUBLIC
+                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-type-limits -Wno-unused-but-set-variable -Wno-deprecated-copy -Wno-extra
+        )
     endif()
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(rinex2assist

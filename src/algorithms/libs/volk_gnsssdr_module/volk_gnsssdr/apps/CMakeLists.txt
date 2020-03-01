@@ -29,7 +29,7 @@ endif()
 if(HAVE_POSIX_MEMALIGN)
     message(STATUS "Use `posix_memalign` for aligned malloc!")
     add_definitions(-DHAVE_POSIX_MEMALIGN)
-endif(HAVE_POSIX_MEMALIGN)
+endif()
 
 # MAKE volk_gnsssdr_profile
 add_executable(volk_gnsssdr_profile
@@ -42,7 +42,7 @@ if(MSVC)
     target_include_directories(volk_gnsssdr_profile
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cmake/msvc>
     )
-endif(MSVC)
+endif()
 
 target_include_directories(volk_gnsssdr_profile
     PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>

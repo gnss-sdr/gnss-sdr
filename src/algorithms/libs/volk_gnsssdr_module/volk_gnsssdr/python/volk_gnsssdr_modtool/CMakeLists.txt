@@ -12,7 +12,7 @@
 ########################################################################
 include(VolkPython)
 
-VOLK_PYTHON_INSTALL(
+volk_python_install(
     FILES
     __init__.py
     cfg.py
@@ -21,7 +21,7 @@ VOLK_PYTHON_INSTALL(
     COMPONENT "volk_gnsssdr"
 )
 
-VOLK_PYTHON_INSTALL(
+volk_python_install(
     PROGRAMS
     volk_gnsssdr_modtool
     DESTINATION ${VOLK_RUNTIME_DIR}

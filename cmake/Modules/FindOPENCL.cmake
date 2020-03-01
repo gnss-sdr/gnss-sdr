@@ -92,9 +92,9 @@ find_path(_OPENCL_CPP_INCLUDE_DIRS
         ENV OCL_ROOT
         /usr/local/cuda/include
     PATH_SUFFIXES
-       include
-       OpenCL/common/inc
-       "AMD APP/include"
+        include
+        OpenCL/common/inc
+        "AMD APP/include"
 )
 
 set(OPENCL_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
@@ -105,7 +105,7 @@ if(_OPENCL_CPP_INCLUDE_DIRS)
     list(REMOVE_DUPLICATES OPENCL_INCLUDE_DIRS)
 endif()
 
-_FIND_OPENCL_VERSION()
+_find_opencl_version()
 
 if(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)

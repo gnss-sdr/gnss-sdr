@@ -83,6 +83,18 @@ jobs:
         run: find . -iname "*.md" | xargs prettier --parser markdown --print-width 80 --prose-wrap always --list-different
 
 
+  cmakelint:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v1
+      - name: install dependencies
+        run: |
+          sudo python -m pip install --upgrade pip
+          sudo pip install cmakelint
+      - name: check CMake scripts
+        run: find . -iname "CMakeLists.txt" -o -iname "*.cmake" | xargs cmakelint --filter=-linelength,-readability/wonkycase
+
+
   volk-gnsssdr-windows:
     runs-on: windows-latest
     steps:

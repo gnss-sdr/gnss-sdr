@@ -24,10 +24,10 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-       target_compile_options(obsdiff
-           PUBLIC
-               -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder -Wno-deprecated-copy -Wno-extra -Wno-unused-but-set-variable -Wno-unknown-pragmas
-       )
+        target_compile_options(obsdiff
+            PUBLIC
+                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder -Wno-deprecated-copy -Wno-extra -Wno-unused-but-set-variable -Wno-unknown-pragmas
+        )
     endif()
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(obsdiff
@@ -65,8 +65,8 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     )
 
     add_custom_command(TARGET obsdiff POST_BUILD
-       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obsdiff>
-       ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obsdiff>
+        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>
     )
 
     install(TARGETS obsdiff

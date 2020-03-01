@@ -237,13 +237,6 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
     endif()
 endif()
 
-# Trick for feature_summary
-if(NOT DEFINED GNURADIO_FOUND)
-    set(GNURADIO_FOUND TRUE)
-endif()
-
-find_package_handle_standard_args(GNURADIO DEFAULT_MSG GNURADIO_FOUND)
-
 set(GNURADIO_VERSION ${PC_GNURADIO_RUNTIME_VERSION})
 
 if(NOT GNSSSDR_GNURADIO_MIN_VERSION)
@@ -275,6 +268,7 @@ else()
     )
 endif()
 
+find_package_handle_standard_args(GNURADIO DEFAULT_MSG GNURADIO_RUNTIME_FOUND)
 
 # Search for IIO component
 if(GNURADIO_VERSION VERSION_GREATER 3.8.99)

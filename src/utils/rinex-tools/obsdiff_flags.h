@@ -33,6 +33,8 @@ DEFINE_string(dupli_sat_prns, "1,2,3,4", "List of duplicated satellites PRN pair
 DEFINE_string(ref_rinex_obs, "reference.obs", "Filename of reference RINEX observation file");
 DEFINE_string(rinex_nav, "reference.nav", "Filename of reference RINEX navigation file");
 DEFINE_string(test_rinex_obs, "test.obs", "Filename of test RINEX observation file");
+DEFINE_string(system, "G", "GNSS satellite system: G for GPS, E for Galileo");
+DEFINE_string(signal, "1C", "GNSS signal: 1C for GPS L1 CA, 1B for Galileo E1");
 DEFINE_bool(remove_rx_clock_error, false, "Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers)");
 
 #endif

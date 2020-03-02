@@ -1359,9 +1359,9 @@ void RINEX_doublediff_dupli_sat()
 void RINEX_doublediff(bool remove_rx_clock_error)
 {
     // read rinex reference observations
-    std::map<int, arma::mat> ref_obs = ReadRinexObs(FLAGS_ref_rinex_obs, 'G', std::string("1C"));
+    std::map<int, arma::mat> ref_obs = ReadRinexObs(FLAGS_ref_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
     // read rinex receiver-under-test observations
-    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, 'G', std::string("1C"));
+    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
 
     if (ref_obs.empty() or test_obs.empty())
         {
@@ -1548,7 +1548,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
 void RINEX_singlediff()
 {
     // read rinex receiver-under-test observations
-    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, 'G', std::string("1C"));
+    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
 
     if (test_obs.empty())
         {

@@ -65,31 +65,36 @@ This later option requires [BLAS](http://www.netlib.org/blas/),
 
 ### Usage
 
-Double differences (Pseudorange, Carrier Phase and Carrier Doppler) within Base and Rover receivers:
+Double differences (Pseudorange, Carrier Phase and Carrier Doppler) within Base
+and Rover receivers:
 
 ```
 $ obsdiff --base_rinex_obs=base.20o --rover_rinex_obs=rover.20o
 ```
-Double differences with receiver clock correction (Pseudorange, Carrier Phase and Carrier Doppler) within Base and Rover receivers:
+
+Double differences with receiver clock correction (Pseudorange, Carrier Phase
+and Carrier Doppler) within Base and Rover receivers:
 
 ```
-$ obsdiff --base_rinex_obs=base.20o --rover_rinex_obs=rover.20o --rinex_nav=base.nav --remove_rx_clock_error=true 
+$ obsdiff --base_rinex_obs=base.20o --rover_rinex_obs=rover.20o --rinex_nav=base.nav --remove_rx_clock_error=true
 ```
 
-Single difference (Pseudorange, Carrier Phase and Carrier Doppler) with Base receiver only and a special duplicated satellites simulated scenario:
+Single difference (Pseudorange, Carrier Phase and Carrier Doppler) with Base
+receiver only and a special duplicated satellites simulated scenario:
 
 ```
 $ obsdiff --rover_rinex_obs=rover.20o --single_diff=true --dupli_sat=true --dupli_sat_prns=1,2,3,4
 ```
 
-Where the list of duplicated satellites PRN pairs must be specified by --dupli_sat_prns flag (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4)
+Where the list of duplicated satellites PRN pairs must be specified by
+--dupli*sat_prns flag (*i.e.*, `1,2,3,4` indicates that the PRNs 1,2 share the
+same orbit. The same applies for PRNs 3,4)
 
 Single difference of Pseudorange Rate vs. Carrier Phase rate for each satellite:
 
 ```
 $ obsdiff --rover_rinex_obs=rover.20o --single_diff=true
 ```
-
 
 There is some flexibility in how command-line flags may be specified. The
 following examples are equivalent:

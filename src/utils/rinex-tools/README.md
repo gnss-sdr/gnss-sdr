@@ -65,18 +65,40 @@ This later option requires [BLAS](http://www.netlib.org/blas/),
 
 ### Usage
 
+Double differences (Pseudorange, Carrier Phase and Carrier Doppler) within Base and Rover receivers:
+
 ```
-$ obsdiff --ref_rinex_obs=reference.20o --test_rinex_obs=rover.20o
+$ obsdiff --base_rinex_obs=base.20o --rover_rinex_obs=rover.20o
 ```
+Double differences with receiver clock correction (Pseudorange, Carrier Phase and Carrier Doppler) within Base and Rover receivers:
+
+```
+$ obsdiff --base_rinex_obs=base.20o --rover_rinex_obs=rover.20o --rinex_nav=base.nav --remove_rx_clock_error=true 
+```
+
+Single difference (Pseudorange, Carrier Phase and Carrier Doppler) with Base receiver only and a special duplicated satellites simulated scenario:
+
+```
+$ obsdiff --rover_rinex_obs=rover.20o --single_diff=true --dupli_sat=true --dupli_sat_prns=1,2,3,4
+```
+
+Where the list of duplicated satellites PRN pairs must be specified by --dupli_sat_prns flag (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4)
+
+Single difference of Pseudorange Rate vs. Carrier Phase rate for each satellite:
+
+```
+$ obsdiff --rover_rinex_obs=rover.20o --single_diff=true
+```
+
 
 There is some flexibility in how command-line flags may be specified. The
 following examples are equivalent:
 
 ```
-$ obsdiff -ref_rinex_obs=reference.20o
-$ obsdiff --ref_rinex_obs=reference.20o
-$ obsdiff -ref_rinex_obs reference.20o
-$ obsdiff --ref_rinex_obs reference.20o
+$ obsdiff -base_rinex_obs=reference.20o
+$ obsdiff --base_rinex_obs=reference.20o
+$ obsdiff -base_rinex_obs reference.20o
+$ obsdiff --base_rinex_obs reference.20o
 ```
 
 For boolean flags, the possibilities are slightly different:
@@ -105,9 +127,9 @@ Available command-line flags:
 | `--compare_with_5X`       | `false`           | [`true`, `false`]: If `true`, the program compares the E5a Doppler and Carrier Phases with the E5 full Bw in RINEX (expect discrepancy due to the center frequencies difference). |
 | `--dupli_sat`             | `false`           | [`true`, `false`]: If `true`, this flag enables special observable test mode where the scenario contains duplicated satellite orbits. |
 | `--dupli_sat_prns`        | `1,2,3,4`         | List of duplicated satellites PRN pairs (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4). |
-| `--ref_rinex_obs`         | `reference.obs`   | Filename of reference RINEX observation file. |
-| `--test_rinex_obs`        | `test.obs`        | Filename of tested RINEX observation file. |
+| `--base_rinex_obs`         | `base.obs`   | Filename of reference RINEX observation file. |
+| `--rover_rinex_obs`        | `rover.obs`        | Filename of tested RINEX observation file. |
 | `--remove_rx_clock_error` | `false`           | Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers) |
-| `--rinex_nav`             | `reference.nav` | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
+| `--rinex_nav`             | `base.nav` | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
 | `--show_plots`            | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |
 <!-- prettier-ignore-end -->

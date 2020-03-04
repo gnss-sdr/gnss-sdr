@@ -30,9 +30,9 @@ DEFINE_bool(compare_with_5X, false, "Compare the E5a Doppler and Carrier Phases 
 DEFINE_bool(dupli_sat, false, "Enable special observable test mode where the scenario contains duplicated satellite orbits");
 DEFINE_bool(single_diff, false, "Enable special observable test mode using only rover observables");
 DEFINE_string(dupli_sat_prns, "1,2,3,4", "List of duplicated satellites PRN pairs (i.e. 1,2,3,4 indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4)");
-DEFINE_string(ref_rinex_obs, "reference.obs", "Filename of reference RINEX observation file");
-DEFINE_string(rinex_nav, "reference.nav", "Filename of reference RINEX navigation file");
-DEFINE_string(test_rinex_obs, "test.obs", "Filename of test RINEX observation file");
+DEFINE_string(base_rinex_obs, "base.obs", "Filename of reference RINEX observation file");
+DEFINE_string(rinex_nav, "base.nav", "Filename of reference RINEX navigation file");
+DEFINE_string(rover_rinex_obs, "base.obs", "Filename of test RINEX observation file");
 DEFINE_string(system, "G", "GNSS satellite system: G for GPS, E for Galileo");
 DEFINE_string(signal, "1C", "GNSS signal: 1C for GPS L1 CA, 1B for Galileo E1");
 DEFINE_bool(remove_rx_clock_error, false, "Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers)");

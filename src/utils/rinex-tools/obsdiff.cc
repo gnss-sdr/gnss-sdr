@@ -89,17 +89,17 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
             std::cout << "Warning: RINEX Obs file " << rinex_file << " does not exist\n";
             return obs_map;
         }
-    // Open and read reference RINEX observables file
+    // Open and read _baseerence RINEX observables file
     try
         {
-            gpstk::Rinex3ObsStream r_ref(rinex_file);
+            gpstk::Rinex3ObsStream r_base(rinex_file);
 
-            gpstk::Rinex3ObsData r_ref_data;
-            gpstk::Rinex3ObsHeader r_ref_header;
+            gpstk::Rinex3ObsData r_base_data;
+            gpstk::Rinex3ObsHeader r_base_header;
 
             gpstk::RinexDatum dataobj;
 
-            r_ref >> r_ref_header;
+            r_base >> r_base_header;
 
             std::set<int> PRN_set;
             gpstk::SatID prn;
@@ -119,17 +119,17 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                 }
 
             std::cout << "Reading RINEX OBS file " << rinex_file << " ...\n";
-            while (r_ref >> r_ref_data)
+            while (r_base >> r_base_data)
                 {
                     for (auto& prn_it : PRN_set)
                         {
                             prn.id = prn_it;
-                            gpstk::CommonTime time = r_ref_data.time;
+                            gpstk::CommonTime time = r_base_data.time;
                             double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
 
-                            auto pointer = r_ref_data.obs.find(prn);
+                            auto pointer = r_base_data.obs.find(prn);
 
-                            if (pointer != r_ref_data.obs.end())
+                            if (pointer != r_base_data.obs.end())
                                 {
                                     // insert next column
                                     try
@@ -147,51 +147,51 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                                     if (strcmp("1C\0", signal.c_str()) == 0)
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_ref_data.getObs(prn, "C1C", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "C1C", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  // C1C P1 (psudorange L1)
-                                            dataobj = r_ref_data.getObs(prn, "D1C", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "D1C", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  // D1C Carrier Doppler
-                                            dataobj = r_ref_data.getObs(prn, "L1C", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "L1C", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  // L1C Carrier Phase
                                         }
                                     else if (strcmp("1B\0", signal.c_str()) == 0)
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_ref_data.getObs(prn, "C1B", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "C1B", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "D1B", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "D1B", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "L1B", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "L1B", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
                                     else if (strcmp("2S\0", signal.c_str()) == 0)  // L2M
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_ref_data.getObs(prn, "C2S", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "C2S", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "D2S", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "D2S", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "L2S", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "L2S", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
                                     else if (strcmp("L5\0", signal.c_str()) == 0)
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_ref_data.getObs(prn, "C5I", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "C5I", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "D5I", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "D5I", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "L5I", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "L5I", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
                                     else if (strcmp("5X\0", signal.c_str()) == 0)  // Simulator gives RINEX with E5a+E5b. Doppler and accumulated Carrier phase WILL differ
                                         {
                                             obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_ref_data.getObs(prn, "C8I", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "C8I", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "D8I", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "D8I", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_ref_data.getObs(prn, "L8I", r_ref_header);
+                                            dataobj = r_base_data.getObs(prn, "L8I", r_base_header);
                                             obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
                                         }
                                     else
@@ -858,10 +858,12 @@ void coderate_phaserate_consistence(
 {
     arma::vec measurement_time = measured_ch0.col(0);
     arma::vec delta_time = measurement_time.subvec(1, measurement_time.n_elem - 1) - measurement_time.subvec(0, measurement_time.n_elem - 2);
+
     // Test 4 is for the pseudorange phase consistency
     //
     // 1) Checks for the value of the pseudoranges to be within a certain threshold.
     arma::vec prange = measured_ch0.col(1);
+
     // todo: This code is only valid for L1/E1 carrier frequency.
     arma::vec phase = measured_ch0.col(3) * (gpstk::C_MPS / gpstk::L1_FREQ_GPS);
 
@@ -881,7 +883,7 @@ void coderate_phaserate_consistence(
 
     // 2) It checks that the pseduorange rate is within a certain threshold
     // check code rate
-    arma::vec coderate = prange.subvec(1, prange.n_elem - 1) - prange.subvec(0, prange.n_elem - 2) / delta_time;
+    arma::vec coderate = (prange.subvec(1, prange.n_elem - 1) - prange.subvec(0, prange.n_elem - 2)) / delta_time;
 
     // remove NaN
     arma::uvec NaN_in_measured_data = arma::find_nonfinite(coderate);
@@ -901,7 +903,7 @@ void coderate_phaserate_consistence(
         }
 
     // 3) It checks that the phase rate is within a certain threshold
-    arma::vec phaserate = phase.subvec(1, prange.n_elem - 1) - phase.subvec(0, prange.n_elem - 2) / delta_time;
+    arma::vec phaserate = (phase.subvec(1, prange.n_elem - 1) - phase.subvec(0, prange.n_elem - 2)) / delta_time;
 
     // remove NaN
     NaN_in_measured_data = arma::find_nonfinite(phase);
@@ -923,6 +925,17 @@ void coderate_phaserate_consistence(
     // 4) It checks the difference between code and phase rates
     // check difference between code and phase rates
     arma::vec ratediff = phaserate - coderate;
+
+    // debug
+    std::vector<double> tmp_time_vec(measurement_time.colptr(0),
+        measurement_time.colptr(0) + measurement_time.n_rows);
+    std::vector<double> tmp_vector_y6(phaserate.colptr(0),
+        phaserate.colptr(0) + phaserate.n_rows);
+    save_mat_xy(tmp_time_vec, tmp_vector_y6, std::string("phaserate_" + data_title));
+    std::vector<double> tmp_vector_y7(coderate.colptr(0),
+        coderate.colptr(0) + coderate.n_rows);
+    save_mat_xy(tmp_time_vec, tmp_vector_y7, std::string("coderate_" + data_title));
+
 
     double maxratediff = 5;
 
@@ -958,7 +971,7 @@ void coderate_phaserate_consistence(
               << ", stdev = " << sqrt(error_var)
               << " (max,min) = " << max_error
               << "," << min_error
-              << " [meters]" << std::endl;
+              << " [m/s]" << std::endl;
     std::cout.precision(ss);
 
     // plots
@@ -1291,8 +1304,8 @@ void RINEX_doublediff_dupli_sat()
 {
     // special test mode for duplicated satellites
     // read rinex receiver-under-test observations
-    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, 'G', std::string("1C"));
-    if (test_obs.empty())
+    std::map<int, arma::mat> rover_obs = ReadRinexObs(FLAGS_rover_rinex_obs, 'G', std::string("1C"));
+    if (rover_obs.empty())
         {
             return;
         }
@@ -1300,12 +1313,12 @@ void RINEX_doublediff_dupli_sat()
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]" << std::endl;
     arma::uvec index;
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
-            index = arma::find(test_ob.second.col(0) >= (test_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
+            index = arma::find(rover_ob.second.col(0) >= (rover_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
             if ((!index.empty()) and (index(0) > 0))
                 {
-                    test_ob.second.shed_rows(0, index(0));
+                    rover_ob.second.shed_rows(0, index(0));
                 }
         }
 
@@ -1330,21 +1343,21 @@ void RINEX_doublediff_dupli_sat()
             for (unsigned int n = 0; n < prn_pairs.size(); n = n + 2)
                 {
                     // compute double differences
-                    if (test_obs.find(prn_pairs.at(n)) != test_obs.end() and test_obs.find(prn_pairs.at(n + 1)) != test_obs.end())
+                    if (rover_obs.find(prn_pairs.at(n)) != rover_obs.end() and rover_obs.find(prn_pairs.at(n + 1)) != rover_obs.end())
                         {
                             std::cout << "Computing single difference observables for duplicated SV pairs..." << std::endl;
                             std::cout << "SD = OBS_ROVER(SV" << prn_pairs.at(n) << ") - OBS_ROVER(SV" << prn_pairs.at(n + 1) << ")" << std::endl;
 
-                            code_pseudorange_single_diff(test_obs.at(prn_pairs.at(n)),
-                                test_obs.at(prn_pairs.at(n + 1)),
+                            code_pseudorange_single_diff(rover_obs.at(prn_pairs.at(n)),
+                                rover_obs.at(prn_pairs.at(n + 1)),
                                 "SD = OBS(SV" + std::to_string(prn_pairs.at(n)) + ") - OBS(SV" + std::to_string(prn_pairs.at(n + 1)) + ") ");
 
-                            carrier_phase_single_diff(test_obs.at(prn_pairs.at(n)),
-                                test_obs.at(prn_pairs.at(n + 1)),
+                            carrier_phase_single_diff(rover_obs.at(prn_pairs.at(n)),
+                                rover_obs.at(prn_pairs.at(n + 1)),
                                 "SD = OBS(SV" + std::to_string(prn_pairs.at(n)) + ") - OBS(SV" + std::to_string(prn_pairs.at(n + 1)) + ") ");
 
-                            carrier_doppler_single_diff(test_obs.at(prn_pairs.at(n)),
-                                test_obs.at(prn_pairs.at(n + 1)),
+                            carrier_doppler_single_diff(rover_obs.at(prn_pairs.at(n)),
+                                rover_obs.at(prn_pairs.at(n + 1)),
                                 "SD = OBS(SV" + std::to_string(prn_pairs.at(n)) + ") - OBS(SV" + std::to_string(prn_pairs.at(n + 1)) + ") ");
                         }
                     else
@@ -1358,56 +1371,56 @@ void RINEX_doublediff_dupli_sat()
 
 void RINEX_doublediff(bool remove_rx_clock_error)
 {
-    // read rinex reference observations
-    std::map<int, arma::mat> ref_obs = ReadRinexObs(FLAGS_ref_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
-    // read rinex receiver-under-test observations
-    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
+    // read rinex base observations
+    std::map<int, arma::mat> base_obs = ReadRinexObs(FLAGS_base_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
+    // read rinex receiver-under-test (rover) observations
+    std::map<int, arma::mat> rover_obs = ReadRinexObs(FLAGS_rover_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
 
-    if (ref_obs.empty() or test_obs.empty())
+    if (base_obs.empty() or rover_obs.empty())
         {
             return;
         }
 
     // compute rx clock errors
-    double ref_rx_clock_error_s = 0.0;
-    double test_rx_clock_error_s = 0.0;
+    double base_rx_clock_error_s = 0.0;
+    double rover_rx_clock_error_s = 0.0;
     if (remove_rx_clock_error == true)
         {
-            ref_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_ref_rinex_obs);
-            test_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_test_rinex_obs);
+            base_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_base_rinex_obs);
+            rover_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_rover_rinex_obs);
         }
 
-    double common_clock_error_s = test_rx_clock_error_s - ref_rx_clock_error_s;
+    double common_clock_error_s = rover_rx_clock_error_s - base_rx_clock_error_s;
 
     // Cut measurement initial transitory of the measurements
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]" << std::endl;
     arma::uvec index;
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
-            index = arma::find(test_ob.second.col(0) >= (test_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
+            index = arma::find(rover_ob.second.col(0) >= (rover_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
             if ((!index.empty()) and (index(0) > 0))
                 {
-                    test_ob.second.shed_rows(0, index(0));
+                    rover_ob.second.shed_rows(0, index(0));
                 }
         }
 
     // Cut observation vectors ends to the shortest one (base or rover)
-    arma::colvec ref_obs_time = ref_obs.begin()->second.col(0);
-    arma::colvec test_obs_time = test_obs.begin()->second.col(0);
+    arma::colvec base_obs_time = base_obs.begin()->second.col(0);
+    arma::colvec rover_obs_time = rover_obs.begin()->second.col(0);
 
-    if (ref_obs_time.back() < test_obs_time.back())
+    if (base_obs_time.back() < rover_obs_time.back())
         {
             // there are more rover observations than base observations
             // cut rover vector
             std::cout << "Cutting rover observations vector end.." << std::endl;
             arma::uvec index2;
-            for (auto& test_ob : test_obs)
+            for (auto& rover_ob : rover_obs)
                 {
-                    index = arma::find(test_ob.second.col(0) >= ref_obs_time.back(), 1, "first");
+                    index = arma::find(rover_ob.second.col(0) >= base_obs_time.back(), 1, "first");
                     if ((!index.empty()) and (index(0) > 0))
                         {
-                            test_ob.second.shed_rows(index(0), test_ob.second.n_rows - 1);
+                            rover_ob.second.shed_rows(index(0), rover_ob.second.n_rows - 1);
                         }
                 }
         }
@@ -1416,124 +1429,124 @@ void RINEX_doublediff(bool remove_rx_clock_error)
             // there are more base observations than rover observations
             // cut base vector
             std::cout << "Cutting base observations vector end.." << std::endl;
-            for (auto& ref_ob : ref_obs)
+            for (auto& base_ob : base_obs)
                 {
-                    index = arma::find(ref_ob.second.col(0) >= test_obs_time.back(), 1, "first");
+                    index = arma::find(base_ob.second.col(0) >= rover_obs_time.back(), 1, "first");
                     if ((!index.empty()) and (index(0) > 0))
                         {
-                            ref_ob.second.shed_rows(index(0), ref_ob.second.n_rows - 1);
+                            base_ob.second.shed_rows(index(0), base_ob.second.n_rows - 1);
                         }
                 }
         }
 
     // also skip last seconds of the observations (some artifacts are present in some RINEX endings)
-    ref_obs_time = ref_obs.begin()->second.col(0);
-    test_obs_time = test_obs.begin()->second.col(0);
+    base_obs_time = base_obs.begin()->second.col(0);
+    rover_obs_time = rover_obs.begin()->second.col(0);
 
     double skip_ends_s = FLAGS_skip_obs_ends_s;
     std::cout << "Skipping last " << skip_ends_s << " [s] of observations" << std::endl;
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
-            index = arma::find(test_ob.second.col(0) >= (test_obs_time.back() - skip_ends_s), 1, "first");
+            index = arma::find(rover_ob.second.col(0) >= (rover_obs_time.back() - skip_ends_s), 1, "first");
             if ((!index.empty()) and (index(0) > 0))
                 {
-                    test_ob.second.shed_rows(index(0), test_ob.second.n_rows - 1);
+                    rover_ob.second.shed_rows(index(0), rover_ob.second.n_rows - 1);
                 }
         }
-    for (auto& ref_ob : ref_obs)
+    for (auto& base_ob : base_obs)
         {
-            index = arma::find(ref_ob.second.col(0) >= (ref_obs_time.back() - skip_ends_s), 1, "first");
+            index = arma::find(base_ob.second.col(0) >= (base_obs_time.back() - skip_ends_s), 1, "first");
             if ((!index.empty()) and (index(0) > 0))
                 {
-                    ref_ob.second.shed_rows(index(0), ref_ob.second.n_rows - 1);
+                    base_ob.second.shed_rows(index(0), base_ob.second.n_rows - 1);
                 }
         }
 
     // Save observations in .mat files
     std::cout << "Saving RAW observables inputs to .mat files...\n";
-    for (auto& ref_ob : ref_obs)
+    for (auto& base_ob : base_obs)
         {
             //            std::cout << it->first << " => " << it->second.n_rows << '\n';
             //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
-            std::vector<double> tmp_time_vec(ref_ob.second.col(0).colptr(0),
-                ref_ob.second.col(0).colptr(0) + ref_ob.second.n_rows);
-            std::vector<double> tmp_vector(ref_ob.second.col(2).colptr(0),
-                ref_ob.second.col(2).colptr(0) + ref_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector, std::string("ref_doppler_sat" + std::to_string(ref_ob.first)));
+            std::vector<double> tmp_time_vec(base_ob.second.col(0).colptr(0),
+                base_ob.second.col(0).colptr(0) + base_ob.second.n_rows);
+            std::vector<double> tmp_vector(base_ob.second.col(2).colptr(0),
+                base_ob.second.col(2).colptr(0) + base_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector, std::string("base_doppler_sat" + std::to_string(base_ob.first)));
 
-            std::vector<double> tmp_vector2(ref_ob.second.col(3).colptr(0),
-                ref_ob.second.col(3).colptr(0) + ref_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("ref_carrier_phase_sat" + std::to_string(ref_ob.first)));
+            std::vector<double> tmp_vector2(base_ob.second.col(3).colptr(0),
+                base_ob.second.col(3).colptr(0) + base_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("base_carrier_phase_sat" + std::to_string(base_ob.first)));
 
-            std::vector<double> tmp_vector3(ref_ob.second.col(1).colptr(0),
-                ref_ob.second.col(1).colptr(0) + ref_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("ref_pseudorange_sat" + std::to_string(ref_ob.first)));
+            std::vector<double> tmp_vector3(base_ob.second.col(1).colptr(0),
+                base_ob.second.col(1).colptr(0) + base_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("base_pseudorange_sat" + std::to_string(base_ob.first)));
         }
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
             //            std::cout << it->first << " => " << it->second.n_rows << '\n';
             //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
-            std::vector<double> tmp_time_vec(test_ob.second.col(0).colptr(0),
-                test_ob.second.col(0).colptr(0) + test_ob.second.n_rows);
-            std::vector<double> tmp_vector(test_ob.second.col(2).colptr(0),
-                test_ob.second.col(2).colptr(0) + test_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector, std::string("measured_doppler_sat" + std::to_string(test_ob.first)));
+            std::vector<double> tmp_time_vec(rover_ob.second.col(0).colptr(0),
+                rover_ob.second.col(0).colptr(0) + rover_ob.second.n_rows);
+            std::vector<double> tmp_vector(rover_ob.second.col(2).colptr(0),
+                rover_ob.second.col(2).colptr(0) + rover_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector, std::string("measured_doppler_sat" + std::to_string(rover_ob.first)));
 
-            std::vector<double> tmp_vector2(test_ob.second.col(3).colptr(0),
-                test_ob.second.col(3).colptr(0) + test_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("measured_carrier_phase_sat" + std::to_string(test_ob.first)));
+            std::vector<double> tmp_vector2(rover_ob.second.col(3).colptr(0),
+                rover_ob.second.col(3).colptr(0) + rover_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("measured_carrier_phase_sat" + std::to_string(rover_ob.first)));
 
-            std::vector<double> tmp_vector3(test_ob.second.col(1).colptr(0),
-                test_ob.second.col(1).colptr(0) + test_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("measured_pseudorange_sat" + std::to_string(test_ob.first)));
+            std::vector<double> tmp_vector3(rover_ob.second.col(1).colptr(0),
+                rover_ob.second.col(1).colptr(0) + rover_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("measured_pseudorange_sat" + std::to_string(rover_ob.first)));
         }
 
     // select reference satellite
     std::set<int> PRN_set = available_gps_prn;
     double min_range = std::numeric_limits<double>::max();
-    int ref_sat_id = 1;
-    for (auto& ref_prn_it : PRN_set)
+    int reference_sat_id = 1;
+    for (auto& base_prn_it : PRN_set)
         {
-            if (ref_obs.find(ref_prn_it) != ref_obs.end() and test_obs.find(ref_prn_it) != test_obs.end())
+            if (base_obs.find(base_prn_it) != base_obs.end() and rover_obs.find(base_prn_it) != rover_obs.end())
                 {
-                    if (test_obs.at(ref_prn_it).at(0, 1) < min_range)
+                    if (rover_obs.at(base_prn_it).at(0, 1) < min_range)
                         {
-                            min_range = test_obs.at(ref_prn_it).at(0, 1);
-                            ref_sat_id = ref_prn_it;
+                            min_range = rover_obs.at(base_prn_it).at(0, 1);
+                            reference_sat_id = base_prn_it;
                         }
                 }
         }
 
     // compute double differences
-    if (ref_obs.find(ref_sat_id) != ref_obs.end() and test_obs.find(ref_sat_id) != test_obs.end())
+    if (base_obs.find(reference_sat_id) != base_obs.end() and rover_obs.find(reference_sat_id) != rover_obs.end())
         {
-            std::cout << "Using reference satellite SV " << ref_sat_id << " with minimum range of " << min_range << " [meters]" << std::endl;
+            std::cout << "Using reference satellite SV " << reference_sat_id << " with minimum range of " << min_range << " [meters]" << std::endl;
             for (auto& current_sat_id : PRN_set)
                 {
-                    if (current_sat_id != ref_sat_id)
+                    if (current_sat_id != reference_sat_id)
                         {
-                            if (ref_obs.find(current_sat_id) != ref_obs.end() and test_obs.find(current_sat_id) != test_obs.end())
+                            if (base_obs.find(current_sat_id) != base_obs.end() and rover_obs.find(current_sat_id) != rover_obs.end())
                                 {
                                     std::cout << "Computing double difference observables for SV " << current_sat_id << std::endl;
-                                    std::cout << "DD = (OBS_ROVER(SV" << current_sat_id << ") - OBS_ROVER(SV" << ref_sat_id << "))"
-                                              << " - (OBS_BASE(SV" << current_sat_id << ") - OBS_BASE(SV" << ref_sat_id << "))" << std::endl;
+                                    std::cout << "DD = (OBS_ROVER(SV" << current_sat_id << ") - OBS_ROVER(SV" << reference_sat_id << "))"
+                                              << " - (OBS_BASE(SV" << current_sat_id << ") - OBS_BASE(SV" << reference_sat_id << "))" << std::endl;
 
-                                    code_pseudorange_double_diff(ref_obs.at(ref_sat_id),
-                                        ref_obs.at(current_sat_id),
-                                        test_obs.at(ref_sat_id),
-                                        test_obs.at(current_sat_id),
+                                    code_pseudorange_double_diff(base_obs.at(reference_sat_id),
+                                        base_obs.at(current_sat_id),
+                                        rover_obs.at(reference_sat_id),
+                                        rover_obs.at(current_sat_id),
                                         "PRN " + std::to_string(current_sat_id) + " ", common_clock_error_s);
 
-                                    carrier_phase_double_diff(ref_obs.at(ref_sat_id),
-                                        ref_obs.at(current_sat_id),
-                                        test_obs.at(ref_sat_id),
-                                        test_obs.at(current_sat_id),
+                                    carrier_phase_double_diff(base_obs.at(reference_sat_id),
+                                        base_obs.at(current_sat_id),
+                                        rover_obs.at(reference_sat_id),
+                                        rover_obs.at(current_sat_id),
                                         "PRN " + std::to_string(current_sat_id) + " ", common_clock_error_s);
 
-                                    carrier_doppler_double_diff(ref_obs.at(ref_sat_id),
-                                        ref_obs.at(current_sat_id),
-                                        test_obs.at(ref_sat_id),
-                                        test_obs.at(current_sat_id),
+                                    carrier_doppler_double_diff(base_obs.at(reference_sat_id),
+                                        base_obs.at(current_sat_id),
+                                        rover_obs.at(reference_sat_id),
+                                        rover_obs.at(current_sat_id),
                                         "PRN " + std::to_string(current_sat_id) + " ", common_clock_error_s);
                                 }
                         }
@@ -1541,16 +1554,16 @@ void RINEX_doublediff(bool remove_rx_clock_error)
         }
     else
         {
-            std::cout << "Satellite ID " << ref_sat_id << " not found in both RINEX files\n";
+            std::cout << "Satellite ID " << reference_sat_id << " not found in both RINEX files\n";
         }
 }
 
 void RINEX_singlediff()
 {
     // read rinex receiver-under-test observations
-    std::map<int, arma::mat> test_obs = ReadRinexObs(FLAGS_test_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
+    std::map<int, arma::mat> rover_obs = ReadRinexObs(FLAGS_rover_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
 
-    if (test_obs.empty())
+    if (rover_obs.empty())
         {
             return;
         }
@@ -1559,49 +1572,49 @@ void RINEX_singlediff()
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]" << std::endl;
     arma::uvec index;
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
-            index = arma::find(test_ob.second.col(0) >= (test_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
+            index = arma::find(rover_ob.second.col(0) >= (rover_ob.second.col(0)(0) + initial_transitory_s), 1, "first");
             if ((!index.empty()) and (index(0) > 0))
                 {
-                    test_ob.second.shed_rows(0, index(0));
+                    rover_ob.second.shed_rows(0, index(0));
                 }
         }
 
     // also skip last seconds of the observations (some artifacts are present in some RINEX endings)
-    arma::colvec test_obs_time = test_obs.begin()->second.col(0);
+    arma::colvec rover_obs_time = rover_obs.begin()->second.col(0);
 
     double skip_ends_s = FLAGS_skip_obs_ends_s;
     std::cout << "Skipping last " << skip_ends_s << " [s] of observations" << std::endl;
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
-            index = arma::find(test_ob.second.col(0) >= (test_obs_time.back() - skip_ends_s), 1, "first");
+            index = arma::find(rover_ob.second.col(0) >= (rover_obs_time.back() - skip_ends_s), 1, "first");
             if ((!index.empty()) and (index(0) > 0))
                 {
-                    test_ob.second.shed_rows(index(0), test_ob.second.n_rows - 1);
+                    rover_ob.second.shed_rows(index(0), rover_ob.second.n_rows - 1);
                 }
         }
 
     // Save observations in .mat files
     std::cout << "Saving RAW observables inputs to .mat files...\n";
 
-    for (auto& test_ob : test_obs)
+    for (auto& rover_ob : rover_obs)
         {
             //            std::cout << it->first << " => " << it->second.n_rows << '\n';
             //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
-            std::vector<double> tmp_time_vec(test_ob.second.col(0).colptr(0),
-                test_ob.second.col(0).colptr(0) + test_ob.second.n_rows);
-            std::vector<double> tmp_vector(test_ob.second.col(2).colptr(0),
-                test_ob.second.col(2).colptr(0) + test_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector, std::string("measured_doppler_sat" + std::to_string(test_ob.first)));
+            std::vector<double> tmp_time_vec(rover_ob.second.col(0).colptr(0),
+                rover_ob.second.col(0).colptr(0) + rover_ob.second.n_rows);
+            std::vector<double> tmp_vector(rover_ob.second.col(2).colptr(0),
+                rover_ob.second.col(2).colptr(0) + rover_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector, std::string("measured_doppler_sat" + std::to_string(rover_ob.first)));
 
-            std::vector<double> tmp_vector2(test_ob.second.col(3).colptr(0),
-                test_ob.second.col(3).colptr(0) + test_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("measured_carrier_phase_sat" + std::to_string(test_ob.first)));
+            std::vector<double> tmp_vector2(rover_ob.second.col(3).colptr(0),
+                rover_ob.second.col(3).colptr(0) + rover_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector2, std::string("measured_carrier_phase_sat" + std::to_string(rover_ob.first)));
 
-            std::vector<double> tmp_vector3(test_ob.second.col(1).colptr(0),
-                test_ob.second.col(1).colptr(0) + test_ob.second.n_rows);
-            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("measured_pseudorange_sat" + std::to_string(test_ob.first)));
+            std::vector<double> tmp_vector3(rover_ob.second.col(1).colptr(0),
+                rover_ob.second.col(1).colptr(0) + rover_ob.second.n_rows);
+            save_mat_xy(tmp_time_vec, tmp_vector3, std::string("measured_pseudorange_sat" + std::to_string(rover_ob.first)));
         }
 
     // compute single differences
@@ -1609,10 +1622,10 @@ void RINEX_singlediff()
     std::cout << "Computing Code Pseudorange rate vs. Carrier phase rate difference..." << std::endl;
     for (auto& current_sat_id : PRN_set)
         {
-            if (test_obs.find(current_sat_id) != test_obs.end())
+            if (rover_obs.find(current_sat_id) != rover_obs.end())
                 {
                     std::cout << "RateError = PR_rate(SV" << current_sat_id << ") - Phase_rate(SV" << current_sat_id << ")" << std::endl;
-                    coderate_phaserate_consistence(test_obs.at(current_sat_id), "PRN " + std::to_string(current_sat_id) + " ");
+                    coderate_phaserate_consistence(rover_obs.at(current_sat_id), "PRN " + std::to_string(current_sat_id) + " ");
                 }
         }
 }

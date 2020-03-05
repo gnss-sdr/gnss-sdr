@@ -87,7 +87,7 @@ $ obsdiff --rover_rinex_obs=rover.20o --single_diff=true --dupli_sat=true --dupl
 ```
 
 Where the list of duplicated satellites PRN pairs must be specified by
---dupli*sat_prns flag (*i.e.*, `1,2,3,4` indicates that the PRNs 1,2 share the
+`--dupli_sat_prns` flag (_i.e.,_ `1,2,3,4` indicates that the PRNs 1,2 share the
 same orbit. The same applies for PRNs 3,4)
 
 Single difference of Pseudorange Rate vs. Carrier Phase rate for each satellite:

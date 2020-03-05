@@ -936,9 +936,7 @@ void coderate_phaserate_consistence(
         coderate.colptr(0) + coderate.n_rows);
     save_mat_xy(tmp_time_vec, tmp_vector_y7, std::string("coderate_" + data_title));
 
-
     double maxratediff = 5;
-
     idx = arma::find(ratediff > maxratediff);
     if (idx.n_elem > 0)
         {
@@ -950,7 +948,6 @@ void coderate_phaserate_consistence(
 
     // 2. RMSE
     arma::vec err;
-
     err = ratediff;
 
     arma::vec err2 = arma::square(err);
@@ -1031,7 +1028,6 @@ void code_phase_diff(
         {
             // 2. RMSE
             arma::vec err;
-
             err = code_minus_phase;
 
             arma::vec err2 = arma::square(err);
@@ -1204,14 +1200,12 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                             // vector of visible satellites, the vector of corresponding
                             // ranges, the object containing satellite ephemerides, and a
                             // pointer to the tropospheric model to be applied
-
                             try
                                 {
                                     std::vector<gpstk::SatID::SatelliteSystem> Syss;
                                     gpstk::Matrix<double> invMC;
                                     int iret;
                                     // Call RAIMCompute.
-
                                     iret = raimSolver.RAIMCompute(rod.time, prnVec, Syss, rangeVec, invMC,
                                         &bcestore, tropModelPtr);
                                     switch (iret)
@@ -1242,7 +1236,6 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                         default:
                                             break;
                                         }
-
                                     // return iret;
                                 }
                             catch (const gpstk::Exception& e)
@@ -1250,7 +1243,6 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                 }
 
                             // If we got a valid solution, let's print it
-
                             if (raimSolver.isValid())
                                 {
                                     std::cout << "RX POS ECEF [XYZ] " << std::fixed << std::setprecision(3) << " "
@@ -1466,8 +1458,8 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     std::cout << "Saving RAW observables inputs to .mat files...\n";
     for (auto& base_ob : base_obs)
         {
-            //            std::cout << it->first << " => " << it->second.n_rows << '\n';
-            //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
+            // std::cout << it->first << " => " << it->second.n_rows << '\n';
+            // std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
             std::vector<double> tmp_time_vec(base_ob.second.col(0).colptr(0),
                 base_ob.second.col(0).colptr(0) + base_ob.second.n_rows);
             std::vector<double> tmp_vector(base_ob.second.col(2).colptr(0),
@@ -1484,8 +1476,8 @@ void RINEX_doublediff(bool remove_rx_clock_error)
         }
     for (auto& rover_ob : rover_obs)
         {
-            //            std::cout << it->first << " => " << it->second.n_rows << '\n';
-            //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
+            // std::cout << it->first << " => " << it->second.n_rows << '\n';
+            // std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
             std::vector<double> tmp_time_vec(rover_ob.second.col(0).colptr(0),
                 rover_ob.second.col(0).colptr(0) + rover_ob.second.n_rows);
             std::vector<double> tmp_vector(rover_ob.second.col(2).colptr(0),
@@ -1558,6 +1550,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
         }
 }
 
+
 void RINEX_singlediff()
 {
     // read rinex receiver-under-test observations
@@ -1600,8 +1593,8 @@ void RINEX_singlediff()
 
     for (auto& rover_ob : rover_obs)
         {
-            //            std::cout << it->first << " => " << it->second.n_rows << '\n';
-            //            std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
+            // std::cout << it->first << " => " << it->second.n_rows << '\n';
+            // std::cout << it->first << " has NaN values: " << it->second.has_nan() << '\n';
             std::vector<double> tmp_time_vec(rover_ob.second.col(0).colptr(0),
                 rover_ob.second.col(0).colptr(0) + rover_ob.second.n_rows);
             std::vector<double> tmp_vector(rover_ob.second.col(2).colptr(0),

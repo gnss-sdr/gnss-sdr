@@ -132,9 +132,11 @@ Available command-line flags:
 | `--compare_with_5X`       | `false`           | [`true`, `false`]: If `true`, the program compares the E5a Doppler and Carrier Phases with the E5 full Bw in RINEX (expect discrepancy due to the center frequencies difference). |
 | `--dupli_sat`             | `false`           | [`true`, `false`]: If `true`, this flag enables special observable test mode where the scenario contains duplicated satellite orbits. |
 | `--dupli_sat_prns`        | `1,2,3,4`         | List of duplicated satellites PRN pairs (_i.e._, `1,2,3,4` indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4). |
-| `--base_rinex_obs`         | `base.obs`   | Filename of reference RINEX observation file. |
-| `--rover_rinex_obs`        | `rover.obs`        | Filename of tested RINEX observation file. |
+| `--base_rinex_obs`        | `base.obs`        | Filename of reference RINEX observation file. |
+| `--rover_rinex_obs`       | `rover.obs`       | Filename of tested RINEX observation file. |
 | `--remove_rx_clock_error` | `false`           | Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers) |
-| `--rinex_nav`             | `base.nav` | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
+| `--rinex_nav`             | `base.nav`        | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
+| `--system`                | `G`               | GNSS satellite system: `G` for GPS, `E` for Galileo. |
+| `--signal`                | `1C`              | GNSS signal: `1C` for GPS L1 CA, `1B` for Galileo E1. |
 | `--show_plots`            | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |
 <!-- prettier-ignore-end -->

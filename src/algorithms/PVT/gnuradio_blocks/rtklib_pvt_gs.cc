@@ -1945,7 +1945,8 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                         default:
                             break;
                         }
-                    initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = (PI_2 * observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads;
+                    double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, PI_2);
+                    initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = PI_2 * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
                     channel_initialized.at(observables_iter->second.Channel_ID) = true;
                     DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
                 }

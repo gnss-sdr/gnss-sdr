@@ -78,6 +78,8 @@ private:
     void log_data();
     int32_t save_matfile();
 
+    void check_carrier_phase_coherent_initialization(uint64_t sample_counter);
+
     // tracking configuration vars
     Dll_Pll_Conf trk_parameters;
     bool d_veml;
@@ -107,6 +109,7 @@ private:
     boost::circular_buffer<float> d_dll_filt_history;
     // tracking state machine
     int32_t d_state;
+    bool d_acc_carrier_phase_initialized;
 
     // Integration period in samples
     int32_t d_correlation_length_ms;

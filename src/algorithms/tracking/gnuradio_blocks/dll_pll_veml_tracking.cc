@@ -529,6 +529,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                 }
         }
     d_corrected_doppler = false;
+    d_acc_carrier_phase_initialized = false;
 }
 
 
@@ -757,6 +758,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_pull_in_transitory = true;
     d_Prompt_circular_buffer.clear();
     d_corrected_doppler = false;
+    d_acc_carrier_phase_initialized = false;
 }
 
 
@@ -1020,6 +1022,16 @@ void dll_pll_veml_tracking::run_dll_pll()
         }
 }
 
+
+void dll_pll_veml_tracking::check_carrier_phase_coherent_initialization(uint64_t sample_counter)
+{
+    if (d_acc_carrier_phase_initialized == false)
+        {
+            double T_rx = static_cast<double>(sample_counter) / trk_parameters.fs_in;
+            d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
+            d_acc_carrier_phase_initialized = true;
+        }
+}
 
 void dll_pll_veml_tracking::clear_tracking_vars()
 {
@@ -1819,6 +1831,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 do_correlation_step(in);
                 save_correlation_results();
 
+
                 // check lock status
                 if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(trk_parameters.extend_correlation_symbols)))
                     {
@@ -1829,6 +1842,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     {
                         run_dll_pll();
                         update_tracking_vars();
+                        check_carrier_phase_coherent_initialization(d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples));
                         if (d_current_data_symbol == 0)
                             {
                                 // enable write dump file this cycle (valid DLL/PLL cycle)

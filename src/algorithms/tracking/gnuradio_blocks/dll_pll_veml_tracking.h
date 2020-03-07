@@ -72,13 +72,12 @@ private:
     bool acquire_secondary();
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
+    void check_carrier_phase_coherent_initialization();
     void update_tracking_vars();
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
     int32_t save_matfile();
-
-    void check_carrier_phase_coherent_initialization(uint64_t sample_counter);
 
     // tracking configuration vars
     Dll_Pll_Conf trk_parameters;

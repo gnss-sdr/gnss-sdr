@@ -487,6 +487,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_symbol.Flag_valid_word = flag_TOW_set;
 
+            if (flag_PLL_180_deg_phase_locked == true)
+                {
+                    // correct the accumulated phase for the Costas loop phase shift, if required
+                    current_symbol.Carrier_phase_rads += GPS_PI;
+                }
+
             if (d_dump == true)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file

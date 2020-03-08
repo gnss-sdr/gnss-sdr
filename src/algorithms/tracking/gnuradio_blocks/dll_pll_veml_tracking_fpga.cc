@@ -469,6 +469,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_worker_is_done = false;
 
     d_stop_tracking = false;
+
+    d_acc_carrier_phase_initialized = false;
 }
 
 
@@ -511,12 +513,11 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
 
-
     // filter initialization
-
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
 
     d_corrected_doppler = false;
+    d_acc_carrier_phase_initialized = false;
 
     boost::mutex::scoped_lock lock(d_mutex);
     d_worker_is_done = true;
@@ -764,6 +765,16 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
                             d_dll_filt_history.clear();
                         }
                 }
+        }
+}
+
+
+void dll_pll_veml_tracking_fpga::check_carrier_phase_coherent_initialization()
+{
+    if (d_acc_carrier_phase_initialized == false)
+        {
+            d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
+            d_acc_carrier_phase_initialized = true;
         }
 }
 
@@ -1832,7 +1843,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                             {
                                 run_dll_pll();
                                 update_tracking_vars();
-
+                                check_carrier_phase_coherent_initialization();
                                 if (d_current_data_symbol == 0)
                                     {
                                         // enable write dump file this cycle (valid DLL/PLL cycle)

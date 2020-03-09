@@ -74,6 +74,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
     cnav_msg_decoder_init(&d_cnav_decoder);
 
     d_sample_counter = 0;
+    flag_PLL_180_deg_phase_locked = false;
 }
 
 
@@ -175,6 +176,14 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
+            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part1.invert == true)
+                {
+                    flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    flag_PLL_180_deg_phase_locked = false;
+                }
             std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> raw_bits;
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (uint32_t i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS; i++)
@@ -225,6 +234,14 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     d_flag_valid_word = false;
                 }
         }
+
+
+    if (flag_PLL_180_deg_phase_locked == true)
+        {
+            // correct the accumulated phase for the Costas loop phase shift, if required
+            current_synchro_data.Carrier_phase_rads += GPS_L2_PI;
+        }
+
     current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
     current_synchro_data.Flag_valid_word = d_flag_valid_word;
 

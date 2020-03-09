@@ -75,6 +75,7 @@ private:
 
     cnav_msg_decoder_t d_cnav_decoder{};
 
+    bool flag_PLL_180_deg_phase_locked;
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_TOW_at_Preamble_ms;
     bool d_flag_valid_word;

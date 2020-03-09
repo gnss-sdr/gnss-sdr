@@ -83,6 +83,7 @@ private:
     uint64_t d_last_valid_preamble;
     uint32_t d_max_symbols_without_valid_frame;
 
+    bool flag_PLL_180_deg_phase_locked;
     double d_TOW_at_current_symbol;
     double d_TOW_at_Preamble;
     bool d_flag_valid_word;

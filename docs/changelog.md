@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Accuracy:
 
-- Improved accuracy of the CN0 estimator.
+- Improved accuracy of the C/N0 estimator.
 
 ### Improvements in Availability:
 
@@ -51,6 +51,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 ### Improvements in Interoperability:
 
 - Fixed PVT solution in receivers processing L1 plus L2C and/or L5 signals.
+- Fixed the initialization of the carrier phase accumulator. Carrier phase
+  measurements are now usable to compute integer ambiguity resolution.
 - Added carrier phase observable initialization to match the pseudorange length.
 - Added RINEX files generation for triple-band configurations (L1 + L2C + L5 and
   L1 + E1 + L2C + L5 + E5a).

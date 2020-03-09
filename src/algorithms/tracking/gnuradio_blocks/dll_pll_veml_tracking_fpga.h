@@ -103,6 +103,7 @@ private:
     bool acquire_secondary();
     void do_correlation_step();
     void run_dll_pll();
+    void check_carrier_phase_coherent_initialization();
     void update_tracking_vars();
     void clear_tracking_vars();
     void save_correlation_results();

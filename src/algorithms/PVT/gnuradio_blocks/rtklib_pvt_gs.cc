@@ -63,6 +63,8 @@
 #include <gnuradio/io_signature.h>      // for io_signature
 #include <pmt/pmt_sugar.h>              // for mp
 #include <algorithm>                    // for sort, unique
+#include <cerrno>                       // for errno
+#include <cstring>                      // for strerror
 #include <exception>                    // for exception
 #include <fstream>                      // for ofstream
 #include <iomanip>                      // for put_time, setprecision
@@ -412,8 +414,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     int msgflg = IPC_CREAT | 0666;
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg)) == -1)
         {
-            std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-            throw std::exception();
+            std::cout << "GNSS-SDR cannot create System V message queues." << std::endl;
+            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno) << std::endl;
         }
 
     // Display time in local time zone
@@ -487,7 +489,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
-    msgctl(sysv_msqid, IPC_RMID, nullptr);
+    if (sysv_msqid != -1)
+        {
+            msgctl(sysv_msqid, IPC_RMID, nullptr);
+        }
     try
         {
             if (d_xml_storage)
@@ -1678,17 +1683,21 @@ void rtklib_pvt_gs::clear_ephemeris()
 
 bool rtklib_pvt_gs::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 {
-    // Fill Sys V message structures
-    int msgsend_size;
-    ttff_msgbuf msg;
-    msg.ttff = ttff.ttff;
-    msgsend_size = sizeof(msg.ttff);
-    msg.mtype = 1;  // default message ID
+    if (sysv_msqid != -1)
+        {
+            // Fill Sys V message structures
+            int msgsend_size;
+            ttff_msgbuf msg;
+            msg.ttff = ttff.ttff;
+            msgsend_size = sizeof(msg.ttff);
+            msg.mtype = 1;  // default message ID
 
-    // SEND SOLUTION OVER A MESSAGE QUEUE
-    // non-blocking Sys V message send
-    msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
-    return true;
+            // SEND SOLUTION OVER A MESSAGE QUEUE
+            // non-blocking Sys V message send
+            msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
+            return true;
+        }
+    return false;
 }
 
 

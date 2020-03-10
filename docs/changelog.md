@@ -141,6 +141,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   and NEON (v7 and v8) instructions.
 - Fixed warnings raised by CMake 3.17.
 - Fixed warnings raised by cmake --warn-uninitialized ..
+- Fixed the receiver's availability in systems in which the Sys V message queue
+  mechanism is not available.
 
 ### Improvements in Reliability:
 

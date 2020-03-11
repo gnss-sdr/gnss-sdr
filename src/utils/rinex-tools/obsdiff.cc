@@ -53,6 +53,7 @@
 // Class defining GPS system constants
 #include <gpstk/GNSSconstants.hpp>
 #include <matio.h>
+#include <algorithm>
 #include <array>
 #include <fstream>
 #include <map>
@@ -393,7 +394,11 @@ void carrier_phase_double_diff(
                     g3.plot_xy(time_vector, range_error_m,
                         "Double diff Carrier Phase error");
                     g3.set_legend();
-                    g3.savetops(data_title + "double_diff_carrier_phase_error");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "double_diff_carrier_phase_error");
 
                     g3.showonscreen();  // window output
                 }
@@ -473,7 +478,11 @@ void carrier_phase_single_diff(
                     g3.plot_xy(time_vector, range_error_m,
                         "Single diff Carrier Phase error");
                     g3.set_legend();
-                    g3.savetops(data_title + "single_diff_carrier_phase_error");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "single_diff_carrier_phase_error");
 
                     g3.showonscreen();  // window output
                 }
@@ -576,7 +585,11 @@ void carrier_doppler_double_diff(
                     g3.plot_xy(time_vector, range_error_m,
                         "Double diff Carrier Doppler error");
                     g3.set_legend();
-                    g3.savetops(data_title + "double_diff_carrier_doppler_error");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "double_diff_carrier_doppler_error");
 
                     g3.showonscreen();  // window output
                 }
@@ -655,7 +668,11 @@ void carrier_doppler_single_diff(
                     g3.plot_xy(time_vector, range_error_m,
                         "Single diff Carrier Doppler error");
                     g3.set_legend();
-                    g3.savetops(data_title + "single_diff_carrier_doppler_error");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "single_diff_carrier_doppler_error");
 
                     g3.showonscreen();  // window output
                 }
@@ -757,9 +774,13 @@ void code_pseudorange_double_diff(
                     std::vector<double> range_error_m(err.colptr(0), err.colptr(0) + err.n_rows);
                     g3.cmd("set key box opaque");
                     g3.plot_xy(time_vector, range_error_m,
-                        "Double diff Pseudorrange error");
+                        "Double diff Pseudorange error");
                     g3.set_legend();
-                    g3.savetops(data_title + "double_diff_pseudorrange_error");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "double_diff_pseudorange_error");
 
                     g3.showonscreen();  // window output
                 }
@@ -838,9 +859,13 @@ void code_pseudorange_single_diff(
                     std::vector<double> range_error_m(err.colptr(0), err.colptr(0) + err.n_rows);
                     g3.cmd("set key box opaque");
                     g3.plot_xy(time_vector, range_error_m,
-                        "Single diff Pseudorrange error");
+                        "Single diff Pseudorange error");
                     g3.set_legend();
-                    g3.savetops(data_title + "Single_diff_pseudorrange_error");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "single_diff_pseudorange_error");
 
                     g3.showonscreen();  // window output
                 }
@@ -985,7 +1010,11 @@ void coderate_phaserate_consistence(
             g3.plot_xy(time_vector, range_error_m,
                 "Code rate - phase rate");
             g3.set_legend();
-            g3.savetops(data_title + "Code_rate_minus_phase_rate");
+            std::string data_title_aux = data_title;
+            std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+            std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+            std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+            g3.savetops(data_title_aux + "Code_rate_minus_phase_rate");
 
             g3.showonscreen();  // window output
         }
@@ -1065,7 +1094,11 @@ void code_phase_diff(
                     g3.plot_xy(time_vector, range_error_m,
                         "Code range - Carrier phase range");
                     g3.set_legend();
-                    g3.savetops(data_title + "Code_range_Carrier_phase_range");
+                    std::string data_title_aux = data_title;
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ' ', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), '(', '_');
+                    std::replace(data_title_aux.begin(), data_title_aux.end(), ')', '_');
+                    g3.savetops(data_title_aux + "Code_range_Carrier_phase_range");
 
                     g3.showonscreen();  // window output
                 }

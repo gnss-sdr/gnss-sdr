@@ -1,6 +1,7 @@
 [![](./docs/doxygen/images/gnss-sdr_logo.png)](https://gnss-sdr.org "GNSS-SDR website")
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![REUSE status](https://api.reuse.software/badge/github.com/gnss-sdr/gnss-sdr)](https://api.reuse.software/info/github.com/gnss-sdr/gnss-sdr)
 
 <!-- prettier-ignore-start -->
 [comment]: # (

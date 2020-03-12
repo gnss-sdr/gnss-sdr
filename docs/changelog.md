@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 )
 <!-- prettier-ignore-end -->
 
-## [GNSS-SDR (unreleased)](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.12](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.12)
 
 ### Improvements in Accuracy:
 
@@ -140,7 +140,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Improved CMake script for cross-compilation and for the detection of AVX, AVX2
   and NEON (v7 and v8) instructions.
 - Fixed warnings raised by CMake 3.17.
-- Fixed warnings raised by cmake --warn-uninitialized ..
+- Fixed warnings raised by `cmake --warn-uninitialized ..`
 - Fixed the receiver's availability in systems in which the Sys V message queue
   mechanism is not available.
 
@@ -163,7 +163,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 ### Improvements in Repeatability:
 
 - Added the option to apply carrier smoothing of code pseudoranges with new
-  Observables parameter enable_carrier_smoothing.
+  Observables parameter `Observables.enable_carrier_smoothing`.
 - Fixed normalization of DLL discriminator in BPSK modulations when the spacing
   between correlators was not 0.5.
 

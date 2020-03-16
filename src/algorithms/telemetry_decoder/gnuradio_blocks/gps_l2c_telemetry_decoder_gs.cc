@@ -176,7 +176,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
-            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part1.invert == true)
+            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part2.invert == true)
                 {
                     flag_PLL_180_deg_phase_locked = true;
                 }
@@ -234,7 +234,6 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     d_flag_valid_word = false;
                 }
         }
-
 
     if (flag_PLL_180_deg_phase_locked == true)
         {

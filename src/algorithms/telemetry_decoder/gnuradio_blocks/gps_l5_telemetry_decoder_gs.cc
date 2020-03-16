@@ -28,11 +28,11 @@
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
-#include <bitset>
-#include <cstdlib>    // for abs
-#include <exception>  // for exception
-#include <iostream>
-#include <memory>  // for shared_ptr, make_shared
+#include <bitset>           // for std::bitset
+#include <cstdlib>          // for std::llabs
+#include <exception>        // for std::exception
+#include <iostream>         // for std::cout
+#include <memory>           // for shared_ptr, make_shared
 
 
 gps_l5_telemetry_decoder_gs_sptr
@@ -168,7 +168,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
     // check if new CNAV frame is available
     if (cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay) == true)
         {
-            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part1.invert == true)
+            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part2.invert == true)
                 {
                     flag_PLL_180_deg_phase_locked = true;
                 }
@@ -218,10 +218,10 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             // check TOW update consistency
             uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
-            if (last_d_TOW_at_current_symbol_ms != 0 and abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > GPS_L5I_SYMBOL_PERIOD_MS)
+            if (last_d_TOW_at_current_symbol_ms != 0 and std::llabs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(GPS_L5I_SYMBOL_PERIOD_MS))
                 {
                     DLOG(INFO) << "Warning: GPS L5 TOW update in ch " << d_channel
-                               << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms) << " ms "
+                               << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms) << " ms "
                                << " with delay: " << delay << " msg tow: " << msg.tow * 6000 << " ms \n";
 
                     d_TOW_at_current_symbol_ms = 0;

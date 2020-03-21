@@ -1,6 +1,6 @@
 <!-- prettier-ignore-start -->
 [comment]: # (
-SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-License-Identifier: CC-BY-4.0
 )
 
 [comment]: # (

@@ -342,18 +342,18 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
             // override value with commandline flag, if present
             if (FLAGS_signal_source != "-")
                 {
-            		filename_rx1 = FLAGS_signal_source;
+                    filename_rx1 = FLAGS_signal_source;
                 }
             if (FLAGS_s != "-")
                 {
-            		filename_rx1 = FLAGS_s;
+                    filename_rx1 = FLAGS_s;
                 }
 
             if (filename_rx1.empty())
-				{
-					filename_rx1 = configuration->property(role + ".filename0", empty_string);
-					filename_rx2 = configuration->property(role + ".filename1", empty_string);
-				}
+                {
+                    filename_rx1 = configuration->property(role + ".filename0", empty_string);
+                    filename_rx2 = configuration->property(role + ".filename1", empty_string);
+                }
             int l1_band = configuration->property("Channels_1C.count", 0) +
                           configuration->property("Channels_1B.count", 0);
 

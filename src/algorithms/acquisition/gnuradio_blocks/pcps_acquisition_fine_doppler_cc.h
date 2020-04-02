@@ -55,7 +55,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <memory>
 #if GNURADIO_USES_STD_POINTERS
 #else
 #include <boost/shared_ptr.hpp>

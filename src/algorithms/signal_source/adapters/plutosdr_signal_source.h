@@ -22,7 +22,6 @@
 #define GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
 
 #include "gnss_block_interface.h"
-#include <memory>
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
 #include <gnuradio/iio/pluto_source.h>

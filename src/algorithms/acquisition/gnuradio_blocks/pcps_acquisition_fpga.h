@@ -32,7 +32,6 @@
 
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
-#include <memory>
 #include <glog/logging.h>
 #include <cstdint>  // for uint32_t
 #include <memory>   // for shared_ptr

@@ -26,8 +26,8 @@
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>      // for block
-#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <gnuradio/block.h>  // for block
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <array>
 #include <cstdint>
 #include <fstream>

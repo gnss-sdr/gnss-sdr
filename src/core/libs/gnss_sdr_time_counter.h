@@ -21,10 +21,10 @@
 #ifndef GNSS_SDR_GNSS_SDR_TIME_COUNTER_H
 #define GNSS_SDR_GNSS_SDR_TIME_COUNTER_H
 
-#include <memory>
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
+#include <memory>
 
 class gnss_sdr_time_counter;
 

@@ -26,7 +26,6 @@
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
-#include <memory>               // for std::shared_ptr
 #include <gnuradio/block.h>                   // for block
 #include <gnuradio/gr_complex.h>              // for gr_complex
 #include <gnuradio/types.h>                   // for gr_vector_int, gr_vector...
@@ -34,7 +33,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>                            // for int32_t
 #include <fstream>                            // for string, ofstream
-#include <memory>
+#include <memory>                             // for std::shared_ptr
 #include <string>
 #include <utility>  // for pair
 #if GNURADIO_USES_STD_POINTERS

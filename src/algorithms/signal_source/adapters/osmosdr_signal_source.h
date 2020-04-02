@@ -24,7 +24,6 @@
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
-#include <memory>
 #include <gnuradio/blocks/file_sink.h>
 #include <pmt/pmt.h>
 #include <cstdint>

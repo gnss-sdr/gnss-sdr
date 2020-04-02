@@ -25,7 +25,7 @@
 
 class unpack_spir_gss6450_samples;
 
-using unpack_spir_gss6450_samples_sptr = boost::shared_ptr<unpack_spir_gss6450_samples>;
+using unpack_spir_gss6450_samples_sptr = std::shared_ptr<unpack_spir_gss6450_samples>;
 
 unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit_);
 

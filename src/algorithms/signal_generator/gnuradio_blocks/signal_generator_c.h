@@ -30,16 +30,16 @@
 class signal_generator_c;
 
 /*
-* We use boost::shared_ptr's instead of raw pointers for all access
+* We use std::shared_ptr's instead of raw pointers for all access
 * to gr_blocks (and many other data structures). The shared_ptr gets
 * us transparent reference counting, which greatly simplifies storage
 * management issues.
 *
 * See https://www.boost.org/doc/libs/release/libs/smart_ptr/doc/html/smart_ptr.html
 *
-* As a convention, the _sptr suffix indicates a boost::shared_ptr
+* As a convention, the _sptr suffix indicates a std::shared_ptr
 */
-using signal_generator_c_sptr = boost::shared_ptr<signal_generator_c>;
+using signal_generator_c_sptr = std::shared_ptr<signal_generator_c>;
 
 /*!
 * \brief Return a shared_ptr to a new instance of gen_source.

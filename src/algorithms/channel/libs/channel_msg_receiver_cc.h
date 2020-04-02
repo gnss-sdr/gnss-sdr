@@ -27,7 +27,7 @@
 
 class channel_msg_receiver_cc;
 
-using channel_msg_receiver_cc_sptr = boost::shared_ptr<channel_msg_receiver_cc>;
+using channel_msg_receiver_cc_sptr = std::shared_ptr<channel_msg_receiver_cc>;
 
 channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
 

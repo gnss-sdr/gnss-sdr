@@ -81,7 +81,7 @@ namespace fs = boost::filesystem;
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx;
 
-using TrackingPullInTest_msg_rx_sptr = boost::shared_ptr<TrackingPullInTest_msg_rx>;
+using TrackingPullInTest_msg_rx_sptr = std::shared_ptr<TrackingPullInTest_msg_rx>;
 
 TrackingPullInTest_msg_rx_sptr TrackingPullInTest_msg_rx_make();
 
@@ -569,7 +569,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             // top_block_acq->connect(head_samples, 0, acquisition->get_left_block(), 0);
         }
 
-    boost::shared_ptr<Acquisition_msg_rx> msg_rx;
+    std::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
         {
             msg_rx = Acquisition_msg_rx_make();
@@ -803,7 +803,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             auto top_block_trk = gr::make_top_block("Tracking test");
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
-                            boost::shared_ptr<TrackingPullInTest_msg_rx> msg_rx = TrackingPullInTest_msg_rx_make();
+                            std::shared_ptr<TrackingPullInTest_msg_rx> msg_rx = TrackingPullInTest_msg_rx_make();
 
                             ASSERT_NO_THROW({
                                 tracking->set_channel(gnss_synchro.Channel_ID);

@@ -40,7 +40,7 @@
 
 class pcps_cccwsr_acquisition_cc;
 
-using pcps_cccwsr_acquisition_cc_sptr = boost::shared_ptr<pcps_cccwsr_acquisition_cc>;
+using pcps_cccwsr_acquisition_cc_sptr = std::shared_ptr<pcps_cccwsr_acquisition_cc>;
 
 pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     uint32_t sampled_ms,

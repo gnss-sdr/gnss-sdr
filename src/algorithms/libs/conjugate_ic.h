@@ -20,13 +20,13 @@
 #ifndef GNSS_SDR_CONJUGATE_IC_H
 #define GNSS_SDR_CONJUGATE_IC_H
 
-#include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <memory>
 
 class conjugate_ic;
 
-using conjugate_ic_sptr = boost::shared_ptr<conjugate_ic>;
+using conjugate_ic_sptr = std::shared_ptr<conjugate_ic>;
 
 conjugate_ic_sptr make_conjugate_ic();
 

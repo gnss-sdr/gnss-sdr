@@ -47,7 +47,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaPcpsAcquisitionTest_msg_rx;
 
-using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;
+using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;
 
 GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
@@ -164,7 +164,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
 TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
-    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
+    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
 }
 
 
@@ -178,13 +178,13 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
-    boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
+    std::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        std::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -212,7 +212,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     init();
     std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
     std::shared_ptr<FreqXlatingFirFilter> input_filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
-    boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);

@@ -29,7 +29,7 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -47,7 +47,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx;
 
-using GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx>;
+using GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = std::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx>;
 
 GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
@@ -428,7 +428,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1Pcps8msAmbiguousAcquisition>(acq_);
-    boost::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -452,8 +452,8 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        std::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -478,7 +478,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0, queue);
     acquisition = std::dynamic_pointer_cast<GalileoE1Pcps8msAmbiguousAcquisition>(acq_);
-    boost::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -507,7 +507,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
+        std::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
@@ -566,7 +566,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
     top_block = gr::make_top_block("Acquisition test");
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1Pcps8msAmbiguousAcquisition>(acq_);
-    boost::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -595,7 +595,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
+        std::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));

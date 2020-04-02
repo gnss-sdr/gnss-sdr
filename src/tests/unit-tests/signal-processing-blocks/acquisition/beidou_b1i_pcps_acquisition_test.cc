@@ -64,7 +64,7 @@ namespace fs = boost::filesystem;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class BeidouB1iPcpsAcquisitionTest_msg_rx;
 
-using BeidouB1iPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx>;
+using BeidouB1iPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx>;
 
 BeidouB1iPcpsAcquisitionTest_msg_rx_sptr BeidouB1iPcpsAcquisitionTest_msg_rx_make();
 
@@ -241,7 +241,7 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
 TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
 {
     init();
-    boost::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
+    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
 }
 
 
@@ -255,13 +255,13 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    boost::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
-    boost::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
+    std::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        std::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -300,7 +300,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
         }
 
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
-    boost::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);

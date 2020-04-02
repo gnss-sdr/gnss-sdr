@@ -119,7 +119,7 @@ private:
     std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
     std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
-    std::vector<boost::shared_ptr<gr::block>> valve_vec_;
+    std::vector<std::shared_ptr<gr::block>> valve_vec_;
     std::vector<gr::blocks::file_sink::sptr> sink_vec_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

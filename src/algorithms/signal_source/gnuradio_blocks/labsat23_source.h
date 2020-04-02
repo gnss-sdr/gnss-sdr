@@ -31,7 +31,7 @@
 
 class labsat23_source;
 
-using labsat23_source_sptr = boost::shared_ptr<labsat23_source>;
+using labsat23_source_sptr = std::shared_ptr<labsat23_source>;
 
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,

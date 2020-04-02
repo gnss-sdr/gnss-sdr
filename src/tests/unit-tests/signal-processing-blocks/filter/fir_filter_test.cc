@@ -189,9 +189,9 @@ TEST_F(FirFilterTest, ConnectAndRun)
     item_size = sizeof(gr_complex);
     ASSERT_NO_THROW({
         filter->connect(top_block);
-        boost::shared_ptr<gr::block> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        std::shared_ptr<gr::block> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        std::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, filter->get_left_block(), 0);
@@ -232,10 +232,10 @@ TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
+        std::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
-        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        std::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source->get_right_block(), 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
@@ -274,11 +274,11 @@ TEST_F(FirFilterTest, ConnectAndRunCshorts)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
+        std::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_short_to_complex_short_sptr ishort_to_cshort_ = make_interleaved_short_to_complex_short();
-        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        std::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source->get_right_block(), 0, ishort_to_cshort_, 0);
         top_block->connect(ishort_to_cshort_, 0, filter->get_left_block(), 0);
@@ -319,11 +319,11 @@ TEST_F(FirFilterTest, ConnectAndRunCbytes)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
+        std::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
-        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        auto null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source->get_right_block(), 0, ibyte_to_cbyte_, 0);
         top_block->connect(ibyte_to_cbyte_, 0, filter->get_left_block(), 0);
@@ -364,11 +364,11 @@ TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
+        std::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
-        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        std::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source->get_right_block(), 0, ibyte_to_cbyte_, 0);
         top_block->connect(ibyte_to_cbyte_, 0, filter->get_left_block(), 0);

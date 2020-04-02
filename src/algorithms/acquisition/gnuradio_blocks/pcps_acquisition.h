@@ -66,7 +66,7 @@
 class Gnss_Synchro;
 class pcps_acquisition;
 
-using pcps_acquisition_sptr = boost::shared_ptr<pcps_acquisition>;
+using pcps_acquisition_sptr = std::shared_ptr<pcps_acquisition>;
 
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 

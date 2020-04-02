@@ -40,7 +40,7 @@
 
 class rtl_tcp_signal_source_c;
 
-using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
+using rtl_tcp_signal_source_c_sptr = std::shared_ptr<rtl_tcp_signal_source_c>;
 
 #if BOOST_GREATER_1_65
 using b_io_context = boost::asio::io_context;

@@ -23,7 +23,7 @@
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
-#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <memory>  // for std::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
 #include <array>
@@ -34,7 +34,7 @@
 class beidou_b3i_telemetry_decoder_gs;
 
 using beidou_b3i_telemetry_decoder_gs_sptr =
-    boost::shared_ptr<beidou_b3i_telemetry_decoder_gs>;
+    std::shared_ptr<beidou_b3i_telemetry_decoder_gs>;
 
 beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

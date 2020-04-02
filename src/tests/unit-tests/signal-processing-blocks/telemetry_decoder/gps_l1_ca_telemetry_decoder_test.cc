@@ -55,7 +55,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
 
-using GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx>;
+using GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx>;
 
 GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
 
@@ -106,7 +106,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx;
 
-using GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx>;
+using GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx>;
 
 GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
 
@@ -348,7 +348,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
     // std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
-    boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx> msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
+    std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx> msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_NO_THROW({
@@ -369,7 +369,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     std::shared_ptr<TelemetryDecoderInterface> tlm(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C", 1, 1));
     tlm->set_channel(0);
 
-    boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> tlm_msg_rx = GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
+    std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> tlm_msg_rx = GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
 
     ASSERT_NO_THROW({
         tracking->set_channel(gnss_synchro.Channel_ID);

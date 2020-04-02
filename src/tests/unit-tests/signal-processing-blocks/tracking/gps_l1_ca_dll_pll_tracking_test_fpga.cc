@@ -151,7 +151,7 @@ void sending_thread(const gr::top_block_sptr &top_block, const char *file_name)
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTestFpga_msg_rx;
 
-using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;
+using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;
 
 GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 
@@ -471,7 +471,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     // std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga> (config.get(), "Tracking_1C", 1, 1);
     std::shared_ptr<GpsL1CaDllPllTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
 
-    boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
+    std::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_NO_THROW(

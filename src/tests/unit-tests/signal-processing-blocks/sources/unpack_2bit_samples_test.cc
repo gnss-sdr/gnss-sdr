@@ -87,7 +87,7 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianByte)
     gr::blocks::vector_source_b::sptr source =
         gr::blocks::vector_source_b::make(packed_data);
 
-    boost::shared_ptr<gr::block> unpacker =
+    std::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
             item_size,
             big_endian_items);
@@ -131,7 +131,7 @@ TEST(Unpack2bitSamplesTest, CheckLittleEndianByte)
     gr::blocks::vector_source_b::sptr source =
         gr::blocks::vector_source_b::make(packed_data);
 
-    boost::shared_ptr<gr::block> unpacker =
+    std::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
             item_size,
             big_endian_items);
@@ -195,7 +195,7 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianShortBigEndianByte)
     gr::blocks::vector_source_s::sptr source =
         gr::blocks::vector_source_s::make(packed_data_short);
 
-    boost::shared_ptr<gr::block> unpacker =
+    std::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
             item_size,
             big_endian_items);
@@ -259,7 +259,7 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianShortLittleEndianByte)
     gr::blocks::vector_source_s::sptr source =
         gr::blocks::vector_source_s::make(packed_data_short);
 
-    boost::shared_ptr<gr::block> unpacker =
+    std::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
             item_size,
             big_endian_items);

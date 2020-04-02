@@ -38,7 +38,7 @@
 
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
 
-using gps_l1_ca_tcp_connector_tracking_cc_sptr = boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc>;
+using gps_l1_ca_tcp_connector_tracking_cc_sptr = std::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc>;
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(

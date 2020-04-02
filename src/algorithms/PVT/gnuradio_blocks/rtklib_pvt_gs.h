@@ -24,7 +24,7 @@
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
+#include <memory>   // for std::shared_ptr
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <pmt/pmt.h>              // for pmt_t
@@ -55,7 +55,7 @@ class Rtcm_Printer;
 class Rtklib_Solver;
 class rtklib_pvt_gs;
 
-using rtklib_pvt_gs_sptr = boost::shared_ptr<rtklib_pvt_gs>;
+using rtklib_pvt_gs_sptr = std::shared_ptr<rtklib_pvt_gs>;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,

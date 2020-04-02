@@ -24,7 +24,7 @@
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <pmt/pmt.h>
@@ -86,9 +86,9 @@ private:
     size_t item_size_;
     bool dump_;
     std::string dump_filename_;
-    std::vector<boost::shared_ptr<gr::block>> null_sinks_;
+    std::vector<std::shared_ptr<gr::block>> null_sinks_;
     Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
-    std::vector<boost::shared_ptr<gr::block>> file_sink_;
+    std::vector<std::shared_ptr<gr::block>> file_sink_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 

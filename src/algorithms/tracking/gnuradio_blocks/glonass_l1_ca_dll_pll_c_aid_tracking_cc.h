@@ -44,7 +44,7 @@
 
 class glonass_l1_ca_dll_pll_c_aid_tracking_cc;
 
-using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
+using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = std::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(

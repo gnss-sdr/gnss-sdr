@@ -49,7 +49,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL2CaPcpsAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr;
+typedef std::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr;
 
 GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
 
@@ -435,12 +435,12 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
 
     config_1();
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
-    boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        std::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -466,7 +466,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
 
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
-    boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -496,7 +496,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
+        std::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
@@ -555,7 +555,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
-    boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -585,7 +585,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
+        std::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));

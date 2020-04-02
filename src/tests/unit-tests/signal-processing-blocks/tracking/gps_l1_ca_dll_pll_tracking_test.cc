@@ -65,7 +65,7 @@ namespace fs = boost::filesystem;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
 
-using GpsL1CADllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx>;
+using GpsL1CADllPllTrackingTest_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx>;
 
 GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make();
 
@@ -589,7 +589,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
                     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
-                    boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
+                    std::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
 
                     gnss_synchro.Acq_delay_samples = acq_delay_samples;
                     gnss_synchro.Acq_doppler_hz = acq_doppler_hz;

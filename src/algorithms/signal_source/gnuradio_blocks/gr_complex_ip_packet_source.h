@@ -35,7 +35,7 @@
 class Gr_Complex_Ip_Packet_Source : virtual public gr::sync_block
 {
 public:
-    typedef boost::shared_ptr<Gr_Complex_Ip_Packet_Source> sptr;
+    typedef std::shared_ptr<Gr_Complex_Ip_Packet_Source> sptr;
     static sptr make(std::string src_device,
         const std::string &origin_address,
         int udp_port,

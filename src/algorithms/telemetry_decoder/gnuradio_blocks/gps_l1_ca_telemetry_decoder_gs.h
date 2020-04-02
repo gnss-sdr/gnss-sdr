@@ -25,7 +25,7 @@
 #include "gnss_synchro.h"
 #include "gps_navigation_message.h"
 #include <boost/circular_buffer.hpp>
-#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <memory>  // for std::shared_ptr
 #include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
 #include <array>                 // for array
@@ -36,7 +36,7 @@
 
 class gps_l1_ca_telemetry_decoder_gs;
 
-using gps_l1_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
+using gps_l1_ca_telemetry_decoder_gs_sptr = std::shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
 
 gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

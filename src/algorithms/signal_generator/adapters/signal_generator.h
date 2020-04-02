@@ -79,7 +79,7 @@ private:
     size_t item_size_;
     bool dump_;
     std::string dump_filename_;
-    boost::shared_ptr<gr::block> gen_source_;
+    std::shared_ptr<gr::block> gen_source_;
     gr::blocks::vector_to_stream::sptr vector_to_stream_;
     gr::blocks::file_sink::sptr file_sink_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue_;

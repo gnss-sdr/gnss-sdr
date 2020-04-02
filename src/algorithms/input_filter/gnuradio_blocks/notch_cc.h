@@ -20,7 +20,7 @@
 #ifndef GNSS_SDR_NOTCH_H
 #define GNSS_SDR_NOTCH_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <cstdint>
@@ -28,7 +28,7 @@
 
 class Notch;
 
-using notch_sptr = boost::shared_ptr<Notch>;
+using notch_sptr = std::shared_ptr<Notch>;
 
 notch_sptr make_notch_filter(
     float pfa,

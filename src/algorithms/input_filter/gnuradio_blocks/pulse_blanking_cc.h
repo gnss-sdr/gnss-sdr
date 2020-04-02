@@ -20,13 +20,13 @@
 #ifndef GNSS_SDR_PULSE_BLANKING_H
 #define GNSS_SDR_PULSE_BLANKING_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/block.h>
 #include <cstdint>
 
 class pulse_blanking_cc;
 
-using pulse_blanking_cc_sptr = boost::shared_ptr<pulse_blanking_cc>;
+using pulse_blanking_cc_sptr = std::shared_ptr<pulse_blanking_cc>;
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(
     float pfa,

@@ -21,7 +21,7 @@
 #ifndef GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H
 #define GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/sync_decimator.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstddef>           // for size_t
@@ -30,7 +30,7 @@
 
 class gnss_sdr_sample_counter;
 
-using gnss_sdr_sample_counter_sptr = boost::shared_ptr<gnss_sdr_sample_counter>;
+using gnss_sdr_sample_counter_sptr = std::shared_ptr<gnss_sdr_sample_counter>;
 
 gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(
     double _fs,

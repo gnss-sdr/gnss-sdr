@@ -40,7 +40,7 @@
 
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 
-using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
+using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = std::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,

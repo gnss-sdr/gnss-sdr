@@ -29,7 +29,7 @@
 
 class channel_status_msg_receiver;
 
-using channel_status_msg_receiver_sptr = boost::shared_ptr<channel_status_msg_receiver>;
+using channel_status_msg_receiver_sptr = std::shared_ptr<channel_status_msg_receiver>;
 
 channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
 

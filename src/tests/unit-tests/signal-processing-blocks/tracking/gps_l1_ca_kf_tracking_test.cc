@@ -67,7 +67,7 @@ DEFINE_bool(plot_gps_l1_kf_tracking_test, false, "Plots results of GpsL1CAKfTrac
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CAKfTrackingTest_msg_rx;
 
-using GpsL1CAKfTrackingTest_msg_rx_sptr = boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx>;
+using GpsL1CAKfTrackingTest_msg_rx_sptr = std::shared_ptr<GpsL1CAKfTrackingTest_msg_rx>;
 
 GpsL1CAKfTrackingTest_msg_rx_sptr GpsL1CAKfTrackingTest_msg_rx_make();
 
@@ -390,7 +390,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);  // std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
-    boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx> msg_rx = GpsL1CAKfTrackingTest_msg_rx_make();
+    std::shared_ptr<GpsL1CAKfTrackingTest_msg_rx> msg_rx = GpsL1CAKfTrackingTest_msg_rx_make();
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_EQ(true_obs_data.read_binary_obs(), true)

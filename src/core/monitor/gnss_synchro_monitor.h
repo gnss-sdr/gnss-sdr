@@ -24,7 +24,7 @@
 #define GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 
 #include "gnss_synchro_udp_sink.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/runtime_types.h>  // for gr_vector_void_star
 #include <gnuradio/sync_block.h>
 #include <memory>
@@ -34,7 +34,7 @@
 
 class gnss_synchro_monitor;
 
-using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
+using gnss_synchro_monitor_sptr = std::shared_ptr<gnss_synchro_monitor>;
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     int decimation_factor,

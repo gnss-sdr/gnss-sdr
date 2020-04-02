@@ -22,7 +22,7 @@
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/uhd/usrp_source.h>
@@ -95,7 +95,7 @@ private:
     std::vector<bool> dump_;
     std::vector<std::string> dump_filename_;
 
-    std::vector<boost::shared_ptr<gr::block>> valve_;
+    std::vector<std::shared_ptr<gr::block>> valve_;
     std::vector<gr::blocks::file_sink::sptr> file_sink_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

@@ -162,7 +162,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_state(int state)
 }
 
 
-void GpsL1CaPcpsAcquisitionFineDoppler::connect(boost::shared_ptr<gr::top_block> top_block)
+void GpsL1CaPcpsAcquisitionFineDoppler::connect(std::shared_ptr<gr::top_block> top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -171,7 +171,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::connect(boost::shared_ptr<gr::top_block>
 }
 
 
-void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(boost::shared_ptr<gr::top_block> top_block)
+void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(std::shared_ptr<gr::top_block> top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -180,13 +180,13 @@ void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(boost::shared_ptr<gr::top_blo
 }
 
 
-boost::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_left_block()
+std::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_left_block()
 {
     return acquisition_cc_;
 }
 
 
-boost::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_right_block()
+std::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_right_block()
 {
     return acquisition_cc_;
 }

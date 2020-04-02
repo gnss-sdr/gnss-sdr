@@ -21,12 +21,12 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/block.h>
 #include <cstdint>
 
 class direct_resampler_conditioner_cs;
-using direct_resampler_conditioner_cs_sptr = boost::shared_ptr<direct_resampler_conditioner_cs>;
+using direct_resampler_conditioner_cs_sptr = std::shared_ptr<direct_resampler_conditioner_cs>;
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
     double sample_freq_in,

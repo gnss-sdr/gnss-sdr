@@ -30,7 +30,7 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -49,7 +49,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx;
 
-using GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx>;
+using GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = std::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx>;
 
 GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
@@ -435,8 +435,8 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        std::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
@@ -459,7 +459,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
-    boost::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -489,7 +489,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
+        std::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
@@ -548,7 +548,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
-    boost::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    std::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -577,7 +577,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
+        std::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));

@@ -64,10 +64,10 @@ public:
         return item_size_;
     }
 
-    void connect(boost::shared_ptr<gr::top_block> top_block) override;
-    void disconnect(boost::shared_ptr<gr::top_block> top_block) override;
-    boost::shared_ptr<gr::basic_block> get_left_block() override;
-    boost::shared_ptr<gr::basic_block> get_right_block() override;
+    void connect(std::shared_ptr<gr::top_block> top_block) override;
+    void disconnect(std::shared_ptr<gr::top_block> top_block) override;
+    std::shared_ptr<gr::basic_block> get_left_block() override;
+    std::shared_ptr<gr::basic_block> get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer

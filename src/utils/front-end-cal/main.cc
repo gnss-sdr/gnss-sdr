@@ -96,7 +96,7 @@ std::vector<Gnss_Synchro> gnss_sync_vector;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
 
-using FrontEndCal_msg_rx_sptr = boost::shared_ptr<FrontEndCal_msg_rx>;
+using FrontEndCal_msg_rx_sptr = std::shared_ptr<FrontEndCal_msg_rx>;
 
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 
@@ -362,7 +362,7 @@ int main(int argc, char** argv)
 
     gr::block_sptr source;
     source = gr::blocks::file_source::make(sizeof(gr_complex), "tmp_capture.dat");
-    boost::shared_ptr<FrontEndCal_msg_rx> msg_rx;
+    std::shared_ptr<FrontEndCal_msg_rx> msg_rx;
     try
         {
             msg_rx = FrontEndCal_msg_rx_make();

@@ -110,7 +110,7 @@ private:
     uint32_t in_streams_;
     uint32_t out_streams_;
     std::vector<gr::blocks::file_source::sptr> file_source_vec_;
-    boost::shared_ptr<gr::block> valve_;
+    std::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

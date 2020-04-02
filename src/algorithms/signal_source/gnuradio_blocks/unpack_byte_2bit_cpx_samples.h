@@ -28,7 +28,7 @@
 
 class unpack_byte_2bit_cpx_samples;
 
-using unpack_byte_2bit_cpx_samples_sptr = boost::shared_ptr<unpack_byte_2bit_cpx_samples>;
+using unpack_byte_2bit_cpx_samples_sptr = std::shared_ptr<unpack_byte_2bit_cpx_samples>;
 
 unpack_byte_2bit_cpx_samples_sptr make_unpack_byte_2bit_cpx_samples();
 

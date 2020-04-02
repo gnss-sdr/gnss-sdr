@@ -24,7 +24,7 @@
 #define GNSS_SDR_GNSS_SDR_VALVE_H
 
 #include "concurrent_queue.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <pmt/pmt.h>
@@ -34,12 +34,12 @@
 
 class Gnss_Sdr_Valve;
 
-boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+std::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     size_t sizeof_stream_item,
     uint64_t nitems,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+std::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
     size_t sizeof_stream_item,
     uint64_t nitems,
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue,
@@ -59,12 +59,12 @@ public:
         gr_vector_void_star &output_items);
 
 private:
-    friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+    friend std::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
         size_t sizeof_stream_item,
         uint64_t nitems,
         std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
-    friend boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
+    friend std::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(
         size_t sizeof_stream_item,
         uint64_t nitems,
         std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue,

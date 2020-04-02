@@ -108,7 +108,7 @@ private:
     unsigned int out_streams_;
     gr::blocks::file_source::sptr file_source_;
     unpack_intspir_1bit_samples_sptr unpack_intspir_;
-    boost::shared_ptr<gr::block> valve_;
+    std::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

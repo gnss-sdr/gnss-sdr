@@ -63,7 +63,7 @@
 
 class unpack_2bit_samples;
 
-using unpack_2bit_samples_sptr = boost::shared_ptr<unpack_2bit_samples>;
+using unpack_2bit_samples_sptr = std::shared_ptr<unpack_2bit_samples>;
 
 unpack_2bit_samples_sptr make_unpack_2bit_samples(
     bool big_endian_bytes,

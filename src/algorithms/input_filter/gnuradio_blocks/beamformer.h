@@ -25,7 +25,7 @@
 
 class beamformer;
 
-using beamformer_sptr = boost::shared_ptr<beamformer>;
+using beamformer_sptr = std::shared_ptr<beamformer>;
 
 beamformer_sptr make_beamformer_sptr();
 

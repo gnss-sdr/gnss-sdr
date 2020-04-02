@@ -29,7 +29,7 @@
 // ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########
 class Acquisition_msg_rx;
 
-using Acquisition_msg_rx_sptr = boost::shared_ptr<Acquisition_msg_rx>;
+using Acquisition_msg_rx_sptr = std::shared_ptr<Acquisition_msg_rx>;
 
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
 

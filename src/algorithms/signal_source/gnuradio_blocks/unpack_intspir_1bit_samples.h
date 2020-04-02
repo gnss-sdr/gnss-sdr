@@ -24,7 +24,7 @@
 
 class unpack_intspir_1bit_samples;
 
-using unpack_intspir_1bit_samples_sptr = boost::shared_ptr<unpack_intspir_1bit_samples>;
+using unpack_intspir_1bit_samples_sptr = std::shared_ptr<unpack_intspir_1bit_samples>;
 
 unpack_intspir_1bit_samples_sptr make_unpack_intspir_1bit_samples();
 

@@ -50,7 +50,7 @@
 
 class pcps_assisted_acquisition_cc;
 
-using pcps_assisted_acquisition_cc_sptr = boost::shared_ptr<pcps_assisted_acquisition_cc>;
+using pcps_assisted_acquisition_cc_sptr = std::shared_ptr<pcps_assisted_acquisition_cc>;
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t max_dwells,

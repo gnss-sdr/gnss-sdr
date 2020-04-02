@@ -22,7 +22,7 @@
 
 #include "gnss_satellite.h"
 #include <boost/crc.hpp>         // for crc_optimal
-#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <memory>  // for std::shared_ptr
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstddef>           // for size_t
@@ -38,7 +38,7 @@ class Viterbi_Decoder;
 
 class sbas_l1_telemetry_decoder_gs;
 
-using sbas_l1_telemetry_decoder_gs_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_gs>;
+using sbas_l1_telemetry_decoder_gs_sptr = std::shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
 sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

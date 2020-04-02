@@ -465,7 +465,11 @@ int main(int argc, char** argv)
                     LOG(INFO) << "Exception caught while joining threads.";
                 }
             gnss_sync_vector.clear();
+#if GNURADIO_USES_STD_POINTERS
+            std::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
+#else
             boost::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
+#endif
             std::cout.flush();
         }
     std::cout << "]" << std::endl;

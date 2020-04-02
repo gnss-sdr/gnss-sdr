@@ -33,6 +33,10 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 class ConfigurationInterface;
@@ -102,7 +106,11 @@ private:
 
     gr::iio::pluto_source::sptr plutosdr_source_;
 
+#if GNURADIO_USES_STD_POINTERS
     std::shared_ptr<gr::block> valve_;
+#else
+    boost::shared_ptr<gr::block> valve_;
+#endif
     gr::blocks::file_sink::sptr file_sink_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };

@@ -65,6 +65,12 @@ target_link_libraries(front-end-cal
         Glog::glog
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(front-end-cal
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 target_compile_definitions(front-end-cal
     PUBLIC -DGNSS_SDR_VERSION="${VERSION}"
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"

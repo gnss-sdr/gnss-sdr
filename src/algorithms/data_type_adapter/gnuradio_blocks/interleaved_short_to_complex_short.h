@@ -20,12 +20,20 @@
 #ifndef GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H
 #define GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H
 
-#include <memory>
 #include <gnuradio/sync_decimator.h>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class interleaved_short_to_complex_short;
 
+#if GNURADIO_USES_STD_POINTERS
 using interleaved_short_to_complex_short_sptr = std::shared_ptr<interleaved_short_to_complex_short>;
+#else
+using interleaved_short_to_complex_short_sptr = boost::shared_ptr<interleaved_short_to_complex_short>;
+#endif
 
 interleaved_short_to_complex_short_sptr make_interleaved_short_to_complex_short();
 

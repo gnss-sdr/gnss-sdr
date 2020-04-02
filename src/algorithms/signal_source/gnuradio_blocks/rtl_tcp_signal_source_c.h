@@ -37,10 +37,19 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class rtl_tcp_signal_source_c;
 
+#if GNURADIO_USES_STD_POINTERS
 using rtl_tcp_signal_source_c_sptr = std::shared_ptr<rtl_tcp_signal_source_c>;
+#else
+using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
+#endif
 
 #if BOOST_GREATER_1_65
 using b_io_context = boost::asio::io_context;

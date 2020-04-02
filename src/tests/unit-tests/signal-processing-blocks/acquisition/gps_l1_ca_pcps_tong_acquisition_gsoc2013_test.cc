@@ -31,13 +31,13 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include <memory>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
+#include <memory>
 #include <thread>
 #include <utility>
 #ifdef GR_GREATER_38
@@ -49,7 +49,11 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx;
 
+#if GNURADIO_USES_STD_POINTERS
 using GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr = std::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx>;
+#else
+using GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx>;
+#endif
 
 GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
@@ -424,12 +428,12 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
 
     config_1();
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
-    std::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    auto msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        std::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -453,7 +457,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
-    std::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    auto msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -541,7 +545,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
-    std::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
+    auto msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);

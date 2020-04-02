@@ -20,14 +20,22 @@
 #ifndef GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H
 #define GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H
 
+#if GNURADIO_USES_STD_POINTERS
 #include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 
 class complex_float_to_complex_byte;
 
+#if GNURADIO_USES_STD_POINTERS
 using complex_float_to_complex_byte_sptr = std::shared_ptr<complex_float_to_complex_byte>;
+#else
+using complex_float_to_complex_byte_sptr = boost::shared_ptr<complex_float_to_complex_byte>;
+#endif
 
 complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
 

@@ -25,6 +25,11 @@
 #include <random>
 #include <string>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 class signal_generator_c;
@@ -39,7 +44,11 @@ class signal_generator_c;
 *
 * As a convention, the _sptr suffix indicates a std::shared_ptr
 */
+#if GNURADIO_USES_STD_POINTERS
 using signal_generator_c_sptr = std::shared_ptr<signal_generator_c>;
+#else
+using signal_generator_c_sptr = boost::shared_ptr<signal_generator_c>;
+#endif
 
 /*!
 * \brief Return a shared_ptr to a new instance of gen_source.

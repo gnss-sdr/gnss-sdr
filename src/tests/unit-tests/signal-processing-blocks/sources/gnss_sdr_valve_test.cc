@@ -39,7 +39,7 @@ TEST(ValveTest, CheckEventSentAfter100Samples)
     gr::top_block_sptr top_block = gr::make_top_block("gnss_sdr_valve_test");
 
     gr::analog::sig_source_f::sptr source = gr::analog::sig_source_f::make(100, gr::analog::GR_CONST_WAVE, 100, 1, 0);
-    std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(float), 100, queue);
+    auto valve = gnss_sdr_make_valve(sizeof(float), 100, queue);
     gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(float));
 
     bool expected0 = false;

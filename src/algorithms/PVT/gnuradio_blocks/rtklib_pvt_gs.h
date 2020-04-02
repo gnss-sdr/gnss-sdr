@@ -37,6 +37,10 @@
 #include <sys/types.h>            // for key_t
 #include <utility>                // for pair
 #include <vector>                 // for vector
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
@@ -55,7 +59,11 @@ class Rtcm_Printer;
 class Rtklib_Solver;
 class rtklib_pvt_gs;
 
+#if GNURADIO_USES_STD_POINTERS
 using rtklib_pvt_gs_sptr = std::shared_ptr<rtklib_pvt_gs>;
+#else
+using rtklib_pvt_gs_sptr = boost::shared_ptr<rtklib_pvt_gs>;
+#endif
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,

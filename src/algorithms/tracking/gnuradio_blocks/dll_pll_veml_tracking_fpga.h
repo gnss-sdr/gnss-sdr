@@ -37,12 +37,20 @@
 #include <memory>
 #include <string>
 #include <utility>  // for pair
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Fpga_Multicorrelator_8sc;
 class Gnss_Synchro;
 class dll_pll_veml_tracking_fpga;
 
+#if GNURADIO_USES_STD_POINTERS
 using dll_pll_veml_tracking_fpga_sptr = std::shared_ptr<dll_pll_veml_tracking_fpga>;
+#else
+using dll_pll_veml_tracking_fpga_sptr = boost::shared_ptr<dll_pll_veml_tracking_fpga>;
+#endif
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 

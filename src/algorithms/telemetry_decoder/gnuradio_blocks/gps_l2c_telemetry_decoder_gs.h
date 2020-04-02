@@ -26,8 +26,12 @@
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
-#include <memory>  // for std::shared_ptr
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>  // for std::shared_ptr
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 extern "C"
 {
@@ -37,7 +41,11 @@ extern "C"
 
 class gps_l2c_telemetry_decoder_gs;
 
+#if GNURADIO_USES_STD_POINTERS
 using gps_l2c_telemetry_decoder_gs_sptr = std::shared_ptr<gps_l2c_telemetry_decoder_gs>;
+#else
+using gps_l2c_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_gs>;
+#endif
 
 gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

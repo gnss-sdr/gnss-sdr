@@ -24,12 +24,16 @@
 #include "gnss_satellite.h"               // for Gnss_Satellite
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
 #include <boost/circular_buffer.hpp>
-#include <memory>  // for std::shared_ptr
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>  // for std::shared_ptr
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 extern "C"
 {
@@ -39,7 +43,11 @@ extern "C"
 
 class gps_l5_telemetry_decoder_gs;
 
+#if GNURADIO_USES_STD_POINTERS
 using gps_l5_telemetry_decoder_gs_sptr = std::shared_ptr<gps_l5_telemetry_decoder_gs>;
+#else
+using gps_l5_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l5_telemetry_decoder_gs>;
+#endif
 
 gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

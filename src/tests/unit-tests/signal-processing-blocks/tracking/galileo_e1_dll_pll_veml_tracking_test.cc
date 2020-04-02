@@ -122,7 +122,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     ASSERT_NO_THROW({
         tracking->connect(top_block);
         gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);
@@ -183,7 +183,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
         const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
-        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), num_samples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), num_samples, queue);
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         top_block->connect(file_source, 0, skip_head, 0);
         top_block->connect(skip_head, 0, valve, 0);

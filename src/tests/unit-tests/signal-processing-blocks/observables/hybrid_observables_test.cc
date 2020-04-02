@@ -77,12 +77,21 @@
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class HybridObservablesTest_msg_rx;
 
+#if GNURADIO_USES_STD_POINTERS
 using HybridObservablesTest_msg_rx_sptr = std::shared_ptr<HybridObservablesTest_msg_rx>;
+#else
+using HybridObservablesTest_msg_rx_sptr = boost::shared_ptr<HybridObservablesTest_msg_rx>;
+#endif
 
 HybridObservablesTest_msg_rx_sptr HybridObservablesTest_msg_rx_make();
 
@@ -541,7 +550,11 @@ bool HybridObservablesTest::acquire_signal()
             // top_block_acq->connect(head_samples, 0, acquisition->get_left_block(), 0);
         }
 
+#if GNURADIO_USES_STD_POINTERS
     std::shared_ptr<Acquisition_msg_rx> msg_rx;
+#else
+    boost::shared_ptr<Acquisition_msg_rx> msg_rx;
+#endif
     try
         {
             msg_rx = Acquisition_msg_rx_make();
@@ -1797,8 +1810,8 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
 
     auto top_block_tlm = gr::make_top_block("Telemetry_Decoder test");
-    std::shared_ptr<HybridObservablesTest_msg_rx> dummy_msg_rx_trk = HybridObservablesTest_msg_rx_make();
-    std::shared_ptr<HybridObservablesTest_tlm_msg_rx> dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_make();
+    auto dummy_msg_rx_trk = HybridObservablesTest_msg_rx_make();
+    auto dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_make();
     // Observables
     std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
 

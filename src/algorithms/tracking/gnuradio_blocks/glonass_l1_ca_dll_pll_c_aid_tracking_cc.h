@@ -40,11 +40,20 @@
 #include <fstream>
 #include <map>
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 class glonass_l1_ca_dll_pll_c_aid_tracking_cc;
 
+#if GNURADIO_USES_STD_POINTERS
 using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = std::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
+#else
+using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
+#endif
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(

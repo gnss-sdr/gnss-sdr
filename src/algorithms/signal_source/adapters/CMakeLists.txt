@@ -152,6 +152,12 @@ target_link_libraries(signal_source_adapters
         Volk::volk
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(signal_source_adapters
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE

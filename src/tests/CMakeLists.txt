@@ -497,6 +497,11 @@ if(ENABLE_UNIT_TESTING)
             core_receiver
             core_system_parameters
     )
+    if(GNURADIO_USES_STD_POINTERS)
+        target_compile_definitions(run_tests
+            PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+        )
+    endif()
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PUBLIC Gpstk::gpstk)
     endif()
@@ -610,6 +615,11 @@ function(add_system_test executable)
 
     target_include_directories(${executable} PUBLIC ${OPT_INCLUDES_} ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
     target_link_libraries(${executable} PUBLIC ${OPT_LIBS_} algorithms_libs)
+    if(GNURADIO_USES_STD_POINTERS)
+        target_compile_definitions(${executable}
+            PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+        )
+    endif()
 
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})

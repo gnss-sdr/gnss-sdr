@@ -29,16 +29,24 @@
 #include <cstdint>
 #include <deque>
 #include <fstream>
-#include <memory>
 #include <string>
 #include <utility>  // for pair
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>  // for std::shared_ptr
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Viterbi_Decoder;
 
 class sbas_l1_telemetry_decoder_gs;
 
+#if GNURADIO_USES_STD_POINTERS
 using sbas_l1_telemetry_decoder_gs_sptr = std::shared_ptr<sbas_l1_telemetry_decoder_gs>;
+#else
+using sbas_l1_telemetry_decoder_gs_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_gs>;
+#endif
 
 sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

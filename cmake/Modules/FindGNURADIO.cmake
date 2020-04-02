@@ -270,6 +270,18 @@ endif()
 
 find_package_handle_standard_args(GNURADIO DEFAULT_MSG GNURADIO_RUNTIME_FOUND)
 
+# Detect if using standard pointers
+set(GNURADIO_USES_STD_POINTERS FALSE)
+if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
+    file(STRINGS ${GNURADIO_RUNTIME_INCLUDE_DIRS}/gnuradio/basic_block.h _basic_block)
+    foreach(_loop_var IN LISTS _basic_block)
+        string(STRIP "${_loop_var}" _file_line)
+        if("public std::enable_shared_from_this<basic_block>" STREQUAL "${_file_line}")
+            set(GNURADIO_USES_STD_POINTERS TRUE)
+        endif()
+    endforeach()
+endif()
+
 # Search for IIO component
 if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
     pkg_check_modules(PC_GNURADIO_IIO QUIET gnuradio-iio)

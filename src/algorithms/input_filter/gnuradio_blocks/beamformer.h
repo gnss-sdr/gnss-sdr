@@ -22,10 +22,19 @@
 
 #include <gnuradio/sync_block.h>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class beamformer;
 
+#if GNURADIO_USES_STD_POINTERS
 using beamformer_sptr = std::shared_ptr<beamformer>;
+#else
+using beamformer_sptr = boost::shared_ptr<beamformer>;
+#endif
 
 beamformer_sptr make_beamformer_sptr();
 

@@ -104,9 +104,9 @@ TEST_F(NotchFilterLiteTest, ConnectAndRun)
     item_size = sizeof(gr_complex);
     ASSERT_NO_THROW({
         filter->connect(top_block);
-        std::shared_ptr<gr::block> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
-        std::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-        std::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, filter->get_left_block(), 0);
@@ -149,7 +149,7 @@ TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
         std::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
-        std::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+        auto null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source->get_right_block(), 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);

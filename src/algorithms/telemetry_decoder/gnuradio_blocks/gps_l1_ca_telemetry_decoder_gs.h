@@ -25,18 +25,25 @@
 #include "gnss_synchro.h"
 #include "gps_navigation_message.h"
 #include <boost/circular_buffer.hpp>
+#include <gnuradio/block.h>  // for block
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <array>             // for array
+#include <cstdint>           // for int32_t
+#include <fstream>           // for ofstream
+#include <string>            // for string
+#if GNURADIO_USES_STD_POINTERS
 #include <memory>  // for std::shared_ptr
-#include <gnuradio/block.h>      // for block
-#include <gnuradio/types.h>      // for gr_vector_const_void_star
-#include <array>                 // for array
-#include <cstdint>               // for int32_t
-#include <fstream>               // for ofstream
-#include <string>                // for string
-
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class gps_l1_ca_telemetry_decoder_gs;
 
+#if GNURADIO_USES_STD_POINTERS
 using gps_l1_ca_telemetry_decoder_gs_sptr = std::shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
+#else
+using gps_l1_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l1_ca_telemetry_decoder_gs>;
+#endif
 
 gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

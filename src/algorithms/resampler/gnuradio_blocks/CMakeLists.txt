@@ -38,6 +38,12 @@ target_link_libraries(resampler_gr_blocks
         Volk::volk
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(resampler_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(resampler_gr_blocks

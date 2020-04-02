@@ -37,6 +37,10 @@
 #include <memory>
 #include <string>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 class ConfigurationInterface;
@@ -119,7 +123,11 @@ private:
     std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
     std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
+#if GNURADIO_USES_STD_POINTERS
     std::vector<std::shared_ptr<gr::block>> valve_vec_;
+#else
+    std::vector<boost::shared_ptr<gr::block>> valve_vec_;
+#endif
     std::vector<gr::blocks::file_sink::sptr> sink_vec_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

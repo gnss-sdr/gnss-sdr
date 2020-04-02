@@ -21,10 +21,19 @@
 #define GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class unpack_byte_2bit_samples;
 
+#if GNURADIO_USES_STD_POINTERS
 using unpack_byte_2bit_samples_sptr = std::shared_ptr<unpack_byte_2bit_samples>;
+#else
+using unpack_byte_2bit_samples_sptr = boost::shared_ptr<unpack_byte_2bit_samples>;
+#endif
 
 unpack_byte_2bit_samples_sptr make_unpack_byte_2bit_samples();
 

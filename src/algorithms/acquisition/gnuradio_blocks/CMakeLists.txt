@@ -81,6 +81,12 @@ target_include_directories(acquisition_gr_blocks
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(acquisition_gr_blocks
         PUBLIC -DARMA_NO_BOUND_CHECKING=1

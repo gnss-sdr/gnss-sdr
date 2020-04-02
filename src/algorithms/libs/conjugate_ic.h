@@ -22,11 +22,19 @@
 
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
+#if GNURADIO_USES_STD_POINTERS
 #include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class conjugate_ic;
 
+#if GNURADIO_USES_STD_POINTERS
 using conjugate_ic_sptr = std::shared_ptr<conjugate_ic>;
+#else
+using conjugate_ic_sptr = boost::shared_ptr<conjugate_ic>;
+#endif
 
 conjugate_ic_sptr make_conjugate_ic();
 

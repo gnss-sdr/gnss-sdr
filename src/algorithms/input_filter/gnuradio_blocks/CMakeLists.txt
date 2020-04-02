@@ -40,6 +40,12 @@ target_link_libraries(input_filter_gr_blocks
         Log4cpp::log4cpp
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(input_filter_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(input_filter_gr_blocks

@@ -27,7 +27,6 @@
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
-#include <memory>               // for std::shared_ptr
 #include <gnuradio/block.h>                   // for block
 #include <gnuradio/gr_complex.h>              // for gr_complex
 #include <gnuradio/types.h>                   // for gr_vector_int, gr_vector...
@@ -37,11 +36,21 @@
 #include <fstream>                            // for string, ofstream
 #include <string>
 #include <utility>  // for pair
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Gnss_Synchro;
 class dll_pll_veml_tracking;
 
+#if GNURADIO_USES_STD_POINTERS
 using dll_pll_veml_tracking_sptr = std::shared_ptr<dll_pll_veml_tracking>;
+#else
+using dll_pll_veml_tracking_sptr = boost::shared_ptr<dll_pll_veml_tracking>;
+#endif
+
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 

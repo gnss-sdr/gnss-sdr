@@ -43,6 +43,12 @@ target_link_libraries(pvt_gr_blocks
         Boost::serialization
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(pvt_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(pvt_gr_blocks

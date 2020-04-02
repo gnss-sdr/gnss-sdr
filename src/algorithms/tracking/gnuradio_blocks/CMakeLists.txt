@@ -92,6 +92,12 @@ target_link_libraries(tracking_gr_blocks
         Glog::glog
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(tracking_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
     target_link_libraries(tracking_gr_blocks
         PUBLIC

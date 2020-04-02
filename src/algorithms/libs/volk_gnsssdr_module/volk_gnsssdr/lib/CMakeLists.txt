@@ -152,18 +152,8 @@ if(CPU_IS_x86)
     )
     if(NOT ${avx_compile_result} EQUAL 0)
         overrule_arch(avx "Compiler or linker missing xgetbv instruction")
-    elseif(NOT CROSSCOMPILE_MULTILIB)
-        execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
-            OUTPUT_QUIET ERROR_QUIET
-            RESULT_VARIABLE avx_exe_result
-        )
-        if(NOT ${avx_exe_result} EQUAL 0)
-            overrule_arch(avx "CPU missing xgetbv")
-        else()
-            set(HAVE_XGETBV 1)
-        endif()
     else()
-        # cross compiling and compiler/linker seems to work; assume working
+        # compiler/linker seems to work; assume working
         set(HAVE_XGETBV 1)
     endif()
     file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
@@ -185,16 +175,6 @@ if(CPU_IS_x86)
         )
         if(NOT ${avx_compile_result} EQUAL 0)
             overrule_arch(avx "Compiler missing cvtpi32_ps intrinsic")
-        elseif(NOT CROSSCOMPILE_MULTILIB)
-            execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_cvtpi32_ps
-                OUTPUT_QUIET ERROR_QUIET
-                RESULT_VARIABLE avx_exe_result
-            )
-            if(NOT ${avx_exe_result} EQUAL 0)
-                overrule_arch(avx "CPU missing cvtpi32_ps")
-            else()
-                set(HAVE_AVX_CVTPI32_PS 1)
-            endif()
         else()
             set(HAVE_AVX_CVTPI32_PS 1)
         endif()

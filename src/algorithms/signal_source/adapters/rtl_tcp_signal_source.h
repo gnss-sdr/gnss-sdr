@@ -24,7 +24,6 @@
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "rtl_tcp_signal_source_c.h"
-#include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
@@ -32,6 +31,10 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 class ConfigurationInterface;
@@ -102,7 +105,11 @@ private:
 
     rtl_tcp_signal_source_c_sptr signal_source_;
 
+#if GNURADIO_USES_STD_POINTERS
+    std::shared_ptr<gr::block> valve_;
+#else
     boost::shared_ptr<gr::block> valve_;
+#endif
     gr::blocks::file_sink::sptr file_sink_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };

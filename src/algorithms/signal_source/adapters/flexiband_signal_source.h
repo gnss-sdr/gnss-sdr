@@ -96,8 +96,8 @@ private:
 
     gr::block_sptr flexiband_source_;
 
-    std::vector<boost::shared_ptr<gr::block>> char_to_float;
-    std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
+    std::vector<std::shared_ptr<gr::block>> char_to_float;
+    std::vector<std::shared_ptr<gr::block>> float_to_complex_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

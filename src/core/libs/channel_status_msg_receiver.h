@@ -26,10 +26,18 @@
 #include <pmt/pmt.h>
 #include <map>
 #include <memory>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class channel_status_msg_receiver;
 
+#if GNURADIO_USES_STD_POINTERS
+using channel_status_msg_receiver_sptr = std::shared_ptr<channel_status_msg_receiver>;
+#else
 using channel_status_msg_receiver_sptr = boost::shared_ptr<channel_status_msg_receiver>;
+#endif
 
 channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
 

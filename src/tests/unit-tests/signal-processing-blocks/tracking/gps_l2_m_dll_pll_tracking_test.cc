@@ -41,12 +41,20 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL2MDllPllTrackingTest_msg_rx;
 
+#if GNURADIO_USES_STD_POINTERS
+using GpsL2MDllPllTrackingTest_msg_rx_sptr = std::shared_ptr<GpsL2MDllPllTrackingTest_msg_rx>;
+#else
 using GpsL2MDllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GpsL2MDllPllTrackingTest_msg_rx>;
+#endif
 
 GpsL2MDllPllTrackingTest_msg_rx_sptr GpsL2MDllPllTrackingTest_msg_rx_make();
 
@@ -152,7 +160,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Tracking test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_2S", 1, 1);
-    boost::shared_ptr<GpsL2MDllPllTrackingTest_msg_rx> msg_rx = GpsL2MDllPllTrackingTest_msg_rx_make();
+    auto msg_rx = GpsL2MDllPllTrackingTest_msg_rx_make();
 
     gnss_synchro.Acq_delay_samples = 1;
     gnss_synchro.Acq_doppler_hz = 1200;
@@ -176,7 +184,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
         std::string file = path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
         const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         top_block->connect(file_source, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);

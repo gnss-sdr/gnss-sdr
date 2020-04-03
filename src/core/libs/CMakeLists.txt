@@ -65,6 +65,11 @@ target_link_libraries(core_libs
         Pugixml::pugixml
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(core_libs
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

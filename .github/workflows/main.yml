@@ -70,7 +70,7 @@ jobs:
     - name: install dependencies
       run: sudo apt-get install python3-pip && sudo pip3 install cpplint
     - name: run checks
-      run: find ./src/ -iname *.h -o -iname *.cc | xargs cpplint --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,+build/include_what_you_use,+build/printf_format,+build/storage_class,+readability/constructors,+readability/namespace,+readability/newline,+readability/utf8,+runtime/casting,+runtime/explicit,+runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,+runtime/member_string_references,+runtime/memset,+runtime/operator,+runtime/printf,+runtime/printf_format,+whitespace/blank_line,+whitespace/comma,+whitespace/comments,+whitespace/empty_conditional_body,+whitespace/end-of-line,+whitespace/ending-newline,+whitespace/semicolon,+whitespace/tab
+      run: find ./src/ -iname *.h -o -iname *.cc | xargs cpplint --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,+build/printf_format,+build/storage_class,+readability/constructors,+readability/namespace,+readability/newline,+readability/utf8,+runtime/casting,+runtime/explicit,+runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,+runtime/member_string_references,+runtime/memset,+runtime/operator,+runtime/printf,+runtime/printf_format,+whitespace/blank_line,+whitespace/comma,+whitespace/comments,+whitespace/empty_conditional_body,+whitespace/end-of-line,+whitespace/ending-newline,+whitespace/semicolon,+whitespace/tab
 
 
   prettier-markdown:

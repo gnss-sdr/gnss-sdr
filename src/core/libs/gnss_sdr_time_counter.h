@@ -21,14 +21,14 @@
 #ifndef GNSS_SDR_GNSS_SDR_TIME_COUNTER_H
 #define GNSS_SDR_GNSS_SDR_TIME_COUNTER_H
 
-#include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
+#include <memory>
 
 class gnss_sdr_time_counter;
 
-using gnss_sdr_time_counter_sptr = boost::shared_ptr<gnss_sdr_time_counter>;
+using gnss_sdr_time_counter_sptr = std::shared_ptr<gnss_sdr_time_counter>;
 
 gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 

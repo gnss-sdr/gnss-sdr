@@ -41,6 +41,12 @@ target_include_directories(channel_libs
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(channel_libs
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(channel_libs

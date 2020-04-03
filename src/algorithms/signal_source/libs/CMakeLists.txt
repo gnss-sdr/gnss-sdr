@@ -55,6 +55,12 @@ target_include_directories(signal_source_libs
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(signal_source_libs
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     target_link_libraries(signal_source_libs
         PUBLIC

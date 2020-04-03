@@ -36,7 +36,6 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro_monitor.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
-#include <boost/shared_ptr.hpp>      // for boost::shared_ptr
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
 #include <glog/logging.h>            // for LOG
 #include <gnuradio/basic_block.h>    // for basic_block
@@ -50,6 +49,7 @@
 #include <exception>                 // for exception
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
+#include <memory>                    // for std::shared_ptr
 #include <set>                       // for set
 #include <stdexcept>                 // for invalid_argument
 #include <thread>                    // for thread

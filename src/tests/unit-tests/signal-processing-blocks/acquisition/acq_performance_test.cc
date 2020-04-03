@@ -44,6 +44,11 @@
 #include <pmt/pmt.h>
 #include <thread>
 #include <utility>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>
@@ -100,7 +105,11 @@ DEFINE_bool(acq_test_dump, false, "Dump the results of an acquisition block into
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
 
+#if GNURADIO_USES_STD_POINTERS
+using AcqPerfTest_msg_rx_sptr = std::shared_ptr<AcqPerfTest_msg_rx>;
+#else
 using AcqPerfTest_msg_rx_sptr = boost::shared_ptr<AcqPerfTest_msg_rx>;
+#endif
 
 AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
@@ -577,7 +586,7 @@ int AcquisitionPerformanceTest::run_receiver()
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
 
     top_block = gr::make_top_block("Acquisition test");
-    boost::shared_ptr<AcqPerfTest_msg_rx> msg_rx = AcqPerfTest_msg_rx_make(channel_internal_queue);
+    auto msg_rx = AcqPerfTest_msg_rx_make(channel_internal_queue);
     gr::blocks::skiphead::sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), FLAGS_acq_test_skiphead);
 
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
@@ -585,7 +594,7 @@ int AcquisitionPerformanceTest::run_receiver()
     init();
 
     int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
-    boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
     if (implementation == "GPS_L1_CA_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);

@@ -31,10 +31,18 @@
 #include <string>
 #include <utility>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class galileo_pcps_8ms_acquisition_cc;
 
+#if GNURADIO_USES_STD_POINTERS
+using galileo_pcps_8ms_acquisition_cc_sptr = std::shared_ptr<galileo_pcps_8ms_acquisition_cc>;
+#else
 using galileo_pcps_8ms_acquisition_cc_sptr = boost::shared_ptr<galileo_pcps_8ms_acquisition_cc>;
+#endif
 
 galileo_pcps_8ms_acquisition_cc_sptr
 galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,

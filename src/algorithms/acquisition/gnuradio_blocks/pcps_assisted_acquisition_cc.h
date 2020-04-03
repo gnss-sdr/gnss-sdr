@@ -47,10 +47,18 @@
 #include <string>
 #include <utility>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class pcps_assisted_acquisition_cc;
 
+#if GNURADIO_USES_STD_POINTERS
+using pcps_assisted_acquisition_cc_sptr = std::shared_ptr<pcps_assisted_acquisition_cc>;
+#else
 using pcps_assisted_acquisition_cc_sptr = boost::shared_ptr<pcps_assisted_acquisition_cc>;
+#endif
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t max_dwells,

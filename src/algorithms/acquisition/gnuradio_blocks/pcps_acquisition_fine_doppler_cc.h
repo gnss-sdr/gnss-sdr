@@ -55,10 +55,18 @@
 #include <memory>
 #include <string>
 #include <utility>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class pcps_acquisition_fine_doppler_cc;
 
+#if GNURADIO_USES_STD_POINTERS
+using pcps_acquisition_fine_doppler_cc_sptr = std::shared_ptr<pcps_acquisition_fine_doppler_cc>;
+#else
 using pcps_acquisition_fine_doppler_cc_sptr = boost::shared_ptr<pcps_acquisition_fine_doppler_cc>;
+#endif
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
 

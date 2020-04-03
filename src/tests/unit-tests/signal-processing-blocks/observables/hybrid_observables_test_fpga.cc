@@ -77,10 +77,19 @@
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class HybridObservablesTest_msg_rx_Fpga;
 
+#if GNURADIO_USES_STD_POINTERS
+using HybridObservablesTest_msg_rx_Fpga_sptr = std::shared_ptr<HybridObservablesTest_msg_rx_Fpga>;
+#else
 using HybridObservablesTest_msg_rx_Fpga_sptr = boost::shared_ptr<HybridObservablesTest_msg_rx_Fpga>;
+#endif
 
 HybridObservablesTest_msg_rx_Fpga_sptr HybridObservablesTest_msg_rx_Fpga_make();
 
@@ -127,7 +136,7 @@ HybridObservablesTest_msg_rx_Fpga::~HybridObservablesTest_msg_rx_Fpga() = defaul
 
 class HybridObservablesTest_tlm_msg_rx_Fpga;
 
-using HybridObservablesTest_tlm_msg_rx_Fpga_sptr = boost::shared_ptr<HybridObservablesTest_tlm_msg_rx_Fpga>;
+using HybridObservablesTest_tlm_msg_rx_Fpga_sptr = std::shared_ptr<HybridObservablesTest_tlm_msg_rx_Fpga>;
 
 HybridObservablesTest_tlm_msg_rx_Fpga_sptr HybridObservablesTest_tlm_msg_rx_Fpga_make();
 
@@ -1930,8 +1939,8 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         }
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
-    boost::shared_ptr<HybridObservablesTest_msg_rx_Fpga> dummy_msg_rx_trk = HybridObservablesTest_msg_rx_Fpga_make();
-    boost::shared_ptr<HybridObservablesTest_tlm_msg_rx_Fpga> dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_Fpga_make();
+    auto dummy_msg_rx_trk = HybridObservablesTest_msg_rx_Fpga_make();
+    auto dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_Fpga_make();
     // Observables
     std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
 

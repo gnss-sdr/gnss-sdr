@@ -20,15 +20,22 @@
 #ifndef GNSS_SDR_NOTCH_H
 #define GNSS_SDR_NOTCH_H
 
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
+#endif
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <cstdint>
-#include <memory>
 
 class Notch;
 
+#if GNURADIO_USES_STD_POINTERS
+using notch_sptr = std::shared_ptr<Notch>;
+#else
 using notch_sptr = boost::shared_ptr<Notch>;
+#endif
 
 notch_sptr make_notch_filter(
     float pfa,

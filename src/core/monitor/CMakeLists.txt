@@ -51,6 +51,11 @@ target_include_directories(core_monitor
         ${PROTO_INCLUDE_HEADERS}
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(core_monitor
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
 
 if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
     target_compile_definitions(core_monitor

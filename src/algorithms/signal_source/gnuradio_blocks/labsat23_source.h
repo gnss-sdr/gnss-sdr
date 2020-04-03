@@ -25,13 +25,20 @@
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <fstream>
-#include <memory>
 #include <string>
-
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class labsat23_source;
 
+#if GNURADIO_USES_STD_POINTERS
+using labsat23_source_sptr = std::shared_ptr<labsat23_source>;
+#else
 using labsat23_source_sptr = boost::shared_ptr<labsat23_source>;
+#endif
 
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,

@@ -32,7 +32,6 @@
 
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
-#include <boost/shared_ptr.hpp>
 #include <glog/logging.h>
 #include <cstdint>  // for uint32_t
 #include <memory>   // for shared_ptr
@@ -62,7 +61,7 @@ typedef struct
 
 class pcps_acquisition_fpga;
 
-using pcps_acquisition_fpga_sptr = boost::shared_ptr<pcps_acquisition_fpga>;
+using pcps_acquisition_fpga_sptr = std::shared_ptr<pcps_acquisition_fpga>;
 
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 

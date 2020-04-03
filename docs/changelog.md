@@ -10,6 +10,11 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ## Unreleased
 
+### Improvements in Maintainability:
+
+- The software can now be built against the GNU Radio 3.9 API that uses C++11
+  smart pointers instead of Boost smart pointers.
+
 ### Improvements in Reproducibility:
 
 - Improved reproducibility of the volk_gnsssdr library: Drop compile-time CPU

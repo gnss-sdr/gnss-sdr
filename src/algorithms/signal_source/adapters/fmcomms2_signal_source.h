@@ -23,7 +23,6 @@
 #define GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H
 
 #include "gnss_block_interface.h"
-#include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
 #include <gnuradio/iio/fmcomms2_source.h>
@@ -35,6 +34,10 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class ConfigurationInterface;
 
@@ -118,7 +121,11 @@ private:
 
     gr::iio::fmcomms2_source_f32c::sptr fmcomms2_source_f32c_;
 
+#if GNURADIO_USES_STD_POINTERS
+    std::shared_ptr<gr::block> valve_;
+#else
     boost::shared_ptr<gr::block> valve_;
+#endif
     gr::blocks::file_sink::sptr file_sink_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };

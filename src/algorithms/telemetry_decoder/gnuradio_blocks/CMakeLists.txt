@@ -53,6 +53,12 @@ target_link_libraries(telemetry_decoder_gr_blocks
         Glog::glog
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(telemetry_decoder_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(telemetry_decoder_gr_blocks

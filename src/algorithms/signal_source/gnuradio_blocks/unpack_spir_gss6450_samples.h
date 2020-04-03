@@ -22,10 +22,19 @@
 #define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class unpack_spir_gss6450_samples;
 
+#if GNURADIO_USES_STD_POINTERS
+using unpack_spir_gss6450_samples_sptr = std::shared_ptr<unpack_spir_gss6450_samples>;
+#else
 using unpack_spir_gss6450_samples_sptr = boost::shared_ptr<unpack_spir_gss6450_samples>;
+#endif
 
 unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit_);
 

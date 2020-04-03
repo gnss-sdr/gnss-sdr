@@ -21,13 +21,21 @@
 #define GNSS_SDR_CSHORT_TO_FLOAT_X2_H
 
 
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
+#endif
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class cshort_to_float_x2;
 
+#if GNURADIO_USES_STD_POINTERS
+using cshort_to_float_x2_sptr = std::shared_ptr<cshort_to_float_x2>;
+#else
 using cshort_to_float_x2_sptr = boost::shared_ptr<cshort_to_float_x2>;
+#endif
 
 cshort_to_float_x2_sptr make_cshort_to_float_x2();
 

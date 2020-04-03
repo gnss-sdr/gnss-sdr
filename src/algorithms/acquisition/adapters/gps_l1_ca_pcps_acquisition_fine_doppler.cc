@@ -161,7 +161,35 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_state(int state)
     acquisition_cc_->set_state(state);
 }
 
+#if GNURADIO_USES_STD_POINTERS
+void GpsL1CaPcpsAcquisitionFineDoppler::connect(std::shared_ptr<gr::top_block> top_block)
+{
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
+}
 
+
+void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(std::shared_ptr<gr::top_block> top_block)
+{
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
+}
+
+std::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_left_block()
+{
+    return acquisition_cc_;
+}
+
+
+std::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_right_block()
+{
+    return acquisition_cc_;
+}
+#else
 void GpsL1CaPcpsAcquisitionFineDoppler::connect(boost::shared_ptr<gr::top_block> top_block)
 {
     if (top_block)
@@ -179,7 +207,6 @@ void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(boost::shared_ptr<gr::top_blo
     // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-
 boost::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_left_block()
 {
     return acquisition_cc_;
@@ -190,3 +217,4 @@ boost::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_right_
 {
     return acquisition_cc_;
 }
+#endif

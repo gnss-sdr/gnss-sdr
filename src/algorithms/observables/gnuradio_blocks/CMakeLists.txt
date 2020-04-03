@@ -47,6 +47,12 @@ target_link_libraries(obs_gr_blocks
         Matio::matio
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(obs_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(obs_gr_blocks

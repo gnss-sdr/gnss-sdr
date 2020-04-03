@@ -56,7 +56,7 @@
 
 class pcps_opencl_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_opencl_acquisition_cc> pcps_opencl_acquisition_cc_sptr;
+typedef std::shared_ptr<pcps_opencl_acquisition_cc> pcps_opencl_acquisition_cc_sptr;
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     uint32_t sampled_ms,

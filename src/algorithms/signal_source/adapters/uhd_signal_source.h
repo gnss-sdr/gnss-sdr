@@ -22,7 +22,6 @@
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
-#include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/uhd/usrp_source.h>
@@ -31,6 +30,10 @@
 #include <memory>
 #include <string>
 #include <vector>
+#if GNURADIO_USES_STD_POINTERS
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 
 class ConfigurationInterface;
@@ -94,8 +97,11 @@ private:
     std::vector<uint64_t> samples_;
     std::vector<bool> dump_;
     std::vector<std::string> dump_filename_;
-
+#if GNURADIO_USES_STD_POINTERS
+    std::vector<std::shared_ptr<gr::block>> valve_;
+#else
     std::vector<boost::shared_ptr<gr::block>> valve_;
+#endif
     std::vector<gr::blocks::file_sink::sptr> file_sink_;
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;

@@ -26,18 +26,25 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
-#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <array>
 #include <cstdint>
 #include <fstream>
 #include <string>
-
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>  // for std::shared_ptr
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class glonass_l2_ca_telemetry_decoder_gs;
 
+#if GNURADIO_USES_STD_POINTERS
+using glonass_l2_ca_telemetry_decoder_gs_sptr = std::shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
+#else
 using glonass_l2_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
+#endif
 
 glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

@@ -36,7 +36,7 @@
 #include <cstdlib>          // for abs
 #include <exception>        // for exception
 #include <iostream>         // for cout
-#include <memory>           // for shared_ptr, make_shared
+#include <memory>           // for make_shared
 
 
 #define CRC_ERROR_LIMIT 6

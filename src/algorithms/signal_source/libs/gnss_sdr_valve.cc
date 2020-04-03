@@ -43,7 +43,20 @@ Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
     d_open_valve = false;
 }
 
+#if GNURADIO_USES_STD_POINTERS
+std::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue, bool stop_flowgraph)
+{
+    std::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
+    return valve_;
+}
 
+
+std::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+{
+    std::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), true));
+    return valve_;
+}
+#else
 boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue, bool stop_flowgraph)
 {
     boost::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
@@ -56,6 +69,7 @@ boost::shared_ptr<Gnss_Sdr_Valve> gnss_sdr_make_valve(size_t sizeof_stream_item,
     boost::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), true));
     return valve_;
 }
+#endif
 
 
 void Gnss_Sdr_Valve::open_valve()

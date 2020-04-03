@@ -66,6 +66,12 @@ target_include_directories(signal_source_gr_blocks
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(signal_source_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
     target_link_libraries(signal_source_gr_blocks
         PUBLIC

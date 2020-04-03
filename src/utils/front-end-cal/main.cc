@@ -96,7 +96,11 @@ std::vector<Gnss_Synchro> gnss_sync_vector;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
 
+#if GNURADIO_USES_STD_POINTERS
+using FrontEndCal_msg_rx_sptr = std::shared_ptr<FrontEndCal_msg_rx>;
+#else
 using FrontEndCal_msg_rx_sptr = boost::shared_ptr<FrontEndCal_msg_rx>;
+#endif
 
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 
@@ -362,7 +366,11 @@ int main(int argc, char** argv)
 
     gr::block_sptr source;
     source = gr::blocks::file_source::make(sizeof(gr_complex), "tmp_capture.dat");
+#if GNURADIO_USES_STD_POINTERS
+    std::shared_ptr<FrontEndCal_msg_rx> msg_rx;
+#else
     boost::shared_ptr<FrontEndCal_msg_rx> msg_rx;
+#endif
     try
         {
             msg_rx = FrontEndCal_msg_rx_make();
@@ -457,7 +465,11 @@ int main(int argc, char** argv)
                     LOG(INFO) << "Exception caught while joining threads.";
                 }
             gnss_sync_vector.clear();
+#if GNURADIO_USES_STD_POINTERS
+            std::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
+#else
             boost::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
+#endif
             std::cout.flush();
         }
     std::cout << "]" << std::endl;

@@ -24,7 +24,6 @@
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
-#include <boost/shared_ptr.hpp>
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <memory>

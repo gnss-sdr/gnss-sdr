@@ -104,6 +104,12 @@ target_link_libraries(algorithms_libs
         Glog::glog
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(algorithms_libs
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_OPENCL)
     target_link_libraries(algorithms_libs PUBLIC OpenCL::OpenCL)
     target_include_directories(algorithms_libs PUBLIC

@@ -65,7 +65,11 @@ namespace fs = boost::filesystem;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL2MPcpsAcquisitionTest_msg_rx;
 
+#if GNURADIO_USES_STD_POINTERS
+using GpsL2MPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx>;
+#else
 using GpsL2MPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx>;
+#endif
 
 GpsL2MPcpsAcquisitionTest_msg_rx_sptr GpsL2MPcpsAcquisitionTest_msg_rx_make();
 
@@ -261,11 +265,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(sampling_frequency_hz, gr::analog::GR_SIN_WAVE, 2000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto source = gr::analog::sig_source_c::make(sampling_frequency_hz, gr::analog::GR_SIN_WAVE, 2000, 1, gr_complex(0));
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-        boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
+        auto msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
     }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW({
@@ -300,7 +304,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 
     init();
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition_2S", 1, 0);
-    boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
+    auto msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -335,7 +339,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         // gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
         // gr::blocks::char_to_short::sptr gr_char_to_short_ = gr::blocks::char_to_short::make();
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         // top_block->connect(file_source, 0, gr_char_to_short_, 0);
         // top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
         top_block->connect(file_source, 0, valve, 0);

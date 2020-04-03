@@ -38,7 +38,7 @@
 
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 
-typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
+typedef std::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
     gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr

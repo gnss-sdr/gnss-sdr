@@ -25,7 +25,6 @@
 
 #include "obs_conf.h"
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
-#include <boost/shared_ptr.hpp>       // for boost::shared_ptr
 #include <gnuradio/block.h>           // for block
 #include <gnuradio/types.h>           // for gr_vector_int
 #include <cstdint>                    // for int32_t
@@ -34,6 +33,11 @@
 #include <memory>                     // for std:shared_ptr
 #include <string>                     // for std::string
 #include <vector>                     // for std::vector
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Gnss_Synchro;
 class hybrid_observables_gs;
@@ -41,7 +45,11 @@ class hybrid_observables_gs;
 template <class T>
 class Gnss_circular_deque;
 
+#if GNURADIO_USES_STD_POINTERS
+using hybrid_observables_gs_sptr = std::shared_ptr<hybrid_observables_gs>;
+#else
 using hybrid_observables_gs_sptr = boost::shared_ptr<hybrid_observables_gs>;
+#endif
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 

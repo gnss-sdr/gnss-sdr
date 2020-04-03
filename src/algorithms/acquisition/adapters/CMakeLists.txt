@@ -100,6 +100,12 @@ target_link_libraries(acquisition_adapters
         Gnuradio::fft
 )
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(acquisition_adapters
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 if(ENABLE_FPGA)
     target_link_libraries(acquisition_adapters
         PRIVATE

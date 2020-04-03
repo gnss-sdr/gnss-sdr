@@ -31,11 +31,20 @@
 #include <pcap.h>
 #include <string>
 #include <sys/ioctl.h>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Gr_Complex_Ip_Packet_Source : virtual public gr::sync_block
 {
 public:
+#if GNURADIO_USES_STD_POINTERS
+    typedef std::shared_ptr<Gr_Complex_Ip_Packet_Source> sptr;
+#else
     typedef boost::shared_ptr<Gr_Complex_Ip_Packet_Source> sptr;
+#endif
     static sptr make(std::string src_device,
         const std::string &origin_address,
         int udp_port,

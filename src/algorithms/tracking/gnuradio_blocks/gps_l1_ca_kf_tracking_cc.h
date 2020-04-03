@@ -44,10 +44,19 @@
 #include <fstream>
 #include <map>
 #include <string>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Gps_L1_Ca_Kf_Tracking_cc;
 
+#if GNURADIO_USES_STD_POINTERS
+using gps_l1_ca_kf_tracking_cc_sptr = std::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>;
+#else
 using gps_l1_ca_kf_tracking_cc_sptr = boost::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>;
+#endif
 
 gps_l1_ca_kf_tracking_cc_sptr
 gps_l1_ca_kf_make_tracking_cc(uint32_t order,

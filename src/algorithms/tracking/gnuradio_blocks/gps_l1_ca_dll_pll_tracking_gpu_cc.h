@@ -34,12 +34,21 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 
+#if GNURADIO_USES_STD_POINTERS
 typedef std::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
     gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
+#else
+typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
+    gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
+#end
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(

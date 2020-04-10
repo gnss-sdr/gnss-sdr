@@ -19,6 +19,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 - The software can now be cross-compiled on Petalinux environments.   
 
+### Improvements in Reliability:
+
+- Fixed a bug in GLONASS GNAV CRC computation.
+
 ### Improvements in Reproducibility:
 
 - Improved reproducibility of the volk_gnsssdr library: Drop compile-time CPU

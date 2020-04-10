@@ -194,8 +194,8 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             return true;
         }
-    // (a-ii) Only one of the checksums (C1,...,C7) is equal to zero but C_Sigma = 1
-    if (C_Sigma == 1 && C1 + C2 + C3 + C4 + C5 + C6 + C7 == 6)
+    // (a-ii) Only one of the checksums (C1,...,C7) is equal to 1 and C_Sigma = 1
+    if (C_Sigma == 1 && C1 + C2 + C3 + C4 + C5 + C6 + C7 == 1)
         {
             return true;
         }

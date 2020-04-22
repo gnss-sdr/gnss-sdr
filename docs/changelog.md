@@ -17,7 +17,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Portability:
 
-- The software can now be cross-compiled on Petalinux environments.   
+- The software can now be cross-compiled on Petalinux environments.
 
 ### Improvements in Reliability:
 

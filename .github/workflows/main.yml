@@ -167,4 +167,4 @@ jobs:
     - name: Check REUSE compliance
       uses: docker://fsfe/reuse
       with:
-        args: reuse lint
+        args: lint

@@ -36,6 +36,7 @@
 #include "beidou_b3i_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
 #include "gps_l2c_signal.h"

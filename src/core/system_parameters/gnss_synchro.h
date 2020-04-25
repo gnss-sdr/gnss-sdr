@@ -22,7 +22,6 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_H
 #define GNSS_SDR_GNSS_SYNCHRO_H
 
-#include "gnss_signal.h"
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
@@ -67,6 +66,129 @@ public:
     double RX_time;               //!< Set by Observables processing block
     bool Flag_valid_pseudorange;  //!< Set by Observables processing block
     double interp_TOW_ms;         //!< Set by Observables processing block
+
+    /// Constructor
+    Gnss_Synchro()
+    {
+        System = 0;
+        Signal[0] = 0;
+        Signal[1] = 0;
+        Signal[2] = '\0';
+        PRN = 0U;
+        Channel_ID = 0;
+
+        Acq_delay_samples = 0.0;
+        Acq_doppler_hz = 0.0;
+        Acq_samplestamp_samples = 0UL;
+        Acq_doppler_step = 0U;
+        Flag_valid_acquisition = false;
+
+        fs = 0L;
+        Prompt_I = 0.0;
+        Prompt_Q = 0.0;
+        CN0_dB_hz = 0.0;
+        Carrier_Doppler_hz = 0.0;
+        Carrier_phase_rads = 0.0;
+        Code_phase_samples = 0.0;
+        Tracking_sample_counter = 0UL;
+        Flag_valid_symbol_output = false;
+        correlation_length_ms = 0;
+
+        Flag_valid_word = false;
+        TOW_at_current_symbol_ms = 0U;
+
+        Pseudorange_m = 0.0;
+        RX_time = 0.0;
+        Flag_valid_pseudorange = false;
+        interp_TOW_ms = 0.0;
+    };
+
+    ~Gnss_Synchro() = default;  //!< Default destructor
+
+    /// Copy constructor
+    Gnss_Synchro(Gnss_Synchro&& other) noexcept
+    {
+        *this = other;
+    };
+
+    /// Copy assignment operator
+    Gnss_Synchro& operator=(const Gnss_Synchro& rhs)
+    {
+        // Only do assignment if RHS is a different object from this.
+        if (this != &rhs)
+            {
+                this->System = rhs.System;
+                this->Signal[0] = rhs.Signal[0];
+                this->Signal[1] = rhs.Signal[1];
+                this->Signal[2] = rhs.Signal[2];
+                this->PRN = rhs.PRN;
+                this->Channel_ID = rhs.Channel_ID;
+                this->Acq_delay_samples = rhs.Acq_delay_samples;
+                this->Acq_doppler_hz = rhs.Acq_doppler_hz;
+                this->Acq_samplestamp_samples = rhs.Acq_samplestamp_samples;
+                this->Acq_doppler_step = rhs.Acq_doppler_step;
+                this->Flag_valid_acquisition = rhs.Flag_valid_acquisition;
+                this->fs = rhs.fs;
+                this->Prompt_I = rhs.Prompt_I;
+                this->Prompt_Q = rhs.Prompt_Q;
+                this->CN0_dB_hz = rhs.CN0_dB_hz;
+                this->Carrier_Doppler_hz = rhs.Carrier_Doppler_hz;
+                this->Carrier_phase_rads = rhs.Carrier_phase_rads;
+                this->Code_phase_samples = rhs.Code_phase_samples;
+                this->Tracking_sample_counter = rhs.Tracking_sample_counter;
+                this->Flag_valid_symbol_output = rhs.Flag_valid_symbol_output;
+                this->correlation_length_ms = rhs.correlation_length_ms;
+                this->Flag_valid_word = rhs.Flag_valid_word;
+                this->TOW_at_current_symbol_ms = rhs.TOW_at_current_symbol_ms;
+                this->Pseudorange_m = rhs.Pseudorange_m;
+                this->RX_time = rhs.RX_time;
+                this->Flag_valid_pseudorange = rhs.Flag_valid_pseudorange;
+                this->interp_TOW_ms = rhs.interp_TOW_ms;
+            }
+        return *this;
+    };
+
+    /// Move constructor
+    Gnss_Synchro(const Gnss_Synchro& other) noexcept
+    {
+        *this = other;
+    };
+
+    /// Move assignment operator
+    Gnss_Synchro& operator=(Gnss_Synchro&& other) noexcept
+    {
+        if (this != &other)
+            {
+                this->System = other.System;
+                this->Signal[0] = other.Signal[0];
+                this->Signal[1] = other.Signal[1];
+                this->Signal[2] = other.Signal[2];
+                this->PRN = other.PRN;
+                this->Channel_ID = other.Channel_ID;
+                this->Acq_delay_samples = other.Acq_delay_samples;
+                this->Acq_doppler_hz = other.Acq_doppler_hz;
+                this->Acq_samplestamp_samples = other.Acq_samplestamp_samples;
+                this->Acq_doppler_step = other.Acq_doppler_step;
+                this->Flag_valid_acquisition = other.Flag_valid_acquisition;
+                this->fs = other.fs;
+                this->Prompt_I = other.Prompt_I;
+                this->Prompt_Q = other.Prompt_Q;
+                this->CN0_dB_hz = other.CN0_dB_hz;
+                this->Carrier_Doppler_hz = other.Carrier_Doppler_hz;
+                this->Carrier_phase_rads = other.Carrier_phase_rads;
+                this->Code_phase_samples = other.Code_phase_samples;
+                this->Tracking_sample_counter = other.Tracking_sample_counter;
+                this->Flag_valid_symbol_output = other.Flag_valid_symbol_output;
+                this->correlation_length_ms = other.correlation_length_ms;
+                this->Flag_valid_word = other.Flag_valid_word;
+                this->TOW_at_current_symbol_ms = other.TOW_at_current_symbol_ms;
+                this->Pseudorange_m = other.Pseudorange_m;
+                this->RX_time = other.RX_time;
+                this->Flag_valid_pseudorange = other.Flag_valid_pseudorange;
+                this->interp_TOW_ms = other.interp_TOW_ms;
+            }
+        return *this;
+    };
 
     /*!
      * \brief This member function serializes and restores

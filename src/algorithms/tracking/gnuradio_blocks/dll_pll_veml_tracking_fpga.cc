@@ -30,6 +30,7 @@
 #include "Galileo_E5a.h"
 #include "MATH_CONSTANTS.h"
 #include "fpga_multicorrelator.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"

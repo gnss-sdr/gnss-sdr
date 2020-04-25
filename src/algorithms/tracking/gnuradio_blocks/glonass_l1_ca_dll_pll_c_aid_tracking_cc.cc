@@ -28,6 +28,7 @@
 #include "glonass_l1_ca_dll_pll_c_aid_tracking_cc.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "glonass_l1_signal_processing.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"

@@ -29,6 +29,7 @@
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "galileo_e1_signal_processing.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
 #include "tcp_communication.h"

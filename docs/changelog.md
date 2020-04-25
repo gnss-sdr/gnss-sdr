@@ -10,6 +10,12 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ## Unreleased
 
+### Improvements in Efficiency:
+
+- Faster internal handling of `Gnss_Synchro` objects by reducing the amount of
+  copying via adding `noexcept` move constructor and move assignment operators,
+  so the move semantics are also used in STL containers.
+
 ### Improvements in Maintainability:
 
 - The software can now be built against the GNU Radio 3.9 API that uses C++11

@@ -105,7 +105,12 @@ void BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 BeidouB1iPcpsAcquisitionTest_msg_rx::BeidouB1iPcpsAcquisitionTest_msg_rx() : gr::block("BeidouB1iPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto &&PH1) { msg_handler_events(PH1); });
+#else
+        boost::bind(&BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+#endif
     rx_message = 0;
 }
 

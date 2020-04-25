@@ -542,6 +542,20 @@ if(ENABLE_UNIT_TESTING)
                 ${CUDA_INCLUDE_DIRS}
         )
     endif()
+    if(CMAKE_VERSION VERSION_GREATER 3.1)
+        set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+        set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+        target_compile_definitions(run_tests
+            PRIVATE
+                "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+                "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+        )
+    else()
+        target_compile_definitions(run_tests
+            PRIVATE
+                -DHAS_GENERIC_LAMBDA=0
+        )
+    endif()
 endif()
 
 if(ENABLE_FPGA)
@@ -913,6 +927,21 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     )
 
     add_test(acq_test acq_test)
+
+    if(CMAKE_VERSION VERSION_GREATER 3.1)
+        set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+        set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+        target_compile_definitions(acq_test
+            PRIVATE
+                "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+                "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+        )
+    else()
+        target_compile_definitions(acq_test
+            PRIVATE
+                -DHAS_GENERIC_LAMBDA=0
+        )
+    endif()
 
     set_property(TEST acq_test PROPERTY TIMEOUT 30)
 endif()

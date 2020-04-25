@@ -152,7 +152,12 @@ void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENNERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_events(PH1); });
+#else
+        boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
+#endif
     rx_message = 0;
 }
 

@@ -39,6 +39,21 @@ target_link_libraries(signal_processing_testing_lib
         Glog::glog
 )
 
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+    set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+    set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+    target_compile_definitions(signal_processing_testing_lib
+        PRIVATE
+            "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+            "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+    )
+else()
+    target_compile_definitions(signal_processing_testing_lib
+        PRIVATE
+            -DHAS_GENERIC_LAMBDA=0
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_processing_testing_lib

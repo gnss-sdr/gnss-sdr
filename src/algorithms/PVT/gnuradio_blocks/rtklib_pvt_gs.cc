@@ -54,7 +54,6 @@
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
 #include <boost/archive/xml_oarchive.hpp>  // for xml_oarchive
-#include <boost/bind/bind.hpp>             // for bind_t, bind
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception/exception.hpp>
 #include <boost/serialization/map.hpp>
@@ -74,6 +73,11 @@
 #include <stdexcept>                    // for length_error
 #include <sys/ipc.h>                    // for IPC_CREAT
 #include <sys/msg.h>                    // for msgctl
+
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 
 #if HAS_STD_FILESYSTEM
 #include <system_error>
@@ -186,8 +190,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
-    this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
-
+    this->set_msg_handler(pmt::mp("telemetry"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
+#endif
     // initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;

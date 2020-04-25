@@ -51,6 +51,11 @@
 #include <numeric>
 #include <vector>
 
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
+
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
 #include <experimental/filesystem>
@@ -83,8 +88,12 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));
-
+    this->set_msg_handler(pmt::mp("telemetry_to_trk"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto &&PH1) { msg_handler_telemetry_to_trk(PH1); });
+#else
+        boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));
+#endif
     // initialize internal vars
     d_dll_filt_history.set_capacity(1000);
     d_veml = false;

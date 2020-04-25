@@ -32,7 +32,6 @@
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <boost/bind.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -45,6 +44,11 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 
 
 #define CN0_ESTIMATION_SAMPLES 10
@@ -105,7 +109,11 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto &&PH1) { msg_handler_preamble_index(PH1); });
+#else
         boost::bind(&glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index, this, _1));
+#endif
     this->message_port_register_out(pmt::mp("events"));
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     // initialize internal vars

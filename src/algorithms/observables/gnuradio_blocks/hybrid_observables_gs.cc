@@ -35,6 +35,11 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
 
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
+
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -67,8 +72,12 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
 {
     // PVT input message port
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
-    this->set_msg_handler(pmt::mp("pvt_to_observables"), boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
-
+    this->set_msg_handler(pmt::mp("pvt_to_observables"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto &&PH1) { msg_handler_pvt_to_observables(PH1); });
+#else
+        boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
+#endif
     // Send Channel status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
     d_conf = conf_;

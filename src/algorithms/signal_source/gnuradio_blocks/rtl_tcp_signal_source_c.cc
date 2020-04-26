@@ -21,13 +21,10 @@
 
 #include "rtl_tcp_signal_source_c.h"
 #include "rtl_tcp_commands.h"
+#include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <map>
-#if HAS_GENERIC_LAMBDA
-#else
-#include <boost/bind.hpp>
-#endif
 
 
 namespace ip = boost::asio::ip;
@@ -301,11 +298,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
                 // Unpack read data
                 boost::mutex::scoped_lock lock(mutex_);
                 not_full_.wait(lock,
-#if HAS_GENERIC_LAMBDA
-                    [this] { not_full(); });
-#else
-                    boost::bind(&rtl_tcp_signal_source_c::not_full, this));
-#endif
+                    boost::bind(&rtl_tcp_signal_source_c::not_full, this));  // NOLINT(modernize-avoid-bind)
 
                 for (size_t i = 0; i < bytes_transferred; i++)
                     {
@@ -315,11 +308,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
                                 // wait until there's space for more
                                 not_empty_.notify_one();  // needed?
                                 not_full_.wait(lock,
-#if HAS_GENERIC_LAMBDA
-                                    [this] { not_full(); });
-#else
-                                    boost::bind(&rtl_tcp_signal_source_c::not_full, this));
-#endif
+                                    boost::bind(&rtl_tcp_signal_source_c::not_full, this));  // NOLINT(modernize-avoid-bind)
                             }
 
                         buffer_.push_front(lookup_[data_[i]]);
@@ -354,11 +343,8 @@ int rtl_tcp_signal_source_c::work(int noutput_items,
     {
         boost::mutex::scoped_lock lock(mutex_);
         not_empty_.wait(lock,
-#if HAS_GENERIC_LAMBDA
-            [this] { not_empty(); });
-#else
-            boost::bind(&rtl_tcp_signal_source_c::not_empty, this));
-#endif
+            boost::bind(&rtl_tcp_signal_source_c::not_empty, this));  // NOLINT(modernize-avoid-bind)
+
         for (; i < noutput_items && unread_ > 1; i++)
             {
                 float re = buffer_[--unread_];

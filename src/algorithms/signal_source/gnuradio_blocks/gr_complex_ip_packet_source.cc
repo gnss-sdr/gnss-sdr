@@ -24,6 +24,10 @@
 #include <array>
 #include <cstdint>
 #include <utility>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 
 const int FIFO_SIZE = 1472000;
 
@@ -148,7 +152,12 @@ bool Gr_Complex_Ip_Packet_Source::start()
     if (open() == true)
         {
             // start pcap capture thread
-            d_pcap_thread = new boost::thread(boost::bind(&Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread, this, descr));
+            d_pcap_thread = new boost::thread(
+#if HAS_GENERIC_LAMBDA
+                [this] { my_pcap_loop_thread(descr); });
+#else
+                boost::bind(&Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread, this, descr));
+#endif
             return true;
         }
     return false;

@@ -103,6 +103,21 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
     )
 endif()
 
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+    set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+    set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+    target_compile_definitions(signal_source_gr_blocks
+        PRIVATE
+            "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+            "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+    )
+else()
+    target_compile_definitions(signal_source_gr_blocks
+        PRIVATE
+            -DHAS_GENERIC_LAMBDA=0
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_gr_blocks

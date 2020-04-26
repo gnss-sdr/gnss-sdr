@@ -133,7 +133,7 @@ HybridObservablesTest_msg_rx_Fpga::HybridObservablesTest_msg_rx_Fpga() : gr::blo
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&HybridObservablesTest_msg_rx_Fpga::msg_handler_events, this, _1));
 #endif

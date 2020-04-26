@@ -192,7 +192,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     this->message_port_register_in(pmt::mp("telemetry"));
     this->set_msg_handler(pmt::mp("telemetry"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
+        [this](pmt::pmt_t&& PH1) { msg_handler_telemetry(PH1); });
 #else
         boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
 #endif

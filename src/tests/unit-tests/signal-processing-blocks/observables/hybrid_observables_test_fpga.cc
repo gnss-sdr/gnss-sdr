@@ -72,6 +72,10 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <utility>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
@@ -127,7 +131,12 @@ void HybridObservablesTest_msg_rx_Fpga::msg_handler_events(pmt::pmt_t msg)
 HybridObservablesTest_msg_rx_Fpga::HybridObservablesTest_msg_rx_Fpga() : gr::block("HybridObservablesTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_msg_rx_Fpga::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_events(PH1); });
+#else
+        boost::bind(&HybridObservablesTest_msg_rx_Fpga::msg_handler_events, this, _1));
+#endif
     rx_message = 0;
 }
 

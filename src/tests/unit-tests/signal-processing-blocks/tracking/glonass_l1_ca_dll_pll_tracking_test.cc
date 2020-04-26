@@ -36,6 +36,10 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <utility>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -88,7 +92,12 @@ void GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() : gr::block("GlonassL1CaDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_events(PH1); });
+#else
+        boost::bind(&GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
+#endif
     rx_message = 0;
 }
 

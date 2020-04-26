@@ -24,6 +24,10 @@
 #include <glog/logging.h>
 #include <cstdint>
 #include <utility>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
 {

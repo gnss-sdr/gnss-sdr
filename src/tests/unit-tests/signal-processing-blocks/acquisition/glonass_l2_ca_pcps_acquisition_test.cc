@@ -40,6 +40,10 @@
 #include <pmt/pmt.h>
 #include <chrono>
 #include <thread>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -97,7 +101,12 @@ void GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 GlonassL2CaPcpsAcquisitionTest_msg_rx::GlonassL2CaPcpsAcquisitionTest_msg_rx(concurrent_queue<int>& queue) : gr::block("GlonassL2CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_events(PH1); });
+#else
+        boost::bind(&GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+#endif
     rx_message = 0;
 }
 
@@ -136,7 +145,7 @@ protected:
 
     Concurrent_Queue<int> channel_internal_queue;
 
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue;
     gr::top_block_sptr top_block;
     GlonassL2CaPcpsAcquisition* acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -434,7 +443,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     int nsamples = floor(fs_in * integration_time_ms * 1e-3);
     std::chrono::time_point<std::chrono::system_clock> begin, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
@@ -466,7 +475,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
 TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
 {
     config_1();
-    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
 
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
@@ -556,7 +565,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
 TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
 {
     config_2();
-    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
     acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);

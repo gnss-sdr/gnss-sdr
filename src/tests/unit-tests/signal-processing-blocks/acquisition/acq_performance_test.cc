@@ -50,6 +50,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
+
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;

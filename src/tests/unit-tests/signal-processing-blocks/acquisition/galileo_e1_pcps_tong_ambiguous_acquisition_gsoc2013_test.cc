@@ -40,6 +40,10 @@
 #include <memory>
 #include <thread>
 #include <utility>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -97,7 +101,12 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_event
 GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_events(PH1); });
+#else
+        boost::bind(&GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, _1));
+#endif
     rx_message = 0;
 }
 

@@ -39,7 +39,7 @@ channel_status_msg_receiver::channel_status_msg_receiver() : gr::block("channel_
     this->message_port_register_in(pmt::mp("status"));
     this->set_msg_handler(pmt::mp("status"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&channel_status_msg_receiver::msg_handler_events, this, _1));
 #endif

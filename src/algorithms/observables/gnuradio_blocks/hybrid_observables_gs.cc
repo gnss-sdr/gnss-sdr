@@ -74,7 +74,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
     this->set_msg_handler(pmt::mp("pvt_to_observables"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1) { msg_handler_pvt_to_observables(PH1); });
+        [this](pmt::pmt_t &&PH1) { msg_handler_pvt_to_observables(PH1); });
 #else
         boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
 #endif

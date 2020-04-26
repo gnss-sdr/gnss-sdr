@@ -94,7 +94,7 @@ GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() : g
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
 #endif

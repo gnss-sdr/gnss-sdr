@@ -105,7 +105,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc
 
     this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1) { msg_handler_preamble_index(PH1); });
+        [this](pmt::pmt_t &&PH1) { msg_handler_preamble_index(PH1); });
 #else
         boost::bind(&glonass_l2_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index, this, _1));
 #endif

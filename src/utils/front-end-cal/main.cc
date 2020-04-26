@@ -148,7 +148,7 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&FrontEndCal_msg_rx::msg_handler_events, this, _1));
 #endif

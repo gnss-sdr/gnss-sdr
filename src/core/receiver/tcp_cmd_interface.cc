@@ -48,13 +48,13 @@ TcpCmdInterface::TcpCmdInterface()
 
 void TcpCmdInterface::register_functions()
 {
-    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
-    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
-    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
-    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
-    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
-    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
-    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
+    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);                      // NOLINT(modernize-avoid-bind)
+    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);                    // NOLINT(modernize-avoid-bind)
+    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);                        // NOLINT(modernize-avoid-bind)
+    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);                  // NOLINT(modernize-avoid-bind)
+    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);                // NOLINT(modernize-avoid-bind)
+    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);                // NOLINT(modernize-avoid-bind)
+    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);  // NOLINT(modernize-avoid-bind)
 }
 
 

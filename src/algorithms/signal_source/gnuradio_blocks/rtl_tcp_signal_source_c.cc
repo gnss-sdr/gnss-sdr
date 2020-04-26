@@ -135,12 +135,8 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 
     // 6. Start reading
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
-#if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1, auto &&PH2) { handle_read(PH1, PH2); });
-#else
-        boost::bind(&rtl_tcp_signal_source_c::handle_read,
-            this, _1, _2));
-#endif
+        boost::bind(&rtl_tcp_signal_source_c::handle_read, this, _1, _2));  // NOLINT(modernize-avoid-bind)
+
     boost::thread(
 #if HAS_GENERIC_LAMBDA
         [ObjectPtr = &io_context_] { ObjectPtr->run(); });
@@ -320,11 +316,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
             // Read some more
             boost::asio::async_read(socket_,
                 boost::asio::buffer(data_),
-#if HAS_GENERIC_LAMBDA
-                [this](auto &&PH1, auto &&PH2) { handle_read(PH1, PH2); });
-#else
-                boost::bind(&rtl_tcp_signal_source_c::handle_read, this, _1, _2));
-#endif
+                boost::bind(&rtl_tcp_signal_source_c::handle_read, this, _1, _2));  // NOLINT(modernize-avoid-bind)
         }
 }
 

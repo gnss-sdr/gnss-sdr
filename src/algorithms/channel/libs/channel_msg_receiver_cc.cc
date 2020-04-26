@@ -42,7 +42,7 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
 #endif

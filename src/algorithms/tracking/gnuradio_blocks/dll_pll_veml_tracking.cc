@@ -100,7 +100,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     this->set_msg_handler(
         pmt::mp("telemetry_to_trk"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1) { msg_handler_telemetry_to_trk(PH1); });
+        [this](pmt::pmt_t &&PH1) { msg_handler_telemetry_to_trk(PH1); });
 #else
         boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
 #endif

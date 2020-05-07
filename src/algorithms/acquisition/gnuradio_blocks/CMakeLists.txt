@@ -93,6 +93,12 @@ if(ENABLE_ARMA_NO_DEBUG)
     )
 endif()
 
+if(has_span)
+    target_compile_definitions(acquisition_gr_blocks
+        PRIVATE -DHAS_STD_SPAN=1
+    )
+endif()
+
 if(ENABLE_OPENCL)
     target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
     target_include_directories(acquisition_gr_blocks

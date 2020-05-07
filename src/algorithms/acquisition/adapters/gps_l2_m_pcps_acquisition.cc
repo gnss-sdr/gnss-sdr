@@ -29,6 +29,12 @@
 #include <glog/logging.h>
 #include <algorithm>
 
+#if HAS_STD_SPAN
+#include <span>
+#else
+#include <gsl/gsl>
+using std::span = gsl::span;
+#endif
 
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     ConfigurationInterface* configuration,
@@ -156,7 +162,7 @@ void GpsL2MPcpsAcquisition::set_local_code()
             gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
         }
 
-    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
+    std::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
             std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());

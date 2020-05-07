@@ -130,6 +130,12 @@ else()
     )
 endif()
 
+if(has_span)
+    target_compile_definitions(tracking_gr_blocks
+        PUBLIC -DHAS_STD_SPAN=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(tracking_gr_blocks

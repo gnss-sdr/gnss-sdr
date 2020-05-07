@@ -29,8 +29,14 @@
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
-#include <gsl/gsl>
 #include <algorithm>
+
+#if HAS_STD_SPAN
+#include <span>
+#else
+#include <gsl/gsl>
+using std::span = gsl::span;
+#endif
 
 
 GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
@@ -157,7 +163,7 @@ void GpsL1CaPcpsAcquisition::set_local_code()
         {
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.fs_in, 0);
         }
-    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
+    std::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());

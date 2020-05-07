@@ -21,9 +21,15 @@
 #include "GPS_L1_CA.h"
 #include "gnss_signal_processing.h"
 #include <armadillo>
-#include <gsl/gsl>
 #include <chrono>
 #include <complex>
+
+#if HAS_STD_SPAN
+#include <span>
+namespace gsl = std;
+#else
+#include <gsl/gsl>
+#endif
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 
@@ -110,7 +116,7 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    complex_exp_gen(gsl::span<std::complex<float>>(output, static_cast<unsigned int>(FLAGS_size_carrier_test)), _f, _fs);
+    complex_exp_gen(std::span<std::complex<float>>(output, static_cast<unsigned int>(FLAGS_size_carrier_test)), _f, _fs);
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;

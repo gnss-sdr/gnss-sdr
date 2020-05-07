@@ -106,6 +106,12 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(has_span)
+    target_compile_definitions(acquisition_adapters
+        PRIVATE -DHAS_STD_SPAN=1
+    )
+endif()
+
 if(ENABLE_FPGA)
     target_link_libraries(acquisition_adapters
         PRIVATE

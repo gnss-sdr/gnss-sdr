@@ -26,7 +26,6 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_assisted_acquisition_cc.h"
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -150,7 +149,7 @@ private:
     int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::shared_ptr<std::complex<float>> code_;
+    std::vector<std::complex<float>> code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

@@ -24,41 +24,46 @@
 #ifndef GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
 #define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
 
-#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
+#if HAS_STD_SPAN
+#include <span>
+#else
+#include <gsl/gsl>
+using std::span = gsl::span;
+#endif
 
 /*!
  * \brief This function generates a complex exponential in _dest.
  *
  */
-void complex_exp_gen(gsl::span<std::complex<float>> _dest, double _f, double _fs);
+void complex_exp_gen(std::span<std::complex<float>> _dest, double _f, double _fs);
 
 /*!
  * \brief This function generates a conjugate complex exponential in _dest.
  *
  */
-void complex_exp_gen_conj(gsl::span<std::complex<float>> _dest, double _f, double _fs);
+void complex_exp_gen_conj(std::span<std::complex<float>> _dest, double _f, double _fs);
 
 /*!
  * \brief This function makes a conversion from hex (the input is a char)
  *  to binary (the output are 4 ints with +1 or -1 values).
  *
  */
-void hex_to_binary_converter(gsl::span<int32_t> _dest, char _from);
+void hex_to_binary_converter(std::span<int32_t> _dest, char _from);
 
 /*!
  * \brief This function resamples a sequence of float values.
  *
  */
-void resampler(const gsl::span<float> _from, gsl::span<float> _dest,
+void resampler(const std::span<float> _from, std::span<float> _dest,
     float _fs_in, float _fs_out);
 
 /*!
  * \brief This function resamples a sequence of complex values.
  *
  */
-void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::complex<float>> _dest,
+void resampler(std::span<const std::complex<float>> _from, std::span<std::complex<float>> _dest,
     float _fs_in, float _fs_out);
 
 #endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H

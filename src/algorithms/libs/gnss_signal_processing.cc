@@ -26,7 +26,7 @@
 #include <cstddef>  // for size_t
 
 
-auto auxCeil2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
+const auto auxCeil2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void complex_exp_gen(gsl::span<std::complex<float>> _dest, double _f, double _fs)
 {

@@ -23,7 +23,7 @@
 #include <array>
 #include <bitset>
 
-auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
+const auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void glonass_l2_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _chip_shift)
 {

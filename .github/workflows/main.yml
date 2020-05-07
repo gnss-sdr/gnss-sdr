@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: install dependencies
-      run: brew install ninja pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && pip3 install mako && pip3 install six
+      run: brew install ninja pkg-config hdf5 armadillo lapack gflags glog gnuradio log4cpp pugixml protobuf && pip3 install mako && pip3 install six
     - name: configure
       run: cd build && cmake -GNinja ..
     - name: build

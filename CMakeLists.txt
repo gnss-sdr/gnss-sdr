@@ -1854,7 +1854,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
                     GIT_REPOSITORY https://github.com/tbeu/matio
-                    GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+                    GIT_TAG 596cb3ce71038958812bd6cf9b141f12ce155ac6 # Workaround until Matio 1.5.18 v${GNSSSDR_MATIO_LOCAL_VERSION}
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>

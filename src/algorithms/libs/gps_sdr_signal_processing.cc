@@ -23,7 +23,7 @@
 #include <array>
 #include <bitset>
 
-const auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
+const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
@@ -172,7 +172,7 @@ void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, ui
             // millisecond).
 
             aux = (_ts * (i + 1)) / _tc;
-            _codeValueIndex = auxCeil(aux) - 1;
+            _codeValueIndex = AUX_CEIL(aux) - 1;
 
             // --- Make the digitized version of the C/A code -------------------
             // The "upsampled" code is made by selecting values form the CA code

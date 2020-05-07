@@ -26,7 +26,7 @@
 #include <cstddef>  // for size_t
 
 
-const auto auxCeil2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
+const auto AUX_CEIL2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
 void complex_exp_gen(gsl::span<std::complex<float>> _dest, double _f, double _fs)
 {
@@ -163,7 +163,7 @@ void resampler(const gsl::span<float> _from, gsl::span<float> _dest, float _fs_i
             // === Digitizing ==================================================
             // --- compute index array to read sampled values ------------------
             aux = (_t_out * (i + 1)) / _t_in;
-            _codeValueIndex = auxCeil2(aux) - 1;
+            _codeValueIndex = AUX_CEIL2(aux) - 1;
 
             // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
@@ -186,7 +186,7 @@ void resampler(gsl::span<const std::complex<float>> _from, gsl::span<std::comple
             // === Digitizing ==================================================
             // --- compute index array to read sampled values ------------------
             aux = (_t_out * (i + 1)) / _t_in;
-            _codeValueIndex = auxCeil2(aux) - 1;
+            _codeValueIndex = AUX_CEIL2(aux) - 1;
 
             // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];

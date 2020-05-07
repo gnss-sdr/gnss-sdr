@@ -32,7 +32,7 @@ uint32_t gps_l2c_m_shift(uint32_t x)
 }
 
 
-void gps_l2c_m_code(std::span<int32_t> _dest, uint32_t _prn)
+void gps_l2c_m_code(own::span<int32_t> _dest, uint32_t _prn)
 {
     uint32_t x;
     x = GPS_L2C_M_INIT_REG[_prn - 1];
@@ -44,7 +44,7 @@ void gps_l2c_m_code(std::span<int32_t> _dest, uint32_t _prn)
 }
 
 
-void gps_l2c_m_code_gen_complex(std::span<std::complex<float>> _dest, uint32_t _prn)
+void gps_l2c_m_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn)
 {
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)
@@ -59,7 +59,7 @@ void gps_l2c_m_code_gen_complex(std::span<std::complex<float>> _dest, uint32_t _
 }
 
 
-void gps_l2c_m_code_gen_float(std::span<float> _dest, uint32_t _prn)
+void gps_l2c_m_code_gen_float(own::span<float> _dest, uint32_t _prn)
 {
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)
@@ -77,7 +77,7 @@ void gps_l2c_m_code_gen_float(std::span<float> _dest, uint32_t _prn)
 /*
  *  Generates complex GPS L2C M code for the desired SV ID and sampled to specific sampling frequency
  */
-void gps_l2c_m_code_gen_complex_sampled(std::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
+void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)

@@ -26,28 +26,29 @@
 #include <cstdint>
 #if HAS_STD_SPAN
 #include <span>
+namespace own = std;
 #else
 #include <gsl/gsl>
-using std::span = gsl::span;
+namespace own = gsl;
 #endif
 
 //! Generates complex GPS L5I code for the desired SV ID
-void gps_l5i_code_gen_complex(std::span<std::complex<float>> _dest, uint32_t _prn);
+void gps_l5i_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
 
 //! Generates real GPS L5I code for the desired SV ID
-void gps_l5i_code_gen_float(std::span<float> _dest, uint32_t _prn);
+void gps_l5i_code_gen_float(own::span<float> _dest, uint32_t _prn);
 
 //! Generates complex GPS L5Q code for the desired SV ID
-void gps_l5q_code_gen_complex(std::span<std::complex<float>> _dest, uint32_t _prn);
+void gps_l5q_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
 
 //! Generates real GPS L5Q code for the desired SV ID
-void gps_l5q_code_gen_float(std::span<float> _dest, uint32_t _prn);
+void gps_l5q_code_gen_float(own::span<float> _dest, uint32_t _prn);
 
 //! Generates complex GPS L5I code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l5i_code_gen_complex_sampled(std::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
+void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
 
 //! Generates complex GPS L5Q code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l5q_code_gen_complex_sampled(std::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
+void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
 
 
 #endif  // GNSS_SDR_GPS_L5_SIGNAL_H

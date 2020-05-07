@@ -64,9 +64,10 @@
 
 #if HAS_STD_SPAN
 #include <span>
+namespace own = std;
 #else
 #include <gsl/gsl>
-using std::span = gsl::span;
+namespace own = gsl;
 #endif
 
 #if GNURADIO_USES_STD_POINTERS
@@ -262,7 +263,7 @@ private:
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
     arma::fmat narrow_grid_;
-    void update_local_carrier(std::span<gr_complex> carrier_vector, float freq);
+    void update_local_carrier(own::span<gr_complex> carrier_vector, float freq);
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     void acquisition_core(uint64_t samp_count);

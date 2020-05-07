@@ -26,9 +26,10 @@
 #include <cstdint>
 #if HAS_STD_SPAN
 #include <span>
+namespace own = std;
 #else
 #include <gsl/gsl>
-using std::span = gsl::span;
+namespace own = gsl;
 #endif
 
 
@@ -36,14 +37,14 @@ using std::span = gsl::span;
  * \brief This function generates Galileo E1 code (can select E1B or E1C sinboc).
  *
  */
-void galileo_e1_code_gen_sinboc11_float(std::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn);
+void galileo_e1_code_gen_sinboc11_float(own::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn);
 
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
  * and the sample frequency _fs).
  *
  */
-void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
     bool _secondary_flag);
 
@@ -52,7 +53,7 @@ void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<
  * and the sample frequency _fs).
  *
  */
-void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 /*!
@@ -60,14 +61,14 @@ void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<
  * and the sample frequency _fs).
  *
  */
-void galileo_e1_code_gen_complex_sampled(std::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
     bool _secondary_flag);
 
 /*!
  * \brief galileo_e1_code_gen_complex_sampled without _secondary_flag for backward compatibility.
  */
-void galileo_e1_code_gen_complex_sampled(std::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 #endif  // GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H

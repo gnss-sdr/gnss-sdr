@@ -29,9 +29,10 @@
 
 #if HAS_STD_SPAN
 #include <span>
+namespace own = std;
 #else
 #include <gsl/gsl>
-using std::span = gsl::span;
+namespace own = gsl;
 #endif
 
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
@@ -172,7 +173,7 @@ void GalileoE5aPcpsAcquisition::set_local_code()
         {
             galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
         }
-    std::span<gr_complex> code_span(code_.data(), vector_length_);
+    own::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());

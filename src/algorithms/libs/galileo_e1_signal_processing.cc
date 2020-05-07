@@ -28,7 +28,7 @@
 #include <vector>
 
 
-void galileo_e1_code_gen_int(std::span<int> _dest, const std::array<char, 3>& _Signal, int32_t _prn)
+void galileo_e1_code_gen_int(own::span<int> _dest, const std::array<char, 3>& _Signal, int32_t _prn)
 {
     std::string _galileo_signal = _Signal.data();
     int32_t prn = _prn - 1;
@@ -59,7 +59,7 @@ void galileo_e1_code_gen_int(std::span<int> _dest, const std::array<char, 3>& _S
 }
 
 
-void galileo_e1_sinboc_11_gen_int(std::span<int> _dest, std::span<const int> _prn)
+void galileo_e1_sinboc_11_gen_int(own::span<int> _dest, own::span<const int> _prn)
 {
     const uint32_t _length_in = GALILEO_E1_B_CODE_LENGTH_CHIPS;
     auto _period = static_cast<uint32_t>(_dest.size() / _length_in);
@@ -77,7 +77,7 @@ void galileo_e1_sinboc_11_gen_int(std::span<int> _dest, std::span<const int> _pr
 }
 
 
-void galileo_e1_sinboc_61_gen_int(std::span<int> _dest, std::span<const int> _prn)
+void galileo_e1_sinboc_61_gen_int(own::span<int> _dest, own::span<const int> _prn)
 {
     const uint32_t _length_in = GALILEO_E1_B_CODE_LENGTH_CHIPS;
     auto _period = static_cast<uint32_t>(_dest.size() / _length_in);
@@ -96,7 +96,7 @@ void galileo_e1_sinboc_61_gen_int(std::span<int> _dest, std::span<const int> _pr
 }
 
 
-void galileo_e1_code_gen_sinboc11_float(std::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn)
+void galileo_e1_code_gen_sinboc11_float(own::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn)
 {
     std::string _galileo_signal = _Signal.data();
     const auto _codeLength = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
@@ -110,7 +110,7 @@ void galileo_e1_code_gen_sinboc11_float(std::span<float> _dest, const std::array
 }
 
 
-void galileo_e1_gen_float(std::span<float> _dest, std::span<int> _prn, const std::array<char, 3>& _Signal)
+void galileo_e1_gen_float(own::span<float> _dest, own::span<int> _prn, const std::array<char, 3>& _Signal)
 {
     std::string _galileo_signal = _Signal.data();
     const uint32_t _codeLength = 12 * GALILEO_E1_B_CODE_LENGTH_CHIPS;
@@ -119,8 +119,8 @@ void galileo_e1_gen_float(std::span<float> _dest, std::span<int> _prn, const std
 
     std::array<int32_t, 12 * 4092> sinboc_11{};
     std::array<int32_t, 12 * 4092> sinboc_61{};
-    std::span<int32_t> sinboc_11_(sinboc_11.data(), _codeLength);
-    std::span<int32_t> sinboc_61_(sinboc_61.data(), _codeLength);
+    own::span<int32_t> sinboc_11_(sinboc_11.data(), _codeLength);
+    own::span<int32_t> sinboc_61_(sinboc_61.data(), _codeLength);
 
     galileo_e1_sinboc_11_gen_int(sinboc_11_, _prn);  // generate sinboc(1,1) 12 samples per chip
     galileo_e1_sinboc_61_gen_int(sinboc_61_, _prn);  // generate sinboc(6,1) 12 samples per chip
@@ -144,7 +144,7 @@ void galileo_e1_gen_float(std::span<float> _dest, std::span<int> _prn, const std
 }
 
 
-void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
     bool _secondary_flag)
 {
@@ -210,7 +210,7 @@ void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<
 }
 
 
-void galileo_e1_code_gen_complex_sampled(std::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
     bool _secondary_flag)
 {
@@ -234,14 +234,14 @@ void galileo_e1_code_gen_complex_sampled(std::span<std::complex<float>> _dest, c
 }
 
 
-void galileo_e1_code_gen_float_sampled(std::span<float> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     galileo_e1_code_gen_float_sampled(_dest, _Signal, _cboc, _prn, _fs, _chip_shift, false);
 }
 
 
-void galileo_e1_code_gen_complex_sampled(std::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
+void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     galileo_e1_code_gen_complex_sampled(_dest, _Signal, _cboc, _prn, _fs, _chip_shift, false);

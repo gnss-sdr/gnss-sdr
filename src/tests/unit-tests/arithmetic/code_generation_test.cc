@@ -43,7 +43,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1Test)
 
     for (int i = 0; i < iterations; i++)
         {
-            gps_l1_ca_code_gen_complex(std::span<std::complex<float>>(_dest, 1023), _prn, _chip_shift);
+            gps_l1_ca_code_gen_complex(own::span<std::complex<float>>(_dest, 1023), _prn, _chip_shift);
         }
 
     end = std::chrono::system_clock::now();
@@ -72,7 +72,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 
     for (int i = 0; i < iterations; i++)
         {
-            gps_l1_ca_code_gen_complex_sampled(std::span<std::complex<float>>(_dest, _samplesPerCode), _prn, _fs, _chip_shift);
+            gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>>(_dest, _samplesPerCode), _prn, _fs, _chip_shift);
         }
 
     end = std::chrono::system_clock::now();
@@ -100,7 +100,7 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 
     for (int i = 0; i < iterations; i++)
         {
-            complex_exp_gen_conj(std::span<std::complex<float>>(_dest, _samplesPerCode), _f, _fs);
+            complex_exp_gen_conj(own::span<std::complex<float>>(_dest, _samplesPerCode), _f, _fs);
         }
 
     end = std::chrono::system_clock::now();

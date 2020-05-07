@@ -28,12 +28,12 @@
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
 #include <algorithm>
-
 #if HAS_STD_SPAN
 #include <span>
+namespace own = std;
 #else
 #include <gsl/gsl>
-using std::span = gsl::span;
+namespace own = gsl;
 #endif
 
 GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
@@ -164,7 +164,7 @@ void GpsL5iPcpsAcquisition::set_local_code()
             gps_l5i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
         }
 
-    std::span<gr_complex> code_span(code_.data(), vector_length_);
+    own::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
             std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());

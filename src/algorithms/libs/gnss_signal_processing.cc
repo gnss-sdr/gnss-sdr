@@ -28,7 +28,7 @@
 
 const auto AUX_CEIL2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void complex_exp_gen(std::span<std::complex<float>> _dest, double _f, double _fs)
+void complex_exp_gen(own::span<std::complex<float>> _dest, double _f, double _fs)
 {
     gr::fxpt_nco d_nco;
     d_nco.set_freq((GPS_TWO_PI * _f) / _fs);
@@ -36,7 +36,7 @@ void complex_exp_gen(std::span<std::complex<float>> _dest, double _f, double _fs
 }
 
 
-void complex_exp_gen_conj(std::span<std::complex<float>> _dest, double _f, double _fs)
+void complex_exp_gen_conj(own::span<std::complex<float>> _dest, double _f, double _fs)
 {
     gr::fxpt_nco d_nco;
     d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
@@ -44,7 +44,7 @@ void complex_exp_gen_conj(std::span<std::complex<float>> _dest, double _f, doubl
 }
 
 
-void hex_to_binary_converter(std::span<int32_t> _dest, char _from)
+void hex_to_binary_converter(own::span<int32_t> _dest, char _from)
 {
     switch (_from)
         {
@@ -150,7 +150,7 @@ void hex_to_binary_converter(std::span<int32_t> _dest, char _from)
 }
 
 
-void resampler(const std::span<float> _from, std::span<float> _dest, float _fs_in,
+void resampler(const own::span<float> _from, own::span<float> _dest, float _fs_in,
     float _fs_out)
 {
     uint32_t _codeValueIndex;
@@ -173,7 +173,7 @@ void resampler(const std::span<float> _from, std::span<float> _dest, float _fs_i
 }
 
 
-void resampler(std::span<const std::complex<float>> _from, std::span<std::complex<float>> _dest, float _fs_in,
+void resampler(own::span<const std::complex<float>> _from, own::span<std::complex<float>> _dest, float _fs_in,
     float _fs_out)
 {
     uint32_t _codeValueIndex;

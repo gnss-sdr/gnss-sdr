@@ -54,7 +54,6 @@
 #include <gnuradio/gr_complex.h>              // for gr_complex
 #include <gnuradio/thread/thread.h>           // for scoped_lock
 #include <gnuradio/types.h>                   // for gr_vector_const_void_star
-#include <gsl/gsl>                            // for Guidelines Support Library
 #include <volk/volk_complex.h>                // for lv_16sc_t
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <complex>
@@ -62,6 +61,15 @@
 #include <memory>
 #include <string>
 #include <utility>
+
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
+
 #if GNURADIO_USES_STD_POINTERS
 #else
 #include <boost/shared_ptr.hpp>
@@ -255,7 +263,7 @@ private:
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
     arma::fmat narrow_grid_;
-    void update_local_carrier(gsl::span<gr_complex> carrier_vector, float freq);
+    void update_local_carrier(own::span<gr_complex> carrier_vector, float freq);
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     void acquisition_core(uint64_t samp_count);

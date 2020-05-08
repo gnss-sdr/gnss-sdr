@@ -85,10 +85,12 @@ else()
     target_link_libraries(algorithms_libs PRIVATE Boost::filesystem Boost::system)
 endif()
 
-target_include_directories(algorithms_libs
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
-)
+if(NOT has_span)
+    target_include_directories(algorithms_libs
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
+    )
+endif()
 
 target_link_libraries(algorithms_libs
     PUBLIC
@@ -107,6 +109,12 @@ target_link_libraries(algorithms_libs
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(algorithms_libs
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+if(has_span)
+    target_compile_definitions(algorithms_libs
+        PUBLIC -DHAS_STD_SPAN=1
     )
 endif()
 

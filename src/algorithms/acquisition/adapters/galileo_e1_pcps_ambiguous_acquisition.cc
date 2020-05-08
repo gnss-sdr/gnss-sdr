@@ -28,6 +28,13 @@
 #include <glog/logging.h>
 #include <algorithm>
 
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
 
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     ConfigurationInterface* configuration,
@@ -182,7 +189,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
                 }
         }
 
-    gsl::span<gr_complex> code__span(code_.data(), vector_length_);
+    own::span<gr_complex> code__span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
         {
             std::copy_n(code.data(), code_length_, code__span.subspan(i * code_length_, code_length_).data());

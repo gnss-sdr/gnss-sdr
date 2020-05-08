@@ -22,23 +22,29 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H
 #define GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H
 
-#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
 
 //! Generates int32_t GPS L1 C/A code for the desired SV ID and code shift
-void beidou_b1i_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift);
+void beidou_b1i_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift);
 
 //! Generates float GPS L1 C/A code for the desired SV ID and code shift
-void beidou_b1i_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _chip_shift);
+void beidou_b1i_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _chip_shift);
 
 //! Generates complex GPS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
-void beidou_b1i_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift);
+void beidou_b1i_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift);
 
 //! Generates N complex GPS L1 C/A codes for the desired SV ID and code shift
-void beidou_b1i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
+void beidou_b1i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
 
 //! Generates complex GPS L1 C/A code for the desired SV ID and code shift
-void beidou_b1i_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
+void beidou_b1i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 #endif  // GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H

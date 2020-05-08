@@ -39,9 +39,8 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
-#include <gsl/gsl>
-#include <matio.h>          // for Mat_VarCreate
-#include <pmt/pmt_sugar.h>  // for mp
+#include <matio.h>                   // for Mat_VarCreate
+#include <pmt/pmt_sugar.h>           // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
 #include <cmath>      // for fmod, round, floor

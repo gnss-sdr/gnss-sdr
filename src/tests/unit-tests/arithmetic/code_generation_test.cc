@@ -20,10 +20,15 @@
 
 #include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
-#include <gsl/gsl>
 #include <chrono>
 #include <complex>
 
+#if HAS_STD_SPAN
+#include <span>
+namespace gsl = std;
+#else
+#include <gsl/gsl>
+#endif
 
 TEST(CodeGenerationTest, CodeGenGPSL1Test)
 {
@@ -38,7 +43,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1Test)
 
     for (int i = 0; i < iterations; i++)
         {
-            gps_l1_ca_code_gen_complex(gsl::span<std::complex<float>>(_dest, 1023), _prn, _chip_shift);
+            gps_l1_ca_code_gen_complex(own::span<std::complex<float>>(_dest, 1023), _prn, _chip_shift);
         }
 
     end = std::chrono::system_clock::now();
@@ -67,7 +72,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 
     for (int i = 0; i < iterations; i++)
         {
-            gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>>(_dest, _samplesPerCode), _prn, _fs, _chip_shift);
+            gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>>(_dest, _samplesPerCode), _prn, _fs, _chip_shift);
         }
 
     end = std::chrono::system_clock::now();
@@ -95,7 +100,7 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 
     for (int i = 0; i < iterations; i++)
         {
-            complex_exp_gen_conj(gsl::span<std::complex<float>>(_dest, _samplesPerCode), _f, _fs);
+            complex_exp_gen_conj(own::span<std::complex<float>>(_dest, _samplesPerCode), _f, _fs);
         }
 
     end = std::chrono::system_clock::now();

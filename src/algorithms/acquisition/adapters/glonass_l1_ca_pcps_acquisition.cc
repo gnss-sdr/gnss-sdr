@@ -29,6 +29,13 @@
 #include <glog/logging.h>
 #include <algorithm>
 
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
 
 GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     ConfigurationInterface* configuration,
@@ -142,7 +149,7 @@ void GlonassL1CaPcpsAcquisition::set_local_code()
 
     glonass_l1_ca_code_gen_complex_sampled(code, fs_in_, 0);
 
-    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
+    own::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());

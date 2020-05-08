@@ -22,15 +22,21 @@
 #ifndef GNSS_SDR_GPS_L2C_SIGNAL_H
 #define GNSS_SDR_GPS_L2C_SIGNAL_H
 
-#include <gsl/gsl>
 #include <complex>
 #include <cstdint>
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
 
 //! Generates complex GPS L2C M code for the desired SV ID
-void gps_l2c_m_code_gen_complex(gsl::span<std::complex<float>> _dest, uint32_t _prn);
-void gps_l2c_m_code_gen_float(gsl::span<float> _dest, uint32_t _prn);
+void gps_l2c_m_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
+void gps_l2c_m_code_gen_float(own::span<float> _dest, uint32_t _prn);
 
 //! Generates complex GPS L2C M code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l2c_m_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
+void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
 
 #endif  // GNSS_SDR_GPS_L2C_SIGNAL_H

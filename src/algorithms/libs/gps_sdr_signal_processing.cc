@@ -25,7 +25,7 @@
 
 const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
     std::bitset<_code_length> G1{};
@@ -110,7 +110,7 @@ void gps_l1_ca_code_gen_int(gsl::span<int32_t> _dest, int32_t _prn, uint32_t _ch
 }
 
 
-void gps_l1_ca_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
     std::array<int32_t, _code_length> ca_code_int{};
@@ -124,7 +124,7 @@ void gps_l1_ca_code_gen_float(gsl::span<float> _dest, int32_t _prn, uint32_t _ch
 }
 
 
-void gps_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 1023;
     std::array<int32_t, _code_length> ca_code_int{};
@@ -142,7 +142,7 @@ void gps_l1_ca_code_gen_complex(gsl::span<std::complex<float>> _dest, int32_t _p
  *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  *  NOTICE: the number of samples is rounded towards zero (integer truncation)
  */
-void gps_l1_ca_code_gen_complex_sampled(gsl::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
+void gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::array<std::complex<float>, 1023> _code{};

@@ -33,6 +33,13 @@
 #include <glog/logging.h>
 #include <algorithm>
 
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
 
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     ConfigurationInterface* configuration,
@@ -226,8 +233,8 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
             // is generated, and modulated in the 'block'.
-            gsl::span<gr_complex> codeQ_span(codeQ_.data(), vector_length_);
-            gsl::span<gr_complex> codeI_span(codeI_.data(), vector_length_);
+            own::span<gr_complex> codeQ_span(codeQ_.data(), vector_length_);
+            own::span<gr_complex> codeI_span(codeI_.data(), vector_length_);
             if (Zero_padding == 0)  // if no zero_padding
                 {
                     for (unsigned int i = 0; i < sampled_ms_; i++)

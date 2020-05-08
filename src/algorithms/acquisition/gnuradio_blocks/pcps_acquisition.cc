@@ -252,7 +252,7 @@ bool pcps_acquisition::is_fdma()
 }
 
 
-void pcps_acquisition::update_local_carrier(gsl::span<gr_complex> carrier_vector, float freq)
+void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector, float freq)
 {
     float phase_step_rad;
     if (acq_parameters.use_automatic_resampler)
@@ -264,7 +264,7 @@ void pcps_acquisition::update_local_carrier(gsl::span<gr_complex> carrier_vector
             phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.fs_in);
         }
     std::array<float, 1> _phase{};
-    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.length());
+    volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.size());
 }
 
 

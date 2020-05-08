@@ -80,7 +80,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l1_ca_code_gen_int(gsl::span<int32_t>(&d_ca_codes[static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * (PRN - 1)], &d_ca_codes[static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * (PRN)]), PRN, 0);
+            gps_l1_ca_code_gen_int(own::span<int32_t>(&d_ca_codes[static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * (PRN - 1)], &d_ca_codes[static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * (PRN)]), PRN, 0);
 
             // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
             for (uint32_t k = 0; k < GPS_L1_CA_CODE_LENGTH_CHIPS; k++)

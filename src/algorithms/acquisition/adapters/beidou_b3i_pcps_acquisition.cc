@@ -27,6 +27,14 @@
 #include <glog/logging.h>
 #include <algorithm>
 
+#if HAS_STD_SPAN
+#include <span>
+namespace own = std;
+#else
+#include <gsl/gsl>
+namespace own = gsl;
+#endif
+
 using google::LogMessage;
 
 BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
@@ -137,7 +145,7 @@ void BeidouB3iPcpsAcquisition::set_local_code()
 
     beidou_b3i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-    gsl::span<gr_complex> code_span(code_.data(), vector_length_);
+    own::span<gr_complex> code_span(code_.data(), vector_length_);
     for (unsigned int i = 0; i < num_codes_; i++)
         {
             std::copy_n(code.data(), code_length_, code_span.subspan(i * code_length_, code_length_).data());

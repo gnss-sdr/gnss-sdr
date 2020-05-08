@@ -26,6 +26,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - The software can now be cross-compiled on Petalinux environments.
 - Fixes building with GCC 10 (gcc-10 and above flipped a default from `-fcommon`
   to `-fno-common`, causing an error due to multiple defined lambda functions).
+- Make use of `std::span` if the compiler supports it.
 
 ### Improvements in Reliability:
 

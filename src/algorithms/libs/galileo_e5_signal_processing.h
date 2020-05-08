@@ -4,7 +4,6 @@
  * as replica code generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -23,6 +22,7 @@
 #ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
 #define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
 
+#include <array>
 #include <complex>
 #include <cstdint>
 #if HAS_STD_SPAN
@@ -35,16 +35,21 @@ namespace own = gsl;
 
 /*!
  * \brief Generates Galileo E5a code at 1 sample/chip
- * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
  */
-void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest, int32_t _prn, const std::array<char, 3>& _Signal);
+void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest,
+    int32_t _prn,
+    const std::array<char, 3>& _Signal);
+
 
 /*!
- * \brief Generates Galileo E5a complex code, shifted to the desired chip and sampled at a frequency fs
- * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
+ * \brief Generates Galileo E5a complex code, shifted to the desired chip and
+ * sampled at a frequency fs
  */
 void galileo_e5_a_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
-    const std::array<char, 3>& _Signal, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
+    uint32_t _prn,
+    const std::array<char, 3>& _Signal,
+    int32_t _fs,
+    uint32_t _chip_shift);
 
 
 #endif  // GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H

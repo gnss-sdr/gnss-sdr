@@ -195,7 +195,7 @@ void signal_generator_c::generate_codes()
                         {
                             std::array<char, 3> signal = {{'5', 'X', '\0'}};
 
-                            galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat], signal, PRN_[sat], fs_in_,
+                            galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat], PRN_[sat], signal, fs_in_,
                                 static_cast<int>(GALILEO_E5A_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
                             // noise
                             if (noise_flag_)

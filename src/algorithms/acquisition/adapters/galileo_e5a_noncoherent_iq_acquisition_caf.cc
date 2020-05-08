@@ -218,18 +218,18 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
                     std::array<char, 3> a = {{'5', 'I', '\0'}};
-                    galileo_e5_a_code_gen_complex_sampled(codeI, a,
-                        gnss_synchro_->PRN, fs_in_, 0);
+                    galileo_e5_a_code_gen_complex_sampled(codeI,
+                        gnss_synchro_->PRN, a, fs_in_, 0);
 
                     std::array<char, 3> b = {{'5', 'Q', '\0'}};
-                    galileo_e5_a_code_gen_complex_sampled(codeQ, b,
-                        gnss_synchro_->PRN, fs_in_, 0);
+                    galileo_e5_a_code_gen_complex_sampled(codeQ,
+                        gnss_synchro_->PRN, b, fs_in_, 0);
                 }
             else
                 {
                     std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
-                    galileo_e5_a_code_gen_complex_sampled(codeI, signal_type_,
-                        gnss_synchro_->PRN, fs_in_, 0);
+                    galileo_e5_a_code_gen_complex_sampled(codeI,
+                        gnss_synchro_->PRN, signal_type_, fs_in_, 0);
                 }
             // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
             // is generated, and modulated in the 'block'.

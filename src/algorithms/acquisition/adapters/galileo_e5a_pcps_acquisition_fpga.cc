@@ -118,7 +118,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     signal_[1] = 'I';
                 }
 
-            galileo_e5_a_code_gen_complex_sampled(code, signal_, PRN, fs_in, 0);
+            galileo_e5_a_code_gen_complex_sampled(code, PRN, signal_, fs_in, 0);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {

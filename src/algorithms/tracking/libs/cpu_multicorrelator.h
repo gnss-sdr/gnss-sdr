@@ -9,31 +9,20 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CPU_MULTICORRELATOR_H_
-#define GNSS_SDR_CPU_MULTICORRELATOR_H_
+#ifndef GNSS_SDR_CPU_MULTICORRELATOR_H
+#define GNSS_SDR_CPU_MULTICORRELATOR_H
 
 
 #include <complex>
@@ -41,14 +30,14 @@
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class cpu_multicorrelator
+class Cpu_Multicorrelator
 {
 public:
-    cpu_multicorrelator();
-    ~cpu_multicorrelator();
+    Cpu_Multicorrelator();
+    ~Cpu_Multicorrelator();
     bool init(int max_signal_length_samples, int n_correlators);
-    bool set_local_code_and_taps(int code_length_chips, const std::complex<float>* local_code_in, float *shifts_chips);
-    bool set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in);
+    bool set_local_code_and_taps(int code_length_chips, const std::complex<float> *local_code_in, float *shifts_chips);
+    bool set_input_output_vectors(std::complex<float> *corr_out, const std::complex<float> *sig_in);
     void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips);
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, int signal_length_samples);
     bool free();
@@ -65,4 +54,4 @@ private:
 };
 
 
-#endif /* CPU_MULTICORRELATOR_H_ */
+#endif  // GNSS_SDR_CPU_MULTICORRELATOR_H

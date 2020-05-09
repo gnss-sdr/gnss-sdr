@@ -1,114 +1,119 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+// clang-format off
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include "volk_gnsssdr_machines.h"
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include "volk_gnsssdr_rank_archs.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+// clang-format on
 
 static size_t __alignment = 0;
 static intptr_t __alignment_mask = 0;
 
 struct volk_gnsssdr_machine *get_machine(void)
 {
-  extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
-  extern unsigned int n_volk_gnsssdr_machines;
-  static struct volk_gnsssdr_machine *machine = NULL;
+    extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
+    extern unsigned int n_volk_gnsssdr_machines;
+    static struct volk_gnsssdr_machine *machine = NULL;
 
-  if(machine != NULL)
-    return machine;
-  else {
-    unsigned int max_score = 0;
-    unsigned int i;
-    struct volk_gnsssdr_machine *max_machine = NULL;
-    for(i=0; i<n_volk_gnsssdr_machines; i++) {
-      if(!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch()))) {
-        if(volk_gnsssdr_machines[i]->caps > max_score) {
-          max_score = volk_gnsssdr_machines[i]->caps;
-          max_machine = volk_gnsssdr_machines[i];
+    if (machine != NULL)
+        return machine;
+    else
+        {
+            unsigned int max_score = 0;
+            unsigned int i;
+            struct volk_gnsssdr_machine *max_machine = NULL;
+            for (i = 0; i < n_volk_gnsssdr_machines; i++)
+                {
+                    if (!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch())))
+                        {
+                            if (volk_gnsssdr_machines[i]->caps > max_score)
+                                {
+                                    max_score = volk_gnsssdr_machines[i]->caps;
+                                    max_machine = volk_gnsssdr_machines[i];
+                                }
+                        }
+                }
+            machine = max_machine;
+            //printf("Using Volk machine: %s\n", machine->name);
+            __alignment = machine->alignment;
+            __alignment_mask = (intptr_t)(__alignment - 1);
+            return machine;
         }
-      }
-    }
-    machine = max_machine;
-    //printf("Using Volk machine: %s\n", machine->name);
-    __alignment = machine->alignment;
-    __alignment_mask = (intptr_t)(__alignment-1);
-    return machine;
-  }
 }
 
 void volk_gnsssdr_list_machines(void)
 {
-  extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
-  extern unsigned int n_volk_gnsssdr_machines;
+    extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
+    extern unsigned int n_volk_gnsssdr_machines;
 
-  unsigned int i;
-  for(i=0; i<n_volk_gnsssdr_machines; i++) {
-    if(!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch()))) {
-        printf("%s;", volk_gnsssdr_machines[i]->name);
-    }
-  }
-  printf("\n");
+    unsigned int i;
+    for (i = 0; i < n_volk_gnsssdr_machines; i++)
+        {
+            if (!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch())))
+                {
+                    printf("%s;", volk_gnsssdr_machines[i]->name);
+                }
+        }
+    printf("\n");
 }
 
-const char* volk_gnsssdr_get_machine(void)
+const char *volk_gnsssdr_get_machine(void)
 {
-  extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
-  extern unsigned int n_volk_gnsssdr_machines;
-  static struct volk_gnsssdr_machine *machine = NULL;
+    extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
+    extern unsigned int n_volk_gnsssdr_machines;
+    static struct volk_gnsssdr_machine *machine = NULL;
 
-  if(machine != NULL)
-    return machine->name;
-  else {
-    unsigned int max_score = 0;
-    unsigned int i;
-    struct volk_gnsssdr_machine *max_machine = NULL;
-    for(i=0; i<n_volk_gnsssdr_machines; i++) {
-      if(!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch()))) {
-        if(volk_gnsssdr_machines[i]->caps > max_score) {
-          max_score = volk_gnsssdr_machines[i]->caps;
-          max_machine = volk_gnsssdr_machines[i];
+    if (machine != NULL)
+        return machine->name;
+    else
+        {
+            unsigned int max_score = 0;
+            unsigned int i;
+            struct volk_gnsssdr_machine *max_machine = NULL;
+            for (i = 0; i < n_volk_gnsssdr_machines; i++)
+                {
+                    if (!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch())))
+                        {
+                            if (volk_gnsssdr_machines[i]->caps > max_score)
+                                {
+                                    max_score = volk_gnsssdr_machines[i]->caps;
+                                    max_machine = volk_gnsssdr_machines[i];
+                                }
+                        }
+                }
+            machine = max_machine;
+            return machine->name;
         }
-      }
-    }
-    machine = max_machine;
-    return machine->name;
-  }
 }
 
 size_t volk_gnsssdr_get_alignment(void)
 {
-    get_machine(); //ensures alignment is set
+    get_machine();  //ensures alignment is set
     return __alignment;
 }
 
 bool volk_gnsssdr_is_aligned(const void *ptr)
 {
-    return ((intptr_t)(ptr) & __alignment_mask) == 0;
+    return ((intptr_t)(ptr)&__alignment_mask) == 0;
 }
 
 #define LV_HAVE_GENERIC
 #define LV_HAVE_DISPATCHER
+
+// clang-format off
 
 %for kern in kernels:
 
@@ -190,6 +195,8 @@ void ${kern.name}_manual(${kern.arglist_full}, const char* impl_name)
     );
 }
 
+
+
 volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void) {
     const char **impl_names = get_machine()->${kern.name}_impl_names;
     const int *impl_deps = get_machine()->${kern.name}_impl_deps;
@@ -205,3 +212,5 @@ volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void) {
 }
 
 %endfor
+
+    // clang-format on

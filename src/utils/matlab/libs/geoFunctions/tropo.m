@@ -1,9 +1,9 @@
 function ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum)
-%TROPO  Calculation of tropospheric correction.
+% TROPO  Calculation of tropospheric correction.
 %       The range correction ddr in m is to be subtracted from
 %       pseudo-ranges and carrier phases
 %
-%ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum);
+% ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum);
 %
 %   Inputs:
 %       sinel   - sin of elevation angle of satellite
@@ -25,10 +25,13 @@ function ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum)
 % Francisco, December 12-17
 
 % A Matlab reimplementation of a C code from driver.
-% Kai Borre 06-28-95
+% Copyright (C) Kai Borre 06-28-95
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
 %
-% CVS record:
-% $Id: tropo.m,v 1.1.1.1.2.4 2006/08/22 13:46:00 dpl Exp $
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 
 a_e    = 6378.137;     % semi-major axis of earth ellipsoid
@@ -57,12 +60,12 @@ ref     = refsea * ((htop-hsta)/htop)^4;
 
 while 1
     rtop = (a_e+htop)^2 - (a_e+hsta)^2*(1-sinel^2);
-    
+
     % check to see if geometry is crazy
     if rtop < 0
-        rtop = 0; 
-    end 
-    
+        rtop = 0;
+    end
+
     rtop = sqrt(rtop) - (a_e+hsta)*sinel;
     a    = -sinel/(htop-hsta);
     b    = -b0*(1-sinel^2) / (htop-hsta);
@@ -71,25 +74,25 @@ while 1
     for i = 1:8
         rn(i) = rtop^(i+1);
     end
-    
+
     alpha = [2*a, 2*a^2+4*b/3, a*(a^2+3*b),...
         a^4/5+2.4*a^2*b+1.2*b^2, 2*a*b*(a^2+3*b)/3,...
         b^2*(6*a^2+4*b)*1.428571e-1, 0, 0];
-    
+
     if b^2 > 1.0e-35
-        alpha(7) = a*b^3/2; 
-        alpha(8) = b^4/9; 
+        alpha(7) = a*b^3/2;
+        alpha(8) = b^4/9;
     end
 
     dr = rtop;
     dr = dr + alpha*rn;
     tropo = tropo + dr*ref*1000;
-    
+
     if done == 'TRUE '
-        ddr = tropo; 
-        break; 
+        ddr = tropo;
+        break;
     end
-    
+
     done    = 'TRUE ';
     refsea  = (371900.0e-6/tksea-12.92e-6)/tksea;
     htop    = 1.1385e-5 * (1255/tksea+0.05)/refsea;

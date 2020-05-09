@@ -58,20 +58,14 @@
 # the new option.
 # E.g. my_install(TARGETS foo DESTINATION OPTIONAL) would result in
 # MY_INSTALL_DESTINATION set to "OPTIONAL", but MY_INSTALL_DESTINATION would
-# be empty and MY_INSTALL_OPTIONAL would be set to TRUE therefor.
+# be empty and MY_INSTALL_OPTIONAL would be set to TRUE therefore.
 
 #=============================================================================
 # Copyright 2010 Alexander Neundorf <neundorf@kde.org>
 #
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file Copyright.txt for details.
+# SPDX-License-Identifier: BSD-1-Clause
 #
-# This software is distributed WITHOUT ANY WARRANTY; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
 #=============================================================================
-# (To distribute this file outside of CMake, substitute the full
-#  License text for the above reference.)
 
 
 if(__CMAKE_PARSE_ARGUMENTS_INCLUDED)
@@ -83,12 +77,12 @@ set(__CMAKE_PARSE_ARGUMENTS_INCLUDED TRUE)
 function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgNames)
   # first set all result variables to empty/FALSE
   foreach(arg_name ${_singleArgNames} ${_multiArgNames})
-    set(${prefix}_${arg_name})
-  endforeach(arg_name)
+      set(${prefix}_${arg_name})
+  endforeach()
 
   foreach(option ${_optionNames})
-    set(${prefix}_${option} FALSE)
-  endforeach(option)
+      set(${prefix}_${option} FALSE)
+  endforeach()
 
   set(${prefix}_UNPARSED_ARGUMENTS)
 
@@ -109,9 +103,9 @@ function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgName
         elseif("${insideValues}" STREQUAL "MULTI")
           list(APPEND ${prefix}_${currentArgName} ${currentArg})
         endif()
-      else(insideValues)
+      else()
         list(APPEND ${prefix}_UNPARSED_ARGUMENTS ${currentArg})
-      endif(insideValues)
+      endif()
     else()
       if(NOT ${optionIndex} EQUAL -1)
         set(${prefix}_${currentArg} TRUE)
@@ -127,12 +121,12 @@ function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgName
       endif()
     endif()
 
-  endforeach(currentArg)
+  endforeach()
 
   # propagate the result variables to the caller:
   foreach(arg_name ${_singleArgNames} ${_multiArgNames} ${_optionNames})
     set(${prefix}_${arg_name}  ${${prefix}_${arg_name}} PARENT_SCOPE)
-  endforeach(arg_name)
+  endforeach()
   set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
 
-endfunction(CMAKE_PARSE_ARGUMENTS _options _singleArgs _multiArgs)
+endfunction()

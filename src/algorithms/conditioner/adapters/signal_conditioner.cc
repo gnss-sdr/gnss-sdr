@@ -6,50 +6,41 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
 #include "signal_conditioner.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
+#include <utility>
 
-
-using google::LogMessage;
 
 // Constructor
 SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
-        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation) :
-                data_type_adapt_(data_type_adapt),
-                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation)
+    std::shared_ptr<GNSSBlockInterface> data_type_adapt,
+    std::shared_ptr<GNSSBlockInterface> in_filt,
+    std::shared_ptr<GNSSBlockInterface> res,
+    std::string role,
+    std::string implementation) : data_type_adapt_(std::move(data_type_adapt)),
+                                  in_filt_(std::move(in_filt)),
+                                  res_(std::move(res)),
+                                  role_(std::move(role)),
+                                  implementation_(std::move(implementation))
 {
     connected_ = false;
-    if(configuration){ };
+    if (configuration)
+        {
+        };
 }
-
-
-// Destructor
-SignalConditioner::~SignalConditioner()
-{}
 
 
 void SignalConditioner::connect(gr::top_block_sptr top_block)
@@ -81,9 +72,9 @@ void SignalConditioner::disconnect(gr::top_block_sptr top_block)
         }
 
     top_block->disconnect(data_type_adapt_->get_right_block(), 0,
-                          in_filt_->get_left_block(), 0);
+        in_filt_->get_left_block(), 0);
     top_block->disconnect(in_filt_->get_right_block(), 0,
-                          res_->get_left_block(), 0);
+        res_->get_left_block(), 0);
 
     data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
@@ -98,8 +89,8 @@ gr::basic_block_sptr SignalConditioner::get_left_block()
     return data_type_adapt_->get_left_block();
 }
 
+
 gr::basic_block_sptr SignalConditioner::get_right_block()
 {
     return res_->get_right_block();
 }
-

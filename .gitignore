@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2011 Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
 *~
 .*.swp
 docs/doxygen/Doxyfile
@@ -6,7 +8,14 @@ docs/latex
 docs/GNSS-SDR_manual.pdf
 src/tests/data/output.dat
 thirdparty/
+.settings
 .project
 .cproject
+.idea
+cmake-build-debug/
 /install
 .DS_Store
+.pydevproject
+.vscode/
+.vs/
+Testing/

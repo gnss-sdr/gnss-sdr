@@ -8,6 +8,7 @@
 
 
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+set(FPHSA_NAME_MISMATCHED ON)
 include(FindPkgConfig)
 pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
 

@@ -5,31 +5,22 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_MATH_CONSTANTS_H_
-#define GNSS_SDR_MATH_CONSTANTS_H_
+#ifndef GNSS_SDR_MATH_CONSTANTS_H
+#define GNSS_SDR_MATH_CONSTANTS_H
+
+#include <string>
 
 /* Constants for scaling the ephemeris found in the data message
         the format is the following: TWO_N5 -> 2^-5, TWO_P4 -> 2^4, PI_TWO_N43 -> Pi*2^-43, etc etc
@@ -41,8 +32,11 @@
         ONE_PI_TWO_PX = (1/Pi)*2^X
 */
 
-const double PI = 3.1415926535897932;             //!<  pi
+const double HALF_PI = 1.570796326794897;  //!< pi/2
+const double PI = 3.1415926535897932;      //!<  pi
+const double PI_2 = 2.0 * PI;              //!<  2 * pi
 
+const double TWO_P3 = (8);                        //!< 2^3
 const double TWO_P4 = (16);                       //!< 2^4
 const double TWO_P11 = (2048);                    //!< 2^11
 const double TWO_P12 = (4096);                    //!< 2^12
@@ -65,6 +59,7 @@ const double TWO_N14 = (0.00006103515625);        //!< 2^-14
 const double TWO_N15 = (0.00003051757813);        //!< 2^-15
 const double TWO_N16 = (0.0000152587890625);      //!< 2^-16
 const double TWO_N17 = (7.629394531250000e-006);  //!< 2^-17
+const double TWO_N18 = (3.814697265625000e-006);  //!< 2^-18
 const double TWO_N19 = (1.907348632812500e-006);  //!< 2^-19
 const double TWO_N20 = (9.536743164062500e-007);  //!< 2^-20
 const double TWO_N21 = (4.768371582031250e-007);  //!< 2^-21
@@ -87,13 +82,14 @@ const double TWO_N44 = (5.684341886080802e-14);   //!< 2^-44
 const double TWO_N46 = (1.4210854715202e-014);    //!< 2^-46
 const double TWO_N48 = (3.552713678800501e-15);   //!< 2^-46
 
-const double TWO_N50 = (8.881784197001252e-016);  //!< 2^-50
-const double TWO_N51 = (4.44089209850063e-016);   //!< 2^-51
-const double TWO_N55 = (2.775557561562891e-017);  //!< 2^-55
-const double TWO_N57 = (6.938893903907228e-18);   //!< 2^-57
-const double TWO_N59 = (1.73472347597681e-018);   //!< 2^-59
-const double TWO_N60 = (8.673617379884036e-19);   //!< 2^-60
-const double TWO_N68 = (3.388131789017201e-21);   //!< 2^-68
+const double TWO_N50 = (8.881784197001252e-016);                                //!< 2^-50
+const double TWO_N51 = (4.44089209850063e-016);                                 //!< 2^-51
+const double TWO_N55 = (2.775557561562891e-017);                                //!< 2^-55
+const double TWO_N57 = (6.938893903907228e-18);                                 //!< 2^-57
+const double TWO_N59 = (1.73472347597681e-018);                                 //!< 2^-59
+const double TWO_N60 = (8.673617379884036e-19);                                 //!< 2^-60
+const double TWO_N66 = (1.3552527156068805425093160010874271392822265625e-20);  //!< 2^-66
+const double TWO_N68 = (3.388131789017201e-21);                                 //!< 2^-68
 
 
 const double PI_TWO_N19 = (5.992112452678286e-006);  //!< Pi*2^-19
@@ -102,13 +98,14 @@ const double PI_TWO_N31 = (1.462918079267160e-009);  //!< Pi*2^-31
 const double PI_TWO_N38 = (1.142904749427469e-011);  //!< Pi*2^-38
 const double PI_TWO_N23 = (3.745070282923929e-007);  //!< Pi*2^-23
 
-const double D2R = (PI/180.0);          //!< deg to rad
-const double R2D = (180.0/PI);          //!< rad to deg
+const double D2R = (PI / 180.0);        //!< deg to rad
+const double R2D = (180.0 / PI);        //!< rad to deg
 const double SC2RAD = 3.1415926535898;  //!<  semi-circle to radian (IS-GPS)
 const double AS2R = (D2R / 3600.0);     //!<  arc sec to radian
 
-const double DEFAULT_OMEGA_EARTH_DOT = 7.2921151467e-5; //!<  Default Earth rotation rate, [rad/s]
-const double SPEED_OF_LIGHT = 299792458.0;              //!<  [m/s]
-const double AU = 149597870691.0;                       //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
+const double DEFAULT_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!<  Default Earth rotation rate, [rad/s]
+const double SPEED_OF_LIGHT = 299792458.0;               //!<  [m/s]
+const double SPEED_OF_LIGHT_MS = 299792.4580;            //!<  [m/ms]
+const double AU = 149597870691.0;                        //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
 
-#endif /* GNSS_SDR_MATH_CONSTANTS_H_ */
+#endif  // GNSS_SDR_MATH_CONSTANTS_H

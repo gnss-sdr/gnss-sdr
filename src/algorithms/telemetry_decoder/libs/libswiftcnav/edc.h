@@ -1,5 +1,6 @@
 /*!
  * \file edc.h
+ * \brief Utilities for CRC computation of the libswiftnav library
  * \author Fergus Noble <fergus@swift-nav.com>
  *
  * -------------------------------------------------------------------------
@@ -16,26 +17,17 @@
  *
  * This file is part of GNSS-SDR.
  *
- * This file is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, version 3.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Lesser Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-3.0-only
+ *.
  */
 
 
-#ifndef LIBSWIFTNAV_EDC_H
-#define LIBSWIFTNAV_EDC_H
+#ifndef GNSS_SDR_EDC_H
+#define GNSS_SDR_EDC_H
 
 #include "swift_common.h"
 
-u32 crc24q(const u8 *buf, u32 len, u32 crc);
-u32 crc24q_bits(u32 crc, const u8 *buf, u32 n_bits, bool invert);
+uint32_t crc24q(const uint8_t *buf, uint32_t len, uint32_t crc);
+uint32_t crc24q_bits(uint32_t crc, const uint8_t *buf, uint32_t n_bits, bool invert);
 
-#endif /* LIBSWIFTNAV_EDC_H */
+#endif /* GNSS_SDR_EDC_H_ */

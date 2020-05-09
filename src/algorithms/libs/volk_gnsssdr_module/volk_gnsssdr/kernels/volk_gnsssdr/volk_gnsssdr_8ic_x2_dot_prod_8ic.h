@@ -10,25 +10,14 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
@@ -59,9 +48,9 @@
 #ifndef INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H
 #define INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H
 
-#include <string.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <string.h>
 
 #ifdef LV_HAVE_GENERIC
 
@@ -75,17 +64,17 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_generic(lv_8sc_t* result, co
      *cPtr += (*aPtr++) * (*bPtr++);
      }*/
 
-    char * res = (char*) result;
-    char * in = (char*) in_a;
-    char * tp = (char*) in_b;
-    unsigned int n_2_ccomplex_blocks = num_points/2;
+    char* res = (char*)result;
+    char* in = (char*)in_a;
+    char* tp = (char*)in_b;
+    unsigned int n_2_ccomplex_blocks = num_points / 2;
     unsigned int isodd = num_points & 1;
 
-    char sum0[2] = {0,0};
-    char sum1[2] = {0,0};
+    char sum0[2] = {0, 0};
+    char sum1[2] = {0, 0};
     unsigned int i = 0;
 
-    for(i = 0; i < n_2_ccomplex_blocks; ++i)
+    for (i = 0; i < n_2_ccomplex_blocks; ++i)
         {
             sum0[0] += in[0] * tp[0] - in[1] * tp[1];
             sum0[1] += in[0] * tp[1] + in[1] * tp[0];
@@ -100,7 +89,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_generic(lv_8sc_t* result, co
     res[1] = sum0[1] + sum1[1];
 
     // Cleanup if we had an odd number of points
-    for(i = 0; i < isodd; ++i)
+    for (i = 0; i < isodd; ++i)
         {
             *result += in_a[num_points - 1] * in_b[num_points - 1];
         }
@@ -115,13 +104,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_generic(lv_8sc_t* result, co
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, const lv_8sc_t* in_a, const lv_8sc_t* in_b, unsigned int num_points)
 {
     lv_8sc_t dotProduct;
-    memset(&dotProduct, 0x0, 2*sizeof(char));
+    memset(&dotProduct, 0x0, 2 * sizeof(char));
     unsigned int number;
     unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
-    const unsigned int sse_iters = num_points/8;
+    const unsigned int sse_iters = num_points / 8;
 
     if (sse_iters > 0)
         {
@@ -131,7 +120,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
                     x = _mm_loadu_si128((__m128i*)a);
                     y = _mm_loadu_si128((__m128i*)b);
@@ -165,9 +154,10 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
 
             totalc = _mm_or_si128(realcacc, imagcacc);
 
-            __VOLK_ATTR_ALIGNED(16) lv_8sc_t dotProductVector[8];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_8sc_t dotProductVector[8];
 
-            _mm_storeu_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
+            _mm_storeu_si128((__m128i*)dotProductVector, totalc);  // Store the results back into the dot product vector
 
             for (i = 0; i < 8; ++i)
                 {
@@ -192,13 +182,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, const lv_8sc_t* in_a, const lv_8sc_t* in_b, unsigned int num_points)
 {
     lv_8sc_t dotProduct;
-    memset(&dotProduct, 0x0, 2*sizeof(char));
+    memset(&dotProduct, 0x0, 2 * sizeof(char));
     unsigned int number;
     unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
-    const unsigned int sse_iters = num_points/8;
+    const unsigned int sse_iters = num_points / 8;
 
     if (sse_iters > 0)
         {
@@ -208,7 +198,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
                     x = _mm_lddqu_si128((__m128i*)a);
                     y = _mm_lddqu_si128((__m128i*)b);
@@ -236,13 +226,14 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
                     b += 8;
                 }
 
-            imagcacc = _mm_slli_si128 (imagcacc, 1);
+            imagcacc = _mm_slli_si128(imagcacc, 1);
 
-            totalc = _mm_blendv_epi8 (imagcacc, realcacc, mult1);
+            totalc = _mm_blendv_epi8(imagcacc, realcacc, mult1);
 
-            __VOLK_ATTR_ALIGNED(16) lv_8sc_t dotProductVector[8];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_8sc_t dotProductVector[8];
 
-            _mm_storeu_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
+            _mm_storeu_si128((__m128i*)dotProductVector, totalc);  // Store the results back into the dot product vector
 
             for (i = 0; i < 8; ++i)
                 {
@@ -267,13 +258,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, const lv_8sc_t* in_a, const lv_8sc_t* in_b, unsigned int num_points)
 {
     lv_8sc_t dotProduct;
-    memset(&dotProduct, 0x0, 2*sizeof(char));
+    memset(&dotProduct, 0x0, 2 * sizeof(char));
     unsigned int number;
     unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
-    const unsigned int sse_iters = num_points/8;
+    const unsigned int sse_iters = num_points / 8;
 
     if (sse_iters > 0)
         {
@@ -283,7 +274,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
                     x = _mm_load_si128((__m128i*)a);
                     y = _mm_load_si128((__m128i*)b);
@@ -317,9 +308,10 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
 
             totalc = _mm_or_si128(realcacc, imagcacc);
 
-            __VOLK_ATTR_ALIGNED(16) lv_8sc_t dotProductVector[8];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_8sc_t dotProductVector[8];
 
-            _mm_store_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, totalc);  // Store the results back into the dot product vector
 
             for (i = 0; i < 8; ++i)
                 {
@@ -343,7 +335,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, const lv_8sc_t* in_a, const lv_8sc_t* in_b, unsigned int num_points)
 {
     lv_8sc_t dotProduct;
-    memset(&dotProduct, 0x0, 2*sizeof(char));
+    memset(&dotProduct, 0x0, 2 * sizeof(char));
     unsigned int number;
     unsigned int i;
     const lv_8sc_t* a = in_a;
@@ -359,7 +351,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
                     x = _mm_load_si128((__m128i*)a);
                     y = _mm_load_si128((__m128i*)b);
@@ -387,13 +379,14 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
                     b += 8;
                 }
 
-            imagcacc = _mm_slli_si128 (imagcacc, 1);
+            imagcacc = _mm_slli_si128(imagcacc, 1);
 
-            totalc = _mm_blendv_epi8 (imagcacc, realcacc, mult1);
+            totalc = _mm_blendv_epi8(imagcacc, realcacc, mult1);
 
-            __VOLK_ATTR_ALIGNED(16) lv_8sc_t dotProductVector[8];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_8sc_t dotProductVector[8];
 
-            _mm_store_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, totalc);  // Store the results back into the dot product vector
 
             for (i = 0; i < 8; ++i)
                 {
@@ -432,28 +425,29 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_orc(lv_8sc_t* result, cons
 #endif /* LV_HAVE_ORC */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const lv_8sc_t* in_a, const lv_8sc_t* in_b, unsigned int num_points)
 {
     lv_8sc_t dotProduct;
-    dotProduct = lv_cmake(0,0);
-    *result = lv_cmake(0,0);
+    dotProduct = lv_cmake(0, 0);
+    *result = lv_cmake(0, 0);
 
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
     // for 2-lane vectors, 1st lane holds the real part,
     // 2nd lane holds the imaginary part
     int8x8x2_t a_val, b_val, c_val, accumulator, tmp_real, tmp_imag;
-    __VOLK_ATTR_ALIGNED(16) lv_8sc_t accum_result[8] = { lv_cmake(0,0) };
+    __VOLK_ATTR_ALIGNED(16)
+    lv_8sc_t accum_result[8] = {lv_cmake(0, 0)};
     accumulator.val[0] = vdup_n_s8(0);
     accumulator.val[1] = vdup_n_s8(0);
     unsigned int number;
 
     const unsigned int neon_iters = num_points / 8;
 
-    for(number = 0; number < neon_iters; ++number)
+    for (number = 0; number < neon_iters; ++number)
         {
             a_val = vld2_s8((const int8_t*)a);
             b_val = vld2_s8((const int8_t*)b);
@@ -478,7 +472,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const
             b += 8;
         }
     vst2_s8((int8_t*)accum_result, accumulator);
-    for(number = 0; number < 8; ++number)
+    for (number = 0; number < 8; ++number)
         {
             *result += accum_result[number];
         }
@@ -490,6 +484,6 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const
 
     *result += dotProduct;
 }
-#endif  /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7 */
 
 #endif /*INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H*/

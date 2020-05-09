@@ -7,39 +7,28 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H
 
-#include <string>
-#include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_tracking_gpu_cc.h"
+#include "tracking_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;
@@ -50,45 +39,51 @@ class ConfigurationInterface;
 class GpsL1CaDllPllTrackingGPU : public TrackingInterface
 {
 public:
-  GpsL1CaDllPllTrackingGPU(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL1CaDllPllTrackingGPU(ConfigurationInterface* configuration,
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllTrackingGPU();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "GPS_L1_CA_DLL_PLL_Tracking_GPU"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_DLL_PLL_Tracking_GPU";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set tracking channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-    void start_tracking();
+    void start_tracking() override;
+
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     gps_l1_ca_dll_pll_tracking_gpu_cc_sptr tracking_;
@@ -99,4 +94,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H

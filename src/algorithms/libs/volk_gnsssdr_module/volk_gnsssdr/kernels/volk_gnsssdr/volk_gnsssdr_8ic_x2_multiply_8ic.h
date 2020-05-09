@@ -10,25 +10,14 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
@@ -75,7 +64,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
 
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_loadu_si128((__m128i*)a);
             y = _mm_loadu_si128((__m128i*)b);
@@ -133,7 +122,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
     _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
@@ -181,7 +170,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_generic(lv_8sc_t* cVector, c
     const lv_8sc_t* bPtr = bVector;
     unsigned int number;
 
-    for(number = 0; number < num_points; number++)
+    for (number = 0; number < num_points; number++)
         {
             *cPtr++ = (*aPtr++) * (*bPtr++);
         }
@@ -204,7 +193,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
 
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -228,7 +217,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
             imagc = _mm_and_si128(imagc, mult1);
             imagc = _mm_slli_si128(imagc, 1);
 
-            totalc = _mm_or_si128 (realc, imagc);
+            totalc = _mm_or_si128(realc, imagc);
 
             _mm_store_si128((__m128i*)c, totalc);
 
@@ -262,7 +251,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
     _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);

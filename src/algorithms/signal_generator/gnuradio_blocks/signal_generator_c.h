@@ -5,25 +5,14 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
@@ -31,28 +20,35 @@
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
 #define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
+#include "gnss_signal.h"
+#include <gnuradio/block.h>
+#include <random>
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <random>
-#include <boost/scoped_array.hpp>
-#include <gnuradio/random.h>
-#include <gnuradio/block.h>
-#include "gnss_signal.h"
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
+
 
 class signal_generator_c;
 
 /*
-* We use boost::shared_ptr's instead of raw pointers for all access
+* We use std::shared_ptr's instead of raw pointers for all access
 * to gr_blocks (and many other data structures). The shared_ptr gets
 * us transparent reference counting, which greatly simplifies storage
 * management issues.
 *
-* See http://www.boost.org/libs/smart_ptr/smart_ptr.htm
+* See https://www.boost.org/doc/libs/release/libs/smart_ptr/doc/html/smart_ptr.html
 *
-* As a convention, the _sptr suffix indicates a boost::shared_ptr
+* As a convention, the _sptr suffix indicates a std::shared_ptr
 */
-typedef boost::shared_ptr<signal_generator_c> signal_generator_c_sptr;
+#if GNURADIO_USES_STD_POINTERS
+using signal_generator_c_sptr = std::shared_ptr<signal_generator_c>;
+#else
+using signal_generator_c_sptr = boost::shared_ptr<signal_generator_c>;
+#endif
 
 /*!
 * \brief Return a shared_ptr to a new instance of gen_source.
@@ -61,11 +57,19 @@ typedef boost::shared_ptr<signal_generator_c> signal_generator_c_sptr;
 * constructor is private. signal_make_generator_c is the public
 * interface for creating new instances.
 */
-signal_generator_c_sptr
-signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-                    const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                    const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
-                    unsigned int fs_in, unsigned int vector_length, float BW_BB);
+signal_generator_c_sptr signal_make_generator_c(
+    const std::vector<std::string> &signal1,
+    const std::vector<std::string> &system,
+    const std::vector<unsigned int> &PRN,
+    const std::vector<float> &CN0_dB,
+    const std::vector<float> &doppler_Hz,
+    const std::vector<unsigned int> &delay_chips,
+    const std::vector<unsigned int> &delay_sec,
+    bool data_flag,
+    bool noise_flag,
+    unsigned int fs_in,
+    unsigned int vector_length,
+    float BW_BB);
 
 /*!
 * \brief This class generates synthesized GNSS signal.
@@ -75,23 +79,46 @@ signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::stri
 */
 class signal_generator_c : public gr::block
 {
+public:
+    ~signal_generator_c() = default;  // public destructor
+
+    // Where all the action really happens
+    int general_work(int noutput_items,
+        gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
+
 private:
-    // The friend declaration allows gen_source to
-    // access the private constructor.
+    friend signal_generator_c_sptr signal_make_generator_c(
+        const std::vector<std::string> &signal1,
+        const std::vector<std::string> &system,
+        const std::vector<unsigned int> &PRN,
+        const std::vector<float> &CN0_dB,
+        const std::vector<float> &doppler_Hz,
+        const std::vector<unsigned int> &delay_chips,
+        const std::vector<unsigned int> &delay_sec,
+        bool data_flag,
+        bool noise_flag,
+        unsigned int fs_in,
+        unsigned int vector_length,
+        float BW_BB);
 
-    /* Create the signal_generator_c object*/
-    friend signal_generator_c_sptr
-    signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-            const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-            const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
-            unsigned int fs_in, unsigned int vector_length, float BW_BB);
-
-    signal_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-            const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-            const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
-            unsigned int fs_in, unsigned int vector_length, float BW_BB);
+    signal_generator_c(
+        std::vector<std::string> signal1,
+        std::vector<std::string> system,
+        const std::vector<unsigned int> &PRN,
+        std::vector<float> CN0_dB,
+        std::vector<float> doppler_Hz,
+        std::vector<unsigned int> delay_chips,
+        std::vector<unsigned int> delay_sec,
+        bool data_flag,
+        bool noise_flag,
+        unsigned int fs_in,
+        unsigned int vector_length,
+        float BW_BB);
 
     void init();
+
     void generate_codes();
 
     std::vector<std::string> signal_;
@@ -107,7 +134,6 @@ private:
     unsigned int num_sats_;
     unsigned int vector_length_;
     float BW_BB_;
-
     std::vector<unsigned int> samples_per_code_;
     std::vector<unsigned int> num_of_codes_per_vector_;
     std::vector<unsigned int> data_bit_duration_ms_;
@@ -117,26 +143,13 @@ private:
     std::vector<signed int> current_data_bit_int_;
     std::vector<signed int> data_modulation_;
     std::vector<signed int> pilot_modulation_;
-
-    boost::scoped_array<gr_complex*> sampled_code_data_;
-    boost::scoped_array<gr_complex*> sampled_code_pilot_;
-    gr::random* random_;
-    gr_complex* complex_phase_;
-
-    unsigned int work_counter_;
+    std::vector<std::vector<gr_complex>> sampled_code_data_;
+    std::vector<std::vector<gr_complex>> sampled_code_pilot_;
+    std::vector<gr_complex> complex_phase_;
+    unsigned int work_counter_{};
     std::random_device r;
-    std::default_random_engine e1;
     std::uniform_int_distribution<int> uniform_dist;
-
-public:
-    ~signal_generator_c();    // public destructor
-
-    // Where all the action really happens
-
-    int general_work (int noutput_items,
-            gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    std::normal_distribution<float> normal_dist;
 };
 
-#endif /* GNSS_SDR_SIGNAL_GENERATOR_C_H */
+#endif  // GNSS_SDR_SIGNAL_GENERATOR_C_H

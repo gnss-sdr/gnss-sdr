@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2014 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+# SPDX-License-Identifier: GPL-3.0-or-later
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
@@ -11,4 +13,3 @@ Requires:
 Version: @LIBVER@
 Libs: -L${libdir} -lvolk_gnsssdr
 Cflags: -I${includedir} ${LV_CXXFLAGS}
-

@@ -5,39 +5,28 @@
  *
  * This implementation has a text file as the source for the values of the parameters.
  * The file is in the INI format, containing sections and pairs of names and values.
- * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
+ * For more information about the INI format, see https://en.wikipedia.org/wiki/INI_file
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
 
-
-#ifndef GNSS_SDR_FILE_CONFIGURATION_H_
-#define GNSS_SDR_FILE_CONFIGURATION_H_
+#ifndef GNSS_SDR_FILE_CONFIGURATION_H
+#define GNSS_SDR_FILE_CONFIGURATION_H
 
 #include "configuration_interface.h"
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -52,31 +41,33 @@ class InMemoryConfiguration;
  * to a configuration file. This implementation has a text file as the source
  * for the values of the parameters.
  * The file is in the INI format, containing sections and pairs of names and values.
- * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
+ * For more information about the INI format, see https://en.wikipedia.org/wiki/INI_file
  */
 class FileConfiguration : public ConfigurationInterface
 {
 public:
-    FileConfiguration(std::string filename);
+    explicit FileConfiguration(std::string filename);
     FileConfiguration();
-    //! Virtual destructor
-     ~FileConfiguration();
+    ~FileConfiguration() = default;
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
-    long property(std::string property_name, long default_value);
-    int property(std::string property_name, int default_value);
-    unsigned int property(std::string property_name, unsigned int default_value);
-    unsigned short property(std::string property_name, unsigned short default_value);
+    int64_t property(std::string property_name, int64_t default_value);
+    uint64_t property(std::string property_name, uint64_t default_value);
+    int32_t property(std::string property_name, int32_t default_value);
+    uint32_t property(std::string property_name, uint32_t default_value);
+    int16_t property(std::string property_name, int16_t default_value);
+    uint16_t property(std::string property_name, uint16_t default_value);
     float property(std::string property_name, float default_value);
     double property(std::string property_name, double default_value);
     void set_property(std::string property_name, std::string value);
+
 private:
     void init();
     std::string filename_;
     std::shared_ptr<INIReader> ini_reader_;
     std::shared_ptr<InMemoryConfiguration> overrided_;
-    std::unique_ptr<StringConverter> converter_;
-    int error_;
+    std::shared_ptr<StringConverter> converter_;
+    int error_{};
 };
 
-#endif /*GNSS_SDR_FILE_CONFIGURATION_H_*/
+#endif  // GNSS_SDR_FILE_CONFIGURATION_H

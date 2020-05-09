@@ -1,172 +1,208 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition_fpga.h
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals. This file is based on the file gps_l1_ca_pcps_acquisition.h
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
+ *  for GPS L1 C/A signals for the FPGA
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
-#define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
+#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H
+#define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include <gnuradio/blocks/float_to_complex.h>
+
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
-#include "acquisition_interface.h"
-#include "gps_pcps_acquisition_fpga_sc.h"
-#include "complex_byte_to_float_x2.h"
-#include <volk_gnsssdr/volk_gnsssdr.h>
-
+#include "pcps_acquisition_fpga.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for GPS L1 C/A signals
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for GPS L1 C/A signals
  */
-class GpsL1CaPcpsAcquisitionFpga: public AcquisitionInterface
+class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
+    /*!
+     * \brief Constructor
+     */
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
-    virtual ~GpsL1CaPcpsAcquisitionFpga();
+    /*!
+     * \brief Destructor
+     */
+    ~GpsL1CaPcpsAcquisitionFpga() = default;
 
-    std::string role()
+    /*!
+     * \brief Role
+     */
+    inline std::string role() override
     {
         return role_;
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
+     * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fpga"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_Acquisition_Fpga";
     }
-    size_t item_size()
+
+    /*!
+     * \brief Returns size of lv_16sc_t
+     */
+    inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int16_t);
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    /*!
+     * \brief Connect
+     */
+    void connect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Disconnect
+     */
+    void disconnect(gr::top_block_sptr top_block) override;
+
+    /*!
+     * \brief Get left block
+     */
+    gr::basic_block_sptr get_left_block() override;
+
+    /*!
+     * \brief Get right block
+     */
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel);
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_fpga_->set_channel(channel_);
+    }
+
+    /*!
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_fpga_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
-    void set_threshold(float threshold);
+    void set_threshold(float threshold) override;
 
     /*!
      * \brief Set maximum Doppler off grid search
      */
-    void set_doppler_max(unsigned int doppler_max);
+    void set_doppler_max(unsigned int doppler_max) override;
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-    void set_doppler_step(unsigned int doppler_step);
+    void set_doppler_step(unsigned int doppler_step) override;
+
+    /*!
+     * \brief Set Doppler center for the grid search
+     */
+    void set_doppler_center(int doppler_center) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
      */
-    void set_local_code();
+    void set_local_code() override;
 
     /*!
      * \brief Returns the maximum peak of grid search
      */
-    signed int mag();
+    signed int mag() override;
 
     /*!
      * \brief Restart acquisition algorithm
      */
-    void reset();
+    void reset() override;
 
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    /*!
+     * \brief Set Resampler Latency
+     */
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
+    static const uint32_t NUM_PRNs = 32;
+
+    // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
+    // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+    static const uint32_t quant_bits_local_code = 16;
+    static const uint32_t select_lsbits = 0x0000FFFF;         // Select the 10 LSbits out of a 20-bit word
+    static const uint32_t select_msbits = 0xFFFF0000;         // Select the 10 MSbits out of a 20-bit word
+    static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
+    static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
+
+
     ConfigurationInterface* configuration_;
-    gps_pcps_acquisition_fpga_sc_sptr gps_acquisition_fpga_sc_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
-    gr::blocks::float_to_complex::sptr float_to_complex_;
-    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    size_t item_size_;
-    std::string item_type_;
-    unsigned int vector_length_;
-    unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
-    unsigned int channel_;
-    float threshold_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    unsigned int sampled_ms_;
-    unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
-    bool dump_;
-    std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    pcps_acquisition_fpga_sptr acquisition_fpga_;
+    uint32_t channel_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
+    int32_t doppler_center_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
-    unsigned int nsamples_total_;
-
-    unsigned int select_queue_Fpga_;
-
-    float calculate_threshold(float pfa);
+    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_ */
+#endif  // GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H

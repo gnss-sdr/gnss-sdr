@@ -1,25 +1,22 @@
 /*!
  * \file convolutional.h
  * \brief General functions used to implement convolutional encoding.
- * \author Matthew C. Valenti
+ * \author Matthew C. Valenti, 2006-2008.
+ * \author C. Fernandez-Prades, 2019.
  *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2006-2008  Matthew C. Valenti
+ * Copyright (C) 2019 C. Fernandez-Prades
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * This file is a derived work of the original file, which had this note:
- *
- * Last updated on May 22, 2008
  *
  * The functions in this file are part of the Iterative Solutions
  * Coded Modulation Library. The Iterative Solutions Coded Modulation
@@ -38,13 +35,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef GNSS_SDR_CONVOLUTIONAL_H_
-#define GNSS_SDR_CONVOLUTIONAL_H_
+#ifndef GNSS_SDR_CONVOLUTIONAL_H
+#define GNSS_SDR_CONVOLUTIONAL_H
 
-#include <cstdlib>  // for calloc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <vector>
 
 /* define constants used throughout the library */
-const float MAXLOG = 1e7;  /* Define infinity */
+const float MAXLOG = 1e7; /* Define infinity */
 
 
 /*!
@@ -57,19 +55,18 @@ const float MAXLOG = 1e7;  /* Define infinity */
  *
  * This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()
  */
-static int parity_counter(int symbol, int length)
+inline int parity_counter(int symbol, int length)
 {
     int counter;
     int temp_parity = 0;
 
-    for (counter = 0; counter <  length; counter++)
+    for (counter = 0; counter < length; counter++)
         {
-            temp_parity = temp_parity^(symbol & 1);
+            temp_parity = temp_parity ^ (symbol & 1);
             symbol = symbol >> 1;
         }
-    return(temp_parity);
+    return (temp_parity);
 }
-
 
 
 /*!
@@ -86,19 +83,19 @@ static int parity_counter(int symbol, int length)
  *
  * This function is used by nsc_transit()
  */
-static int nsc_enc_bit(int state_out_p[],
-                       int input,
-                       int state_in,
-                       int g[],
-                       int KK,
-                       int nn)
+inline int nsc_enc_bit(int state_out_p[],
+    int input,
+    int state_in,
+    const int g[],
+    int KK,
+    int nn)
 {
     /* declare variables */
     int state, i;
     int out_ = 0;
 
     /* create a word made up of state and new input */
-    state = (input << (KK - 1))^state_in;
+    state = (input << (KK - 1)) ^ state_in;
 
     /* AND the word with the generators */
     for (i = 0; i < nn; i++)
@@ -109,34 +106,32 @@ static int nsc_enc_bit(int state_out_p[],
 
     /* shift the state to make the new state */
     state_out_p[0] = state >> 1;
-    return(out_);
+    return (out_);
 }
-
 
 
 /*!
  * \brief Function that creates the transit and output vectors
  */
-static void nsc_transit(int output_p[],
-                        int trans_p[],
-                        int input,
-                        int g[],
-                        int KK,
-                        int nn)
+inline void nsc_transit(int output_p[],
+    int trans_p[],
+    int input,
+    int g[],
+    int KK,
+    int nn)
 {
     int nextstate[1];
     int state, states;
-    states = (1 << (KK - 1));  /* The number of states: 2^mm */
+    states = (1 << (KK - 1)); /* The number of states: 2^mm */
 
     /* Determine the output and next state for each possible starting state */
-    for(state = 0; state < states; state++)
+    for (state = 0; state < states; state++)
         {
-            output_p[state]  = nsc_enc_bit(nextstate, input, state, g, KK, nn);
-            trans_p[state]  = nextstate[0];
+            output_p[state] = nsc_enc_bit(nextstate, input, state, g, KK, nn);
+            trans_p[state] = nextstate[0];
         }
     return;
 }
-
 
 
 /*!
@@ -147,9 +142,9 @@ static void nsc_transit(int output_p[],
  *  \param[in] nn            The length of the received vector
  *
  */
-static float Gamma(float  rec_array[],
-                   int symbol,
-                   int nn)
+inline float Gamma(const float rec_array[],
+    int symbol,
+    int nn)
 {
     float rm = 0;
     int i;
@@ -158,10 +153,12 @@ static float Gamma(float  rec_array[],
     for (i = 0; i < nn; i++)
         {
             if (symbol & mask)
-                rm += rec_array[nn - i - 1];
+                {
+                    rm += rec_array[nn - i - 1];
+                }
             mask = mask << 1;
         }
-    return(rm);
+    return (rm);
 }
 
 
@@ -177,92 +174,77 @@ static float Gamma(float  rec_array[],
  * \param[out] output_u_int[]    Hard decisions on the data bits
  *
  */
-static void Viterbi(int output_u_int[],
-                    int out0[],
-                    int state0[],
-                    int out1[],
-                    int state1[],
-                    double input_c[],
-                    int KK,
-                    int nn,
-                    int LL)
+inline void Viterbi(int output_u_int[],
+    const int out0[],
+    const int state0[],
+    const int out1[],
+    const int state1[],
+    const float input_c[],
+    int KK,
+    int nn,
+    int LL)
 {
     int i, t, state, mm, states;
     int number_symbols;
+    uint32_t max_index;
     float metric;
-    float *prev_section, *next_section;
-    int *prev_bit;
-    int *prev_state;
-    float *metric_c;    /* Set of all possible branch metrics */
-    float *rec_array;   /* Received values for one trellis section */
     float max_val;
 
     /* some derived constants */
     mm = KK - 1;
-    states = 1 << mm;          /* 2^mm */
-    number_symbols = 1 << nn;  /* 2^nn */
+    states = 1 << mm;         /* 2^mm */
+    number_symbols = 1 << nn; /* 2^nn */
 
-    /* dynamically allocate memory */
-    prev_section = static_cast<float*>(calloc( states, sizeof(float) ));
-    next_section = static_cast<float*>(calloc( states, sizeof(float) ));
-    prev_bit = static_cast<int*>(calloc( states*(LL + mm), sizeof(int) ));
-    prev_state = static_cast<int*>(calloc( states*(LL + mm), sizeof(int) ));
-    rec_array = static_cast<float*>(calloc( nn, sizeof(float) ));
-    metric_c = static_cast<float*>(calloc( number_symbols, sizeof(float) ));
+    std::vector<float> prev_section(states, -MAXLOG);
+    std::vector<float> next_section(states, -MAXLOG);
+    std::vector<int> prev_bit(states * (LL + mm), 0);
+    std::vector<int> prev_state(states * (LL + mm), 0);
+    std::vector<float> rec_array(nn);
+    std::vector<float> metric_c(number_symbols);
 
-    /* initialize trellis */
-    for (state = 0; state < states; state++)
-        {
-            prev_section[state] = -MAXLOG;
-            next_section[state] = -MAXLOG;
-        }
-    prev_section[0] = 0; /* start in all-zeros state */
+    prev_section[0] = 0.0; /* start in all-zeros state */
 
     /* go through trellis */
     for (t = 0; t < LL + mm; t++)
         {
-            for (i = 0; i < nn; i++)
-                rec_array[i] = static_cast<float>(input_c[nn*t + i]);
+            rec_array.assign(input_c + nn * t, input_c + nn * t + (nn - 1));
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)
-                metric_c[i] = Gamma( rec_array, i, nn );
+                {
+                    metric_c[i] = Gamma(rec_array.data(), i, nn);
+                }
 
             /* step through all states */
             for (state = 0; state < states; state++)
                 {
                     /* hypothesis: info bit is a zero */
-                    metric = prev_section[state] + metric_c[ out0[ state ] ];
+                    metric = prev_section[state] + metric_c[out0[state]];
 
                     /* store new metric if more than metric in storage */
-                    if ( metric > next_section[state0[state]] )
+                    if (metric > next_section[state0[state]])
                         {
                             next_section[state0[state]] = metric;
-                            prev_state[t*states + state0[state]] = state;
-                            prev_bit[t*states + state0[state]] = 0;
+                            prev_state[t * states + state0[state]] = state;
+                            prev_bit[t * states + state0[state]] = 0;
                         }
 
                     /* hypothesis: info bit is a one */
-                    metric = prev_section[state] + metric_c[ out1[ state ] ];
+                    metric = prev_section[state] + metric_c[out1[state]];
 
                     /* store new metric if more than metric in storage */
-                    if ( metric > next_section[state1[state]] )
+                    if (metric > next_section[state1[state]])
                         {
                             next_section[state1[state]] = metric;
-                            prev_state[t*states + state1[state]] = state;
-                            prev_bit[t*states + state1[state]] = 1;
+                            prev_state[t * states + state1[state]] = state;
+                            prev_bit[t * states + state1[state]] = 1;
                         }
                 }
 
             /* normalize */
-            max_val = 0;
-            for (state = 0; state < states; state++)
-                {
-                    if (next_section[state] > max_val)
-                        {
-                            max_val = next_section[state];
-                        }
-                }
+            volk_gnsssdr_32f_index_max_32u(&max_index, next_section.data(), states);
+            max_val = next_section[max_index];
+
             for (state = 0; state < states; state++)
                 {
                     prev_section[state] = next_section[state] - max_val;
@@ -276,22 +258,14 @@ static void Viterbi(int output_u_int[],
     /* tail, no need to output */
     for (t = LL + mm - 1; t >= LL; t--)
         {
-            state = prev_state[t*states + state];
+            state = prev_state[t * states + state];
         }
 
     for (t = LL - 1; t >= 0; t--)
         {
-            output_u_int[t] = prev_bit[t*states + state];
-            state = prev_state[t*states + state];
+            output_u_int[t] = prev_bit[t * states + state];
+            state = prev_state[t * states + state];
         }
-
-    /* free the dynamically allocated memory */
-    free(prev_section);
-    free(next_section);
-    free(prev_bit);
-    free(prev_state);
-    free(rec_array);
-    free(metric_c);
 }
 
 

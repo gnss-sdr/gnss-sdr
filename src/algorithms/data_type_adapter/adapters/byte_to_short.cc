@@ -5,39 +5,27 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
 #include "byte_to_short.h"
-#include <glog/logging.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <cstdint>
+#include <utility>
 
-using google::LogMessage;
 
 ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
     std::string default_output_item_type = "short";
@@ -50,7 +38,7 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
 
-    size_t item_size = sizeof(short);
+    size_t item_size = sizeof(int16_t);
 
     gr_char_to_short_ = gr::blocks::char_to_short::make();
 
@@ -61,11 +49,15 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
-
-
-ByteToShort::~ByteToShort()
-{}
 
 
 void ByteToShort::connect(gr::top_block_sptr top_block)
@@ -90,16 +82,13 @@ void ByteToShort::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
 gr::basic_block_sptr ByteToShort::get_left_block()
 {
     return gr_char_to_short_;
 }
 
 
-
 gr::basic_block_sptr ByteToShort::get_right_block()
 {
     return gr_char_to_short_;
 }
-

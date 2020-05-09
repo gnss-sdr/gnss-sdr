@@ -1,41 +1,61 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 
-set(INPUT_FILTER_GR_BLOCKS_SOURCES 
-     beamformer.cc
-     pulse_blanking_cc.cc
+set(INPUT_FILTER_GR_BLOCKS_SOURCES
+    beamformer.cc
+    pulse_blanking_cc.cc
+    notch_cc.cc
+    notch_lite_cc.cc
 )
 
-include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+set(INPUT_FILTER_GR_BLOCKS_HEADERS
+    beamformer.h
+    pulse_blanking_cc.h
+    notch_cc.h
+    notch_lite_cc.h
 )
 
-file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
-add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
+list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
+
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 
-target_link_libraries(input_filter_gr_blocks ${GNURADIO_FILTER_LIBRARIES}  ${VOLK_GNSSSDR_LIBRARIES} ${LOG4CPP_LIBRARIES})
+add_library(input_filter_gr_blocks
+    ${INPUT_FILTER_GR_BLOCKS_SOURCES}
+    ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 
-if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(input_filter_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+target_link_libraries(input_filter_gr_blocks
+    PUBLIC
+        Gnuradio::blocks
+        Gnuradio::filter
+    PRIVATE
+        Volk::volk
+        Log4cpp::log4cpp
+)
+
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(input_filter_gr_blocks
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(input_filter_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET input_filter_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

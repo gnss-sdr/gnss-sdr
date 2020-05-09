@@ -7,25 +7,14 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
@@ -33,8 +22,7 @@
 #include "string_converter.h"
 
 
-
-TEST(String_Converter_Test, StringToBool)
+TEST(StringConverterTest, StringToBool)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("false", true);
@@ -43,7 +31,7 @@ TEST(String_Converter_Test, StringToBool)
 }
 
 
-TEST(String_Converter_Test, StringToSizeT)
+TEST(StringConverterTest, StringToSizeT)
 {
     // Example using a raw pointer
     StringConverter* converter;
@@ -55,9 +43,7 @@ TEST(String_Converter_Test, StringToSizeT)
 }
 
 
-
-
-TEST(String_Converter_Test, StringToBoolFail)
+TEST(StringConverterTest, StringToBoolFail)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("lse", true);
@@ -66,9 +52,7 @@ TEST(String_Converter_Test, StringToBoolFail)
 }
 
 
-
-
-TEST(String_Converter_Test, StringToSizeTFail)
+TEST(StringConverterTest, StringToSizeTFail)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     size_t conversion_result = converter->convert("false", 1);

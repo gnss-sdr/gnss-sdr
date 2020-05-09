@@ -5,43 +5,27 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
 #include "gn3s_signal_source.h"
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gn3s/gn3s_source_cc.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gn3s/gn3s_source_cc.h>
 
-
-using google::LogMessage;
 
 Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/gn3s_source.dat";
@@ -55,7 +39,6 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
             gn3s_source_ = gn3s_make_source_cc();
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "gn3s_source(" << gn3s_source_->unique_id() << ")";
-
         }
     //    else if (item_type_.compare("short") == 0)
     //        {
@@ -66,7 +49,7 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_
-                    << " unrecognized item type for resampler";
+                         << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
     if (dump_)
@@ -81,12 +64,6 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
 }
 
 
-
-Gn3sSignalSource::~Gn3sSignalSource()
-{}
-
-
-
 void Gn3sSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
@@ -99,7 +76,6 @@ void Gn3sSignalSource::connect(gr::top_block_sptr top_block)
             DLOG(INFO) << "nothing to connect internally";
         }
 }
-
 
 
 void Gn3sSignalSource::disconnect(gr::top_block_sptr top_block)

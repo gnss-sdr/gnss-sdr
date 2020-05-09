@@ -1,21 +1,12 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
 # This file is part of GNSS-SDR.
 #
-# GNSS-SDR is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# GNSS-SDR is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 from __future__ import print_function
@@ -25,7 +16,7 @@ import six
 archs = list()
 arch_dict = dict()
 
-class arch_class:
+class arch_class(object):
     def __init__(self, flags, checks, **kwargs):
         for key, cast, failval in (
             ('name', str, None),
@@ -82,7 +73,7 @@ for arch_xml in archs_xml:
     flags = dict()
     for flag_xml in arch_xml.getElementsByTagName("flag"):
         name = flag_xml.attributes["compiler"].value
-        if not flags.has_key(name): flags[name] = list()
+        if name not in flags: flags[name] = list()
         flags[name].append(flag_xml.firstChild.data)
     #force kwargs keys to be of type str, not unicode for py25
     kwargs = dict((str(k), v) for k, v in six.iteritems(kwargs))

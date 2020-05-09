@@ -5,38 +5,37 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H_
-#define GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H_
+#ifndef GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H
+#define GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H
 
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
+#endif
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+
 
 class complex_float_to_complex_byte;
 
-typedef boost::shared_ptr<complex_float_to_complex_byte> complex_float_to_complex_byte_sptr;
+#if GNURADIO_USES_STD_POINTERS
+using complex_float_to_complex_byte_sptr = std::shared_ptr<complex_float_to_complex_byte>;
+#else
+using complex_float_to_complex_byte_sptr = boost::shared_ptr<complex_float_to_complex_byte>;
+#endif
 
 complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
 
@@ -47,12 +46,12 @@ class complex_float_to_complex_byte : public gr::sync_block
 {
 private:
     friend complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
-public:
     complex_float_to_complex_byte();
 
+public:
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

@@ -5,37 +5,25 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BYTE_TO_SHORT_H_
-#define GNSS_SDR_BYTE_TO_SHORT_H_
+#ifndef GNSS_SDR_BYTE_TO_SHORT_H
+#define GNSS_SDR_BYTE_TO_SHORT_H
 
-#include <string>
+#include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/file_sink.h>
-#include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -43,33 +31,35 @@ class ConfigurationInterface;
  * \brief Adapts an 8-bits sample stream (IF) to a short int stream (IF)
  *
  */
-class ByteToShort: public GNSSBlockInterface
+class ByteToShort : public GNSSBlockInterface
 {
 public:
     ByteToShort(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
-    virtual ~ByteToShort();
+    ~ByteToShort() = default;
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
+
     //! Returns "Byte_To_Short"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Byte_To_Short";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     gr::blocks::char_to_short::sptr gr_char_to_short_;
@@ -85,4 +75,3 @@ private:
 };
 
 #endif
-

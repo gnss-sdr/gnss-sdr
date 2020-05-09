@@ -1,21 +1,10 @@
-# Copyright 2014 Free Software Foundation, Inc.
+# Copyright (C) 2014-2020  (see AUTHORS file for a list of contributors)
 #
-# This file is part of VOLK
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
-# VOLK is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# This file is part of GNSS-SDR.
 #
-# VOLK is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with GNU Radio; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street,
-# Boston, MA 02110-1301, USA.
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 if(DEFINED __INCLUDED_VOLK_BUILD_TYPES_CMAKE)
     return()
@@ -29,7 +18,7 @@ set(__INCLUDED_VOLK_BUILD_TYPES_CMAKE TRUE)
 #  - RelWithDebInfo: -O3 -g
 #  - MinSizeRel: -Os
 
-# Addtional Build Types, defined below:
+# Additional Build Types, defined below:
 #  - NoOptWithASM: -O0 -g -save-temps
 #  - O2WithASM: -O2 -g -save-temps
 #  - O3WithASM: -O3 -g -save-temps
@@ -39,7 +28,8 @@ set(__INCLUDED_VOLK_BUILD_TYPES_CMAKE TRUE)
 # build type below, make sure to add it to this list.
 list(APPEND AVAIL_BUILDTYPES
   None Debug Release RelWithDebInfo MinSizeRel
-  DebugParanoid NoOptWithASM O2WithASM O3WithASM
+  DebugParanoid Coverage NoOptWithASM O2WithASM O3WithASM
+  ASAN
 )
 
 ########################################################################
@@ -51,19 +41,19 @@ list(APPEND AVAIL_BUILDTYPES
 # known build types in AVAIL_BUILDTYPES. If the build type is found,
 # the function exits immediately. If nothing is found by the end of
 # checking all available build types, we exit with an error and list
-# the avialable build types.
+# the available build types.
 ########################################################################
 function(VOLK_CHECK_BUILD_TYPE settype)
-  STRING(TOUPPER ${settype} _settype)
+  string(TOUPPER ${settype} _settype)
   foreach(btype ${AVAIL_BUILDTYPES})
-    STRING(TOUPPER ${btype} _btype)
+    string(TOUPPER ${btype} _btype)
     if(${_settype} STREQUAL ${_btype})
       return() # found it; exit cleanly
-    endif(${_settype} STREQUAL ${_btype})
-  endforeach(btype)
+    endif()
+  endforeach()
   # Build type not found; error out
   message(FATAL_ERROR "Build type '${settype}' not valid, must be one of: ${AVAIL_BUILDTYPES}")
-endfunction(VOLK_CHECK_BUILD_TYPE)
+endfunction()
 
 ########################################################################
 # For GCC and Clang, we can set a build type:
@@ -75,23 +65,62 @@ endfunction(VOLK_CHECK_BUILD_TYPE)
 # NOTE: This is not defined on Windows systems.
 ########################################################################
 if(NOT WIN32)
-  SET(CMAKE_CXX_FLAGS_DEBUGPARANOID "-Wall -Wextra -g -O0" CACHE STRING
+  set(CMAKE_CXX_FLAGS_DEBUGPARANOID "-Wall -Wextra -g -O0" CACHE STRING
     "Flags used by the C++ compiler during DebugParanoid builds." FORCE)
-  SET(CMAKE_C_FLAGS_DEBUGPARANOID "-Wall -Wextra -g -O0" CACHE STRING
+  set(CMAKE_C_FLAGS_DEBUGPARANOID "-Wall -Wextra -g -O0" CACHE STRING
     "Flags used by the C compiler during DebugParanoid builds." FORCE)
-  SET(CMAKE_EXE_LINKER_FLAGS_DEBUGPARANOID
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used for linking binaries during NoOptWithASM builds." FORCE)
-  SET(CMAKE_SHARED_LINKER_FLAGS_DEBUGPARANOID
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used by the shared lib linker during NoOptWithASM builds." FORCE)
+  if(CMAKE_COMPILER_ID STREQUAL GNU)
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUGPARANOID
+      "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+      "Flags used for linking binaries during DebugParanoid builds." FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUGPARANOID
+      "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+      "Flags used by the shared lib linker during DebugParanoid builds." FORCE)
+  else()
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUGPARANOID
+      "-Wl" CACHE STRING
+      "Flags used for linking binaries during DebugParanoid builds." FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUGPARANOID
+      "-Wl" CACHE STRING
+      "Flags used by the shared lib linker during DebugParanoid builds." FORCE)
+  endif()
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_DEBUGPARANOID
     CMAKE_C_FLAGS_DEBUGPARANOID
     CMAKE_EXE_LINKER_FLAGS_DEBUGPARANOID
     CMAKE_SHARED_LINKER_DEBUGPARANOID)
-endif(NOT WIN32)
+endif()
+
+########################################################################
+# For GCC and Clang, we can set a build type:
+#
+# -DCMAKE_BUILD_TYPE=Coverage
+#
+# This type uses no optimization (-O0), outputs debug symbols (-g) and
+# outputs all intermediary files the build system produces, including
+# all assembly (.s) files. Look in the build directory for these
+# files.
+# NOTE: This is not defined on Windows systems.
+########################################################################
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS_COVERAGE "-Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage" CACHE STRING
+    "Flags used by the C++ compiler during Coverage builds." FORCE)
+  set(CMAKE_C_FLAGS_COVERAGE "-Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage" CACHE STRING
+    "Flags used by the C compiler during Coverage builds." FORCE)
+  set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
+    "-W" CACHE STRING
+    "Flags used for linking binaries during Coverage builds." FORCE)
+  set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+    "-W" CACHE STRING
+    "Flags used by the shared lib linker during Coverage builds." FORCE)
+
+  mark_as_advanced(
+    CMAKE_CXX_FLAGS_COVERAGE
+    CMAKE_C_FLAGS_COVERAGE
+    CMAKE_EXE_LINKER_FLAGS_COVERAGE
+    CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
+endif()
 
 
 ########################################################################
@@ -106,23 +135,31 @@ endif(NOT WIN32)
 # NOTE: This is not defined on Windows systems.
 ########################################################################
 if(NOT WIN32)
-  SET(CMAKE_CXX_FLAGS_NOOPTWITHASM "-save-temps -g -O0" CACHE STRING
+  set(CMAKE_CXX_FLAGS_NOOPTWITHASM "-save-temps -g -O0" CACHE STRING
     "Flags used by the C++ compiler during NoOptWithASM builds." FORCE)
-  SET(CMAKE_C_FLAGS_NOOPTWITHASM "-save-temps -g -O0" CACHE STRING
+  set(CMAKE_C_FLAGS_NOOPTWITHASM "-save-temps -g -O0" CACHE STRING
     "Flags used by the C compiler during NoOptWithASM builds." FORCE)
-  SET(CMAKE_EXE_LINKER_FLAGS_NOOPTWITHASM
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used for linking binaries during NoOptWithASM builds." FORCE)
-  SET(CMAKE_SHARED_LINKER_FLAGS_NOOPTWITHASM
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used by the shared lib linker during NoOptWithASM builds." FORCE)
-
-  MARK_AS_ADVANCED(
+  if(CMAKE_COMPILER_ID STREQUAL GNU)
+    set(CMAKE_EXE_LINKER_FLAGS_NOOPTWITHASM
+      "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+      "Flags used for linking binaries during NoOptWithASM builds." FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_NOOPTWITHASM
+      "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+      "Flags used by the shared lib linker during NoOptWithASM builds." FORCE)
+  else()
+    set(CMAKE_EXE_LINKER_FLAGS_NOOPTWITHASM
+      "-Wl" CACHE STRING
+      "Flags used for linking binaries during NoOptWithASM builds." FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_NOOPTWITHASM
+      "-Wl" CACHE STRING
+      "Flags used by the shared lib linker during NoOptWithASM builds." FORCE)
+  endif()
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_NOOPTWITHASM
     CMAKE_C_FLAGS_NOOPTWITHASM
     CMAKE_EXE_LINKER_FLAGS_NOOPTWITHASM
     CMAKE_SHARED_LINKER_FLAGS_NOOPTWITHASM)
-endif(NOT WIN32)
+endif()
 
 
 ########################################################################
@@ -138,23 +175,32 @@ endif(NOT WIN32)
 ########################################################################
 
 if(NOT WIN32)
-  SET(CMAKE_CXX_FLAGS_O2WITHASM "-save-temps -g -O2" CACHE STRING
+  set(CMAKE_CXX_FLAGS_O2WITHASM "-save-temps -g -O2" CACHE STRING
     "Flags used by the C++ compiler during O2WithASM builds." FORCE)
-  SET(CMAKE_C_FLAGS_O2WITHASM "-save-temps -g -O2" CACHE STRING
+  set(CMAKE_C_FLAGS_O2WITHASM "-save-temps -g -O2" CACHE STRING
     "Flags used by the C compiler during O2WithASM builds." FORCE)
-  SET(CMAKE_EXE_LINKER_FLAGS_O2WITHASM
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used for linking binaries during O2WithASM builds." FORCE)
-  SET(CMAKE_SHARED_LINKER_FLAGS_O2WITHASM
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used by the shared lib linker during O2WithASM builds." FORCE)
+  if(CMAKE_COMPILER_ID STREQUAL GNU)
+    set(CMAKE_EXE_LINKER_FLAGS_O2WITHASM
+      "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+      "Flags used for linking binaries during O2WithASM builds." FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_O2WITHASM
+      "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+      "Flags used by the shared lib linker during O2WithASM builds." FORCE)
+  else()
+    set(CMAKE_EXE_LINKER_FLAGS_O2WITHASM
+      "-Wl" CACHE STRING
+      "Flags used for linking binaries during O2WithASM builds." FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_O2WITHASM
+      "-Wl" CACHE STRING
+      "Flags used by the shared lib linker during O2WithASM builds." FORCE)
+  endif()
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_O2WITHASM
     CMAKE_C_FLAGS_O2WITHASM
     CMAKE_EXE_LINKER_FLAGS_O2WITHASM
     CMAKE_SHARED_LINKER_FLAGS_O2WITHASM)
-endif(NOT WIN32)
+endif()
 
 
 ########################################################################
@@ -170,20 +216,50 @@ endif(NOT WIN32)
 ########################################################################
 
 if(NOT WIN32)
-  SET(CMAKE_CXX_FLAGS_O3WITHASM "-save-temps -g -O3" CACHE STRING
+  set(CMAKE_CXX_FLAGS_O3WITHASM "-save-temps -g -O3" CACHE STRING
     "Flags used by the C++ compiler during O3WithASM builds." FORCE)
-  SET(CMAKE_C_FLAGS_O3WITHASM "-save-temps -g -O3" CACHE STRING
+  set(CMAKE_C_FLAGS_O3WITHASM "-save-temps -g -O3" CACHE STRING
     "Flags used by the C compiler during O3WithASM builds." FORCE)
-  SET(CMAKE_EXE_LINKER_FLAGS_O3WITHASM
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used for linking binaries during O3WithASM builds." FORCE)
-  SET(CMAKE_SHARED_LINKER_FLAGS_O3WITHASM
-    "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
-    "Flags used by the shared lib linker during O3WithASM builds." FORCE)
+    if(CMAKE_COMPILER_ID STREQUAL GNU)
+      set(CMAKE_EXE_LINKER_FLAGS_O3WITHASM
+        "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+        "Flags used for linking binaries during O3WithASM builds." FORCE)
+      set(CMAKE_SHARED_LINKER_FLAGS_O3WITHASM
+        "-Wl,--warn-unresolved-symbols,--warn-once" CACHE STRING
+        "Flags used by the shared lib linker during O3WithASM builds." FORCE)
+    else()
+      set(CMAKE_EXE_LINKER_FLAGS_O3WITHASM
+        "-Wl" CACHE STRING
+        "Flags used for linking binaries during O3WithASM builds." FORCE)
+      set(CMAKE_SHARED_LINKER_FLAGS_O3WITHASM
+        "-Wl" CACHE STRING
+        "Flags used by the shared lib linker during O3WithASM builds." FORCE)
+  endif()
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_O3WITHASM
     CMAKE_C_FLAGS_O3WITHASM
     CMAKE_EXE_LINKER_FLAGS_O3WITHASM
     CMAKE_SHARED_LINKER_FLAGS_O3WITHASM)
-endif(NOT WIN32)
+endif()
+
+########################################################################
+# For GCC and Clang, we can set a build type:
+#
+# -DCMAKE_BUILD_TYPE=ASAN
+#
+# This type creates an address sanitized build (-fsanitize=address)
+# and defaults to the DebugParanoid linker flags.
+# NOTE: This is not defined on Windows systems.
+########################################################################
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C++ compiler during Address Sanitized builds." FORCE)
+  set(CMAKE_C_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C compiler during Address Sanitized builds." FORCE)
+  mark_as_advanced(
+    CMAKE_CXX_FLAGS_ASAN
+    CMAKE_C_FLAGS_ASAN
+    CMAKE_EXE_LINKER_FLAGS_DEBUGPARANOID
+    CMAKE_SHARED_LINKER_DEBUGPARANOID)
+endif()

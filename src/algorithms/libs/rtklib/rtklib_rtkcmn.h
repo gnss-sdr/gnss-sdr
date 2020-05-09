@@ -25,32 +25,11 @@
  * Copyright (C) 2017, Carles Fernandez
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier: BSD-2-Clause
  *
  *
  * References :
- *     [1] IS-GPS-200D, Navstar GPS Space Segment/Navigation User Interfaces,
+ *     [1] IS-GPS-200K, Navstar GPS Space Segment/Navigation User Interfaces,
  *         7 March, 2006
  *     [2] RTCA/DO-229C, Minimum operational performanc standards for global
  *         positioning system/wide area augmentation system airborne equipment,
@@ -75,29 +54,46 @@
  *
  *----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_RTKCMN_H_
-#define GNSS_SDR_RTKLIB_RTKCMN_H_
+#ifndef GNSS_SDR_RTKLIB_RTKCMN_H
+#define GNSS_SDR_RTKLIB_RTKCMN_H
 
 #include "rtklib.h"
-#include <glog/logging.h>
+#include <string>
+
 
 /* coordinate rotation matrix ------------------------------------------------*/
-#define Rx(t,X) do { \
-    (X)[0]=1.0; (X)[1]=(X)[2]=(X)[3]=(X)[6]=0.0; \
-    (X)[4]=(X)[8]=cos(t); (X)[7]=sin(t); (X)[5]=-(X)[7]; \
-} while (0)
+#define Rx(t, X)                                     \
+    do                                               \
+        {                                            \
+            (X)[0] = 1.0;                            \
+            (X)[1] = (X)[2] = (X)[3] = (X)[6] = 0.0; \
+            (X)[4] = (X)[8] = cos(t);                \
+            (X)[7] = sin(t);                         \
+            (X)[5] = -(X)[7];                        \
+        }                                            \
+    while (0)
 
-#define Ry(t,X) do { \
-    (X)[4]=1.0; (X)[1]=(X)[3]=(X)[5]=(X)[7]=0.0; \
-    (X)[0]=(X)[8]=cos(t); (X)[2]=sin(t); (X)[6]=-(X)[2]; \
-} while (0)
+#define Ry(t, X)                                     \
+    do                                               \
+        {                                            \
+            (X)[4] = 1.0;                            \
+            (X)[1] = (X)[3] = (X)[5] = (X)[7] = 0.0; \
+            (X)[0] = (X)[8] = cos(t);                \
+            (X)[2] = sin(t);                         \
+            (X)[6] = -(X)[2];                        \
+        }                                            \
+    while (0)
 
-#define Rz(t,X) do { \
-    (X)[8]=1.0; (X)[2]=(X)[5]=(X)[6]=(X)[7]=0.0; \
-    (X)[0]=(X)[4]=cos(t); (X)[3]=sin(t); (X)[1]=-(X)[3]; \
-} while (0)
-
-
+#define Rz(t, X)                                     \
+    do                                               \
+        {                                            \
+            (X)[8] = 1.0;                            \
+            (X)[2] = (X)[5] = (X)[6] = (X)[7] = 0.0; \
+            (X)[0] = (X)[4] = cos(t);                \
+            (X)[3] = sin(t);                         \
+            (X)[1] = -(X)[3];                        \
+        }                                            \
+    while (0)
 
 
 void fatalerr(const char *format, ...);
@@ -106,7 +102,7 @@ int satsys(int sat, int *prn);
 int satid2no(const char *id);
 void satno2id(int sat, char *id);
 int satexclude(int sat, int svh, const prcopt_t *opt);
-int testsnr(int base, int freq, double el, double snr,const snrmask_t *mask);
+int testsnr(int base, int freq, double el, double snr, const snrmask_t *mask);
 unsigned char obs2code(const char *obs, int *freq);
 char *code2obs(unsigned char code, int *freq);
 void setcodepri(int sys, int freq, const char *pri);
@@ -129,21 +125,21 @@ void cross3(const double *a, const double *b, double *c);
 int normv3(const double *a, double *b);
 void matcpy(double *A, const double *B, int n, int m);
 void matmul(const char *tr, int n, int k, int m, double alpha,
-                   const double *A, const double *B, double beta, double *C);
+    const double *A, const double *B, double beta, double *C);
 int matinv(double *A, int n);
 int solve(const char *tr, const double *A, const double *Y, int n,
-                 int m, double *X);
+    int m, double *X);
 int lsq(const double *A, const double *y, int n, int m, double *x,
-               double *Q);
+    double *Q);
 int filter_(const double *x, const double *P, const double *H,
-                   const double *v, const double *R, int n, int m,
-                   double *xp, double *Pp);
+    const double *v, const double *R, int n, int m,
+    double *xp, double *Pp);
 int filter(double *x, double *P, const double *H, const double *v,
-                  const double *R, int n, int m);
+    const double *R, int n, int m);
 int smoother(const double *xf, const double *Qf, const double *xb,
-                    const double *Qb, int n, double *xs, double *Qs);
+    const double *Qb, int n, double *xs, double *Qs);
 void matfprint(const double A[], int n, int m, int p, int q, FILE *fp);
-void matsprint(const double A[], int n, int m, int p, int q, std::string & buffer);
+void matsprint(const double A[], int n, int m, int p, int q, std::string &buffer);
 void matprint(const double A[], int n, int m, int p, int q);
 double str2num(const char *s, int i, int n);
 int str2time(const char *s, int i, int n, gtime_t *t);
@@ -157,7 +153,8 @@ gtime_t bdt2time(int week, double sec);
 double time2bdt(gtime_t t, int *week);
 gtime_t timeadd(gtime_t t, double sec);
 double timediff(gtime_t t1, gtime_t t2);
-gtime_t timeget(void);
+double timediffweekcrossover(gtime_t t1, gtime_t t2);
+gtime_t timeget();
 void timeset(gtime_t t);
 int read_leaps_text(FILE *fp);
 int read_leaps_usno(FILE *fp);
@@ -171,8 +168,8 @@ double utc2gmst(gtime_t t, double ut1_utc);
 void time2str(gtime_t t, char *s, int n);
 char *time_str(gtime_t t, int n);
 double time2doy(gtime_t t);
-int adjgpsweek(int week);
-unsigned int tickget(void);
+int adjgpsweek(int week, bool pre_2009_file = false);
+unsigned int tickget();
 void sleepms(int ms);
 void deg2dms(double deg, double *dms, int ndec);
 void deg2dms(double deg, double *dms);
@@ -193,7 +190,7 @@ int readngspcv(const char *file, pcvs_t *pcvs);
 int readantex(const char *file, pcvs_t *pcvs);
 int readpcv(const char *file, pcvs_t *pcvs);
 pcv_t *searchpcv(int sat, const char *type, gtime_t time,
-                        const pcvs_t *pcvs);
+    const pcvs_t *pcvs);
 void readpos(const char *file, const char *rcv, double *pos);
 int readblqrecord(FILE *fp, double *odisp);
 int readblq(const char *file, const char *sta, double *odisp);
@@ -215,58 +212,57 @@ void freeobs(obs_t *obs);
 void freenav(nav_t *nav, int opt);
 
 void traceopen(const char *file);
-void traceclose(void);
+void traceclose();
 void tracelevel(int level);
-void traceswap(void);
-void trace   (int level, const char *format, ...);
-void tracet  (int level, const char *format, ...);
+void traceswap();
+void trace(int level, const char *format, ...);
+void tracet(int level, const char *format, ...);
 void tracemat(int level, const double *A, int n, int m, int p, int q);
 void traceobs(int level, const obsd_t *obs, int n);
-//void tracenav(int level, const nav_t *nav);
-//void tracegnav(int level, const nav_t *nav);
-//void tracehnav(int level, const nav_t *nav);
-//void tracepeph(int level, const nav_t *nav);
-//void tracepclk(int level, const nav_t *nav);
-//void traceb  (int level, const unsigned char *p, int n);
+// void tracenav(int level, const nav_t *nav);
+// void tracegnav(int level, const nav_t *nav);
+// void tracehnav(int level, const nav_t *nav);
+// void tracepeph(int level, const nav_t *nav);
+// void tracepclk(int level, const nav_t *nav);
+// void traceb  (int level, const unsigned char *p, int n);
 
 int execcmd(const char *cmd);
 void createdir(const char *path);
 int repstr(char *str, const char *pat, const char *rep);
 int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
-                   const char *base);
+    const char *base);
 int reppaths(const char *path, char *rpath[], int nmax, gtime_t ts,
-                    gtime_t te, const char *rov, const char *base);
+    gtime_t te, const char *rov, const char *base);
 double satwavelen(int sat, int frq, const nav_t *nav);
 double geodist(const double *rs, const double *rr, double *e);
 double satazel(const double *pos, const double *e, double *azel);
 
-//#define SQRT(x)     ((x)<0.0?0.0:sqrt(x))
 void dops(int ns, const double *azel, double elmin, double *dop);
 double ionmodel(gtime_t t, const double *ion, const double *pos,
-                       const double *azel);
+    const double *azel);
 double ionmapf(const double *pos, const double *azel);
 double ionppp(const double *pos, const double *azel, double re,
-                     double hion, double *posp);
+    double hion, double *posp);
 double tropmodel(gtime_t time, const double *pos, const double *azel,
-                        double humi);
+    double humi);
 double interpc(const double coef[], double lat);
 double mapf(double el, double a, double b, double c);
 double nmf(gtime_t time, const double pos[], const double azel[],
-                  double *mapfw);
+    double *mapfw);
 double tropmapf(gtime_t time, const double pos[], const double azel[],
-                       double *mapfw);
+    double *mapfw);
 double interpvar(double ang, const double *var);
 
 void antmodel(const pcv_t *pcv, const double *del, const double *azel,
-                     int opt, double *dant);
+    int opt, double *dant);
 
 void antmodel_s(const pcv_t *pcv, double nadir, double *dant);
 void sunmoonpos_eci(gtime_t tut, double *rsun, double *rmoon);
 void sunmoonpos(gtime_t tutc, const double *erpv, double *rsun,
-                       double *rmoon, double *gmst);
+    double *rmoon, double *gmst);
 void csmooth(obs_t *obs, int ns);
 int rtk_uncompress(const char *file, char *uncfile);
 int expath(const char *path, char *paths[], int nmax);
 void windupcorr(gtime_t time, const double *rs, const double *rr, double *phw);
 
-#endif /* GNSS_SDR_RTKLIB_RTKCMN_H_ */
+#endif  // GNSS_SDR_RTKLIB_RTKCMN_H

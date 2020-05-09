@@ -6,25 +6,14 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
  *
  * This file is part of GNSS-SDR.
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -------------------------------------------------------------------------
  */
@@ -33,55 +22,65 @@
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H
 
 #include <gnuradio/block.h>
-#include <volk/volk.h>
+#include <cstdint>
+#if GNURADIO_USES_STD_POINTERS
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif
 
 class direct_resampler_conditioner_cb;
-typedef boost::shared_ptr<direct_resampler_conditioner_cb>
-        direct_resampler_conditioner_cb_sptr;
 
-direct_resampler_conditioner_cb_sptr
-direct_resampler_make_conditioner_cb(double sample_freq_in,
-        double sample_freq_out);
+#if GNURADIO_USES_STD_POINTERS
+using direct_resampler_conditioner_cb_sptr = std::shared_ptr<direct_resampler_conditioner_cb>;
+#else
+using direct_resampler_conditioner_cb_sptr = boost::shared_ptr<direct_resampler_conditioner_cb>;
+#endif
+
+direct_resampler_conditioner_cb_sptr direct_resampler_make_conditioner_cb(
+    double sample_freq_in,
+    double sample_freq_out);
+
 /*!
  * \brief This class implements a direct resampler conditioner for std::complex<signed char>
  *
  * Direct resampling without interpolation
  */
-class direct_resampler_conditioner_cb: public gr::block
+class direct_resampler_conditioner_cb : public gr::block
 {
+public:
+    ~direct_resampler_conditioner_cb() = default;
+
+    inline unsigned int sample_freq_in() const
+    {
+        return d_sample_freq_in;
+    }
+
+    inline unsigned int sample_freq_out() const
+    {
+        return d_sample_freq_out;
+    }
+
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 
 private:
+    friend direct_resampler_conditioner_cb_sptr direct_resampler_make_conditioner_cb(
+        double sample_freq_in,
+        double sample_freq_out);
 
-    friend direct_resampler_conditioner_cb_sptr
-    direct_resampler_make_conditioner_cb(double sample_freq_in,
-            double sample_freq_out);
+    direct_resampler_conditioner_cb(
+        double sample_freq_in,
+        double sample_freq_out);
 
     double d_sample_freq_in;
     double d_sample_freq_out;
     uint32_t d_phase;
     uint32_t d_lphase;
     uint32_t d_phase_step;
-    unsigned int d_history;
-
-    direct_resampler_conditioner_cb(double sample_freq_in,
-            double sample_freq_out);
-
-public:
-
-    ~direct_resampler_conditioner_cb();
-
-    unsigned int sample_freq_in() const
-    {
-        return d_sample_freq_in;
-    }
-    unsigned int sample_freq_out() const
-    {
-        return d_sample_freq_out;
-    }
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
 };
 
-#endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H */
+#endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H

@@ -1,6 +1,6 @@
 function [dout,mout,sout] = dms2mat(dms,n)
 
-%DMS2MAT Converts a dms vector format to a [deg min sec] matrix
+% DMS2MAT Converts a dms vector format to a [deg min sec] matrix
 %
 %  [d,m,s] = DMS2MAT(dms) converts a dms vector format to a
 %  deg:min:sec matrix.  The vector format is dms = 100*deg + min + sec/100.
@@ -19,7 +19,13 @@ function [dout,mout,sout] = dms2mat(dms,n)
 
 %  Copyright 1996-2002 Systems Planning and Analysis, Inc. and The MathWorks, Inc.
 %  Written by:  E. Byrns, E. Brown
-%   $Revision: 1.10 $    $Date: 2002/03/20 21:25:06 $
+%  Revision: 1.10    $Date: 2002/03/20 21:25:06
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+%
+% SPDX-License-Identifier: GPL-3.0-or-later
 
 
 if nargin == 0
@@ -84,7 +90,7 @@ msign = signvec .* (d==0 & m~=0);
 ssign = signvec .* (d==0 & m==0 & s~=0);
 
 %  In the application of signs below, the comparison with 0 is used so that
-%  the sign vector contains only +1 and -1.  Any zero occurances causes
+%  the sign vector contains only +1 and -1.  Any zero occurrences causes
 %  data to be lost when the sign has been applied to a higher component
 %  of d:m:s.  Use fix function to eliminate potential round-off errors.
 
@@ -101,4 +107,3 @@ elseif nargout == 3
 else
     error('Invalid number of output arguments')
 end
-

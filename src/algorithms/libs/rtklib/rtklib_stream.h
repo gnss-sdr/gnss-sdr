@@ -1,6 +1,6 @@
 /*!
- * \file rtklib_sbas.h
- * \brief sbas functions
+ * \file rtklib_stream.h
+ * \brief streaming functions
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu
  *          <li> 2017, Javier Arribas
@@ -25,59 +25,38 @@
  * Copyright (C) 2017, Carles Fernandez
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier: BSD-2-Clause
  *
  *-----------------------------------------------------------------------------*/
 
- #ifndef GNSS_SDR_RTKLIB_STREAM_H_
- #define GNSS_SDR_RTKLIB_STREAM_H_
+#ifndef GNSS_SDR_RTKLIB_STREAM_H
+#define GNSS_SDR_RTKLIB_STREAM_H
 
 #include "rtklib.h"
 
 /* constants -----------------------------------------------------------------*/
 
-#define TINTACT             200         /* period for stream active (ms) */
-#define SERIBUFFSIZE        4096        /* serial buffer size (bytes) */
-#define TIMETAGH_LEN        64          /* time tag file header length */
-#define MAXCLI              32          /* max client connection for tcp svr */
-#define MAXSTATMSG          32          /* max length of status message */
+#define TINTACT 200       /* period for stream active (ms) */
+#define SERIBUFFSIZE 4096 /* serial buffer size (bytes) */
+#define TIMETAGH_LEN 64   /* time tag file header length */
+#define MAXCLI 32         /* max client connection for tcp svr */
+#define MAXSTATMSG 32     /* max length of status message */
 
-#define VER_RTKLIB          "2.4.2"
-#define NTRIP_AGENT         "RTKLIB/" VER_RTKLIB
-#define NTRIP_CLI_PORT      2101        /* default ntrip-client connection port */
-#define NTRIP_SVR_PORT      80          /* default ntrip-server connection port */
-#define NTRIP_MAXRSP        32768       /* max size of ntrip response */
-#define NTRIP_MAXSTR        256         /* max length of mountpoint string */
-#define NTRIP_RSP_OK_CLI    "ICY 200 OK\r\n" /* ntrip response: client */
-#define NTRIP_RSP_OK_SVR    "OK\r\n"    /* ntrip response: server */
-#define NTRIP_RSP_SRCTBL    "SOURCETABLE 200 OK\r\n" /* ntrip response: source table */
-#define NTRIP_RSP_TBLEND    "ENDSOURCETABLE"
-#define NTRIP_RSP_HTTP      "HTTP/"     /* ntrip response: http */
-#define NTRIP_RSP_ERROR     "ERROR"     /* ntrip response: error */
+#define VER_RTKLIB "2.4.2"
+#define NTRIP_AGENT "RTKLIB/" VER_RTKLIB
+#define NTRIP_CLI_PORT 2101                       /* default ntrip-client connection port */
+#define NTRIP_SVR_PORT 80                         /* default ntrip-server connection port */
+#define NTRIP_MAXRSP 32768                        /* max size of ntrip response */
+#define NTRIP_MAXSTR 256                          /* max length of mountpoint string */
+#define NTRIP_RSP_OK_CLI "ICY 200 OK\r\n"         /* ntrip response: client */
+#define NTRIP_RSP_OK_SVR "OK\r\n"                 /* ntrip response: server */
+#define NTRIP_RSP_SRCTBL "SOURCETABLE 200 OK\r\n" /* ntrip response: source table */
+#define NTRIP_RSP_TBLEND "ENDSOURCETABLE"
+#define NTRIP_RSP_HTTP "HTTP/"  /* ntrip response: http */
+#define NTRIP_RSP_ERROR "ERROR" /* ntrip response: error */
 
-#define FTP_CMD             "wget"      /* ftp/http command */
-#define FTP_TIMEOUT         30          /* ftp/http timeout (s) */
+#define FTP_CMD "wget" /* ftp/http command */
+#define FTP_TIMEOUT 30 /* ftp/http timeout (s) */
 
 
 serial_t *openserial(const char *path, int mode, char *msg);
@@ -111,9 +90,9 @@ int writefile(file_t *file, unsigned char *buff, int n, char *msg);
 void syncfile(file_t *file1, file_t *file2);
 
 void decodetcppath(const char *path, char *addr, char *port, char *user,
-        char *passwd, char *mntpnt, char *str);
+    char *passwd, char *mntpnt, char *str);
 
-int errsock(void);
+int errsock();
 
 int setsock(socket_t sock, char *msg);
 
@@ -182,7 +161,7 @@ int writentrip(ntrip_t *ntrip, unsigned char *buff, int n, char *msg);
 int statentrip(ntrip_t *ntrip);
 
 void decodeftppath(const char *path, char *addr, char *file, char *user,
-        char *passwd, int *topts);
+    char *passwd, int *topts);
 
 gtime_t nextdltime(const int *topts, int stat);
 
@@ -196,7 +175,7 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg);
 
 int stateftp(ftp_t *ftp);
 
-void strinitcom(void);
+void strinitcom();
 
 void strinit(stream_t *stream);
 
@@ -220,7 +199,7 @@ void strsum(stream_t *stream, int *inb, int *inr, int *outb, int *outr);
 
 void strsetopt(const int *opt);
 
-void strsettimeout(stream_t *stream, int toinact, int tirecon);
+void strsettimeout(stream_t *stream, int inactive_timeout, int tirecon);
 
 void strsetdir(const char *dir);
 

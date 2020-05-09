@@ -1,11 +1,19 @@
+# Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
+#
+# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
+#
+# This file is part of GNSS-SDR.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 /*! \mainpage VOLK_GNSSSDR
 
 Welcome to VOLK_GNSSSDR!
 
-VOLK_GNSSSDR is the Vector-Optimized Library of Kernels for GNSS-SDR. 
-It is a library that contains kernels of hand-written SIMD code for different 
-mathematical operations. Since each SIMD architecture can be very different 
-and no compiler has yet come along to handle vectorization properly or highly 
+VOLK_GNSSSDR is the Vector-Optimized Library of Kernels for GNSS-SDR.
+It is a library that contains kernels of hand-written SIMD code for different
+mathematical operations. Since each SIMD architecture can be very different
+and no compiler has yet come along to handle vectorization properly or highly
 efficiently, VOLK_GNSSSDR approaches the problem differently.
 
 For each architecture or platform that a developer wishes to vectorize for, a
@@ -14,6 +22,6 @@ proto-kernel. In this way, the users of VOLK_GNSSSDR call a kernel for performin
 operation that is platform/architecture agnostic. This allows us to write
 portable SIMD code.
 
-VOLK_GNSSSDR is a module generated from the original VOLK library http://libvolk.org
+VOLK_GNSSSDR is a module generated from the original VOLK library https://www.libvolk.org
 
 */

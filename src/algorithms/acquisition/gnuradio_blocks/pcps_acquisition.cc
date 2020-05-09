@@ -94,7 +94,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0U;
-    d_threshold = 0.0;
+    d_threshold = 0.0;   //Initialize threshold
     d_doppler_step = acq_parameters.doppler_step;
     d_doppler_center = 0U;
     d_doppler_center_step_two = 0.0;

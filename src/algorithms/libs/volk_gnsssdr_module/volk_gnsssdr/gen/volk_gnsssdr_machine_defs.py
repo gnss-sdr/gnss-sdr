@@ -8,9 +8,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-from __future__ import print_function
 
-import six
+from __future__ import print_function
+import sys
+if sys.version_info[0] < 3:
+    import six
 
 from volk_gnsssdr_arch_defs import arch_dict
 
@@ -28,7 +30,7 @@ class machine_class(object):
             self.archs.append(arch)
             self.arch_names.append(arch_name)
         self.alignment = max([a.alignment for a in self.archs])
-    
+
     def __repr__(self): return self.name
 
 def register_machine(name, archs):
@@ -64,7 +66,8 @@ for machine_xml in machines_xml:
         except: pass
     kwargs['archs'] = kwargs['archs'].split()
     #force kwargs keys to be of type str, not unicode for py25
-    kwargs = dict((str(k), v) for k, v in six.iteritems(kwargs))
+    if sys.version_info[0] < 3:
+        kwargs = dict((str(k), v) for k, v in six.iteritems(kwargs))
     register_machine(**kwargs)
 
 if __name__ == '__main__':

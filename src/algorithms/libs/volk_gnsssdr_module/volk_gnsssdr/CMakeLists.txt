@@ -228,10 +228,12 @@ endif()
 ########################################################################
 
 # Python
-include(VolkPython) # sets PYTHON_EXECUTABLE and PYTHON_DASH_B
+include(VolkPython) # sets PYTHON_EXECUTABLE
 volk_python_check_module("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
 volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
-volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+if(Python2_VERSION OR (PYTHON_VERSION_STRING VERSION_LESS "3.0"))
+    volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+endif()
 
 if(NOT PYTHON_MIN_VER_FOUND)
     message(FATAL_ERROR "Python 2.7 or greater required to build VOLK_GNSSSDR")
@@ -241,9 +243,12 @@ endif()
 if(NOT MAKO_FOUND)
     message(FATAL_ERROR "Mako templates required to build VOLK_GNSSSDR")
 endif()
+
 # Six
-if(NOT SIX_FOUND)
-    message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK")
+if(Python2_VERSION OR (PYTHON_VERSION_STRING VERSION_LESS "3.0"))
+    if(NOT SIX_FOUND)
+        message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
+    endif()
 endif()
 
 

@@ -556,19 +556,6 @@ endif()
 
 
 ################################################################################
-# Detect availability of std::span
-################################################################################
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("
-    #include <span>
-    int main()
-    { std::span<float> s; }"
-    has_span
-)
-
-
-
-################################################################################
 # Boost - https://www.boost.org
 ################################################################################
 if(UNIX AND EXISTS "/usr/lib64")
@@ -746,6 +733,20 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
     endif()
 endif()
 
+# Disable concepts to address https://github.com/boostorg/asio/issues/312
+if((CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.9) OR
+    (CMAKE_CXX_COMPILER_ID MATCHES Clang))
+    target_compile_definitions(Boost::headers
+        INTERFACE
+            -DBOOST_ASIO_DISABLE_CONCEPTS
+    )
+endif()
+
+# Workaround for https://github.com/boostorg/format/issues/67
+if(Boost_VERSION_STRING VERSION_GREATER 1.71)
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 # Fix for Boost Asio < 1.70 when using Clang in macOS
 if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
     # Check if we have std::string_view
@@ -757,6 +758,19 @@ if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
         has_string_view
     )
 endif()
+
+
+
+################################################################################
+# Detect availability of std::span
+################################################################################
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+    #include <span>
+    int main()
+    { std::span<float> s; }"
+    has_span
+)
 
 
 

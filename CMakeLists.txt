@@ -420,6 +420,7 @@ endif()
 # pkg-config - Helper tool used when compiling applications and libraries.
 ################################################################################
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
+set(FPHSA_NAME_MISMATCHED ON)
 find_package(PkgConfig)
 
 

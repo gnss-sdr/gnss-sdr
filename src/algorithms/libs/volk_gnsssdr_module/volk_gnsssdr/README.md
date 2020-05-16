@@ -49,7 +49,7 @@ baseband processor:
 ![Example of VOLK_GNSSSDR
 usage.](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
 
-## How to build VOLK_GNSSSDR:
+## How to build VOLK_GNSSSDR
 
 This library is automatically built and installed along with GNSS-SDR if it is
 not found by CMake on your system at configure time.
@@ -57,37 +57,41 @@ not found by CMake on your system at configure time.
 However, you can install and use VOLK_GNSSSDR kernels as you use VOLK's,
 independently of GNSS-SDR.
 
+### Install dependencies
+
 First, make sure that the required dependencies are installed in your machine:
 
 ```
-$ sudo apt-get install cmake python3-mako python3-six libboost-dev \
-  libboost-filesystem-dev libboost-system-dev
+$ sudo apt-get install build-essential python3-mako cmake git ca-certificates \
+    libboost-dev libboost-filesystem-dev libboost-system-dev
 ```
 
 Please note that if you are using a compiler supporting the C++17 standard (for
-instance, gcc >= 8.0), specifically the std::filesystem library, packages
+instance, gcc >= 8.0), specifically the `std::filesystem` library, packages
 `libboost-dev`, `libboost-filesystem-dev` and `libboost-system-dev` are no
 longer required dependencies. The CMake script will detect that availability for
 you.
 
 ### Building on most x86 (32-bit and 64-bit) platforms
 
-In order to build and install the library, go to the base folder of the source
-code and do:
+In order to get the source code, build and install the library, do:
 
 ```
-$ mkdir build
+$ git clone https://github.com/gnss-sdr/gnss-sdr
+$ cd gnss-sdr
+$ git checkout next
 $ cd build
-$ cmake ..
+$ cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
 $ make
 $ sudo make install
+$ sudo ldconfig
 ```
 
 That's it!
 
 Before its first use, please execute `volk_gnsssdr_profile` to let your system
-know which is the fastest available implementation. This only has to be done
-once:
+know which is the fastest available implementation for each kernel. This only
+has to be done once:
 
 ```
 $ volk_gnsssdr_profile
@@ -101,9 +105,14 @@ The execution of `volk_gnsssdr_profile` can be set automatically after building,
 leaving your system ready to use:
 
 ```
-$ cmake -DENABLE_PROFILING=ON ../
+$ git clone https://github.com/gnss-sdr/gnss-sdr
+$ cd gnss-sdr
+$ git checkout next
+$ cd build
+$ cmake -DENABLE_PROFILING=ON ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
 $ make
 $ sudo make install
+$ sudo ldconfig
 ```
 
 ### Building on Raspberry Pi and other ARM boards
@@ -117,12 +126,17 @@ best performance.
 Example for Raspberry Pi 4:
 
 ```
-$ mkdir build && cd build
-$ cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/arm_cortex_a72_hardfp_native.cmake ..
+$ git clone https://github.com/gnss-sdr/gnss-sdr
+$ cd gnss-sdr
+$ git checkout next
+$ cd build
+$ cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/arm_cortex_a72_hardfp_native.cmake \
+  ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
 $ make
 $ make test
 $ sudo make install
 $ volk_gnsssdr_profile
+$ sudo ldconfig
 ```
 
 ## References
@@ -134,7 +148,7 @@ following paper:
   [_Accelerating GNSS Software Receivers_](https://zenodo.org/record/266493), in
   Proc. of the 29th International Technical Meeting of the Satellite Division of
   The Institute of Navigation (ION GNSS+ 2016), pp. 44-61, Portland, Oregon,
-  September 12-16, 2016. doi:
+  September 12-16, 2016. DOI:
   [10.33012/2016.14576](https://doi.org/10.33012/2016.14576)
 
 BibTeX entry:
@@ -148,7 +162,7 @@ pages   = {44--61},
 year    = {2016},
 address = {Portland, OR},
 month   = {Sep.},
-note    = {{doi}: 10.33012/2016.14576}
+note    = {{DOI}: 10.33012/2016.14576}
 }
 ```
 

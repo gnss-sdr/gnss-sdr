@@ -23,6 +23,7 @@
 #include <matio.h>
 #include <cmath>
 #include <iostream>
+#include <utility>
 
 bool Acquisition_Dump_Reader::read_binary_acq()
 {
@@ -232,7 +233,7 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
 }
 
 // Copy constructor
-Acquisition_Dump_Reader::Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept
 {
     *this = other;
 }
@@ -251,9 +252,9 @@ Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Du
 
 
 // Move constructor
-Acquisition_Dump_Reader::Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept
 {
-    *this = other;
+    *this = std::move(other);
 }
 
 

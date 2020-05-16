@@ -19,6 +19,7 @@
 
 #include "gnss_satellite.h"
 #include <glog/logging.h>
+#include <utility>
 
 
 Gnss_Satellite::Gnss_Satellite()
@@ -80,7 +81,7 @@ bool operator==(const Gnss_Satellite& sat1, const Gnss_Satellite& sat2)
 
 
 // Copy constructor
-Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other) noexcept
+Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other) noexcept
 {
     *this = other;
 }
@@ -102,9 +103,9 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
 
 
 // Move constructor
-Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other) noexcept
+Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other) noexcept
 {
-    *this = other;
+    *this = std::move(other);
 }
 
 

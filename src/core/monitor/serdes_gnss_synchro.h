@@ -47,23 +47,23 @@ public:
         google::protobuf::ShutdownProtobufLibrary();
     }
 
-    inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other)  //!< Copy constructor
+    inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other) noexcept  //!< Copy constructor
     {
         this->observables = other.observables;
     }
 
-    inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs)  //!< Copy assignment operator
+    inline Serdes_Gnss_Synchro& operator=(const Serdes_Gnss_Synchro& rhs) noexcept  //!< Copy assignment operator
     {
         this->observables = rhs.observables;
         return *this;
     }
 
-    inline Serdes_Gnss_Synchro(const Serdes_Gnss_Synchro& other)  //!< Move constructor
+    inline Serdes_Gnss_Synchro(Serdes_Gnss_Synchro&& other) noexcept  //!< Move constructor
     {
         this->observables = std::move(other.observables);
     }
 
-    inline Serdes_Gnss_Synchro& operator=(Serdes_Gnss_Synchro&& other)  //!< Move assignment operator
+    inline Serdes_Gnss_Synchro& operator=(Serdes_Gnss_Synchro&& other) noexcept  //!< Move assignment operator
     {
         if (this != &other)
             {

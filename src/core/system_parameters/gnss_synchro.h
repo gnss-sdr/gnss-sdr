@@ -24,6 +24,7 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
+#include <utility>
 
 /*!
  * \brief This is the class that contains the information that is shared
@@ -106,13 +107,13 @@ public:
     ~Gnss_Synchro() = default;  //!< Default destructor
 
     /// Copy constructor
-    Gnss_Synchro(Gnss_Synchro&& other) noexcept
+    Gnss_Synchro(const Gnss_Synchro& other) noexcept
     {
         *this = other;
     };
 
     /// Copy assignment operator
-    Gnss_Synchro& operator=(const Gnss_Synchro& rhs)
+    Gnss_Synchro& operator=(const Gnss_Synchro& rhs) noexcept
     {
         // Only do assignment if RHS is a different object from this.
         if (this != &rhs)
@@ -149,9 +150,9 @@ public:
     };
 
     /// Move constructor
-    Gnss_Synchro(const Gnss_Synchro& other) noexcept
+    Gnss_Synchro(Gnss_Synchro&& other) noexcept
     {
-        *this = other;
+        *this = std::move(other);
     };
 
     /// Move assignment operator

@@ -135,7 +135,7 @@ HybridObservablesTest_msg_rx_Fpga::HybridObservablesTest_msg_rx_Fpga() : gr::blo
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
-        boost::bind(&HybridObservablesTest_msg_rx_Fpga::msg_handler_events, this, _1));
+        boost::bind(&HybridObservablesTest_msg_rx_Fpga::msg_handler_events, this, boost::placeholders::_1));
 #endif
     rx_message = 0;
 }
@@ -183,7 +183,7 @@ void HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_events(pmt::pmt_t msg)
 HybridObservablesTest_tlm_msg_rx_Fpga::HybridObservablesTest_tlm_msg_rx_Fpga() : gr::block("HybridObservablesTest_tlm_msg_rx_Fpga", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_events, this, boost::placeholders::_1));
     rx_message = 0;
 }
 

@@ -91,7 +91,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t &&PH1) { msg_handler_telemetry_to_trk(PH1); });
 #else
-        boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));
+        boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
 #endif
     // initialize internal vars
     d_dll_filt_history.set_capacity(1000);

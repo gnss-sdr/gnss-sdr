@@ -194,7 +194,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_telemetry(PH1); });
 #else
-        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
+        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));
 #endif
     // initialize kml_printer
     std::string kml_dump_filename;

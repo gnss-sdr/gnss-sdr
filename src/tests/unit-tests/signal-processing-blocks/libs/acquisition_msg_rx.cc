@@ -58,7 +58,7 @@ Acquisition_msg_rx::Acquisition_msg_rx() : gr::block("Acquisition_msg_rx", gr::i
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
-        boost::bind(&Acquisition_msg_rx::msg_handler_events, this, _1));
+        boost::bind(&Acquisition_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #endif
     rx_message = 0;
 }

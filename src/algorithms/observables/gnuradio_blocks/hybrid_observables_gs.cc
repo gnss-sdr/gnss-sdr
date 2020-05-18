@@ -76,7 +76,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t &&PH1) { msg_handler_pvt_to_observables(PH1); });
 #else
-        boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
+        boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, boost::placeholders::_1));
 #endif
     // Send Channel status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));

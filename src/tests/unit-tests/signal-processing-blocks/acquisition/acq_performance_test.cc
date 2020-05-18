@@ -161,7 +161,7 @@ AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
-        boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
+        boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #endif
     rx_message = 0;
 }

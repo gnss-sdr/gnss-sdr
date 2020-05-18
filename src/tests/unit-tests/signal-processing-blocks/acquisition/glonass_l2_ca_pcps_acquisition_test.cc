@@ -105,7 +105,11 @@ GlonassL2CaPcpsAcquisitionTest_msg_rx::GlonassL2CaPcpsAcquisitionTest_msg_rx(con
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
+#if BOOST_173_OR_GREATER
+        boost::bind(&GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
+#else
         boost::bind(&GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+#endif
 #endif
     rx_message = 0;
 }

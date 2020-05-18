@@ -91,6 +91,13 @@ else()
     )
 endif()
 
+if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    target_compile_definitions(front-end-cal
+        PRIVATE
+            -DBOOST_173_OR_GREATER=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(front-end-cal

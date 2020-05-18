@@ -44,6 +44,11 @@
 #include <utility>
 #include <vector>
 
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
+
 #define CN0_ESTIMATION_SAMPLES 10
 
 
@@ -107,7 +112,11 @@ glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t &&PH1) { msg_handler_preamble_index(PH1); });
 #else
+#if BOOST_173_OR_GREATER
+        boost::bind(&glonass_l2_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index, this, boost::placeholders::_1));
+#else
         boost::bind(&glonass_l2_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index, this, _1));
+#endif
 #endif
     this->message_port_register_out(pmt::mp("events"));
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));

@@ -116,7 +116,11 @@ GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() : gr::block
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t &&PH1) { msg_handler_events(PH1); });
 #else
+#if BOOST_173_OR_GREATER
+        boost::bind(&GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
+#else
         boost::bind(&GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+#endif
 #endif
     rx_message = 0;
 }

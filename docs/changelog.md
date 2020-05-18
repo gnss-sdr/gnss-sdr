@@ -30,6 +30,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Make use of `std::span` if the compiler supports it, and use gsl-lite as a
   fallback. The latter has been updated to version
   [0.37.0](https://github.com/gsl-lite/gsl-lite/releases/tag/0.37.0).
+- Fixes building against Boost 1.73 in old compilers (_e.g._, GCC 4.x).
 
 ### Improvements in Reliability:
 

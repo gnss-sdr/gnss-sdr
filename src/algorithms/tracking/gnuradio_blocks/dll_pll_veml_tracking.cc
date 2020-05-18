@@ -101,7 +101,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t &&PH1) { msg_handler_telemetry_to_trk(PH1); });
 #else
+#if BOOST_173_OR_GREATER
+        boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
+#else
         boost::bind(&dll_pll_veml_tracking::msg_handler_telemetry_to_trk, this, _1));
+#endif
 #endif
 
     // initialize internal vars

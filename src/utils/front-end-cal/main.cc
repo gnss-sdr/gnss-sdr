@@ -72,6 +72,7 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 #endif
 
 #if HAS_STD_FILESYSTEM

@@ -50,6 +50,7 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 #endif
 
 #define CN0_ESTIMATION_SAMPLES 10

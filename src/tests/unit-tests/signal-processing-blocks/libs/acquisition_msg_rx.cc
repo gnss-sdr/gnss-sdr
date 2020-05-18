@@ -27,6 +27,7 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 #endif
 
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make()

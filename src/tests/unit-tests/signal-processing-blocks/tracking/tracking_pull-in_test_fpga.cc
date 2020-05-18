@@ -60,6 +60,7 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 #endif
 
 #ifdef GR_GREATER_38

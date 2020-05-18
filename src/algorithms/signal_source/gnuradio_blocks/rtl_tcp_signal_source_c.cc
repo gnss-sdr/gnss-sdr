@@ -22,6 +22,7 @@
 #include "rtl_tcp_signal_source_c.h"
 #include "rtl_tcp_commands.h"
 #include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 #include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <map>

@@ -29,7 +29,6 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind.hpp>
-#include <boost/bind/placeholders.hpp>
 #endif
 
 channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat)

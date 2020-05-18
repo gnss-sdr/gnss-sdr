@@ -53,7 +53,6 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind.hpp>
-#include <boost/bind/placeholders.hpp>
 #endif
 #if GNURADIO_USES_STD_POINTERS
 #include <memory>

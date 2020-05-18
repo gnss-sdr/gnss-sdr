@@ -77,6 +77,13 @@ if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
     target_compile_definitions(pvt_gr_blocks PRIVATE -DOLD_BOOST=1)
 endif()
 
+if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    target_compile_definitions(pvt_gr_blocks
+        PRIVATE
+            -DBOOST_173_OR_GREATER=1
+    )
+endif()
+
 # Check if we have std::put_time (Workaround for gcc < 5.0)
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("

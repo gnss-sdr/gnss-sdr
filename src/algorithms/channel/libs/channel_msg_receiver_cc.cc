@@ -44,7 +44,11 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
+#if BOOST_173_OR_GREATER
         boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, boost::placeholders::_1));
+#else
+        boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
+#endif
 #endif
 
     d_channel_fsm = std::move(channel_fsm);

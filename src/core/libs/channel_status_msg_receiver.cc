@@ -45,7 +45,11 @@ channel_status_msg_receiver::channel_status_msg_receiver() : gr::block("channel_
 #if HAS_GENERIC_LAMBDA
         [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
 #else
+#if BOOST_173_OR_GREATER
         boost::bind(&channel_status_msg_receiver::msg_handler_events, this, boost::placeholders::_1));
+#else
+        boost::bind(&channel_status_msg_receiver::msg_handler_events, this, _1));
+#endif
 #endif
     d_pvt_status.RX_time = -1;  // to indicate that the PVT is not available
 }

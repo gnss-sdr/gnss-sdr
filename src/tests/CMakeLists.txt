@@ -556,6 +556,12 @@ if(ENABLE_UNIT_TESTING)
                 -DHAS_GENERIC_LAMBDA=0
         )
     endif()
+    if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+        target_compile_definitions(run_tests
+            PRIVATE
+                -DBOOST_173_OR_GREATER=1
+        )
+    endif()
 endif()
 
 if(ENABLE_FPGA)
@@ -942,7 +948,12 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DHAS_GENERIC_LAMBDA=0
         )
     endif()
-
+    if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+        target_compile_definitions(acq_test
+            PRIVATE
+                -DBOOST_173_OR_GREATER=1
+        )
+    endif()
     set_property(TEST acq_test PROPERTY TIMEOUT 30)
 endif()
 
@@ -1006,6 +1017,12 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_compile_definitions(trk_test
             PRIVATE
                 -DHAS_GENERIC_LAMBDA=0
+        )
+    endif()
+    if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+        target_compile_definitions(trk_test
+            PRIVATE
+                -DBOOST_173_OR_GREATER=1
         )
     endif()
 

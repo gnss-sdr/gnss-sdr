@@ -130,6 +130,13 @@ else()
     )
 endif()
 
+if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DBOOST_173_OR_GREATER=1
+    )
+endif()
+
 if(has_span)
     target_compile_definitions(tracking_gr_blocks
         PUBLIC -DHAS_STD_SPAN=1

@@ -502,14 +502,8 @@ private:
     class Rtcm_Message
     {
     public:
-        enum
-        {
-            header_length = 6
-        };
-        enum
-        {
-            max_body_length = 1029
-        };
+        static const std::size_t header_length = 6;
+        static const std::size_t max_body_length = 1029;
 
         Rtcm_Message()
             : body_length_(0)

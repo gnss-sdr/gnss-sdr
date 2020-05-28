@@ -582,7 +582,7 @@ private:
         }
 
     private:
-        char data_[header_length + max_body_length];
+        char data_[header_length + max_body_length] = "";
         std::size_t body_length_;
     };
 

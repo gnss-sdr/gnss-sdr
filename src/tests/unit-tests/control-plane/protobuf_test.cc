@@ -81,7 +81,8 @@ TEST(Protobuf, Works)
 
     // We can access like this:
     std::vector<Gnss_Synchro> vgs_read = serdes.readProtobuffer(obs);
-    Gnss_Synchro gs_read = vgs_read[0];
+    Gnss_Synchro gs_read{};
+    gs_read = vgs_read[0];
     uint32_t prn_read = gs_read.PRN;
     uint32_t prn_read2 = vgs_read[1].PRN;
     std::string system_read(1, gs_read.System);

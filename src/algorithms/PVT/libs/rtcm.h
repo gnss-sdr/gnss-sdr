@@ -506,8 +506,8 @@ private:
         static const std::size_t max_body_length = 1029;
 
         Rtcm_Message()
-            : body_length_(0)
         {
+            body_length_ = 0;
         }
 
         const char* data() const

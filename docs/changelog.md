@@ -21,6 +21,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - The software can now be built against the GNU Radio 3.9 API that uses C++11
   smart pointers instead of Boost smart pointers.
 - Remove python six module as a dependency if using Python 3.x.
+- Fixes warnings risen by GCC 10 and Clang 10.
 
 ### Improvements in Portability:
 
@@ -35,6 +36,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 ### Improvements in Reliability:
 
 - Fixed a bug in GLONASS GNAV CRC computation.
+- Fix possible buffer overflow in the generation of RTCM messages.
 
 ### Improvements in Reproducibility:
 

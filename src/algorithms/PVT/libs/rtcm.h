@@ -34,6 +34,7 @@
 #include <glog/logging.h>
 #include <pmt/pmt.h>
 #include <algorithm>  // for min
+#include <array>
 #include <bitset>
 #include <cstddef>  // for size_t
 #include <cstdint>
@@ -506,18 +507,18 @@ private:
         static const std::size_t max_body_length = 1029;
 
         Rtcm_Message()
+            : body_length_(0)
         {
-            body_length_ = 0;
         }
 
         const char* data() const
         {
-            return data_;
+            return data_.data();
         }
 
         char* data()
         {
-            return data_;
+            return data_.data();
         }
 
         inline std::size_t length() const
@@ -527,12 +528,12 @@ private:
 
         const char* body() const
         {
-            return data_ + header_length;
+            return data_.data() + header_length;
         }
 
         char* body()
         {
-            return data_ + header_length;
+            return data_.data() + header_length;
         }
 
         std::size_t body_length() const
@@ -552,14 +553,14 @@ private:
         inline bool decode_header()
         {
             char header[header_length + 1] = "";
-            std::strncat(header, data_, header_length);
+            std::strncat(header, data_.data(), header_length);
             if (header[0] != 'G' || header[1] != 'S')
                 {
                     return false;
                 }
 
             char header2_[header_length - 1] = "";
-            std::strncat(header2_, data_ + 2, header_length - 2);
+            std::strncat(header2_, data_.data() + 2, header_length - 2);
             body_length_ = std::atoi(header2_);
             if (body_length_ == 0)
                 {
@@ -578,11 +579,11 @@ private:
         {
             char header[header_length + 1] = "";
             std::snprintf(header, header_length + 1, "GS%4d", std::max(std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)), 0));
-            std::memcpy(data_, header, header_length);
+            std::memcpy(data_.data(), header, header_length);
         }
 
     private:
-        char data_[header_length + max_body_length] = "";
+        std::array<char, header_length + max_body_length> data_{};
         std::size_t body_length_;
     };
 

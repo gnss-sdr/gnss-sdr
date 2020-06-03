@@ -57,6 +57,8 @@ void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest,
             hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn][GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1]);
             _dest[index] = std::complex<float>(static_cast<float>(a[0]), 0.0);
             _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), 0.0);
+            _dest[index + 2] = std::complex<float>(0.0, 0.0);
+            _dest[index + 3] = std::complex<float>(0.0, 0.0);
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'I')
         {
@@ -73,6 +75,8 @@ void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest,
             hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn][GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1]);
             _dest[index] = std::complex<float>(static_cast<float>(a[0]), 0.0);
             _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), 0.0);
+            _dest[index + 2] = std::complex<float>(0.0, 0.0);
+            _dest[index + 3] = std::complex<float>(0.0, 0.0);
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'X')
         {
@@ -92,6 +96,8 @@ void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest,
             hex_to_binary_converter(b, GALILEO_E5A_Q_PRIMARY_CODE[prn][GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1]);
             _dest[index] = std::complex<float>(static_cast<float>(a[0]), static_cast<float>(b[0]));
             _dest[index + 1] = std::complex<float>(static_cast<float>(a[1]), static_cast<float>(b[1]));
+            _dest[index + 2] = std::complex<float>(0.0, 0.0);
+            _dest[index + 3] = std::complex<float>(0.0, 0.0);
         }
 }
 

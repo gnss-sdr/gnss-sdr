@@ -3,11 +3,13 @@
  * \brief This library implements various functions for Galileo E5 signals such
  * as replica code generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \author Piyush Gupta, 2020. piyush04111999@gmail.com
+ * \note Code added as part of GSoC 2020 Program.
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,5 +53,23 @@ void galileo_e5_a_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
     int32_t _fs,
     uint32_t _chip_shift);
 
+
+/*!
+ * \brief Generates Galileo E5b code at 1 sample/chip
+ */
+void galileo_e5_b_code_gen_complex_primary(own::span<std::complex<float>> _dest,
+    int32_t _prn,
+    const std::array<char, 3>& _Signal);
+
+
+/*!
+ * \brief Generates Galileo E5b complex code, shifted to the desired chip and
+ * sampled at a frequency fs
+ */
+void galileo_e5_b_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
+    uint32_t _prn,
+    const std::array<char, 3>& _Signal,
+    int32_t _fs,
+    uint32_t _chip_shift);
 
 #endif  // GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H

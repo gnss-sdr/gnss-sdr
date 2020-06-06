@@ -133,9 +133,14 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
             LOG(INFO) << "Found " << info_.get_type_name() << " tuner.";
         }
 
-    // 6. Start reading
+// 6. Start reading
+#if BOOST_173_OR_GREATER
+    boost::bind(&rtl_tcp_signal_source_c::handle_read, this, boost::placeholders::_1, boost::placeholders::_2));
+#else
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
         boost::bind(&rtl_tcp_signal_source_c::handle_read, this, _1, _2));  // NOLINT(modernize-avoid-bind)
+#endif
+
 
     boost::thread(
 #if HAS_GENERIC_LAMBDA

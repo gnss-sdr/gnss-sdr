@@ -235,6 +235,24 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/armv7hl-suse-linux-gnueabi/7
         /usr/lib64/gcc/riscv64-suse-linux/7
         /usr/lib64/gcc/s390x-suse-linux/7
+        /usr/lib64/gcc/x86_64-suse-linux/8  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/8
+        /usr/lib64/gcc/powerpc64le-suse-linux/8
+        /usr/lib/gcc/i586-suse-linux/8
+        /usr/lib64/gcc/aarch64-suse-linux/8
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/8
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/8
+        /usr/lib64/gcc/riscv64-suse-linux/8
+        /usr/lib64/gcc/s390x-suse-linux/8
+        /usr/lib64/gcc/x86_64-suse-linux/9  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/9
+        /usr/lib64/gcc/powerpc64le-suse-linux/9
+        /usr/lib/gcc/i586-suse-linux/9
+        /usr/lib64/gcc/aarch64-suse-linux/9
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/9
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/9
+        /usr/lib64/gcc/riscv64-suse-linux/9
+        /usr/lib64/gcc/s390x-suse-linux/9
         /usr/lib64/gcc/x86_64-suse-linux/10  # openSUSE
         /usr/lib64/gcc/powerpc64-suse-linux/10
         /usr/lib64/gcc/powerpc64le-suse-linux/10

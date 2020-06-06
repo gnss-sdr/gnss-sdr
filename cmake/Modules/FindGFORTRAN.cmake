@@ -226,6 +226,42 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/x86_64-linux-gnux32/10
         /usr/lib/gcc/x86_64-kfreebsd-gnu/10
         /usr/lib/gcc/i686-kfreebsd-gnu/10
+        /usr/lib64/gcc/x86_64-suse-linux/7  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/7
+        /usr/lib64/gcc/powerpc64le-suse-linux/7
+        /usr/lib/gcc/i586-suse-linux/7
+        /usr/lib64/gcc/aarch64-suse-linux/7
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/7
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/7
+        /usr/lib64/gcc/riscv64-suse-linux/7
+        /usr/lib64/gcc/s390x-suse-linux/7
+        /usr/lib64/gcc/x86_64-suse-linux/10  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/10
+        /usr/lib64/gcc/powerpc64le-suse-linux/10
+        /usr/lib/gcc/i586-suse-linux/10
+        /usr/lib64/gcc/aarch64-suse-linux/10
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/10
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/10
+        /usr/lib64/gcc/riscv64-suse-linux/10
+        /usr/lib64/gcc/s390x-suse-linux/10
+        /usr/lib/gcc/x86_64-redhat-linux/8  # Fedora
+        /usr/lib/gcc/i686-redhat-linux/8
+        /usr/lib/gcc/aarch64-redhat-linux/8
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/8
+        /usr/lib/gcc/ppc64le-redhat-linux/8
+        /usr/lib/gcc/s390x-redhat-linux/8
+        /usr/lib/gcc/x86_64-redhat-linux/9  # Fedora
+        /usr/lib/gcc/i686-redhat-linux/9
+        /usr/lib/gcc/aarch64-redhat-linux/9
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/9
+        /usr/lib/gcc/ppc64le-redhat-linux/9
+        /usr/lib/gcc/s390x-redhat-linux/9
+        /usr/lib/gcc/x86_64-redhat-linux/10  # Fedora
+        /usr/lib/gcc/i686-redhat-linux/10
+        /usr/lib/gcc/aarch64-redhat-linux/10
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/10
+        /usr/lib/gcc/ppc64le-redhat-linux/10
+        /usr/lib/gcc/s390x-redhat-linux/10
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386

@@ -21,7 +21,7 @@
 
 #include "rtl_tcp_signal_source_c.h"
 #include "rtl_tcp_commands.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <map>
@@ -135,12 +135,12 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 
 // 6. Start reading
 #if BOOST_173_OR_GREATER
-    boost::bind(&rtl_tcp_signal_source_c::handle_read, this, boost::placeholders::_1, boost::placeholders::_2));
+    boost::asio::async_read(socket_, boost::asio::buffer(data_),
+        boost::bind(&rtl_tcp_signal_source_c::handle_read, this, boost::placeholders::_1, boost::placeholders::_2));  // NOLINT(modernize-avoid-bind)
 #else
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
         boost::bind(&rtl_tcp_signal_source_c::handle_read, this, _1, _2));  // NOLINT(modernize-avoid-bind)
 #endif
-
 
     boost::thread(
 #if HAS_GENERIC_LAMBDA
@@ -318,10 +318,16 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
             }
             // let woker know that more data is available
             not_empty_.notify_one();
-            // Read some more
+// Read some more
+#if BOOST_173_OR_GREATER
+            boost::asio::async_read(socket_,
+                boost::asio::buffer(data_),
+                boost::bind(&rtl_tcp_signal_source_c::handle_read, this, boost::placeholders::_1, boost::placeholders::_2));  // NOLINT(modernize-avoid-bind)
+#else
             boost::asio::async_read(socket_,
                 boost::asio::buffer(data_),
                 boost::bind(&rtl_tcp_signal_source_c::handle_read, this, _1, _2));  // NOLINT(modernize-avoid-bind)
+#endif
         }
 }
 

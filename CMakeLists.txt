@@ -746,7 +746,7 @@ if(Boost_VERSION_STRING VERSION_LESS 1.73)
 endif()
 
 # Workaround for https://github.com/boostorg/format/issues/67
-if(Boost_VERSION_STRING VERSION_GREATER 1.71)
+if((Boost_VERSION_STRING VERSION_GREATER 1.71) AND (Boost_VERSION_STRING VERSION_LESS 1.73))
     set(CMAKE_CXX_STANDARD 17)
 endif()
 

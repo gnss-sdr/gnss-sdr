@@ -44,7 +44,7 @@ target_link_libraries(data_type_gr_blocks
         Gnuradio::runtime
         Boost::headers
     PRIVATE
-        Volk::volk
+        Volk::volk   
 )
 
 if(GNURADIO_USES_STD_POINTERS)

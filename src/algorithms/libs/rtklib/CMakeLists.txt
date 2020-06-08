@@ -63,9 +63,9 @@ if(CMAKE_VERSION VERSION_GREATER 3.13)
 else()
     source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
     add_library(algorithms_libs_rtklib
-       ${RTKLIB_LIB_SOURCES}
-       ${RTKLIB_LIB_HEADERS}
-   )
+        ${RTKLIB_LIB_SOURCES}
+        ${RTKLIB_LIB_HEADERS}
+    )
 endif()
 
 target_link_libraries(algorithms_libs_rtklib

@@ -22,12 +22,21 @@ set(TELEMETRY_DECODER_LIB_HEADERS
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
 list(SORT TELEMETRY_DECODER_LIB_SOURCES)
 
-source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
-
-add_library(telemetry_decoder_libs
-    ${TELEMETRY_DECODER_LIB_SOURCES}
-    ${TELEMETRY_DECODER_LIB_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(telemetry_decoder_libs STATIC)
+    target_sources(telemetry_decoder_libs
+        PRIVATE
+            ${TELEMETRY_DECODER_LIB_SOURCES}
+        PUBLIC
+            ${TELEMETRY_DECODER_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
+    add_library(telemetry_decoder_libs
+        ${TELEMETRY_DECODER_LIB_SOURCES}
+        ${TELEMETRY_DECODER_LIB_HEADERS}
+    )
+endif()
 
 target_link_libraries(telemetry_decoder_libs
     PUBLIC

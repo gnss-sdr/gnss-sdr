@@ -44,15 +44,26 @@ set(GNSS_RECEIVER_INTERFACE_HEADERS
 
 list(SORT GNSS_RECEIVER_INTERFACE_HEADERS)
 
-source_group(Headers FILES ${GNSS_RECEIVER_HEADERS}
-    ${GNSS_RECEIVER_INTERFACE_HEADERS}
-)
-
-add_library(core_receiver
-    ${GNSS_RECEIVER_SOURCES}
-    ${GNSS_RECEIVER_HEADERS}
-    ${GNSS_RECEIVER_INTERFACE_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(core_receiver STATIC)
+    target_sources(core_receiver
+        PRIVATE
+            ${GNSS_RECEIVER_SOURCES}
+        PUBLIC
+            ${GNSS_RECEIVER_HEADERS}
+        INTERFACE
+            ${GNSS_RECEIVER_INTERFACE_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${GNSS_RECEIVER_HEADERS}
+        ${GNSS_RECEIVER_INTERFACE_HEADERS}
+    )
+    add_library(core_receiver
+        ${GNSS_RECEIVER_SOURCES}
+        ${GNSS_RECEIVER_HEADERS}
+        ${GNSS_RECEIVER_INTERFACE_HEADERS}
+    )
+endif()
 
 if(ENABLE_FPGA)
     target_compile_definitions(core_receiver PUBLIC -DENABLE_FPGA=1)

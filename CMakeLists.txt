@@ -736,8 +736,8 @@ endif()
 
 if(Boost_VERSION_STRING VERSION_LESS 1.73)
     # Disable concepts to address https://github.com/boostorg/asio/issues/312
-    if((CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.9) OR
-        (CMAKE_CXX_COMPILER_ID MATCHES Clang))
+    if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.9) OR
+        CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (CMAKE_VERSION VERSION_GREATER 3.11))
         target_compile_definitions(Boost::headers
             INTERFACE
                 -DBOOST_ASIO_DISABLE_CONCEPTS

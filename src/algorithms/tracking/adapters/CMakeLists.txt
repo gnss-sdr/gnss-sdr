@@ -76,22 +76,28 @@ set(TRACKING_ADAPTER_HEADERS
 list(SORT TRACKING_ADAPTER_HEADERS)
 list(SORT TRACKING_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
-
-add_library(tracking_adapters
-    ${TRACKING_ADAPTER_SOURCES}
-    ${TRACKING_ADAPTER_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(tracking_adapters STATIC)
+    target_sources(tracking_adapters
+        PRIVATE
+            ${TRACKING_ADAPTER_SOURCES}
+        PUBLIC
+            ${TRACKING_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
+    add_library(tracking_adapters
+        ${TRACKING_ADAPTER_SOURCES}
+        ${TRACKING_ADAPTER_HEADERS}
+    )
+endif()
 
 target_link_libraries(tracking_adapters
     PUBLIC
         tracking_gr_blocks
-        algorithms_libs
-        Gnuradio::runtime
     PRIVATE
         gnss_sdr_flags
         Glog::glog
-        Volkgnsssdr::volkgnsssdr
 )
 
 target_include_directories(tracking_adapters

@@ -61,12 +61,21 @@ set(TRACKING_GR_BLOCKS_HEADERS
 list(SORT TRACKING_GR_BLOCKS_HEADERS)
 list(SORT TRACKING_GR_BLOCKS_SOURCES)
 
-source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
-
-add_library(tracking_gr_blocks
-    ${TRACKING_GR_BLOCKS_SOURCES}
-    ${TRACKING_GR_BLOCKS_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(tracking_gr_blocks STATIC)
+    target_sources(tracking_gr_blocks
+        PRIVATE
+            ${TRACKING_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${TRACKING_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
+    add_library(tracking_gr_blocks
+        ${TRACKING_GR_BLOCKS_SOURCES}
+        ${TRACKING_GR_BLOCKS_HEADERS}
+    )
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(tracking_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -80,11 +89,7 @@ endif()
 
 target_link_libraries(tracking_gr_blocks
     PUBLIC
-        Boost::headers
-        Armadillo::armadillo
         Gnuradio::blocks
-        Volkgnsssdr::volkgnsssdr
-        algorithms_libs
         tracking_libs
     PRIVATE
         Matio::matio
@@ -115,7 +120,7 @@ if(ENABLE_ARMA_NO_DEBUG)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(tracking_gr_blocks

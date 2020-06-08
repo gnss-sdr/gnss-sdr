@@ -7,17 +7,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(OBS_ADAPTER_SOURCES
-    hybrid_observables.cc
-)
-
-set(OBS_ADAPTER_HEADERS
-    hybrid_observables.h
-)
-
-source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
-
-add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(obs_adapters STATIC)
+    target_sources(obs_adapters
+        PRIVATE
+            hybrid_observables.cc
+        PUBLIC
+            hybrid_observables.h
+    )
+else()
+    source_group(Headers FILES hybrid_observables.h)
+    add_library(obs_adapters hybrid_observables.cc hybrid_observables.h)
+endif()
 
 target_include_directories(obs_adapters
     PUBLIC
@@ -29,8 +30,6 @@ target_link_libraries(obs_adapters
         obs_gr_blocks
     PRIVATE
         gnss_sdr_flags
-        observables_libs
-        Gflags::gflags
         Glog::glog
 )
 

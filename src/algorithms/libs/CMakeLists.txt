@@ -71,9 +71,18 @@ endif()
 list(SORT GNSS_SPLIBS_HEADERS)
 list(SORT GNSS_SPLIBS_SOURCES)
 
-source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
-
-add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(algorithms_libs STATIC)
+    target_sources(algorithms_libs
+        PRIVATE
+            ${GNSS_SPLIBS_SOURCES}
+        PUBLIC
+            ${GNSS_SPLIBS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
+    add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(algorithms_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -180,9 +189,18 @@ endif()
 
 ###############################################################################
 
-source_group(Headers FILES gnss_sdr_flags.h)
-
-add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(gnss_sdr_flags STATIC)
+    target_sources(gnss_sdr_flags
+        PRIVATE
+            gnss_sdr_flags.cc
+        PUBLIC
+            gnss_sdr_flags.h
+    )
+else()
+    source_group(Headers FILES gnss_sdr_flags.h)
+    add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(gnss_sdr_flags PRIVATE -DHAS_STD_FILESYSTEM=1)

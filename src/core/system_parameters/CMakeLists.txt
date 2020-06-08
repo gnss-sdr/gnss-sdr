@@ -95,12 +95,21 @@ set(SYSTEM_PARAMETERS_HEADERS
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
 
-source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
-
-add_library(core_system_parameters
-    ${SYSTEM_PARAMETERS_SOURCES}
-    ${SYSTEM_PARAMETERS_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(core_system_parameters STATIC)
+    target_sources(core_system_parameters
+        PRIVATE
+            ${SYSTEM_PARAMETERS_SOURCES}
+        PUBLIC
+            ${SYSTEM_PARAMETERS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
+    add_library(core_system_parameters
+        ${SYSTEM_PARAMETERS_SOURCES}
+        ${SYSTEM_PARAMETERS_HEADERS}
+    )
+endif()
 
 target_link_libraries(core_system_parameters
     PUBLIC

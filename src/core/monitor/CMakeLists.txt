@@ -12,25 +12,36 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/gn
 set(CORE_MONITOR_LIBS_SOURCES
     gnss_synchro_monitor.cc
     gnss_synchro_udp_sink.cc
-    ${PROTO_SRCS}
 )
 
 set(CORE_MONITOR_LIBS_HEADERS
     gnss_synchro_monitor.h
     gnss_synchro_udp_sink.h
     serdes_gnss_synchro.h
-    ${PROTO_HDRS}
 )
 
 list(SORT CORE_MONITOR_LIBS_HEADERS)
 list(SORT CORE_MONITOR_LIBS_SOURCES)
 
-source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
-
-add_library(core_monitor
-    ${CORE_MONITOR_LIBS_SOURCES}
-    ${CORE_MONITOR_LIBS_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(core_monitor STATIC)
+    target_sources(core_monitor
+        PRIVATE
+            ${PROTO_SRCS}
+            ${PROTO_HDRS}
+            ${CORE_MONITOR_LIBS_SOURCES}
+        PUBLIC
+            ${CORE_MONITOR_LIBS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
+    add_library(core_monitor
+        ${CORE_MONITOR_LIBS_SOURCES}
+        ${PROTO_SRCS}
+        ${CORE_MONITOR_LIBS_HEADERS}
+        ${PROTO_HDRS}
+    )
+endif()
 
 target_link_libraries(core_monitor
     PUBLIC

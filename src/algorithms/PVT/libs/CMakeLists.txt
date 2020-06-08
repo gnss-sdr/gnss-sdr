@@ -23,7 +23,6 @@ set(PVT_LIB_SOURCES
     rtklib_solver.cc
     pvt_conf.cc
     monitor_pvt_udp_sink.cc
-    ${PROTO_SRCS}
 )
 
 set(PVT_LIB_HEADERS
@@ -42,15 +41,25 @@ set(PVT_LIB_HEADERS
     monitor_pvt_udp_sink.h
     monitor_pvt.h
     serdes_monitor_pvt.h
-    ${PROTO_HDRS}
 )
 
 list(SORT PVT_LIB_HEADERS)
 list(SORT PVT_LIB_SOURCES)
 
-source_group(Headers FILES ${PVT_LIB_HEADERS})
-
-add_library(pvt_libs ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(pvt_libs STATIC)
+    target_sources(pvt_libs
+        PRIVATE
+            ${PROTO_SRCS}
+            ${PROTO_HDRS}
+            ${PVT_LIB_SOURCES}
+        PUBLIC
+            ${PVT_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${PVT_LIB_HEADERS} ${PROTO_HDRS})
+    add_library(pvt_libs ${PVT_LIB_SOURCES} ${PROTO_SRCS} ${PVT_LIB_HEADERS} ${PROTO_HDRS})
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(pvt_libs PRIVATE -DHAS_STD_FILESYSTEM=1)

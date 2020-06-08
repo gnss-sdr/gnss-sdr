@@ -25,11 +25,21 @@ set(INPUT_FILTER_GR_BLOCKS_HEADERS
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
 
-source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
-
-add_library(input_filter_gr_blocks
-    ${INPUT_FILTER_GR_BLOCKS_SOURCES}
-    ${INPUT_FILTER_GR_BLOCKS_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(input_filter_gr_blocks STATIC)
+    target_sources(input_filter_gr_blocks
+        PRIVATE
+            ${INPUT_FILTER_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${INPUT_FILTER_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
+    add_library(input_filter_gr_blocks
+        ${INPUT_FILTER_GR_BLOCKS_SOURCES}
+        ${INPUT_FILTER_GR_BLOCKS_HEADERS}
+    )
+endif()
 
 target_link_libraries(input_filter_gr_blocks
     PUBLIC

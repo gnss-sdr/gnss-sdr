@@ -34,12 +34,21 @@ set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_SOURCES)
 
-source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-
-add_library(telemetry_decoder_gr_blocks
-    ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
-    ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(telemetry_decoder_gr_blocks STATIC)
+    target_sources(telemetry_decoder_gr_blocks
+        PRIVATE
+            ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
+    add_library(telemetry_decoder_gr_blocks
+        ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
+        ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
+    )
+endif()
 
 target_link_libraries(telemetry_decoder_gr_blocks
     PUBLIC

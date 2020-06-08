@@ -7,12 +7,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-source_group(Headers FILES obs_conf.h)
-
-add_library(observables_libs
-    obs_conf.cc
-    obs_conf.h
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(observables_libs STATIC)
+    target_sources(observables_libs
+        PRIVATE
+            obs_conf.cc
+        PUBLIC
+            obs_conf.h
+    )
+else()
+    source_group(Headers FILES obs_conf.h)
+    add_library(observables_libs obs_conf.cc obs_conf.h)
+endif()
 
 target_link_libraries(observables_libs
     PRIVATE

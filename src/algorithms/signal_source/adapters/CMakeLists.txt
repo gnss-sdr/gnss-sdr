@@ -125,12 +125,21 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
 list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
-
-add_library(signal_source_adapters
-    ${SIGNAL_SOURCE_ADAPTER_SOURCES}
-    ${SIGNAL_SOURCE_ADAPTER_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(signal_source_adapters STATIC)
+    target_sources(signal_source_adapters
+        PRIVATE
+            ${SIGNAL_SOURCE_ADAPTER_SOURCES}
+        PUBLIC
+            ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
+    add_library(signal_source_adapters
+        ${SIGNAL_SOURCE_ADAPTER_SOURCES}
+        ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+    )
+endif()
 
 target_include_directories(signal_source_adapters
     PUBLIC
@@ -140,14 +149,11 @@ target_include_directories(signal_source_adapters
 target_link_libraries(signal_source_adapters
     PUBLIC
         Boost::headers
-        Gnuradio::runtime
         Gnuradio::blocks
         signal_source_gr_blocks
-        signal_source_libs
     PRIVATE
         gnss_sdr_flags
         core_system_parameters
-        Gflags::gflags
         Glog::glog
         Volk::volk
 )

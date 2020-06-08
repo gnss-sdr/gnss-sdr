@@ -52,9 +52,21 @@ set(RTKLIB_LIB_HEADERS
 list(SORT RTKLIB_LIB_HEADERS)
 list(SORT RTKLIB_LIB_SOURCES)
 
-source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
-
-add_library(algorithms_libs_rtklib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(algorithms_libs_rtklib STATIC)
+    target_sources(algorithms_libs_rtklib
+        PRIVATE
+            ${RTKLIB_LIB_SOURCES}
+        PUBLIC
+            ${RTKLIB_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
+    add_library(algorithms_libs_rtklib
+       ${RTKLIB_LIB_SOURCES}
+       ${RTKLIB_LIB_HEADERS}
+   )
+endif()
 
 target_link_libraries(algorithms_libs_rtklib
     PRIVATE

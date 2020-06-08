@@ -7,17 +7,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(OBS_GR_BLOCKS_SOURCES
-    hybrid_observables_gs.cc
-)
-
-set(OBS_GR_BLOCKS_HEADERS
-    hybrid_observables_gs.h
-)
-
-source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
-
-add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(obs_gr_blocks STATIC)
+    target_sources(obs_gr_blocks
+        PRIVATE
+            hybrid_observables_gs.cc
+        PUBLIC
+            hybrid_observables_gs.h
+    )
+else()
+    source_group(Headers FILES hybrid_observables_gs.h)
+    add_library(obs_gr_blocks hybrid_observables_gs.cc hybrid_observables_gs.h)
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(obs_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -53,7 +54,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(obs_gr_blocks

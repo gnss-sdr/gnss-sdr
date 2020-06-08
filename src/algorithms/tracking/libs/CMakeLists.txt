@@ -73,9 +73,18 @@ endif()
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
 
-source_group(Headers FILES ${TRACKING_LIB_HEADERS})
-
-add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(tracking_libs STATIC)
+    target_sources(tracking_libs
+        PRIVATE
+            ${TRACKING_LIB_SOURCES}
+        PUBLIC
+            ${TRACKING_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TRACKING_LIB_HEADERS})
+    add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
+endif()
 
 target_link_libraries(tracking_libs
     PUBLIC
@@ -88,7 +97,6 @@ target_link_libraries(tracking_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         gnss_sdr_flags
-        Gflags::gflags
         Glog::glog
 )
 

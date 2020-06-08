@@ -7,17 +7,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(PVT_GR_BLOCKS_SOURCES
-    rtklib_pvt_gs.cc
-)
-
-set(PVT_GR_BLOCKS_HEADERS
-    rtklib_pvt_gs.h
-)
-
-source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
-
-add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(pvt_gr_blocks STATIC)
+    target_sources(pvt_gr_blocks
+        PRIVATE
+            rtklib_pvt_gs.cc
+        PUBLIC
+            rtklib_pvt_gs.h
+    )
+else()
+    source_group(Headers FILES rtklib_pvt_gs.h)
+    add_library(pvt_gr_blocks rtklib_pvt_gs.cc rtklib_pvt_gs.h)
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -32,7 +33,6 @@ endif()
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         algorithms_libs_rtklib
-        core_system_parameters
         Boost::date_time
         Gnuradio::pmt
         Gnuradio::runtime
@@ -49,7 +49,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(pvt_gr_blocks

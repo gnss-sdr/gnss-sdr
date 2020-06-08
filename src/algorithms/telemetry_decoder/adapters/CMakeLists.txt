@@ -37,17 +37,25 @@ set(TELEMETRY_DECODER_ADAPTER_HEADERS
 list(SORT TELEMETRY_DECODER_ADAPTER_HEADERS)
 list(SORT TELEMETRY_DECODER_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
-
-add_library(telemetry_decoder_adapters
-    ${TELEMETRY_DECODER_ADAPTER_SOURCES}
-    ${TELEMETRY_DECODER_ADAPTER_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(telemetry_decoder_adapters STATIC)
+    target_sources(telemetry_decoder_adapters
+        PRIVATE
+            ${TELEMETRY_DECODER_ADAPTER_SOURCES}
+        PUBLIC
+            ${TELEMETRY_DECODER_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
+    add_library(telemetry_decoder_adapters
+        ${TELEMETRY_DECODER_ADAPTER_SOURCES}
+        ${TELEMETRY_DECODER_ADAPTER_HEADERS}
+    )
+endif()
 
 target_link_libraries(telemetry_decoder_adapters
     PUBLIC
         telemetry_decoder_gr_blocks
-        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog

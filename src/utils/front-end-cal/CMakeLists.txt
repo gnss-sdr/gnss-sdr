@@ -8,11 +8,18 @@
 #
 
 
-set(FRONT_END_CAL_SOURCES front_end_cal.cc)
-set(FRONT_END_CAL_HEADERS front_end_cal.h)
-
-add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
-source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(front_end_cal_lib STATIC)
+    target_sources(front_end_cal_lib
+        PRIVATE
+            front_end_cal.cc
+        PUBLIC
+            front_end_cal.h
+    )
+else()
+    source_group(Headers FILES front_end_cal.h)
+    add_library(front_end_cal_lib front_end_cal.cc front_end_cal.h)
+endif()
 
 target_link_libraries(front_end_cal_lib
     PUBLIC
@@ -41,7 +48,12 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_executable(front-end-cal)
+    target_sources(front-end-cal PRIVATE main.cc)
+else()
+    add_executable(front-end-cal main.cc)
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(front-end-cal PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -54,29 +66,26 @@ else()
 endif()
 
 target_link_libraries(front-end-cal
-    PUBLIC
-        core_libs
+    PRIVATE
         core_receiver
         front_end_cal_lib
         gnss_sdr_flags
         Boost::headers
-    PRIVATE
-        Gflags::gflags
         Glog::glog
 )
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(front-end-cal
-        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+        PRIVATE -DGNURADIO_USES_STD_POINTERS=1
     )
 endif()
 
 target_compile_definitions(front-end-cal
-    PUBLIC -DGNSS_SDR_VERSION="${VERSION}"
-    PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+    PRIVATE -DGNSS_SDR_VERSION="${VERSION}"
+    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(front-end-cal

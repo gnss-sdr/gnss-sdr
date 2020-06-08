@@ -20,9 +20,18 @@ set(CHANNEL_FSM_HEADERS
 list(SORT CHANNEL_FSM_HEADERS)
 list(SORT CHANNEL_FSM_SOURCES)
 
-source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
-
-add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(channel_libs STATIC)
+    target_sources(channel_libs
+        PRIVATE
+            ${CHANNEL_FSM_SOURCES}
+        PUBLIC
+            ${CHANNEL_FSM_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
+    add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+endif()
 
 target_link_libraries(channel_libs
     PUBLIC
@@ -47,7 +56,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(channel_libs

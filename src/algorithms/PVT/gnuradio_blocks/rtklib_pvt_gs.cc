@@ -76,7 +76,7 @@
 
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 
 #if HAS_STD_FILESYSTEM
@@ -192,7 +192,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     this->message_port_register_in(pmt::mp("telemetry"));
     this->set_msg_handler(pmt::mp("telemetry"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_telemetry(PH1); });
+        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
 #else
 #if BOOST_173_OR_GREATER
         boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));

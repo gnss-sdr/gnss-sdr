@@ -28,28 +28,30 @@ set(INPUT_FILTER_ADAPTER_HEADERS
 list(SORT INPUT_FILTER_ADAPTER_HEADERS)
 list(SORT INPUT_FILTER_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
-
-add_library(input_filter_adapters
-    ${INPUT_FILTER_ADAPTER_SOURCES}
-    ${INPUT_FILTER_ADAPTER_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(input_filter_adapters STATIC)
+    target_sources(input_filter_adapters
+        PRIVATE
+            ${INPUT_FILTER_ADAPTER_SOURCES}
+        PUBLIC
+            ${INPUT_FILTER_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
+    add_library(input_filter_adapters
+        ${INPUT_FILTER_ADAPTER_SOURCES}
+        ${INPUT_FILTER_ADAPTER_HEADERS}
+    )
+endif()
 
 target_link_libraries(input_filter_adapters
     PUBLIC
-        Gnuradio::blocks
-        Gnuradio::filter
+        algorithms_libs
         input_filter_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
         Volk::volk
-)
-
-target_include_directories(input_filter_adapters
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))

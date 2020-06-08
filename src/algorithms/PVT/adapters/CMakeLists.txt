@@ -8,22 +8,22 @@
 #
 
 
-set(PVT_ADAPTER_SOURCES
-    rtklib_pvt.cc
-)
-
-set(PVT_ADAPTER_HEADERS
-    rtklib_pvt.h
-)
-
-source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
-
-add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(pvt_adapters STATIC)
+    target_sources(pvt_adapters
+        PRIVATE
+            rtklib_pvt.cc
+        PUBLIC
+            rtklib_pvt.h
+    )
+else()
+    source_group(Headers FILES rtklib_pvt.h)
+    add_library(pvt_adapters rtklib_pvt.cc rtklib_pvt.h)
+endif()
 
 target_link_libraries(pvt_adapters
     PUBLIC
         pvt_gr_blocks
-        algorithms_libs_rtklib
     PRIVATE
         gnss_sdr_flags
         Glog::glog

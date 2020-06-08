@@ -108,7 +108,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::GpsL1CADllPllTelemetryDecoderTest_msg_
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
 #if BOOST_173_OR_GREATER
         boost::bind(&GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
@@ -168,7 +168,7 @@ GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::GpsL1CADllPllTelemetryDecoderTest_
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #endif

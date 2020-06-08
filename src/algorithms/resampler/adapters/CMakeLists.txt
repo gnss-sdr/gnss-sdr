@@ -21,16 +21,24 @@ set(RESAMPLER_ADAPTER_HEADERS
 list(SORT RESAMPLER_ADAPTER_HEADERS)
 list(SORT RESAMPLER_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
-
-add_library(resampler_adapters
-    ${RESAMPLER_ADAPTER_SOURCES}
-    ${RESAMPLER_ADAPTER_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(resampler_adapters STATIC)
+    target_sources(resampler_adapters
+        PRIVATE
+            ${RESAMPLER_ADAPTER_SOURCES}
+        PUBLIC
+            ${RESAMPLER_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
+    add_library(resampler_adapters
+        ${RESAMPLER_ADAPTER_SOURCES}
+        ${RESAMPLER_ADAPTER_HEADERS}
+    )
+endif()
 
 target_link_libraries(resampler_adapters
     PUBLIC
-        Gnuradio::runtime
         resampler_gr_blocks
     PRIVATE
         Gflags::gflags

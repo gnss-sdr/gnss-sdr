@@ -25,12 +25,21 @@ set(TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS
 list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS)
 list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES)
 
-source_group(Headers FILES ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
-
-add_library(telemetry_decoder_libswiftcnav STATIC
-    ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES}
-    ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS}
-)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    add_library(telemetry_decoder_libswiftcnav STATIC)
+    target_sources(telemetry_decoder_libswiftcnav
+        PRIVATE
+            ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES}
+        PUBLIC
+            ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
+    add_library(telemetry_decoder_libswiftcnav STATIC
+        ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES}
+        ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS}
+    )
+endif()
 
 set_property(TARGET telemetry_decoder_libswiftcnav
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

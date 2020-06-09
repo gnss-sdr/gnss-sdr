@@ -17,65 +17,136 @@ else()
 endif()
 if(DEFINED ENV{GFORTRAN_ROOT})
     set(GFORTRAN_ROOT_USER_DEFINED
-        $ENV{GFORTRAN_ROOT}
         ${GFORTRAN_ROOT_USER_DEFINED}
+        $ENV{GFORTRAN_ROOT}
     )
 endif()
-
-set(GCC_MAJOR_SERIES 10 9 8 7 6 5)
-set(GCC4_SERIES 4.9.1 4.9 4.8.3 4.8.1 4.7.2 4.7 4.8.2 4.8 4.7 4.6 4.5 4.4.4 4.4)
-set(GCC_SERIES ${GCC_MAJOR_SERIES} ${GCC4_SERIES})
 
 find_library(GFORTRAN NAMES gfortran
     PATHS ${GFORTRAN_ROOT_USER_DEFINED}
         /usr/lib64
-        /usr/lib/gcc/x86_64-linux-gnu/${GCC_SERIES}  # Debian
-        /usr/lib/gcc/i486-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/i586-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/i686-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/arm-linux-gnueabihf/${GCC_SERIES}
-        /usr/lib/gcc/aarch64-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/arm-linux-gnueabi/${GCC_SERIES}
-        /usr/lib/gcc/alpha-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/riscv64-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/hppa-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/m68k-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/i686-gnu/${GCC_SERIES}
-        /usr/lib/gcc/x86_64-kfreebsd-gnu/${GCC_SERIES}
-        /usr/lib/gcc/i686-kfreebsd-gnu/${GCC_SERIES}
-        /usr/lib/gcc/mips-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/mips64el-linux-gnuabi64/${GCC_SERIES}
-        /usr/lib/gcc/mipsel-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/powerpc-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/powerpc-linux-gnuspe/${GCC_SERIES}
-        /usr/lib/gcc/powerpc64-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/powerpc64le-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/s390x-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/sparc64-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/x86_64-linux-gnux32/${GCC_SERIES}
-        /usr/lib/gcc/sh4-linux-gnu/${GCC_SERIES}
-        /usr/lib/gcc/i686-redhat-linux/${GCC_SERIES}  # Fedora
-        /usr/lib64/gcc/x86_64-redhat-linux/${GCC_SERIES}
-        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/${GCC_SERIES}
-        /usr/lib/gcc/aarch64-redhat-linux/${GCC_SERIES}
-        /usr/lib/gcc/ppc64le-redhat-linux/${GCC_SERIES}
-        /usr/lib/gcc/s390x-redhat-linux/${GCC_SERIES}
-        /usr/lib64/gcc/x86_64-suse-linux/${GCC_SERIES}  # openSUSE
-        /usr/lib/gcc/i586-suse-linux/${GCC_SERIES}
-        /usr/lib/gcc/x86_64-suse-linux/${GCC_SERIES}
-        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/${GCC_SERIES}
-        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/${GCC_SERIES}
-        /usr/lib64/gcc/aarch64-suse-linux/${GCC_SERIES}
-        /usr/lib64/gcc/powerpc64-suse-linux/${GCC_SERIES}
-        /usr/lib64/gcc/powerpc64le-suse-linux/${GCC_SERIES}
-        /usr/lib64/gcc/riscv64-suse-linux/${GCC_SERIES}
-        /usr/lib64/gcc/s390x-suse-linux/${GCC_SERIES}
         /usr/lib/gcc/x86_64-linux-gnu
         /usr/lib/gcc/i686-linux-gnu
         /usr/lib/gcc/i386-linux-gnu
-        /usr/lib/gcc/i486-linux-gnu
-        /usr/lib/gcc/riscv64-linux-gnu
-        /usr/lib/x86_64-linux-gnu
+        /usr/lib/gcc/x86_64-linux-gnu/4.6 # Ubuntu 12.04
+        /usr/lib/gcc/i686-linux-gnu/4.6
+        /usr/lib/gcc/x86_64-linux-gnu/4.7
+        /usr/lib/gcc/i686-linux-gnu/4.7
+        /usr/lib/gcc/x86_64-linux-gnu/4.8
+        /usr/lib/gcc/i686-linux-gnu/4.8
+        /usr/lib/gcc/x86_64-linux-gnu/4.9
+        /usr/lib/gcc/i686-linux-gnu/4.9
+        /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
+        /usr/lib/gcc/i686-redhat-linux/4.7.2
+        /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
+        /usr/lib/gcc/x86_64-redhat-linux/4.8.3 # Fedora 20
+        /usr/lib/gcc/x86_64-redhat-linux/4.9.1 # Fedora 21
+        /usr/lib/gcc/i686-redhat-linux/4.8.1
+        /usr/lib/gcc/i686-redhat-linux/4.8.3
+        /usr/lib/gcc/i686-redhat-linux/4.9.1
+        /usr/lib/gcc/x86_64-redhat-linux/4.4.4 # CentOS 6
+        /usr/lib/gcc/i686-redhat-linux/4.4.4
+        /usr/lib/gcc/x86_64-redhat-linux/4.8.2
+        /usr/lib/gcc/i686-redhat-linux/4.8.2
+        /usr/lib/gcc/x86_64-redhat-linux/7
+        /usr/lib/gcc/i686-redhat-linux/7
+        /usr/lib/gcc/x86_64-redhat-linux/8
+        /usr/lib/gcc/i686-redhat-linux/8
+        /usr/lib/gcc/x86_64-redhat-linux/9
+        /usr/lib/gcc/i686-redhat-linux/9
+        /usr/lib64/gcc/x86_64-redhat-linux/7
+        /usr/lib64/gcc/x86_64-redhat-linux/8
+        /usr/lib64/gcc/x86_64-redhat-linux/9
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/7
+        /usr/lib/gcc/aarch64-redhat-linux/7
+        /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
+        /usr/lib/gcc/i586-suse-linux/4.9
+        /usr/lib/gcc/i586-suse-linux/7
+        /usr/lib/gcc/i586-suse-linux/8
+        /usr/lib/gcc/i586-suse-linux/9
+        /usr/lib/gcc/x86_64-suse-linux/4.8
+        /usr/lib/gcc/x86_64-suse-linux/4.9
+        /usr/lib64/gcc/x86_64-suse-linux/7
+        /usr/lib64/gcc/x86_64-suse-linux/8
+        /usr/lib64/gcc/x86_64-suse-linux/9
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/7
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/8
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/9
+        /usr/lib64/gcc/aarch64-suse-linux/7
+        /usr/lib64/gcc/aarch64-suse-linux/8
+        /usr/lib64/gcc/aarch64-suse-linux/9
+        /usr/lib64/gcc/powerpc64-suse-linux/7
+        /usr/lib64/gcc/powerpc64-suse-linux/8
+        /usr/lib64/gcc/powerpc64-suse-linux/9
+        /usr/lib64/gcc/powerpc64le-suse-linux/7
+        /usr/lib64/gcc/powerpc64le-suse-linux/8
+        /usr/lib64/gcc/powerpc64le-suse-linux/9
+        /usr/lib/gcc/i486-linux-gnu # Debian 7
+        /usr/lib/gcc/i486-linux-gnu/4.4
+        /usr/lib/gcc/i486-linux-gnu/4.6
+        /usr/lib/gcc/i486-linux-gnu/4.7
+        /usr/lib/gcc/i486-linux-gnu/4.8
+        /usr/lib/gcc/i486-linux-gnu/4.9
+        /usr/lib/gcc/i586-linux-gnu/4.9
+        /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
+        /usr/lib/gcc/arm-linux-gnueabihf/4.5
+        /usr/lib/gcc/arm-linux-gnueabihf/4.6
+        /usr/lib/gcc/arm-linux-gnueabihf/4.7
+        /usr/lib/gcc/arm-linux-gnueabihf/4.8
+        /usr/lib/gcc/arm-linux-gnueabihf/4.9
+        /usr/lib/gcc/aarch64-linux-gnu/4.9   # Debian arm64
+        /usr/lib/gcc/arm-linux-gnueabi/4.7   # Debian armel
+        /usr/lib/gcc/arm-linux-gnueabi/4.9
+        /usr/lib/gcc/x86_64-linux-gnu/5
+        /usr/lib/gcc/i686-linux-gnu/5
+        /usr/lib/gcc/arm-linux-gnueabi/5
+        /usr/lib/gcc/arm-linux-gnueabihf/5
+        /usr/lib/gcc/aarch64-linux-gnu/5
+        /usr/lib/gcc/x86_64-linux-gnu/6      # Ubuntu 16.10
+        /usr/lib/gcc/alpha-linux-gnu/6
+        /usr/lib/gcc/aarch64-linux-gnu/6
+        /usr/lib/gcc/arm-linux-gnueabi/6
+        /usr/lib/gcc/arm-linux-gnueabihf/6
+        /usr/lib/gcc/hppa-linux-gnu/6
+        /usr/lib/gcc/i686-gnu/6
+        /usr/lib/gcc/i686-linux-gnu/6
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/6
+        /usr/lib/gcc/i686-kfreebsd-gnu/6
+        /usr/lib/gcc/m68k-linux-gnu/6
+        /usr/lib/gcc/mips-linux-gnu/6
+        /usr/lib/gcc/mips64el-linux-gnuabi64/6
+        /usr/lib/gcc/mipsel-linux-gnu/6
+        /usr/lib/gcc/powerpc-linux-gnu/6
+        /usr/lib/gcc/powerpc-linux-gnuspe/6
+        /usr/lib/gcc/powerpc64-linux-gnu/6
+        /usr/lib/gcc/powerpc64le-linux-gnu/6
+        /usr/lib/gcc/s390x-linux-gnu/6
+        /usr/lib/gcc/sparc64-linux-gnu/6
+        /usr/lib/gcc/x86_64-linux-gnux32/6
+        /usr/lib/gcc/sh4-linux-gnu/6
+        /usr/lib/gcc/x86_64-linux-gnu/7      # Debian 9 Buster
+        /usr/lib/gcc/alpha-linux-gnu/7
+        /usr/lib/gcc/aarch64-linux-gnu/7
+        /usr/lib/gcc/arm-linux-gnueabi/7
+        /usr/lib/gcc/arm-linux-gnueabihf/7
+        /usr/lib/gcc/hppa-linux-gnu/7
+        /usr/lib/gcc/i686-gnu/7
+        /usr/lib/gcc/i686-linux-gnu/7
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/7
+        /usr/lib/gcc/i686-kfreebsd-gnu/7
+        /usr/lib/gcc/m68k-linux-gnu/7
+        /usr/lib/gcc/mips-linux-gnu/7
+        /usr/lib/gcc/mips64el-linux-gnuabi64/7
+        /usr/lib/gcc/mipsel-linux-gnu/7
+        /usr/lib/gcc/powerpc-linux-gnu/7
+        /usr/lib/gcc/powerpc-linux-gnuspe/7
+        /usr/lib/gcc/powerpc64-linux-gnu/7
+        /usr/lib/gcc/powerpc64le-linux-gnu/7
+        /usr/lib/gcc/s390x-linux-gnu/7
+        /usr/lib/gcc/sparc64-linux-gnu/7
+        /usr/lib/gcc/x86_64-linux-gnux32/7
+        /usr/lib/gcc/sh4-linux-gnu/7
+        /usr/lib/x86_64-linux-gnu         # libgfortran4
         /usr/lib/i386-linux-gnu
         /usr/lib/arm-linux-gnueabi
         /usr/lib/arm-linux-gnueabihf
@@ -94,7 +165,121 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/sparc64-linux-gnu
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/alpha-linux-gnu
-        /usr/lib/riscv64-linux-gnu
+        /usr/lib/gcc/x86_64-linux-gnu/8     # libgfortran-8
+        /usr/lib/gcc/aarch64-linux-gnu/8
+        /usr/lib/gcc/arm-linux-gnueabi/8
+        /usr/lib/gcc/arm-linux-gnueabihf/8
+        /usr/lib/gcc/hppa-linux-gnu/8
+        /usr/lib/gcc/m68k-linux-gnu/8
+        /usr/lib/gcc/mips-linux-gnu/8
+        /usr/lib/gcc/mips64el-linux-gnuabi64/8
+        /usr/lib/gcc/mipsel-linux-gnu/8
+        /usr/lib/gcc/i686-linux-gnu/8
+        /usr/lib/gcc/powerpc-linux-gnuspe/8
+        /usr/lib/gcc/powerpc64-linux-gnu/8
+        /usr/lib/gcc/powerpc64le-linux-gnu/8
+        /usr/lib/gcc/s390x-linux-gnu/8
+        /usr/lib/gcc/alpha-linux-gnu/8
+        /usr/lib/gcc/riscv64-linux-gnu/8
+        /usr/lib/gcc/sh4-linux-gnu/8
+        /usr/lib/gcc/sparc64-linux-gnu/8
+        /usr/lib/gcc/x86_64-linux-gnux32/8
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/8
+        /usr/lib/gcc/i686-kfreebsd-gnu/8
+        /usr/lib/gcc/alpha-linux-gnu/9    # libgfortran-9
+        /usr/lib/gcc/x86_64-linux-gnu/9
+        /usr/lib/gcc/aarch64-linux-gnu/9
+        /usr/lib/gcc/arm-linux-gnueabi/9
+        /usr/lib/gcc/arm-linux-gnueabihf/9
+        /usr/lib/gcc/i686-linux-gnu/9
+        /usr/lib/gcc/powerpc64le-linux-gnu/9
+        /usr/lib/gcc/powerpc64-linux-gnu/9
+        /usr/lib/gcc/s390x-linux-gnu/9
+        /usr/lib/gcc/hppa-linux-gnu/9
+        /usr/lib/gcc/m68k-linux-gnu/9
+        /usr/lib/gcc/mips-linux-gnu/9
+        /usr/lib/gcc/mips64el-linux-gnuabi64/9
+        /usr/lib/gcc/mipsel-linux-gnu/9
+        /usr/lib/gcc/riscv64-linux-gnu/9
+        /usr/lib/gcc/sh4-linux-gnu/9
+        /usr/lib/gcc/sparc64-linux-gnu/9
+        /usr/lib/gcc/x86_64-linux-gnux32/9
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/9
+        /usr/lib/gcc/i686-kfreebsd-gnu/9
+        /usr/lib/gcc/alpha-linux-gnu/10    # libgfortran-10
+        /usr/lib/gcc/x86_64-linux-gnu/10
+        /usr/lib/gcc/aarch64-linux-gnu/10
+        /usr/lib/gcc/arm-linux-gnueabi/10
+        /usr/lib/gcc/arm-linux-gnueabihf/10
+        /usr/lib/gcc/i686-linux-gnu/10
+        /usr/lib/gcc/powerpc64le-linux-gnu/10
+        /usr/lib/gcc/powerpc64-linux-gnu/10
+        /usr/lib/gcc/s390x-linux-gnu/10
+        /usr/lib/gcc/hppa-linux-gnu/10
+        /usr/lib/gcc/m68k-linux-gnu/10
+        /usr/lib/gcc/mips-linux-gnu/10
+        /usr/lib/gcc/mips64el-linux-gnuabi64/10
+        /usr/lib/gcc/mipsel-linux-gnu/10
+        /usr/lib/gcc/riscv64-linux-gnu/10
+        /usr/lib/gcc/sh4-linux-gnu/10
+        /usr/lib/gcc/sparc64-linux-gnu/10
+        /usr/lib/gcc/x86_64-linux-gnux32/10
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/10
+        /usr/lib/gcc/i686-kfreebsd-gnu/10
+        /usr/lib64/gcc/x86_64-suse-linux/7  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/7
+        /usr/lib64/gcc/powerpc64le-suse-linux/7
+        /usr/lib/gcc/i586-suse-linux/7
+        /usr/lib64/gcc/aarch64-suse-linux/7
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/7
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/7
+        /usr/lib64/gcc/riscv64-suse-linux/7
+        /usr/lib64/gcc/s390x-suse-linux/7
+        /usr/lib64/gcc/x86_64-suse-linux/8  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/8
+        /usr/lib64/gcc/powerpc64le-suse-linux/8
+        /usr/lib/gcc/i586-suse-linux/8
+        /usr/lib64/gcc/aarch64-suse-linux/8
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/8
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/8
+        /usr/lib64/gcc/riscv64-suse-linux/8
+        /usr/lib64/gcc/s390x-suse-linux/8
+        /usr/lib64/gcc/x86_64-suse-linux/9  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/9
+        /usr/lib64/gcc/powerpc64le-suse-linux/9
+        /usr/lib/gcc/i586-suse-linux/9
+        /usr/lib64/gcc/aarch64-suse-linux/9
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/9
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/9
+        /usr/lib64/gcc/riscv64-suse-linux/9
+        /usr/lib64/gcc/s390x-suse-linux/9
+        /usr/lib64/gcc/x86_64-suse-linux/10  # openSUSE
+        /usr/lib64/gcc/powerpc64-suse-linux/10
+        /usr/lib64/gcc/powerpc64le-suse-linux/10
+        /usr/lib/gcc/i586-suse-linux/10
+        /usr/lib64/gcc/aarch64-suse-linux/10
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/10
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/10
+        /usr/lib64/gcc/riscv64-suse-linux/10
+        /usr/lib64/gcc/s390x-suse-linux/10
+        /usr/lib/gcc/x86_64-redhat-linux/8  # Fedora
+        /usr/lib/gcc/i686-redhat-linux/8
+        /usr/lib/gcc/aarch64-redhat-linux/8
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/8
+        /usr/lib/gcc/ppc64le-redhat-linux/8
+        /usr/lib/gcc/s390x-redhat-linux/8
+        /usr/lib/gcc/x86_64-redhat-linux/9  # Fedora
+        /usr/lib/gcc/i686-redhat-linux/9
+        /usr/lib/gcc/aarch64-redhat-linux/9
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/9
+        /usr/lib/gcc/ppc64le-redhat-linux/9
+        /usr/lib/gcc/s390x-redhat-linux/9
+        /usr/lib/gcc/x86_64-redhat-linux/10  # Fedora
+        /usr/lib/gcc/i686-redhat-linux/10
+        /usr/lib/gcc/aarch64-redhat-linux/10
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/10
+        /usr/lib/gcc/ppc64le-redhat-linux/10
+        /usr/lib/gcc/s390x-redhat-linux/10
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386

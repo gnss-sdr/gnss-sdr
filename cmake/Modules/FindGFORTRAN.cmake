@@ -22,55 +22,59 @@ if(DEFINED ENV{GFORTRAN_ROOT})
     )
 endif()
 
-set(GCC_MAJOR_SERIES "10 9 8 7 6 5")
-set(GCC4_SERIES "4.9.1 4.9 4.8.3 4.8.1 4.7.2 4.7 4.8.2 4.8 4.7 4.6 4.5 4.4.4 4.4")
-set(GCC_SERIES "${GCC_MAJOR_SERIES} ${GCC4_SERIES}")
+set(GCC_MAJOR_SERIES 10 9 8 7 6 5)
+set(GCC4_SERIES 4.9.1 4.9 4.8.3 4.8.1 4.7.2 4.7 4.8.2 4.8 4.7 4.6 4.5 4.4.4 4.4)
+set(GCC_SERIES ${GCC_MAJOR_SERIES} ${GCC4_SERIES})
 
 find_library(GFORTRAN NAMES gfortran
     PATHS ${GFORTRAN_ROOT_USER_DEFINED}
         /usr/lib64
-        /usr/lib/gcc/x86_64-linux-gnu  # Debian
+        /usr/lib/gcc/x86_64-linux-gnu/${GCC_SERIES}  # Debian
+        /usr/lib/gcc/i486-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/i586-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/i686-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/arm-linux-gnueabihf/${GCC_SERIES}
+        /usr/lib/gcc/aarch64-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/arm-linux-gnueabi/${GCC_SERIES}
+        /usr/lib/gcc/alpha-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/riscv64-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/hppa-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/m68k-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/i686-gnu/${GCC_SERIES}
+        /usr/lib/gcc/x86_64-kfreebsd-gnu/${GCC_SERIES}
+        /usr/lib/gcc/i686-kfreebsd-gnu/${GCC_SERIES}
+        /usr/lib/gcc/mips-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/mips64el-linux-gnuabi64/${GCC_SERIES}
+        /usr/lib/gcc/mipsel-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/powerpc-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/powerpc-linux-gnuspe/${GCC_SERIES}
+        /usr/lib/gcc/powerpc64-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/powerpc64le-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/s390x-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/sparc64-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/x86_64-linux-gnux32/${GCC_SERIES}
+        /usr/lib/gcc/sh4-linux-gnu/${GCC_SERIES}
+        /usr/lib/gcc/i686-redhat-linux/${GCC_SERIES}  # Fedora
+        /usr/lib64/gcc/x86_64-redhat-linux/${GCC_SERIES}
+        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi/${GCC_SERIES}
+        /usr/lib/gcc/aarch64-redhat-linux/${GCC_SERIES}
+        /usr/lib/gcc/ppc64le-redhat-linux/${GCC_SERIES}
+        /usr/lib/gcc/s390x-redhat-linux/${GCC_SERIES}
+        /usr/lib64/gcc/x86_64-suse-linux/${GCC_SERIES}  # openSUSE
+        /usr/lib/gcc/i586-suse-linux/${GCC_SERIES}
+        /usr/lib/gcc/x86_64-suse-linux/${GCC_SERIES}
+        /usr/lib/gcc/armv6hl-suse-linux-gnueabi/${GCC_SERIES}
+        /usr/lib/gcc/armv7hl-suse-linux-gnueabi/${GCC_SERIES}
+        /usr/lib64/gcc/aarch64-suse-linux/${GCC_SERIES}
+        /usr/lib64/gcc/powerpc64-suse-linux/${GCC_SERIES}
+        /usr/lib64/gcc/powerpc64le-suse-linux/${GCC_SERIES}
+        /usr/lib64/gcc/riscv64-suse-linux/${GCC_SERIES}
+        /usr/lib64/gcc/s390x-suse-linux/${GCC_SERIES}
+        /usr/lib/gcc/x86_64-linux-gnu
+        /usr/lib/gcc/i686-linux-gnu
         /usr/lib/gcc/i386-linux-gnu
         /usr/lib/gcc/i486-linux-gnu
-        /usr/lib/gcc/i586-linux-gnu
-        /usr/lib/gcc/i686-linux-gnu
-        /usr/lib/gcc/arm-linux-gnueabihf
-        /usr/lib/gcc/aarch64-linux-gnu
-        /usr/lib/gcc/arm-linux-gnueabi
-        /usr/lib/gcc/alpha-linux-gnu
         /usr/lib/gcc/riscv64-linux-gnu
-        /usr/lib/gcc/hppa-linux-gnu
-        /usr/lib/gcc/m68k-linux-gnu
-        /usr/lib/gcc/i686-gnu
-        /usr/lib/gcc/x86_64-kfreebsd-gnu
-        /usr/lib/gcc/i686-kfreebsd-gnu
-        /usr/lib/gcc/mips-linux-gnu
-        /usr/lib/gcc/mips64el-linux-gnuabi64
-        /usr/lib/gcc/mipsel-linux-gnu
-        /usr/lib/gcc/powerpc-linux-gnu
-        /usr/lib/gcc/powerpc-linux-gnuspe
-        /usr/lib/gcc/powerpc64-linux-gnu
-        /usr/lib/gcc/powerpc64le-linux-gnu
-        /usr/lib/gcc/s390x-linux-gnu
-        /usr/lib/gcc/sparc64-linux-gnu
-        /usr/lib/gcc/x86_64-linux-gnux32
-        /usr/lib/gcc/sh4-linux-gnu
-        /usr/lib/gcc/i686-redhat-linux  # Fedora
-        /usr/lib64/gcc/x86_64-redhat-linux
-        /usr/lib/gcc/armv7hl-redhat-linux-gnueabi
-        /usr/lib/gcc/aarch64-redhat-linux
-        /usr/lib/gcc/ppc64le-redhat-linux
-        /usr/lib/gcc/s390x-redhat-linux
-        /usr/lib64/gcc/x86_64-suse-linux  # openSUSE
-        /usr/lib/gcc/i586-suse-linux
-        /usr/lib/gcc/x86_64-suse-linux
-        /usr/lib/gcc/armv6hl-suse-linux-gnueabi
-        /usr/lib/gcc/armv7hl-suse-linux-gnueabi
-        /usr/lib64/gcc/aarch64-suse-linux
-        /usr/lib64/gcc/powerpc64-suse-linux
-        /usr/lib64/gcc/powerpc64le-suse-linux
-        /usr/lib64/gcc/riscv64-suse-linux
-        /usr/lib64/gcc/s390x-suse-linux
         /usr/lib/x86_64-linux-gnu
         /usr/lib/i386-linux-gnu
         /usr/lib/arm-linux-gnueabi
@@ -94,8 +98,6 @@ find_library(GFORTRAN NAMES gfortran
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386
-    PATH_SUFFIXES
-        ${GCC_SERIES}
 )
 
 set_package_properties(GFORTRAN PROPERTIES

@@ -15,6 +15,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Faster internal handling of `Gnss_Synchro` objects by reducing the amount of
   copying via adding `noexcept` move constructor and move assignment operators,
   so the move semantics are also used in STL containers.
+- Add building option `ENABLE_STRIP` to generate stripped binaries (that is,
+  without debugging symbols), smaller in size and potentially providing better
+  performance than non-stripped counterparts. Only for GCC in Release build
+  mode. Set to `OFF` by default.
 
 ### Improvements in Maintainability:
 

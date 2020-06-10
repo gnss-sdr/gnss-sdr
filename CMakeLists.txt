@@ -75,10 +75,17 @@ option(ENABLE_LOG "Enable logging" ON)
 
 option(ENABLE_ARMA_NO_DEBUG OFF)
 
+option(ENABLE_STRIP "Create stripped binaries without debugging symbols, potentially smaller in size (GCC-only, Release build mode)" OFF)
+
+if((NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")) OR WIN32)
+    set(ENABLE_STRIP OFF)
+endif()
+
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
     set(ENABLE_ARMA_NO_DEBUG ON)
     set(CMAKE_VERBOSE_MAKEFILE ON)
+    set(ENABLE_STRIP OFF)
 endif()
 
 # Testing
@@ -221,6 +228,9 @@ else()
 endif()
 gnsssdr_check_build_type(${CMAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
+if(NOT (${CMAKE_BUILD_TYPE} STREQUAL "Release"))
+    set(ENABLE_STRIP OFF)
+endif()
 
 # Enable optimization options in GCC for Release and RelWithDebInfo build types
 if((${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU") AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
@@ -886,13 +896,10 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
 
     set(STRIP_VOLK_GNSSSDR_PROFILE "")
-    if(ENABLE_PACKAGING)
-        if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-            if(CMAKE_CROSSCOMPILING)
-                set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=OFF -DCMAKE_VERBOSE_MAKEFILE=ON")
-            else()
-                set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
-            endif()
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=${ENABLE_STRIP}")
+        if(ENABLE_PACKAGING)
+            set(STRIP_VOLK_GNSSSDR_PROFILE "${STRIP_VOLK_GNSSSDR_PROFILE} -DCMAKE_VERBOSE_MAKEFILE=ON")
         endif()
     endif()
 
@@ -2917,6 +2924,7 @@ add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging."
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
 add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
 add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
+add_feature_info(ENABLE_STRIP ENABLE_STRIP "Enables the generation of stripped binaries (without debugging symbols).")
 add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")
 add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enables building a minimal set of Unit Tests.")
 add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables building of Extra Unit Tests and downloading of external data files.")

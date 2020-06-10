@@ -507,6 +507,9 @@ if(ENABLE_UNIT_TESTING)
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PRIVATE Gpstk::gpstk)
     endif()
+    if(ENABLE_STRIP)
+        set_target_properties(run_tests PROPERTIES LINK_FLAGS "-s")
+    endif()
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/run_tests)
             file(REMOVE ${CMAKE_SOURCE_DIR}/install/run_tests)
@@ -651,6 +654,10 @@ function(add_system_test executable)
         target_compile_definitions(${executable}
             PRIVATE -DGNURADIO_USES_STD_POINTERS=1
         )
+    endif()
+
+    if(ENABLE_STRIP)
+        set_target_properties(${executable} PROPERTIES LINK_FLAGS "-s")
     endif()
 
     if(ENABLE_INSTALL_TESTS)

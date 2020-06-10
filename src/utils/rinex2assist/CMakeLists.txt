@@ -97,6 +97,10 @@ if(Boost_FOUND)
         add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
     endif()
 
+    if(ENABLE_STRIP)
+        set_target_properties(rinex2assist PROPERTIES LINK_FLAGS "-s")
+    endif()
+
     add_custom_command(TARGET rinex2assist POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
             ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>

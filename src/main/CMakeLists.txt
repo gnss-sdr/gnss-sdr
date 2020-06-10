@@ -68,11 +68,12 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        target_link_libraries(gnss-sdr
-            PRIVATE
-                "-lc++"
-        )
+        target_link_libraries(gnss-sdr PRIVATE "-lc++")
     endif()
+endif()
+
+if(ENABLE_STRIP)
+    set_target_properties(gnss-sdr PROPERTIES LINK_FLAGS "-s")
 endif()
 
 if(ENABLE_CLANG_TIDY)

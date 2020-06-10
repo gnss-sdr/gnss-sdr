@@ -72,6 +72,10 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
             ${GPSTK_INCLUDE_DIR}
     )
 
+    if(ENABLE_STRIP)
+        set_target_properties(obsdiff PROPERTIES LINK_FLAGS "-s")
+    endif()
+
     add_custom_command(TARGET obsdiff POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obsdiff>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>

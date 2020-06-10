@@ -20,11 +20,6 @@
 
 #include "gnss_signal.h"
 
-Gnss_Signal::Gnss_Signal()
-{
-    this->signal = "";
-}
-
 
 Gnss_Signal::Gnss_Signal(const std::string& signal_)
 {

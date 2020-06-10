@@ -20,20 +20,6 @@
 #include "gps_cnav_utc_model.h"
 #include <cmath>
 
-Gps_CNAV_Utc_Model::Gps_CNAV_Utc_Model()
-{
-    valid = false;
-    d_A2 = 0.0;
-    d_A1 = 0.0;
-    d_A0 = 0.0;
-    d_t_OT = 0;
-    i_WN_T = 0;
-    d_DeltaT_LS = 0;
-    i_WN_LSF = 0;
-    i_DN = 0;
-    d_DeltaT_LSF = 0;
-}
-
 
 double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week)
 {

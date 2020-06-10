@@ -36,53 +36,53 @@ public:
     /*!
      * Default constructor
      */
-    Gps_CNAV_Ephemeris();
+    Gps_CNAV_Ephemeris() = default;
 
-    uint32_t i_satellite_PRN;  // SV PRN NUMBER
+    uint32_t i_satellite_PRN{};  // SV PRN NUMBER
 
     // Message Types 10 and 11 Parameters (1 of 2)
-    int32_t i_GPS_week;        //!< GPS week number, aka WN [week]
-    int32_t i_URA;             //!< ED Accuracy Index
-    int32_t i_signal_health;   //!< Signal health (L1/L2/L5)
-    int32_t d_Top;             //!< Data predict time of week
-    double d_DELTA_A;          //!< Semi-major axis difference at reference time
-    double d_A_DOT;            //!< Change rate in semi-major axis
-    double d_Delta_n;          //!< Mean Motion Difference From Computed Value [semi-circles/s]
-    double d_DELTA_DOT_N;      //!< Rate of mean motion difference from computed value
-    double d_M_0;              //!< Mean Anomaly at Reference Time [semi-circles]
-    double d_e_eccentricity;   //!< Eccentricity
-    double d_OMEGA;            //!< Argument of Perigee [semi-cicles]
-    double d_OMEGA0;           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
-    int32_t d_Toe1;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
-    int32_t d_Toe2;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
-    double d_DELTA_OMEGA_DOT;  //!< Rate of Right Ascension  difference [semi-circles/s]
-    double d_i_0;              //!< Inclination Angle at Reference Time [semi-circles]
-    double d_IDOT;             //!< Rate of Inclination Angle [semi-circles/s]
-    double d_Cis;              //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
-    double d_Cic;              //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
-    double d_Crs;              //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
-    double d_Crc;              //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
-    double d_Cus;              //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_Cuc;              //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    int32_t i_GPS_week{};        //!< GPS week number, aka WN [week]
+    int32_t i_URA{};             //!< ED Accuracy Index
+    int32_t i_signal_health{};   //!< Signal health (L1/L2/L5)
+    int32_t d_Top{};             //!< Data predict time of week
+    double d_DELTA_A{};          //!< Semi-major axis difference at reference time
+    double d_A_DOT{};            //!< Change rate in semi-major axis
+    double d_Delta_n{};          //!< Mean Motion Difference From Computed Value [semi-circles/s]
+    double d_DELTA_DOT_N{};      //!< Rate of mean motion difference from computed value
+    double d_M_0{};              //!< Mean Anomaly at Reference Time [semi-circles]
+    double d_e_eccentricity{};   //!< Eccentricity
+    double d_OMEGA{};            //!< Argument of Perigee [semi-cicles]
+    double d_OMEGA0{};           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
+    int32_t d_Toe1{};            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
+    int32_t d_Toe2{};            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
+    double d_DELTA_OMEGA_DOT{};  //!< Rate of Right Ascension  difference [semi-circles/s]
+    double d_i_0{};              //!< Inclination Angle at Reference Time [semi-circles]
+    double d_IDOT{};             //!< Rate of Inclination Angle [semi-circles/s]
+    double d_Cis{};              //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
+    double d_Cic{};              //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
+    double d_Crs{};              //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
+    double d_Crc{};              //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
+    double d_Cus{};              //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
+    double d_Cuc{};              //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
 
     // Clock Correction and Accuracy Parameters
-    int32_t d_Toc;  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
-    double d_A_f0;  //!< Coefficient 0 of code phase offset model [s]
-    double d_A_f1;  //!< Coefficient 1 of code phase offset model [s/s]
-    double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
+    int32_t d_Toc{};  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
+    double d_A_f0{};  //!< Coefficient 0 of code phase offset model [s]
+    double d_A_f1{};  //!< Coefficient 1 of code phase offset model [s/s]
+    double d_A_f2{};  //!< Coefficient 2 of code phase offset model [s/s^2]
 
-    double d_URA0;  //!< NED Accuracy Index
-    double d_URA1;  //!< NED Accuracy Change Index
-    double d_URA2;  //!< NED Accuracy Change Rate Index
+    double d_URA0{};  //!< NED Accuracy Index
+    double d_URA1{};  //!< NED Accuracy Change Index
+    double d_URA2{};  //!< NED Accuracy Change Rate Index
 
     // Group Delay Differential Parameters
-    double d_TGD;  //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
-    double d_ISCL1;
-    double d_ISCL2;
-    double d_ISCL5I;
-    double d_ISCL5Q;
+    double d_TGD{};  //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
+    double d_ISCL1{};
+    double d_ISCL2{};
+    double d_ISCL5I{};
+    double d_ISCL5Q{};
 
-    int32_t d_TOW;  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    int32_t d_TOW{};  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
 
     /*! \brief If true, enhanced level of integrity assurance.
      *
@@ -94,24 +94,24 @@ public:
      *  times the upper bound value of the current broadcast URA index, for more than 5.2 seconds, without an
      *  accompanying alert, is less than 1E-8 per hour.
      */
-    bool b_integrity_status_flag;
-    bool b_l2c_phasing_flag;
-    bool b_alert_flag;         //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
+    bool b_integrity_status_flag{};
+    bool b_l2c_phasing_flag{};
+    bool b_alert_flag{};         //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
+    bool b_antispoofing_flag{};  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     // clock terms derived from ephemeris data
-    double d_satClkDrift;  //!< GPS clock error
-    double d_dtr;          //!< relativistic clock correction term
+    double d_satClkDrift{};  //!< GPS clock error
+    double d_dtr{};          //!< relativistic clock correction term
 
     // satellite positions
-    double d_satpos_X;  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y;  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z;  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+    double d_satpos_X{};  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+    double d_satpos_Y{};  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+    double d_satpos_Z{};  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
 
     // Satellite velocity
-    double d_satvel_X;  //!< Earth-fixed velocity coordinate x of the satellite [m]
-    double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
-    double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
+    double d_satvel_X{};  //!< Earth-fixed velocity coordinate x of the satellite [m]
+    double d_satvel_Y{};  //!< Earth-fixed velocity coordinate y of the satellite [m]
+    double d_satvel_Z{};  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity

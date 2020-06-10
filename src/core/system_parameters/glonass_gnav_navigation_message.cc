@@ -28,61 +28,8 @@
 #include <ostream>  // for operator<<
 
 
-void Glonass_Gnav_Navigation_Message::reset()
+Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
 {
-    // Satellite Identification
-    i_satellite_PRN = 0U;
-    i_alm_satellite_slot_number = 0;  // SV Orbit Slot Number
-    flag_update_slot_number = false;
-
-    // Ephmeris Flags
-    flag_all_ephemeris = false;
-    flag_ephemeris_str_1 = false;
-    flag_ephemeris_str_2 = false;
-    flag_ephemeris_str_3 = false;
-    flag_ephemeris_str_4 = false;
-
-    // Almanac Flags
-    flag_all_almanac = false;
-    flag_almanac_str_6 = false;
-    flag_almanac_str_7 = false;
-    flag_almanac_str_8 = false;
-    flag_almanac_str_9 = false;
-    flag_almanac_str_10 = false;
-    flag_almanac_str_11 = false;
-    flag_almanac_str_12 = false;
-    flag_almanac_str_13 = false;
-    flag_almanac_str_14 = false;
-    flag_almanac_str_15 = false;
-
-    // UTC and System Clocks Flags
-    flag_utc_model_valid = false;   // If set, it indicates that the UTC model parameters are filled
-    flag_utc_model_str_5 = false;   // Clock info send in string 5 of navigation data
-    flag_utc_model_str_15 = false;  // Clock info send in string 15 of frame 5 of navigation data
-
-    // broadcast orbit 1
-    flag_TOW_set = false;
-    flag_TOW_new = false;
-
-    flag_CRC_test = false;
-    d_frame_ID = 0U;
-    d_string_ID = 0U;
-    i_channel_ID = 0;
-
-    // Clock terms
-    d_satClkCorr = 0.0;
-    d_dtr = 0.0;
-    d_satClkDrift = 0.0;
-
-    // Data update information
-    d_previous_tb = 0.0;
-    for (double& i : d_previous_Na)
-        {
-            i = 0.0;
-        }
-
-    std::map<int, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs
-
     auto gnss_sat = Gnss_Satellite();
     std::string _system("GLONASS");
     // TODO SHould number of channels be hardcoded?
@@ -90,12 +37,6 @@ void Glonass_Gnav_Navigation_Message::reset()
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }
-}
-
-
-Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
-{
-    reset();
 }
 
 

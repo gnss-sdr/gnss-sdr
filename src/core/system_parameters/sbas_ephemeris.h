@@ -30,17 +30,20 @@
 class Sbas_Ephemeris
 {
 public:
+    Sbas_Ephemeris() = default;
+
+    int i_prn{};             //!< PRN number
+    int i_t0{};              //!< Reference epoch time (GPST)
+    double d_tof{};          //!< Time of message frame (GPST)
+    int i_sv_ura{};          //!< SV accuracy (URA index), not standardized
+    bool b_sv_do_not_use{};  //!< Health status (false:do not use / true:usable)
+    double d_pos[3]{};       //!< Satellite position (m) (ECEF)
+    double d_vel[3]{};       //!< Satellite velocity (m/s) (ECEF)
+    double d_acc[3]{};       //!< Satellite acceleration (m/s^2) (ECEF)
+    double d_af0{};          //!< Satellite clock-offset (s)
+    double d_af1{};          //!< Satellite drift (s/s)
+
     void print(std::ostream &out);
-    int i_prn;             //!< PRN number
-    int i_t0;              //!< Reference epoch time (GPST)
-    double d_tof;          //!< Time of message frame (GPST)
-    int i_sv_ura;          //!< SV accuracy (URA index), not standardized
-    bool b_sv_do_not_use;  //!< Health status (false:do not use / true:usable)
-    double d_pos[3];       //!< Satellite position (m) (ECEF)
-    double d_vel[3];       //!< Satellite velocity (m/s) (ECEF)
-    double d_acc[3];       //!< Satellite acceleration (m/s^2) (ECEF)
-    double d_af0;          //!< Satellite clock-offset (s)
-    double d_af1;          //!< Satellite drift (s/s)
 };
 
 

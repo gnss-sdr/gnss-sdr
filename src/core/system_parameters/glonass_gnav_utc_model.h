@@ -37,16 +37,16 @@ public:
     /*!
      * Default constructor
      */
-    Glonass_Gnav_Utc_Model();
+    Glonass_Gnav_Utc_Model() = default;
 
-    bool valid;
+    bool valid{};
     // Clock Parameters
-    double d_tau_c;    //!< GLONASS time scale correction to UTC(SU) time. [s]
-    double d_tau_gps;  //!< Correction to GPS time to GLONASS time [day]
-    double d_N_4;      //!< Four year interval number starting from 1996 [4 year interval]
-    double d_N_A;      //!< Calendar day number within the four-year period beginning since the leap year for Almanac data [days]
-    double d_B1;       //!< Coefficient  to  determine DeltaUT1 [s]
-    double d_B2;       //!< Coefficient  to  determine DeltaUT1 [s/msd]
+    double d_tau_c{};    //!< GLONASS time scale correction to UTC(SU) time. [s]
+    double d_tau_gps{};  //!< Correction to GPS time to GLONASS time [day]
+    double d_N_4{};      //!< Four year interval number starting from 1996 [4 year interval]
+    double d_N_A{};      //!< Calendar day number within the four-year period beginning since the leap year for Almanac data [days]
+    double d_B1{};       //!< Coefficient  to  determine DeltaUT1 [s]
+    double d_B2{};       //!< Coefficient  to  determine DeltaUT1 [s/msd]
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and

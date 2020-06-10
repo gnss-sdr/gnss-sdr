@@ -37,7 +37,7 @@
 class Gnss_Satellite
 {
 public:
-    Gnss_Satellite();                                                   //!< Default Constructor.
+    Gnss_Satellite() = default;                                         //!< Default Constructor.
     Gnss_Satellite(const std::string& system_, uint32_t PRN_);          //!< Concrete GNSS satellite Constructor.
     ~Gnss_Satellite() = default;                                        //!< Default Destructor.
     void update_PRN(uint32_t PRN);                                      //!< Updates the PRN Number when information is decoded, only applies to GLONASS GNAV messages

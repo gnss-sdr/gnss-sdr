@@ -20,25 +20,6 @@
 #include "galileo_utc_model.h"
 #include <cmath>
 
-Galileo_Utc_Model::Galileo_Utc_Model()
-{
-    // Word type 6: GST-UTC conversion parameters
-    A0_6 = 0.0;
-    A1_6 = 0.0;
-    Delta_tLS_6 = 0;
-    t0t_6 = 0;
-    WNot_6 = 0;
-    WN_LSF_6 = 0;
-    DN_6 = 0;
-    Delta_tLSF_6 = 0;
-    flag_utc_model = false;
-    // GPS to Galileo GST conversion parameters
-    A_0G_10 = 0.0;
-    A_1G_10 = 0.0;
-    t_0G_10 = 0;
-    WN_0G_10 = 0;
-}
-
 
 double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN)
 {

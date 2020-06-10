@@ -75,11 +75,7 @@ option(ENABLE_LOG "Enable logging" ON)
 
 option(ENABLE_ARMA_NO_DEBUG OFF)
 
-option(ENABLE_STRIP "Create stripped binaries without debugging symbols, potentially smaller in size (GCC-only, Release build mode)" OFF)
-
-if((NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")) OR WIN32)
-    set(ENABLE_STRIP OFF)
-endif()
+option(ENABLE_STRIP "Create stripped binaries without debugging symbols (in Release build mode only)" OFF)
 
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)

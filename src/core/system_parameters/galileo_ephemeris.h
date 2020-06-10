@@ -34,71 +34,71 @@
 class Galileo_Ephemeris
 {
 public:
+    Galileo_Ephemeris() = default;
     /* Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
        The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
-    bool flag_all_ephemeris;
-    int32_t IOD_ephemeris;
-    int32_t IOD_nav_1;
-    int32_t SV_ID_PRN_4;
-    double M0_1;         //!< Mean anomaly at reference time [semi-circles]
-    double delta_n_3;    //!< Mean motion difference from computed value [semi-circles/sec]
-    double e_1;          //!< Eccentricity
-    double A_1;          //!< Square root of the semi-major axis [meters^1/2]
-    double OMEGA_0_2;    //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    double i_0_2;        //!< Inclination angle at reference time  [semi-circles]
-    double omega_2;      //!< Argument of perigee [semi-circles]
-    double OMEGA_dot_3;  //!< Rate of right ascension [semi-circles/sec]
-    double iDot_2;       //!< Rate of inclination angle [semi-circles/sec]
-    double C_uc_3;       //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    double C_us_3;       //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    double C_rc_3;       //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    double C_rs_3;       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    double C_ic_4;       //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    double C_is_4;       //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    int32_t t0e_1;       //!< Ephemeris reference time [s]
+    bool flag_all_ephemeris{};
+    int32_t IOD_ephemeris{};
+    int32_t IOD_nav_1{};
+    int32_t SV_ID_PRN_4{};
+    double M0_1{};         //!< Mean anomaly at reference time [semi-circles]
+    double delta_n_3{};    //!< Mean motion difference from computed value [semi-circles/sec]
+    double e_1{};          //!< Eccentricity
+    double A_1{};          //!< Square root of the semi-major axis [meters^1/2]
+    double OMEGA_0_2{};    //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    double i_0_2{};        //!< Inclination angle at reference time  [semi-circles]
+    double omega_2{};      //!< Argument of perigee [semi-circles]
+    double OMEGA_dot_3{};  //!< Rate of right ascension [semi-circles/sec]
+    double iDot_2{};       //!< Rate of inclination angle [semi-circles/sec]
+    double C_uc_3{};       //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    double C_us_3{};       //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    double C_rc_3{};       //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    double C_rs_3{};       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    double C_ic_4{};       //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
+    double C_is_4{};       //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    int32_t t0e_1{};       //!< Ephemeris reference time [s]
 
-    /*Clock correction parameters*/
-    int32_t t0c_4;  //!< Clock correction data reference Time of Week [sec]
-    double af0_4;   //!< SV clock bias correction coefficient [s]
-    double af1_4;   //!< SV clock drift correction coefficient [s/s]
-    double af2_4;   //!< SV clock drift rate correction coefficient [s/s^2]
+    /* Clock correction parameters */
+    int32_t t0c_4{};  //!< Clock correction data reference Time of Week [sec]
+    double af0_4{};   //!< SV clock bias correction coefficient [s]
+    double af1_4{};   //!< SV clock drift correction coefficient [s/s]
+    double af2_4{};   //!< SV clock drift rate correction coefficient [s/s^2]
 
-    /*GST*/
+    /* GST */
     // Not belong to ephemeris set (page 1 to 4)
-    int32_t WN_5;   //!< Week number
-    int32_t TOW_5;  //!< Time of Week
-    double Galileo_satClkDrift;
-    double Galileo_dtr;  //!< relativistic clock correction term
+    int32_t WN_5{};   //!< Week number
+    int32_t TOW_5{};  //!< Time of Week
+    double Galileo_satClkDrift{};
+    double Galileo_dtr{};  //!< relativistic clock correction term
 
     // SV status
-    int32_t SISA_3;
-    int32_t E5a_HS;    //!< E5a Signal Health Status
-    int32_t E5b_HS_5;  //!< E5b Signal Health Status
-    int32_t E1B_HS_5;  //!< E1B Signal Health Status
-    bool E5a_DVS;      //!< E5a Data Validity Status
-    bool E5b_DVS_5;    //!< E5b Data Validity Status
-    bool E1B_DVS_5;    //!< E1B Data Validity Status
+    int32_t SISA_3{};
+    int32_t E5a_HS{};    //!< E5a Signal Health Status
+    int32_t E5b_HS_5{};  //!< E5b Signal Health Status
+    int32_t E1B_HS_5{};  //!< E1B Signal Health Status
+    bool E5a_DVS{};      //!< E5a Data Validity Status
+    bool E5b_DVS_5{};    //!< E5b Data Validity Status
+    bool E1B_DVS_5{};    //!< E1B Data Validity Status
 
-    double BGD_E1E5a_5;  //!< E1-E5a Broadcast Group Delay [s]
-    double BGD_E1E5b_5;  //!< E1-E5b Broadcast Group Delay [s]
+    double BGD_E1E5a_5{};  //!< E1-E5a Broadcast Group Delay [s]
+    double BGD_E1E5b_5{};  //!< E1-E5b Broadcast Group Delay [s]
 
     // satellite positions
-    double d_satpos_X;  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y;  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z;  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+    double d_satpos_X{};  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+    double d_satpos_Y{};  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+    double d_satpos_Z{};  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
 
     // Satellite velocity
-    double d_satvel_X;  //!< Earth-fixed velocity coordinate x of the satellite [m]
-    double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
-    double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
+    double d_satvel_X{};  //!< Earth-fixed velocity coordinate x of the satellite [m]
+    double d_satvel_Y{};  //!< Earth-fixed velocity coordinate y of the satellite [m]
+    double d_satvel_Z{};  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
-    uint32_t i_satellite_PRN;  //!< SV PRN NUMBER
+    uint32_t i_satellite_PRN{};  //!< SV PRN NUMBER
 
     void satellitePosition(double transmitTime);             //!< Computes the ECEF SV coordinates and ECEF velocity
     double Galileo_System_Time(double WN, double TOW);       //!< Galileo System Time (GST), ICD paragraph 5.1.2
     double sv_clock_drift(double transmitTime);              //!< Satellite Time Correction Algorithm, ICD 5.1.4
     double sv_clock_relativistic_term(double transmitTime);  //!< Satellite Time Correction Algorithm, ICD 5.1.4
-    Galileo_Ephemeris();
 
     template <class Archive>
 

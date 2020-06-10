@@ -24,34 +24,8 @@
 #include <limits>  // for std::numeric_limits
 
 
-void Gps_CNAV_Navigation_Message::reset()
-{
-    b_flag_ephemeris_1 = false;
-    b_flag_ephemeris_2 = false;
-    b_flag_iono_valid = false;
-    b_flag_utc_valid = false;
-
-    // satellite positions
-    d_satpos_X = 0.0;
-    d_satpos_Y = 0.0;
-    d_satpos_Z = 0.0;
-
-    // info
-    i_channel_ID = 0;
-    i_satellite_PRN = 0U;
-
-    // Satellite velocity
-    d_satvel_X = 0.0;
-    d_satvel_Y = 0.0;
-    d_satvel_Z = 0.0;
-
-    d_TOW = 0;
-}
-
-
 Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 {
-    reset();
     Gnss_Satellite gnss_satellite_ = Gnss_Satellite();
     for (uint32_t prn_ = 1; prn_ < 33; prn_++)
         {

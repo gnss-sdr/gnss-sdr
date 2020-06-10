@@ -21,21 +21,6 @@
 #include <cmath>
 
 
-Gps_Utc_Model::Gps_Utc_Model()
-{
-    valid = false;
-    d_A0 = 0.0;
-    d_A1 = 0.0;
-    d_A2 = 0.0;
-    d_t_OT = 0;
-    i_WN_T = 0;
-    d_DeltaT_LS = 0;
-    i_WN_LSF = 0;
-    i_DN = 0;
-    d_DeltaT_LSF = 0;
-}
-
-
 double Gps_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week)
 {
     double t_utc;

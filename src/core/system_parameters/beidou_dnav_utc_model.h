@@ -33,29 +33,29 @@
 class Beidou_Dnav_Utc_Model
 {
 public:
-    bool valid;
+    Beidou_Dnav_Utc_Model() = default;
+
+    bool valid{};
 
     // BeiDou UTC parameters
-    double d_A0_UTC;      //!< BDT clock bias relative to UTC [s]
-    double d_A1_UTC;      //!< BDT clock rate relative to UTC [s/s]
-    double d_DeltaT_LS;   //!< Delta time due to leap seconds before the new leap second effective
-    int i_WN_LSF;         //!< Week number of the new leap second
-    int i_DN;             //!< Day number of week of the new leap second
-    double d_DeltaT_LSF;  //!< Delta time due to leap seconds after the new leap second effective [s]
+    double d_A0_UTC{};      //!< BDT clock bias relative to UTC [s]
+    double d_A1_UTC{};      //!< BDT clock rate relative to UTC [s/s]
+    double d_DeltaT_LS{};   //!< Delta time due to leap seconds before the new leap second effective
+    int i_WN_LSF{};         //!< Week number of the new leap second
+    int i_DN{};             //!< Day number of week of the new leap second
+    double d_DeltaT_LSF{};  //!< Delta time due to leap seconds after the new leap second effective [s]
 
     // BeiDou to GPS time corrections
-    double d_A0_GPS;  //!< BDT clock bias relative to GPS time [s]
-    double d_A1_GPS;  //!< BDT clock rate relative to GPS time [s/s]
+    double d_A0_GPS{};  //!< BDT clock bias relative to GPS time [s]
+    double d_A1_GPS{};  //!< BDT clock rate relative to GPS time [s/s]
 
     // BeiDou to Galileo time corrections
-    double d_A0_GAL;  //!< BDT clock bias relative to GAL time [s]
-    double d_A1_GAL;  //!< BDT clock rate relative to GAL time [s/s]
+    double d_A0_GAL{};  //!< BDT clock bias relative to GAL time [s]
+    double d_A1_GAL{};  //!< BDT clock rate relative to GAL time [s/s]
 
     // BeiDou to GLONASS time corrections
-    double d_A0_GLO;  //!< BDT clock bias relative to GLO time [s]
-    double d_A1_GLO;  //!< BDT clock rate relative to GLO time [s/s]
-
-    Beidou_Dnav_Utc_Model();
+    double d_A0_GLO{};  //!< BDT clock bias relative to GLO time [s]
+    double d_A1_GLO{};  //!< BDT clock rate relative to GLO time [s/s]
 
     template <class Archive>
     /*

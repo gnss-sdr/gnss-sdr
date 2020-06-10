@@ -32,22 +32,22 @@
 class Gps_Utc_Model
 {
 public:
-    bool valid;
-    // UTC parameters
-    double d_A0;           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s]
-    double d_A1;           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s/s]
-    double d_A2;           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s/s]
-    int32_t d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200K) [s]
-    int32_t i_WN_T;        //!< UTC reference week number [weeks]
-    int32_t d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int32_t i_WN_LSF;      //!< Week number at the end of which the leap second becomes effective [weeks]
-    int32_t i_DN;          //!< Day number (DN) at the end of which the leap second becomes effective [days]
-    int32_t d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
-
     /*!
      * Default constructor
      */
-    Gps_Utc_Model();
+    Gps_Utc_Model() = default;
+
+    bool valid{};
+    // UTC parameters
+    double d_A0{};           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s]
+    double d_A1{};           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s/s]
+    double d_A2{};           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s/s]
+    int32_t d_t_OT{};        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200K) [s]
+    int32_t i_WN_T{};        //!< UTC reference week number [weeks]
+    int32_t d_DeltaT_LS{};   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
+    int32_t i_WN_LSF{};      //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN{};          //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t d_DeltaT_LSF{};  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     template <class Archive>
     /*

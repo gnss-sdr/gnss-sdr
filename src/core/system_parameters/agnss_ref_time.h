@@ -31,15 +31,16 @@
 class Agnss_Ref_Time
 {
 public:
-    bool valid;
-    double d_TOW;
-    double d_Week;
-    double d_tv_sec;
-    double d_tv_usec;
     /*!
      * Default constructor
      */
-    Agnss_Ref_Time();
+    Agnss_Ref_Time() = default;
+
+    bool valid{};
+    double d_TOW{};
+    double d_Week{};
+    double d_tv_sec{};
+    double d_tv_usec{};
 
     template <class Archive>
 

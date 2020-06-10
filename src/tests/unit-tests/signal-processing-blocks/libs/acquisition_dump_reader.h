@@ -52,23 +52,23 @@ public:
     std::vector<int> doppler;
     std::vector<unsigned int> samples;
     std::vector<std::vector<float> > mag;
-    float acq_doppler_hz;
-    float acq_delay_samples;
-    float test_statistic;
-    float input_power;
-    float threshold;
-    int positive_acq;
-    unsigned int PRN;
-    unsigned int num_dwells;
-    uint64_t sample_counter;
+    float acq_doppler_hz{};
+    float acq_delay_samples{};
+    float test_statistic{};
+    float input_power{};
+    float threshold{};
+    int positive_acq{};
+    unsigned int PRN{};
+    unsigned int num_dwells{};
+    uint64_t sample_counter{};
 
 private:
     std::string d_basename;
-    unsigned int d_sat;
-    unsigned int d_doppler_max;
-    unsigned int d_doppler_step;
-    unsigned int d_samples_per_code;
-    unsigned int d_num_doppler_bins;
+    unsigned int d_sat{};
+    unsigned int d_doppler_max{};
+    unsigned int d_doppler_step{};
+    unsigned int d_samples_per_code{};
+    unsigned int d_num_doppler_bins{};
     std::string d_dump_filename;
 };
 

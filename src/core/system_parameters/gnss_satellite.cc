@@ -22,12 +22,6 @@
 #include <utility>
 
 
-Gnss_Satellite::Gnss_Satellite()
-{
-    Gnss_Satellite::reset();
-}
-
-
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 {
     Gnss_Satellite::reset();

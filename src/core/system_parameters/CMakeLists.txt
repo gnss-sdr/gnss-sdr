@@ -13,31 +13,19 @@ set(SYSTEM_PARAMETERS_SOURCES
     gnss_signal.cc
     gps_navigation_message.cc
     gps_ephemeris.cc
-    gps_iono.cc
-    gps_almanac.cc
     gps_utc_model.cc
-    gps_acq_assist.cc
-    agnss_ref_time.cc
-    agnss_ref_location.cc
     galileo_utc_model.cc
     galileo_ephemeris.cc
-    galileo_almanac.cc
     galileo_almanac_helper.cc
-    galileo_iono.cc
     galileo_navigation_message.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
-    beidou_dnav_iono.cc
-    beidou_dnav_almanac.cc
-    beidou_dnav_utc_model.cc
     sbas_ephemeris.cc
     galileo_fnav_message.cc
     gps_cnav_ephemeris.cc
     gps_cnav_navigation_message.cc
-    gps_cnav_iono.cc
     gps_cnav_utc_model.cc
     glonass_gnav_ephemeris.cc
-    glonass_gnav_almanac.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
 )

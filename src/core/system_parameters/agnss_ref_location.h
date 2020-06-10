@@ -31,14 +31,15 @@
 class Agnss_Ref_Location
 {
 public:
-    bool valid;
-    double lat;
-    double lon;
-    double uncertainty;
     /*!
      * Default constructor
      */
-    Agnss_Ref_Location();
+    Agnss_Ref_Location() = default;
+
+    bool valid{};
+    double lat{};
+    double lon{};
+    double uncertainty{};
 
     template <class Archive>
 

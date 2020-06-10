@@ -567,7 +567,7 @@ if(ENABLE_UNIT_TESTING)
 endif()
 
 if(ENABLE_FPGA)
-    add_executable(GPS_L1_CA_DLL_PLL_TRACKING_TEST_FPGA_SOURCES
+    set(GPS_L1_CA_DLL_PLL_TRACKING_TEST_FPGA_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc
     )

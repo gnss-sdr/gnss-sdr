@@ -59,7 +59,7 @@ get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
 
 target_include_directories(core_monitor
     PUBLIC
-        ${PROTO_INCLUDE_HEADERS}
+        SYSTEM ${PROTO_INCLUDE_HEADERS}
 )
 
 if(GNURADIO_USES_STD_POINTERS)

@@ -90,7 +90,7 @@ get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
 target_include_directories(pvt_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
-        ${PROTO_INCLUDE_HEADERS}
+        SYSTEM ${PROTO_INCLUDE_HEADERS}
 )
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

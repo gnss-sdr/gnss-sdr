@@ -540,15 +540,13 @@ set(FILESYSTEM_FOUND FALSE)
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))  # Fix for GPTSk
-            find_package(FILESYSTEM COMPONENTS Final Experimental)
-            set_package_properties(FILESYSTEM PROPERTIES
-                URL "https://en.cppreference.com/w/cpp/filesystem"
-                DESCRIPTION "Provides facilities for performing operations on file systems and their components"
-                PURPOSE "Work with paths, regular files, and directories."
-                TYPE OPTIONAL
-            )
-        endif()
+        find_package(FILESYSTEM COMPONENTS Final Experimental)
+        set_package_properties(FILESYSTEM PROPERTIES
+            URL "https://en.cppreference.com/w/cpp/filesystem"
+            DESCRIPTION "Provides facilities for performing operations on file systems and their components"
+            PURPOSE "Work with paths, regular files, and directories."
+            TYPE OPTIONAL
+        )
         if(${FILESYSTEM_FOUND})
             if(CMAKE_VERSION VERSION_LESS 3.13)
                 set(CMAKE_CXX_STANDARD 17)

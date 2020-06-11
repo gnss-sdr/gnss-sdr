@@ -34,7 +34,7 @@
 
 
 #ifndef _rotl
-#define _rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))  // Used in the parity check algorithm
+auto _rotl = [](auto x, auto n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };  // Used in the parity check algorithm
 #endif
 
 

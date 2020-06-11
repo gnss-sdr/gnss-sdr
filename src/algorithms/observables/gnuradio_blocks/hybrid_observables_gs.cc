@@ -653,7 +653,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
 
     if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity())
         {
-            std::vector<Gnss_Synchro> epoch_data;
+            std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
@@ -672,7 +672,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             n_valid++;
                         }
-                    epoch_data.push_back(interpolated_gnss_synchro);
+                    epoch_data[n] = interpolated_gnss_synchro;
                 }
 
             if (T_rx_TOW_set)

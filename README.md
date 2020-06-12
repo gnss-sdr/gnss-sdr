@@ -519,20 +519,29 @@ the function to execute. It mimics GNU Radio's [VOLK](https://www.libvolk.org/)
 library, so if you still have not run `volk_profile`, this is a good moment to
 do so.
 
-If you are using Eclipse as your development environment, CMake can create the
-project for you. Type:
+If you are using [Eclipse](https://www.eclipse.org/ide/) as your development
+environment, CMake can create the project for you. However, if the build
+directory is a subdirectory of the source directory (as is the case of the
+`gnss-sdr/build` folder), this is not supported well by Eclipse. It is strongly
+recommended to use a build directory which is a sibling of the source directory.
+Hence, type from the `gnss-sdr` root folder:
 
 ```
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=4.5 .
+$ cd ..
+$ mkdir eclipse && cd eclipse
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=4.5 ../gnss-sdr
 ```
 
-and then import the created project file into Eclipse:
+and then import the created project into Eclipse:
 
 1. Import project using Menu File -> Import.
 2. Select General -> Existing projects into workspace.
-3. Browse where your build tree is and select the root build tree directory.
-   Keep "Copy projects into workspace" unchecked.
-4. You get a fully functional Eclipse project.
+3. Select your root directory: Browse and select your newly created `eclipse/`
+   directory. Keep "Copy projects into workspace" unchecked.
+4. Click on "Finish" and you will get a fully functional Eclipse project.
+
+After building the project, you will find the generated binaries at
+`eclipse/install`.
 
 ###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 

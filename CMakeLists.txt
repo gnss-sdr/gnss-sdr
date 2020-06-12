@@ -257,6 +257,13 @@ if(UNIX)
     add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
 endif()
 
+# If this is an out-of-tree build, do not pollute the original source directory
+if(${CMAKE_BINARY_DIR} MATCHES ${CMAKE_SOURCE_DIR})
+    set(LOCAL_INSTALL_BASE_DIR ${CMAKE_SOURCE_DIR})
+else()
+    set(LOCAL_INSTALL_BASE_DIR ${CMAKE_BINARY_DIR})
+endif()
+
 # Determine if we are using make or ninja
 if(CMAKE_MAKE_PROGRAM MATCHES "make")
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "make")
@@ -540,13 +547,15 @@ set(FILESYSTEM_FOUND FALSE)
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        find_package(FILESYSTEM COMPONENTS Final Experimental)
-        set_package_properties(FILESYSTEM PROPERTIES
-            URL "https://en.cppreference.com/w/cpp/filesystem"
-            DESCRIPTION "Provides facilities for performing operations on file systems and their components"
-            PURPOSE "Work with paths, regular files, and directories."
-            TYPE OPTIONAL
-        )
+        if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))  # Fix for GPTSk
+            find_package(FILESYSTEM COMPONENTS Final Experimental)
+            set_package_properties(FILESYSTEM PROPERTIES
+                URL "https://en.cppreference.com/w/cpp/filesystem"
+                DESCRIPTION "Provides facilities for performing operations on file systems and their components"
+                PURPOSE "Work with paths, regular files, and directories."
+                TYPE OPTIONAL
+            )
+        endif()
         if(${FILESYSTEM_FOUND})
             if(CMAKE_VERSION VERSION_LESS 3.13)
                 set(CMAKE_CXX_STANDARD 17)
@@ -751,12 +760,15 @@ endif()
 
 # Workaround for https://github.com/boostorg/format/issues/67
 if((Boost_VERSION_STRING VERSION_GREATER 1.71) AND (Boost_VERSION_STRING VERSION_LESS 1.73))
-    set(CMAKE_CXX_STANDARD 17)
+    if(CMAKE_CXX_STANDARD VERSION_GREATER 17)
+        set(CMAKE_CXX_STANDARD 17)
+    endif()
 endif()
 
 # Fix for Boost Asio < 1.70 when using Clang in macOS
 if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
     # Check if we have std::string_view
+    unset(has_string_view CACHE)
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
         #include <string_view>
@@ -771,12 +783,26 @@ endif()
 ################################################################################
 # Detect availability of std::span
 ################################################################################
+unset(has_span CACHE)
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("
     #include <span>
     int main()
     { std::span<float> s; }"
     has_span
+)
+
+
+
+################################################################################
+# Detect availability of std::put_time (Workaround for gcc < 5.0)
+################################################################################
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+    #include <iomanip>
+    int main()
+    { std::put_time(nullptr, \"\"); }"
+    has_put_time
 )
 
 
@@ -1007,19 +1033,19 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(CMAKE_VERSION VERSION_LESS 3.2)
         add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-                ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile
+                ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr_profile
         )
     else()
         add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-                ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile
-            BYPRODUCTS ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile
+                ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr_profile
+            BYPRODUCTS ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr_profile
         )
     endif()
 
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
-            ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr-config-info
+            ${LOCAL_INSTALL_BASE_DIR}/install/volk_gnsssdr-config-info
     )
 
     set_package_properties(VOLKGNSSSDR PROPERTIES
@@ -1058,7 +1084,7 @@ if(NOT GFLAGS_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             GIT_REPOSITORY git://github.com/gflags/gflags.git
             GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
                 -DBUILD_STATIC_LIBS=ON
@@ -1085,7 +1111,7 @@ if(NOT GFLAGS_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             GIT_REPOSITORY git://github.com/gflags/gflags.git
             GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
                 -DBUILD_STATIC_LIBS=ON
@@ -1222,12 +1248,12 @@ export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK}\"
 ${GLOG_EXPORT_CXX_LIBRARIES}
 ${GLOG_EXPORT_C_COMPILER}
 ${GLOG_EXPORT_CXX_COMPILER}
-cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
+cd ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
 aclocal
 automake --add-missing
 autoreconf -vfi
 cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure --enable-shared=no"
+${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure --enable-shared=no"
             )
 
             file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
@@ -1291,7 +1317,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/google/glog/
                 GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
                 BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
@@ -1303,7 +1329,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                 ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
             set(GLOG_INCLUDE_DIRS
-                ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+                ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
                 ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
             )
         else()  # CMake > 3.0 but < 3.2
@@ -1312,7 +1338,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/google/glog/
                 GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -1325,7 +1351,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                 INSTALL_COMMAND ""
             )
             set(GLOG_INCLUDE_DIRS
-                ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+                ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
                 ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 ${GFlags_INCLUDE_DIRS}
             )
@@ -1348,7 +1374,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/glog/
             GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -1362,7 +1388,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             INSTALL_COMMAND ""
         )
         set(GLOG_INCLUDE_DIRS
-            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+            ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
             ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             ${GFlags_INCLUDE_DIRS}
         )
@@ -1372,7 +1398,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
 
     # Create Glog::glog target
     if(NOT TARGET Glog::glog)
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION})
         add_library(Glog::glog STATIC IMPORTED)
         add_dependencies(Glog::glog glog-${GNSSSDR_GLOG_LOCAL_VERSION})
@@ -1578,7 +1604,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
             GIT_TAG ${armadillo_BRANCH}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DBUILD_SHARED_LIBS=OFF
@@ -1598,7 +1624,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
             GIT_TAG ${armadillo_BRANCH}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DBUILD_SHARED_LIBS=OFF
@@ -1621,7 +1647,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     set(ARMADILLO_STATIC_LIBRARY ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(LOCAL_ARMADILLO TRUE CACHE STRING "Armadillo downloaded and built automatically" FORCE)
     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
     add_library(Armadillo::armadillo STATIC IMPORTED)
     add_dependencies(Armadillo::armadillo armadillo-${armadillo_RELEASE})
     set_target_properties(Armadillo::armadillo PROPERTIES
@@ -1637,7 +1663,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         IMPORTED_LOCATION_RELEASE ${ARMADILLO_STATIC_LIBRARY}
         IMPORTED_LOCATION_RELWITHDEBINFO ${ARMADILLO_STATIC_LIBRARY}
         IMPORTED_LOCATION_MINSIZEREL ${ARMADILLO_STATIC_LIBRARY}
-        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include
+        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include
         INTERFACE_LINK_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${GFORTRAN} ${ARMADILLO_STATIC_LIBRARY}
     )
     if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
@@ -1885,9 +1911,9 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
                     GIT_REPOSITORY https://github.com/tbeu/matio
                     GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
-                    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                    UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
-                    CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+                    SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                    UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+                    CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
                     BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
                 )
             else()
@@ -1895,9 +1921,9 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
                     GIT_REPOSITORY https://github.com/tbeu/matio
                     GIT_TAG 596cb3ce71038958812bd6cf9b141f12ce155ac6 # Workaround until Matio 1.5.18 v${GNSSSDR_MATIO_LOCAL_VERSION}
-                    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                    UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
-                    CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+                    SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                    UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+                    CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
                     BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
                     BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
                 )
@@ -1971,7 +1997,7 @@ if(NOT PUGIXML_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/zeux/pugixml
             GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             CMAKE_ARGS ${PUGIXML_COMPILER}
                 ${PUGIXML_CMAKE_FLAGS}
@@ -1989,7 +2015,7 @@ if(NOT PUGIXML_FOUND)
             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/zeux/pugixml
             GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             CMAKE_ARGS ${PUGIXML_COMPILER}
                 ${PUGIXML_CMAKE_FLAGS}
@@ -2005,7 +2031,7 @@ if(NOT PUGIXML_FOUND)
     set(PUGIXML_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX})
 
     if(NOT TARGET Pugixml::pugixml)
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
         add_library(Pugixml::pugixml STATIC IMPORTED)
         add_dependencies(Pugixml::pugixml pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION})
         set_target_properties(Pugixml::pugixml PROPERTIES
@@ -2021,7 +2047,7 @@ if(NOT PUGIXML_FOUND)
             IMPORTED_LOCATION_RELEASE ${PUGIXML_LIBRARIES}
             IMPORTED_LOCATION_RELWITHDEBINFO ${PUGIXML_LIBRARIES}
             IMPORTED_LOCATION_MINSIZEREL ${PUGIXML_LIBRARIES}
-            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src
+            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src
             INTERFACE_LINK_LIBRARIES ${PUGIXML_LIBRARIES}
         )
         if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
@@ -2139,10 +2165,10 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
                 GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION} --host=$ENV{OECORE_TARGET_ARCH} --with-protoc=${PROTOC_EXECUTABLE}"
+                UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                CONFIGURE_COMMAND "${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION} --host=$ENV{OECORE_TARGET_ARCH} --with-protoc=${PROTOC_EXECUTABLE}"
                 BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
                 INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                 BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -2226,10 +2252,10 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
                 GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
                 INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
             )
@@ -2238,10 +2264,10 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
                 GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
                 INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
                 BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}

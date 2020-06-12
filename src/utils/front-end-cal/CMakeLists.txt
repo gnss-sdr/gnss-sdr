@@ -122,7 +122,7 @@ endif()
 
 add_custom_command(TARGET front-end-cal POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
+        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
 
 install(TARGETS front-end-cal
     RUNTIME DESTINATION bin

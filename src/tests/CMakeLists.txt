@@ -41,7 +41,7 @@ if(NOT GOOGLETEST_FOUND)
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest
             GIT_TAG v1.10.x
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
                 -DINSTALL_GTEST=OFF
@@ -69,7 +69,7 @@ if(NOT GOOGLETEST_FOUND)
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest
             GIT_TAG v1.10.x
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
                 -DINSTALL_GTEST=OFF
@@ -87,7 +87,7 @@ if(NOT GOOGLETEST_FOUND)
     ExternalProject_Get_Property(gtest-${GNSSSDR_GTEST_LOCAL_VERSION} binary_dir)
 
     if(NOT TARGET GTest::GTest)
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include)
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include)
         add_library(GTest::GTest STATIC IMPORTED)
         add_dependencies(GTest::GTest gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
         set_target_properties(GTest::GTest PROPERTIES
@@ -103,7 +103,7 @@ if(NOT GOOGLETEST_FOUND)
             IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include
+            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include
             INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/gtest$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
         if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
@@ -135,7 +135,7 @@ if(NOT GOOGLETEST_FOUND)
             IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include
+            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include
             INTERFACE_LINK_LIBRARIES ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
         if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
@@ -288,7 +288,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         ExternalProject_Add(gnss-sim
             GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
             GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
             BUILD_COMMAND ${GNSS_SIM_BUILD_COMMAND}
@@ -298,8 +298,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         )
         if(ENABLE_INSTALL_TESTS)
             install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim DESTINATION bin)
-            install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim)
-            install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim)
+            install(FILES ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim)
+            install(FILES ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim)
             set(SW_GENERATOR_BIN ${CMAKE_INSTALL_PREFIX}/bin/gnss_sim)
             add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
             add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
@@ -310,8 +310,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/${CMAKE_BUILD_TYPE}/gnss_sim)
             endif()
             add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
-            add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
-            add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
+            add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n")
+            add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/circle.csv")
         endif()
     endif()
 
@@ -340,9 +340,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=11 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
+                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=11 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
                 BUILD_COMMAND ${GPSTK_BUILD_COMMAND}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
@@ -351,18 +351,18 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
+                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
                 BUILD_COMMAND ${GPSTK_BUILD_COMMAND}
-                BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
+                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
             )
         endif()
-        set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
-        set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-        set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
+        set(GPSTK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
+        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(GPSTK_BINDIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
         add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
         add_library(Gpstk::gpstk SHARED IMPORTED)
         add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
@@ -384,40 +384,40 @@ endif()
 if(ENABLE_UNIT_TESTING_EXTRA)
     add_definitions(-DEXTRA_TESTS)
     message(STATUS "Downloading some data files for testing...")
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+    if(NOT EXISTS ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
         message(STATUS "Downloading file: gps_l2c_m_prn7_5msps.dat")
-        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
+        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9
         )
     endif()
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat)
+    if(NOT EXISTS ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat)
         message(STATUS "Downloading file: Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat")
-        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat
+        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=ffb72fc63c116be58d5e5ccb1daaed3a
         )
     endif()
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat)
+    if(NOT EXISTS ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat)
         message(STATUS "Downloading file: BdsB1IStr01_fs25e6_if0_4ms.dat")
-        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/BdsB1IStr01_fs25e6_if0_4ms.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat
+        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/BdsB1IStr01_fs25e6_if0_4ms.dat ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=5a4336dad9d80f3313a16dec4fff9233
         )
     endif()
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat)
+    if(NOT EXISTS ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat)
         message(STATUS "Downloading file: BdsB3IStr01_fs50e6_if0_4ms.dat")
-        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/BdsB3IStr01_fs50e6_if0_4ms.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat
+        file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/BdsB3IStr01_fs50e6_if0_4ms.dat ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=066d0d8434a8bc81e161778b7c34cc07
         )
     endif()
     message(STATUS "Done.")
     if(ENABLE_INSTALL_TESTS)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+        install(FILES ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
+        install(FILES ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+        install(FILES ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+        install(FILES ${CMAKE_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
     endif()
 endif()
 
@@ -430,13 +430,13 @@ if(ENABLE_INSTALL_TESTS)
     install(FILES ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
     add_definitions(-DTEST_PATH="${CMAKE_INSTALL_PREFIX}/share/gnss-sdr/")
 else()
-    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
-    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
-    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
-    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
-    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)
-    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)
-    add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/thirdparty/")
+    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION ${CMAKE_BINARY_DIR}/thirdparty/signal_samples)
+    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION ${CMAKE_BINARY_DIR}/thirdparty/signal_samples)
+    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_BINARY_DIR}/thirdparty/signal_samples)
+    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION ${CMAKE_BINARY_DIR}/thirdparty/signal_samples)
+    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION ${CMAKE_BINARY_DIR}/thirdparty/data/rtklib_test)
+    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${CMAKE_BINARY_DIR}/thirdparty/data/rtklib_test)
+    add_definitions(-DTEST_PATH="${CMAKE_BINARY_DIR}/thirdparty/")
 endif()
 
 set(LIST_INCLUDE_DIRS
@@ -511,14 +511,14 @@ if(ENABLE_UNIT_TESTING)
         set_target_properties(run_tests PROPERTIES LINK_FLAGS "-s")
     endif()
     if(ENABLE_INSTALL_TESTS)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/run_tests)
-            file(REMOVE ${CMAKE_SOURCE_DIR}/install/run_tests)
+        if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/run_tests)
+            file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/run_tests)
         endif()
         install(TARGETS run_tests RUNTIME DESTINATION bin COMPONENT "run_tests")
     else()
         add_custom_command(TARGET run_tests POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
-            ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:run_tests>
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:run_tests>
         )
     endif()
     if(ENABLE_GPERFTOOLS)
@@ -629,7 +629,7 @@ function(add_system_test executable)
     endif()
     set(SYSTEM_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/${executable}.cc)
     # Ensure that executable is rebuilt if it was previously built and then removed
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
+    if(NOT EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
         execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${SYSTEM_TEST_SOURCES})
     endif()
     if(CMAKE_VERSION VERSION_GREATER 3.13)
@@ -661,14 +661,14 @@ function(add_system_test executable)
     endif()
 
     if(ENABLE_INSTALL_TESTS)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
-            file(REMOVE ${CMAKE_SOURCE_DIR}/install/${executable})
+        if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
+            file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
         endif()
         install(TARGETS ${executable} RUNTIME DESTINATION bin COMPONENT "${executable}_test")
     else()
         add_custom_command(TARGET ${executable} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${executable}>
-            ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:${executable}>
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${executable}>
         )
     endif()
     if(ENABLE_CLANG_TIDY)
@@ -722,17 +722,17 @@ if(ENABLE_SYSTEM_TESTING)
         endif()
     else()
         # Avoid working with old executables if they were switched ON and then OFF
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-            file(REMOVE ${CMAKE_SOURCE_DIR}/install/position_test)
+        if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/position_test)
+            file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/position_test)
         endif()
     endif()
 else()
     # Avoid working with old executables if they were switched ON and then OFF
-    if(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
-        file(REMOVE ${CMAKE_SOURCE_DIR}/install/ttff)
+    if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/ttff)
+        file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/ttff)
     endif()
-    if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-        file(REMOVE ${CMAKE_SOURCE_DIR}/install/position_test)
+    if(EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/position_test)
+        file(REMOVE ${LOCAL_INSTALL_BASE_DIR}/install/position_test)
     endif()
 endif()
 

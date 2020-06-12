@@ -87,7 +87,7 @@ endif()
 
 add_custom_command(TARGET gnss-sdr
     POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
+        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
 )
 
 install(TARGETS gnss-sdr

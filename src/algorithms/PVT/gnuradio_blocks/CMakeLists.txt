@@ -84,14 +84,6 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
     )
 endif()
 
-# Check if we have std::put_time (Workaround for gcc < 5.0)
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("
-    #include <iomanip>
-    int main()
-    { std::put_time(nullptr, \"\"); }"
-    has_put_time
-)
 if(${has_put_time})
     target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_PUT_TIME=1)
 endif()

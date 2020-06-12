@@ -50,6 +50,14 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Usability:
 
+- Do not pollute the source directory if the software is built from an
+  out-of-source-tree directory. Downloaded external sources and test raw files
+  are now stored in a `./thirdparty` folder under the building directory. In
+  case of an out-of-source-tree build, the generated binaries are stored in an
+  `./install` folder, also under the building directory. The old behavior for
+  generated binaries is maintained if the building is done from any source tree
+  subfolder (for instance, `gnss-sdr/build`): in that case, binaries are stored
+  in the source tree (under `gnss-sdr/install`).
 - Updated version of the Contributor Covenant to version 2.0.
 - Added a Matlab script to quantize the input signal with a given number of bits
   per sample.

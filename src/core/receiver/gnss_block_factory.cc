@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -53,6 +53,7 @@
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "galileo_e5a_telemetry_decoder.h"
+#include "galileo_e5b_pcps_acquisition.h"
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
@@ -115,6 +116,7 @@
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
 #include "galileo_e5a_pcps_acquisition_fpga.h"
+#include "galileo_e5b_pcps_acquisition_fpga.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l2_m_dll_pll_tracking_fpga.h"
@@ -260,6 +262,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const std::
     LOG(INFO) << "Getting Observables with implementation " << implementation;
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
+    Galileo_channels += configuration->property("Channels_7X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
     GPS_channels += configuration->property("Channels_L5.count", 0);
@@ -288,6 +291,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const std::shared_p
     LOG(INFO) << "Getting PVT with implementation " << implementation;
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
+    Galileo_channels += configuration->property("Channels_7X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
     GPS_channels += configuration->property("Channels_L5.count", 0);
@@ -561,6 +565,73 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
         std::move(trk_),
         std::move(tlm_),
         "Channel", "5X", queue));
+
+    return channel_;
+}
+
+
+// ********* GALILEO E5b  CHANNEL *****************
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_7X(
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
+    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue)
+{
+    std::stringstream stream;
+    stream << channel;
+    std::string id = stream.str();
+    LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
+              << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
+    std::string aux = configuration->property("Acquisition_7X" + std::to_string(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if (aux != "W")
+        {
+            appendix1 = std::to_string(channel);
+        }
+    else
+        {
+            appendix1 = "";
+        }
+    aux = configuration->property("Tracking_7X" + std::to_string(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if (aux != "W")
+        {
+            appendix2 = std::to_string(channel);
+        }
+    else
+        {
+            appendix2 = "";
+        }
+    aux = configuration->property("TelemetryDecoder_7X" + std::to_string(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if (aux != "W")
+        {
+            appendix3 = std::to_string(channel);
+        }
+    else
+        {
+            appendix3 = "";
+        }
+    // Automatically detect input data type
+    std::shared_ptr<InMemoryConfiguration> config;
+    config = std::make_shared<InMemoryConfiguration>();
+    std::string default_item_type = "gr_complex";
+    std::string acq_item_type = configuration->property("Acquisition_7X" + appendix1 + ".item_type", default_item_type);
+    std::string trk_item_type = configuration->property("Tracking_7X" + appendix2 + ".item_type", default_item_type);
+    if (acq_item_type != trk_item_type)
+        {
+            LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
+        }
+    config->set_property("Channel.item_type", acq_item_type);
+
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_7X" + appendix1, acq, 1, 0);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_7X" + appendix2, trk, 1, 1);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_7X" + appendix3, tlm, 1, 1);
+
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel,
+        std::move(acq_),
+        std::move(trk_),
+        std::move(tlm_),
+        "Channel", "7X", queue));
 
     return channel_;
 }
@@ -919,6 +990,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     unsigned int Channels_2G_count = configuration->property("Channels_2G.count", 0);
     unsigned int Channels_2S_count = configuration->property("Channels_2S.count", 0);
     unsigned int Channels_5X_count = configuration->property("Channels_5X.count", 0);
+    unsigned int Channels_7X_count = configuration->property("Channels_7X.count", 0);
     unsigned int Channels_L5_count = configuration->property("Channels_L5.count", 0);
     unsigned int Channels_B1_count = configuration->property("Channels_B1.count", 0);
     unsigned int Channels_B3_count = configuration->property("Channels_B3.count", 0);
@@ -929,6 +1001,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                                   Channels_2S_count +
                                   Channels_2G_count +
                                   Channels_5X_count +
+                                  Channels_7X_count +
                                   Channels_L5_count +
                                   Channels_B1_count +
                                   Channels_B3_count;
@@ -1074,6 +1147,35 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 
                     // Push back the channel to the vector of channels
                     channels->at(channel_absolute_id) = GetChannel_5X(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue);
+                    channel_absolute_id++;
+                }
+
+            // **************** GALILEO E5b I (I/NAV OS)  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_7X_count << " GALILEO E5b I (I/NAV OS) channels";
+            tracking_implementation = configuration->property("Tracking_7X.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_7X.implementation", default_implementation);
+            acquisition_implementation = configuration->property("Acquisition_7X.implementation", default_implementation);
+            for (unsigned int i = 0; i < Channels_7X_count; i++)
+                {
+                    // (i.e. Acquisition_1C0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_7X" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    // (i.e. Tracking_1C0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_7X" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_7X" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = GetChannel_7X(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
@@ -1665,6 +1767,20 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 #endif
+    else if (implementation == "Galileo_E5b_PCPS_Acquisition")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5bPcpsAcquisition(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#if ENABLE_FPGA
+    else if (implementation == "Galileo_E5b_PCPS_Acquisition_FPGA")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5bPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation == "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition")
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsQuickSyncAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -2075,6 +2191,20 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation == "Galileo_E5a_Pcps_Acquisition_Fpga")
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
+    else if (implementation == "Galileo_E5b_PCPS_Acquisition")
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5bPcpsAcquisition(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#if ENABLE_FPGA
+    else if (implementation == "Galileo_E5b_PCPS_Acquisition_FPGA")
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5bPcpsAcquisitionFpga(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

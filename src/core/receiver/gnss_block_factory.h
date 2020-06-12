@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -82,6 +82,10 @@ private:
         const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_5X(const std::shared_ptr<ConfigurationInterface>& configuration,
+        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
+        const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue);
+
+    std::unique_ptr<GNSSBlockInterface> GetChannel_7X(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
         const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue);
 

@@ -16,15 +16,6 @@ list(SORT ASN_SUPL_SOURCES)
 file(GLOB ASN_SUPL_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.h")
 list(SORT ASN_SUPL_HEADERS)
 
-set(MY_C_FLAGS "")
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        set(MY_C_FLAGS "${MY_C_FLAGS} -Wno-parentheses-equality")
-    endif()
-endif()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
-
 if(CMAKE_VERSION VERSION_GREATER 3.13)
     add_library(core_libs_supl STATIC)
     target_sources(core_libs_supl
@@ -44,6 +35,13 @@ else()
             ${ASN_SUPL_SOURCES}
             supl.c
     )
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        set(MY_C_FLAGS -Wno-parentheses-equality)
+        target_compile_options(core_libs_supl PUBLIC $<$<COMPILE_LANGUAGE:C>:${MY_C_FLAGS}>)
+    endif()
 endif()
 
 if(OPENSSL_FOUND)

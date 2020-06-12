@@ -125,7 +125,7 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
 list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(signal_source_adapters STATIC)
     target_sources(signal_source_adapters
         PRIVATE

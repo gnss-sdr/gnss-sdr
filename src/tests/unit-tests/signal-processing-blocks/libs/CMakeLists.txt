@@ -21,7 +21,7 @@ set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES
 file(GLOB SIGNAL_PROCESSING_TESTING_LIB_HEADERS "*.h")
 list(SORT SIGNAL_PROCESSING_TESTING_LIB_HEADERS)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(signal_processing_testing_lib STATIC)
     target_sources(signal_processing_testing_lib
         PRIVATE
@@ -48,7 +48,7 @@ target_link_libraries(signal_processing_testing_lib
         Glog::glog
 )
 
-if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(signal_processing_testing_lib
@@ -63,10 +63,10 @@ else()
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+if(USE_BOOST_BIND_PLACEHOLDERS)
     target_compile_definitions(signal_processing_testing_lib
         PRIVATE
-            -DBOOST_173_OR_GREATER=1
+            -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()
 

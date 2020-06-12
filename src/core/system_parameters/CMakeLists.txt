@@ -83,7 +83,7 @@ set(SYSTEM_PARAMETERS_HEADERS
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(core_system_parameters STATIC)
     target_sources(core_system_parameters
         PRIVATE

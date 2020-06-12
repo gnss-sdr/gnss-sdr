@@ -44,7 +44,7 @@ set(GNSS_RECEIVER_INTERFACE_HEADERS
 
 list(SORT GNSS_RECEIVER_INTERFACE_HEADERS)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(core_receiver STATIC)
     target_sources(core_receiver
         PRIVATE
@@ -126,10 +126,10 @@ if(ENABLE_CUDA)
     target_compile_definitions(core_receiver PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(core_receiver
         PRIVATE
-            -DBOOST_GREATER_1_65
+            -DUSE_BOOST_ASIO_IO_CONTEXT
     )
 endif()
 

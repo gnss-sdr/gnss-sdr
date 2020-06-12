@@ -16,7 +16,7 @@ set(SYSTEM_TESTING_LIB_SOURCES
 file(GLOB SYSTEM_TESTING_LIB_HEADERS "*.h")
 list(SORT SYSTEM_TESTING_LIB_HEADERS)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(system_testing_lib STATIC)
     target_sources(system_testing_lib
         PRIVATE

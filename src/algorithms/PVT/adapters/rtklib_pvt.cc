@@ -30,7 +30,7 @@
 #include "rtklib_rtkpos.h"            // for rtkfree, rtkinit
 #include <glog/logging.h>             // for LOG
 #include <iostream>                   // for operator<<
-#if OLD_BOOST
+#if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
 #else

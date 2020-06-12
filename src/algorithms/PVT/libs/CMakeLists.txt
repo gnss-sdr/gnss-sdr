@@ -46,7 +46,7 @@ set(PVT_LIB_HEADERS
 list(SORT PVT_LIB_HEADERS)
 list(SORT PVT_LIB_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(pvt_libs STATIC)
     target_sources(pvt_libs
         PRIVATE
@@ -101,10 +101,10 @@ if(ENABLE_ARMA_NO_DEBUG)
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(pvt_libs
         PUBLIC
-            -DBOOST_GREATER_1_65
+            -DUSE_BOOST_ASIO_IO_CONTEXT
     )
 endif()
 

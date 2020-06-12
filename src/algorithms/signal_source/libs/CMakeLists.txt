@@ -36,7 +36,7 @@ set(SIGNAL_SOURCE_LIB_HEADERS
 list(SORT SIGNAL_SOURCE_LIB_HEADERS)
 list(SORT SIGNAL_SOURCE_LIB_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(signal_source_libs STATIC)
     target_sources(signal_source_libs
         PRIVATE

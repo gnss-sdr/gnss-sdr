@@ -23,7 +23,7 @@ set(DATA_TYPE_GR_BLOCKS_HEADERS
 list(SORT DATA_TYPE_GR_BLOCKS_HEADERS)
 list(SORT DATA_TYPE_GR_BLOCKS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(data_type_gr_blocks STATIC)
     target_sources(data_type_gr_blocks
         PRIVATE

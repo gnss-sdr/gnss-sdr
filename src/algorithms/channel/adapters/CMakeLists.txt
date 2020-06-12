@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(channel_adapters STATIC)
     target_sources(channel_adapters
         PRIVATE

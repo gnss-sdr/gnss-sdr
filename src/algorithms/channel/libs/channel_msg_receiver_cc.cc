@@ -44,7 +44,7 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));

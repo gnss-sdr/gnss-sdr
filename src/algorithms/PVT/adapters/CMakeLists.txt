@@ -8,7 +8,7 @@
 #
 
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(pvt_adapters STATIC)
     target_sources(pvt_adapters
         PRIVATE
@@ -35,8 +35,11 @@ target_include_directories(pvt_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
-    target_compile_definitions(pvt_adapters PRIVATE -DOLD_BOOST=1)
+if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
+    target_compile_definitions(pvt_adapters
+        PRIVATE
+            -DUSE_OLD_BOOST_MATH_COMMON_FACTOR=1
+    )
 endif()
 
 if(ENABLE_CLANG_TIDY)

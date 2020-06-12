@@ -71,7 +71,7 @@ endif()
 list(SORT GNSS_SPLIBS_HEADERS)
 list(SORT GNSS_SPLIBS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(algorithms_libs STATIC)
     target_sources(algorithms_libs
         PRIVATE
@@ -189,7 +189,7 @@ endif()
 
 ###############################################################################
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(gnss_sdr_flags STATIC)
     target_sources(gnss_sdr_flags
         PRIVATE

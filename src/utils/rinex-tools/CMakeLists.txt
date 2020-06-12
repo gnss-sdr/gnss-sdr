@@ -16,7 +16,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         set(GPSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
     endif()
 
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(obsdiff)
         target_sources(obsdiff
             PRIVATE

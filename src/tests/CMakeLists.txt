@@ -449,7 +449,7 @@ include_directories(${LIST_INCLUDE_DIRS})
 # Unit testing
 ################################################################################
 if(ENABLE_UNIT_TESTING)
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(run_tests)
         target_sources(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
     else()
@@ -547,7 +547,7 @@ if(ENABLE_UNIT_TESTING)
                 ${CUDA_INCLUDE_DIRS}
         )
     endif()
-    if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+    if(USE_GENERIC_LAMBDAS)
         set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
         set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
         target_compile_definitions(run_tests
@@ -561,10 +561,10 @@ if(ENABLE_UNIT_TESTING)
                 -DHAS_GENERIC_LAMBDA=0
         )
     endif()
-    if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    if(USE_BOOST_BIND_PLACEHOLDERS)
         target_compile_definitions(run_tests
             PRIVATE
-                -DBOOST_173_OR_GREATER=1
+                -DUSE_BOOST_BIND_PLACEHOLDERS=1
         )
     endif()
 endif()
@@ -574,7 +574,7 @@ if(ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gps_l1_ca_dll_pll_tracking_test_fpga)
         target_sources(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE ${GPS_L1_CA_DLL_PLL_TRACKING_TEST_FPGA_SOURCES})
     else()
@@ -632,7 +632,7 @@ function(add_system_test executable)
     if(NOT EXISTS ${LOCAL_INSTALL_BASE_DIR}/install/${executable})
         execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${SYSTEM_TEST_SOURCES})
     endif()
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(${executable})
         target_sources(${executable} PRIVATE ${SYSTEM_TEST_SOURCES})
     else()
@@ -748,7 +748,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(flowgraph_test)
         target_sources(flowgraph_test PRIVATE ${FLOWGRAPH_TEST_SOURCES})
     else()
@@ -803,7 +803,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/adapter/adapter_test.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_block_factory_test.cc
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gnss_block_test)
         target_sources(gnss_block_test PRIVATE ${GNSS_BLOCK_TEST_SOURCES})
     else()
@@ -856,7 +856,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gnuradio_block_test)
         target_sources(gnuradio_block_test PRIVATE ${GNURADIO_BLOCK_TEST_SOURCES})
     else()
@@ -900,7 +900,7 @@ set(MATIO_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/arithmetic/matio_test.cc
 )
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_executable(matio_test)
     target_sources(matio_test PRIVATE ${MATIO_TEST_SOURCES})
 else()
@@ -938,7 +938,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(acq_test)
         target_sources(acq_test PRIVATE ${ACQ_TEST_SOURCES})
     else()
@@ -973,7 +973,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     add_test(acq_test acq_test)
 
-    if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+    if(USE_GENERIC_LAMBDAS)
         set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
         set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
         target_compile_definitions(acq_test
@@ -987,10 +987,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DHAS_GENERIC_LAMBDA=0
         )
     endif()
-    if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    if(USE_BOOST_BIND_PLACEHOLDERS)
         target_compile_definitions(acq_test
             PRIVATE
-                -DBOOST_173_OR_GREATER=1
+                -DUSE_BOOST_BIND_PLACEHOLDERS=1
         )
     endif()
     set_property(TEST acq_test PROPERTY TIMEOUT 30)
@@ -1014,7 +1014,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc
         ${NONLINEAR_SOURCES}
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(trk_test)
         target_sources(trk_test PRIVATE ${TRKTEST_SOURCES})
     else()
@@ -1049,7 +1049,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_generator_gr_blocks
             core_receiver
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+    if(USE_GENERIC_LAMBDAS)
         set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
         set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
         target_compile_definitions(trk_test
@@ -1063,10 +1063,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DHAS_GENERIC_LAMBDA=0
         )
     endif()
-    if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    if(USE_BOOST_BIND_PLACEHOLDERS)
         target_compile_definitions(trk_test
             PRIVATE
-                -DBOOST_173_OR_GREATER=1
+                -DUSE_BOOST_BIND_PLACEHOLDERS=1
         )
     endif()
 
@@ -1082,7 +1082,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_thread_test.cc
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(control_thread_test)
         target_sources(control_thread_test PRIVATE ${CONTROL_THREAD_TEST_SOURCES})
     else()

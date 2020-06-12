@@ -43,7 +43,7 @@ endif()
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 list(SORT ACQ_GR_BLOCKS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(acquisition_gr_blocks STATIC)
     target_sources(acquisition_gr_blocks
         PRIVATE

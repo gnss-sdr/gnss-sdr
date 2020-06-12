@@ -25,7 +25,7 @@ set(INPUT_FILTER_GR_BLOCKS_HEADERS
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(input_filter_gr_blocks STATIC)
     target_sources(input_filter_gr_blocks
         PRIVATE

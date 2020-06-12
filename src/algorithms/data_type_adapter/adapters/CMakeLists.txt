@@ -29,7 +29,7 @@ set(DATATYPE_ADAPTER_HEADERS
 list(SORT DATATYPE_ADAPTER_HEADERS)
 list(SORT DATATYPE_ADAPTER_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(data_type_adapters STATIC)
     target_sources(data_type_adapters
         PRIVATE

@@ -114,7 +114,7 @@ BeidouB1iPcpsAcquisitionTest_msg_rx::BeidouB1iPcpsAcquisitionTest_msg_rx() : gr:
 #if HAS_GENERIC_LAMBDA
         [this](auto &&PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));

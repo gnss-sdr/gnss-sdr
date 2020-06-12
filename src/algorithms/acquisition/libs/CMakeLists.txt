@@ -18,7 +18,7 @@ endif()
 list(SORT ACQUISITION_LIB_HEADERS)
 list(SORT ACQUISITION_LIB_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(acquisition_libs STATIC)
     target_sources(acquisition_libs
         PRIVATE

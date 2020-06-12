@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(pvt_gr_blocks STATIC)
     target_sources(pvt_gr_blocks
         PRIVATE
@@ -49,7 +49,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(pvt_gr_blocks
@@ -73,14 +73,17 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
-    target_compile_definitions(pvt_gr_blocks PRIVATE -DOLD_BOOST=1)
-endif()
-
-if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
     target_compile_definitions(pvt_gr_blocks
         PRIVATE
-            -DBOOST_173_OR_GREATER=1
+            -DUSE_OLD_BOOST_MATH_COMMON_FACTOR=1
+    )
+endif()
+
+if(USE_BOOST_BIND_PLACEHOLDERS)
+    target_compile_definitions(pvt_gr_blocks
+        PRIVATE
+            -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()
 

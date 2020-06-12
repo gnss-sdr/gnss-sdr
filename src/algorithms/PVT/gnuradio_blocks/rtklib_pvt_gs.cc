@@ -96,7 +96,7 @@ namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
 
-#if OLD_BOOST
+#if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
 #else
@@ -194,7 +194,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_telemetry(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));
 #else
         boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));

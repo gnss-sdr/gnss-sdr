@@ -134,7 +134,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
         }
 
 // 6. Start reading
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
         boost::bind(&rtl_tcp_signal_source_c::handle_read, this, boost::placeholders::_1, boost::placeholders::_2));  // NOLINT(modernize-avoid-bind)
 #else
@@ -319,7 +319,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
             // let woker know that more data is available
             not_empty_.notify_one();
 // Read some more
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
             boost::asio::async_read(socket_,
                 boost::asio::buffer(data_),
                 boost::bind(&rtl_tcp_signal_source_c::handle_read, this, boost::placeholders::_1, boost::placeholders::_2));  // NOLINT(modernize-avoid-bind)

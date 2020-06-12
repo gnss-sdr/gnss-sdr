@@ -45,7 +45,7 @@ channel_status_msg_receiver::channel_status_msg_receiver() : gr::block("channel_
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&channel_status_msg_receiver::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&channel_status_msg_receiver::msg_handler_events, this, _1));

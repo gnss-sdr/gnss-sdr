@@ -16,7 +16,7 @@ list(SORT ASN_SUPL_SOURCES)
 file(GLOB ASN_SUPL_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.h")
 list(SORT ASN_SUPL_HEADERS)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(core_libs_supl STATIC)
     target_sources(core_libs_supl
         PRIVATE

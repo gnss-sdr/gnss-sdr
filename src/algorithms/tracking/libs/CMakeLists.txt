@@ -73,7 +73,7 @@ endif()
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(tracking_libs STATIC)
     target_sources(tracking_libs
         PRIVATE
@@ -111,10 +111,10 @@ if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(tracking_libs
         PUBLIC
-            -DBOOST_GREATER_1_65
+            -DUSE_BOOST_ASIO_IO_CONTEXT
     )
 endif()
 

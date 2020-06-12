@@ -46,7 +46,7 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
 
 if(Boost_FOUND)
     message(STATUS "The rinex2assist utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
-    if(CMAKE_VERSION VERSION_GREATER 3.13)
+    if(USE_CMAKE_TARGET_SOURCES)
         add_executable(rinex2assist)
         target_sources(rinex2assist
             PRIVATE

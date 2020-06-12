@@ -23,7 +23,7 @@ set(RESAMPLER_GR_BLOCKS_HEADERS
 list(SORT RESAMPLER_GR_BLOCKS_HEADERS)
 list(SORT RESAMPLER_GR_BLOCKS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(resampler_gr_blocks STATIC)
     target_sources(resampler_gr_blocks
         PRIVATE

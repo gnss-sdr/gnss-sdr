@@ -28,7 +28,7 @@ set(INPUT_FILTER_ADAPTER_HEADERS
 list(SORT INPUT_FILTER_ADAPTER_HEADERS)
 list(SORT INPUT_FILTER_ADAPTER_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(input_filter_adapters STATIC)
     target_sources(input_filter_adapters
         PRIVATE

@@ -21,7 +21,7 @@ set(COND_ADAPTER_HEADERS
 list(SORT COND_ADAPTER_HEADERS)
 list(SORT COND_ADAPTER_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(conditioner_adapters STATIC)
     target_sources(conditioner_adapters
         PRIVATE

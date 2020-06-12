@@ -52,7 +52,7 @@ set(RTKLIB_LIB_HEADERS
 list(SORT RTKLIB_LIB_HEADERS)
 list(SORT RTKLIB_LIB_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(algorithms_libs_rtklib STATIC)
     target_sources(algorithms_libs_rtklib
         PRIVATE

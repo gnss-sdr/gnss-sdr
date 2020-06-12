@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(signal_generator_gr_blocks STATIC)
     target_sources(signal_generator_gr_blocks
         PRIVATE

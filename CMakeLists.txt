@@ -264,6 +264,18 @@ else()
     set(LOCAL_INSTALL_BASE_DIR ${CMAKE_BINARY_DIR})
 endif()
 
+# Determine if CMake scripts make use of target_sources()
+if(CMAKE_VERSION VERSION_GREATER 3.13)
+    set(USE_CMAKE_TARGET_SOURCES ON)
+endif()
+
+# Determine if we try to use generic lambdas
+if(CMAKE_VERSION VERSION_GREATER 3.1 AND
+    NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND
+    (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+    set(USE_GENERIC_LAMBDAS ON)
+endif()
+
 # Determine if we are using make or ninja
 if(CMAKE_MAKE_PROGRAM MATCHES "make")
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "make")
@@ -747,6 +759,14 @@ if(Boost_VERSION_STRING VERSION_GREATER 1.70.99)
     endif()
 endif()
 
+if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
+    set(USE_OLD_BOOST_MATH_COMMON_FACTOR ON)
+endif()
+
+if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+    set(USE_BOOST_ASIO_IO_CONTEXT ON)
+endif()
+
 if(Boost_VERSION_STRING VERSION_LESS 1.73)
     # Disable concepts to address https://github.com/boostorg/asio/issues/312
     if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.9) OR
@@ -778,6 +798,11 @@ if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
     )
 endif()
 
+# Fix for Boost >= 1.73
+if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+    set(USE_BOOST_BIND_PLACEHOLDERS ON)
+endif()
+
 
 
 ################################################################################
@@ -797,7 +822,6 @@ check_cxx_source_compiles("
 ################################################################################
 # Detect availability of std::put_time (Workaround for gcc < 5.0)
 ################################################################################
-include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("
     #include <iomanip>
     int main()

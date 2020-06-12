@@ -76,7 +76,7 @@ set(TRACKING_ADAPTER_HEADERS
 list(SORT TRACKING_ADAPTER_HEADERS)
 list(SORT TRACKING_ADAPTER_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(tracking_adapters STATIC)
     target_sources(tracking_adapters
         PRIVATE

@@ -76,7 +76,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
 #if HAS_GENERIC_LAMBDA
         [this](auto &&PH1) { msg_handler_pvt_to_observables(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, boost::placeholders::_1));
 #else
         boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));

@@ -112,7 +112,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 #if HAS_GENERIC_LAMBDA
         [this](auto &&PH1) { msg_handler_preamble_index(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index, this, boost::placeholders::_1));
 #else
         boost::bind(&glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index, this, _1));

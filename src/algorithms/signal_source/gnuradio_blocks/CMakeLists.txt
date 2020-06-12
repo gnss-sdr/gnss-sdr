@@ -43,7 +43,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_HEADERS)
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(signal_source_gr_blocks STATIC)
     target_sources(signal_source_gr_blocks
         PRIVATE
@@ -104,21 +104,21 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     endif()
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(signal_source_gr_blocks
         PUBLIC
-            -DBOOST_GREATER_1_65
+            -DUSE_BOOST_ASIO_IO_CONTEXT
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+if(USE_BOOST_BIND_PLACEHOLDERS)
     target_compile_definitions(signal_source_gr_blocks
         PRIVATE
-            -DBOOST_173_OR_GREATER=1
+            -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)))
+if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(signal_source_gr_blocks

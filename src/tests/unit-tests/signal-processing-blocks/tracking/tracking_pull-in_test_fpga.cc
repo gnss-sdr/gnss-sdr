@@ -140,7 +140,7 @@ TrackingPullInTest_msg_rx_Fpga::TrackingPullInTest_msg_rx_Fpga() : gr::block("Tr
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&TrackingPullInTest_msg_rx_Fpga::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&TrackingPullInTest_msg_rx_Fpga::msg_handler_events, this, _1));

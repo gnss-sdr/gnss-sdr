@@ -22,7 +22,7 @@ set(TELEMETRY_DECODER_LIB_HEADERS
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
 list(SORT TELEMETRY_DECODER_LIB_SOURCES)
 
-if(CMAKE_VERSION VERSION_GREATER 3.13)
+if(USE_CMAKE_TARGET_SOURCES)
     add_library(telemetry_decoder_libs STATIC)
     target_sources(telemetry_decoder_libs
         PRIVATE

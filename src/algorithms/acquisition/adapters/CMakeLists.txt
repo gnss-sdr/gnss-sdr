@@ -23,6 +23,7 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e1_pcps_8ms_ambiguous_acquisition.cc
     galileo_e5a_noncoherent_iq_acquisition_caf.cc
     galileo_e5a_pcps_acquisition.cc
+    galileo_e5b_pcps_acquisition.cc
     glonass_l1_ca_pcps_acquisition.cc
     glonass_l2_ca_pcps_acquisition.cc
     beidou_b1i_pcps_acquisition.cc
@@ -44,6 +45,7 @@ set(ACQ_ADAPTER_HEADERS
     galileo_e1_pcps_8ms_ambiguous_acquisition.h
     galileo_e5a_noncoherent_iq_acquisition_caf.h
     galileo_e5a_pcps_acquisition.h
+    galileo_e5b_pcps_acquisition.h
     glonass_l1_ca_pcps_acquisition.h
     glonass_l2_ca_pcps_acquisition.h
     beidou_b1i_pcps_acquisition.h
@@ -56,6 +58,7 @@ if(ENABLE_FPGA)
         gps_l2_m_pcps_acquisition_fpga.cc
         galileo_e1_pcps_ambiguous_acquisition_fpga.cc
         galileo_e5a_pcps_acquisition_fpga.cc
+        galileo_e5b_pcps_acquisition_fpga.cc
         gps_l5i_pcps_acquisition_fpga.cc
     )
     set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
@@ -63,6 +66,7 @@ if(ENABLE_FPGA)
         gps_l2_m_pcps_acquisition_fpga.h
         galileo_e1_pcps_ambiguous_acquisition_fpga.h
         galileo_e5a_pcps_acquisition_fpga.h
+        galileo_e5b_pcps_acquisition_fpga.h
         gps_l5i_pcps_acquisition_fpga.h
     )
 endif()

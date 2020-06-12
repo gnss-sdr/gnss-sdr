@@ -25,7 +25,7 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(CMAKE_VERSION VERSION_GREATER 3.13)
     add_library(core_libs_supl STATIC)
     target_sources(core_libs_supl
         PRIVATE

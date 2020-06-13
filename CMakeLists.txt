@@ -275,6 +275,25 @@ if(CMAKE_VERSION VERSION_GREATER 3.1 AND NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "G
     set(USE_GENERIC_LAMBDAS ON)
 endif()
 
+# Determine if we use lambdas
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        set(DO_NOT_USE_LAMBDAS ON)
+    endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        if(CLANG_VERSION VERSION_LESS "600")
+            set(DO_NOT_USE_LAMBDAS ON)
+        endif()
+    else()
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(DO_NOT_USE_LAMBDAS ON)
+        endif()
+    endif()
+endif()
+
 # Determine if we are using make or ninja
 if(CMAKE_MAKE_PROGRAM MATCHES "make")
     set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "make")

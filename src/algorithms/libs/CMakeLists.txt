@@ -149,28 +149,10 @@ target_compile_definitions(algorithms_libs
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
-if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-        target_compile_definitions(algorithms_libs
-            PRIVATE -DOLDCOMPILER=1
-        )
-    endif()
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-        if(CLANG_VERSION VERSION_LESS "600")
-            target_compile_definitions(algorithms_libs
-                PRIVATE -DOLDCOMPILER=1
-            )
-        endif()
-    else()
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            target_compile_definitions(algorithms_libs
-                PRIVATE -DOLDCOMPILER=1
-            )
-        endif()
-    endif()
+if(DO_NOT_USE_LAMBDAS)
+    target_compile_definitions(algorithms_libs
+        PRIVATE -DDO_NOT_USE_LAMBDAS=1
+    )
 endif()
 
 set_property(TARGET algorithms_libs

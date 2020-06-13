@@ -73,8 +73,8 @@ target_link_libraries(algorithms_libs_rtklib
         core_system_parameters
         Gflags::gflags
         Glog::glog
-        ${LAPACK_LIBRARIES}
-        ${BLAS_LIBRARIES}
+        LAPACK::LAPACK
+        BLAS::BLAS
 )
 
 set_property(TARGET algorithms_libs_rtklib

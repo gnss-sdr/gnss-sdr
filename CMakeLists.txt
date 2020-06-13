@@ -1512,8 +1512,13 @@ if(NOT BLAS_FOUND)
     endif()
     message(FATAL_ERROR "BLAS is required to build gnss-sdr")
 endif()
-
-
+if(NOT TARGET BLAS::BLAS)
+    add_library(BLAS::BLAS SHARED IMPORTED)
+    set_target_properties(BLAS::BLAS PROPERTIES
+        IMPORTED_LOCATION ${BLAS_LIBRARIES}
+        INTERFACE_LINK_LIBRARIES ${BLAS_LIBRARIES}
+    )
+endif()
 
 ################################################################################
 # Check that LAPACK (Linear Algebra PACKage) is found in the system
@@ -1540,7 +1545,13 @@ if(NOT LAPACK_FOUND)
     endif()
     message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
 endif()
-
+if(NOT TARGET LAPACK::LAPACK)
+    add_library(LAPACK::LAPACK SHARED IMPORTED)
+    set_target_properties(BLAS::BLAS PROPERTIES
+        IMPORTED_LOCATION ${LAPACK_LIBRARIES}
+        INTERFACE_LINK_LIBRARIES ${LAPACK_LIBRARIES}
+    )
+endif()
 
 
 ################################################################################

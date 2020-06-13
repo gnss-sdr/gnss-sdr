@@ -30,7 +30,7 @@ endif()
 
 if(NOT GOOGLETEST_FOUND)
     set(GTEST_BUILD_COMMAND "${CMAKE_COMMAND}"
-        "--build" "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}"
+        "--build" "${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}"
         "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
     )
     if(CMAKE_GENERATOR STREQUAL Xcode)
@@ -42,7 +42,7 @@ if(NOT GOOGLETEST_FOUND)
             GIT_REPOSITORY https://github.com/google/googletest
             GIT_TAG v1.10.x
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+            BINARY_DIR ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
                 -DINSTALL_GTEST=OFF
                 -DBUILD_GMOCK=OFF
@@ -56,21 +56,21 @@ if(NOT GOOGLETEST_FOUND)
         )
     else()
         set(GOOGLETEST_BUILD_BYPRODUCTS
-            ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
         if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
             (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
             set(GOOGLETEST_BUILD_BYPRODUCTS
-                ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd${CMAKE_STATIC_LIBRARY_SUFFIX}
-                ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest
             GIT_TAG v1.10.x
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+            BINARY_DIR ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
                 -DINSTALL_GTEST=OFF
                 -DBUILD_GMOCK=OFF
@@ -289,7 +289,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
             GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim
-            BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
+            BINARY_DIR ${CMAKE_BINARY_DIR}/gnss-sim
             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
             BUILD_COMMAND ${GNSS_SIM_BUILD_COMMAND}
             UPDATE_COMMAND ""
@@ -297,7 +297,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             INSTALL_COMMAND ""
         )
         if(ENABLE_INSTALL_TESTS)
-            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim DESTINATION bin)
+            install(PROGRAMS ${CMAKE_BINARY_DIR}/gnss-sim/gnss_sim DESTINATION bin)
             install(FILES ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim)
             install(FILES ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim)
             set(SW_GENERATOR_BIN ${CMAKE_INSTALL_PREFIX}/bin/gnss_sim)
@@ -305,9 +305,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
             add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")
         else()
-            set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
+            set(SW_GENERATOR_BIN ${CMAKE_BINARY_DIR}/gnss-sim/gnss_sim)
             if(CMAKE_GENERATOR STREQUAL Xcode)
-                set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/${CMAKE_BUILD_TYPE}/gnss_sim)
+                set(SW_GENERATOR_BIN ${CMAKE_BINARY_DIR}/gnss-sim/${CMAKE_BUILD_TYPE}/gnss_sim)
             endif()
             add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
             add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n")
@@ -341,8 +341,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=11 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
+                BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=11 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
                 BUILD_COMMAND ${GPSTK_BUILD_COMMAND}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
@@ -352,17 +352,17 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
+                BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
                 BUILD_COMMAND ${GPSTK_BUILD_COMMAND}
-                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
+                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
             )
         endif()
-        set(GPSTK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
-        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-        set(GPSTK_BINDIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
+        set(GPSTK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
+        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(GPSTK_BINDIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
         add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
         add_library(Gpstk::gpstk SHARED IMPORTED)
         add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
@@ -439,11 +439,7 @@ else()
     add_definitions(-DTEST_PATH="${CMAKE_BINARY_DIR}/thirdparty/")
 endif()
 
-set(LIST_INCLUDE_DIRS
-    ${CMAKE_SOURCE_DIR}/src/tests/common-files
-)
 
-include_directories(${LIST_INCLUDE_DIRS})
 
 ################################################################################
 # Unit testing
@@ -498,6 +494,10 @@ if(ENABLE_UNIT_TESTING)
             signal_processing_testing_lib
             system_testing_lib
             core_receiver
+    )
+    target_include_directories(run_tests
+        INTERFACE
+            ${CMAKE_SOURCE_DIR}/src/tests/common-files
     )
     if(GNURADIO_USES_STD_POINTERS)
         target_compile_definitions(run_tests
@@ -608,6 +608,9 @@ if(ENABLE_FPGA)
             algorithms_libs
             core_receiver
     )
+    target_include_directories(gps_l1_ca_dll_pll_tracking_test_fpga
+        INTERFACE ${CMAKE_SOURCE_DIR}/src/tests/common-files
+    )
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
         RUNTIME DESTINATION bin
         COMPONENT "fpga-test"
@@ -648,7 +651,10 @@ function(add_system_test executable)
         target_link_libraries(${executable} PRIVATE Boost::filesystem Boost::system)
     endif()
 
-    target_include_directories(${executable} PRIVATE ${OPT_INCLUDES_} ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+    target_include_directories(${executable}
+        PRIVATE ${OPT_INCLUDES_} ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        INTERFACE ${CMAKE_SOURCE_DIR}/src/tests/common-files
+    )
     target_link_libraries(${executable} PRIVATE ${OPT_LIBS_} algorithms_libs)
     if(GNURADIO_USES_STD_POINTERS)
         target_compile_definitions(${executable}
@@ -838,7 +844,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
     )
 
-    target_include_directories(gnss_block_test PRIVATE ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+    target_include_directories(gnss_block_test
+        PRIVATE ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        INTERFACE ${CMAKE_SOURCE_DIR}/src/tests/common-files
+    )
 
     if(ENABLE_FPGA)
         target_compile_definitions(gnss_block_test PRIVATE -DENABLE_FPGA=1)
@@ -927,6 +936,11 @@ target_link_libraries(matio_test
         core_receiver
 )
 
+target_include_directories(matio_test
+    INTERFACE
+        ${CMAKE_SOURCE_DIR}/src/tests/common-files
+)
+
 add_test(matio_test matio_test)
 
 set_property(TEST matio_test PROPERTY TIMEOUT 30)
@@ -970,7 +984,10 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_processing_testing_lib
             core_receiver
     )
-
+    target_include_directories(acq_test
+        INTERFACE
+            ${CMAKE_SOURCE_DIR}/src/tests/common-files
+    )
     add_test(acq_test acq_test)
 
     if(USE_GENERIC_LAMBDAS)

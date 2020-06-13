@@ -54,7 +54,7 @@ target_link_libraries(input_filter_adapters
         Volk::volk
 )
 
-if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
+if(GNURADIO_IS_38_OR_GREATER)
     target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)
 endif()
 

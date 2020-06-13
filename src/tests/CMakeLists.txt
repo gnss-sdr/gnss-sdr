@@ -213,7 +213,7 @@ endif()
 # Definitions
 ################################################################################
 
-if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
+if(GNURADIO_IS_38_OR_GREATER)
     add_definitions(-DGR_GREATER_38=1)
 endif()
 

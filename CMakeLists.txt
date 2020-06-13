@@ -535,6 +535,9 @@ set_package_properties(GNURADIO PROPERTIES
     TYPE REQUIRED
 )
 
+if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
+    set(GNURADIO_IS_38_OR_GREATER ON)
+endif()
 
 
 ################################################################################

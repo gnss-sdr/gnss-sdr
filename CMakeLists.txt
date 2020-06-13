@@ -2286,6 +2286,13 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
             )
         else()
+            if(CMAKE_MAKE_PROGRAM MATCHES "make")
+                include(ProcessorCount)
+                ProcessorCount(NUMBER_OF_PROCESSORS)
+                if(NUMBER_OF_PROCESSORS GREATER 1)
+                    set(PROTOBUF_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
+                endif()
+            endif()
             ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 PREFIX ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
@@ -2294,7 +2301,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 BINARY_DIR ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
                 CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
+                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}
                 INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc

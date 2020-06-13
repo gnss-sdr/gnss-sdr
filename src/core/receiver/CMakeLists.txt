@@ -32,14 +32,14 @@ list(SORT GNSS_RECEIVER_HEADERS)
 list(SORT GNSS_RECEIVER_SOURCES)
 
 set(GNSS_RECEIVER_INTERFACE_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/acquisition_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/channel_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/configuration_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/gnss_block_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/observables_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/pvt_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/telemetry_decoder_interface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../interfaces/tracking_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/acquisition_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/channel_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/configuration_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/gnss_block_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/observables_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/pvt_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/telemetry_decoder_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces/tracking_interface.h
 )
 
 list(SORT GNSS_RECEIVER_INTERFACE_HEADERS)

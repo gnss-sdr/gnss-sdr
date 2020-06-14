@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -205,6 +205,7 @@ private:
     std::list<Gnss_Signal> available_SBAS_1C_signals_;
     std::list<Gnss_Signal> available_GAL_1B_signals_;
     std::list<Gnss_Signal> available_GAL_5X_signals_;
+    std::list<Gnss_Signal> available_GAL_7X_signals_;
     std::list<Gnss_Signal> available_GLO_1G_signals_;
     std::list<Gnss_Signal> available_GLO_2G_signals_;
     std::list<Gnss_Signal> available_BDS_B1_signals_;
@@ -217,6 +218,7 @@ private:
         evSBAS_1C,
         evGAL_1B,
         evGAL_5X,
+        evGAL_7X,
         evGLO_1G,
         evGLO_2G,
         evBDS_B1,

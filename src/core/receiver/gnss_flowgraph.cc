@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,6 +27,7 @@
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E5b.h"
 #include "channel.h"
 #include "channel_fsm.h"
 #include "channel_interface.h"
@@ -405,6 +406,9 @@ void GNSSFlowgraph::connect()
                                         case evGAL_5X:
                                             acq_fs = GALILEO_E5A_OPT_ACQ_FS_SPS;
                                             break;
+                                        case evGAL_7X:
+                                            acq_fs = GALILEO_E5B_OPT_ACQ_FS_SPS;
+                                            break;
                                         case evGLO_1G:
                                             acq_fs = fs;
                                             break;
@@ -628,6 +632,12 @@ void GNSSFlowgraph::connect()
                             gnss_system = "Galileo";
                             signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                             available_GAL_5X_signals_.remove(signal_value);
+                            break;
+
+                        case evGAL_7X:
+                            gnss_system = "Galileo";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GAL_7X_signals_.remove(signal_value);
                             break;
 
                         case evGLO_1G:
@@ -1081,6 +1091,11 @@ void GNSSFlowgraph::push_back_signal(const Gnss_Signal& gs)
             available_GAL_5X_signals_.push_back(gs);
             break;
 
+        case evGAL_7X:
+            available_GAL_7X_signals_.remove(gs);
+            available_GAL_7X_signals_.push_back(gs);
+            break;
+
         case evGLO_1G:
             available_GLO_1G_signals_.remove(gs);
             available_GLO_1G_signals_.push_back(gs);
@@ -1132,6 +1147,10 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
             available_GAL_5X_signals_.remove(gs);
             break;
 
+        case evGAL_7X:
+            available_GAL_7X_signals_.remove(gs);
+            break;
+
         case evGLO_1G:
             available_GLO_1G_signals_.remove(gs);
             break;
@@ -1165,6 +1184,9 @@ double GNSSFlowgraph::project_doppler(const std::string& searched_signal, double
             break;
         case evGAL_5X:
             return (primary_freq_doppler_hz / FREQ1) * FREQ5;
+            break;
+        case evGAL_7X:
+            return (primary_freq_doppler_hz / FREQ1) * FREQ7;
             break;
         case evGPS_2S:
             return (primary_freq_doppler_hz / FREQ1) * FREQ2;
@@ -1425,6 +1447,14 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
                         {
                             available_GAL_5X_signals_.push_front(gs);
                         }
+
+                    gs = Gnss_Signal(visible_satellite.second, "7X");
+                    old_size = available_GAL_7X_signals_.size();
+                    available_GAL_7X_signals_.remove(gs);
+                    if (old_size > available_GAL_7X_signals_.size())
+                        {
+                            available_GAL_7X_signals_.push_front(gs);
+                        }
                 }
         }
 }
@@ -1569,6 +1599,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["L5"] = evGPS_L5;
     mapStringValues_["1B"] = evGAL_1B;
     mapStringValues_["5X"] = evGAL_5X;
+    mapStringValues_["7X"] = evGAL_7X;
     mapStringValues_["1G"] = evGLO_1G;
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
@@ -1800,6 +1831,19 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    if (configuration_->property("Channels_7X.count", 0) > 0)
+        {
+            // Loop to create the list of Galileo E5b signals
+            for (available_gnss_prn_iter = available_galileo_prn.cbegin();
+                 available_gnss_prn_iter != available_galileo_prn.cend();
+                 available_gnss_prn_iter++)
+                {
+                    available_GAL_7X_signals_.emplace_back(
+                        Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
+                        std::string("7X"));
+                }
+        }
+
     if (configuration_->property("Channels_1G.count", 0) > 0)
         {
             // Loop to create the list of GLONASS L1 C/A signals
@@ -1898,6 +1942,10 @@ bool GNSSFlowgraph::is_multiband() const
     if (configuration_->property("Channels_1B.count", 0) > 0)
         {
             if (configuration_->property("Channels_5X.count", 0) > 0)
+                {
+                    multiband = true;
+                }
+            if (configuration_->property("Channels_7X.count", 0) > 0)
                 {
                     multiband = true;
                 }
@@ -2090,6 +2138,50 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     if (!pop)
                         {
                             available_GAL_5X_signals_.push_back(result);
+                        }
+                }
+            break;
+
+        case evGAL_7X:
+            if (configuration_->property("Channels_1B.count", 0) > 0)
+                {
+                    // 1. Get the current channel status map
+                    std::map<int, std::shared_ptr<Gnss_Synchro>> current_channels_status = channels_status_->get_current_status_map();
+                    // 2. search the currently tracked Galileo E1 satellites and assist the Galileo E5 acquisition if the satellite is not tracked on E5
+                    for (auto& current_status : current_channels_status)
+                        {
+                            if (std::string(current_status.second->Signal) == "1B")
+                                {
+                                    std::list<Gnss_Signal>::iterator it2;
+                                    it2 = std::find_if(std::begin(available_GAL_7X_signals_), std::end(available_GAL_7X_signals_),
+                                        [&](Gnss_Signal const& sig) { return sig.get_satellite().get_PRN() == current_status.second->PRN; });
+
+                                    if (it2 != available_GAL_7X_signals_.end())
+                                        {
+                                            estimated_doppler = current_status.second->Carrier_Doppler_hz;
+                                            RX_time = current_status.second->RX_time;
+                                            // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
+                                            // 3. return the Gal 7X satellite and remove it from list
+                                            result = *it2;
+                                            if (pop)
+                                                {
+                                                    available_GAL_7X_signals_.erase(it2);
+                                                }
+                                            found_signal = true;
+                                            assistance_available = true;
+                                            break;
+                                        }
+                                }
+                        }
+                }
+            // fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
+            if (found_signal == false)
+                {
+                    result = available_GAL_7X_signals_.front();
+                    available_GAL_7X_signals_.pop_front();
+                    if (!pop)
+                        {
+                            available_GAL_7X_signals_.push_back(result);
                         }
                 }
             break;

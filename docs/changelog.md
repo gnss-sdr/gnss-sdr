@@ -29,6 +29,11 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fixed building with GCC 10 (gcc-10 and above flipped a default from `-fcommon`
   to `-fno-common`, causing an error due to multiple defined lambda functions).
 - Fixed warnings risen by GCC 10 and Clang 10.
+- Various improvements in the CMake scripts: better decision on the C++ standard
+  to use; simplifications for various API dependency and environment versions
+  requirements, with more intuitive naming for variables; fixed the
+  `ENABLE_CLANG_TIDY` option; better GFORTRAN module; and broader adoption of
+  the modern per-target approach.
 
 ### Improvements in Portability:
 

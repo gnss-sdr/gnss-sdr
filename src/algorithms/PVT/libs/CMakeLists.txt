@@ -77,9 +77,9 @@ target_link_libraries(pvt_libs
         Boost::date_time
         protobuf::libprotobuf
         core_system_parameters
+        algorithms_libs_rtklib
     PRIVATE
         algorithms_libs
-        algorithms_libs_rtklib
         Gflags::gflags
         Glog::glog
         Matio::matio
@@ -104,7 +104,7 @@ endif()
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(pvt_libs
         PUBLIC
-            -DUSE_BOOST_ASIO_IO_CONTEXT
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
     )
 endif()
 
@@ -125,18 +125,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     endif()
 endif()
 
-if(ENABLE_CLANG_TIDY)
-    if(CLANG_TIDY_EXE)
-        set_target_properties(pvt_libs
-            PROPERTIES
-                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
-        )
-    endif()
-endif()
-
 set_property(TARGET pvt_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/system_parameters>
 )

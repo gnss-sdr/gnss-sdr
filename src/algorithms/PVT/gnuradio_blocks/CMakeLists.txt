@@ -37,6 +37,7 @@ target_link_libraries(pvt_gr_blocks
         Gnuradio::pmt
         Gnuradio::runtime
     PRIVATE
+        algorithms_libs
         pvt_libs
         Gflags::gflags
         Glog::glog

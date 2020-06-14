@@ -71,10 +71,9 @@ endif()
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(core_monitor
         PUBLIC
-            -DUSE_BOOST_ASIO_IO_CONTEXT
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
     )
 endif()
-
 
 # Fix for Boost Asio < 1.70
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -93,19 +92,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     endif()
 endif()
 
-
-if(ENABLE_CLANG_TIDY)
-    if(CLANG_TIDY_EXE)
-        set_target_properties(core_monitor
-            PROPERTIES
-                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
-        )
-    endif()
-endif()
-
-
 set_property(TARGET core_monitor
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-        $<BUILD_INTERFACE:${PROTO_INCLUDE_HEADERS}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

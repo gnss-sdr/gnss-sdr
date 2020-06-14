@@ -284,7 +284,7 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-        if(CLANG_VERSION VERSION_LESS "600")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7")
             set(DO_NOT_USE_LAMBDAS ON)
         endif()
     else()

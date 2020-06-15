@@ -402,7 +402,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
                                     out_idx++;
                                 }
                         }
-                    if (signal_[sat].at(0) == '7')
+                    else if (signal_[sat].at(0) == '7')
                         {
                             // EACH WORK outputs 1 modulated primary code
                             int codelen = static_cast<int>(GALILEO_E5B_CODE_LENGTH_CHIPS);

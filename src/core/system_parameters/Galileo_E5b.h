@@ -40,6 +40,8 @@ const int32_t GALILEO_E5B_I_SECONDARY_CODE_LENGTH = 4;    //!< Galileo E5b-I sec
 const int32_t GALILEO_E5B_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5b-Q secondary code length [chips]
 const int32_t GALILEO_E5B_SYMBOL_RATE_BPS = 250;          //!< Galileo E5b symbol rate [bits/second]
 const int32_t GALILEO_E5B_NUMBER_OF_CODES = 50;
+const double GALILEO_E5B_CODE_PERIOD_S = 0.001;  //!< Galileo E1 primary code period [s]
+const int32_t GALILEO_E5B_CODE_PERIOD_MS = 1;    //!< Galileo E1 primary code period [ms]
 
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION

@@ -4,7 +4,7 @@
  *  Galileo E5b data and pilot Signals
  * \author Piyush Gupta, 2020. piyush04111999@gmail.com
  * \note Code added as part of GSoC 2020 program.
-
+ *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)

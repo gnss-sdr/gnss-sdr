@@ -136,7 +136,6 @@ endif()
 target_link_libraries(core_receiver
     PUBLIC
         core_libs
-        Gnuradio::runtime
     PRIVATE
         core_monitor
         signal_source_adapters
@@ -159,6 +158,21 @@ target_link_libraries(core_receiver
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(core_receiver
         PRIVATE -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
+if(USE_GENERIC_LAMBDAS)
+    set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+    set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+    target_compile_definitions(core_receiver
+        PRIVATE
+            "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+            "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+    )
+else()
+    target_compile_definitions(core_receiver
+        PRIVATE
+            -DHAS_GENERIC_LAMBDA=0
     )
 endif()
 

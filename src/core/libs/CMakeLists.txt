@@ -62,8 +62,9 @@ endif()
 
 target_link_libraries(core_libs
     PUBLIC
-        Boost::headers
+        Gnuradio::blocks
         Gnuradio::runtime
+        Gnuradio::pmt
         core_libs_supl
         core_system_parameters
         pvt_libs
@@ -73,6 +74,12 @@ target_link_libraries(core_libs
         Glog::glog
         Pugixml::pugixml
 )
+
+if(USE_GENERIC_LAMBDAS AND NOT GNURADIO_USES_STD_POINTERS)
+    target_link_libraries(core_libs PUBLIC Boost::headers)
+else()
+    target_link_libraries(core_libs PRIVATE Boost::headers)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(core_libs

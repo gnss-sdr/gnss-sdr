@@ -39,14 +39,10 @@ namespace my_rotl = std;
 #else
 namespace my_rotl
 {
-#ifndef _rotl
 #if HAS_GENERIC_LAMBDA
 auto rotl = [](auto x, auto n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
 #else
-#define rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))
-#endif
-#else
-#define rotl _rotl
+uint32_t rotl = [](uint32_t x, uint32_t n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
 #endif
 }  // namespace my_rotl
 #endif

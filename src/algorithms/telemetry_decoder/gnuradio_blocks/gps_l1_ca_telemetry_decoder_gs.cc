@@ -39,8 +39,16 @@ namespace my_rotl = std;
 #else
 namespace my_rotl
 {
-auto rotl = [](auto x, auto n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };  // Used in the parity check algorithm
-}
+#ifndef _rotl
+#if HAS_GENERIC_LAMBDA
+auto rotl = [](auto x, auto n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
+#else
+#define rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))
+#endif
+#else
+#define rotl _rotl
+#endif
+}  // namespace my_rotl
 #endif
 
 

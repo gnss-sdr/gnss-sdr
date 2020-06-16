@@ -42,7 +42,7 @@ namespace my_rotl
 #if HAS_GENERIC_LAMBDA
 auto rotl = [](auto x, auto n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
 #else
-uint32_t rotl = [](uint32_t x, uint32_t n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
+auto rotl = [](uint32_t x, uint32_t n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
 #endif
 }  // namespace my_rotl
 #endif

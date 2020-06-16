@@ -833,6 +833,7 @@ endif()
 # Detect availability of std::span
 ################################################################################
 unset(has_span CACHE)
+include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("
     #include <span>
     int main()

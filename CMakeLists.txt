@@ -833,13 +833,31 @@ endif()
 # Detect availability of std::span
 ################################################################################
 unset(has_span CACHE)
-include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("
     #include <span>
     int main()
     { std::span<float> s; }"
     has_span
 )
+
+
+
+################################################################################
+# Detect availability of std::rotl
+################################################################################
+unset(has_rotl CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 17)
+    check_cxx_source_compiles("
+        #include <bit>
+        #include <cstdint>
+        int main()
+        {
+            std::uint8_t i = 0b00011101;
+            auto k = std::rotl(i,0);
+        }"
+        has_rotl
+    )
+endif()
 
 
 

@@ -68,6 +68,12 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(has_rotl)
+    target_compile_definitions(telemetry_decoder_gr_blocks
+        PRIVATE -DCOMPILER_HAS_ROTL=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(telemetry_decoder_gr_blocks

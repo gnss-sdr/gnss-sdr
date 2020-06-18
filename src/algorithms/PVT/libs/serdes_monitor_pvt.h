@@ -71,7 +71,7 @@ public:
         return *this;
     }
 
-    inline std::string createProtobuffer(std::shared_ptr<Monitor_Pvt> monitor)  //!< Serialization into a string
+    inline std::string createProtobuffer(const Monitor_Pvt* monitor)  //!< Serialization into a string
     {
         monitor_.Clear();
 

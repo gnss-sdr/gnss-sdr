@@ -4288,7 +4288,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (flag_monitor_pvt_enabled)
                                 {
-                                    udp_sink_ptr->write_monitor_pvt(monitor_pvt);
+                                    udp_sink_ptr->write_monitor_pvt(monitor_pvt.get());
                                 }
                         }
                 }

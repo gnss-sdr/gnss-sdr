@@ -55,6 +55,7 @@ set(GNSS_SPLIBS_HEADERS
     conjugate_sc.h
     conjugate_ic.h
     gnss_sdr_create_directory.h
+    gnss_sdr_make_unique.h
     gnss_circular_deque.h
     geofunctions.h
     item_type_helpers.h

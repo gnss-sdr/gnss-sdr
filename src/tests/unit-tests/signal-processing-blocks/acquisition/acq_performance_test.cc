@@ -608,7 +608,7 @@ int AcquisitionPerformanceTest::run_receiver()
     init();
 
     int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
-    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
     if (implementation == "GPS_L1_CA_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);

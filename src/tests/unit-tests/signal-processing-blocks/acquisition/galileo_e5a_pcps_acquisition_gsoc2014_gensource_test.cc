@@ -553,7 +553,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
         auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -605,11 +605,10 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     // USING THE SIGNAL GENERATOR
 
     ASSERT_NO_THROW({
-        std::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
         filter->connect(top_block);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));

@@ -19,12 +19,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_sdr_make_unique.h"
 #include "string_converter.h"
 
 
 TEST(StringConverterTest, StringToBool)
 {
-    std::unique_ptr<StringConverter> converter(new StringConverter());
+    auto converter = std::make_unique<StringConverter>();
     bool conversion_result = converter->convert("false", true);
     bool expected_false = false;
     EXPECT_EQ(expected_false, conversion_result);
@@ -45,7 +46,7 @@ TEST(StringConverterTest, StringToSizeT)
 
 TEST(StringConverterTest, StringToBoolFail)
 {
-    std::unique_ptr<StringConverter> converter(new StringConverter());
+    auto converter = std::make_unique<StringConverter>();
     bool conversion_result = converter->convert("lse", true);
     bool expected_true = true;
     EXPECT_EQ(expected_true, conversion_result);
@@ -54,7 +55,7 @@ TEST(StringConverterTest, StringToBoolFail)
 
 TEST(StringConverterTest, StringToSizeTFail)
 {
-    std::unique_ptr<StringConverter> converter(new StringConverter());
+    auto converter = std::make_unique<StringConverter>();
     size_t conversion_result = converter->convert("false", 1);
     unsigned int expected1 = 1;
     EXPECT_EQ(expected1, conversion_result);

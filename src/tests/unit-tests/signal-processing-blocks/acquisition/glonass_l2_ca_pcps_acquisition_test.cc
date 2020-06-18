@@ -151,7 +151,7 @@ protected:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue;
     gr::top_block_sptr top_block;
-    GlonassL2CaPcpsAcquisition* acquisition;
+    std::shared_ptr<GlonassL2CaPcpsAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -437,8 +437,7 @@ void GlonassL2CaPcpsAcquisitionTest::stop_queue()
 TEST_F(GlonassL2CaPcpsAcquisitionTest, Instantiate)
 {
     config_1();
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
-    delete acquisition;
+    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
 }
 
 
@@ -451,13 +450,13 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
+    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition_2G", 1, 0);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
         auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
@@ -471,8 +470,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     }) << "Failure running the top_block.";
 
     std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
-
-    delete acquisition;
 }
 
 
@@ -482,7 +479,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
+    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition_2G", 1, 0);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -513,10 +510,9 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        std::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
+        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
@@ -561,8 +557,6 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
                 ch_thread.join();
             }) << "Failure while waiting the queue to stop";
         }
-
-    delete acquisition;
 }
 
 
@@ -571,7 +565,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     config_2();
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
+    acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition_2G", 1, 0);
     auto msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -602,10 +596,9 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        std::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
+        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
@@ -651,6 +644,4 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
                 ch_thread.join();
             }) << "Failure while waiting the queue to stop";
         }
-
-    delete acquisition;
 }

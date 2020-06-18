@@ -610,7 +610,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
                     top_block = gr::make_top_block("Tracking test");
 
-                    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
+                    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_1C", implementation, 1, 1);
                     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
                     auto msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();

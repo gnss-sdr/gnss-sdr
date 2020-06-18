@@ -3,15 +3,16 @@
  * \brief Interface of a GNSS receiver flow graph.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
- *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ *         Carles Fernandez-Prades, 2014-2020. cfernandez(at)cttc.es
  *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, an observables block and a pvt.
  *
- * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -20,7 +21,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H
@@ -61,7 +62,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);  // NOLINT(performance-unnecessary-value-param)
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);  // NOLINT(performance-unnecessary-value-param)
 
     /*!
      * \brief Destructor

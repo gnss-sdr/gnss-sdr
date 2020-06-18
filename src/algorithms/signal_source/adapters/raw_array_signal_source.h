@@ -39,7 +39,7 @@ class RawArraySignalSource : public GNSSBlockInterface
 public:
     RawArraySignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~RawArraySignalSource() = default;
 
@@ -78,7 +78,6 @@ private:
     std::string eth_device_;
     gr::block_sptr raw_array_source_;
     gr::blocks::file_sink::sptr file_sink_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif  // GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H

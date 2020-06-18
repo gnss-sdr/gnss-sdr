@@ -180,8 +180,8 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     bool quadrature_,
     bool rfdc_,
     bool bbdc_,
-    std::string filter_source_,
-    std::string filter_filename_,
+    std::string filter_source_,    // NOLINT(performance-unnecessary-value-param)
+    std::string filter_filename_,  // NOLINT(performance-unnecessary-value-param)
     float Fpass_,
     float Fstop_)
 

@@ -109,13 +109,13 @@ void Observables_Dump_Reader::close_obs_file()
 Observables_Dump_Reader::Observables_Dump_Reader(int n_channels_)
 {
     n_channels = n_channels_;
-    RX_time = new double[n_channels];
-    TOW_at_current_symbol_s = new double[n_channels];
-    Carrier_Doppler_hz = new double[n_channels];
-    Acc_carrier_phase_hz = new double[n_channels];
-    Pseudorange_m = new double[n_channels];
-    PRN = new double[n_channels];
-    valid = new double[n_channels];
+    RX_time = std::vector<double>(n_channels);
+    TOW_at_current_symbol_s = std::vector<double>(n_channels);
+    Carrier_Doppler_hz = std::vector<double>(n_channels);
+    Acc_carrier_phase_hz = std::vector<double>(n_channels);
+    Pseudorange_m = std::vector<double>(n_channels);
+    PRN = std::vector<double>(n_channels);
+    valid = std::vector<double>(n_channels);
 }
 
 
@@ -136,11 +136,4 @@ Observables_Dump_Reader::~Observables_Dump_Reader()
         {
             std::cerr << e.what() << '\n';
         }
-    delete[] RX_time;
-    delete[] TOW_at_current_symbol_s;
-    delete[] Carrier_Doppler_hz;
-    delete[] Acc_carrier_phase_hz;
-    delete[] Pseudorange_m;
-    delete[] PRN;
-    delete[] valid;
 }

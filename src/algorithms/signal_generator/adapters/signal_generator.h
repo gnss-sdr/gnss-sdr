@@ -44,7 +44,7 @@ class SignalGenerator : public GNSSBlockInterface
 public:
     SignalGenerator(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue);
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~SignalGenerator() = default;
 
@@ -86,7 +86,6 @@ private:
 #endif
     gr::blocks::vector_to_stream::sptr vector_to_stream_;
     gr::blocks::file_sink::sptr file_sink_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue_;
 };
 
 #endif  // GNSS_SDR_SIGNAL_GENERATOR_H

@@ -26,7 +26,7 @@
 
 
 LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    const std::string& role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./labsat_output.dat";
@@ -42,7 +42,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channel_selector, queue_);
+            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channel_selector, queue);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
         }

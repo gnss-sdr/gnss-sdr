@@ -18,6 +18,7 @@
  */
 
 
+#include "gnss_sdr_make_unique.h"
 #include "rtcm_printer.h"
 #include <string>
 
@@ -31,7 +32,7 @@ TEST(RtcmPrinterTest, Instantiate)
     bool rtcm_file_output_enabled = false;
     unsigned short rtcm_tcp_port = 2101;
     unsigned short rtcm_station_id = 1234;
-    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, rtcm_file_output_enabled, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname));
+    auto RTCM_printer = std::make_unique<Rtcm_Printer>(filename, rtcm_file_output_enabled, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
 }
 
 
@@ -45,7 +46,7 @@ TEST(RtcmPrinterTest, Run)
     unsigned short rtcm_tcp_port = 2101;
     unsigned short rtcm_station_id = 1234;
 
-    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, rtcm_file_output_enabled, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname));
+    auto RTCM_printer = std::make_unique<Rtcm_Printer>(filename, rtcm_file_output_enabled, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
 
     std::string reference_msg = "D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98";
 

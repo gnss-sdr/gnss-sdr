@@ -25,6 +25,7 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_make_unique.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>
@@ -80,7 +81,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));
+    auto fft_if = std::make_unique<gr::fft::fft_complex>(nsamples_total, true);
     // allocate memory to compute all the PRNs and compute all the possible codes
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);

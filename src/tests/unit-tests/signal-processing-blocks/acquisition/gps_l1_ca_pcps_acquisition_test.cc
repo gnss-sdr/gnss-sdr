@@ -291,10 +291,10 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ConnectAndRun /*unused*/)
         acquisition->connect(top_block);
 #if GNURADIO_USES_STD_POINTERS
         auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
 #else
         boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
 #endif
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);

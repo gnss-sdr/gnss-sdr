@@ -27,6 +27,7 @@ endif()
 
 target_link_libraries(gnss-sdr
     PRIVATE
+        algorithms_libs
         core_receiver
         Boost::headers
         Boost::thread

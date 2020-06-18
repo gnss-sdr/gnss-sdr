@@ -38,6 +38,7 @@ class Pvt_Solution
 {
 public:
     Pvt_Solution();
+    virtual ~Pvt_Solution() = default;
     void set_pre_2009_file(bool pre_2009_file);  //!< Flag for the week rollover computation in post processing mode for signals older than 2009
     double get_time_offset_s() const;            //!< Get RX time offset [s]
     void set_time_offset_s(double offset);       //!< Set RX time offset [s]
@@ -122,6 +123,11 @@ public:
      * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
      */
     int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
+
+    virtual double get_hdop() const = 0;
+    virtual double get_vdop() const = 0;
+    virtual double get_pdop() const = 0;
+    virtual double get_gdop() const = 0;
 
 protected:
     bool d_pre_2009_file;  // Flag to correct week rollover in post processing mode for signals older than 2009

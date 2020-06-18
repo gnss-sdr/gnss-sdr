@@ -32,7 +32,7 @@
 
 MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -205,7 +205,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
-    valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
+    valve_ = gnss_sdr_make_valve(item_size_, samples_, queue);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
     if (enable_throttle_control_)

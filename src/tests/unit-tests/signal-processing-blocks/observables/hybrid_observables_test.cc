@@ -74,7 +74,7 @@
 #include <utility>
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
@@ -140,9 +140,9 @@ HybridObservablesTest_msg_rx::HybridObservablesTest_msg_rx() : gr::block("Hybrid
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&HybridObservablesTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&HybridObservablesTest_msg_rx::msg_handler_events, this, _1));
@@ -206,9 +206,9 @@ HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() : gr::block
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&HybridObservablesTest_tlm_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&HybridObservablesTest_tlm_msg_rx::msg_handler_events, this, _1));
@@ -1806,9 +1806,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
             // create the tracking channels and create the telemetry decoders
 
-            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
+            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
             tracking_ch_vec.push_back(std::dynamic_pointer_cast<TrackingInterface>(trk_));
-            std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config, "TelemetryDecoder", config->property("TelemetryDecoder.implementation", std::string("undefined")), 1, 1);
+            std::shared_ptr<GNSSBlockInterface> tlm_ = factory->GetBlock(config.get(), "TelemetryDecoder", config->property("TelemetryDecoder.implementation", std::string("undefined")), 1, 1);
             tlm_ch_vec.push_back(std::dynamic_pointer_cast<TelemetryDecoderInterface>(tlm_));
 
             // create null sinks for observables output
@@ -1843,7 +1843,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     auto dummy_msg_rx_trk = HybridObservablesTest_msg_rx_make();
     auto dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_make();
     // Observables
-    std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
+    std::shared_ptr<ObservablesInterface> observables = std::make_shared<HybridObservables>(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size());
 
     for (auto& n : tracking_ch_vec)
         {

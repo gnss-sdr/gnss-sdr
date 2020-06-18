@@ -191,12 +191,12 @@ private:
     int32_t d_display_rate_ms;
     int32_t d_report_rate_ms;
 
-    std::shared_ptr<Rinex_Printer> rp;
-    std::shared_ptr<Kml_Printer> d_kml_dump;
-    std::shared_ptr<Gpx_Printer> d_gpx_dump;
-    std::shared_ptr<Nmea_Printer> d_nmea_printer;
-    std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
-    std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
+    std::unique_ptr<Rinex_Printer> rp;
+    std::unique_ptr<Kml_Printer> d_kml_dump;
+    std::unique_ptr<Gpx_Printer> d_gpx_dump;
+    std::unique_ptr<Nmea_Printer> d_nmea_printer;
+    std::unique_ptr<GeoJSON_Printer> d_geojson_printer;
+    std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
 
     bool d_geojson_output_enabled;

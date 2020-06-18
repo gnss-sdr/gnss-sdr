@@ -8,22 +8,22 @@
 #
 
 
-set(PVT_ADAPTER_SOURCES
-    rtklib_pvt.cc
-)
-
-set(PVT_ADAPTER_HEADERS
-    rtklib_pvt.h
-)
-
-source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
-
-add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(pvt_adapters STATIC)
+    target_sources(pvt_adapters
+        PRIVATE
+            rtklib_pvt.cc
+        PUBLIC
+            rtklib_pvt.h
+    )
+else()
+    source_group(Headers FILES rtklib_pvt.h)
+    add_library(pvt_adapters rtklib_pvt.cc rtklib_pvt.h)
+endif()
 
 target_link_libraries(pvt_adapters
     PUBLIC
         pvt_gr_blocks
-        algorithms_libs_rtklib
     PRIVATE
         gnss_sdr_flags
         Glog::glog
@@ -35,8 +35,11 @@ target_include_directories(pvt_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-if(Boost_VERSION_STRING VERSION_LESS 1.58.0)
-    target_compile_definitions(pvt_adapters PRIVATE -DOLD_BOOST=1)
+if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
+    target_compile_definitions(pvt_adapters
+        PRIVATE
+            -DUSE_OLD_BOOST_MATH_COMMON_FACTOR=1
+    )
 endif()
 
 if(ENABLE_CLANG_TIDY)

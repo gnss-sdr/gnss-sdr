@@ -40,238 +40,10 @@
 #include <utility>
 #include <vector>
 
-void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
-{
-    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
-    int max_value = 0;
-    int tx_fd;  // DMA descriptor
-    std::ifstream infile1;
-    infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-    try
-        {
-            infile1.open(Filename1, std::ios::binary);
-        }
-    catch (const std::ifstream::failure &e)
-        {
-            std::cerr << "Exception opening file " << Filename1 << std::endl;
-            return;
-        }
-
-    std::ifstream infile2;
-    infile2.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-        {
-            infile2.open(Filename2, std::ios::binary);
-        }
-    catch (const std::ifstream::failure &e)
-        {
-            // could not exist
-        }
-
-    // rx signal
-    std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
-
-    int nread_elements;
-    int nread_elements2;
-    int file_completed = 0;
-    int num_transferred_bytes;
-
-    //**************************************************************************
-    // Open DMA device
-    //**************************************************************************
-    tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 0)
-        {
-            std::cout << "Cannot open loop device" << std::endl;
-            return;
-        }
-
-    //**************************************************************************
-    // Open input file
-    //**************************************************************************
-    int nsamples = 0;
-
-    while ((file_completed == 0) && (enable_DMA == true))
-        {
-            unsigned int dma_index = 0;
-
-            if (FreqBand == "L1")
-                {
-                    try
-                        {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
-                        }
-                    if (infile1)
-                        {
-                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements = 0;
-                        }
-                    nsamples += (nread_elements / 2);
-
-                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
-                        {
-                            // channel 1 (queue 1)
-                            input_samples_dma[dma_index] = 0;
-                            input_samples_dma[dma_index + 1] = 0;
-                            // channel 0 (queue 0)
-                            input_samples_dma[dma_index + 2] = input_samples[index0];
-                            input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
-
-                            dma_index += 4;
-                        }
-                }
-            else if (FreqBand == "L2")
-                {
-                    try
-                        {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
-                        }
-                    if (infile1)
-                        {
-                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements = 0;
-                        }
-                    nsamples += (nread_elements / 2);
-
-                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
-                        {
-                            // channel 1 (queue 1)
-                            input_samples_dma[dma_index] = input_samples[index0];
-                            input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
-                            // channel 0 (queue 0)
-                            input_samples_dma[dma_index + 2] = 0;
-                            input_samples_dma[dma_index + 3] = 0;
-
-                            dma_index += 4;
-                        }
-                }
-            else if (FreqBand == "L1L2")
-                {
-                    try
-                        {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
-                        }
-                    if (infile1)
-                        {
-                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements = 0;
-                        }
-                    try
-                        {
-                            infile2.read(reinterpret_cast<char *>(input_samples2.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
-                        }
-                    if (infile2)
-                        {
-                            nread_elements2 = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements2 = 0;
-                        }
-
-                    if (nread_elements > nread_elements2)
-                        {
-                            nread_elements = nread_elements2;  // take the smallest
-                        }
-
-                    nsamples += (nread_elements / 2);
-
-                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
-                        {
-                            input_samples[index0] = input_samples[index0];
-                            input_samples[index0 + 1] = input_samples[index0 + 1];
-
-                            if (input_samples[index0] > max_value)
-                                {
-                                    max_value = input_samples[index0];
-                                }
-                            else if (-input_samples[index0] > max_value)
-                                {
-                                    max_value = -input_samples[index0];
-                                }
-
-                            if (input_samples[index0 + 1] > max_value)
-                                {
-                                    max_value = input_samples[index0 + 1];
-                                }
-                            else if (-input_samples[index0 + 1] > max_value)
-                                {
-                                    max_value = -input_samples[index0 + 1];
-                                }
-
-                            // channel 1 (queue 1)
-                            input_samples_dma[dma_index] = input_samples2[index0];
-                            input_samples_dma[dma_index + 1] = input_samples2[index0 + 1];
-                            // channel 0 (queue 0)
-                            input_samples_dma[dma_index + 2] = input_samples[index0];
-                            input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
-
-                            dma_index += 4;
-                        }
-                }
-
-            if (nread_elements > 0)
-                {
-                    num_transferred_bytes = nread_elements * 2;
-                    int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
-                    if (num_bytes_sent != num_transferred_bytes)
-                        {
-                            std::cerr << "Error: DMA could not send all the required samples " << std::endl;
-                        }
-
-                    // Throttle the DMA
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                }
-
-            if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)
-                {
-                    file_completed = 1;
-                }
-        }
-
-    try
-        {
-            infile1.close();
-            infile2.close();
-        }
-    catch (const std::ifstream::failure &e)
-        {
-            std::cerr << "Exception closing files " << Filename1 << " and " << Filename2 << std::endl;
-        }
-}
-
 
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_gain_mode("slow_attack");
     double default_tx_attenuation_db = -10.0;
@@ -560,6 +332,235 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
                                 }
                         }
                 }
+        }
+}
+
+
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
+{
+    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
+    int max_value = 0;
+    int tx_fd;  // DMA descriptor
+    std::ifstream infile1;
+    infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+    try
+        {
+            infile1.open(Filename1, std::ios::binary);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Exception opening file " << Filename1 << std::endl;
+            return;
+        }
+
+    std::ifstream infile2;
+    infile2.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+        {
+            infile2.open(Filename2, std::ios::binary);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            // could not exist
+        }
+
+    // rx signal
+    std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
+    std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
+    std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
+
+    int nread_elements;
+    int nread_elements2;
+    int file_completed = 0;
+    int num_transferred_bytes;
+
+    //**************************************************************************
+    // Open DMA device
+    //**************************************************************************
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 0)
+        {
+            std::cout << "Cannot open loop device" << std::endl;
+            return;
+        }
+
+    //**************************************************************************
+    // Open input file
+    //**************************************************************************
+    int nsamples = 0;
+
+    while ((file_completed == 0) && (enable_DMA == true))
+        {
+            unsigned int dma_index = 0;
+
+            if (FreqBand == "L1")
+                {
+                    try
+                        {
+                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                        }
+                    if (infile1)
+                        {
+                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
+                        }
+                    else
+                        {
+                            nread_elements = 0;
+                        }
+                    nsamples += (nread_elements / 2);
+
+                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+                        {
+                            // channel 1 (queue 1)
+                            input_samples_dma[dma_index] = 0;
+                            input_samples_dma[dma_index + 1] = 0;
+                            // channel 0 (queue 0)
+                            input_samples_dma[dma_index + 2] = input_samples[index0];
+                            input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
+
+                            dma_index += 4;
+                        }
+                }
+            else if (FreqBand == "L2")
+                {
+                    try
+                        {
+                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                        }
+                    if (infile1)
+                        {
+                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
+                        }
+                    else
+                        {
+                            nread_elements = 0;
+                        }
+                    nsamples += (nread_elements / 2);
+
+                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+                        {
+                            // channel 1 (queue 1)
+                            input_samples_dma[dma_index] = input_samples[index0];
+                            input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
+                            // channel 0 (queue 0)
+                            input_samples_dma[dma_index + 2] = 0;
+                            input_samples_dma[dma_index + 3] = 0;
+
+                            dma_index += 4;
+                        }
+                }
+            else if (FreqBand == "L1L2")
+                {
+                    try
+                        {
+                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                        }
+                    if (infile1)
+                        {
+                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
+                        }
+                    else
+                        {
+                            nread_elements = 0;
+                        }
+                    try
+                        {
+                            infile2.read(reinterpret_cast<char *>(input_samples2.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                        }
+                    if (infile2)
+                        {
+                            nread_elements2 = MAX_INPUT_SAMPLES_TOTAL * 2;
+                        }
+                    else
+                        {
+                            nread_elements2 = 0;
+                        }
+
+                    if (nread_elements > nread_elements2)
+                        {
+                            nread_elements = nread_elements2;  // take the smallest
+                        }
+
+                    nsamples += (nread_elements / 2);
+
+                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+                        {
+                            input_samples[index0] = input_samples[index0];
+                            input_samples[index0 + 1] = input_samples[index0 + 1];
+
+                            if (input_samples[index0] > max_value)
+                                {
+                                    max_value = input_samples[index0];
+                                }
+                            else if (-input_samples[index0] > max_value)
+                                {
+                                    max_value = -input_samples[index0];
+                                }
+
+                            if (input_samples[index0 + 1] > max_value)
+                                {
+                                    max_value = input_samples[index0 + 1];
+                                }
+                            else if (-input_samples[index0 + 1] > max_value)
+                                {
+                                    max_value = -input_samples[index0 + 1];
+                                }
+
+                            // channel 1 (queue 1)
+                            input_samples_dma[dma_index] = input_samples2[index0];
+                            input_samples_dma[dma_index + 1] = input_samples2[index0 + 1];
+                            // channel 0 (queue 0)
+                            input_samples_dma[dma_index + 2] = input_samples[index0];
+                            input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
+
+                            dma_index += 4;
+                        }
+                }
+
+            if (nread_elements > 0)
+                {
+                    num_transferred_bytes = nread_elements * 2;
+                    int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
+                    if (num_bytes_sent != num_transferred_bytes)
+                        {
+                            std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+                        }
+
+                    // Throttle the DMA
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+
+            if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)
+                {
+                    file_completed = 1;
+                }
+        }
+
+    try
+        {
+            infile1.close();
+            infile2.close();
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Exception closing files " << Filename1 << " and " << Filename2 << std::endl;
         }
 }
 

@@ -30,6 +30,7 @@ ChannelFsm::ChannelFsm()
     trk_ = nullptr;
     channel_ = 0U;
     d_state = 0U;
+    queue_ = nullptr;
 }
 
 
@@ -38,6 +39,7 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_
     trk_ = nullptr;
     channel_ = 0U;
     d_state = 0U;
+    queue_ = nullptr;
 }
 
 
@@ -168,10 +170,10 @@ void ChannelFsm::set_telemetry(std::shared_ptr<TelemetryDecoderInterface> teleme
 }
 
 
-void ChannelFsm::set_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+void ChannelFsm::set_queue(Concurrent_Queue<pmt::pmt_t>* queue)
 {
     std::lock_guard<std::mutex> lk(mx);
-    queue_ = std::move(queue);
+    queue_ = queue;
 }
 
 

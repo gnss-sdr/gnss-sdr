@@ -34,75 +34,41 @@ class Gnss_Synchro
 {
 public:
     // Satellite and signal info
-    char System;         //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
-    char Signal[3];      //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
-    uint32_t PRN;        //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
-    int32_t Channel_ID;  //!< Set by Channel constructor
+    char System{};         //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
+    char Signal[3]{};      //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
+    uint32_t PRN{};        //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
+    int32_t Channel_ID{};  //!< Set by Channel constructor
 
     // Acquisition
-    double Acq_delay_samples;          //!< Set by Acquisition processing block
-    double Acq_doppler_hz;             //!< Set by Acquisition processing block
-    uint64_t Acq_samplestamp_samples;  //!< Set by Acquisition processing block
-    uint32_t Acq_doppler_step;         //!< Set by Acquisition processing block
-    bool Flag_valid_acquisition;       //!< Set by Acquisition processing block
+    double Acq_delay_samples{};          //!< Set by Acquisition processing block
+    double Acq_doppler_hz{};             //!< Set by Acquisition processing block
+    uint64_t Acq_samplestamp_samples{};  //!< Set by Acquisition processing block
+    uint32_t Acq_doppler_step{};         //!< Set by Acquisition processing block
+    bool Flag_valid_acquisition{};       //!< Set by Acquisition processing block
 
     // Tracking
-    int64_t fs;                        //!< Set by Tracking processing block
-    double Prompt_I;                   //!< Set by Tracking processing block
-    double Prompt_Q;                   //!< Set by Tracking processing block
-    double CN0_dB_hz;                  //!< Set by Tracking processing block
-    double Carrier_Doppler_hz;         //!< Set by Tracking processing block
-    double Carrier_phase_rads;         //!< Set by Tracking processing block
-    double Code_phase_samples;         //!< Set by Tracking processing block
-    uint64_t Tracking_sample_counter;  //!< Set by Tracking processing block
-    bool Flag_valid_symbol_output;     //!< Set by Tracking processing block
-    int32_t correlation_length_ms;     //!< Set by Tracking processing block
+    int64_t fs{};                        //!< Set by Tracking processing block
+    double Prompt_I{};                   //!< Set by Tracking processing block
+    double Prompt_Q{};                   //!< Set by Tracking processing block
+    double CN0_dB_hz{};                  //!< Set by Tracking processing block
+    double Carrier_Doppler_hz{};         //!< Set by Tracking processing block
+    double Carrier_phase_rads{};         //!< Set by Tracking processing block
+    double Code_phase_samples{};         //!< Set by Tracking processing block
+    uint64_t Tracking_sample_counter{};  //!< Set by Tracking processing block
+    bool Flag_valid_symbol_output{};     //!< Set by Tracking processing block
+    int32_t correlation_length_ms{};     //!< Set by Tracking processing block
 
     // Telemetry Decoder
-    bool Flag_valid_word;               //!< Set by Telemetry Decoder processing block
-    uint32_t TOW_at_current_symbol_ms;  //!< Set by Telemetry Decoder processing block
+    bool Flag_valid_word{};               //!< Set by Telemetry Decoder processing block
+    uint32_t TOW_at_current_symbol_ms{};  //!< Set by Telemetry Decoder processing block
 
     // Observables
-    double Pseudorange_m;         //!< Set by Observables processing block
-    double RX_time;               //!< Set by Observables processing block
-    bool Flag_valid_pseudorange;  //!< Set by Observables processing block
-    double interp_TOW_ms;         //!< Set by Observables processing block
+    double Pseudorange_m{};         //!< Set by Observables processing block
+    double RX_time{};               //!< Set by Observables processing block
+    bool Flag_valid_pseudorange{};  //!< Set by Observables processing block
+    double interp_TOW_ms{};         //!< Set by Observables processing block
 
-    /// Constructor
-    Gnss_Synchro()
-    {
-        System = 0;
-        Signal[0] = 0;
-        Signal[1] = 0;
-        Signal[2] = '\0';
-        PRN = 0U;
-        Channel_ID = 0;
-
-        Acq_delay_samples = 0.0;
-        Acq_doppler_hz = 0.0;
-        Acq_samplestamp_samples = 0UL;
-        Acq_doppler_step = 0U;
-        Flag_valid_acquisition = false;
-
-        fs = 0L;
-        Prompt_I = 0.0;
-        Prompt_Q = 0.0;
-        CN0_dB_hz = 0.0;
-        Carrier_Doppler_hz = 0.0;
-        Carrier_phase_rads = 0.0;
-        Code_phase_samples = 0.0;
-        Tracking_sample_counter = 0UL;
-        Flag_valid_symbol_output = false;
-        correlation_length_ms = 0;
-
-        Flag_valid_word = false;
-        TOW_at_current_symbol_ms = 0U;
-
-        Pseudorange_m = 0.0;
-        RX_time = 0.0;
-        Flag_valid_pseudorange = false;
-        interp_TOW_ms = 0.0;
-    };
+    Gnss_Synchro() = default;  //!< Default constructor
 
     ~Gnss_Synchro() = default;  //!< Default destructor
 

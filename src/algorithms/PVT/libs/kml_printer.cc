@@ -20,7 +20,7 @@
  */
 
 #include "kml_printer.h"
-#include "rtklib_solver.h"
+#include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <cstdlib>    // for mkstemp
@@ -231,7 +231,7 @@ bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
 }
 
 
-bool Kml_Printer::print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values)
+bool Kml_Printer::print_position(const Pvt_Solution* position, bool print_average_values)
 {
     double latitude;
     double longitude;
@@ -239,15 +239,13 @@ bool Kml_Printer::print_position(const std::shared_ptr<Rtklib_Solver>& position,
 
     positions_printed = true;
 
-    const std::shared_ptr<Rtklib_Solver>& position_ = position;
+    double speed_over_ground = position->get_speed_over_ground();    // expressed in m/s
+    double course_over_ground = position->get_course_over_ground();  // expressed in deg
 
-    double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
-    double course_over_ground = position_->get_course_over_ground();  // expressed in deg
-
-    double hdop = position_->get_hdop();
-    double vdop = position_->get_vdop();
-    double pdop = position_->get_pdop();
-    std::string utc_time = to_iso_extended_string(position_->get_position_UTC_time());
+    double hdop = position->get_hdop();
+    double vdop = position->get_vdop();
+    double pdop = position->get_pdop();
+    std::string utc_time = to_iso_extended_string(position->get_position_UTC_time());
     if (utc_time.length() < 23)
         {
             utc_time += ".";
@@ -257,15 +255,15 @@ bool Kml_Printer::print_position(const std::shared_ptr<Rtklib_Solver>& position,
 
     if (print_average_values == false)
         {
-            latitude = position_->get_latitude();
-            longitude = position_->get_longitude();
-            height = position_->get_height();
+            latitude = position->get_latitude();
+            longitude = position->get_longitude();
+            height = position->get_height();
         }
     else
         {
-            latitude = position_->get_avg_latitude();
-            longitude = position_->get_avg_longitude();
-            height = position_->get_avg_height();
+            latitude = position->get_avg_latitude();
+            longitude = position->get_avg_longitude();
+            height = position->get_avg_height();
         }
 
     if (kml_file.is_open() && tmp_file.is_open())

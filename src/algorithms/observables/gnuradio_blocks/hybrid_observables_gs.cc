@@ -37,7 +37,7 @@
 
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 
 #if HAS_STD_FILESYSTEM
@@ -74,9 +74,9 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
     this->message_port_register_in(pmt::mp("pvt_to_observables"));
     this->set_msg_handler(pmt::mp("pvt_to_observables"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t &&PH1) { msg_handler_pvt_to_observables(PH1); });
+        [this](auto &&PH1) { msg_handler_pvt_to_observables(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, boost::placeholders::_1));
 #else
         boost::bind(&hybrid_observables_gs::msg_handler_pvt_to_observables, this, _1));
@@ -653,7 +653,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
 
     if (d_Rx_clock_buffer.size() == d_Rx_clock_buffer.capacity())
         {
-            std::vector<Gnss_Synchro> epoch_data;
+            std::vector<Gnss_Synchro> epoch_data(d_nchannels_out);
             int32_t n_valid = 0;
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
@@ -672,7 +672,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             n_valid++;
                         }
-                    epoch_data.push_back(interpolated_gnss_synchro);
+                    epoch_data[n] = interpolated_gnss_synchro;
                 }
 
             if (T_rx_TOW_set)

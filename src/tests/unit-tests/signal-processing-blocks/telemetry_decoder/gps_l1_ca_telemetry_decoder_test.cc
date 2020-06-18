@@ -52,7 +52,7 @@
 #include <gtest/gtest.h>
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 #if GNURADIO_USES_STD_POINTERS
 #include <memory>
@@ -108,9 +108,9 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::GpsL1CADllPllTelemetryDecoderTest_msg_
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_events, this, _1));
@@ -168,7 +168,7 @@ GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::GpsL1CADllPllTelemetryDecoderTest_
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
         boost::bind(&GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #endif
@@ -393,7 +393,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
-    std::shared_ptr<TelemetryDecoderInterface> tlm(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C", 1, 1));
+    std::shared_ptr<TelemetryDecoderInterface> tlm = std::make_shared<GpsL1CaTelemetryDecoder>(config.get(), "TelemetryDecoder_1C", 1, 1);
     tlm->set_channel(0);
 
     std::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> tlm_msg_rx = GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();

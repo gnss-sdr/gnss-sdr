@@ -16,12 +16,21 @@ set(SYSTEM_TESTING_LIB_SOURCES
 file(GLOB SYSTEM_TESTING_LIB_HEADERS "*.h")
 list(SORT SYSTEM_TESTING_LIB_HEADERS)
 
-add_library(system_testing_lib
-    ${SYSTEM_TESTING_LIB_SOURCES}
-    ${SYSTEM_TESTING_LIB_HEADERS}
-)
-
-source_group(Headers FILES ${SYSTEM_TESTING_LIB_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(system_testing_lib STATIC)
+    target_sources(system_testing_lib
+        PRIVATE
+            ${SYSTEM_TESTING_LIB_SOURCES}
+        PUBLIC
+            ${SYSTEM_TESTING_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${SYSTEM_TESTING_LIB_HEADERS})
+    add_library(system_testing_lib
+        ${SYSTEM_TESTING_LIB_SOURCES}
+        ${SYSTEM_TESTING_LIB_HEADERS}
+    )
+endif()
 
 target_link_libraries(system_testing_lib
     PUBLIC

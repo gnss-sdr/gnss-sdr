@@ -29,17 +29,17 @@
 #include <utility>  // for std::move
 
 
-Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, const std::shared_ptr<AcquisitionInterface>& acq,
-    const std::shared_ptr<TrackingInterface>& trk, const std::shared_ptr<TelemetryDecoderInterface>& nav,
-    const std::string& role, const std::string& implementation, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t> >& queue)
+Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
+    std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
+    const std::string& role, const std::string& implementation, Concurrent_Queue<pmt::pmt_t>* queue)
 {
-    acq_ = acq;
-    trk_ = trk;
-    nav_ = nav;
+    acq_ = std::move(acq);
+    trk_ = std::move(trk);
+    nav_ = std::move(nav);
+    queue_ = queue;
     role_ = role;
     implementation_ = implementation;
     channel_ = channel;
-    queue_ = queue;
     channel_fsm_ = std::make_shared<ChannelFsm>();
 
     flag_enable_fpga = configuration->property("GNSS-SDR.enable_FPGA", false);

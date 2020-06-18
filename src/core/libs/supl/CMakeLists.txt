@@ -9,23 +9,40 @@
 
 file(GLOB ASN_RRLP_SOURCES "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp/*.c")
 list(SORT ASN_RRLP_SOURCES)
+file(GLOB ASN_RRLP_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp/*.h")
+list(SORT ASN_RRLP_HEADERS)
 file(GLOB ASN_SUPL_SOURCES "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.c")
 list(SORT ASN_SUPL_SOURCES)
+file(GLOB ASN_SUPL_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.h")
+list(SORT ASN_SUPL_HEADERS)
 
-set(SUPL_SOURCES
-    supl.c
-)
-
-set(MY_C_FLAGS "")
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        set(MY_C_FLAGS "${MY_C_FLAGS} -Wno-parentheses-equality")
-    endif()
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(core_libs_supl STATIC)
+    target_sources(core_libs_supl
+        PRIVATE
+            ${ASN_RRLP_SOURCES}
+            ${ASN_SUPL_SOURCES}
+            ${ASN_RRLP_HEADERS}
+            ${ASN_SUPL_HEADERS}
+            ${CMAKE_CURRENT_LIST_DIR}/supl.c
+        PUBLIC
+            ${CMAKE_CURRENT_LIST_DIR}/supl.h
+    )
+else()
+    add_library(core_libs_supl
+        STATIC
+            ${ASN_RRLP_SOURCES}
+            ${ASN_SUPL_SOURCES}
+            supl.c
+    )
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
-
-add_library(core_libs_supl STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        set(MY_C_FLAGS -Wno-parentheses-equality)
+        target_compile_options(core_libs_supl PUBLIC $<$<COMPILE_LANGUAGE:C>:${MY_C_FLAGS}>)
+    endif()
+endif()
 
 if(OPENSSL_FOUND)
     target_compile_definitions(core_libs_supl PUBLIC -DUSE_OPENSSL_FALLBACK=1)

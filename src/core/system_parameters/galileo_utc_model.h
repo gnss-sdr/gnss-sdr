@@ -33,30 +33,30 @@
 class Galileo_Utc_Model
 {
 public:
-    // Word type 6: GST-UTC conversion parameters
-    double A0_6;
-    double A1_6;
-    int32_t Delta_tLS_6;
-    int32_t t0t_6;   //!< UTC data reference Time of Week [s]
-    int32_t WNot_6;  //!< UTC data reference Week number [week]
-    int32_t WN_LSF_6;
-    int32_t DN_6;
-    int32_t Delta_tLSF_6;
-    bool flag_utc_model;
-
-    // GPS to Galileo GST conversion parameters
-    double A_0G_10;
-    double A_1G_10;
-    int32_t t_0G_10;
-    int32_t WN_0G_10;
-
-    // double TOW_6;
-    double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
-
     /*!
      * Default constructor
      */
-    Galileo_Utc_Model();
+    Galileo_Utc_Model() = default;
+
+    // Word type 6: GST-UTC conversion parameters
+    double A0_6{};
+    double A1_6{};
+    int32_t Delta_tLS_6{};
+    int32_t t0t_6{};   //!< UTC data reference Time of Week [s]
+    int32_t WNot_6{};  //!< UTC data reference Week number [week]
+    int32_t WN_LSF_6{};
+    int32_t DN_6{};
+    int32_t Delta_tLSF_6{};
+    bool flag_utc_model{};
+
+    // GPS to Galileo GST conversion parameters
+    double A_0G_10{};
+    double A_1G_10{};
+    int32_t t_0G_10{};
+    int32_t WN_0G_10{};
+
+    // double TOW_6;
+    double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
 
     template <class Archive>
 

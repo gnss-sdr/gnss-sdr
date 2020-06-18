@@ -868,14 +868,6 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 }
             d_num_noncoherent_integrations_counter = 0U;
             d_positive_acq = 0;
-            // Reset grid
-            for (uint32_t i = 0; i < d_num_doppler_bins; i++)
-                {
-                    for (uint32_t k = 0; k < d_fft_size; k++)
-                        {
-                            d_magnitude_grid[i][k] = 0.0;
-                        }
-                }
         }
 }
 

@@ -31,7 +31,7 @@
 
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
+    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -204,7 +204,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             if (samples_.at(i) != 0ULL)
                 {
                     LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
-                    valve_.emplace_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
+                    valve_.emplace_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 

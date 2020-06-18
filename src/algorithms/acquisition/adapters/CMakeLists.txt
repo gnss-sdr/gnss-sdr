@@ -84,24 +84,27 @@ endif()
 list(SORT ACQ_ADAPTER_HEADERS)
 list(SORT ACQ_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
-
-add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(acquisition_adapters STATIC)
+    target_sources(acquisition_adapters
+        PRIVATE
+            ${ACQ_ADAPTER_SOURCES}
+        PUBLIC
+            ${ACQ_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
+    add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
+endif()
 
 target_link_libraries(acquisition_adapters
     PUBLIC
-        algorithms_libs
         acquisition_gr_blocks
-        acquisition_libs
-        channel_libs
-        core_system_parameters
         Gnuradio::blocks
     PRIVATE
         gnss_sdr_flags
         Boost::headers
-        Gflags::gflags
         Glog::glog
-        Gnuradio::fft
 )
 
 if(GNURADIO_USES_STD_POINTERS)
@@ -119,6 +122,8 @@ endif()
 if(ENABLE_FPGA)
     target_link_libraries(acquisition_adapters
         PRIVATE
+            algorithms_libs
+            Gnuradio::fft
             Volk::volk
             Volkgnsssdr::volkgnsssdr
     )

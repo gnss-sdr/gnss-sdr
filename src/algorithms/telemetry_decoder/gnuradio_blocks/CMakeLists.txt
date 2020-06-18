@@ -34,12 +34,21 @@ set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_SOURCES)
 
-source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-
-add_library(telemetry_decoder_gr_blocks
-    ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
-    ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
-)
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(telemetry_decoder_gr_blocks STATIC)
+    target_sources(telemetry_decoder_gr_blocks
+        PRIVATE
+            ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
+    add_library(telemetry_decoder_gr_blocks
+        ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
+        ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
+    )
+endif()
 
 target_link_libraries(telemetry_decoder_gr_blocks
     PUBLIC
@@ -56,6 +65,27 @@ target_link_libraries(telemetry_decoder_gr_blocks
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(telemetry_decoder_gr_blocks
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+if(has_rotl)
+    target_compile_definitions(telemetry_decoder_gr_blocks
+        PRIVATE -DCOMPILER_HAS_ROTL=1
+    )
+endif()
+
+if(USE_GENERIC_LAMBDAS)
+    set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+    set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+    target_compile_definitions(telemetry_decoder_gr_blocks
+        PRIVATE
+            "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+            "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+    )
+else()
+    target_compile_definitions(telemetry_decoder_gr_blocks
+        PRIVATE
+            -DHAS_GENERIC_LAMBDA=0
     )
 endif()
 

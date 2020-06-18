@@ -27,120 +27,18 @@ m * \file gps_navigation_message.cc
 #include <limits>    // for std::numeric_limits
 
 
-void Gps_Navigation_Message::reset()
+Gps_Navigation_Message::Gps_Navigation_Message()
 {
-    b_valid_ephemeris_set_flag = false;
-    d_TOW = 0;
-    d_TOW_SF1 = 0;
-    d_TOW_SF2 = 0;
-    d_TOW_SF3 = 0;
-    d_TOW_SF4 = 0;
-    d_TOW_SF5 = 0;
-    d_IODE_SF2 = 0;
-    d_IODE_SF3 = 0;
-    d_Crs = 0.0;
-    d_Delta_n = 0.0;
-    d_M_0 = 0.0;
-    d_Cuc = 0.0;
-    d_e_eccentricity = 0.0;
-    d_Cus = 0.0;
-    d_sqrt_A = 0.0;
-    d_Toe = 0;
-    d_Toc = 0;
-    d_Cic = 0.0;
-    d_OMEGA0 = 0.0;
-    d_Cis = 0.0;
-    d_i_0 = 0.0;
-    d_Crc = 0.0;
-    d_OMEGA = 0.0;
-    d_OMEGA_DOT = 0.0;
-    d_IDOT = 0.0;
-    i_code_on_L2 = 0;
-    i_GPS_week = 0;
-    b_L2_P_data_flag = false;
-    i_SV_accuracy = 0;
-    i_SV_health = 0;
-    d_TGD = 0.0;
-    d_IODC = -1;
-    i_AODO = 0;
-
-    b_fit_interval_flag = false;
-    d_spare1 = 0.0;
-    d_spare2 = 0.0;
-
-    d_A_f0 = 0.0;
-    d_A_f1 = 0.0;
-    d_A_f2 = 0.0;
-
-    // clock terms
-    // d_master_clock=0;
-    d_dtr = 0.0;
-    d_satClkCorr = 0.0;
-    d_satClkDrift = 0.0;
-
-    // satellite positions
-    d_satpos_X = 0.0;
-    d_satpos_Y = 0.0;
-    d_satpos_Z = 0.0;
-
-    // info
-    i_channel_ID = 0;
-    i_satellite_PRN = 0U;
-
-    // time synchro
-    d_subframe_timestamp_ms = 0.0;
-
-    // flags
-    b_alert_flag = false;
-    b_integrity_status_flag = false;
-    b_antispoofing_flag = false;
-
-    // Ionosphere and UTC
-    flag_iono_valid = false;
-    flag_utc_model_valid = false;
-    d_alpha0 = 0.0;
-    d_alpha1 = 0.0;
-    d_alpha2 = 0.0;
-    d_alpha3 = 0.0;
-    d_beta0 = 0.0;
-    d_beta1 = 0.0;
-    d_beta2 = 0.0;
-    d_beta3 = 0.0;
-    d_A2 = 0.0;
-    d_A1 = 0.0;
-    d_A0 = 0.0;
-    d_t_OT = 0;
-    i_WN_T = 0;
-    d_DeltaT_LS = 0;
-    i_WN_LSF = 0;
-    i_DN = 0;
-    d_DeltaT_LSF = 0;
-
-    // Almanac
-    i_Toa = 0;
-    i_WN_A = 0;
-    for (int32_t i = 1; i < 32; i++)
-        {
-            almanacHealth[i] = 0;
-        }
-
-    // Satellite velocity
-    d_satvel_X = 0.0;
-    d_satvel_Y = 0.0;
-    d_satvel_Z = 0.0;
-
     auto gnss_sat = Gnss_Satellite();
     std::string _system("GPS");
     for (uint32_t i = 1; i < 33; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }
-}
-
-
-Gps_Navigation_Message::Gps_Navigation_Message()
-{
-    reset();
+    for (int32_t i = 1; i < 33; i++)
+        {
+            almanacHealth[i] = 0;
+        }
 }
 
 

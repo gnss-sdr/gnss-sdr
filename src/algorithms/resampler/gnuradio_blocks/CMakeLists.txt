@@ -23,12 +23,21 @@ set(RESAMPLER_GR_BLOCKS_HEADERS
 list(SORT RESAMPLER_GR_BLOCKS_HEADERS)
 list(SORT RESAMPLER_GR_BLOCKS_SOURCES)
 
-source_group(Headers FILES ${RESAMPLER_GR_BLOCKS_HEADERS})
-
-add_library(resampler_gr_blocks
-    ${RESAMPLER_GR_BLOCKS_SOURCES}
-    ${RESAMPLER_GR_BLOCKS_HEADERS}
-)
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(resampler_gr_blocks STATIC)
+    target_sources(resampler_gr_blocks
+        PRIVATE
+            ${RESAMPLER_GR_BLOCKS_SOURCES}
+        PUBLIC
+            ${RESAMPLER_GR_BLOCKS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${RESAMPLER_GR_BLOCKS_HEADERS})
+    add_library(resampler_gr_blocks
+        ${RESAMPLER_GR_BLOCKS_SOURCES}
+        ${RESAMPLER_GR_BLOCKS_HEADERS}
+    )
+endif()
 
 target_link_libraries(resampler_gr_blocks
     PUBLIC

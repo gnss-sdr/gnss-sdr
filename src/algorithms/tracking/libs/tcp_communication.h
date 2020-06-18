@@ -25,7 +25,7 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
-#if BOOST_GREATER_1_65
+#if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
 using b_io_context = boost::asio::io_service;

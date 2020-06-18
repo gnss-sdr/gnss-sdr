@@ -21,18 +21,6 @@
 
 #include "glonass_gnav_utc_model.h"
 
-Glonass_Gnav_Utc_Model::Glonass_Gnav_Utc_Model()
-{
-    valid = false;
-    d_tau_c = 0.0;
-    d_tau_gps = 0.0;
-    d_N_4 = 0.0;
-    d_N_A = 0.0;
-    d_B1 = 0.0;
-    d_B2 = 0.0;
-}
-
-
 double Glonass_Gnav_Utc_Model::utc_time(double glonass_time_corrected)
 {
     double t_utc;

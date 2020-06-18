@@ -26,7 +26,7 @@
 #include <memory>   // for shared_ptr
 #include <string>
 
-class Rtklib_Solver;
+class Pvt_Solution;
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
@@ -39,7 +39,7 @@ public:
     explicit Kml_Printer(const std::string& base_path = std::string("."));
     ~Kml_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
+    bool print_position(const Pvt_Solution* position, bool print_average_values);
     bool close_file();
 
 private:

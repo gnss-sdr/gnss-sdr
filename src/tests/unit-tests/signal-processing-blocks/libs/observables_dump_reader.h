@@ -37,13 +37,13 @@ public:
     void close_obs_file();
 
     // dump variables
-    double* RX_time;
-    double* TOW_at_current_symbol_s;
-    double* Carrier_Doppler_hz;
-    double* Acc_carrier_phase_hz;
-    double* Pseudorange_m;
-    double* PRN;
-    double* valid;
+    std::vector<double> RX_time;
+    std::vector<double> TOW_at_current_symbol_s;
+    std::vector<double> Carrier_Doppler_hz;
+    std::vector<double> Acc_carrier_phase_hz;
+    std::vector<double> Pseudorange_m;
+    std::vector<double> PRN;
+    std::vector<double> valid;
 
 private:
     int n_channels;

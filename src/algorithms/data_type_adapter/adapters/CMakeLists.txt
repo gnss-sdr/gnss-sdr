@@ -29,27 +29,36 @@ set(DATATYPE_ADAPTER_HEADERS
 list(SORT DATATYPE_ADAPTER_HEADERS)
 list(SORT DATATYPE_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(data_type_adapters STATIC)
+    target_sources(data_type_adapters
+        PRIVATE
+            ${DATATYPE_ADAPTER_SOURCES}
+        PUBLIC
+            ${DATATYPE_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
+    add_library(data_type_adapters
+        ${DATATYPE_ADAPTER_SOURCES}
+        ${DATATYPE_ADAPTER_HEADERS}
+    )
+endif()
 
-add_library(data_type_adapters
-    ${DATATYPE_ADAPTER_SOURCES}
-    ${DATATYPE_ADAPTER_HEADERS}
+target_include_directories(data_type_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 target_link_libraries(data_type_adapters
     PUBLIC
+        algorithms_libs
         Gnuradio::blocks
         data_type_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
         Volk::volk
-)
-
-target_include_directories(data_type_adapters
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(ENABLE_CLANG_TIDY)

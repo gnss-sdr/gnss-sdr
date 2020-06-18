@@ -28,7 +28,7 @@
 #include <sstream>    // for stringstream
 #include <utility>    // for move
 
-#if BOOST_GREATER_1_65
+#if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
 using b_io_context = boost::asio::io_service;
@@ -48,13 +48,23 @@ TcpCmdInterface::TcpCmdInterface()
 
 void TcpCmdInterface::register_functions()
 {
-    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);                      // NOLINT(modernize-avoid-bind)
-    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);                    // NOLINT(modernize-avoid-bind)
-    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);                        // NOLINT(modernize-avoid-bind)
-    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);                  // NOLINT(modernize-avoid-bind)
-    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);                // NOLINT(modernize-avoid-bind)
-    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);                // NOLINT(modernize-avoid-bind)
-    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);  // NOLINT(modernize-avoid-bind)
+#if HAS_GENERIC_LAMBDA
+    functions["status"] = [&](auto &s) { return TcpCmdInterface::status(s); };
+    functions["standby"] = [&](auto &s) { return TcpCmdInterface::standby(s); };
+    functions["reset"] = [&](auto &s) { return TcpCmdInterface::reset(s); };
+    functions["hotstart"] = [&](auto &s) { return TcpCmdInterface::hotstart(s); };
+    functions["warmstart"] = [&](auto &s) { return TcpCmdInterface::warmstart(s); };
+    functions["coldstart"] = [&](auto &s) { return TcpCmdInterface::coldstart(s); };
+    functions["set_ch_satellite"] = [&](auto &s) { return TcpCmdInterface::set_ch_satellite(s); };
+#else
+    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
+    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
+    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
+    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
+    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
+    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
+    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
+#endif
 }
 
 
@@ -64,7 +74,7 @@ void TcpCmdInterface::set_pvt(std::shared_ptr<PvtInterface> PVT_sptr)
 }
 
 
-time_t TcpCmdInterface::get_utc_time()
+time_t TcpCmdInterface::get_utc_time() const
 {
     return receiver_utc_time_;
 }

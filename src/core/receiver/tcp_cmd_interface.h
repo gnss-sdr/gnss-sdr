@@ -45,7 +45,7 @@ public:
     /*!
      * \brief gets the UTC time parsed from the last TC command issued
      */
-    time_t get_utc_time();
+    time_t get_utc_time() const;
 
     /*!
      * \brief gets the Latitude, Longitude and Altitude vector from the last TC command issued

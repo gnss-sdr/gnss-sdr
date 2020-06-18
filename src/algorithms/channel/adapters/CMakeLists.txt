@@ -7,25 +7,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(CHANNEL_ADAPTER_SOURCES channel.cc)
-set(CHANNEL_ADAPTER_HEADERS channel.h)
-
-add_library(channel_adapters
-    ${CHANNEL_ADAPTER_SOURCES}
-    ${CHANNEL_ADAPTER_HEADERS}
-)
-
-source_group(Headers FILES ${CHANNEL_ADAPTER_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(channel_adapters STATIC)
+    target_sources(channel_adapters
+        PRIVATE
+            channel.cc
+        PUBLIC
+            channel.h
+    )
+else()
+    source_group(Headers FILES channel.h)
+    add_library(channel_adapters
+        channel.cc
+        channel.h
+    )
+endif()
 
 target_link_libraries(channel_adapters
     PUBLIC
-        Gnuradio::runtime
         channel_libs
-        core_system_parameters
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         gnss_sdr_flags
+        Glog::glog
 )
 
 target_include_directories(channel_adapters

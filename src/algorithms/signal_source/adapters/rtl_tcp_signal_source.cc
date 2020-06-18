@@ -34,10 +34,9 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : role_(role),
-                                                           in_stream_(in_stream),
-                                                           out_stream_(out_stream),
-                                                           queue_(std::move(queue))
+    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role),
+                                           in_stream_(in_stream),
+                                           out_stream_(out_stream)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -111,7 +110,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     if (samples_ != 0ULL)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
-            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
+            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue);
             DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
         }
 

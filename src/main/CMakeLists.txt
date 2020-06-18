@@ -7,8 +7,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+if(USE_CMAKE_TARGET_SOURCES)
+    add_executable(gnss-sdr)
+    target_sources(gnss-sdr PRIVATE main.cc)
+else()
+    add_executable(gnss-sdr main.cc)
+endif()
 
-add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(gnss-sdr PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -21,7 +26,8 @@ else()
 endif()
 
 target_link_libraries(gnss-sdr
-    PUBLIC
+    PRIVATE
+        algorithms_libs
         core_receiver
         Boost::headers
         Boost::thread
@@ -34,17 +40,17 @@ target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 # Disable internal logging
 if(NOT ENABLE_LOG)
-    target_compile_definitions(gnss-sdr PUBLIC -DGOOGLE_STRIP_LOG=1)
+    target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
 endif()
 
 if(ENABLE_CUDA)
     if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
         target_link_libraries(gnss-sdr
-            PUBLIC
+            PRIVATE
                 ${CUDA_LIBRARIES}
         )
         target_include_directories(gnss-sdr
-            PUBLIC
+            PRIVATE
                 ${CUDA_INCLUDE_DIRS}
         )
     endif()
@@ -54,7 +60,7 @@ endif()
 if(ENABLE_GPERFTOOLS)
     if(GPERFTOOLS_FOUND)
         target_link_libraries(gnss-sdr
-            PUBLIC
+            PRIVATE
                 Gperftools::profiler
                 Gperftools::tcmalloc
         )
@@ -63,11 +69,12 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        target_link_libraries(gnss-sdr
-            PUBLIC
-                "-lc++"
-        )
+        target_link_libraries(gnss-sdr PRIVATE "-lc++")
     endif()
+endif()
+
+if(ENABLE_STRIP)
+    set_target_properties(gnss-sdr PROPERTIES LINK_FLAGS "-s")
 endif()
 
 if(ENABLE_CLANG_TIDY)
@@ -81,7 +88,7 @@ endif()
 
 add_custom_command(TARGET gnss-sdr
     POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
+        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
 )
 
 install(TARGETS gnss-sdr

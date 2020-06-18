@@ -35,9 +35,9 @@ class ConfigurationInterface;
 class Ad9361FpgaSignalSource : public GNSSBlockInterface
 {
 public:
-    Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
-        const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+    Ad9361FpgaSignalSource(ConfigurationInterface *configuration,
+        const std::string &role, unsigned int in_stream,
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t> *queue);
 
     ~Ad9361FpgaSignalSource();
 
@@ -102,8 +102,6 @@ private:
 
     size_t item_size_;
 
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
-
     std::shared_ptr<Fpga_Switch> switch_fpga;
     int32_t switch_position;
 
@@ -114,6 +112,7 @@ private:
 
     bool enable_DMA_;
     bool rf_shutdown_;
+    void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA);
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

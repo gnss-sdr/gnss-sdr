@@ -29,21 +29,14 @@
 
 
 // Constructor
-GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-    std::string role, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : signal_generator_(signal_generator),
-                                                                             filter_(filter),
-                                                                             role_(std::move(role)),
-                                                                             queue_(std::move(queue))
+GenSignalSource::GenSignalSource(std::shared_ptr<GNSSBlockInterface> signal_generator,
+    std::shared_ptr<GNSSBlockInterface> filter,
+    std::string role,
+    Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused))) : signal_generator_(std::move(signal_generator)),
+                                                                   filter_(std::move(filter)),
+                                                                   role_(std::move(role))
 {
     connected_ = false;
-}
-
-
-// Destructor
-GenSignalSource::~GenSignalSource()
-{
-    delete signal_generator_;
-    delete filter_;
 }
 
 

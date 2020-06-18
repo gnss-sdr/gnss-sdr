@@ -52,7 +52,7 @@
 
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 
 #if HAS_STD_FILESYSTEM
@@ -89,9 +89,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     this->set_msg_handler(pmt::mp("telemetry_to_trk"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t &&PH1) { msg_handler_telemetry_to_trk(PH1); });
+        [this](auto &&PH1) { msg_handler_telemetry_to_trk(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
 #else
         boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));

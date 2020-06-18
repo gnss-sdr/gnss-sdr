@@ -54,9 +54,9 @@ class Channel : public ChannelInterface
 {
 public:
     //! Constructor
-    Channel(ConfigurationInterface* configuration, uint32_t channel, const std::shared_ptr<AcquisitionInterface>& acq,
-        const std::shared_ptr<TrackingInterface>& trk, const std::shared_ptr<TelemetryDecoderInterface>& nav,
-        const std::string& role, const std::string& implementation, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue);
+    Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
+        std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
+        const std::string& role, const std::string& implementation, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~Channel() = default;  //!< Destructor
 
@@ -97,7 +97,7 @@ private:
     bool connected_;
     bool repeat_;
     std::shared_ptr<ChannelFsm> channel_fsm_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
+    Concurrent_Queue<pmt::pmt_t>* queue_;
     std::mutex mx;
 };
 

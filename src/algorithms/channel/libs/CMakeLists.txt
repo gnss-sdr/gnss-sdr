@@ -20,9 +20,18 @@ set(CHANNEL_FSM_HEADERS
 list(SORT CHANNEL_FSM_HEADERS)
 list(SORT CHANNEL_FSM_SOURCES)
 
-source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
-
-add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(channel_libs STATIC)
+    target_sources(channel_libs
+        PRIVATE
+            ${CHANNEL_FSM_SOURCES}
+        PUBLIC
+            ${CHANNEL_FSM_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
+    add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+endif()
 
 target_link_libraries(channel_libs
     PUBLIC
@@ -47,7 +56,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(channel_libs
@@ -62,10 +71,10 @@ else()
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+if(USE_BOOST_BIND_PLACEHOLDERS)
     target_compile_definitions(channel_libs
         PRIVATE
-            -DBOOST_173_OR_GREATER=1
+            -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()
 

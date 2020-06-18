@@ -32,6 +32,7 @@
 #include "file_signal_source.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_valve.h"
 #include "in_memory_configuration.h"
 #include "notch_filter_lite.h"
@@ -72,17 +73,19 @@ void NotchFilterLiteTest::init()
     config->set_property("InputFilter.segments_reset", "5000000");
 }
 
+
 void NotchFilterLiteTest::configure_gr_complex_gr_complex()
 {
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
 }
 
+
 TEST_F(NotchFilterLiteTest, InstantiateGrComplexGrComplex)
 {
     init();
     configure_gr_complex_gr_complex();
-    std::unique_ptr<NotchFilterLite> filter(new NotchFilterLite(config.get(), "InputFilter", 1, 1));
+    auto filter = std::make_unique<NotchFilterLite>(config.get(), "InputFilter", 1, 1);
     int res = 0;
     if (filter)
         {
@@ -90,6 +93,7 @@ TEST_F(NotchFilterLiteTest, InstantiateGrComplexGrComplex)
         }
     ASSERT_EQ(1, res);
 }
+
 
 TEST_F(NotchFilterLiteTest, ConnectAndRun)
 {
@@ -100,12 +104,12 @@ TEST_F(NotchFilterLiteTest, ConnectAndRun)
     top_block = gr::make_top_block("Notch filter lite test");
     init();
     configure_gr_complex_gr_complex();
-    std::shared_ptr<NotchFilterLite> filter = std::make_shared<NotchFilterLite>(config.get(), "InputFilter", 1, 1);
+    auto filter = std::make_shared<NotchFilterLite>(config.get(), "InputFilter", 1, 1);
     item_size = sizeof(gr_complex);
     ASSERT_NO_THROW({
         filter->connect(top_block);
         auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
         auto null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source, 0, valve, 0);
@@ -131,8 +135,8 @@ TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
     top_block = gr::make_top_block("Notch filter lite test");
     init();
     configure_gr_complex_gr_complex();
-    std::shared_ptr<NotchFilterLite> filter = std::make_shared<NotchFilterLite>(config.get(), "InputFilter", 1, 1);
-    std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
+    auto filter = std::make_shared<NotchFilterLite>(config.get(), "InputFilter", 1, 1);
+    auto config2 = std::make_shared<InMemoryConfiguration>();
 
     config2->set_property("Test_Source.samples", std::to_string(nsamples));
     config2->set_property("Test_Source.sampling_frequency", "4000000");
@@ -146,7 +150,7 @@ TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        std::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
+        auto source = std::make_shared<FileSignalSource>(config2.get(), "Test_Source", 0, 1, queue.get());
         source->connect(top_block);
 
         auto null_sink = gr::blocks::null_sink::make(item_size);

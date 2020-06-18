@@ -33,7 +33,7 @@
 class Gnss_Signal
 {
 public:
-    Gnss_Signal();
+    Gnss_Signal() = default;
     explicit Gnss_Signal(const std::string& signal_);
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
     ~Gnss_Signal() = default;

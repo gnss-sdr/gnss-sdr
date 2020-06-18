@@ -24,12 +24,6 @@
 #include <chrono>
 #include <complex>
 
-#if HAS_STD_SPAN
-#include <span>
-namespace gsl = std;
-#else
-#include <gsl/gsl>
-#endif
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 
@@ -110,13 +104,14 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
 
 TEST(ComplexCarrierTest, OwnComplexImplementation)
 {
-    auto* output = new std::complex<float>[FLAGS_size_carrier_test];
+    std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
+
     double _f = 2000.0;
     double _fs = 2000000.0;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    complex_exp_gen(own::span<std::complex<float>>(output, static_cast<unsigned int>(FLAGS_size_carrier_test)), _f, _fs);
+    complex_exp_gen(output, _f, _fs);
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
@@ -130,7 +125,7 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
         {
             mag[i] = output[i] * std::conj(output[i]);
         }
-    delete[] output;
+
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             ASSERT_NEAR(std::norm(expected), std::norm(mag[i]), 0.0001);

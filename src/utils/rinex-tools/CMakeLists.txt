@@ -12,26 +12,34 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     find_package(GPSTK QUIET)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
         include(GNUInstallDirs)
-        set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-        set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
+        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(GPSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
     endif()
 
-    set(obsdiff_HEADERS obsdiff_flags.h)
-    source_group(Headers FILES ${obsdiff_HEADERS})
+    if(USE_CMAKE_TARGET_SOURCES)
+        add_executable(obsdiff)
+        target_sources(obsdiff
+            PRIVATE
+                obsdiff.cc
+                obsdiff_flags.h
+        )
+    else()
+        source_group(Headers FILES obsdiff_flags.h)
+        add_executable(obsdiff ${CMAKE_CURRENT_SOURCE_DIR}/obsdiff.cc obsdiff_flags.h)
+    endif()
 
-    add_executable(obsdiff ${CMAKE_CURRENT_SOURCE_DIR}/obsdiff.cc ${obsdiff_HEADERS})
     target_include_directories(obsdiff PUBLIC ${CMAKE_SOURCE_DIR}/src/tests/common-files)
     set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(obsdiff
-            PUBLIC
+            PRIVATE
                 -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder -Wno-deprecated-copy -Wno-extra -Wno-unused-but-set-variable -Wno-unknown-pragmas
         )
     endif()
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(obsdiff
-            PUBLIC
+            PRIVATE
                 -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-reorder
         )
     endif()
@@ -50,7 +58,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     endif()
 
     target_link_libraries(obsdiff
-        PUBLIC
+        PRIVATE
             Armadillo::armadillo
             Threads::Threads
             Gflags::gflags
@@ -59,14 +67,18 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     )
 
     target_include_directories(obsdiff
-        PUBLIC
+        PRIVATE
             ${GPSTK_INCLUDE_DIR}/gpstk
             ${GPSTK_INCLUDE_DIR}
     )
 
+    if(ENABLE_STRIP)
+        set_target_properties(obsdiff PROPERTIES LINK_FLAGS "-s")
+    endif()
+
     add_custom_command(TARGET obsdiff POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obsdiff>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>
+        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>
     )
 
     install(TARGETS obsdiff

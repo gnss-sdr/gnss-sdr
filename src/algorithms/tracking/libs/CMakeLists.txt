@@ -73,9 +73,18 @@ endif()
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
 
-source_group(Headers FILES ${TRACKING_LIB_HEADERS})
-
-add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(tracking_libs STATIC)
+    target_sources(tracking_libs
+        PRIVATE
+            ${TRACKING_LIB_SOURCES}
+        PUBLIC
+            ${TRACKING_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${TRACKING_LIB_HEADERS})
+    add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
+endif()
 
 target_link_libraries(tracking_libs
     PUBLIC
@@ -88,7 +97,6 @@ target_link_libraries(tracking_libs
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         gnss_sdr_flags
-        Gflags::gflags
         Glog::glog
 )
 
@@ -103,10 +111,10 @@ if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.65.99)
+if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(tracking_libs
         PUBLIC
-            -DBOOST_GREATER_1_65
+            -DUSE_BOOST_ASIO_IO_CONTEXT
     )
 endif()
 

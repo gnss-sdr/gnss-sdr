@@ -59,7 +59,7 @@
 
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 
 #ifdef GR_GREATER_38
@@ -138,9 +138,9 @@ TrackingPullInTest_msg_rx_Fpga::TrackingPullInTest_msg_rx_Fpga() : gr::block("Tr
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&TrackingPullInTest_msg_rx_Fpga::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&TrackingPullInTest_msg_rx_Fpga::msg_handler_events, this, _1));
@@ -294,7 +294,6 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
 
             // Throttle the DMA
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
 
             nsamples_remaining -= nsamples_block_size;
 
@@ -474,13 +473,11 @@ public:
         return true;
     }
 
-
     bool Event_failed_acquisition_repeat() override
     {
         acquisition_successful = false;
         return true;
     }
-
 
     bool Event_failed_acquisition_no_repeat() override
     {
@@ -882,7 +879,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                 }
         }
 
-
     // use generator or use an external capture file
     if (FLAGS_enable_external_signal_file)
         {
@@ -1011,7 +1007,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                             // create flowgraph
                             top_block = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_Fpga_make();
 

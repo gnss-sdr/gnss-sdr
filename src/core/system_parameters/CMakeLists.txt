@@ -13,31 +13,19 @@ set(SYSTEM_PARAMETERS_SOURCES
     gnss_signal.cc
     gps_navigation_message.cc
     gps_ephemeris.cc
-    gps_iono.cc
-    gps_almanac.cc
     gps_utc_model.cc
-    gps_acq_assist.cc
-    agnss_ref_time.cc
-    agnss_ref_location.cc
     galileo_utc_model.cc
     galileo_ephemeris.cc
-    galileo_almanac.cc
     galileo_almanac_helper.cc
-    galileo_iono.cc
     galileo_navigation_message.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
-    beidou_dnav_iono.cc
-    beidou_dnav_almanac.cc
-    beidou_dnav_utc_model.cc
     sbas_ephemeris.cc
     galileo_fnav_message.cc
     gps_cnav_ephemeris.cc
     gps_cnav_navigation_message.cc
-    gps_cnav_iono.cc
     gps_cnav_utc_model.cc
     glonass_gnav_ephemeris.cc
-    glonass_gnav_almanac.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
 )
@@ -95,12 +83,21 @@ set(SYSTEM_PARAMETERS_HEADERS
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
 
-source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
-
-add_library(core_system_parameters
-    ${SYSTEM_PARAMETERS_SOURCES}
-    ${SYSTEM_PARAMETERS_HEADERS}
-)
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(core_system_parameters STATIC)
+    target_sources(core_system_parameters
+        PRIVATE
+            ${SYSTEM_PARAMETERS_SOURCES}
+        PUBLIC
+            ${SYSTEM_PARAMETERS_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
+    add_library(core_system_parameters
+        ${SYSTEM_PARAMETERS_SOURCES}
+        ${SYSTEM_PARAMETERS_HEADERS}
+    )
+endif()
 
 target_link_libraries(core_system_parameters
     PUBLIC

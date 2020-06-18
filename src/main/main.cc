@@ -31,6 +31,7 @@
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
+#include "gnss_sdr_make_unique.h"
 #include "gps_acq_assist.h"
 #include <boost/exception/diagnostic_information.hpp>  // for diagnostic_information
 #include <boost/exception/exception.hpp>               // for exception
@@ -139,7 +140,7 @@ int main(int argc, char** argv)
     int return_code = 0;
     try
         {
-            std::unique_ptr<ControlThread> control_thread(new ControlThread());
+            auto control_thread = std::make_unique<ControlThread>();
             // record startup time
             start = std::chrono::system_clock::now();
             return_code = control_thread->run();

@@ -10,8 +10,8 @@
 find_package(GPSTK QUIET)
 if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     include(GNUInstallDirs)
-    set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
+    set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(GPSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
 endif()
 
 
@@ -46,24 +46,33 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
 
 if(Boost_FOUND)
     message(STATUS "The rinex2assist utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
-    add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+    if(USE_CMAKE_TARGET_SOURCES)
+        add_executable(rinex2assist)
+        target_sources(rinex2assist
+            PRIVATE
+                main.cc
+        )
+    else()
+        add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+    endif()
+
     set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(rinex2assist
-            PUBLIC
+            PRIVATE
                 -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-type-limits -Wno-unused-but-set-variable -Wno-deprecated-copy -Wno-extra
         )
     endif()
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(rinex2assist
-            PUBLIC
+            PRIVATE
                 -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare
         )
     endif()
 
     target_link_libraries(rinex2assist
-        PUBLIC
+        PRIVATE
             Boost::iostreams
             Boost::serialization
             ${GPSTK_LIBRARY}
@@ -73,24 +82,28 @@ if(Boost_FOUND)
     )
 
     target_include_directories(rinex2assist
-        PUBLIC
+        PRIVATE
             ${GPSTK_INCLUDE_DIR}/gpstk
             ${GPSTK_INCLUDE_DIR}
     )
 
     if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
-        target_compile_definitions(rinex2assist PUBLIC -DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
+        target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
     else()
-        target_compile_definitions(rinex2assist PUBLIC -DUNCOMPRESS_EXECUTABLE="")
+        target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="")
     endif()
 
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
         add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
     endif()
 
+    if(ENABLE_STRIP)
+        set_target_properties(rinex2assist PROPERTIES LINK_FLAGS "-s")
+    endif()
+
     add_custom_command(TARGET rinex2assist POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
-            ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>
     )
 
     install(TARGETS rinex2assist

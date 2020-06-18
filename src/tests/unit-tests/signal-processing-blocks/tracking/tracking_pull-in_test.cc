@@ -60,7 +60,7 @@
 
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 
 #ifdef GR_GREATER_38
@@ -140,9 +140,9 @@ TrackingPullInTest_msg_rx::TrackingPullInTest_msg_rx() : gr::block("TrackingPull
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&TrackingPullInTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&TrackingPullInTest_msg_rx::msg_handler_events, this, _1));
@@ -808,7 +808,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // create the msg queue for valve
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
-    auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
+    auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue.get(), false);
 
     // CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;
@@ -828,7 +828,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                             // create flowgraph
                             auto top_block_trk = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_make();
 

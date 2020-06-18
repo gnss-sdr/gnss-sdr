@@ -3,9 +3,10 @@
  * \brief Implementation of a GNSS receiver flow graph
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ *         Carles Fernandez-Prades, 2014-2020. cfernandez(at)cttc.es
  *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *         Javier Arribas, 2018. javiarribas(at)gmail.com
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -35,6 +36,7 @@
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
@@ -53,7 +55,10 @@
 #include <memory>                    // for std::shared_ptr
 #include <set>                       // for set
 #include <stdexcept>                 // for invalid_argument
-#include <thread>                    // for thread
+#include <thread>                    // for std::thread
+#include <utility>                   // for std::move
+
+
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
@@ -64,12 +69,12 @@
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
 
-GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
+GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
 {
     connected_ = false;
     running_ = false;
     configuration_ = std::move(configuration);
-    queue_ = queue;
+    queue_ = std::move(queue);
     multiband_ = GNSSFlowgraph::is_multiband();
     init();
 }
@@ -1512,7 +1517,7 @@ void GNSSFlowgraph::init()
     /*
      * Instantiates the receiver blocks
      */
-    std::unique_ptr<GNSSBlockFactory> block_factory_(new GNSSBlockFactory());
+    auto block_factory_ = std::make_unique<GNSSBlockFactory>();
 
     channels_status_ = channel_status_msg_receiver_make();
 
@@ -1527,7 +1532,7 @@ void GNSSFlowgraph::init()
             for (int i = 0; i < sources_count_; i++)
                 {
                     std::cout << "Creating source " << i << std::endl;
-                    sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_, i));
+                    sig_source_.push_back(block_factory_->GetSignalSource(configuration_.get(), queue_.get(), i));
                     // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
                     // Include GetRFChannels in the interface to avoid read config parameters here
                     // read the number of RF channels for each front-end
@@ -1535,7 +1540,7 @@ void GNSSFlowgraph::init()
                     std::cout << "RF Channels " << RF_Channels << std::endl;
                     for (int j = 0; j < RF_Channels; j++)
                         {
-                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, signal_conditioner_ID));
+                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                             signal_conditioner_ID++;
                         }
                 }
@@ -1543,7 +1548,7 @@ void GNSSFlowgraph::init()
     else
         {
             // backwards compatibility for old config files
-            sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_, -1));
+            sig_source_.push_back(block_factory_->GetSignalSource(configuration_.get(), queue_.get(), -1));
             // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
             // Include GetRFChannels in the interface to avoid read config parameters here
             // read the number of RF channels for each front-end
@@ -1552,18 +1557,18 @@ void GNSSFlowgraph::init()
                 {
                     for (int j = 0; j < RF_Channels; j++)
                         {
-                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, signal_conditioner_ID));
+                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                             signal_conditioner_ID++;
                         }
                 }
             else
                 {
                     // old config file, single signal source and single channel, not specified
-                    sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, -1));
+                    sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_.get(), -1));
                 }
         }
 
-    observables_ = block_factory_->GetObservables(configuration_);
+    observables_ = block_factory_->GetObservables(configuration_.get());
     // Mark old implementations as deprecated
     std::string default_str("Default");
     std::string obs_implementation = configuration_->property("Observables.implementation", default_str);
@@ -1574,7 +1579,7 @@ void GNSSFlowgraph::init()
             std::cout << "Please update your configuration file." << std::endl;
         }
 
-    pvt_ = block_factory_->GetPVT(configuration_);
+    pvt_ = block_factory_->GetPVT(configuration_.get());
     // Mark old implementations as deprecated
     std::string pvt_implementation = configuration_->property("PVT.implementation", default_str);
     if ((pvt_implementation == "GPS_L1_CA_PVT") || (pvt_implementation == "Galileo_E1_PVT") || (pvt_implementation == "Hybrid_PVT"))
@@ -1583,7 +1588,7 @@ void GNSSFlowgraph::init()
             std::cout << "Please update your configuration file." << std::endl;
         }
 
-    std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
+    auto channels = block_factory_->GetChannels(configuration_.get(), queue_.get());
 
     channels_count_ = channels->size();
     for (unsigned int i = 0; i < channels_count_; i++)

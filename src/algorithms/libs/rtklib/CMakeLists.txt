@@ -52,17 +52,29 @@ set(RTKLIB_LIB_HEADERS
 list(SORT RTKLIB_LIB_HEADERS)
 list(SORT RTKLIB_LIB_SOURCES)
 
-source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
-
-add_library(algorithms_libs_rtklib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(algorithms_libs_rtklib STATIC)
+    target_sources(algorithms_libs_rtklib
+        PRIVATE
+            ${RTKLIB_LIB_SOURCES}
+        PUBLIC
+            ${RTKLIB_LIB_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
+    add_library(algorithms_libs_rtklib
+        ${RTKLIB_LIB_SOURCES}
+        ${RTKLIB_LIB_HEADERS}
+    )
+endif()
 
 target_link_libraries(algorithms_libs_rtklib
     PRIVATE
         core_system_parameters
         Gflags::gflags
         Glog::glog
-        ${LAPACK_LIBRARIES}
-        ${BLAS_LIBRARIES}
+        LAPACK::LAPACK
+        BLAS::BLAS
 )
 
 set_property(TARGET algorithms_libs_rtklib

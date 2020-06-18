@@ -33,8 +33,18 @@
 #include <memory>           // for shared_ptr
 
 
-#ifndef _rotl
-#define _rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))  // Used in the parity check algorithm
+#ifdef COMPILER_HAS_ROTL
+#include <bit>
+namespace my_rotl = std;
+#else
+namespace my_rotl
+{
+#if HAS_GENERIC_LAMBDA
+auto rotl = [](auto x, auto n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
+#else
+auto rotl = [](uint32_t x, uint32_t n) { return (((x) << (n)) ^ ((x) >> (32 - (n)))); };
+#endif
+}  // namespace my_rotl
 #endif
 
 
@@ -138,15 +148,15 @@ bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
     //   check algorithm described in IS-GPS-200K.  This avoids lengthy shift-
     //   and-xor loops.
     d1 = gpsword & 0xFBFFBF00U;
-    d2 = _rotl(gpsword, 1U) & 0x07FFBF01U;
-    d3 = _rotl(gpsword, 2U) & 0xFC0F8100U;
-    d4 = _rotl(gpsword, 3U) & 0xF81FFE02U;
-    d5 = _rotl(gpsword, 4U) & 0xFC00000EU;
-    d6 = _rotl(gpsword, 5U) & 0x07F00001U;
-    d7 = _rotl(gpsword, 6U) & 0x00003000U;
+    d2 = my_rotl::rotl(gpsword, 1U) & 0x07FFBF01U;
+    d3 = my_rotl::rotl(gpsword, 2U) & 0xFC0F8100U;
+    d4 = my_rotl::rotl(gpsword, 3U) & 0xF81FFE02U;
+    d5 = my_rotl::rotl(gpsword, 4U) & 0xFC00000EU;
+    d6 = my_rotl::rotl(gpsword, 5U) & 0x07F00001U;
+    d7 = my_rotl::rotl(gpsword, 6U) & 0x00003000U;
     t = d1 ^ d2 ^ d3 ^ d4 ^ d5 ^ d6 ^ d7;
     // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
-    parity = t ^ _rotl(t, 6U) ^ _rotl(t, 12U) ^ _rotl(t, 18U) ^ _rotl(t, 24U);
+    parity = t ^ my_rotl::rotl(t, 6U) ^ my_rotl::rotl(t, 12U) ^ my_rotl::rotl(t, 18U) ^ my_rotl::rotl(t, 24U);
     parity = parity & 0x3FU;
     if (parity == (gpsword & 0x3FU))
         {
@@ -159,7 +169,7 @@ bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
 
 void gps_l1_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
-    d_nav.reset();
+    d_nav = Gps_Navigation_Message();
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     d_nav.i_satellite_PRN = d_satellite.get_PRN();

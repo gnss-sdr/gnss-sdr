@@ -44,7 +44,7 @@
 
 #if HAS_GENERIC_LAMBDA
 #else
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #endif
 
 #ifdef GR_GREATER_38
@@ -114,9 +114,9 @@ GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() : gr::block
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](pmt::pmt_t &&PH1) { msg_handler_events(PH1); });
+        [this](auto &&PH1) { msg_handler_events(PH1); });
 #else
-#if BOOST_173_OR_GREATER
+#if USE_BOOST_BIND_PLACEHOLDERS
         boost::bind(&GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
 #else
         boost::bind(&GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
@@ -280,7 +280,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
         auto source = gr::analog::sig_source_c::make(sampling_frequency_hz, gr::analog::GR_SIN_WAVE, 2000, 1, gr_complex(0));
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         auto msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
@@ -353,7 +353,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         // gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
         // gr::blocks::char_to_short::sptr gr_char_to_short_ = gr::blocks::char_to_short::make();
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
         // top_block->connect(file_source, 0, gr_char_to_short_, 0);
         // top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
         top_block->connect(file_source, 0, valve, 0);

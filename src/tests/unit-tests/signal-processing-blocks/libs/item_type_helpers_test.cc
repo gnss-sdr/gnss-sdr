@@ -21,6 +21,7 @@
 
 #include "item_type_helpers.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <random>
 
 class ItemTypeHelpersTest : public ::testing::Test

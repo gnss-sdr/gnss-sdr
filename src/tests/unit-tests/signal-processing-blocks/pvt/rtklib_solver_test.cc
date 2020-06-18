@@ -18,6 +18,7 @@
  */
 
 #include "geofunctions.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_supl_client.h"
 #include "in_memory_configuration.h"
 #include "rtklib_solver.h"
@@ -385,7 +386,7 @@ TEST(RTKLibSolverTest, test1)
     bool save_to_mat = false;
     rtk_t rtk = configure_rtklib_options();
 
-    std::unique_ptr<Rtklib_Solver> d_ls_pvt(new Rtklib_Solver(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk));
+    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk);
     d_ls_pvt->set_averaging_depth(1);
 
     // load ephemeris

@@ -49,6 +49,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/arithmetic/fft_speed_test.cc"
 #include "unit-tests/arithmetic/magnitude_squared_test.cc"
 #include "unit-tests/arithmetic/multiply_test.cc"
+#include "unit-tests/arithmetic/preamble_correlator_test.cc"
 #include "unit-tests/control-plane/control_thread_test.cc"
 #include "unit-tests/control-plane/file_configuration_test.cc"
 #include "unit-tests/control-plane/gnss_block_factory_test.cc"

@@ -28,17 +28,25 @@ set(INPUT_FILTER_ADAPTER_HEADERS
 list(SORT INPUT_FILTER_ADAPTER_HEADERS)
 list(SORT INPUT_FILTER_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
-
-add_library(input_filter_adapters
-    ${INPUT_FILTER_ADAPTER_SOURCES}
-    ${INPUT_FILTER_ADAPTER_HEADERS}
-)
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(input_filter_adapters STATIC)
+    target_sources(input_filter_adapters
+        PRIVATE
+            ${INPUT_FILTER_ADAPTER_SOURCES}
+        PUBLIC
+            ${INPUT_FILTER_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
+    add_library(input_filter_adapters
+        ${INPUT_FILTER_ADAPTER_SOURCES}
+        ${INPUT_FILTER_ADAPTER_HEADERS}
+    )
+endif()
 
 target_link_libraries(input_filter_adapters
     PUBLIC
-        Gnuradio::blocks
-        Gnuradio::filter
+        algorithms_libs
         input_filter_gr_blocks
     PRIVATE
         Gflags::gflags
@@ -46,13 +54,7 @@ target_link_libraries(input_filter_adapters
         Volk::volk
 )
 
-target_include_directories(input_filter_adapters
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
-)
-
-if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
+if(GNURADIO_IS_38_OR_GREATER)
     target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)
 endif()
 

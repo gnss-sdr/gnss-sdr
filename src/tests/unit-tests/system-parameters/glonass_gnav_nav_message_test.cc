@@ -33,8 +33,7 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestSuccess)
     // Variables declarations in code
     bool test_result;
     std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(std::string("0010100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
-    Glonass_Gnav_Navigation_Message gnav_nav_message;
-    gnav_nav_message.reset();
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
 
     // Call function to test
     test_result = gnav_nav_message.CRC_test(string_bits);
@@ -55,8 +54,7 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
     bool test_result;
     // Constructor of string to bitset will flip the order of the bits. Needed for CRC computation
     std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(std::string("0111100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
-    Glonass_Gnav_Navigation_Message gnav_nav_message;
-    gnav_nav_message.reset();
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
 
     // Call function to test
     test_result = gnav_nav_message.CRC_test(string_bits);

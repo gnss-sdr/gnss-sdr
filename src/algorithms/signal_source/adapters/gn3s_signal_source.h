@@ -40,7 +40,7 @@ class Gn3sSignalSource : public GNSSBlockInterface
 public:
     Gn3sSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~Gn3sSignalSource() = default;
 
@@ -78,7 +78,6 @@ private:
     std::string dump_filename_;
     gr::block_sptr gn3s_source_;
     gr::blocks::file_sink::sptr file_sink_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif  // GNSS_SDR_GN3S_SIGNAL_SOURCE_H

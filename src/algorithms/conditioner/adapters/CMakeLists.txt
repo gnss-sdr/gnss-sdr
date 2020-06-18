@@ -21,9 +21,21 @@ set(COND_ADAPTER_HEADERS
 list(SORT COND_ADAPTER_HEADERS)
 list(SORT COND_ADAPTER_SOURCES)
 
-source_group(Headers FILES ${COND_ADAPTER_HEADERS})
-
-add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(conditioner_adapters STATIC)
+    target_sources(conditioner_adapters
+        PRIVATE
+            ${COND_ADAPTER_SOURCES}
+        PUBLIC
+            ${COND_ADAPTER_HEADERS}
+    )
+else()
+    source_group(Headers FILES ${COND_ADAPTER_HEADERS})
+    add_library(conditioner_adapters
+        ${COND_ADAPTER_SOURCES}
+        ${COND_ADAPTER_HEADERS}
+    )
+endif()
 
 target_link_libraries(conditioner_adapters
     PUBLIC

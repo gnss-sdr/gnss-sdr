@@ -7,17 +7,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set(OBS_GR_BLOCKS_SOURCES
-    hybrid_observables_gs.cc
-)
-
-set(OBS_GR_BLOCKS_HEADERS
-    hybrid_observables_gs.h
-)
-
-source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
-
-add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
+if(USE_CMAKE_TARGET_SOURCES)
+    add_library(obs_gr_blocks STATIC)
+    target_sources(obs_gr_blocks
+        PRIVATE
+            hybrid_observables_gs.cc
+        PUBLIC
+            hybrid_observables_gs.h
+    )
+else()
+    source_group(Headers FILES hybrid_observables_gs.h)
+    add_library(obs_gr_blocks hybrid_observables_gs.cc hybrid_observables_gs.h)
+endif()
 
 if(${FILESYSTEM_FOUND})
     target_compile_definitions(obs_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
@@ -53,7 +54,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER 3.1)
+if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(obs_gr_blocks
@@ -68,10 +69,10 @@ else()
     )
 endif()
 
-if(Boost_VERSION_STRING VERSION_GREATER 1.72.99)
+if(USE_BOOST_BIND_PLACEHOLDERS)
     target_compile_definitions(obs_gr_blocks
         PRIVATE
-            -DBOOST_173_OR_GREATER=1
+            -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()
 

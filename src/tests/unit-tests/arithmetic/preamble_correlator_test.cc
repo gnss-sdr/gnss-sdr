@@ -45,27 +45,14 @@ TEST(PreambleCorrelationTest, TestMethods)
     std::random_device rd;
     std::default_random_engine e2(rd());
     std::uniform_real_distribution<> dist(-1.0, 1.0);
-
     std::generate(d_symbol_history.begin(), d_symbol_history.end(), [&dist, &e2]() { return dist(e2); });
 
-    int32_t n = 0;
-    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-        {
-            if (GPS_CA_PREAMBLE[i] == '1')
-                {
-                    d_preamble_samples[n] = 1;
-                    n++;
-                }
-            else
-                {
-                    d_preamble_samples[n] = -1;
-                    n++;
-                }
-        }
+    std::string preamble = GPS_CA_PREAMBLE;
+    std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [preamble, n = 0]() mutable { return (preamble[n++] == '1' ? 1 : -1); });
 
     // Compute correlation, method 1
     start = std::chrono::system_clock::now();
-    for (int64_t kk = 0; kk < n_iter; kk++)
+    for (int64_t iter = 0; iter < n_iter; iter++)
         {
             corr_value = 0;
             for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
@@ -85,13 +72,12 @@ TEST(PreambleCorrelationTest, TestMethods)
 
     // Compute correlation, method 2
     start2 = std::chrono::system_clock::now();
-    for (int64_t kk = 0; kk < n_iter; kk++)
+    for (int64_t iter = 0; iter < n_iter; iter++)
         {
-            int32_t ii = -1;
             corr_value2 = std::accumulate(d_symbol_history.begin(),
                 d_symbol_history.begin() + GPS_CA_PREAMBLE_LENGTH_BITS,
                 0,
-                [&ii, &d_preamble_samples](float a, float b) { return (b > 0.0 ? a + d_preamble_samples[++ii] : a - d_preamble_samples[++ii]); });
+                [&d_preamble_samples, n = 0](float a, float b) mutable { return (b > 0.0 ? a + d_preamble_samples[n++] : a - d_preamble_samples[n++]); });
             sum_corr2 += corr_value2;
         }
     end2 = std::chrono::system_clock::now();

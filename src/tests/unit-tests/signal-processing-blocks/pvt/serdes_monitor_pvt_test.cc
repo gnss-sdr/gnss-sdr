@@ -27,7 +27,7 @@ TEST(Serdes_Monitor_Pvt_Test, Simpletest)
     monitor->latitude = true_latitude;
 
     Serdes_Monitor_Pvt serdes = Serdes_Monitor_Pvt();
-    std::string serialized_data = serdes.createProtobuffer(monitor);
+    std::string serialized_data = serdes.createProtobuffer(monitor.get());
 
     gnss_sdr::MonitorPvt mon;
     mon.ParseFromString(serialized_data);

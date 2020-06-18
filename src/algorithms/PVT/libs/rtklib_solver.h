@@ -75,10 +75,10 @@ public:
 
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
-    double get_hdop() const;
-    double get_vdop() const;
-    double get_pdop() const;
-    double get_gdop() const;
+    double get_hdop() const override;
+    double get_vdop() const override;
+    double get_pdop() const override;
+    double get_gdop() const override;
     Monitor_Pvt get_monitor_pvt() const;
 
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris

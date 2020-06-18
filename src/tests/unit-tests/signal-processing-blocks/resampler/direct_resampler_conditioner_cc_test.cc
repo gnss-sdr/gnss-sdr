@@ -41,17 +41,17 @@ TEST(DirectResamplerConditionerCcTest, InstantiationAndRunTest)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     int nsamples = 1000000;  // Number of samples to be computed
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    gr::top_block_sptr top_block = gr::make_top_block("direct_resampler_conditioner_cc_test");
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto top_block = gr::make_top_block("direct_resampler_conditioner_cc_test");
     auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
-    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
 
     EXPECT_NO_THROW({
         direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
     }) << "Failure in instantiation of direct_resampler_conditioner.";
 
-    direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
-    gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(gr_complex));
+    auto resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
+    auto sink = gr::blocks::null_sink::make(sizeof(gr_complex));
 
     EXPECT_NO_THROW({
         top_block->connect(source, 0, valve, 0);

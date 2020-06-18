@@ -53,7 +53,7 @@ class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
     SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
-        uint32_t in_streams, uint32_t out_streams, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~SpirGSS6450FileSignalSource() = default;
     inline std::string role() override
@@ -130,7 +130,6 @@ private:
 #endif
     std::vector<gr::blocks::file_sink::sptr> sink_vec_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     size_t item_size_;
 };
 

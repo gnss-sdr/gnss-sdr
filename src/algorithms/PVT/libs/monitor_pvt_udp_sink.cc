@@ -22,6 +22,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
 Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled) : socket{io_context}
@@ -40,19 +41,20 @@ Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addre
 }
 
 
-bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const std::shared_ptr<Monitor_Pvt>& monitor_pvt)
+bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(std::shared_ptr<Monitor_Pvt> monitor_pvt)
 {
+    monitor_pvt_ = std::move(monitor_pvt);
     std::string outbound_data;
     if (use_protobuf == false)
         {
             std::ostringstream archive_stream;
             boost::archive::binary_oarchive oa{archive_stream};
-            oa << *monitor_pvt.get();
+            oa << *monitor_pvt_.get();
             outbound_data = archive_stream.str();
         }
     else
         {
-            outbound_data = serdes.createProtobuffer(monitor_pvt);
+            outbound_data = serdes.createProtobuffer(monitor_pvt_);
         }
 
     for (const auto& endpoint : endpoints)

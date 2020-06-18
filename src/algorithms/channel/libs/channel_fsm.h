@@ -45,7 +45,7 @@ public:
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
     void set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry);
-    void set_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+    void set_queue(Concurrent_Queue<pmt::pmt_t>* queue);
     void set_channel(uint32_t channel);
     void start_acquisition();
     // FSM EVENTS
@@ -67,7 +67,7 @@ private:
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     std::shared_ptr<TelemetryDecoderInterface> nav_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
+    Concurrent_Queue<pmt::pmt_t>* queue_;
     uint32_t channel_;
     uint32_t d_state;
     std::mutex mx;

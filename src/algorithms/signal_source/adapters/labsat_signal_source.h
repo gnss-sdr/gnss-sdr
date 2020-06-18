@@ -39,7 +39,7 @@ class LabsatSignalSource : public GNSSBlockInterface
 public:
     LabsatSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~LabsatSignalSource() = default;
 
@@ -77,7 +77,6 @@ private:
     std::string dump_filename_;
     gr::block_sptr labsat23_source_;
     gr::blocks::file_sink::sptr file_sink_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif  // GNSS_SDR_LABSAT_SIGNAL_SOURCE_H

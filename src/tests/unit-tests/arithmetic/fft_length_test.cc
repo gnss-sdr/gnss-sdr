@@ -18,6 +18,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_sdr_make_unique.h"
 #include "gnuplot_i.h"
 #include "test_flags.h"
 #include <gnuradio/fft/fft.h>
@@ -72,9 +73,8 @@ TEST(FFTLengthTest, MeasureExecutionTime)
 
     EXPECT_NO_THROW(
         for (it = fft_sizes_v.cbegin(); it != fft_sizes_v.cend(); ++it) {
-            gr::fft::fft_complex* d_fft;
             d_fft_size = *it;
-            d_fft = new gr::fft::fft_complex(d_fft_size, true);
+            auto d_fft = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
 
             std::generate_n(d_fft->get_inbuf(), d_fft_size, gen);
 
@@ -88,7 +88,6 @@ TEST(FFTLengthTest, MeasureExecutionTime)
             double exec_time = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_iterations_test);
             execution_times.push_back(exec_time * 1e3);
             std::cout << "FFT execution time for length=" << d_fft_size << " : " << exec_time << " [s]" << std::endl;
-            delete d_fft;
 
             if ((d_fft_size & (d_fft_size - 1)) == 0)  // if it is a power of two
                 {

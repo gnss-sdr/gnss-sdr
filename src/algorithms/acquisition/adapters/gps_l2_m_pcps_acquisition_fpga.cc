@@ -24,6 +24,7 @@
 #include "GPS_L2C.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
@@ -81,7 +82,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     // compute all the GPS L2C PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));  // Direct FFT
+    auto fft_if = std::make_unique<gr::fft::fft_complex>(nsamples_total, true);  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);

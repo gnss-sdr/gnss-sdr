@@ -176,25 +176,23 @@ bool GeoJSON_Printer::set_headers(const std::string& filename, bool time_tag_nam
 }
 
 
-bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
+bool GeoJSON_Printer::print_position(const Pvt_Solution* position, bool print_average_values)
 {
     double latitude;
     double longitude;
     double height;
 
-    const std::shared_ptr<Pvt_Solution>& position_ = position;
-
     if (print_average_values == false)
         {
-            latitude = position_->get_latitude();
-            longitude = position_->get_longitude();
-            height = position_->get_height();
+            latitude = position->get_latitude();
+            longitude = position->get_longitude();
+            height = position->get_height();
         }
     else
         {
-            latitude = position_->get_avg_latitude();
-            longitude = position_->get_avg_longitude();
-            height = position_->get_avg_height();
+            latitude = position->get_avg_latitude();
+            longitude = position->get_avg_longitude();
+            height = position->get_avg_height();
         }
 
     if (geojson_file.is_open())

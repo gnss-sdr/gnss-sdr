@@ -808,7 +808,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // create the msg queue for valve
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
-    auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false);
+    auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue.get(), false);
 
     // CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;
@@ -828,7 +828,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                             // create flowgraph
                             auto top_block_trk = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_make();
 

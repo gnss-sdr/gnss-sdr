@@ -119,6 +119,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
             nmea_dev_descriptor = -1;
         }
     print_avg_pos = false;
+    d_PVT_data = nullptr;
 }
 
 
@@ -213,7 +214,7 @@ void Nmea_Printer::close_serial()
 }
 
 
-bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Rtklib_Solver>& pvt_data, bool print_average_values)
+bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_average_values)
 {
     std::string GPRMC;
     std::string GPGGA;

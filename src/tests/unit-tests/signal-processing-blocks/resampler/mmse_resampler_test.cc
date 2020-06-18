@@ -38,10 +38,10 @@ TEST(MmseResamplerTest, InstantiationAndRunTestWarning)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     int nsamples = 1000000;  // Number of samples to be computed
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    gr::top_block_sptr top_block = gr::make_top_block("mmse_resampler_conditioner_cc_test");
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto top_block = gr::make_top_block("mmse_resampler_conditioner_cc_test");
     auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
-    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
 
     std::shared_ptr<InMemoryConfiguration> config;
     config = std::make_shared<InMemoryConfiguration>();
@@ -49,9 +49,9 @@ TEST(MmseResamplerTest, InstantiationAndRunTestWarning)
     config->set_property("Resampler.sample_freq_in", std::to_string(fs_in));
     config->set_property("Resampler.sample_freq_out", std::to_string(fs_out));
 
-    std::shared_ptr<MmseResamplerConditioner> resampler = std::make_shared<MmseResamplerConditioner>(config.get(), "Resampler", 1, 1);
+    auto resampler = std::make_shared<MmseResamplerConditioner>(config.get(), "Resampler", 1, 1);
 
-    gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(gr_complex));
+    auto sink = gr::blocks::null_sink::make(sizeof(gr_complex));
 
     EXPECT_NO_THROW({
         resampler->connect(top_block);
@@ -79,10 +79,10 @@ TEST(MmseResamplerTest, InstantiationAndRunTest2)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     int nsamples = 1000000;  // Number of samples to be computed
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    gr::top_block_sptr top_block = gr::make_top_block("mmse_resampler_conditioner_cc_test");
+    auto queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+    auto top_block = gr::make_top_block("mmse_resampler_conditioner_cc_test");
     auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
-    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
 
     std::shared_ptr<InMemoryConfiguration> config;
     config = std::make_shared<InMemoryConfiguration>();
@@ -90,9 +90,9 @@ TEST(MmseResamplerTest, InstantiationAndRunTest2)
     config->set_property("Resampler.sample_freq_in", std::to_string(fs_in));
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_out));
 
-    std::shared_ptr<MmseResamplerConditioner> resampler = std::make_shared<MmseResamplerConditioner>(config.get(), "Resampler", 1, 1);
+    auto resampler = std::make_shared<MmseResamplerConditioner>(config.get(), "Resampler", 1, 1);
 
-    gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(gr_complex));
+    auto sink = gr::blocks::null_sink::make(sizeof(gr_complex));
 
     EXPECT_NO_THROW({
         resampler->connect(top_block);

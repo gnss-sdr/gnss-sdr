@@ -35,6 +35,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_make_unique.h"
 #include "gps_almanac.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -137,12 +138,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     mapStringValues_["B2"] = evBDS_B2;
     mapStringValues_["B3"] = evBDS_B3;
 
-
     initial_carrier_phase_offset_estimation_rads = std::vector<double>(nchannels, 0.0);
     channel_initialized = std::vector<bool>(nchannels, false);
 
     max_obs_block_rx_clock_offset_ms = conf_.max_obs_block_rx_clock_offset_ms;
-
 
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
@@ -211,7 +210,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
     if (d_kml_output_enabled)
         {
-            d_kml_dump = std::make_shared<Kml_Printer>(conf_.kml_output_path);
+            d_kml_dump = std::make_unique<Kml_Printer>(conf_.kml_output_path);
             d_kml_dump->set_headers(kml_dump_filename);
         }
     else
@@ -230,7 +229,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
     if (d_gpx_output_enabled)
         {
-            d_gpx_dump = std::make_shared<Gpx_Printer>(conf_.gpx_output_path);
+            d_gpx_dump = std::make_unique<Gpx_Printer>(conf_.gpx_output_path);
             d_gpx_dump->set_headers(gpx_dump_filename);
         }
     else
@@ -249,7 +248,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
     if (d_geojson_output_enabled)
         {
-            d_geojson_printer = std::make_shared<GeoJSON_Printer>(conf_.geojson_output_path);
+            d_geojson_printer = std::make_unique<GeoJSON_Printer>(conf_.geojson_output_path);
             d_geojson_printer->set_headers(geojson_dump_filename);
         }
     else
@@ -267,7 +266,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     if (d_nmea_output_file_enabled)
         {
-            d_nmea_printer = std::make_shared<Nmea_Printer>(conf_.nmea_dump_filename, conf_.nmea_output_file_enabled, conf_.flag_nmea_tty_port, conf_.nmea_dump_devname, conf_.nmea_output_file_path);
+            d_nmea_printer = std::make_unique<Nmea_Printer>(conf_.nmea_dump_filename, conf_.nmea_output_file_enabled, conf_.flag_nmea_tty_port, conf_.nmea_dump_devname, conf_.nmea_output_file_path);
         }
     else
         {
@@ -279,7 +278,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     rtcm_dump_filename = d_dump_filename;
     if (conf_.flag_rtcm_server or conf_.flag_rtcm_tty_port or conf_.rtcm_output_file_enabled)
         {
-            d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
+            d_rtcm_printer = std::make_unique<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
             std::map<int, int> rtcm_msg_rate_ms = conf_.rtcm_msg_rate_ms;
             if (rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
                 {
@@ -355,7 +354,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_rinex_version = conf_.rinex_version;
     if (b_rinex_output_enabled)
         {
-            rp = std::make_shared<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path, conf_.rinex_name);
+            rp = std::make_unique<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path, conf_.rinex_name);
             rp->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
@@ -413,7 +412,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
-            udp_sink_ptr = std::unique_ptr<Monitor_Pvt_Udp_Sink>(new Monitor_Pvt_Udp_Sink(udp_addr_vec, conf_.udp_port, conf_.protobuf_enabled));
+            udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, conf_.udp_port, conf_.protobuf_enabled);
         }
     else
         {
@@ -2283,28 +2282,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             if (current_RX_time_ms % d_kml_rate_ms == 0)
                                                 {
-                                                    d_kml_dump->print_position(d_user_pvt_solver, false);
+                                                    d_kml_dump->print_position(d_user_pvt_solver.get(), false);
                                                 }
                                         }
                                     if (d_gpx_output_enabled)
                                         {
                                             if (current_RX_time_ms % d_gpx_rate_ms == 0)
                                                 {
-                                                    d_gpx_dump->print_position(d_user_pvt_solver, false);
+                                                    d_gpx_dump->print_position(d_user_pvt_solver.get(), false);
                                                 }
                                         }
                                     if (d_geojson_output_enabled)
                                         {
                                             if (current_RX_time_ms % d_geojson_rate_ms == 0)
                                                 {
-                                                    d_geojson_printer->print_position(d_user_pvt_solver, false);
+                                                    d_geojson_printer->print_position(d_user_pvt_solver.get(), false);
                                                 }
                                         }
                                     if (d_nmea_output_file_enabled)
                                         {
                                             if (current_RX_time_ms % d_nmea_rate_ms == 0)
                                                 {
-                                                    d_nmea_printer->Print_Nmea_Line(d_user_pvt_solver, false);
+                                                    d_nmea_printer->Print_Nmea_Line(d_user_pvt_solver.get(), false);
                                                 }
                                         }
 

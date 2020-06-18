@@ -51,7 +51,7 @@ public:
         const std::string& role,
         unsigned int in_stream,
         unsigned int out_stream,
-        std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~RtlTcpSignalSource() = default;
 
@@ -111,7 +111,6 @@ private:
     boost::shared_ptr<gr::block> valve_;
 #endif
     gr::blocks::file_sink::sptr file_sink_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H

@@ -53,7 +53,7 @@ class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 public:
     TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
-        const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>>& queue);
+        Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~TwoBitPackedFileSignalSource() = default;
     inline std::string role() override
@@ -145,7 +145,6 @@ private:
 #endif
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
     size_t item_size_;
     bool big_endian_items_;
     bool big_endian_bytes_;

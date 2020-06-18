@@ -30,18 +30,18 @@
 #include <vector>
 
 
-labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)
+labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector, Concurrent_Queue<pmt::pmt_t> *queue)
 {
-    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, std::move(queue)));
+    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, queue));
 }
 
 
 labsat23_source::labsat23_source(const char *signal_file_basename,
     int channel_selector,
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue) : gr::block("labsat23_source",
-                                                               gr::io_signature::make(0, 0, 0),
-                                                               gr::io_signature::make(1, 1, sizeof(gr_complex))),
-                                                           d_queue(std::move(queue))
+    Concurrent_Queue<pmt::pmt_t> *queue) : gr::block("labsat23_source",
+                                               gr::io_signature::make(0, 0, 0),
+                                               gr::io_signature::make(1, 1, sizeof(gr_complex))),
+                                           d_queue(queue)
 {
     if (channel_selector < 1 or channel_selector > 2)
         {
@@ -60,16 +60,15 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
     std::string signal_file;
     this->set_output_multiple(8);
     signal_file = generate_filename();
-    binary_input_file = new std::ifstream(signal_file.c_str(), std::ios::in | std::ios::binary);
+    binary_input_file.open(signal_file.c_str(), std::ios::in | std::ios::binary);
 
-    if (binary_input_file->is_open())
+    if (binary_input_file.is_open())
         {
             std::cout << "Labsat file source is reading samples from " << signal_file << std::endl;
         }
     else
         {
             std::cout << "Labsat file " << signal_file << " could not be opened!" << std::endl;
-            delete binary_input_file;
             exit(1);
         }
 }
@@ -79,9 +78,9 @@ labsat23_source::~labsat23_source()
 {
     try
         {
-            if (binary_input_file->is_open())
+            if (binary_input_file.is_open())
                 {
-                    binary_input_file->close();
+                    binary_input_file.close();
                 }
         }
     catch (const std::ifstream::failure &e)
@@ -92,7 +91,6 @@ labsat23_source::~labsat23_source()
         {
             std::cerr << e.what() << '\n';
         }
-    delete binary_input_file;
 }
 
 
@@ -202,10 +200,10 @@ int labsat23_source::general_work(int noutput_items,
 
     if (d_header_parsed == false)
         {
-            if (binary_input_file->eof() == false)
+            if (binary_input_file.eof() == false)
                 {
                     std::array<char, 1024> memblock{};
-                    binary_input_file->read(memblock.data(), 1024);
+                    binary_input_file.read(memblock.data(), 1024);
                     // parse Labsat header
                     // check preamble
                     int byte_counter = 0;
@@ -392,8 +390,8 @@ int labsat23_source::general_work(int noutput_items,
                             // end of header
                             d_header_parsed = true;
                             // seek file to the first signal sample
-                            binary_input_file->clear();
-                            binary_input_file->seekg(header_bytes, binary_input_file->beg);
+                            binary_input_file.clear();
+                            binary_input_file.seekg(header_bytes, binary_input_file.beg);
                             return 0;
                         }
                     std::cout << "Labsat file header error: section 2 is not available." << std::endl;
@@ -419,8 +417,8 @@ int labsat23_source::general_work(int noutput_items,
                     if (n_int16_to_read > 0)
                         {
                             std::vector<int16_t> memblock(n_int16_to_read);
-                            binary_input_file->read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
-                            n_int16_to_read = binary_input_file->gcount() / 2;  // from bytes to int16
+                            binary_input_file.read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
+                            n_int16_to_read = binary_input_file.gcount() / 2;  // from bytes to int16
                             if (n_int16_to_read > 0)
                                 {
                                     int output_pointer = 0;
@@ -438,9 +436,9 @@ int labsat23_source::general_work(int noutput_items,
                                 {
                                     std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
                                 }
-                            binary_input_file->close();
-                            binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
-                            if (binary_input_file->is_open())
+                            binary_input_file.close();
+                            binary_input_file.open(generate_filename().c_str(), std::ios::in | std::ios::binary);
+                            if (binary_input_file.is_open())
                                 {
                                     std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
                                     return 0;
@@ -477,8 +475,8 @@ int labsat23_source::general_work(int noutput_items,
                     if (n_int16_to_read > 0)
                         {
                             std::vector<int16_t> memblock(n_int16_to_read);
-                            binary_input_file->read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
-                            n_int16_to_read = binary_input_file->gcount() / 2;  // from bytes to int16
+                            binary_input_file.read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
+                            n_int16_to_read = binary_input_file.gcount() / 2;  // from bytes to int16
                             if (n_int16_to_read > 0)
                                 {
                                     int output_pointer = 0;
@@ -496,9 +494,9 @@ int labsat23_source::general_work(int noutput_items,
                                 {
                                     std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
                                 }
-                            binary_input_file->close();
-                            binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
-                            if (binary_input_file->is_open())
+                            binary_input_file.close();
+                            binary_input_file.open(generate_filename().c_str(), std::ios::in | std::ios::binary);
+                            if (binary_input_file.is_open())
                                 {
                                     std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
                                     return 0;

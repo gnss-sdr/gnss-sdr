@@ -92,10 +92,8 @@ Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 bool stop;
 Concurrent_Queue<int> channel_internal_queue;
-GpsL1CaPcpsAcquisitionFineDoppler* acquisition;
-Gnss_Synchro* gnss_synchro;
 std::vector<Gnss_Synchro> gnss_sync_vector;
-
+Gnss_Synchro gnss_synchro{};
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
@@ -170,7 +168,7 @@ void wait_message()
             switch (message)
                 {
                 case 1:  // Positive acq
-                    gnss_sync_vector.push_back(*gnss_synchro);
+                    gnss_sync_vector.push_back(gnss_synchro);
                     // acquisition->reset();
                     break;
                 case 2:  // negative acq
@@ -198,7 +196,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     std::shared_ptr<GNSSBlockInterface> source;
     try
         {
-            source = block_factory.GetSignalSource(configuration, queue);
+            source = block_factory.GetSignalSource(configuration.get(), queue.get());
         }
     catch (const boost::exception_ptr& e)
         {
@@ -209,7 +207,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     std::shared_ptr<GNSSBlockInterface> conditioner;
     try
         {
-            conditioner = block_factory.GetSignalConditioner(configuration);
+            conditioner = block_factory.GetSignalConditioner(configuration.get());
         }
     catch (const boost::exception_ptr& e)
         {
@@ -359,20 +357,20 @@ int main(int argc, char** argv)
     top_block = gr::make_top_block("Acquisition test");
 
     // Satellite signal definition
-    gnss_synchro = new Gnss_Synchro();
-    gnss_synchro->Channel_ID = 0;
-    gnss_synchro->System = 'G';
+    gnss_synchro = Gnss_Synchro();
+    gnss_synchro.Channel_ID = 0;
+    gnss_synchro.System = 'G';
     std::string signal = "1C";
-    signal.copy(gnss_synchro->Signal, 2, 0);
-    gnss_synchro->PRN = 1;
+    signal.copy(gnss_synchro.Signal, 2, 0);
+    gnss_synchro.PRN = 1;
 
     int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     configuration->set_property("Acquisition.max_dwells", "10");
 
-    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
+    auto acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);
-    acquisition->set_gnss_synchro(gnss_synchro);
+    acquisition->set_gnss_synchro(&gnss_synchro);
     acquisition->set_threshold(configuration->property("Acquisition.threshold", 2.0));
     acquisition->set_doppler_max(configuration->property("Acquisition.doppler_max", 10000));
     acquisition->set_doppler_step(configuration->property("Acquisition.doppler_step", 250));
@@ -425,8 +423,8 @@ int main(int argc, char** argv)
 
     for (unsigned int PRN = 1; PRN < 33; PRN++)
         {
-            gnss_synchro->PRN = PRN;
-            acquisition->set_gnss_synchro(gnss_synchro);
+            gnss_synchro.PRN = PRN;
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->init();
             acquisition->set_local_code();
             acquisition->reset();
@@ -515,8 +513,6 @@ int main(int argc, char** argv)
             else
                 {
                     std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
-                    delete acquisition;
-                    delete gnss_synchro;
                     google::ShutDownCommandLineFlags();
                     std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
                     return 0;
@@ -525,8 +521,6 @@ int main(int argc, char** argv)
     catch (const boost::exception& e)
         {
             std::cout << "Exception in getting Global ephemeris map" << std::endl;
-            delete acquisition;
-            delete gnss_synchro;
             google::ShutDownCommandLineFlags();
             std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
             return 0;
@@ -546,8 +540,6 @@ int main(int argc, char** argv)
     if (doppler_measurements_map.empty())
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
-            delete acquisition;
-            delete gnss_synchro;
             google::ShutDownCommandLineFlags();
             std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
             return 0;
@@ -641,9 +633,6 @@ int main(int argc, char** argv)
                     std::cout << "  " << it.first << "   " << it.second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
                 }
         }
-
-    delete acquisition;
-    delete gnss_synchro;
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;

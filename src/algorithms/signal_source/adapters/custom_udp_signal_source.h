@@ -48,7 +48,7 @@ class CustomUDPSignalSource : public GNSSBlockInterface
 public:
     CustomUDPSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~CustomUDPSignalSource() = default;
 
@@ -98,8 +98,6 @@ private:
 #endif
 
     Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
-
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif  // GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H

@@ -295,7 +295,6 @@ void* handler_DMA_trk_pull_in_test(void* arguments)
             // Throttle the DMA
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-
             nsamples_remaining -= nsamples_block_size;
 
             if (nsamples_remaining == 0)
@@ -474,13 +473,11 @@ public:
         return true;
     }
 
-
     bool Event_failed_acquisition_repeat() override
     {
         acquisition_successful = false;
         return true;
     }
-
 
     bool Event_failed_acquisition_no_repeat() override
     {
@@ -882,7 +879,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                 }
         }
 
-
     // use generator or use an external capture file
     if (FLAGS_enable_external_signal_file)
         {
@@ -1011,7 +1007,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                             // create flowgraph
                             top_block = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_Fpga_make();
 

@@ -19,6 +19,7 @@
  */
 
 #include "GPS_L1_CA.h"
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -44,10 +45,8 @@ TEST(PreambleCorrelationTest, TestMethods)
     std::random_device rd;
     std::default_random_engine e2(rd());
     std::uniform_real_distribution<> dist(-1.0, 1.0);
-    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
-        {
-            d_symbol_history[i] = dist(e2);
-        }
+
+    std::generate(d_symbol_history.begin(), d_symbol_history.end(), [&dist, &e2]() { return dist(e2); });
 
     int32_t n = 0;
     for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)

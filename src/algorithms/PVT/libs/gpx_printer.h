@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-class Rtklib_Solver;
+class Pvt_Solution;
 
 /*!
  * \brief Prints PVT information to GPX format file
@@ -40,7 +40,7 @@ public:
     explicit Gpx_Printer(const std::string& base_path = ".");
     ~Gpx_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values);
+    bool print_position(const Pvt_Solution* position, bool print_average_values);
     bool close_file();
 
 private:

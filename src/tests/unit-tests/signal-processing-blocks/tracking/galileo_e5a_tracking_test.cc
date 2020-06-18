@@ -103,7 +103,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_5X", "Galileo_E5a_DLL_PLL_Tracking", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking_5X", "Galileo_E5a_DLL_PLL_Tracking", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
     // REAL
@@ -127,7 +127,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
 
     ASSERT_NO_THROW({
         gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);

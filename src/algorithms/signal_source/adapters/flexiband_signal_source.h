@@ -47,7 +47,7 @@ class FlexibandSignalSource : public GNSSBlockInterface
 public:
     FlexibandSignalSource(ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
-        unsigned int out_stream, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
+        unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~FlexibandSignalSource() = default;
 
@@ -94,13 +94,11 @@ private:
     int n_channels_;
     int sel_ch_;
 
-    gr::block_sptr flexiband_source_;
+    boost::shared_ptr<gr::block> flexiband_source_;
 
-    std::vector<std::shared_ptr<gr::block>> char_to_float;
-    std::vector<std::shared_ptr<gr::block>> float_to_complex_;
+    std::vector<boost::shared_ptr<gr::block>> char_to_float;
+    std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
-
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 };
 
 #endif  // GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H

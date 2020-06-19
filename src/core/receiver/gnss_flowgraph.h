@@ -62,7 +62,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);  // NOLINT(performance-unnecessary-value-param)
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue);
 
     /*!
      * \brief Destructor
@@ -173,32 +173,29 @@ private:
 
     double project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz);
     bool is_multiband() const;
+
+    std::vector<std::string> split_string(const std::string& s, char delim);
+
     bool connected_;
     bool running_;
     bool multiband_;
+    bool enable_monitor_;
+
     int sources_count_;
 
     unsigned int channels_count_;
     unsigned int acq_channels_count_;
     unsigned int max_acq_channels_;
+
     std::string config_file_;
-    std::shared_ptr<ConfigurationInterface> configuration_;
+
+    std::mutex signal_list_mutex_;
 
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
-
-    std::shared_ptr<GNSSBlockInterface> observables_;
-    std::shared_ptr<GNSSBlockInterface> pvt_;
-
-    std::map<std::string, gr::basic_block_sptr> acq_resamplers_;
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
-    gnss_sdr_sample_counter_sptr ch_out_sample_counter;
-#if ENABLE_FPGA
-    gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
-#endif
-    gr::top_block_sptr top_block_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
+    std::vector<unsigned int> channels_state_;
 
     std::list<Gnss_Signal> available_GPS_1C_signals_;
     std::list<Gnss_Signal> available_GPS_2S_signals_;
@@ -210,6 +207,7 @@ private:
     std::list<Gnss_Signal> available_GLO_2G_signals_;
     std::list<Gnss_Signal> available_BDS_B1_signals_;
     std::list<Gnss_Signal> available_BDS_B3_signals_;
+
     enum StringValue
     {
         evGPS_1C,
@@ -224,14 +222,20 @@ private:
         evBDS_B3
     };
     std::map<std::string, StringValue> mapStringValues_;
+    std::map<std::string, gr::basic_block_sptr> acq_resamplers_;
 
-    std::vector<unsigned int> channels_state_;
-    channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
-    std::mutex signal_list_mutex;
+    std::shared_ptr<ConfigurationInterface> configuration_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
+    std::shared_ptr<GNSSBlockInterface> observables_;
+    std::shared_ptr<GNSSBlockInterface> pvt_;
 
-    bool enable_monitor_;
+    gr::top_block_sptr top_block_;
     gr::basic_block_sptr GnssSynchroMonitor_;
-    std::vector<std::string> split_string(const std::string& s, char delim);
+    channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
+    gnss_sdr_sample_counter_sptr ch_out_sample_counter_;
+#if ENABLE_FPGA
+    gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter_;
+#endif
 };
 
 #endif  // GNSS_SDR_GNSS_FLOWGRAPH_H

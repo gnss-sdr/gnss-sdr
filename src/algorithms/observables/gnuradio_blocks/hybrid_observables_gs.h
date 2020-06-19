@@ -68,7 +68,23 @@ private:
 
     explicit hybrid_observables_gs(const Obs_Conf& conf_);
 
-    Obs_Conf d_conf;
+    void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
+    double compute_T_rx_s(const Gnss_Synchro& a) const;
+    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, uint32_t ch, uint64_t rx_clock) const;
+    void update_TOW(const std::vector<Gnss_Synchro>& data);
+    void compute_pranges(std::vector<Gnss_Synchro>& data) const;
+    void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
+    int32_t save_matfile() const;
+
+    bool d_T_rx_TOW_set;  // rx time follow GPST
+    bool d_dump;
+    bool d_dump_mat;
+    uint32_t d_T_rx_TOW_ms;
+    uint32_t d_T_rx_step_ms;
+    uint32_t d_T_status_report_timer_ms;
+    uint32_t d_nchannels_in;
+    uint32_t d_nchannels_out;
+    double d_smooth_filter_M;
 
     enum StringValue_
     {
@@ -84,33 +100,21 @@ private:
         evBDS_B2,
         evBDS_B3
     };
-
-    bool d_T_rx_TOW_set;  // rx time follow GPST
-    bool d_dump;
-    bool d_dump_mat;
-    uint32_t d_T_rx_TOW_ms;
-    uint32_t d_T_rx_step_ms;
-    uint32_t d_T_status_report_timer_ms;
-    uint32_t d_nchannels_in;
-    uint32_t d_nchannels_out;
-    double d_smooth_filter_M;
-
     std::map<std::string, StringValue_> d_mapStringValues;
+
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;
     std::vector<double> d_channel_last_carrier_phase_rads;
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-    std::unique_ptr<Gnss_circular_deque<Gnss_Synchro>> d_gnss_synchro_history;  // Tracking observable history
-    boost::circular_buffer<uint64_t> d_Rx_clock_buffer;                         // time history
 
-    void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
-    double compute_T_rx_s(const Gnss_Synchro& a) const;
-    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, uint32_t ch, uint64_t rx_clock) const;
-    void update_TOW(const std::vector<Gnss_Synchro>& data);
-    void compute_pranges(std::vector<Gnss_Synchro>& data) const;
-    void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
-    int32_t save_matfile() const;
+    std::string d_dump_filename;
+
+    std::ofstream d_dump_file;
+
+    std::unique_ptr<Gnss_circular_deque<Gnss_Synchro>> d_gnss_synchro_history;  // Tracking observable history
+
+    boost::circular_buffer<uint64_t> d_Rx_clock_buffer;  // time history
+
+    Obs_Conf d_conf;
 };
 
 #endif  // GNSS_SDR_HYBRID_OBSERVABLES_GS_H

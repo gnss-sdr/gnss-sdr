@@ -189,6 +189,12 @@ public:
 private:
     friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
     explicit pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
+
+    void send_negative_acquisition();
+    void send_positive_acquisition();
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min);
+    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+
     bool d_active;
     bool d_make_2_steps;
     uint32_t d_doppler_index;
@@ -211,14 +217,10 @@ private:
     float d_test_statistics;
     float d_doppler_step2;
     float d_doppler_center_step_two;
-    pcpsconf_fpga_t d_acq_parameters;
-    Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<Fpga_Acquisition> d_acquisition_fpga;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
-    void send_negative_acquisition();
-    void send_positive_acquisition();
-    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min);
-    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    pcpsconf_fpga_t d_acq_parameters;
+    Gnss_Synchro* d_gnss_synchro;
 };
 
 #endif  // GNSS_SDR_PCPS_ACQUISITION_FPGA_H

@@ -132,20 +132,33 @@ private:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
-    enum StringValue_
+    void msg_handler_telemetry(const pmt::pmt_t& msg);
+
+    void initialize_and_apply_carrier_phase_offset();
+
+    void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
+        double rx_clock_offset_s);
+
+    std::map<int, Gnss_Synchro> interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
+        const std::map<int, Gnss_Synchro>& observables_map_t1,
+        double rx_time_s);
+
+    inline std::time_t convert_to_time_t(const boost::posix_time::ptime pt) const
     {
-        evGPS_1C,
-        evGPS_2S,
-        evGPS_L5,
-        evSBAS_1C,
-        evGAL_1B,
-        evGAL_5X,
-        evGLO_1G,
-        evGLO_2G,
-        evBDS_B1,
-        evBDS_B2,
-        evBDS_B3
-    };
+        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
+    }
+
+    std::vector<std::string> split_string(const std::string& s, char delim) const;
+
+    typedef struct
+    {
+        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
+        double ttff;
+    } d_ttff_msgbuf;
+    bool send_sys_v_ttff_msg(d_ttff_msgbuf ttff);
+
+    bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
+    bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
     bool d_dump;
     bool d_dump_mat;
@@ -189,6 +202,9 @@ private:
     double d_rinex_version;
     double d_rx_time;
 
+    key_t d_sysv_msg_key;
+    int d_sysv_msqid;
+
     std::unique_ptr<Rinex_Printer> d_rp;
     std::unique_ptr<Kml_Printer> d_kml_dump;
     std::unique_ptr<Gpx_Printer> d_gpx_dump;
@@ -210,42 +226,26 @@ private:
     std::vector<bool> d_channel_initialized;
     std::vector<double> d_initial_carrier_phase_offset_estimation_rads;
 
+    enum StringValue_
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G,
+        evBDS_B1,
+        evBDS_B2,
+        evBDS_B3
+    };
+    std::map<std::string, StringValue_> d_mapStringValues;
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
-    std::map<std::string, StringValue_> d_mapStringValues;
 
     boost::posix_time::time_duration d_utc_diff_time;
-
-    void msg_handler_telemetry(const pmt::pmt_t& msg);
-
-    void initialize_and_apply_carrier_phase_offset();
-
-    void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
-        double rx_clock_offset_s);
-
-    std::map<int, Gnss_Synchro> interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
-        const std::map<int, Gnss_Synchro>& observables_map_t1,
-        double rx_time_s);
-
-    inline std::time_t convert_to_time_t(const boost::posix_time::ptime pt) const
-    {
-        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
-    }
-
-    std::vector<std::string> split_string(const std::string& s, char delim) const;
-
-    key_t d_sysv_msg_key;
-    int d_sysv_msqid;
-    typedef struct
-    {
-        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
-        double ttff;
-    } d_ttff_msgbuf;
-    bool send_sys_v_ttff_msg(d_ttff_msgbuf ttff);
-
-    bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
-    bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 };
 
 #endif  // GNSS_SDR_RTKLIB_PVT_GS_H

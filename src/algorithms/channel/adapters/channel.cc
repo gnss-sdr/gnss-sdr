@@ -103,7 +103,7 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 
     gnss_signal_ = Gnss_Signal(implementation_);
 
-    channel_msg_rx = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
+    channel_msg_rx_ = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
 }
 
 
@@ -126,9 +126,9 @@ void Channel::connect(gr::top_block_sptr top_block)
     // Message ports
     if (!flag_enable_fpga)
         {
-            top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+            top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
         }
-    top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+    top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
 
     connected_ = true;
 }
@@ -153,9 +153,9 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
     if (!flag_enable_fpga)
         {
-            top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+            top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
         }
-    top_block->msg_disconnect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+    top_block->msg_disconnect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
     connected_ = false;
 }
 
@@ -191,7 +191,7 @@ gr::basic_block_sptr Channel::get_right_block()
 
 void Channel::set_signal(const Gnss_Signal& gnss_signal)
 {
-    std::lock_guard<std::mutex> lk(mx);
+    std::lock_guard<std::mutex> lk(mx_);
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
     gnss_synchro_.Signal[0] = str_aux[0];
@@ -210,7 +210,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 
 void Channel::stop_channel()
 {
-    std::lock_guard<std::mutex> lk(mx);
+    std::lock_guard<std::mutex> lk(mx_);
     bool result = channel_fsm_->Event_stop_channel();
     if (!result)
         {
@@ -229,7 +229,7 @@ void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz)
 
 void Channel::start_acquisition()
 {
-    std::lock_guard<std::mutex> lk(mx);
+    std::lock_guard<std::mutex> lk(mx_);
     bool result = false;
     if (!flag_enable_fpga)
         {

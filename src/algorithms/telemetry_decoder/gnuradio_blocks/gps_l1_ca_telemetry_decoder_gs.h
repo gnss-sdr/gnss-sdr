@@ -73,6 +73,9 @@ private:
 
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
+    bool gps_word_parityCheck(uint32_t gpsword);
+    bool decode_subframe();
+
     bool d_flag_frame_sync;
     bool d_flag_parity;
     bool d_flag_preamble;
@@ -108,9 +111,6 @@ private:
 
     Gps_Navigation_Message d_nav;
     Gnss_Satellite d_satellite;
-
-    bool gps_word_parityCheck(uint32_t gpsword);
-    bool decode_subframe();
 };
 
 #endif  // GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H

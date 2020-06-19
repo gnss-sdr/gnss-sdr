@@ -78,6 +78,11 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
+    void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
+    void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
+    void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
+    void decode_FNAV_word(float *page_symbols, int32_t frame_length);
+
     bool d_sent_tlm_failed_msg;
     bool d_flag_frame_sync;
     bool d_flag_PLL_180_deg_phase_locked;
@@ -130,11 +135,6 @@ private:
     // navigation message vars
     Galileo_Navigation_Message d_inav_nav;
     Galileo_Fnav_Message d_fnav_nav;
-
-    void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
-    void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
-    void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
-    void decode_FNAV_word(float *page_symbols, int32_t frame_length);
 };
 
 #endif  // GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H

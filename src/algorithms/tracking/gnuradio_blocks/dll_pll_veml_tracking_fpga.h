@@ -105,6 +105,18 @@ private:
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
     explicit dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
+    void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
+    bool cn0_and_tracking_lock_status(double coh_integration_time_s);
+    bool acquire_secondary();
+    void do_correlation_step();
+    void run_dll_pll();
+    void check_carrier_phase_coherent_initialization();
+    void update_tracking_vars();
+    void clear_tracking_vars();
+    void save_correlation_results();
+    void log_data();
+    int32_t save_matfile();
+
     bool d_veml;
     bool d_cloop;
     bool d_secondary;
@@ -228,18 +240,6 @@ private:
     Tracking_loop_filter d_code_loop_filter;
 
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
-
-    void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
-    bool cn0_and_tracking_lock_status(double coh_integration_time_s);
-    bool acquire_secondary();
-    void do_correlation_step();
-    void run_dll_pll();
-    void check_carrier_phase_coherent_initialization();
-    void update_tracking_vars();
-    void clear_tracking_vars();
-    void save_correlation_results();
-    void log_data();
-    int32_t save_matfile();
 };
 
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

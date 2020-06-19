@@ -220,6 +220,20 @@ public:
 private:
     friend pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
     explicit pcps_acquisition(const Acq_Conf& conf_);
+
+    void update_local_carrier(own::span<gr_complex> carrier_vector, float freq);
+    void update_grid_doppler_wipeoffs();
+    void update_grid_doppler_wipeoffs_step2();
+    void acquisition_core(uint64_t samp_count);
+    void send_negative_acquisition();
+    void send_positive_acquisition();
+    void dump_results(int32_t effective_fft_size);
+    bool is_fdma();
+    bool start();
+    void calculate_threshold(void);
+    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+
     bool d_active;
     bool d_worker_active;
     bool d_cshort;
@@ -248,6 +262,9 @@ private:
     float d_test_statistics;
     float d_doppler_center_step_two;
     std::string d_dump_filename;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_magnitude_grid;
     volk_gnsssdr::vector<float> d_tmp_buffer;
     volk_gnsssdr::vector<std::complex<float>> d_input_signal;
@@ -256,25 +273,10 @@ private:
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
     volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
-    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex> d_ifft;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
     Acq_Conf d_acq_parameters;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat d_grid;
     arma::fmat d_narrow_grid;
-    void update_local_carrier(own::span<gr_complex> carrier_vector, float freq);
-    void update_grid_doppler_wipeoffs();
-    void update_grid_doppler_wipeoffs_step2();
-    void acquisition_core(uint64_t samp_count);
-    void send_negative_acquisition();
-    void send_positive_acquisition();
-    void dump_results(int32_t effective_fft_size);
-    bool is_fdma();
-    bool start();
-    void calculate_threshold(void);
-    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
-    float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 };
 
 #endif  // GNSS_SDR_PCPS_ACQUISITION_H

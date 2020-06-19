@@ -48,6 +48,7 @@ public:
     void set_queue(Concurrent_Queue<pmt::pmt_t>* queue);
     void set_channel(uint32_t channel);
     void start_acquisition();
+
     // FSM EVENTS
     bool Event_start_acquisition();
     bool Event_start_acquisition_fpga();
@@ -64,13 +65,16 @@ private:
     void request_satellite();
     void notify_stop_tracking();
 
+    uint32_t channel_;
+    uint32_t state_;
+
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     std::shared_ptr<TelemetryDecoderInterface> nav_;
+
+    std::mutex mx_;
+    
     Concurrent_Queue<pmt::pmt_t>* queue_;
-    uint32_t channel_;
-    uint32_t d_state;
-    std::mutex mx;
 };
 
 #endif  // GNSS_SDR_CHANNEL_FSM_H

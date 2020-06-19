@@ -217,8 +217,8 @@ private:
     std::vector<std::vector<float>> d_grid_data;
     std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
 
-    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
-    std::shared_ptr<gr::fft::fft_complex> d_ifft;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
     float d_doppler_freq;

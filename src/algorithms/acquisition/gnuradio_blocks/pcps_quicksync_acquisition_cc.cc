@@ -19,6 +19,7 @@
 
 #include "pcps_quicksync_acquisition_cc.h"
 #include "GPS_L1_CA.h"
+#include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -95,9 +96,9 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_code = std::vector<gr_complex>(d_samples_per_code, lv_cmake(0.0F, 0.0F));
 
     // Direct FFT
-    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
+    d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
     // Inverse FFT
-    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
+    d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;

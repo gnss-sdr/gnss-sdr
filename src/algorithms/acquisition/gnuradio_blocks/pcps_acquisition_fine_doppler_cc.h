@@ -216,8 +216,8 @@ private:
     volk_gnsssdr::vector<float> d_magnitude;
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
     volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
-    std::shared_ptr<gr::fft::fft_complex> d_ifft;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;

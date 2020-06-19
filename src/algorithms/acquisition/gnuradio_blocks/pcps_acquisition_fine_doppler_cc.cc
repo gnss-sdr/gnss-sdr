@@ -22,6 +22,7 @@
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include "GPS_L1_CA.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_make_unique.h"
 #include "gps_sdr_signal_processing.h"
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
@@ -80,10 +81,10 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_magnitude.reserve(d_fft_size);
     d_10_ms_buffer.reserve(50 * d_samples_per_ms);
     // Direct FFT
-    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
+    d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
+    d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = conf_.dump;
@@ -379,7 +380,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     int signal_samples = prn_replicas * d_fft_size;
     // int fft_size_extended = nextPowerOf2(signal_samples * zero_padding_factor);
     int fft_size_extended = signal_samples * zero_padding_factor;
-    auto fft_operator = std::make_shared<gr::fft::fft_complex>(fft_size_extended, true);
+    auto fft_operator = std::make_unique<gr::fft::fft_complex>(fft_size_extended, true);
     // zero padding the entire vector
     std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
 

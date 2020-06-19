@@ -226,8 +226,8 @@ private:
     std::vector<gr_complex> d_fft_code_Q_A;
     std::vector<gr_complex> d_fft_code_Q_B;
     std::vector<gr_complex> d_inbuffer;
-    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
-    std::shared_ptr<gr::fft::fft_complex> d_ifft;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;

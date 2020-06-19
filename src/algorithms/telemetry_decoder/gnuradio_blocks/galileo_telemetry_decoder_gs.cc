@@ -82,8 +82,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 // preamble bits to sampled symbols
                 d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
-                CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
-                DataLength = (CodeLength / nn) - mm;
+                d_codelength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
+                d_datalength = (d_codelength / d_nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
 
                 break;
@@ -99,8 +99,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 // preamble bits to sampled symbols
                 d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
-                CodeLength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
-                DataLength = (CodeLength / nn) - mm;
+                d_codelength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+                d_datalength = (d_codelength / d_nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
                 break;
             }
@@ -111,8 +111,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             d_PRN_code_period_ms = 0U;
             d_required_symbols = 0U;
             d_frame_length_symbols = 0U;
-            CodeLength = 0;
-            DataLength = 0;
+            d_codelength = 0;
+            d_datalength = 0;
             d_max_symbols_without_valid_frame = 0;
             std::cout << "Galileo unified telemetry decoder error: Unknown frame type " << std::endl;
         }
@@ -157,26 +157,25 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_flag_parity = false;
     d_TOW_at_current_symbol_ms = 0;
     d_TOW_at_Preamble_ms = 0;
-    delta_t = 0;
+    d_delta_t = 0;
     d_CRC_error_counter = 0;
     flag_even_word_arrived = 0;
     d_flag_preamble = false;
     d_channel = 0;
-    flag_TOW_set = false;
-    flag_PLL_180_deg_phase_locked = false;
+    d_flag_PLL_180_deg_phase_locked = false;
     d_symbol_history.set_capacity(d_required_symbols + 1);
 
     // vars for Viterbi decoder
-    int32_t max_states = 1U << static_cast<uint32_t>(mm);  // 2^mm
-    g_encoder[0] = 121;                                    // Polynomial G1
-    g_encoder[1] = 91;                                     // Polynomial G2
-    out0.reserve(max_states);
-    out1.reserve(max_states);
-    state0.reserve(max_states);
-    state1.reserve(max_states);
+    int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
+    std::array<int32_t, 2> g_encoder{{121, 91}};             // Polynomial G1 and G2
+    d_out0.reserve(max_states);
+    d_out1.reserve(max_states);
+    d_state0.reserve(max_states);
+    d_state1.reserve(max_states);
+
     // create appropriate transition matrices
-    nsc_transit(out0.data(), state0.data(), 0, g_encoder.data(), KK, nn);
-    nsc_transit(out1.data(), state1.data(), 1, g_encoder.data(), KK, nn);
+    nsc_transit(d_out0.data(), d_state0.data(), 0, g_encoder.data(), d_KK, d_nn);
+    nsc_transit(d_out1.data(), d_state1.data(), 1, g_encoder.data(), d_KK, d_nn);
 }
 
 
@@ -198,8 +197,8 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 
 void galileo_telemetry_decoder_gs::viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits)
 {
-    Viterbi(page_part_bits, out0.data(), state0.data(), out1.data(), state1.data(),
-        page_part_symbols, KK, nn, DataLength);
+    Viterbi(page_part_bits, d_out0.data(), d_state0.data(), d_out1.data(), d_state1.data(),
+        page_part_symbols, d_KK, d_nn, d_datalength);
 }
 
 
@@ -291,8 +290,8 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
             std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_inav_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
-            DLOG(INFO) << "delta_t=" << delta_t << "[s]";
+            d_delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_inav_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
+            DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
         }
     if (d_inav_nav.have_new_almanac() == true)
         {
@@ -527,11 +526,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_CRC_error_counter = 0;
                                         if (corr_value < 0)
                                             {
-                                                flag_PLL_180_deg_phase_locked = true;
+                                                d_flag_PLL_180_deg_phase_locked = true;
                                             }
                                         else
                                             {
-                                                flag_PLL_180_deg_phase_locked = false;
+                                                d_flag_PLL_180_deg_phase_locked = false;
                                             }
                                         d_stat = 2;
                                     }
@@ -556,7 +555,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             case 1:  // INAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
-                                if (flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
+                                if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
@@ -575,7 +574,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             case 2:  // FNAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
-                                if (flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
+                                if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
@@ -733,7 +732,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     {
                         if (d_inav_nav.flag_GGTO_1 == true and d_inav_nav.flag_GGTO_2 == true and d_inav_nav.flag_GGTO_3 == true and d_inav_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
                             {
-                                delta_t = d_inav_nav.A_0G_10 + d_inav_nav.A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.t_0G_10 + 604800.0 * (fmod((d_inav_nav.WN_0 - d_inav_nav.WN_0G_10), 64.0)));
+                                d_delta_t = d_inav_nav.A_0G_10 + d_inav_nav.A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.t_0G_10 + 604800.0 * (fmod((d_inav_nav.WN_0 - d_inav_nav.WN_0G_10), 64.0)));
                             }
 
                         current_symbol.Flag_valid_word = true;
@@ -755,9 +754,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.
-            // current_symbol.TOW_at_current_symbol_ms -= delta_t;  // Galileo to GPS TOW
+            // current_symbol.TOW_at_current_symbol_ms -= d_delta_t;  // Galileo to GPS TOW
 
-            if (flag_PLL_180_deg_phase_locked == true)
+            if (d_flag_PLL_180_deg_phase_locked == true)
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GALILEO_PI;

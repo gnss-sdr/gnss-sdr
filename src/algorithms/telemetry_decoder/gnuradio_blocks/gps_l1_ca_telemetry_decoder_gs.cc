@@ -109,8 +109,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     d_CRC_error_counter = 0;
     d_flag_preamble = false;
     d_channel = 0;
-    flag_TOW_set = false;
-    flag_PLL_180_deg_phase_locked = false;
+    d_flag_TOW_set = false;
+    d_flag_PLL_180_deg_phase_locked = false;
     d_prev_GPS_frame_4bytes = 0;
     d_symbol_history.set_capacity(d_required_symbols);
 }
@@ -317,7 +317,7 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
-    flag_TOW_set = false;
+    d_flag_TOW_set = false;
     d_symbol_history.clear();
     d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
@@ -378,7 +378,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         decode_subframe();
                         d_stat = 1;  // enter into frame pre-detection status
                     }
-                flag_TOW_set = false;
+                d_flag_TOW_set = false;
                 break;
             }
         case 1:  // possible preamble lock
@@ -411,11 +411,11 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 if (corr_value < 0)
                                     {
-                                        flag_PLL_180_deg_phase_locked = true;
+                                        d_flag_PLL_180_deg_phase_locked = true;
                                     }
                                 else
                                     {
-                                        flag_PLL_180_deg_phase_locked = false;
+                                        d_flag_PLL_180_deg_phase_locked = false;
                                     }
                                 decode_subframe();
                                 d_stat = 2;
@@ -425,7 +425,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 if (preamble_diff > d_preamble_period_symbols)
                                     {
                                         d_stat = 0;  // start again
-                                        flag_TOW_set = false;
+                                        d_flag_TOW_set = false;
                                     }
                             }
                     }
@@ -463,7 +463,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                         d_TOW_at_current_symbol_ms = 0;
                                         d_TOW_at_Preamble_ms = 0;
                                         d_CRC_error_counter = 0;
-                                        flag_TOW_set = false;
+                                        d_flag_TOW_set = false;
                                     }
                             }
                     }
@@ -478,7 +478,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                 {
                     d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
-                    flag_TOW_set = true;
+                    d_flag_TOW_set = true;
                 }
             else
                 {
@@ -487,18 +487,18 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         }
     else
         {
-            if (flag_TOW_set == true)
+            if (d_flag_TOW_set == true)
                 {
                     d_TOW_at_current_symbol_ms += GPS_L1_CA_BIT_PERIOD_MS;
                 }
         }
 
-    if (flag_TOW_set == true)
+    if (d_flag_TOW_set == true)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            current_symbol.Flag_valid_word = flag_TOW_set;
+            current_symbol.Flag_valid_word = d_flag_TOW_set;
 
-            if (flag_PLL_180_deg_phase_locked == true)
+            if (d_flag_PLL_180_deg_phase_locked == true)
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GPS_PI;

@@ -427,7 +427,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
     bool quadrature_,
     bool rfdc_,
     bool bbdc_,
-    std::string filter_source_,
+    std::string filter_source_,  // NOLINT(performance-unnecessary-value-param)
     std::string filter_filename_,
     float Fpass_,
     float Fstop_)

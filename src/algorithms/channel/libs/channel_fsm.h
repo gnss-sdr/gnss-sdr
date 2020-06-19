@@ -73,7 +73,7 @@ private:
     std::shared_ptr<TelemetryDecoderInterface> nav_;
 
     std::mutex mx_;
-    
+
     Concurrent_Queue<pmt::pmt_t>* queue_;
 };
 

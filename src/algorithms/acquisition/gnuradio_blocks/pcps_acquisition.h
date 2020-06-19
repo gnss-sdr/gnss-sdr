@@ -180,7 +180,7 @@ public:
     inline void set_doppler_max(uint32_t doppler_max)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        acq_parameters.doppler_max = doppler_max;
+        d_acq_parameters.doppler_max = doppler_max;
     }
 
     /*!
@@ -256,13 +256,13 @@ private:
     volk_gnsssdr::vector<std::complex<float>> d_fft_codes;
     volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
-    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
-    std::shared_ptr<gr::fft::fft_complex> d_ifft;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
-    Acq_Conf acq_parameters;
+    Acq_Conf d_acq_parameters;
     Gnss_Synchro* d_gnss_synchro;
-    arma::fmat grid_;
-    arma::fmat narrow_grid_;
+    arma::fmat d_grid;
+    arma::fmat d_narrow_grid;
     void update_local_carrier(own::span<gr_complex> carrier_vector, float freq);
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();

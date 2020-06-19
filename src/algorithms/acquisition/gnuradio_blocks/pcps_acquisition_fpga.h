@@ -155,7 +155,7 @@ public:
     inline void set_doppler_max(uint32_t doppler_max)
     {
         d_doppler_max = doppler_max;
-        acquisition_fpga->set_doppler_max(doppler_max);
+        d_acquisition_fpga->set_doppler_max(doppler_max);
     }
 
     /*!
@@ -165,7 +165,7 @@ public:
     inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
-        acquisition_fpga->set_doppler_step(doppler_step);
+        d_acquisition_fpga->set_doppler_step(doppler_step);
     }
 
     /*!
@@ -211,9 +211,9 @@ private:
     float d_test_statistics;
     float d_doppler_step2;
     float d_doppler_center_step_two;
-    pcpsconf_fpga_t acq_parameters;
+    pcpsconf_fpga_t d_acq_parameters;
     Gnss_Synchro* d_gnss_synchro;
-    std::shared_ptr<Fpga_Acquisition> acquisition_fpga;
+    std::shared_ptr<Fpga_Acquisition> d_acquisition_fpga;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
     void send_negative_acquisition();
     void send_positive_acquisition();

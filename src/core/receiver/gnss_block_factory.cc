@@ -610,7 +610,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_7X(
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
-  
+
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_7X" + appendix1, acq, 1, 0);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_7X" + appendix2, trk, 1, 1);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_7X" + appendix3, tlm, 1, 1);
@@ -619,7 +619,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_7X(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "7X", queue));
+        "Channel", "7X", queue);
 
     return channel_;
 }

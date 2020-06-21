@@ -37,6 +37,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   requirements, with more intuitive naming for variables; fixed the
   `ENABLE_CLANG_TIDY` option; better GFORTRAN module; and broader adoption of
   the modern per-target approach.
+- Add a new building option `ENABLE_BENCHMARKS` which activates the building of
+  benchmarks for some code snippets.
 
 ### Improvements in Portability:
 

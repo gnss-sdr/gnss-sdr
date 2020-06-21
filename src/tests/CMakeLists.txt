@@ -1159,3 +1159,7 @@ else()
         )
     endif()
 endif()
+
+if(ENABLE_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()

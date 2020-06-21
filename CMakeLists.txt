@@ -112,6 +112,10 @@ if(ENABLE_FPGA)
     set(ENABLE_INSTALL_TESTS ON)
 endif()
 
+option(ENABLE_BENCHMARKS "Build code snippets benchmarks" OFF)
+if(CMAKE_VERSION VERSION_LESS 3.5.1)
+    set(ENABLE_BENCHMARKS OFF)
+endif()
 
 
 ################################################################################
@@ -320,6 +324,7 @@ set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.12.3")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.1")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
@@ -3045,6 +3050,7 @@ add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enable
 add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
 add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
+add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 
 message(STATUS "")
 message(STATUS "***************************************")

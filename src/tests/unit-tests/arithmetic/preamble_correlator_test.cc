@@ -47,8 +47,7 @@ TEST(PreambleCorrelationTest, TestMethods)
     std::uniform_real_distribution<> dist(-1.0, 1.0);
     std::generate(d_symbol_history.begin(), d_symbol_history.end(), [&dist, &e2]() { return dist(e2); });
 
-    std::string preamble = GPS_CA_PREAMBLE;
-    std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [preamble, n = 0]() mutable { return (preamble[n++] == '1' ? 1 : -1); });
+    std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [n = 0]() mutable { return (GPS_CA_PREAMBLE[n++] == '1' ? 1 : -1); });
 
     // Compute correlation, method 1
     start = std::chrono::system_clock::now();

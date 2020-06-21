@@ -1199,7 +1199,7 @@ if(NOT GFLAGS_FOUND)
                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 ${GFLAGS_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GFLAGS_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -1460,7 +1460,7 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
                 -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
                 ${GLOG_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -1722,7 +1722,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
                 ${DARWIN_DISABLE_HDF5}
                 ${ARMADILLO_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${ARMADILLO_BUILD_COMMAND} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${ARMADILLO_BUILD_COMMAND} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/armadillo-${armadillo_RELEASE}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}
             UPDATE_COMMAND ""
             INSTALL_COMMAND ""
@@ -2112,7 +2112,7 @@ if(NOT PUGIXML_FOUND)
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${PUGIXML_BUILD_COMMAND} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${PUGIXML_BUILD_COMMAND} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}
             INSTALL_COMMAND ""
         )
@@ -2365,7 +2365,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 BINARY_DIR ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
                 CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}
+                BUILD_COMMAND "${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}"
                 INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc

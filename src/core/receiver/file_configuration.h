@@ -48,17 +48,18 @@ public:
     explicit FileConfiguration(std::string filename);
     FileConfiguration();
     ~FileConfiguration() = default;
-    std::string property(std::string property_name, std::string default_value);
-    bool property(std::string property_name, bool default_value);
-    int64_t property(std::string property_name, int64_t default_value);
-    uint64_t property(std::string property_name, uint64_t default_value);
-    int32_t property(std::string property_name, int32_t default_value);
-    uint32_t property(std::string property_name, uint32_t default_value);
-    int16_t property(std::string property_name, int16_t default_value);
-    uint16_t property(std::string property_name, uint16_t default_value);
-    float property(std::string property_name, float default_value);
-    double property(std::string property_name, double default_value);
-    void set_property(std::string property_name, std::string value);
+    std::string property(std::string property_name, std::string default_value) const override;
+    bool property(std::string property_name, bool default_value) const override;
+    int64_t property(std::string property_name, int64_t default_value) const override;
+    uint64_t property(std::string property_name, uint64_t default_value) const override;
+    int32_t property(std::string property_name, int32_t default_value) const override;
+    uint32_t property(std::string property_name, uint32_t default_value) const override;
+    int16_t property(std::string property_name, int16_t default_value) const override;
+    uint16_t property(std::string property_name, uint16_t default_value) const override;
+    float property(std::string property_name, float default_value) const override;
+    double property(std::string property_name, double default_value) const override;
+    void set_property(std::string property_name, std::string value) override;
+    bool is_present(const std::string& property_name) const;
 
 private:
     void init();

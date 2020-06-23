@@ -63,7 +63,7 @@ void FileConfiguration::init()
 }
 
 
-std::string FileConfiguration::property(std::string property_name, std::string default_value)
+std::string FileConfiguration::property(std::string property_name, std::string default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -73,7 +73,7 @@ std::string FileConfiguration::property(std::string property_name, std::string d
 }
 
 
-bool FileConfiguration::property(std::string property_name, bool default_value)
+bool FileConfiguration::property(std::string property_name, bool default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -84,7 +84,7 @@ bool FileConfiguration::property(std::string property_name, bool default_value)
 }
 
 
-int64_t FileConfiguration::property(std::string property_name, int64_t default_value)
+int64_t FileConfiguration::property(std::string property_name, int64_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -95,7 +95,7 @@ int64_t FileConfiguration::property(std::string property_name, int64_t default_v
 }
 
 
-uint64_t FileConfiguration::property(std::string property_name, uint64_t default_value)
+uint64_t FileConfiguration::property(std::string property_name, uint64_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -106,7 +106,7 @@ uint64_t FileConfiguration::property(std::string property_name, uint64_t default
 }
 
 
-int FileConfiguration::property(std::string property_name, int default_value)
+int FileConfiguration::property(std::string property_name, int default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -117,7 +117,7 @@ int FileConfiguration::property(std::string property_name, int default_value)
 }
 
 
-unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value)
+unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -128,7 +128,7 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
 }
 
 
-uint16_t FileConfiguration::property(std::string property_name, uint16_t default_value)
+uint16_t FileConfiguration::property(std::string property_name, uint16_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -139,7 +139,7 @@ uint16_t FileConfiguration::property(std::string property_name, uint16_t default
 }
 
 
-int16_t FileConfiguration::property(std::string property_name, int16_t default_value)
+int16_t FileConfiguration::property(std::string property_name, int16_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -150,7 +150,7 @@ int16_t FileConfiguration::property(std::string property_name, int16_t default_v
 }
 
 
-float FileConfiguration::property(std::string property_name, float default_value)
+float FileConfiguration::property(std::string property_name, float default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -161,7 +161,7 @@ float FileConfiguration::property(std::string property_name, float default_value
 }
 
 
-double FileConfiguration::property(std::string property_name, double default_value)
+double FileConfiguration::property(std::string property_name, double default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -175,4 +175,10 @@ double FileConfiguration::property(std::string property_name, double default_val
 void FileConfiguration::set_property(std::string property_name, std::string value)
 {
     overrided_->set_property(property_name, value);
+}
+
+
+bool FileConfiguration::is_present(const std::string& property_name) const
+{
+    return (overrided_->is_present(property_name));
 }

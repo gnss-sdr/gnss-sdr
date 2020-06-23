@@ -1,0 +1,316 @@
+/*!
+ * \file Galileo_E5b_pcps_acquisition_test.cc
+ * \brief  This class implements an acquisition test for
+ * GalileoE5bPcpsAcquisition class based on some input parameters.
+ * \author Piyush Gupta, 2020. piyush04111999@gmail.com
+ * \note Code added as GSoC 2020 Program.
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -------------------------------------------------------------------------
+ */
+
+
+#include "concurrent_queue.h"
+#include "fir_filter.h"
+#include "galileo_e5b_pcps_acquisition.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
+#include "pass_through.h"
+#include "signal_generator.h"
+#include "signal_generator_c.h"
+#include <boost/make_shared.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <pmt/pmt.h>
+#include <chrono>
+#include <cstdlib>
+#include <utility>
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind.hpp>
+#endif
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
+
+
+// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+class GalileoE5bPcpsAcquisitionTest_msg_rx;
+
+#if GNURADIO_USES_STD_POINTERS
+using GalileoE5bPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<GalileoE5bPcpsAcquisitionTest_msg_rx>;
+#else
+using GalileoE5bPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GalileoE5bPcpsAcquisitionTest_msg_rx>;
+#endif
+
+GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make();
+
+class GalileoE5bPcpsAcquisitionTest_msg_rx : public gr::block
+{
+private:
+    friend GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make();
+    void msg_handler_events(pmt::pmt_t msg);
+    GalileoE5bPcpsAcquisitionTest_msg_rx();
+
+public:
+    int rx_message;
+    ~GalileoE5bPcpsAcquisitionTest_msg_rx();  //!< Default destructor
+};
+
+
+GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make()
+{
+    return GalileoE5bPcpsAcquisitionTest_msg_rx_sptr(new GalileoE5bPcpsAcquisitionTest_msg_rx());
+}
+
+
+void GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+{
+    try
+        {
+            int64_t message = pmt::to_long(std::move(msg));
+            rx_message = message;
+        }
+    catch (boost::bad_any_cast& e)
+        {
+            std::cout << "msg_handler_telemetry Bad any cast!" << std::endl;
+            rx_message = 0;
+        }
+}
+
+
+GalileoE5bPcpsAcquisitionTest_msg_rx::GalileoE5bPcpsAcquisitionTest_msg_rx() : gr::block("GalileoE5bPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"),
+#if HAS_GENERIC_LAMBDA
+        [this](pmt::pmt_t&& PH1) { msg_handler_events(PH1); });
+#else
+#if BOOST_173_OR_GREATER
+        boost::bind(&GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
+#else
+        boost::bind(&GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+#endif
+#endif
+    rx_message = 0;
+}
+
+
+GalileoE5bPcpsAcquisitionTest_msg_rx::~GalileoE5bPcpsAcquisitionTest_msg_rx() = default;
+
+
+// ###########################################################
+
+class GalileoE5bPcpsAcquisitionTest : public ::testing::Test
+{
+protected:
+    GalileoE5bPcpsAcquisitionTest()
+    {
+        factory = std::make_shared<GNSSBlockFactory>();
+        config = std::make_shared<InMemoryConfiguration>();
+        item_size = sizeof(gr_complex);
+        gnss_synchro = Gnss_Synchro();
+    }
+
+    ~GalileoE5bPcpsAcquisitionTest() = default;
+
+    void init();
+
+    gr::top_block_sptr top_block;
+    std::shared_ptr<GNSSBlockFactory> factory;
+    std::shared_ptr<InMemoryConfiguration> config;
+    Gnss_Synchro gnss_synchro;
+    size_t item_size;
+};
+
+
+void GalileoE5bPcpsAcquisitionTest::init()
+{
+    gnss_synchro.Channel_ID = 0;
+    gnss_synchro.System = 'E';
+    std::string signal = "7X";
+    signal.copy(gnss_synchro.Signal, 2, 0);
+    gnss_synchro.PRN = 1;
+    config->set_property("SignalSource.item_type", "gr_complex");
+    config->set_property("SignalSource.num_satellites", "1");
+    config->set_property("SignalSource.system_0", "E");
+    config->set_property("SignalSource.signal_0", "7X");
+    config->set_property("SignalSource.PRN_0", "11");
+    config->set_property("SignalSource.CN0_dB_0", "50");
+    config->set_property("SignalSource.doppler_Hz_0", std::to_string(1000));
+    config->set_property("SignalSource.delay_chips_0", std::to_string(50));
+    config->set_property("SignalSource.delay_sec_0", std::to_string(94));
+    config->set_property("SignalSource.noise_flag", "false");
+    config->set_property("SignalSource.data_flag", "false");
+    config->set_property("SignalSource.BW_BB", "0.97");
+    config->set_property("SignalSource.dump", "false");
+    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
+    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.input_item_type", "gr_complex");
+    config->set_property("InputFilter.output_item_type", "gr_complex");
+    config->set_property("InputFilter.taps_item_type", "float");
+    config->set_property("InputFilter.number_of_taps", "11");
+    config->set_property("InputFilter.number_of_bands", "2");
+    config->set_property("InputFilter.band1_begin", "0.0");
+    config->set_property("InputFilter.band1_end", "0.97");
+    config->set_property("InputFilter.band2_begin", "0.98");
+    config->set_property("InputFilter.band2_end", "1.0");
+    config->set_property("InputFilter.ampl1_begin", "1.0");
+    config->set_property("InputFilter.ampl1_end", "1.0");
+    config->set_property("InputFilter.ampl2_begin", "0.0");
+    config->set_property("InputFilter.ampl2_end", "0.0");
+    config->set_property("InputFilter.band1_error", "1.0");
+    config->set_property("InputFilter.band2_error", "1.0");
+    config->set_property("InputFilter.filter_type", "bandpass");
+    config->set_property("InputFilter.grid_density", "16");
+    config->set_property("Acquisition_7X.item_type", "gr_complex");
+    config->set_property("Acquisition_7X.coherent_integration_time_ms", "1");
+    config->set_property("Acquisition_7X.dump", "true");
+    config->set_property("Acquisition_7X.dump_filename", "./acquisition");
+    config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
+    config->set_property("Acquisition_7X.threshold", "0.001");
+    config->set_property("Acquisition_7X.doppler_max", "10000");
+    config->set_property("Acquisition_7X.doppler_step", "250");
+    config->set_property("Acquisition_7X.repeat_satellite", "false");
+}
+
+
+TEST_F(GalileoE5bPcpsAcquisitionTest, Instantiate)
+{
+    init();
+#if GNURADIO_USES_STD_POINTERS
+    std::shared_ptr<GalileoE5bPcpsAcquisition> acquisition = std::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+#else
+    boost::shared_ptr<GalileoE5bPcpsAcquisition> acquisition = boost::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+#endif
+}
+
+
+TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
+{
+    int fs_in = 4000000;
+    int nsamples = 4000;
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds(0);
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+
+    top_block = gr::make_top_block("Acquisition test");
+    init();
+#if GNURADIO_USES_STD_POINTERS
+    std::shared_ptr<GalileoE5bPcpsAcquisition> acquisition = std::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+#else
+    boost::shared_ptr<GalileoE5bPcpsAcquisition> acquisition = boost::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+#endif
+
+    auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make();
+
+    ASSERT_NO_THROW({
+        acquisition->connect(top_block);
+        auto source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        auto valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue.get());
+        top_block->connect(source, 0, valve, 0);
+        top_block->connect(valve, 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    }) << "Failure connecting the blocks of acquisition test.";
+
+    EXPECT_NO_THROW({
+        begin = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - begin;
+    }) << "Failure running the top_block.";
+
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+}
+
+
+TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
+{
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds(0);
+    top_block = gr::make_top_block("Acquisition test");
+
+    double expected_delay_samples = 2920;
+    double expected_doppler_hz = -632;
+    init();
+    std::shared_ptr<GalileoE5bPcpsAcquisition> acquisition = std::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    std::shared_ptr<FirFilter> input_filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+    auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+
+    ASSERT_NO_THROW({
+        acquisition->set_channel(1);
+    }) << "Failure setting channel.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_threshold(0.001);
+    }) << "Failure setting threshold.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_doppler_max(5000);
+    }) << "Failure setting doppler_max.";
+
+    ASSERT_NO_THROW({
+        acquisition->set_doppler_step(100);
+    }) << "Failure setting doppler_step.";
+
+    ASSERT_NO_THROW({
+        acquisition->connect(top_block);
+    }) << "Failure connecting acquisition to the top_block.";
+
+    acquisition->set_local_code();
+    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+    acquisition->init();
+
+    ASSERT_NO_THROW({
+        std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
+        std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
+        std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
+        filter->connect(top_block);
+        signal_source->connect(top_block);
+        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    }) << "Failure connecting the blocks of acquisition test.";
+
+    EXPECT_NO_THROW({
+        begin = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - begin;
+    }) << "Failure running the top_block.";
+
+    uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
+    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+
+    ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+
+    double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
+    float delay_error_chips = static_cast<float>(delay_error_samples) * 10230.0 / 4000.0;
+    double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
+
+    EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
+    EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
+}

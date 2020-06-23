@@ -440,10 +440,6 @@ public:
     void set_pre_2009_file(bool pre_2009_file);
 
 private:
-    int version;                  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
-    int numberTypesObservations;  // Number of available types of observable in the system. Should be public?
-    bool pre_2009_file_;
-
     /*
      * Generation of RINEX signal strength indicators
      */
@@ -476,8 +472,6 @@ private:
      *  Checks that the line is 80 characters length
      */
     void lengthCheck(const std::string& line);
-
-    double fake_cnav_iode;
 
     /*
      * If the string is bigger than length, truncate it from the right.
@@ -653,6 +647,11 @@ private:
     inline std::string asString(const X x);
 
     inline std::string asFixWidthString(const int x, const int width, char fill_digit);
+
+    double fake_cnav_iode;
+    int version;                  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
+    int numberTypesObservations;  // Number of available types of observable in the system. Should be public?
+    bool pre_2009_file_;
 };
 
 

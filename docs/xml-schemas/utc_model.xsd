@@ -7,7 +7,6 @@
         <xs:element name="GNSS-SDR_utc_model">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:byte" name="valid"/>
               <xs:element type="xs:float" name="d_A1"/>
               <xs:element type="xs:float" name="d_A0"/>
               <xs:element type="xs:int" name="d_t_OT"/>
@@ -16,6 +15,7 @@
               <xs:element type="xs:short" name="i_WN_LSF"/>
               <xs:element type="xs:byte" name="i_DN"/>
               <xs:element type="xs:byte" name="d_DeltaT_LSF"/>
+              <xs:element type="xs:byte" name="valid"/>
             </xs:sequence>
             <xs:attribute type="xs:byte" name="class_id"/>
             <xs:attribute type="xs:byte" name="tracking_level"/>

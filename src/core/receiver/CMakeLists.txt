@@ -155,6 +155,8 @@ target_link_libraries(core_receiver
         Armadillo::armadillo
 )
 
+target_include_directories(core_receiver PRIVATE ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(core_receiver
         PRIVATE -DARMA_NO_BOUND_CHECKING=1

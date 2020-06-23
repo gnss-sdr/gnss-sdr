@@ -160,51 +160,6 @@ private:
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_rinex_output_enabled;
-    bool d_rinex_header_written;
-    bool d_rinex_header_updated;
-    bool d_geojson_output_enabled;
-    bool d_gpx_output_enabled;
-    bool d_kml_output_enabled;
-    bool d_nmea_output_file_enabled;
-    bool d_first_fix;
-    bool d_xml_storage;
-    bool d_flag_monitor_pvt_enabled;
-    bool d_show_local_time_zone;
-    bool d_waiting_obs_block_rx_clock_offset_correction_msg;
-    bool d_enable_rx_clock_correction;
-    bool d_rtcm_writing_started;
-    bool d_rtcm_enabled;
-
-    int32_t d_rinexobs_rate_ms;
-    int32_t d_rtcm_MT1045_rate_ms;  // Galileo Broadcast Ephemeris
-    int32_t d_rtcm_MT1019_rate_ms;  // GPS Broadcast Ephemeris (orbits)
-    int32_t d_rtcm_MT1020_rate_ms;  // GLONASS Broadcast Ephemeris (orbits)
-    int32_t d_rtcm_MT1077_rate_ms;  // The type 7 Multiple Signal Message format for the USA’s GPS system, popular
-    int32_t d_rtcm_MT1087_rate_ms;  // GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
-    int32_t d_rtcm_MT1097_rate_ms;  // Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
-    int32_t d_rtcm_MSM_rate_ms;
-    int32_t d_kml_rate_ms;
-    int32_t d_gpx_rate_ms;
-    int32_t d_geojson_rate_ms;
-    int32_t d_nmea_rate_ms;
-    int32_t d_last_status_print_seg;  // for status printer
-    int32_t d_output_rate_ms;
-    int32_t d_display_rate_ms;
-    int32_t d_report_rate_ms;
-    int32_t d_max_obs_block_rx_clock_offset_ms;
-
-    uint32_t d_nchannels;
-    uint32_t d_type_of_rx;
-
-    double d_rinex_version;
-    double d_rx_time;
-
-    key_t d_sysv_msg_key;
-    int d_sysv_msqid;
-
     std::unique_ptr<Rinex_Printer> d_rp;
     std::unique_ptr<Kml_Printer> d_kml_dump;
     std::unique_ptr<Gpx_Printer> d_gpx_dump;
@@ -246,6 +201,51 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
 
     boost::posix_time::time_duration d_utc_diff_time;
+
+    double d_rinex_version;
+    double d_rx_time;
+
+    key_t d_sysv_msg_key;
+    int d_sysv_msqid;
+
+    int32_t d_rinexobs_rate_ms;
+    int32_t d_rtcm_MT1045_rate_ms;  // Galileo Broadcast Ephemeris
+    int32_t d_rtcm_MT1019_rate_ms;  // GPS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1020_rate_ms;  // GLONASS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1077_rate_ms;  // The type 7 Multiple Signal Message format for the USA’s GPS system, popular
+    int32_t d_rtcm_MT1087_rate_ms;  // GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
+    int32_t d_rtcm_MT1097_rate_ms;  // Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
+    int32_t d_rtcm_MSM_rate_ms;
+    int32_t d_kml_rate_ms;
+    int32_t d_gpx_rate_ms;
+    int32_t d_geojson_rate_ms;
+    int32_t d_nmea_rate_ms;
+    int32_t d_last_status_print_seg;  // for status printer
+    int32_t d_output_rate_ms;
+    int32_t d_display_rate_ms;
+    int32_t d_report_rate_ms;
+    int32_t d_max_obs_block_rx_clock_offset_ms;
+
+    uint32_t d_nchannels;
+    uint32_t d_type_of_rx;
+
+    bool d_dump;
+    bool d_dump_mat;
+    bool d_rinex_output_enabled;
+    bool d_rinex_header_written;
+    bool d_rinex_header_updated;
+    bool d_geojson_output_enabled;
+    bool d_gpx_output_enabled;
+    bool d_kml_output_enabled;
+    bool d_nmea_output_file_enabled;
+    bool d_first_fix;
+    bool d_xml_storage;
+    bool d_flag_monitor_pvt_enabled;
+    bool d_show_local_time_zone;
+    bool d_waiting_obs_block_rx_clock_offset_correction_msg;
+    bool d_enable_rx_clock_correction;
+    bool d_rtcm_writing_started;
+    bool d_rtcm_enabled;
 };
 
 #endif  // GNSS_SDR_RTKLIB_PVT_GS_H

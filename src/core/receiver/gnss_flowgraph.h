@@ -176,21 +176,6 @@ private:
 
     std::vector<std::string> split_string(const std::string& s, char delim);
 
-    bool connected_;
-    bool running_;
-    bool multiband_;
-    bool enable_monitor_;
-
-    int sources_count_;
-
-    unsigned int channels_count_;
-    unsigned int acq_channels_count_;
-    unsigned int max_acq_channels_;
-
-    std::string config_file_;
-
-    std::mutex signal_list_mutex_;
-
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
@@ -236,6 +221,21 @@ private:
 #if ENABLE_FPGA
     gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter_;
 #endif
+
+    std::string config_file_;
+
+    std::mutex signal_list_mutex_;
+
+    int sources_count_;
+
+    unsigned int channels_count_;
+    unsigned int acq_channels_count_;
+    unsigned int max_acq_channels_;
+
+    bool connected_;
+    bool running_;
+    bool multiband_;
+    bool enable_monitor_;
 };
 
 #endif  // GNSS_SDR_GNSS_FLOWGRAPH_H

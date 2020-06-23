@@ -148,6 +148,12 @@ private:
     static const uint32_t SELECT_ALL_CODE_BITS = 0xFFFFFFFF;  // Select a 20 bit word
     static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
 
+    // FPGA private functions
+    void fpga_acquisition_test_register(void);
+    void read_result_valid(uint32_t *result_valid);
+
+    std::string d_device_name;  // HW device name
+
     int64_t d_fs_in;
     // data related to the hardware module and the driver
     int32_t d_fd;                   // driver descriptor
@@ -158,13 +164,9 @@ private:
     uint32_t d_nsamples_total;  // number of samples including padding
     uint32_t d_nsamples;        // number of samples not including padding
     uint32_t d_select_queue;    // queue selection
-    std::string d_device_name;  // HW device name
     uint32_t d_doppler_max;     // max doppler
     uint32_t d_doppler_step;    // doppler step
     uint32_t d_PRN;             // PRN
-    // FPGA private functions
-    void fpga_acquisition_test_register(void);
-    void read_result_valid(uint32_t *result_valid);
 };
 
 #endif  // GNSS_SDR_FPGA_ACQUISITION_H

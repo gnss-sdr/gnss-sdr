@@ -33,11 +33,11 @@ Tracking_loop_filter::Tracking_loop_filter(float update_interval,
     float noise_bandwidth,
     int loop_order,
     bool include_last_integrator)
-    : d_loop_order(loop_order),
+    : d_noise_bandwidth(noise_bandwidth),
+      d_update_interval(update_interval),
+      d_loop_order(loop_order),
       d_current_index(0),
-      d_include_last_integrator(include_last_integrator),
-      d_noise_bandwidth(noise_bandwidth),
-      d_update_interval(update_interval)
+      d_include_last_integrator(include_last_integrator)
 {
     d_inputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
     d_outputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
@@ -46,11 +46,11 @@ Tracking_loop_filter::Tracking_loop_filter(float update_interval,
 
 
 Tracking_loop_filter::Tracking_loop_filter()
-    : d_loop_order(2),
+    : d_noise_bandwidth(15.0),
+      d_update_interval(0.001),
+      d_loop_order(2),
       d_current_index(0),
-      d_include_last_integrator(false),
-      d_noise_bandwidth(15.0),
-      d_update_interval(0.001)
+      d_include_last_integrator(false)
 {
     d_inputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
     d_outputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);

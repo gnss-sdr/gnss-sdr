@@ -35,19 +35,12 @@ public:
     void SetFromConfiguration(ConfigurationInterface* configuration, const std::string& role);
 
     /* DLL/PLL tracking configuration */
-    int32_t fll_filter_order;
-    bool enable_fll_pull_in;
-    bool enable_fll_steady_state;
-    uint32_t pull_in_time_s;  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
-    uint32_t bit_synchronization_time_limit_s;
-    int32_t pll_filter_order;
-    int32_t dll_filter_order;
+    std::string device_name;
+    std::string dump_filename;
 
     double fs_in;
-    uint32_t vector_length;
-    bool dump;
-    bool dump_mat;
-    std::string dump_filename;
+    double carrier_lock_th;
+
     float pll_pull_in_bw_hz;
     float dll_pull_in_bw_hz;
     float fll_bw_hz;
@@ -62,36 +55,47 @@ public:
     float slope;
     float spc;
     float y_intercept;
-    int32_t extend_correlation_symbols;
-    bool carrier_aiding;
-    bool high_dyn;
-    int32_t cn0_samples;
-    int32_t cn0_min;
-    int32_t max_code_lock_fail;
-    int32_t max_carrier_lock_fail;
-
-    int32_t cn0_smoother_samples;
     float cn0_smoother_alpha;
-    int32_t carrier_lock_test_smoother_samples;
     float carrier_lock_test_smoother_alpha;
 
-    // int32_t max_lock_fail;
+    uint32_t pull_in_time_s;  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
+    uint32_t bit_synchronization_time_limit_s;
+    uint32_t vector_length;
     uint32_t smoother_length;
-    double carrier_lock_th;
-    bool track_pilot;
-    bool enable_doppler_correction;
-    char system;
-    char signal[3];
-    std::string device_name;
     uint32_t dev_file_num;
     uint32_t num_prev_assigned_ch;
     uint32_t code_length_chips;
     uint32_t code_samples_per_chip;
-    int32_t* ca_codes;
-    int32_t* data_codes;
-    bool extended_correlation_in_fpga;
     uint32_t extend_fpga_integration_periods;
     uint32_t fpga_integration_period;
+
+    int32_t fll_filter_order;
+    int32_t pll_filter_order;
+    int32_t dll_filter_order;
+    int32_t extend_correlation_symbols;
+    int32_t cn0_samples;
+    int32_t cn0_min;
+    int32_t max_code_lock_fail;
+    int32_t max_carrier_lock_fail;
+    int32_t cn0_smoother_samples;
+    int32_t carrier_lock_test_smoother_samples;
+    // int32_t max_lock_fail;
+
+    int32_t* ca_codes;
+    int32_t* data_codes;
+
+    char signal[3];
+    char system;
+
+    bool extended_correlation_in_fpga;
+    bool track_pilot;
+    bool enable_doppler_correction;
+    bool enable_fll_pull_in;
+    bool enable_fll_steady_state;
+    bool carrier_aiding;
+    bool high_dyn;
+    bool dump;
+    bool dump_mat;
 };
 
 #endif

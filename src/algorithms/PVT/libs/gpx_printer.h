@@ -24,7 +24,6 @@
 
 
 #include <fstream>
-#include <memory>
 #include <string>
 
 class Pvt_Solution;
@@ -45,10 +44,10 @@ public:
 
 private:
     std::ofstream gpx_file;
-    bool positions_printed;
     std::string gpx_filename;
     std::string indent;
     std::string gpx_base_path;
+    bool positions_printed;
 };
 
 #endif

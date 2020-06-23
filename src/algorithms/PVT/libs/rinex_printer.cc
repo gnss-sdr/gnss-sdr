@@ -11888,13 +11888,13 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
 {
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     // idea: resolve the ambiguity with the leap second
-    const double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000));
+    const double utc_t = nav_msg.utc_time(nav_msg.get_TOW());
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.get_GPS_week())) * 1000));
     // Handle week rollover
     if (pre_2009_file_ == false)
         {
             // Handle week rollover (valid from 2009 to 2029)
-            if (nav_msg.i_GPS_week < 512)
+            if (nav_msg.get_GPS_week() < 512)
                 {
                     boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
                     return p_time;

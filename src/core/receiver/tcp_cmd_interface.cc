@@ -49,21 +49,21 @@ TcpCmdInterface::TcpCmdInterface()
 void TcpCmdInterface::register_functions()
 {
 #if HAS_GENERIC_LAMBDA
-    functions["status"] = [&](auto &s) { return TcpCmdInterface::status(s); };
-    functions["standby"] = [&](auto &s) { return TcpCmdInterface::standby(s); };
-    functions["reset"] = [&](auto &s) { return TcpCmdInterface::reset(s); };
-    functions["hotstart"] = [&](auto &s) { return TcpCmdInterface::hotstart(s); };
-    functions["warmstart"] = [&](auto &s) { return TcpCmdInterface::warmstart(s); };
-    functions["coldstart"] = [&](auto &s) { return TcpCmdInterface::coldstart(s); };
-    functions["set_ch_satellite"] = [&](auto &s) { return TcpCmdInterface::set_ch_satellite(s); };
+    functions_["status"] = [&](auto &s) { return TcpCmdInterface::status(s); };
+    functions_["standby"] = [&](auto &s) { return TcpCmdInterface::standby(s); };
+    functions_["reset"] = [&](auto &s) { return TcpCmdInterface::reset(s); };
+    functions_["hotstart"] = [&](auto &s) { return TcpCmdInterface::hotstart(s); };
+    functions_["warmstart"] = [&](auto &s) { return TcpCmdInterface::warmstart(s); };
+    functions_["coldstart"] = [&](auto &s) { return TcpCmdInterface::coldstart(s); };
+    functions_["set_ch_satellite"] = [&](auto &s) { return TcpCmdInterface::set_ch_satellite(s); };
 #else
-    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
-    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
-    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
-    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
-    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
-    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
-    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
+    functions_["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
+    functions_["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
+    functions_["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
+    functions_["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
+    functions_["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
+    functions_["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
+    functions_["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
 #endif
 }
 
@@ -355,7 +355,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                                         }
                                                     else
                                                         {
-                                                            response = functions[cmd_vector.at(0)](cmd_vector);
+                                                            response = functions_[cmd_vector.at(0)](cmd_vector);
                                                         }
                                                 }
                                             catch (const std::bad_function_call &ex)

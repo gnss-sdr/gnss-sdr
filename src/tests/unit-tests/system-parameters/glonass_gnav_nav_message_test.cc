@@ -89,11 +89,11 @@ TEST(GlonassGnavNavigationMessageTest, String1Decoder)
     gnav_nav_message.string_decoder(str1);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(gnav_ephemeris.d_P_1 - gnav_nav_message.gnav_ephemeris.d_P_1 < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_t_k - gnav_nav_message.gnav_ephemeris.d_t_k < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_VXn - gnav_nav_message.gnav_ephemeris.d_VXn < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_AXn - gnav_nav_message.gnav_ephemeris.d_AXn < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_Xn - gnav_nav_message.gnav_ephemeris.d_Xn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_P_1 - gnav_nav_message.get_ephemeris().d_P_1 < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_t_k - gnav_nav_message.get_ephemeris().d_t_k < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_VXn - gnav_nav_message.get_ephemeris().d_VXn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_AXn - gnav_nav_message.get_ephemeris().d_AXn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_Xn - gnav_nav_message.get_ephemeris().d_Xn < FLT_EPSILON);
 }
 
 
@@ -120,17 +120,16 @@ TEST(GlonassGnavNavigationMessageTest, String2Decoder)
     gnav_ephemeris.d_Yn = -11456.7348632812;
 
     // Call target test method
-    gnav_nav_message.flag_ephemeris_str_1 = true;
-    gnav_nav_message.gnav_ephemeris.d_P_1 = 15;
+    gnav_nav_message.set_flag_ephemeris_str_1(true);
     gnav_nav_message.string_decoder(str2);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(gnav_ephemeris.d_B_n - gnav_nav_message.gnav_ephemeris.d_B_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_P_2 - gnav_nav_message.gnav_ephemeris.d_P_2 < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_t_b - gnav_nav_message.gnav_ephemeris.d_t_b < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_VYn - gnav_nav_message.gnav_ephemeris.d_VYn < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_AYn - gnav_nav_message.gnav_ephemeris.d_AYn < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_Yn - gnav_nav_message.gnav_ephemeris.d_Yn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_B_n - gnav_nav_message.get_ephemeris().d_B_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_P_2 - gnav_nav_message.get_ephemeris().d_P_2 < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_t_b - gnav_nav_message.get_ephemeris().d_t_b < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_VYn - gnav_nav_message.get_ephemeris().d_VYn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_AYn - gnav_nav_message.get_ephemeris().d_AYn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_Yn - gnav_nav_message.get_ephemeris().d_Yn < FLT_EPSILON);
 }
 
 
@@ -158,17 +157,17 @@ TEST(GlonassGnavNavigationMessageTest, String3Decoder)
     gnav_ephemeris.d_Zn = 19929.2377929688;
 
     // Call target test method
-    gnav_nav_message.flag_ephemeris_str_2 = true;
+    gnav_nav_message.set_flag_ephemeris_str_2(true);
     gnav_nav_message.string_decoder(str3);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(gnav_ephemeris.d_P_3 - gnav_nav_message.gnav_ephemeris.d_P_3 < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_gamma_n - gnav_nav_message.gnav_ephemeris.d_gamma_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_P - gnav_nav_message.gnav_ephemeris.d_P < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_l3rd_n - gnav_nav_message.gnav_ephemeris.d_l3rd_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_VZn - gnav_nav_message.gnav_ephemeris.d_VZn < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_AZn - gnav_nav_message.gnav_ephemeris.d_AZn < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_Zn - gnav_nav_message.gnav_ephemeris.d_Zn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_P_3 - gnav_nav_message.get_ephemeris().d_P_3 < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_gamma_n - gnav_nav_message.get_ephemeris().d_gamma_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_P - gnav_nav_message.get_ephemeris().d_P < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_l3rd_n - gnav_nav_message.get_ephemeris().d_l3rd_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_VZn - gnav_nav_message.get_ephemeris().d_VZn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_AZn - gnav_nav_message.get_ephemeris().d_AZn < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_Zn - gnav_nav_message.get_ephemeris().d_Zn < FLT_EPSILON);
 }
 
 
@@ -197,18 +196,18 @@ TEST(GlonassGnavNavigationMessageTest, String4Decoder)
     gnav_ephemeris.d_M = 1;
 
     // Call target test method
-    gnav_nav_message.flag_ephemeris_str_3 = true;
+    gnav_nav_message.set_flag_ephemeris_str_3(true);
     gnav_nav_message.string_decoder(str4);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(gnav_ephemeris.d_tau_n - gnav_nav_message.gnav_ephemeris.d_tau_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_Delta_tau_n - gnav_nav_message.gnav_ephemeris.d_Delta_tau_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_E_n - gnav_nav_message.gnav_ephemeris.d_E_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_P_4 - gnav_nav_message.gnav_ephemeris.d_P_4 < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_F_T - gnav_nav_message.gnav_ephemeris.d_F_T < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_N_T - gnav_nav_message.gnav_ephemeris.d_N_T < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_n - gnav_nav_message.gnav_ephemeris.d_n < FLT_EPSILON);
-    ASSERT_TRUE(gnav_ephemeris.d_M - gnav_nav_message.gnav_ephemeris.d_M < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_tau_n - gnav_nav_message.get_ephemeris().d_tau_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_Delta_tau_n - gnav_nav_message.get_ephemeris().d_Delta_tau_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_E_n - gnav_nav_message.get_ephemeris().d_E_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_P_4 - gnav_nav_message.get_ephemeris().d_P_4 < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_F_T - gnav_nav_message.get_ephemeris().d_F_T < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_N_T - gnav_nav_message.get_ephemeris().d_N_T < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_n - gnav_nav_message.get_ephemeris().d_n < FLT_EPSILON);
+    ASSERT_TRUE(gnav_ephemeris.d_M - gnav_nav_message.get_ephemeris().d_M < FLT_EPSILON);
 }
 
 
@@ -233,14 +232,14 @@ TEST(GlonassGnavNavigationMessageTest, String5Decoder)
     gnav_utc_model.d_tau_gps = 9.313225746154785e-08;
 
     // Call target test method
-    gnav_nav_message.flag_ephemeris_str_4 = true;
+    gnav_nav_message.set_flag_ephemeris_str_4(true);
     gnav_nav_message.string_decoder(str5);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(gnav_utc_model.d_N_A - gnav_nav_message.gnav_utc_model.d_N_A < FLT_EPSILON);
-    ASSERT_TRUE(gnav_utc_model.d_tau_c - gnav_nav_message.gnav_utc_model.d_tau_c < FLT_EPSILON);
-    ASSERT_TRUE(gnav_utc_model.d_N_4 - gnav_nav_message.gnav_utc_model.d_N_4 < FLT_EPSILON);
-    ASSERT_TRUE(gnav_utc_model.d_tau_gps - gnav_nav_message.gnav_utc_model.d_tau_gps < FLT_EPSILON);
+    ASSERT_TRUE(gnav_utc_model.d_N_A - gnav_nav_message.get_utc_model().d_N_A < FLT_EPSILON);
+    ASSERT_TRUE(gnav_utc_model.d_tau_c - gnav_nav_message.get_utc_model().d_tau_c < FLT_EPSILON);
+    ASSERT_TRUE(gnav_utc_model.d_N_4 - gnav_nav_message.get_utc_model().d_N_4 < FLT_EPSILON);
+    ASSERT_TRUE(gnav_utc_model.d_tau_gps - gnav_nav_message.get_utc_model().d_tau_gps < FLT_EPSILON);
 }
 
 std::string str6("0011010100110100001100111100011100001101011000000110101111001000000101100011111011001");

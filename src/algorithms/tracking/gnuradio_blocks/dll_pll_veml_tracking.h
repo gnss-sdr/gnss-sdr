@@ -88,41 +88,30 @@ private:
     bool acquire_secondary();
     int32_t save_matfile();
 
-    bool d_pull_in_transitory;
-    bool d_corrected_doppler;
-    bool d_interchange_iq;
-    bool d_veml;
-    bool d_cloop;
-    bool d_secondary;
-    bool d_dump;
-    bool d_dump_mat;
-    bool d_acc_carrier_phase_initialized;
-    bool d_enable_extended_integration;
+    Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
+    Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
 
-    int32_t d_symbols_per_bit;
-    int32_t d_preamble_length_symbols;
-    int32_t d_state;
-    int32_t d_correlation_length_ms;
-    int32_t d_n_correlator_taps;
-    int32_t d_current_prn_length_samples;
-    int32_t d_extend_correlation_symbols_count;
-    int32_t d_current_symbol;
-    int32_t d_current_data_symbol;
-    int32_t d_cn0_estimation_counter;
-    int32_t d_carrier_lock_fail_counter;
-    int32_t d_code_lock_fail_counter;
+    Dll_Pll_Conf d_trk_parameters;
 
-    uint32_t d_channel;
-    uint32_t d_secondary_code_length;
-    uint32_t d_data_secondary_code_length;
-    uint32_t d_code_length_chips;
-    uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
+    Exponential_Smoother d_cn0_smoother;
+    Exponential_Smoother d_carrier_lock_test_smoother;
 
-    uint64_t d_sample_counter;
-    uint64_t d_acq_sample_stamp;
+    Tracking_loop_filter d_code_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
-    float *d_prompt_data_shift;
-    float d_rem_carr_phase_rad;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
+
+    volk_gnsssdr::vector<float> d_tracking_code;
+    volk_gnsssdr::vector<float> d_data_code;
+    volk_gnsssdr::vector<float> d_local_code_shift_chips;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
+
+    boost::circular_buffer<float> d_dll_filt_history;
+    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
+    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
+    boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
 
     double d_signal_carrier_freq;
     double d_code_period;
@@ -175,30 +164,41 @@ private:
 
     std::ofstream d_dump_file;
 
-    boost::circular_buffer<float> d_dll_filt_history;
-    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
-    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
-    boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
-    volk_gnsssdr::vector<float> d_tracking_code;
-    volk_gnsssdr::vector<float> d_data_code;
-    volk_gnsssdr::vector<float> d_local_code_shift_chips;
-    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
-    volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
-    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
+    float *d_prompt_data_shift;
+    float d_rem_carr_phase_rad;
 
-    Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
-    Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
+    int32_t d_symbols_per_bit;
+    int32_t d_preamble_length_symbols;
+    int32_t d_state;
+    int32_t d_correlation_length_ms;
+    int32_t d_n_correlator_taps;
+    int32_t d_current_prn_length_samples;
+    int32_t d_extend_correlation_symbols_count;
+    int32_t d_current_symbol;
+    int32_t d_current_data_symbol;
+    int32_t d_cn0_estimation_counter;
+    int32_t d_carrier_lock_fail_counter;
+    int32_t d_code_lock_fail_counter;
 
-    Dll_Pll_Conf d_trk_parameters;
+    uint32_t d_channel;
+    uint32_t d_secondary_code_length;
+    uint32_t d_data_secondary_code_length;
+    uint32_t d_code_length_chips;
+    uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
 
-    Exponential_Smoother d_cn0_smoother;
-    Exponential_Smoother d_carrier_lock_test_smoother;
-
-    Gnss_Synchro *d_acquisition_gnss_synchro;
-
-    Tracking_loop_filter d_code_loop_filter;
-    Tracking_FLL_PLL_filter d_carrier_loop_filter;
+    bool d_pull_in_transitory;
+    bool d_corrected_doppler;
+    bool d_interchange_iq;
+    bool d_veml;
+    bool d_cloop;
+    bool d_secondary;
+    bool d_dump;
+    bool d_dump_mat;
+    bool d_acc_carrier_phase_initialized;
+    bool d_enable_extended_integration;
 };
 
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H

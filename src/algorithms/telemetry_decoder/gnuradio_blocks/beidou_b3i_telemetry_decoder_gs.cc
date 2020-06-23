@@ -227,7 +227,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
         }
 
     // 3. Check operation executed correctly
-    if (d_nav.flag_crc_test == true)
+    if (d_nav.get_flag_CRC_test() == true)
         {
             DLOG(INFO) << "BeiDou DNAV CRC correct in channel " << d_channel
                        << " from satellite " << d_satellite;
@@ -299,8 +299,8 @@ void beidou_b3i_telemetry_decoder_gs::set_satellite(
 
     // Update satellite information for DNAV decoder
     sat_prn = d_satellite.get_PRN();
-    d_nav.i_satellite_PRN = sat_prn;
-    d_nav.i_signal_type = 5;  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
+    d_nav.set_satellite_PRN(sat_prn);
+    d_nav.set_signal_type(5);  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
 
     // Update tel dec parameters for D2 NAV Messages
     if (sat_prn > 0 and sat_prn < 6)
@@ -474,7 +474,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                             // call the decoder
                             decode_subframe(d_subframe_symbols.data());
 
-                            if (d_nav.flag_crc_test == true)
+                            if (d_nav.get_flag_CRC_test() == true)
                                 {
                                     d_CRC_error_counter = 0;
                                     d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
@@ -534,7 +534,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                     // call the decoder
                     decode_subframe(d_subframe_symbols.data());
 
-                    if (d_nav.flag_crc_test == true)
+                    if (d_nav.get_flag_CRC_test() == true)
                         {
                             d_CRC_error_counter = 0;
                             d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
@@ -563,17 +563,17 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
         }
     // UPDATE GNSS SYNCHRO DATA
     // 2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.flag_new_SOW_available == true)
+    if (this->d_flag_preamble == true and d_nav.get_flag_new_SOW_available() == true)
         // update TOW at the preamble instant
         {
             // Reporting sow as gps time of week
-            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
+            d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.get_SOW() + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
             // check TOW update consistency
             uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // compute new TOW
             d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
             flag_SOW_set = true;
-            d_nav.flag_new_SOW_available = false;
+            d_nav.set_flag_new_SOW_available(false);
 
             if (last_d_TOW_at_current_symbol_ms != 0 and abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(d_symbol_duration_ms))
                 {

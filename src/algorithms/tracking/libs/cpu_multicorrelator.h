@@ -45,8 +45,8 @@ public:
 private:
     // Allocate the device input vectors
     const std::complex<float> *d_sig_in;
-    std::complex<float> **d_local_codes_resampled;
     const std::complex<float> *d_local_code_in;
+    std::complex<float> **d_local_codes_resampled;
     std::complex<float> *d_corr_out;
     float *d_shifts_chips;
     int d_code_length_chips;

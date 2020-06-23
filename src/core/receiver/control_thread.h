@@ -152,18 +152,13 @@ private:
     std::thread sysv_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;
 
+#ifdef ENABLE_FPGA
+    boost::thread fpga_helper_thread_;
+#endif
+
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
-
-    bool receiver_on_standby_;
-    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
-    bool stop_;
-    bool restart_;
-    bool delete_configuration_;
-    unsigned int processed_control_messages_;
-    unsigned int applied_actions_;
-    int msqid_;
 
     // default filename for assistance data
     const std::string eph_default_xml_filename_ = "./gps_ephemeris.xml";
@@ -194,9 +189,15 @@ private:
     Agnss_Ref_Location agnss_ref_location_;
     Agnss_Ref_Time agnss_ref_time_;
 
-#ifdef ENABLE_FPGA
-    boost::thread fpga_helper_thread_;
-#endif
+    unsigned int processed_control_messages_;
+    unsigned int applied_actions_;
+    int msqid_;
+
+    bool receiver_on_standby_;
+    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
+    bool stop_;
+    bool restart_;
+    bool delete_configuration_;
 };
 
 #endif  // GNSS_SDR_CONTROL_THREAD_H

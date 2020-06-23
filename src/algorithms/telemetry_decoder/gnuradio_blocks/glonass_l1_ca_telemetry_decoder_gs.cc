@@ -165,7 +165,7 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
     d_nav.string_decoder(data_bits);
 
     // 3. Check operation executed correctly
-    if (d_nav.flag_CRC_test == true)
+    if (d_nav.get_flag_CRC_test() == true)
         {
             LOG(INFO) << "GLONASS GNAV CRC correct in channel " << d_channel << " from satellite " << d_satellite;
         }
@@ -177,7 +177,7 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-            d_nav.gnav_ephemeris.i_satellite_freq_channel = d_satellite.get_rf_link();
+            d_nav.set_rf_link(d_satellite.get_rf_link());
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
@@ -193,19 +193,20 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
         }
     if (d_nav.have_new_almanac() == true)
         {
-            uint32_t slot_nbr = d_nav.i_alm_satellite_slot_number;
-            std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
+            uint32_t slot_nbr = d_nav.get_alm_satellite_slot_number();
+            std::shared_ptr<Glonass_Gnav_Almanac>
+                tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac have been received in channel" << d_channel << " in slot number " << slot_nbr;
             std::cout << "New GLONASS L1 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
         }
     // 5. Update satellite information on system
-    if (d_nav.flag_update_slot_number == true)
+    if (d_nav.get_flag_update_slot_number() == true)
         {
             LOG(INFO) << "GLONASS GNAV Slot Number Identified in channel " << d_channel;
-            d_satellite.update_PRN(d_nav.gnav_ephemeris.d_n);
-            d_satellite.what_block(d_satellite.get_system(), d_nav.gnav_ephemeris.d_n);
-            d_nav.flag_update_slot_number = false;
+            d_satellite.update_PRN(d_nav.get_ephemeris().d_n);
+            d_satellite.what_block(d_satellite.get_system(), d_nav.get_ephemeris().d_n);
+            d_nav.set_flag_update_slot_number(false);
         }
 }
 
@@ -342,7 +343,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
 
                     // call the decoder
                     decode_string(string_symbols.data(), string_length);
-                    if (d_nav.flag_CRC_test == true)
+                    if (d_nav.get_flag_CRC_test() == true)
                         {
                             d_CRC_error_counter = 0;
                             d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
@@ -370,25 +371,25 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
 
     // UPDATE GNSS SYNCHRO DATA
     // 2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.flag_TOW_new == true)
+    if (this->d_flag_preamble == true and d_nav.get_flag_TOW_new() == true)
         // update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = floor((d_nav.gnav_ephemeris.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000;
-            d_nav.flag_TOW_new = false;
+            d_TOW_at_current_symbol = floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000;
+            d_nav.set_flag_TOW_new(false);
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_CODE_PERIOD_S;
         }
 
-    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
+    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.get_flag_CRC_test() == true)
 
     // if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) // all GGTO parameters arrived
     //     {
     //         delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
     //     }
 
-    if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
+    if (d_flag_frame_sync == true and d_nav.is_flag_TOW_set() == true)
         {
             current_symbol.Flag_valid_word = true;
         }

@@ -25,14 +25,13 @@
 #ifndef GNSS_SDR_FILE_CONFIGURATION_H
 #define GNSS_SDR_FILE_CONFIGURATION_H
 
+#include "INIReader.h"
 #include "configuration_interface.h"
+#include "in_memory_configuration.h"
+#include "string_converter.h"
 #include <cstdint>
 #include <memory>
 #include <string>
-
-class INIReader;
-class StringConverter;
-class InMemoryConfiguration;
 
 /*!
  * \brief This class is an implementation of the interface ConfigurationInterface
@@ -64,9 +63,9 @@ public:
 private:
     void init();
     std::string filename_;
-    std::shared_ptr<INIReader> ini_reader_;
-    std::shared_ptr<InMemoryConfiguration> overrided_;
-    std::shared_ptr<StringConverter> converter_;
+    std::unique_ptr<INIReader> ini_reader_;
+    std::unique_ptr<InMemoryConfiguration> overrided_;
+    std::unique_ptr<StringConverter> converter_;
     int error_{};
 };
 

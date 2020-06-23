@@ -75,31 +75,31 @@ private:
 
     gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
-    bool d_dump;
-    bool d_sent_tlm_failed_msg;
-    bool d_flag_PLL_180_deg_phase_locked;
-    bool d_flag_valid_word;
-
-    int32_t d_channel;
-    int32_t d_state;
-    int32_t d_crc_error_count;
-
-    uint64_t d_sample_counter;
-
-    uint64_t d_last_valid_preamble;
-    uint32_t d_max_symbols_without_valid_frame;
-
-    double d_TOW_at_current_symbol;
-    double d_TOW_at_Preamble;
-
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-
     Gnss_Satellite d_satellite;
 
     cnav_msg_decoder_t d_cnav_decoder{};
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
+
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+
+    double d_TOW_at_current_symbol;
+    double d_TOW_at_Preamble;
+
+    uint64_t d_sample_counter;
+    uint64_t d_last_valid_preamble;
+
+    int32_t d_channel;
+    int32_t d_state;
+    int32_t d_crc_error_count;
+
+    uint32_t d_max_symbols_without_valid_frame;
+
+    bool d_dump;
+    bool d_sent_tlm_failed_msg;
+    bool d_flag_PLL_180_deg_phase_locked;
+    bool d_flag_valid_word;
 };
 
 

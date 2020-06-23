@@ -76,13 +76,19 @@ private:
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe();
 
-    bool d_flag_frame_sync;
-    bool d_flag_parity;
-    bool d_flag_preamble;
-    bool d_sent_tlm_failed_msg;
-    bool d_flag_PLL_180_deg_phase_locked;
-    bool d_flag_TOW_set;
-    bool d_dump;
+    Gps_Navigation_Message d_nav;
+    Gnss_Satellite d_satellite;
+
+    std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
+
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+
+    boost::circular_buffer<float> d_symbol_history;
+
+    uint64_t d_sample_counter;
+    uint64_t d_preamble_index;
+    uint64_t d_last_valid_preamble;
 
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
@@ -98,19 +104,13 @@ private:
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
 
-    uint64_t d_sample_counter;
-    uint64_t d_preamble_index;
-    uint64_t d_last_valid_preamble;
-
-    std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
-
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-
-    boost::circular_buffer<float> d_symbol_history;
-
-    Gps_Navigation_Message d_nav;
-    Gnss_Satellite d_satellite;
+    bool d_flag_frame_sync;
+    bool d_flag_parity;
+    bool d_flag_preamble;
+    bool d_sent_tlm_failed_msg;
+    bool d_flag_PLL_180_deg_phase_locked;
+    bool d_flag_TOW_set;
+    bool d_dump;
 };
 
 #endif  // GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H

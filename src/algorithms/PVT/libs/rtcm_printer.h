@@ -146,17 +146,18 @@ public:
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
 private:
-    std::string rtcm_filename;  // String with the RTCM log filename
-    std::string rtcm_base_path;
-    std::ofstream rtcm_file_descriptor;  // Output file stream for RTCM log file
-    std::string rtcm_devname;
-    uint16_t port;
-    uint16_t station_id;
-    int32_t rtcm_dev_descriptor;                            // RTCM serial device descriptor (i.e. COM port)
     int32_t init_serial(const std::string& serial_device);  // serial port control
     void close_serial();
-    std::shared_ptr<Rtcm> rtcm;
     bool Print_Message(const std::string& message);
+
+    std::shared_ptr<Rtcm> rtcm;
+    std::ofstream rtcm_file_descriptor;  // Output file stream for RTCM log file
+    std::string rtcm_filename;           // String with the RTCM log filename
+    std::string rtcm_base_path;
+    std::string rtcm_devname;
+    int32_t rtcm_dev_descriptor;  // RTCM serial device descriptor (i.e. COM port)
+    uint16_t port;
+    uint16_t station_id;
     bool d_rtcm_file_dump;
 };
 

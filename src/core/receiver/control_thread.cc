@@ -357,6 +357,7 @@ int ControlThread::run()
     fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
 #endif
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // Terminate keyboard thread
     pthread_t id = keyboard_thread_.native_handle();
     keyboard_thread_.detach();

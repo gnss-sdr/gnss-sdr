@@ -78,24 +78,42 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
+    const int32_t d_nn = 2;  // Coding rate 1/n
+    const int32_t d_KK = 7;  // Constraint Length
+
     void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
     void decode_FNAV_word(float *page_symbols, int32_t frame_length);
 
-    bool d_sent_tlm_failed_msg;
-    bool d_flag_frame_sync;
-    bool d_flag_PLL_180_deg_phase_locked;
-    bool d_flag_parity;
-    bool d_flag_preamble;
-    bool d_dump;
+    // vars for Viterbi decoder
+    std::vector<int32_t> d_preamble_samples;
+    std::vector<float> d_page_part_symbols;
+    std::vector<int32_t> d_out0;
+    std::vector<int32_t> d_out1;
+    std::vector<int32_t> d_state0;
+    std::vector<int32_t> d_state1;
 
-    const int32_t d_nn = 2;  // Coding rate 1/n
-    const int32_t d_KK = 7;  // Constraint Length
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+
+    boost::circular_buffer<float> d_symbol_history;
+
+    Gnss_Satellite d_satellite;
+
+    // navigation message vars
+    Galileo_Navigation_Message d_inav_nav;
+    Galileo_Fnav_Message d_fnav_nav;
+
+    double d_delta_t;  // GPS-GALILEO time offset
+
+    uint64_t d_sample_counter;
+    uint64_t d_preamble_index;
+    uint64_t d_last_valid_preamble;
+
     int32_t d_mm = d_KK - 1;
     int32_t d_codelength;
     int32_t d_datalength;
-
     int32_t d_frame_type;
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
@@ -109,32 +127,14 @@ private:
     uint32_t d_stat;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
-    uint64_t d_sample_counter;
-    uint64_t d_preamble_index;
-    uint64_t d_last_valid_preamble;
     uint32_t d_max_symbols_without_valid_frame;
 
-    double d_delta_t;  // GPS-GALILEO time offset
-
-    // vars for Viterbi decoder
-    std::vector<int32_t> d_out0;
-    std::vector<int32_t> d_out1;
-    std::vector<int32_t> d_state0;
-    std::vector<int32_t> d_state1;
-
-    std::vector<int32_t> d_preamble_samples;
-    std::vector<float> d_page_part_symbols;
-
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-
-    boost::circular_buffer<float> d_symbol_history;
-
-    Gnss_Satellite d_satellite;
-
-    // navigation message vars
-    Galileo_Navigation_Message d_inav_nav;
-    Galileo_Fnav_Message d_fnav_nav;
+    bool d_sent_tlm_failed_msg;
+    bool d_flag_frame_sync;
+    bool d_flag_PLL_180_deg_phase_locked;
+    bool d_flag_parity;
+    bool d_flag_preamble;
+    bool d_dump;
 };
 
 #endif  // GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H

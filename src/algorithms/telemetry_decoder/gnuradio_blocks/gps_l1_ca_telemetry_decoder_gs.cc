@@ -172,7 +172,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satelli
     d_nav = Gps_Navigation_Message();
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
-    d_nav.i_satellite_PRN = d_satellite.get_PRN();
+    d_nav.set_satellite_PRN(d_satellite.get_PRN());
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 
@@ -180,7 +180,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satelli
 void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
-    d_nav.i_channel_ID = channel;
+    d_nav.set_channel(channel);
     DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -274,7 +274,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
                               << "subframe "
                               << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string("GPS"), d_nav.i_satellite_PRN) << std::endl;
+                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << std::endl;
 
                     switch (subframe_ID)
                         {
@@ -287,12 +287,12 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                                 }
                             break;
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
-                            if (d_nav.flag_iono_valid == true)
+                            if (d_nav.get_flag_iono_valid() == true)
                                 {
                                     std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav.get_iono());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                 }
-                            if (d_nav.flag_utc_model_valid == true)
+                            if (d_nav.get_flag_utc_model_valid() == true)
                                 {
                                     std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav.get_utc_model());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -474,15 +474,15 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            if (!(d_nav.d_TOW == 0))
+            if (!(d_nav.get_TOW() == 0))
                 {
-                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
-                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
+                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.get_TOW() * 1000.0);
+                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.get_TOW() * 1000.0);
                     d_flag_TOW_set = true;
                 }
             else
                 {
-                    DLOG(INFO) << "Received GPS L1 TOW equal to zero at sat " << d_nav.i_satellite_PRN;
+                    DLOG(INFO) << "Received GPS L1 TOW equal to zero at sat " << d_nav.get_satellite_PRN();
                 }
         }
     else

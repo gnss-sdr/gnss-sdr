@@ -41,7 +41,7 @@ Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 }
 
 
-void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_word)
+void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_word) const
 {
     std::cout << " Word =";
     std::cout << std::bitset<32>(BEIDOU_word);
@@ -51,7 +51,7 @@ void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_wor
 
 bool Beidou_Dnav_Navigation_Message::read_navigation_bool(
     std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter)
+    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
 
@@ -69,7 +69,7 @@ bool Beidou_Dnav_Navigation_Message::read_navigation_bool(
 
 uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
     std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter)
+    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -90,7 +90,7 @@ uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
 
 int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
     std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter)
+    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0;
     int32_t num_of_slices = parameter.size();
@@ -776,7 +776,7 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
 }
 
 
-Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
+Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 {
     Beidou_Dnav_Ephemeris eph;
 
@@ -825,7 +825,6 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_A_f1_msb_bits + d_A_f1_lsb_bits);
             eph.d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1)) * D1_A1_LSB;
             eph.d_A_f2 = d_A_f2;
-
 
             eph.d_TGD1 = d_TGD1;
             eph.d_TGD2 = d_TGD2;

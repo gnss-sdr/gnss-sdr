@@ -35,9 +35,14 @@ class Galileo_Ephemeris
 {
 public:
     Galileo_Ephemeris() = default;
+
+    void satellitePosition(double transmitTime);             //!< Computes the ECEF SV coordinates and ECEF velocity
+    double Galileo_System_Time(double WN, double TOW);       //!< Galileo System Time (GST), ICD paragraph 5.1.2
+    double sv_clock_drift(double transmitTime);              //!< Satellite Time Correction Algorithm, ICD 5.1.4
+    double sv_clock_relativistic_term(double transmitTime);  //!< Satellite Time Correction Algorithm, ICD 5.1.4
+
     /* Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
        The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
-    bool flag_all_ephemeris{};
     int32_t IOD_ephemeris{};
     int32_t IOD_nav_1{};
     int32_t SV_ID_PRN_4{};
@@ -73,13 +78,12 @@ public:
 
     // SV status
     int32_t SISA_3{};
-    int32_t E5a_HS{};    //!< E5a Signal Health Status
-    int32_t E5b_HS_5{};  //!< E5b Signal Health Status
-    int32_t E1B_HS_5{};  //!< E1B Signal Health Status
-    bool E5a_DVS{};      //!< E5a Data Validity Status
-    bool E5b_DVS_5{};    //!< E5b Data Validity Status
-    bool E1B_DVS_5{};    //!< E1B Data Validity Status
-
+    int32_t E5a_HS{};      //!< E5a Signal Health Status
+    int32_t E5b_HS_5{};    //!< E5b Signal Health Status
+    int32_t E1B_HS_5{};    //!< E1B Signal Health Status
+    bool E5a_DVS{};        //!< E5a Data Validity Status
+    bool E5b_DVS_5{};      //!< E5b Data Validity Status
+    bool E1B_DVS_5{};      //!< E1B Data Validity Status
     double BGD_E1E5a_5{};  //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5{};  //!< E1-E5b Broadcast Group Delay [s]
 
@@ -95,10 +99,7 @@ public:
 
     uint32_t i_satellite_PRN{};  //!< SV PRN NUMBER
 
-    void satellitePosition(double transmitTime);             //!< Computes the ECEF SV coordinates and ECEF velocity
-    double Galileo_System_Time(double WN, double TOW);       //!< Galileo System Time (GST), ICD paragraph 5.1.2
-    double sv_clock_drift(double transmitTime);              //!< Satellite Time Correction Algorithm, ICD 5.1.4
-    double sv_clock_relativistic_term(double transmitTime);  //!< Satellite Time Correction Algorithm, ICD 5.1.4
+    bool flag_all_ephemeris{};
 
     template <class Archive>
 
@@ -140,7 +141,6 @@ public:
         archive& BOOST_SERIALIZATION_NVP(Galileo_satClkDrift);
         archive& BOOST_SERIALIZATION_NVP(Galileo_dtr);
 
-        archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
         archive& BOOST_SERIALIZATION_NVP(IOD_ephemeris);
         archive& BOOST_SERIALIZATION_NVP(IOD_nav_1);
 
@@ -154,6 +154,8 @@ public:
 
         archive& BOOST_SERIALIZATION_NVP(BGD_E1E5a_5);
         archive& BOOST_SERIALIZATION_NVP(BGD_E1E5b_5);
+
+        archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
     }
 };
 

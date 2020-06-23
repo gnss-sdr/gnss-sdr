@@ -20,14 +20,13 @@
 
 
 #include "in_memory_configuration.h"
-#include "string_converter.h"
+#include "gnss_sdr_make_unique.h"
 #include <utility>
 
 
 InMemoryConfiguration::InMemoryConfiguration()
 {
-    std::unique_ptr<StringConverter> converter_aux(new StringConverter);
-    converter_ = std::move(converter_aux);
+    converter_ = std::make_unique<StringConverter>();
 }
 
 

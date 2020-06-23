@@ -36,10 +36,10 @@ public:
      */
     Agnss_Ref_Location() = default;
 
-    bool valid{};
     double lat{};
     double lon{};
     double uncertainty{};
+    bool valid{};
 
     template <class Archive>
 
@@ -52,10 +52,10 @@ public:
         if (version)
             {
             };
-        archive& make_nvp("valid", valid);
         archive& make_nvp("lat", lat);
         archive& make_nvp("lon", lon);
         archive& make_nvp("uncertainty", uncertainty);
+        archive& make_nvp("valid", valid);
     }
 };
 

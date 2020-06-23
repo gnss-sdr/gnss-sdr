@@ -47,22 +47,16 @@ public:
     Nmea_Printer(const std::string& filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path = ".");
 
     /*!
-     * \brief Print NMEA PVT and satellite info to the initialized device
-     */
-    bool Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_average_values);
-
-    /*!
      * \brief Default destructor.
      */
     ~Nmea_Printer();
 
+    /*!
+     * \brief Print NMEA PVT and satellite info to the initialized device
+     */
+    bool Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_average_values);
+
 private:
-    std::string nmea_filename;  // String with the NMEA log filename
-    std::string nmea_base_path;
-    std::ofstream nmea_file_descriptor;  // Output file stream for NMEA log file
-    std::string nmea_devname;
-    int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
-    const Rtklib_Solver* d_PVT_data;
     int init_serial(const std::string& serial_device);  // serial port control
     void close_serial();
     std::string get_GPGGA();  // fix data
@@ -73,6 +67,17 @@ private:
     std::string longitude_to_hm(double longitude);
     std::string latitude_to_hm(double lat);
     char checkSum(const std::string& sentence);
+
+    const Rtklib_Solver* d_PVT_data;
+
+    std::ofstream nmea_file_descriptor;  // Output file stream for NMEA log file
+
+    std::string nmea_filename;  // String with the NMEA log filename
+    std::string nmea_base_path;
+    std::string nmea_devname;
+
+    int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
+
     bool print_avg_pos;
     bool d_flag_nmea_output_file;
 };

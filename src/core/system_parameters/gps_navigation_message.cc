@@ -1,13 +1,14 @@
 /*!
-m * \file gps_navigation_message.cc
+ * \file gps_navigation_message.cc
  * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200K
- *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix II
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * -------------------------------------------------------------------------
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix II
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +17,7 @@ m * \file gps_navigation_message.cc
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "gps_navigation_message.h"
@@ -42,7 +43,7 @@ Gps_Navigation_Message::Gps_Navigation_Message()
 }
 
 
-void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word)
+void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word) const
 {
     std::cout << " Word =";
     std::cout << std::bitset<32>(GPS_word);
@@ -50,7 +51,7 @@ void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word)
 }
 
 
-bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
 
@@ -66,7 +67,7 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 }
 
 
-uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -85,7 +86,7 @@ uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRA
 }
 
 
-int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     int32_t num_of_slices = parameter.size();
@@ -428,7 +429,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
 }
 
 
-Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
+Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
 {
     Gps_Ephemeris ephemeris;
     ephemeris.i_satellite_PRN = i_satellite_PRN;

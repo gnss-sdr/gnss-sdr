@@ -23,9 +23,7 @@
  */
 
 #include "file_configuration.h"
-#include "INIReader.h"
-#include "in_memory_configuration.h"
-#include "string_converter.h"
+#include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
 #include <utility>
 
@@ -41,6 +39,27 @@ FileConfiguration::FileConfiguration()
 {
     filename_ = "./default_config_file.txt";
     init();
+}
+
+
+void FileConfiguration::init()
+{
+    converter_ = std::make_unique<StringConverter>();
+    overrided_ = std::make_unique<InMemoryConfiguration>();
+    ini_reader_ = std::make_unique<INIReader>(filename_);
+    error_ = ini_reader_->ParseError();
+    if (error_ == 0)
+        {
+            DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
+        }
+    else if (error_ > 0)
+        {
+            LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
+        }
+    else
+        {
+            LOG(WARNING) << "Unable to open configuration file " << filename_;
+        }
 }
 
 
@@ -156,25 +175,4 @@ double FileConfiguration::property(std::string property_name, double default_val
 void FileConfiguration::set_property(std::string property_name, std::string value)
 {
     overrided_->set_property(property_name, value);
-}
-
-
-void FileConfiguration::init()
-{
-    converter_ = std::make_shared<StringConverter>();
-    overrided_ = std::make_shared<InMemoryConfiguration>();
-    ini_reader_ = std::make_shared<INIReader>(filename_);
-    error_ = ini_reader_->ParseError();
-    if (error_ == 0)
-        {
-            DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
-        }
-    else if (error_ > 0)
-        {
-            LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
-        }
-    else
-        {
-            LOG(WARNING) << "Unable to open configuration file " << filename_;
-        }
 }

@@ -42,21 +42,21 @@ class Gnss_Synchro;
 typedef struct
 {
     /* pcps acquisition configuration */
-    uint32_t doppler_max;
-    int64_t fs_in;
-    int32_t samples_per_code;
-    int32_t code_length;
-    uint32_t select_queue_Fpga;
     std::string device_name;
+    int64_t fs_in;
+    float doppler_step2;
     uint32_t* all_fft_codes;  // pointer to memory that contains all the code ffts
+    uint32_t doppler_max;
+    uint32_t select_queue_Fpga;
     uint32_t downsampling_factor;
     uint32_t total_block_exp;
     uint32_t excludelimit;
-    bool make_2_steps;
     uint32_t num_doppler_bins_step2;
-    float doppler_step2;
-    bool repeat_satellite;
     uint32_t max_num_acqs;
+    int32_t samples_per_code;
+    int32_t code_length;
+    bool make_2_steps;
+    bool repeat_satellite;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -195,12 +195,28 @@ private:
     void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min);
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
-    bool d_active;
-    bool d_make_2_steps;
+    pcpsconf_fpga_t d_acq_parameters;
+
+    std::shared_ptr<Fpga_Acquisition> d_acquisition_fpga;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+
+    Gnss_Synchro* d_gnss_synchro;
+
+    uint64_t d_sample_counter;
+
+    float d_threshold;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
+    float d_doppler_step2;
+    float d_doppler_center_step_two;
+
+    int32_t d_doppler_center;
+    int32_t d_state;
+
     uint32_t d_doppler_index;
     uint32_t d_channel;
     uint32_t d_doppler_step;
-    int32_t d_doppler_center;
     uint32_t d_doppler_max;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
@@ -209,18 +225,9 @@ private:
     uint32_t d_total_block_exp;
     uint32_t d_num_doppler_bins_step2;
     uint32_t d_max_num_acqs;
-    int32_t d_state;
-    uint64_t d_sample_counter;
-    float d_threshold;
-    float d_mag;
-    float d_input_power;
-    float d_test_statistics;
-    float d_doppler_step2;
-    float d_doppler_center_step_two;
-    std::shared_ptr<Fpga_Acquisition> d_acquisition_fpga;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    pcpsconf_fpga_t d_acq_parameters;
-    Gnss_Synchro* d_gnss_synchro;
+
+    bool d_active;
+    bool d_make_2_steps;
 };
 
 #endif  // GNSS_SDR_PCPS_ACQUISITION_FPGA_H

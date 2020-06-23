@@ -252,7 +252,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // DECODE COMPLETE WORD (even + odd) and TEST CRC
             d_inav_nav.split_page(page_String, flag_even_word_arrived);
-            if (d_inav_nav.flag_CRC_test == true)
+            if (d_inav_nav.get_flag_CRC_test() == true)
                 {
                     DLOG(INFO) << "Galileo E1 CRC correct in channel " << d_channel << " from satellite " << d_satellite;
                 }
@@ -290,7 +290,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
             std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            d_delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_inav_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
+            d_delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G_10), 64.0)));
             DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
         }
     if (d_inav_nav.have_new_almanac() == true)
@@ -301,7 +301,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
-            DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.WN_0;
+            DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.get_Galileo_week();
         }
 }
 
@@ -341,7 +341,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 
     // DECODE COMPLETE WORD (even + odd) and TEST CRC
     d_fnav_nav.split_page(page_String);
-    if (d_fnav_nav.flag_CRC_test == true)
+    if (d_fnav_nav.get_flag_CRC_test() == true)
         {
             DLOG(INFO) << "Galileo E5a CRC correct in channel " << d_channel << " from satellite " << d_satellite;
         }
@@ -595,7 +595,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 break;
                             }
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                        if (d_inav_nav.flag_CRC_test == true or d_fnav_nav.flag_CRC_test == true)
+                        if (d_inav_nav.get_flag_CRC_test() == true or d_fnav_nav.get_flag_CRC_test() == true)
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
@@ -617,8 +617,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;
                                         d_TOW_at_Preamble_ms = 0;
-                                        d_fnav_nav.flag_TOW_set = false;
-                                        d_inav_nav.flag_TOW_set = false;
+                                        d_fnav_nav.set_flag_TOW_set(false);
+                                        d_inav_nav.set_flag_TOW_set(false);
                                     }
                             }
                     }
@@ -635,22 +635,22 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                 case 1:  // INAV
                     {
-                        if (d_inav_nav.flag_TOW_set == true)
+                        if (d_inav_nav.is_TOW_set() == true)
                             {
-                                if (d_inav_nav.flag_TOW_5 == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+                                if (d_inav_nav.is_TOW5_set() == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                                     {
                                         // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.TOW_5 * 1000.0);
+                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW5() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
-                                        d_inav_nav.flag_TOW_5 = false;
+                                        d_inav_nav.set_TOW5_flag(false);
                                     }
 
-                                else if (d_inav_nav.flag_TOW_6 == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+                                else if (d_inav_nav.is_TOW5_set() == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                                     {
                                         // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.TOW_6 * 1000.0);
+                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW6() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
-                                        d_inav_nav.flag_TOW_6 = false;
+                                        d_inav_nav.set_TOW6_flag(false);
                                     }
                                 else
                                     {
@@ -662,35 +662,35 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 2:  // FNAV
                     {
-                        if (d_fnav_nav.flag_TOW_set == true)
+                        if (d_fnav_nav.is_TOW_set() == true)
                             {
-                                if (d_fnav_nav.flag_TOW_1 == true)
+                                if (d_fnav_nav.is_TOW1_set() == true)
                                     {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_1 * 1000.0);
+                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW1() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
-                                        d_fnav_nav.flag_TOW_1 = false;
+                                        d_fnav_nav.set_TOW1_flag(false);
                                     }
-                                else if (d_fnav_nav.flag_TOW_2 == true)
+                                else if (d_fnav_nav.is_TOW2_set() == true)
                                     {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_2 * 1000.0);
+                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW2() * 1000.0);
                                         // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.flag_TOW_2 = false;
+                                        d_fnav_nav.set_TOW2_flag(false);
                                     }
-                                else if (d_fnav_nav.flag_TOW_3 == true)
+                                else if (d_fnav_nav.is_TOW3_set() == true)
                                     {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_3 * 1000.0);
+                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW3() * 1000.0);
                                         // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.flag_TOW_3 = false;
+                                        d_fnav_nav.set_TOW3_flag(false);
                                     }
-                                else if (d_fnav_nav.flag_TOW_4 == true)
+                                else if (d_fnav_nav.is_TOW4_set() == true)
                                     {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.FNAV_TOW_4 * 1000.0);
+                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW4() * 1000.0);
                                         // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.flag_TOW_4 = false;
+                                        d_fnav_nav.set_TOW4_flag(false);
                                     }
                                 else
                                     {
@@ -707,7 +707,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                 case 1:  // INAV
                     {
-                        if (d_inav_nav.flag_TOW_set == true)
+                        if (d_inav_nav.is_TOW_set() == true)
                             {
                                 d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                             }
@@ -715,7 +715,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 2:  // FNAV
                     {
-                        if (d_fnav_nav.flag_TOW_set == true)
+                        if (d_fnav_nav.is_TOW_set() == true)
                             {
                                 d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                             }
@@ -728,11 +728,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
         case 1:  // INAV
             {
-                if (d_inav_nav.flag_TOW_set)
+                if (d_inav_nav.is_TOW_set())
                     {
-                        if (d_inav_nav.flag_GGTO_1 == true and d_inav_nav.flag_GGTO_2 == true and d_inav_nav.flag_GGTO_3 == true and d_inav_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
+                        if (d_inav_nav.get_flag_GGTO())  // all GGTO parameters arrived
                             {
-                                d_delta_t = d_inav_nav.A_0G_10 + d_inav_nav.A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.t_0G_10 + 604800.0 * (fmod((d_inav_nav.WN_0 - d_inav_nav.WN_0G_10), 64.0)));
+                                d_delta_t = d_inav_nav.get_A0G() + d_inav_nav.get_A1G() * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.get_t0G() + 604800.0 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - d_inav_nav.get_WN0G()), 64.0)));
                             }
 
                         current_symbol.Flag_valid_word = true;
@@ -742,7 +742,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
         case 2:  // FNAV
             {
-                if (d_fnav_nav.flag_TOW_set)
+                if (d_fnav_nav.is_TOW_set())
                     {
                         current_symbol.Flag_valid_word = true;
                     }
@@ -750,7 +750,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         }
 
-    if (d_inav_nav.flag_TOW_set or d_fnav_nav.flag_TOW_set)
+    if (d_inav_nav.is_TOW_set() or d_fnav_nav.is_TOW_set())
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.

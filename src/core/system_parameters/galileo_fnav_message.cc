@@ -53,7 +53,7 @@ void Galileo_Fnav_Message::split_page(const std::string& page_string)
 }
 
 
-bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, uint32_t checksum)
+bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, uint32_t checksum) const
 {
     CRC_Galileo_FNAV_type CRC_Galileo;
 
@@ -283,7 +283,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
 }
 
 
-uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     int num_of_slices = parameter.size();
@@ -302,7 +302,7 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV
 }
 
 
-int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     int num_of_slices = parameter.size();
@@ -399,7 +399,7 @@ bool Galileo_Fnav_Message::have_new_almanac()  // Check if we have a new almanac
 }
 
 
-Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris()
+Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
@@ -440,7 +440,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris()
 }
 
 
-Galileo_Iono Galileo_Fnav_Message::get_iono()
+Galileo_Iono Galileo_Fnav_Message::get_iono() const
 {
     Galileo_Iono iono;
     // Ionospheric correction
@@ -462,7 +462,7 @@ Galileo_Iono Galileo_Fnav_Message::get_iono()
 }
 
 
-Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model()
+Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model() const
 {
     Galileo_Utc_Model utc_model;
     // Word type 6: GST-UTC conversion parameters
@@ -482,7 +482,7 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model()
 }
 
 
-Galileo_Almanac_Helper Galileo_Fnav_Message::get_almanac()
+Galileo_Almanac_Helper Galileo_Fnav_Message::get_almanac() const
 {
     Galileo_Almanac_Helper almanac;
     // FNAV equivalent of INAV Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number

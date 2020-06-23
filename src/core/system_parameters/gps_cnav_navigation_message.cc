@@ -36,7 +36,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 }
 
 
-bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
 
@@ -52,7 +52,7 @@ bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA
 }
 
 
-uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -71,7 +71,7 @@ uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_C
 }
 
 
-int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     int32_t num_of_slices = parameter.size();
@@ -306,7 +306,7 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
 }
 
 
-Gps_CNAV_Ephemeris Gps_CNAV_Navigation_Message::get_ephemeris()
+Gps_CNAV_Ephemeris Gps_CNAV_Navigation_Message::get_ephemeris() const
 {
     return ephemeris_record;
 }
@@ -323,7 +323,7 @@ bool Gps_CNAV_Navigation_Message::have_new_iono()  // Check if we have a new ion
 }
 
 
-Gps_CNAV_Iono Gps_CNAV_Navigation_Message::get_iono()
+Gps_CNAV_Iono Gps_CNAV_Navigation_Message::get_iono() const
 {
     return iono_record;
 }

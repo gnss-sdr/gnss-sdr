@@ -44,91 +44,206 @@ class Galileo_Navigation_Message
 public:
     Galileo_Navigation_Message() = default;
 
-    int32_t Page_type_time_stamp{};
+    /*
+     * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
+     */
+    void split_page(std::string page_string, int32_t flag_even_word);
+
+    /*
+     * \brief Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
+     *
+     * Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
+     */
+    int32_t page_jk_decoder(const char* data_jk);
+
+    /*
+     * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_ephemeris();
+
+    /*
+     * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_iono_and_GST();
+
+    /*
+     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_utc_model();
+
+    /*
+     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_almanac();
+
+    /*
+     * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received
+     */
+    Galileo_Ephemeris get_ephemeris() const;
+
+    /*
+     * \brief Returns a Galileo_Iono object filled with the latest navigation data received
+     */
+    Galileo_Iono get_iono() const;
+
+    /*
+     * \brief Returns a Galileo_Utc_Model object filled with the latest navigation data received
+     */
+    Galileo_Utc_Model get_utc_model() const;
+
+    /*
+     * \brief Returns a Galileo_Almanac_Helper object filled with the latest navigation data received
+     */
+    Galileo_Almanac_Helper get_almanac() const;
+
+    inline bool get_flag_CRC_test() const
+    {
+        return flag_CRC_test;
+    }
+
+    inline bool get_flag_TOW_set() const
+    {
+        return flag_TOW_set;
+    }
+
+    inline void set_flag_TOW_set(bool flag_tow)
+    {
+        flag_TOW_set = flag_tow;
+    }
+
+    inline int32_t get_Galileo_week() const
+    {
+        return WN_0;
+    }
+
+    inline bool is_TOW_set() const
+    {
+        return flag_TOW_set;
+    }
+
+    inline int32_t get_TOW5() const
+    {
+        return TOW_5;
+    }
+
+    inline int32_t get_TOW6() const
+    {
+        return TOW_6;
+    }
+
+    inline bool is_TOW5_set() const
+    {
+        return flag_TOW_5;
+    }
+
+    inline void set_TOW5_flag(bool flag_tow5)
+    {
+        flag_TOW_5 = flag_tow5;
+    }
+
+    inline bool is_TOW6_set() const
+    {
+        return flag_TOW_6;
+    }
+
+    inline void set_TOW6_flag(bool flag_tow6)
+    {
+        flag_TOW_6 = flag_tow6;
+    }
+
+    inline bool get_flag_GGTO() const
+    {
+        return (flag_GGTO_1 == true and flag_GGTO_2 == true and flag_GGTO_3 == true and flag_GGTO_4 == true);
+    }
+
+    inline double get_A0G() const
+    {
+        return A_0G_10;
+    }
+
+    inline double get_A1G() const
+    {
+        return A_1G_10;
+    }
+
+    inline double get_t0G() const
+    {
+        return t_0G_10;
+    }
+
+    inline double get_WN0G() const
+    {
+        return WN_0G_10;
+    }
+
+private:
+    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum) const;
+    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
+    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
+    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
+
     std::string page_Even{};
-    bool flag_CRC_test{};
-    bool flag_all_ephemeris{};  //!< Flag indicating that all words containing ephemeris have been received
-    bool flag_ephemeris_1{};    //!< Flag indicating that ephemeris 1/4 (word 1) have been received
-    bool flag_ephemeris_2{};    //!< Flag indicating that ephemeris 2/4 (word 2) have been received
-    bool flag_ephemeris_3{};    //!< Flag indicating that ephemeris 3/4 (word 3) have been received
-    bool flag_ephemeris_4{};    //!< Flag indicating that ephemeris 4/4 (word 4) have been received
 
-    bool flag_iono_and_GST{};  //!< Flag indicating that ionospheric and GST parameters (word 5) have been received
-    bool flag_TOW_5{};
-    bool flag_TOW_6{};
-    bool flag_TOW_set{};    //!< it is true when page 5 or page 6 arrives
-    bool flag_utc_model{};  //!< Flag indicating that utc model parameters (word 6) have been received
-
-    bool flag_all_almanac{};  //!< Flag indicating that all almanac have been received
-    bool flag_almanac_1{};    //!< Flag indicating that almanac 1/4 (word 7) have been received
-    bool flag_almanac_2{};    //!< Flag indicating that almanac 2/4 (word 8) have been received
-    bool flag_almanac_3{};    //!< Flag indicating that almanac 3/4 (word 9) have been received
-    bool flag_almanac_4{};    //!< Flag indicating that almanac 4/4 (word 10) have been received
-
+    int32_t Page_type_time_stamp{};
     int32_t IOD_ephemeris{};
 
-    bool flag_GGTO{};
-    bool flag_GGTO_1{};
-    bool flag_GGTO_2{};
-    bool flag_GGTO_3{};
-    bool flag_GGTO_4{};
-
     // Word type 1: Ephemeris (1/4)
-    int32_t IOD_nav_1{};  //!< IOD_nav page 1
-    int32_t t0e_1{};      //!< Ephemeris reference time [s]
-    double M0_1{};        //!< Mean anomaly at reference time [semi-circles]
-    double e_1{};         //!< Eccentricity
-    double A_1{};         //!< Square root of the semi-major axis [meters^1/2]
+    int32_t IOD_nav_1{};  // IOD_nav page 1
+    int32_t t0e_1{};      // Ephemeris reference time [s]
+    double M0_1{};        // Mean anomaly at reference time [semi-circles]
+    double e_1{};         // Eccentricity
+    double A_1{};         // Square root of the semi-major axis [meters^1/2]
 
     // Word type 2: Ephemeris (2/4)
-    int32_t IOD_nav_2{};  //!< IOD_nav page 2
-    double OMEGA_0_2{};   //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    double i_0_2{};       //!< Inclination angle at reference time  [semi-circles]
-    double omega_2{};     //!< Argument of perigee [semi-circles]
-    double iDot_2{};      //!< Rate of inclination angle [semi-circles/sec]
+    int32_t IOD_nav_2{};  // IOD_nav page 2
+    double OMEGA_0_2{};   // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    double i_0_2{};       // Inclination angle at reference time  [semi-circles]
+    double omega_2{};     // Argument of perigee [semi-circles]
+    double iDot_2{};      // Rate of inclination angle [semi-circles/sec]
 
     // Word type 3: Ephemeris (3/4) and SISA
     int32_t IOD_nav_3{};   //
-    double OMEGA_dot_3{};  //!< Rate of right ascension [semi-circles/sec]
-    double delta_n_3{};    //!< Mean motion difference from computed value  [semi-circles/sec]
-    double C_uc_3{};       //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    double C_us_3{};       //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    double C_rc_3{};       //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    double C_rs_3{};       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    double OMEGA_dot_3{};  // Rate of right ascension [semi-circles/sec]
+    double delta_n_3{};    // Mean motion difference from computed value  [semi-circles/sec]
+    double C_uc_3{};       // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    double C_us_3{};       // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    double C_rc_3{};       // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    double C_rs_3{};       // Amplitude of the sine harmonic correction term to the orbit radius [meters]
     int32_t SISA_3{};
 
     // Word type 4: Ephemeris (4/4) and Clock correction parameters*/
     int32_t IOD_nav_4{};    //
     int32_t SV_ID_PRN_4{};  //
-    double C_ic_4{};        //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    double C_is_4{};        //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    double C_ic_4{};        // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
+    double C_is_4{};        // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
 
     // Clock correction parameters
-    int32_t t0c_4{};  //!< Clock correction data reference Time of Week [sec]
-    double af0_4{};   //!< SV clock bias correction coefficient [s]
-    double af1_4{};   //!< SV clock drift correction coefficient [s/s]
-    double af2_4{};   //!< clock drift rate correction coefficient [s/s^2]
+    int32_t t0c_4{};  // Clock correction data reference Time of Week [sec]
+    double af0_4{};   // SV clock bias correction coefficient [s]
+    double af1_4{};   // SV clock drift correction coefficient [s/s]
+    double af2_4{};   // clock drift rate correction coefficient [s/s^2]
     double spare_4{};
 
     //  Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
     // Ionospheric correction
-    double ai0_5{};  //!< Effective Ionisation Level 1st order parameter [sfu]
-    double ai1_5{};  //!< Effective Ionisation Level 2st order parameter [sfu/degree]
-    double ai2_5{};  //!< Effective Ionisation Level 3st order parameter [sfu/degree]
+    double ai0_5{};  // Effective Ionisation Level 1st order parameter [sfu]
+    double ai1_5{};  // Effective Ionisation Level 2st order parameter [sfu/degree]
+    double ai2_5{};  // Effective Ionisation Level 3st order parameter [sfu/degree]
 
     // Ionospheric disturbance flag
-    bool Region1_flag_5{};  //!< Ionospheric Disturbance Flag for region 1
-    bool Region2_flag_5{};  //!< Ionospheric Disturbance Flag for region 2
-    bool Region3_flag_5{};  //!< Ionospheric Disturbance Flag for region 3
-    bool Region4_flag_5{};  //!< Ionospheric Disturbance Flag for region 4
-    bool Region5_flag_5{};  //!< Ionospheric Disturbance Flag for region 5
-    double BGD_E1E5a_5{};   //!< E1-E5a Broadcast Group Delay [s]
-    double BGD_E1E5b_5{};   //!< E1-E5b Broadcast Group Delay [s]
+    bool Region1_flag_5{};  // Ionospheric Disturbance Flag for region 1
+    bool Region2_flag_5{};  // Ionospheric Disturbance Flag for region 2
+    bool Region3_flag_5{};  // Ionospheric Disturbance Flag for region 3
+    bool Region4_flag_5{};  // Ionospheric Disturbance Flag for region 4
+    bool Region5_flag_5{};  // Ionospheric Disturbance Flag for region 5
+    double BGD_E1E5a_5{};   // E1-E5a Broadcast Group Delay [s]
+    double BGD_E1E5b_5{};   // E1-E5b Broadcast Group Delay [s]
 
-    int32_t E5b_HS_5{};  //!< E5b Signal Health Status
-    int32_t E1B_HS_5{};  //!< E1B Signal Health Status
-    bool E5b_DVS_5{};    //!< E5b Data Validity Status
-    bool E1B_DVS_5{};    //!< E1B Data Validity Status
+    int32_t E5b_HS_5{};  // E5b Signal Health Status
+    int32_t E1B_HS_5{};  // E1B Signal Health Status
+    bool E5b_DVS_5{};    // E5b Data Validity Status
+    bool E1B_DVS_5{};    // E1B Data Validity Status
 
     // GST
     int32_t WN_5{};
@@ -199,10 +314,10 @@ public:
     int32_t E1B_HS_10{};
 
     // GST-GPS conversion
-    double A_0G_10{};    //!< Constant term of the offset Delta t systems
-    double A_1G_10{};    //!< Rate of change of the offset Delta t systems
-    int32_t t_0G_10{};   //!< Reference time for Galileo/GPS Time Offset (GGTO) data
-    int32_t WN_0G_10{};  //!< Week Number of Galileo/GPS Time Offset (GGTO) reference
+    double A_0G_10{};    // Constant term of the offset Delta t systems
+    double A_1G_10{};    // Rate of change of the offset Delta t systems
+    int32_t t_0G_10{};   // Reference time for Galileo/GPS Time Offset (GGTO) data
+    int32_t WN_0G_10{};  // Week Number of Galileo/GPS Time Offset (GGTO) reference
 
     // Word type 0: I/NAV Spare Word
     int32_t Time_0{};
@@ -210,76 +325,30 @@ public:
     int32_t TOW_0{};
 
     double Galileo_satClkDrift{};
-    double Galileo_dtr{};  //!< Relativistic clock correction term
 
-    // satellite positions
-    double galileo_satpos_X{};  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double galileo_satpos_Y{};  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double galileo_satpos_Z{};  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+    bool flag_CRC_test{};
+    bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
+    bool flag_ephemeris_1{};    // Flag indicating that ephemeris 1/4 (word 1) have been received
+    bool flag_ephemeris_2{};    // Flag indicating that ephemeris 2/4 (word 2) have been received
+    bool flag_ephemeris_3{};    // Flag indicating that ephemeris 3/4 (word 3) have been received
+    bool flag_ephemeris_4{};    // Flag indicating that ephemeris 4/4 (word 4) have been received
 
-    // Satellite velocity
-    double galileo_satvel_X{};  //!< Earth-fixed velocity coordinate x of the satellite [m]
-    double galileo_satvel_Y{};  //!< Earth-fixed velocity coordinate y of the satellite [m]
-    double galileo_satvel_Z{};  //!< Earth-fixed velocity coordinate z of the satellite [m]
+    bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 5) have been received
+    bool flag_TOW_5{};
+    bool flag_TOW_6{};
+    bool flag_TOW_set{};    // it is true when page 5 or page 6 arrives
+    bool flag_utc_model{};  // Flag indicating that utc model parameters (word 6) have been received
 
-    /*
-     * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
-     */
-    void split_page(std::string page_string, int32_t flag_even_word);
+    bool flag_all_almanac{};  // Flag indicating that all almanac have been received
+    bool flag_almanac_1{};    // Flag indicating that almanac 1/4 (word 7) have been received
+    bool flag_almanac_2{};    // Flag indicating that almanac 2/4 (word 8) have been received
+    bool flag_almanac_3{};    // Flag indicating that almanac 3/4 (word 9) have been received
+    bool flag_almanac_4{};    // Flag indicating that almanac 4/4 (word 10) have been received
 
-    /*
-     * \brief Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
-     *
-     * Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
-     */
-    int32_t page_jk_decoder(const char* data_jk);
-
-    /*
-     * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
-     */
-    bool have_new_ephemeris();
-
-    /*
-     * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
-     */
-    bool have_new_iono_and_GST();
-
-    /*
-     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
-     */
-    bool have_new_utc_model();
-
-    /*
-     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
-     */
-    bool have_new_almanac();
-
-    /*
-     * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received
-     */
-    Galileo_Ephemeris get_ephemeris();
-
-    /*
-     * \brief Returns a Galileo_Iono object filled with the latest navigation data received
-     */
-    Galileo_Iono get_iono();
-
-    /*
-     * \brief Returns a Galileo_Utc_Model object filled with the latest navigation data received
-     */
-    Galileo_Utc_Model get_utc_model();
-
-    /*
-     * \brief Returns a Galileo_Almanac_Helper object filled with the latest navigation data received
-     */
-    Galileo_Almanac_Helper get_almanac();
-
-private:
-    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum);
-    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
-    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    bool flag_GGTO_1{};
+    bool flag_GGTO_2{};
+    bool flag_GGTO_3{};
+    bool flag_GGTO_4{};
 };
 
 #endif  // GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H

@@ -40,7 +40,7 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
 }
 
 
-bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits)
+bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits) const
 {
     uint32_t sum_bits = 0;
     int32_t sum_hamming = 0;
@@ -146,7 +146,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
 }
 
 
-bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
 
@@ -162,7 +162,7 @@ bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_G
 }
 
 
-uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -181,7 +181,7 @@ uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<G
 }
 
 
-int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
+int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     int64_t sign = 0LL;
@@ -628,19 +628,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 }
 
 
-Glonass_Gnav_Ephemeris Glonass_Gnav_Navigation_Message::get_ephemeris()
-{
-    return gnav_ephemeris;
-}
-
-
-Glonass_Gnav_Utc_Model Glonass_Gnav_Navigation_Message::get_utc_model()
-{
-    return gnav_utc_model;
-}
-
-
-Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(uint32_t satellite_slot_number)
+Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(uint32_t satellite_slot_number) const
 {
     return gnav_almanac[satellite_slot_number - 1];
 }

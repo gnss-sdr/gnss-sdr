@@ -45,8 +45,8 @@ public:
 private:
     // Allocate the device input vectors
     const lv_16sc_t *d_sig_in;
-    lv_16sc_t **d_local_codes_resampled;
     const lv_16sc_t *d_local_code_in;
+    lv_16sc_t **d_local_codes_resampled;
     lv_16sc_t *d_corr_out;
     float *d_shifts_chips;
     int d_code_length_chips;

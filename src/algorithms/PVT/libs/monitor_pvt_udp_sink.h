@@ -41,11 +41,11 @@ public:
     bool write_monitor_pvt(const Monitor_Pvt* monitor_pvt);
 
 private:
+    Serdes_Monitor_Pvt serdes;
     b_io_context io_context;
     boost::asio::ip::udp::socket socket;
-    boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    Serdes_Monitor_Pvt serdes;
+    boost::system::error_code error;
     bool use_protobuf;
 };
 

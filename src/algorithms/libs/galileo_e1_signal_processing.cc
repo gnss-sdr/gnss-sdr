@@ -98,7 +98,6 @@ void galileo_e1_sinboc_61_gen_int(own::span<int> _dest, own::span<const int> _pr
 
 void galileo_e1_code_gen_sinboc11_float(own::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn)
 {
-    std::string _galileo_signal = _Signal.data();
     const auto _codeLength = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
     std::array<int32_t, 4092> primary_code_E1_chips{};
     galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  // generate Galileo E1 code, 1 sample per chip

@@ -30,7 +30,6 @@
 
 void bm_forloop(benchmark::State& state)
 {
-    int32_t corr_value = 0;
     std::vector<float> d_symbol_history(GPS_CA_PREAMBLE_LENGTH_SYMBOLS, 0.0);
     std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
 
@@ -44,6 +43,7 @@ void bm_forloop(benchmark::State& state)
 
     while (state.KeepRunning())
         {
+            int32_t corr_value = 0;
             for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
                 {
                     if (d_symbol_history[i] < 0.0)
@@ -59,9 +59,8 @@ void bm_forloop(benchmark::State& state)
 }
 
 
-void bm_lambda(benchmark::State& state)
+void bm_accumulate(benchmark::State& state)
 {
-    int32_t corr_value = 0;
     std::vector<float> d_symbol_history(GPS_CA_PREAMBLE_LENGTH_SYMBOLS, 0.0);
     std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
 
@@ -75,6 +74,7 @@ void bm_lambda(benchmark::State& state)
 
     while (state.KeepRunning())
         {
+            int32_t corr_value = 0;
             corr_value += std::accumulate(d_symbol_history.begin(),
                 d_symbol_history.begin() + GPS_CA_PREAMBLE_LENGTH_BITS,
                 0,
@@ -82,6 +82,7 @@ void bm_lambda(benchmark::State& state)
         }
 }
 
+
 BENCHMARK(bm_forloop);
-BENCHMARK(bm_lambda);
+BENCHMARK(bm_accumulate);
 BENCHMARK_MAIN();

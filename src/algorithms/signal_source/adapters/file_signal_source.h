@@ -103,16 +103,6 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    std::string filename_;
-    std::string item_type_;
-    bool repeat_;
-    bool dump_;
-    std::string dump_filename_;
-    std::string role_;
-    uint32_t in_streams_;
-    uint32_t out_streams_;
     gr::blocks::file_source::sptr file_source_;
 #if GNURADIO_USES_STD_POINTERS
     std::shared_ptr<gr::block> valve_;
@@ -121,9 +111,22 @@ private:
 #endif
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
+
+    std::string role_;
+    std::string item_type_;
+    std::string filename_;
+    std::string dump_filename_;
+
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     size_t item_size_;
-    // Throttle control
+
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+
     bool enable_throttle_control_;
+    bool repeat_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_FILE_SIGNAL_SOURCE_H

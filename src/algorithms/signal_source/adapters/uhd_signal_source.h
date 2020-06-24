@@ -75,34 +75,33 @@ public:
     gr::basic_block_sptr get_right_block(int RF_channel) override;
 
 private:
-    std::string role_;
-    unsigned int in_stream_;
-    unsigned int out_stream_;
     gr::uhd::usrp_source::sptr uhd_source_;
-
-    // UHD SETTINGS
-    uhd::stream_args_t uhd_stream_args_;
-    std::string device_address_;
-    double sample_rate_;
-    int RF_channels_;
-    std::string item_type_;
-    size_t item_size_;
-
-    std::string subdevice_;
-    std::string clock_source_;
-
-    std::vector<double> freq_;
-    std::vector<double> gain_;
-    std::vector<double> IF_bandwidth_hz_;
-    std::vector<uint64_t> samples_;
-    std::vector<bool> dump_;
-    std::vector<std::string> dump_filename_;
 #if GNURADIO_USES_STD_POINTERS
     std::vector<std::shared_ptr<gr::block>> valve_;
 #else
     std::vector<boost::shared_ptr<gr::block>> valve_;
 #endif
     std::vector<gr::blocks::file_sink::sptr> file_sink_;
+    std::vector<double> freq_;
+    std::vector<double> gain_;
+    std::vector<double> IF_bandwidth_hz_;
+    std::vector<uint64_t> samples_;
+    std::vector<std::string> dump_filename_;
+    std::vector<bool> dump_;
+
+    uhd::stream_args_t uhd_stream_args_;  // UHD SETTINGS
+
+    std::string device_address_;
+    std::string item_type_;
+    std::string subdevice_;
+    std::string clock_source_;
+    std::string role_;
+
+    double sample_rate_;
+    size_t item_size_;
+    int RF_channels_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
 };
 
 #endif  // GNSS_SDR_UHD_SIGNAL_SOURCE_H

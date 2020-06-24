@@ -336,7 +336,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 }
 
 
-void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, bool enable_DMA)
 {
     const int MAX_INPUT_SAMPLES_TOTAL = 16384;
     int max_value = 0;

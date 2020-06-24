@@ -71,16 +71,17 @@ private:
     std::string generate_filename();
     void decode_samples_one_channel(int16_t input_short, gr_complex *out, int type);
     int getBit(uint8_t byte, int position);
-    bool d_header_parsed;
-    uint8_t d_channel_selector;
+
+    std::ifstream binary_input_file;
+    std::string d_signal_file_basename;
+    Concurrent_Queue<pmt::pmt_t> *d_queue;
     int d_channel_selector_config;
     int d_current_file_number;
     uint8_t d_labsat_version;
-    std::string d_signal_file_basename;
-    std::ifstream binary_input_file;
+    uint8_t d_channel_selector;
     uint8_t d_ref_clock;
     uint8_t d_bits_per_sample;
-    Concurrent_Queue<pmt::pmt_t> *d_queue;
+    bool d_header_parsed;
 };
 
 #endif  // GNSS_SDR_LABSAT23_SOURCE_H

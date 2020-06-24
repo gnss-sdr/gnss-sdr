@@ -155,8 +155,8 @@ private:
     gr_complex d_VL_accu;
     gr_complex d_P_data_accu;
 
-    std::string *d_secondary_code_string;
-    std::string *d_data_secondary_code_string;
+    std::string d_secondary_code_string;
+    std::string d_data_secondary_code_string;
     std::string d_systemName;
     std::string d_signal_type;
     std::string d_signal_pretty_name;

@@ -104,9 +104,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_pull_in_transitory = true;
     d_code_chip_rate = 0.0;
     d_secondary_code_length = 0U;
-    d_secondary_code_string = nullptr;
     d_data_secondary_code_length = 0U;
-    d_data_secondary_code_string = nullptr;
     d_signal_type = std::string(d_trk_parameters.signal);
     d_interchange_iq = false;
 
@@ -148,7 +146,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     // symbol integration: 20 trk symbols (20 ms) = 1 tlm bit
                     // set the preamble in the secondary code acquisition to obtain tlm symbol synchronization
                     d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
-                    d_secondary_code_string = const_cast<std::string *>(&GPS_CA_PREAMBLE_SYMBOLS_STR);
+                    d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;
                     d_symbols_per_bit = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
                 }
             else if (d_signal_type == "2S")
@@ -189,11 +187,11 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                         {
                             // synchronize pilot secondary code
                             d_secondary_code_length = static_cast<uint32_t>(GPS_L5Q_NH_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5Q_NH_CODE_STR);
+                            d_secondary_code_string = GPS_L5Q_NH_CODE_STR;
                             // remove data secondary code
                             // remove Neuman-Hofman Code (see IS-GPS-705D)
                             d_data_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
-                            d_data_secondary_code_string = const_cast<std::string *>(&GPS_L5I_NH_CODE_STR);
+                            d_data_secondary_code_string = GPS_L5I_NH_CODE_STR;
                             d_signal_pretty_name = d_signal_pretty_name + "Q";
                         }
                     else
@@ -201,7 +199,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             // synchronize and remove data secondary code
                             // remove Neuman-Hofman Code (see IS-GPS-705D)
                             d_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5I_NH_CODE_STR);
+                            d_secondary_code_string = GPS_L5I_NH_CODE_STR;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
                         }
@@ -236,7 +234,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                         {
                             d_secondary = true;
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GALILEO_E1_C_SECONDARY_CODE);
+                            d_secondary_code_string = GALILEO_E1_C_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "C";
                         }
                     else
@@ -271,7 +269,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             d_signal_pretty_name = d_signal_pretty_name + "Q";
                             // remove data secondary code
                             d_data_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
-                            d_data_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_I_SECONDARY_CODE);
+                            d_data_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
 
                             // the pilot secondary code depends on PRN and it is initialized later
                         }
@@ -279,7 +277,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                         {
                             // synchronize and remove data secondary code
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_I_SECONDARY_CODE);
+                            d_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
                         }
@@ -581,7 +579,7 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
         {
             if (d_Prompt_circular_buffer[i].real() < 0.0)  // symbols clipping
                 {
-                    if (d_secondary_code_string->at(i) == '0')
+                    if (d_secondary_code_string[i] == '0')
                         {
                             corr_value++;
                         }
@@ -592,7 +590,7 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
                 }
             else
                 {
-                    if (d_secondary_code_string->at(i) == '0')
+                    if (d_secondary_code_string[i] == '0')
                         {
                             corr_value--;
                         }
@@ -896,7 +894,7 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
 {
     if (d_secondary && (!d_current_extended_correlation_in_fpga))  // the FPGA removes the secondary code
         {
-            if (d_secondary_code_string->at(d_current_symbol) == '0')
+            if (d_secondary_code_string[d_current_symbol] == '0')
                 {
                     if (d_veml)
                         {
@@ -943,7 +941,7 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
                         {
                             if (!d_current_extended_correlation_in_fpga)  // the FPGA removes the secondary code
                                 {
-                                    if (d_data_secondary_code_string->at(d_current_data_symbol) == '0')
+                                    if (d_data_secondary_code_string[d_current_data_symbol] == '0')
                                         {
                                             d_P_data_accu += d_Prompt_Data[0];
                                         }
@@ -961,7 +959,7 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
                         {
                             if (!d_current_extended_correlation_in_fpga)
                                 {
-                                    if (d_data_secondary_code_string->at(d_current_data_symbol) == '0')
+                                    if (d_data_secondary_code_string[d_current_data_symbol] == '0')
                                         {
                                             d_P_data_accu += *d_Prompt;
                                         }
@@ -1359,13 +1357,13 @@ void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
                                     if (d_trk_parameters.track_pilot)
                                         {
                                             d_multicorrelator_fpga->set_secondary_code_lengths(d_secondary_code_length, d_data_secondary_code_length);
-                                            d_multicorrelator_fpga->initialize_secondary_code(0, d_secondary_code_string);
-                                            d_multicorrelator_fpga->initialize_secondary_code(1, d_data_secondary_code_string);
+                                            d_multicorrelator_fpga->initialize_secondary_code(0, &d_secondary_code_string);
+                                            d_multicorrelator_fpga->initialize_secondary_code(1, &d_data_secondary_code_string);
                                         }
                                     else
                                         {
                                             d_multicorrelator_fpga->set_secondary_code_lengths(d_secondary_code_length, 0);
-                                            d_multicorrelator_fpga->initialize_secondary_code(0, d_secondary_code_string);
+                                            d_multicorrelator_fpga->initialize_secondary_code(0, &d_secondary_code_string);
                                         }
                                 }
                         }
@@ -1377,7 +1375,7 @@ void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
                                     if (d_trk_parameters.track_pilot)
                                         {
                                             d_multicorrelator_fpga->set_secondary_code_lengths(d_secondary_code_length, d_data_secondary_code_length);
-                                            d_multicorrelator_fpga->initialize_secondary_code(1, d_data_secondary_code_string);
+                                            d_multicorrelator_fpga->initialize_secondary_code(1, &d_data_secondary_code_string);
                                         }
                                 }
                         }
@@ -1420,7 +1418,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
                 {
                     if (d_trk_parameters.track_pilot)
                         {
-                            d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+                            d_secondary_code_string = GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1];
 
                             d_Prompt_Data[0] = gr_complex(0.0, 0.0);
 
@@ -1428,7 +1426,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
                                 {
                                     if (d_extended_correlation_in_fpga == true)
                                         {
-                                            d_multicorrelator_fpga->initialize_secondary_code(0, d_secondary_code_string);
+                                            d_multicorrelator_fpga->initialize_secondary_code(0, &d_secondary_code_string);
                                         }
                                 }
                         }

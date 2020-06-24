@@ -114,7 +114,7 @@ endif()
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(tracking_libs
         PUBLIC
-            -DUSE_BOOST_ASIO_IO_CONTEXT
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
     )
 endif()
 

@@ -129,7 +129,7 @@ endif()
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(core_receiver
         PRIVATE
-            -DUSE_BOOST_ASIO_IO_CONTEXT
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
     )
 endif()
 

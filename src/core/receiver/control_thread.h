@@ -194,10 +194,9 @@ private:
     int msqid_;
 
     bool receiver_on_standby_;
-    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
     bool stop_;
     bool restart_;
-    bool delete_configuration_;
+    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
 };
 
 #endif  // GNSS_SDR_CONTROL_THREAD_H

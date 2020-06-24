@@ -87,7 +87,6 @@ ControlThread::ControlThread()
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
-    delete_configuration_ = false;
     restart_ = false;
     init();
 }
@@ -96,7 +95,6 @@ ControlThread::ControlThread()
 ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
 {
     configuration_ = std::move(configuration);
-    delete_configuration_ = false;
     restart_ = false;
     init();
 }

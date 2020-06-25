@@ -195,6 +195,7 @@ void ControlThread::init()
 
 ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
+    DLOG(INFO) << "Control Thread destructor called";
     if (msqid_ != -1)
         {
             msgctl(msqid_, IPC_RMID, nullptr);

@@ -795,6 +795,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
 
 Rtklib_Pvt::~Rtklib_Pvt()
 {
+    DLOG(INFO) << "PVT adapter destructor called.";
     rtkfree(&rtk);
 }
 

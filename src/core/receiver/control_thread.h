@@ -147,6 +147,10 @@ private:
     void keyboard_listener();
     void sysv_queue_listener();
 
+    std::shared_ptr<ConfigurationInterface> configuration_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
+    std::shared_ptr<GNSSFlowgraph> flowgraph_;
+
     std::thread cmd_interface_thread_;
     std::thread keyboard_thread_;
     std::thread sysv_queue_thread_;
@@ -155,10 +159,6 @@ private:
 #ifdef ENABLE_FPGA
     boost::thread fpga_helper_thread_;
 #endif
-
-    std::shared_ptr<GNSSFlowgraph> flowgraph_;
-    std::shared_ptr<ConfigurationInterface> configuration_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
 
     // default filename for assistance data
     const std::string eph_default_xml_filename_ = "./gps_ephemeris.xml";

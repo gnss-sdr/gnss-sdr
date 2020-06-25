@@ -125,6 +125,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 
 Nmea_Printer::~Nmea_Printer()
 {
+    DLOG(INFO) << "NMEA printer destructor called.";
     auto pos = nmea_file_descriptor.tellp();
     try
         {

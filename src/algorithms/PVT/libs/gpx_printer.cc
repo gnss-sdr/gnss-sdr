@@ -228,6 +228,7 @@ bool Gpx_Printer::close_file()
 
 Gpx_Printer::~Gpx_Printer()
 {
+    DLOG(INFO) << "GPX printer destructor called.";
     try
         {
             close_file();

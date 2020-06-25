@@ -160,6 +160,9 @@ private:
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
+    std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
+
     std::unique_ptr<Rinex_Printer> d_rp;
     std::unique_ptr<Kml_Printer> d_kml_dump;
     std::unique_ptr<Gpx_Printer> d_gpx_dump;
@@ -167,9 +170,6 @@ private:
     std::unique_ptr<GeoJSON_Printer> d_geojson_printer;
     std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
     std::unique_ptr<Monitor_Pvt_Udp_Sink> d_udp_sink_ptr;
-
-    std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
-    std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
 
     std::chrono::time_point<std::chrono::system_clock> d_start;
     std::chrono::time_point<std::chrono::system_clock> d_end;

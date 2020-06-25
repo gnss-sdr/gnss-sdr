@@ -181,6 +181,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
 
 galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "Galileo Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try

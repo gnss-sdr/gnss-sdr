@@ -80,6 +80,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
 
 gps_l2c_telemetry_decoder_gs::~gps_l2c_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "GPS L2C Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try

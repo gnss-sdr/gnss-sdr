@@ -98,6 +98,7 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, const std::string &dump_filename, bo
 
 Rtklib_Solver::~Rtklib_Solver()
 {
+    DLOG(INFO) << "Rtklib_Solver destructor called.";
     if (d_dump_file.is_open() == true)
         {
             auto pos = d_dump_file.tellp();

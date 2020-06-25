@@ -176,10 +176,27 @@ private:
 
     std::vector<std::string> split_string(const std::string& s, char delim);
 
+    gr::top_block_sptr top_block_;
+
+    std::shared_ptr<ConfigurationInterface> configuration_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
+
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
-    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
+    std::shared_ptr<GNSSBlockInterface> observables_;
+    std::shared_ptr<GNSSBlockInterface> pvt_;
+
+    std::map<std::string, gr::basic_block_sptr> acq_resamplers_;
+    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
+
+    gr::basic_block_sptr GnssSynchroMonitor_;
+    channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
+    gnss_sdr_sample_counter_sptr ch_out_sample_counter_;
+#if ENABLE_FPGA
+    gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter_;
+#endif
+
     std::vector<unsigned int> channels_state_;
 
     std::list<Gnss_Signal> available_GPS_1C_signals_;
@@ -207,20 +224,6 @@ private:
         evBDS_B3
     };
     std::map<std::string, StringValue> mapStringValues_;
-    std::map<std::string, gr::basic_block_sptr> acq_resamplers_;
-
-    std::shared_ptr<ConfigurationInterface> configuration_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
-    std::shared_ptr<GNSSBlockInterface> observables_;
-    std::shared_ptr<GNSSBlockInterface> pvt_;
-
-    gr::top_block_sptr top_block_;
-    gr::basic_block_sptr GnssSynchroMonitor_;
-    channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
-    gnss_sdr_sample_counter_sptr ch_out_sample_counter_;
-#if ENABLE_FPGA
-    gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter_;
-#endif
 
     std::string config_file_;
 

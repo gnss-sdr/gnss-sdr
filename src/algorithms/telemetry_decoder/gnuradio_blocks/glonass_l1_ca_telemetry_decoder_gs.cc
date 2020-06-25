@@ -96,6 +96,7 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
 
 glonass_l1_ca_telemetry_decoder_gs::~glonass_l1_ca_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "Glonass L1 Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try

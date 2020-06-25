@@ -113,7 +113,7 @@ private:
     bool rf_dc_;
     bool bb_dc_;
     bool rx1_enable_;
-    bool rx2_enable_;    
+    bool rx2_enable_;
     bool enable_DMA_;
     bool rf_shutdown_;
 };

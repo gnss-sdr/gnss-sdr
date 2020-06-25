@@ -234,6 +234,7 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path,
 
 Rinex_Printer::~Rinex_Printer()
 {
+    DLOG(INFO) << "RINEX printer destructor called.";
     // close RINEX files
     int64_t posn;
     int64_t poso;

@@ -155,6 +155,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
 
 hybrid_observables_gs::~hybrid_observables_gs()
 {
+    DLOG(INFO) << "Observables block destructor called.";
     if (d_dump_file.is_open())
         {
             auto pos = d_dump_file.tellp();

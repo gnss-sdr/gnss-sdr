@@ -98,6 +98,11 @@ public:
     ~pcps_acquisition() = default;
 
     /*!
+     * \brief Initializes acquisition algorithm and reserves memory.
+     */
+    void init();
+
+    /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
@@ -109,23 +114,27 @@ public:
     }
 
     /*!
+     * \brief Sets local code for PCPS acquisition algorithm.
+     * \param code - Pointer to the PRN code.
+     */
+    void set_local_code(std::complex<float>* code);
+
+    /*!
+     * \brief If set to 1, ensures that acquisition starts at the
+     * first available sample.
+     * \param state - int=1 forces start of acquisition
+     */
+    void set_state(int32_t state);
+
+    void set_resampler_latency(uint32_t latency_samples);
+
+    /*!
      * \brief Returns the maximum peak of grid search.
      */
     inline uint32_t mag() const
     {
         return d_mag;
     }
-
-    /*!
-     * \brief Initializes acquisition algorithm and reserves memory.
-     */
-    void init();
-
-    /*!
-     * \brief Sets local code for PCPS acquisition algorithm.
-     * \param code - Pointer to the PRN code.
-     */
-    void set_local_code(std::complex<float>* code);
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
@@ -137,13 +146,6 @@ public:
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_active = active;
     }
-
-    /*!
-     * \brief If set to 1, ensures that acquisition starts at the
-     * first available sample.
-     * \param state - int=1 forces start of acquisition
-     */
-    void set_state(int32_t state);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -208,8 +210,6 @@ public:
             }
     }
 
-    void set_resampler_latency(uint32_t latency_samples);
-
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
@@ -243,7 +243,6 @@ private:
     volk_gnsssdr::vector<std::complex<float>> d_data_buffer;
     volk_gnsssdr::vector<lv_16sc_t> d_data_buffer_sc;
 
-    std::string d_dump_filename;
     std::unique_ptr<gr::fft::fft_complex> d_fft_if;
     std::unique_ptr<gr::fft::fft_complex> d_ifft;
     std::weak_ptr<ChannelFsm> d_channel_fsm;
@@ -252,6 +251,8 @@ private:
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat d_grid;
     arma::fmat d_narrow_grid;
+
+    std::string d_dump_filename;
 
     int64_t d_dump_number;
     uint64_t d_sample_counter;

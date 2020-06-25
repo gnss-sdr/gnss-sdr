@@ -143,29 +143,29 @@ public:
     void set_resampler_latency(uint32_t latency_samples) override;
 
 private:
-    ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
+    std::vector<std::complex<float>> code_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
+    Gnss_Synchro* gnss_synchro_;
+    ConfigurationInterface* configuration_;
     Acq_Conf acq_parameters_;
-    size_t item_size_;
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
-    bool acq_pilot_;
-    bool acq_iq_;
+    int64_t fs_in_;
+    size_t item_size_;
+    float threshold_;
+    int doppler_center_;
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
-    std::weak_ptr<ChannelFsm> channel_fsm_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    int doppler_center_;
     unsigned int sampled_ms_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    int64_t fs_in_;
-    float threshold_;
-    std::vector<std::complex<float>> code_;
-    Gnss_Synchro* gnss_synchro_;
+    bool acq_pilot_;
+    bool acq_iq_;
 };
 
 #endif  // GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H

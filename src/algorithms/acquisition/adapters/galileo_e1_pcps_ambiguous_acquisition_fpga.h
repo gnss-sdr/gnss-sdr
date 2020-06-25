@@ -185,20 +185,20 @@ private:
     static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
     static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
 
-    ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    bool acquire_pilot_;
-    uint32_t channel_;
+    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     std::weak_ptr<ChannelFsm> channel_fsm_;
+    Gnss_Synchro* gnss_synchro_;
+    ConfigurationInterface* configuration_;
+    std::string dump_filename_;
+    std::string role_;
+    int32_t doppler_center_;
+    uint32_t channel_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
-    int32_t doppler_center_;
-    std::string dump_filename_;
-    Gnss_Synchro* gnss_synchro_;
-    std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
+    bool acquire_pilot_;
 };
 
 #endif  // GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H

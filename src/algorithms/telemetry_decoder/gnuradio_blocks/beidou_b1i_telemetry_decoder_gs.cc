@@ -103,6 +103,7 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
 
 beidou_b1i_telemetry_decoder_gs::~beidou_b1i_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "BeiDou B1I Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try

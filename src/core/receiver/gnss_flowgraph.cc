@@ -81,6 +81,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 
 GNSSFlowgraph::~GNSSFlowgraph()
 {
+    DLOG(INFO) << "GNSSFlowgraph destructor called";
     if (connected_)
         {
             GNSSFlowgraph::disconnect();

@@ -87,6 +87,7 @@ GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
 
 GeoJSON_Printer::~GeoJSON_Printer()
 {
+    DLOG(INFO) << "GeoJSON printer destructor called.";
     try
         {
             GeoJSON_Printer::close_file();

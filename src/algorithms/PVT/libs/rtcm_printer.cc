@@ -24,6 +24,7 @@
 #include "galileo_ephemeris.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_ephemeris.h"
@@ -170,7 +171,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
     port = rtcm_tcp_port;
     station_id = rtcm_station_id;
 
-    rtcm = std::make_shared<Rtcm>(port);
+    rtcm = std::make_unique<Rtcm>(port);
 
     if (flag_rtcm_server)
         {
@@ -181,6 +182,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
 
 Rtcm_Printer::~Rtcm_Printer()
 {
+    DLOG(INFO) << "RTCM printer destructor called.";
     if (rtcm->is_server_running())
         {
             try

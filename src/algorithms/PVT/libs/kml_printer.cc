@@ -340,6 +340,7 @@ bool Kml_Printer::close_file()
 
 Kml_Printer::~Kml_Printer()
 {
+    DLOG(INFO) << "KML printer destructor called.";
     try
         {
             close_file();

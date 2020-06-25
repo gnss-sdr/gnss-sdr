@@ -49,6 +49,7 @@ Rtcm::Rtcm(uint16_t port)
 
 Rtcm::~Rtcm()
 {
+    DLOG(INFO) << "RTCM object destructor called.";
     if (server_is_running)
         {
             try

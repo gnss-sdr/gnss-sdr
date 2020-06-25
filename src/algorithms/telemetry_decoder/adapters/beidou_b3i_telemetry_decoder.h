@@ -23,6 +23,7 @@
 
 #include "beidou_b3i_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"  // for Gnss_Satellite
+#include "gnss_synchro.h"
 #include "telemetry_decoder_interface.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <cstddef>                   // for size_t
@@ -67,7 +68,7 @@ public:
         telemetry_decoder_->reset();
     }
 
-    inline size_t item_size() override { return 0; }
+    inline size_t item_size() override { return sizeof(Gnss_Synchro); }
 
 private:
     beidou_b3i_telemetry_decoder_gs_sptr telemetry_decoder_;

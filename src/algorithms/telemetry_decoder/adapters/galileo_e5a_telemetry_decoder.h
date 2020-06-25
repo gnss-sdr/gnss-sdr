@@ -28,6 +28,7 @@
 
 #include "galileo_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"  // for Gnss_Satellite
+#include "gnss_synchro.h"
 #include "telemetry_decoder_interface.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <cstddef>                   // for size_t
@@ -77,7 +78,7 @@ public:
 
     inline size_t item_size() override
     {
-        return 0;
+        return sizeof(Gnss_Synchro);
     }
 
 private:

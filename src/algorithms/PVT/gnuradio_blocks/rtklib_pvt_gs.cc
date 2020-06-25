@@ -501,6 +501,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
+    DLOG(INFO) << "PVT block destructor called.";
     if (d_sysv_msqid != -1)
         {
             msgctl(d_sysv_msqid, IPC_RMID, nullptr);

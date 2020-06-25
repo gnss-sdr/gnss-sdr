@@ -18,6 +18,7 @@
  */
 
 #include "notch_lite_cc.h"
+#include "gnss_sdr_make_unique.h"
 #include <boost/math/distributions/chi_squared.hpp>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -63,14 +64,8 @@ NotchLite::NotchLite(float p_c_factor,
     c_samples2 = gr_complex(0.0, 0.0);
     angle1 = 0.0;
     angle2 = 0.0;
-    power_spect = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
-    d_fft = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(length_, true));
-}
-
-
-NotchLite::~NotchLite()
-{
-    volk_free(power_spect);
+    power_spect = volk_gnsssdr::vector<float>(length_);
+    d_fft = std::make_unique<gr::fft::fft_complex>(length_, true);
 }
 
 
@@ -99,8 +94,8 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
                 {
                     memcpy(d_fft->get_inbuf(), in, sizeof(gr_complex) * length_);
                     d_fft->execute();
-                    volk_32fc_s32f_power_spectrum_32f(power_spect, d_fft->get_outbuf(), 1.0, length_);
-                    volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
+                    volk_32fc_s32f_power_spectrum_32f(power_spect.data(), d_fft->get_outbuf(), 1.0, length_);
+                    volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect.data(), 15.0, length_);
                     sig2lin = std::pow(10.0, (sig2dB / 10.0)) / static_cast<float>(n_deg_fred);
                     noise_pow_est = (static_cast<float>(n_segments) * noise_pow_est + sig2lin) / static_cast<float>(n_segments + 1);
                     memcpy(out, in, sizeof(gr_complex) * length_);

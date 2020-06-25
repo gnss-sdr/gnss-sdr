@@ -70,15 +70,6 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    std::string role_;
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-    std::string item_type_;
-    size_t item_size_;
-    bool dump_;
-    std::string dump_filename_;
-    double sample_freq_in_;
-    double sample_freq_out_;
 #ifdef GR_GREATER_38
     gr::filter::mmse_resampler_cc::sptr resampler_;
 #else
@@ -86,6 +77,15 @@ private:
 #endif
     gr::filter::fir_filter_ccf::sptr fir_filter_ccf_;
     gr::block_sptr file_sink_;
+    std::string role_;
+    std::string item_type_;
+    std::string dump_filename_;
+    size_t item_size_;
+    double sample_freq_in_;
+    double sample_freq_out_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H

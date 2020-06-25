@@ -18,6 +18,7 @@
  */
 
 #include "notch_cc.h"
+#include "gnss_sdr_make_unique.h"
 #include <boost/math/distributions/chi_squared.hpp>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -55,19 +56,11 @@ Notch::Notch(float pfa,
     z_0 = gr_complex(0.0, 0.0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
-    c_samples = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
-    angle_ = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
-    power_spect = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
+    c_samples = volk_gnsssdr::vector<gr_complex>(length_);
+    angle_ = volk_gnsssdr::vector<float>(length_);
+    power_spect = volk_gnsssdr::vector<float>(length_);
     last_out = gr_complex(0.0, 0.0);
-    d_fft = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(length_, true));
-}
-
-
-Notch::~Notch()
-{
-    volk_free(c_samples);
-    volk_free(angle_);
-    volk_free(power_spect);
+    d_fft = std::make_unique<gr::fft::fft_complex>(length_, true);
 }
 
 
@@ -96,8 +89,8 @@ int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribu
                 {
                     memcpy(d_fft->get_inbuf(), in, sizeof(gr_complex) * length_);
                     d_fft->execute();
-                    volk_32fc_s32f_power_spectrum_32f(power_spect, d_fft->get_outbuf(), 1.0, length_);
-                    volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
+                    volk_32fc_s32f_power_spectrum_32f(power_spect.data(), d_fft->get_outbuf(), 1.0, length_);
+                    volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect.data(), 15.0, length_);
                     sig2lin = std::pow(10.0, (sig2dB / 10.0)) / (static_cast<float>(n_deg_fred));
                     noise_pow_est = (static_cast<float>(n_segments) * noise_pow_est + sig2lin) / (static_cast<float>(n_segments + 1));
                     memcpy(out, in, sizeof(gr_complex) * length_);
@@ -112,11 +105,11 @@ int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribu
                                     filter_state_ = true;
                                     last_out = gr_complex(0, 0);
                                 }
-                            volk_32fc_x2_multiply_conjugate_32fc(c_samples, in, (in - 1), length_);
-                            volk_32fc_s32f_atan2_32f(angle_, c_samples, static_cast<float>(1.0), length_);
+                            volk_32fc_x2_multiply_conjugate_32fc(c_samples.data(), in, (in - 1), length_);
+                            volk_32fc_s32f_atan2_32f(angle_.data(), c_samples.data(), static_cast<float>(1.0), length_);
                             for (int32_t aux = 0; aux < length_; aux++)
                                 {
-                                    z_0 = std::exp(gr_complex(0, 1) * (*(angle_ + aux)));
+                                    z_0 = std::exp(gr_complex(0, 1) * (*(angle_.data() + aux)));
                                     *(out + aux) = *(in + aux) - z_0 * (*(in + aux - 1)) + p_c_factor * z_0 * last_out;
                                     last_out = *(out + aux);
                                 }

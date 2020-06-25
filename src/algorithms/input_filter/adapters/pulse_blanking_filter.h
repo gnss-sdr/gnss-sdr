@@ -64,19 +64,19 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    ConfigurationInterface* config_;
-    bool dump_;
-    bool xlat_;
-    std::string dump_filename_;
-    std::string input_item_type_;
-    size_t input_size_;
-    std::string output_item_type_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-    gr::blocks::file_sink::sptr file_sink_;
     pulse_blanking_cc_sptr pulse_blanking_cc_;
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_;
+    gr::blocks::file_sink::sptr file_sink_;
+    ConfigurationInterface* config_;
+    std::string dump_filename_;
+    std::string input_item_type_;
+    std::string output_item_type_;
+    std::string role_;
+    size_t input_size_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
+    bool dump_;
+    bool xlat_;
 };
 
 #endif  // GNSS_SDR_PULSE_BLANKING_FILTER_H

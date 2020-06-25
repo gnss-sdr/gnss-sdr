@@ -72,13 +72,6 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    std::string role_;
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-    std::string item_type_;
-    size_t item_size_;
-    bool dump_;
-    std::string dump_filename_;
 #if GNURADIO_USES_STD_POINTERS
     std::shared_ptr<gr::block> gen_source_;
 #else
@@ -86,6 +79,13 @@ private:
 #endif
     gr::blocks::vector_to_stream::sptr vector_to_stream_;
     gr::blocks::file_sink::sptr file_sink_;
+    std::string role_;
+    std::string item_type_;
+    std::string dump_filename_;
+    size_t item_size_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_SIGNAL_GENERATOR_H

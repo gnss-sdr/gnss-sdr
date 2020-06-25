@@ -64,17 +64,17 @@ public:
 
 private:
     gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_;
+    conjugate_cc_sptr conjugate_cc_;
+    gr::blocks::file_sink::sptr file_sink_;
     ConfigurationInterface* config_;
-    bool dump_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr::blocks::file_sink::sptr file_sink_;
-    conjugate_cc_sptr conjugate_cc_;
     bool inverted_spectrum;
+    bool dump_;
 };
 
 #endif

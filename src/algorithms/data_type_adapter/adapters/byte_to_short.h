@@ -63,15 +63,15 @@ public:
 
 private:
     gr::blocks::char_to_short::sptr gr_char_to_short_;
+    gr::blocks::file_sink::sptr file_sink_;
     ConfigurationInterface* config_;
-    bool dump_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr::blocks::file_sink::sptr file_sink_;
+    bool dump_;
 };
 
 #endif

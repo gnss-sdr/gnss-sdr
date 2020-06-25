@@ -65,17 +65,17 @@ public:
 
 private:
     interleaved_byte_to_complex_short_sptr interleaved_byte_to_complex_short_;
+    conjugate_sc_sptr conjugate_sc_;
+    gr::blocks::file_sink::sptr file_sink_;
     ConfigurationInterface* config_;
-    bool dump_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr::blocks::file_sink::sptr file_sink_;
-    conjugate_sc_sptr conjugate_sc_;
     bool inverted_spectrum;
+    bool dump_;
 };
 
 #endif

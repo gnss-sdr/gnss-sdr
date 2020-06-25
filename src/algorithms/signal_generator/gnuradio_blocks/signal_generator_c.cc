@@ -65,17 +65,17 @@ signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
     float BW_BB) : gr::block("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex) * vector_length)),
                    signal_(std::move(signal1)),
                    system_(std::move(system)),
-                   PRN_(PRN),
                    CN0_dB_(std::move(CN0_dB)),
                    doppler_Hz_(std::move(doppler_Hz)),
+                   PRN_(PRN),
                    delay_chips_(std::move(delay_chips)),
                    delay_sec_(std::move(delay_sec)),
-                   data_flag_(data_flag),
-                   noise_flag_(noise_flag),
+                   BW_BB_(BW_BB * static_cast<float>(fs_in) / 2.0),
                    fs_in_(fs_in),
                    num_sats_(PRN.size()),
                    vector_length_(vector_length),
-                   BW_BB_(BW_BB * static_cast<float>(fs_in) / 2.0)
+                   data_flag_(data_flag),
+                   noise_flag_(noise_flag)
 {
     init();
     generate_codes();

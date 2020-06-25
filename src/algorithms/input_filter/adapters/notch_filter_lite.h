@@ -38,6 +38,7 @@ public:
         unsigned int out_streams);
 
     ~NotchFilterLite() = default;
+
     std::string role()
     {
         return role_;
@@ -48,24 +49,26 @@ public:
     {
         return "Notch_Filter_Lite";
     }
+
     size_t item_size()
     {
         return 0;
     }
+
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
 
 private:
-    bool dump_;
+    notch_lite_sptr notch_filter_lite_;
+    gr::blocks::file_sink::sptr file_sink_;
     std::string dump_filename_;
     std::string role_;
     std::string item_type_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr::blocks::file_sink::sptr file_sink_;
-    notch_lite_sptr notch_filter_lite_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_NOTCH_FILTER_LITE_H

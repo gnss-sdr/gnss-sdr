@@ -75,35 +75,6 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    std::string role_;
-
-    // Front-end settings
-    std::string uri_;  // device direction
-    uint64_t freq_;    // frequency of local oscilator
-    uint64_t sample_rate_;
-    uint64_t bandwidth_;
-    uint64_t buffer_size_;  // reception buffer
-    bool quadrature_;
-    bool rf_dc_;
-    bool bb_dc_;
-    std::string gain_mode_;
-    double rf_gain_;
-    std::string filter_file_;
-    bool filter_auto_;
-    std::string filter_source_;
-    std::string filter_filename_;
-    float Fpass_;
-    float Fstop_;
-
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-
-    std::string item_type_;
-    size_t item_size_;
-    int64_t samples_;
-    bool dump_;
-    std::string dump_filename_;
-
     gr::iio::pluto_source::sptr plutosdr_source_;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -112,6 +83,34 @@ private:
     boost::shared_ptr<gr::block> valve_;
 #endif
     gr::blocks::file_sink::sptr file_sink_;
+
+    std::string role_;
+    std::string dump_filename_;
+
+    // Front-end settings
+    std::string uri_;  // device direction
+    std::string gain_mode_;
+    std::string filter_file_;
+    std::string filter_source_;
+    std::string filter_filename_;
+    std::string item_type_;
+    double rf_gain_;
+    int64_t samples_;
+    uint64_t freq_;  // frequency of local oscilator
+    uint64_t sample_rate_;
+    uint64_t bandwidth_;
+    uint64_t buffer_size_;  // reception buffer
+    size_t item_size_;
+    float Fpass_;
+    float Fstop_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+
+    bool quadrature_;
+    bool rf_dc_;
+    bool bb_dc_;
+    bool filter_auto_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H

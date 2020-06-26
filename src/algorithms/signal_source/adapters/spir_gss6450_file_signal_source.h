@@ -103,34 +103,34 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
+    gr::blocks::file_source::sptr file_source_;
+    gr::blocks::deinterleave::sptr deint_;
+    #if GNURADIO_USES_STD_POINTERS
+        std::vector<std::shared_ptr<gr::block>> valve_vec_;
+    #else
+        std::vector<boost::shared_ptr<gr::block>> valve_vec_;
+    #endif
+    std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
+    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
+    std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
+    std::vector<gr::blocks::file_sink::sptr> sink_vec_;
+    std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::string filename_;
-    bool repeat_;
-    bool dump_;  // Enables dumping the gr_complex sample output
-    bool enable_throttle_control_;
-    bool endian_swap_;
     std::string dump_filename_;
     std::string role_;
     std::string item_type_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
+    size_t item_size_;
     uint32_t in_streams_;
     uint32_t out_streams_;
     uint32_t adc_bits_;
     uint32_t n_channels_;
     uint32_t sel_ch_;
-    gr::blocks::file_source::sptr file_source_;
-    gr::blocks::deinterleave::sptr deint_;
-    std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
-    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
-    std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
-#if GNURADIO_USES_STD_POINTERS
-    std::vector<std::shared_ptr<gr::block>> valve_vec_;
-#else
-    std::vector<boost::shared_ptr<gr::block>> valve_vec_;
-#endif
-    std::vector<gr::blocks::file_sink::sptr> sink_vec_;
-    std::vector<gr::blocks::throttle::sptr> throttle_vec_;
-    size_t item_size_;
+    bool repeat_;
+    bool dump_;  // Enables dumping the gr_complex sample output
+    bool enable_throttle_control_;
+    bool endian_swap_;
 };
 
 #endif  // GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H

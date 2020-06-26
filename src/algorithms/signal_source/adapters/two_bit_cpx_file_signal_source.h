@@ -106,19 +106,9 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    std::string filename_;
-    std::string item_type_;
-    bool repeat_;
-    bool dump_;
-    std::string dump_filename_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     gr::blocks::file_source::sptr file_source_;
-    unpack_byte_2bit_cpx_samples_sptr unpack_byte_;
     gr::blocks::interleaved_short_to_complex::sptr inter_shorts_to_cpx_;
+    unpack_byte_2bit_cpx_samples_sptr unpack_byte_;
 #if GNURADIO_USES_STD_POINTERS
     std::shared_ptr<gr::block> valve_;
 #else
@@ -126,7 +116,17 @@ private:
 #endif
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
+    std::string filename_;
+    std::string item_type_;
+    std::string dump_filename_;
+    std::string role_;
     size_t item_size_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
+    bool repeat_;
+    bool dump_;
     // Throttle control
     bool enable_throttle_control_;
 };

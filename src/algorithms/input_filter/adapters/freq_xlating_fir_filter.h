@@ -75,7 +75,7 @@ public:
 
     inline size_t item_size() override
     {
-        return 0;
+        return input_size_;
     }
 
     void connect(gr::top_block_sptr top_block) override;

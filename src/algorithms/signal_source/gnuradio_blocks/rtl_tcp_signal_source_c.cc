@@ -55,11 +55,11 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     : gr::sync_block("rtl_tcp_signal_source_c",
           gr::io_signature::make(0, 0, 0),
           gr::io_signature::make(1, 1, sizeof(gr_complex))),
+      buffer_(RTL_TCP_BUFFER_SIZE),
       socket_(io_context_),
       data_(RTL_TCP_PAYLOAD_SIZE),
-      flip_iq_(flip_iq),
-      buffer_(RTL_TCP_BUFFER_SIZE),
-      unread_(0)
+      unread_(0),
+      flip_iq_(flip_iq)
 {
     boost::system::error_code ec;
 

@@ -106,13 +106,13 @@ private:
         bool big_endian_items,
         bool reverse_interleaving);
 
-    bool big_endian_bytes_;
+    std::vector<int8_t> work_buffer_;
     size_t item_size_;
+    bool big_endian_bytes_;
     bool big_endian_items_;
     bool swap_endian_items_;
     bool swap_endian_bytes_;
     bool reverse_interleaving_;
-    std::vector<int8_t> work_buffer_;
 };
 
 #endif  // GNSS_SDR_UNPACK_2BIT_SAMPLES_H

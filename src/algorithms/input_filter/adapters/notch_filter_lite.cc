@@ -29,7 +29,6 @@
 NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    size_t item_size_;
     float p_c_factor;
     float default_p_c_factor = 0.9;
     float pfa;

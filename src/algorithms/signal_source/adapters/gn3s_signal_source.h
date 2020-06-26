@@ -26,6 +26,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -68,16 +69,16 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    std::string role_;
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-    std::string item_type_;
-    size_t item_size_;
-    long samples_;
-    bool dump_;
-    std::string dump_filename_;
     gr::block_sptr gn3s_source_;
     gr::blocks::file_sink::sptr file_sink_;
+    std::string role_;
+    std::string item_type_;
+    std::string dump_filename_;
+    size_t item_size_;
+    int64_t samples_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_GN3S_SIGNAL_SOURCE_H

@@ -82,8 +82,6 @@ public:
     void set_if_gain(int gain);
 
 private:
-    using buffer_type = boost::circular_buffer_space_optimized<float>;
-
     friend rtl_tcp_signal_source_c_sptr
     rtl_tcp_make_signal_source_c(const std::string &address,
         int16_t port,
@@ -92,24 +90,6 @@ private:
     rtl_tcp_signal_source_c(const std::string &address,
         int16_t port,
         bool flip_iq);
-
-    Rtl_Tcp_Dongle_Info info_;
-
-    // IO members
-    b_io_context io_context_;
-    boost::asio::ip::tcp::socket socket_;
-    std::vector<unsigned char> data_;
-    bool flip_iq_;
-
-    // producer-consumer helpers
-    boost::mutex mutex_;
-    boost::condition not_full_;
-    boost::condition not_empty_;
-    buffer_type buffer_;
-    size_t unread_;
-
-    // lookup for scaling data
-    boost::array<float, 0xff> lookup_{};
 
     // async read callback
     void handle_read(const boost::system::error_code &ec,
@@ -124,6 +104,24 @@ private:
     {
         return unread_ > 0 || io_context_.stopped();
     }
+
+    boost::circular_buffer_space_optimized<float> buffer_;
+    // producer-consumer helpers
+    boost::mutex mutex_;
+    boost::condition not_full_;
+    boost::condition not_empty_;
+
+    // lookup for scaling data
+    boost::array<float, 0xff> lookup_{};
+
+    // IO members
+    b_io_context io_context_;
+    boost::asio::ip::tcp::socket socket_;
+    std::vector<unsigned char> data_;
+
+    Rtl_Tcp_Dongle_Info info_;
+    size_t unread_;
+    bool flip_iq_;
 };
 
 #endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H

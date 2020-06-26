@@ -104,24 +104,24 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    uint32_t n_channels_;
-    std::vector<std::string> filename_vec_;
-    std::string item_type_;
-    bool repeat_;
-    std::string role_;
-    uint32_t in_streams_;
-    uint32_t out_streams_;
     std::vector<gr::blocks::file_source::sptr> file_source_vec_;
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<gr::block> valve_;
-#else
-    boost::shared_ptr<gr::block> valve_;
-#endif
+    #if GNURADIO_USES_STD_POINTERS
+        std::shared_ptr<gr::block> valve_;
+    #else
+        boost::shared_ptr<gr::block> valve_;
+    #endif
     gr::blocks::file_sink::sptr sink_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
+    std::vector<std::string> filename_vec_;
+    std::string item_type_;
+    std::string role_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     size_t item_size_;
+    uint32_t n_channels_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    bool repeat_;
     // Throttle control
     bool enable_throttle_control_;
 };

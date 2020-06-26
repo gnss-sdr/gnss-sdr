@@ -29,22 +29,21 @@
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
-    size_t item_size;
     (*this).init();
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
-            item_size = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
             DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
-            item_size = sizeof(lv_16sc_t);
+            item_size_ = sizeof(lv_16sc_t);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
             fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -56,12 +55,12 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
-            item_size = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
             fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -71,13 +70,13 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
 
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
-            item_size = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
 
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -90,12 +89,12 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
-            item_size = sizeof(lv_8sc_t);
+            item_size_ = sizeof(lv_8sc_t);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
 
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -111,7 +110,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else

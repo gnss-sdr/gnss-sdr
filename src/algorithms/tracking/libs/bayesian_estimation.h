@@ -73,11 +73,10 @@ public:
 private:
     arma::vec mu_est;
     arma::mat Psi_est;
-
     arma::vec mu_prior;
+    arma::mat Psi_prior;
     int kappa_prior;
     int nu_prior;
-    arma::mat Psi_prior;
 };
 
 #endif

@@ -108,6 +108,7 @@ private:
     std::string output_item_type_;
     std::string taps_item_type_;
     std::string role_;
+    size_t item_size_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     bool dump_;

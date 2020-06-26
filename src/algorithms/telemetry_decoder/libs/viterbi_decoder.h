@@ -74,31 +74,6 @@ private:
         int refcount;
     };
 
-    // code properties
-    int d_KK;
-    int d_nn;
-
-    // derived code properties
-    int d_mm;
-    int d_states;
-    int d_number_symbols;
-
-    // trellis definition
-    std::vector<int> d_out0;
-    std::vector<int> d_state0;
-    std::vector<int> d_out1;
-    std::vector<int> d_state1;
-
-    // trellis state
-    std::vector<float> d_pm_t;
-    std::deque<Prev> d_trellis_paths;
-    std::vector<float> d_metric_c;  /* Set of all possible branch metrics */
-    std::vector<float> d_rec_array; /* Received values for one trellis section */
-    bool d_trellis_state_is_initialised;
-
-    // measures
-    float d_indicator_metric;
-
     // operations on the trellis (change decoder state)
     void init_trellis_state();
     int do_acs(const double sym[], int nbits);
@@ -112,6 +87,31 @@ private:
     void nsc_transit(int output_p[], int trans_p[], int input, const int g[], int KK, int nn);
     int nsc_enc_bit(int state_out_p[], int input, int state_in, const int g[], int KK, int nn);
     int parity_counter(int symbol, int length);
+
+    // trellis state
+    std::deque<Prev> d_trellis_paths;
+    std::vector<float> d_pm_t;
+    std::vector<float> d_metric_c;  /* Set of all possible branch metrics */
+    std::vector<float> d_rec_array; /* Received values for one trellis section */
+
+    // trellis definition
+    std::vector<int> d_out0;
+    std::vector<int> d_state0;
+    std::vector<int> d_out1;
+    std::vector<int> d_state1;
+
+    // measures
+    float d_indicator_metric;
+
+    // code properties
+    int d_KK;
+    int d_nn;
+
+    // derived code properties
+    int d_mm;
+    int d_states;
+    int d_number_symbols;
+    bool d_trellis_state_is_initialised;
 };
 
 #endif  // GNSS_SDR_VITERBI_DECODER_H

@@ -52,7 +52,7 @@ public:
 
     size_t item_size()
     {
-        return 0;
+        return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
@@ -66,6 +66,7 @@ private:
     std::string dump_filename_;
     std::string role_;
     std::string item_type_;
+    size_t item_size_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     bool dump_;

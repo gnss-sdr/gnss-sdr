@@ -149,6 +149,11 @@ public:
         d_threshold = threshold;
     }
 
+    inline void set_state(int32_t state)
+    {
+        d_state = state;
+    }
+
     /*!
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
@@ -195,44 +200,48 @@ private:
     void reset_grid();
     void redefine_grid();
 
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
+
+    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    std::vector<std::vector<float>> d_grid_data;
+    std::vector<gr_complex> d_fft_codes;
+
+    std::string d_satellite_str;
+    std::string d_dump_filename;
+
+    std::ofstream d_dump_file;
+
+    Gnss_Synchro* d_gnss_synchro;
+
     int64_t d_fs_in;
+    uint64_t d_sample_counter;
+
+    float d_threshold;
+    float d_doppler_freq;
+    float d_input_power;
+    float d_test_statistics;
     int32_t d_samples_per_ms;
     int32_t d_max_dwells;
-    uint32_t d_doppler_resolution;
     int32_t d_gnuradio_forecast_samples;
-    float d_threshold;
-    std::string d_satellite_str;
     int32_t d_doppler_max;
     int32_t d_doppler_min;
     int32_t d_config_doppler_max;
     int32_t d_config_doppler_min;
-
     int32_t d_num_doppler_points;
     int32_t d_doppler_step;
+    int32_t d_state;
+    int32_t d_well_count;
+    uint32_t d_doppler_resolution;
+    uint32_t d_channel;
     uint32_t d_sampled_ms;
     uint32_t d_fft_size;
-    uint64_t d_sample_counter;
-    std::vector<gr_complex> d_fft_codes;
-
-    std::vector<std::vector<float>> d_grid_data;
-    std::vector<std::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-
-    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex> d_ifft;
-    Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
-    float d_doppler_freq;
-    float d_input_power;
-    float d_test_statistics;
-    std::ofstream d_dump_file;
-    int32_t d_state;
+
     bool d_active;
     bool d_disable_assist;
-    int32_t d_well_count;
     bool d_dump;
-    uint32_t d_channel;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    std::string d_dump_filename;
 };
 
 #endif  // GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H

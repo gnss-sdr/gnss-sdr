@@ -199,41 +199,51 @@ private:
     void reset_grid();
     void update_carrier_wipeoff();
     bool start();
-    Acq_Conf acq_parameters;
-    int64_t d_fs_in;
-    int d_samples_per_ms;
-    int d_max_dwells;
-    int d_gnuradio_forecast_samples;
-    float d_threshold;
-    std::string d_satellite_str;
-    int d_config_doppler_max;
-    int d_num_doppler_points;
-    int d_doppler_step;
-    unsigned int d_fft_size;
-    uint64_t d_sample_counter;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
+
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
+    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
     volk_gnsssdr::vector<gr_complex> d_fft_codes;
     volk_gnsssdr::vector<gr_complex> d_10_ms_buffer;
     volk_gnsssdr::vector<float> d_magnitude;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;
-    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
-    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex> d_ifft;
+
+    arma::fmat grid_;
+
+    std::string d_satellite_str;
+    std::string d_dump_filename;
+
     Gnss_Synchro* d_gnss_synchro;
-    unsigned int d_code_phase;
+
+    Acq_Conf acq_parameters;
+
+    int64_t d_fs_in;
+    int64_t d_dump_number;
+    uint64_t d_sample_counter;
+
     float d_doppler_freq;
+    float d_threshold;
     float d_test_statistics;
+
     int d_positive_acq;
     int d_state;
-    bool d_active;
+    int d_samples_per_ms;
+    int d_max_dwells;
+    int d_gnuradio_forecast_samples;
+    int d_config_doppler_max;
+    int d_num_doppler_points;
+    int d_doppler_step;
     int d_well_count;
     int d_n_samples_in_buffer;
-    bool d_dump;
     unsigned int d_channel;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    std::string d_dump_filename;
-    arma::fmat grid_;
-    int64_t d_dump_number;
+    unsigned int d_fft_size;
+    unsigned int d_code_phase;
     unsigned int d_dump_channel;
+
+    bool d_active;
+    bool d_dump;
 };
 
 #endif /* pcps_acquisition_fine_doppler_cc*/

@@ -224,48 +224,6 @@ private:
 
     int init_opencl_environment(const std::string& kernel_filename);
 
-    int64_t d_fs_in;
-    int d_samples_per_ms;
-    int d_samples_per_code;
-    uint32_t d_doppler_resolution;
-    float d_threshold;
-    std::string d_satellite_str;
-    uint32_t d_doppler_max;
-    uint32_t d_doppler_step;
-    uint32_t d_sampled_ms;
-    uint32_t d_max_dwells;
-    uint32_t d_well_count;
-    uint32_t d_fft_size;
-    uint32_t d_fft_size_pow2;
-    int* d_max_doppler_indexs;
-    uint64_t d_sample_counter;
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
-    uint32_t d_num_doppler_bins;
-    std::vector<gr_complex> d_fft_codes;
-    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex> d_ifft;
-    Gnss_Synchro* d_gnss_synchro;
-    uint32_t d_code_phase;
-    float d_doppler_freq;
-    float d_mag;
-    std::vector<float> d_magnitude;
-    float d_input_power;
-    float d_test_statistics;
-    bool d_bit_transition_flag;
-    std::ofstream d_dump_file;
-    bool d_active;
-    int d_state;
-    bool d_core_working;
-    bool d_dump;
-    uint32_t d_channel;
-    std::string d_dump_filename;
-    std::vector<gr_complex> d_zero_vector;
-    std::vector<std::vector<gr_complex>> d_in_buffer;
-    std::vector<uint64_t> d_sample_counter_buffer;
-    uint32_t d_in_dwell_count;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    int d_opencl;
-
     cl::Platform d_cl_platform;
     cl::Device d_cl_device;
     cl::Context d_cl_context;
@@ -279,6 +237,59 @@ private:
     cl::CommandQueue* d_cl_queue;
     clFFT_Plan d_cl_fft_plan;
     cl_int d_cl_fft_batch_size;
+
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
+
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
+    std::vector<std::vector<gr_complex>> d_in_buffer;
+    std::vector<gr_complex> d_fft_codes;
+    std::vector<gr_complex> d_zero_vector;
+    std::vector<uint64_t> d_sample_counter_buffer;
+    std::vector<float> d_magnitude;
+
+    std::string d_dump_filename;
+    std::string d_satellite_str;
+
+    std::ofstream d_dump_file;
+
+    Gnss_Synchro* d_gnss_synchro;
+
+    int64_t d_fs_in;
+    uint64_t d_sample_counter;
+
+    int* d_max_doppler_indexs;
+
+    float d_threshold;
+    float d_doppler_freq;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
+
+    int d_samples_per_ms;
+    int d_samples_per_code;
+    int d_state;
+    int d_opencl;
+
+    uint32_t d_doppler_resolution;
+    uint32_t d_doppler_max;
+    uint32_t d_doppler_step;
+    uint32_t d_sampled_ms;
+    uint32_t d_max_dwells;
+    uint32_t d_well_count;
+    uint32_t d_fft_size;
+    uint32_t d_fft_size_pow2;
+    uint32_t d_num_doppler_bins;
+    uint32_t d_code_phase;
+    uint32_t d_channel;
+    uint32_t d_in_dwell_count;
+
+    bool d_bit_transition_flag;
+    bool d_active;
+    bool d_core_working;
+    bool d_dump;
 };
 
 #endif

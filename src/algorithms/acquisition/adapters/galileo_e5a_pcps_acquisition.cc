@@ -93,6 +93,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
 void GalileoE5aPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

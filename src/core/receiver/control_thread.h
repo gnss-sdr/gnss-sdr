@@ -147,19 +147,6 @@ private:
     void keyboard_listener();
     void sysv_queue_listener();
 
-    std::shared_ptr<ConfigurationInterface> configuration_;
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
-    std::shared_ptr<GNSSFlowgraph> flowgraph_;
-
-    std::thread cmd_interface_thread_;
-    std::thread keyboard_thread_;
-    std::thread sysv_queue_thread_;
-    std::thread gps_acq_assist_data_collector_thread_;
-
-#ifdef ENABLE_FPGA
-    boost::thread fpga_helper_thread_;
-#endif
-
     // default filename for assistance data
     const std::string eph_default_xml_filename_ = "./gps_ephemeris.xml";
     const std::string utc_default_xml_filename_ = "./gps_utc_model.xml";
@@ -175,6 +162,19 @@ private:
     const std::string glo_utc_default_xml_filename_ = "./glo_utc_model.xml";
     const std::string gal_almanac_default_xml_filename_ = "./gal_almanac.xml";
     const std::string gps_almanac_default_xml_filename_ = "./gps_almanac.xml";
+
+    std::shared_ptr<ConfigurationInterface> configuration_;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
+    std::shared_ptr<GNSSFlowgraph> flowgraph_;
+
+    std::thread cmd_interface_thread_;
+    std::thread keyboard_thread_;
+    std::thread sysv_queue_thread_;
+    std::thread gps_acq_assist_data_collector_thread_;
+
+#ifdef ENABLE_FPGA
+    boost::thread fpga_helper_thread_;
+#endif
 
     TcpCmdInterface cmd_interface_;
 
@@ -196,6 +196,7 @@ private:
     bool receiver_on_standby_;
     bool stop_;
     bool restart_;
+    bool telecommand_enabled_;
     bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
 };
 

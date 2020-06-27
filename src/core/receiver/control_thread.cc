@@ -102,6 +102,7 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 
 void ControlThread::init()
 {
+    telecommand_enabled_ = configuration_->property("GNSS-SDR.telecommand_enabled", false);
     // OPTIONAL: specify a custom year to override the system time in order to postprocess old gnss records and avoid wrong week rollover
     pre_2009_file_ = configuration_->property("GNSS-SDR.pre_2009_file", false);
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
@@ -208,15 +209,14 @@ ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 
     if (cmd_interface_thread_.joinable())
         {
-            cmd_interface_thread_.detach();
+            cmd_interface_thread_.join();
         }
 }
 
 
 void ControlThread::telecommand_listener()
 {
-    bool telecommand_enabled = configuration_->property("GNSS-SDR.telecommand_enabled", false);
-    if (telecommand_enabled)
+    if (telecommand_enabled_)
         {
             int tcp_cmd_port = configuration_->property("GNSS-SDR.telecommand_tcp_port", 3333);
             cmd_interface_.run_cmd_server(tcp_cmd_port);
@@ -356,11 +356,17 @@ int ControlThread::run()
     fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
 #endif
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // Terminate keyboard thread
     pthread_t id = keyboard_thread_.native_handle();
     keyboard_thread_.detach();
     pthread_cancel(id);
+
+    if (telecommand_enabled_)
+        {
+            pthread_t id2 = cmd_interface_thread_.native_handle();
+            cmd_interface_thread_.detach();
+            pthread_cancel(id2);
+        }
 
     LOG(INFO) << "Flowgraph stopped";
 

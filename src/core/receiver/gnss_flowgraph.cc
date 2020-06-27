@@ -114,6 +114,10 @@ void GNSSFlowgraph::start()
 
 void GNSSFlowgraph::stop()
 {
+    for (auto chan : channels_)
+        {
+            chan->stop_channel();  // stop the acquisition or tracking operation
+        }
     top_block_->stop();
     running_ = false;
 }

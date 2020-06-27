@@ -94,6 +94,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
 
 void GpsL5iPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

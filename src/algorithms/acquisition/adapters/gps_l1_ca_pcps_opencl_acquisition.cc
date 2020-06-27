@@ -119,6 +119,8 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
 void GpsL1CaPcpsOpenClAcquisition::stop_acquisition()
 {
+    acquisition_cc_->set_active(false);
+    acquisition_cc_->set_state(0);
 }
 
 

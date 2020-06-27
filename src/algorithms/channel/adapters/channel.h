@@ -84,10 +84,10 @@ public:
     void msg_handler_events(pmt::pmt_t msg);
 
 private:
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     std::shared_ptr<TelemetryDecoderInterface> nav_;
-    std::shared_ptr<ChannelFsm> channel_fsm_;
     channel_msg_receiver_cc_sptr channel_msg_rx_;
     Concurrent_Queue<pmt::pmt_t>* queue_;
     Gnss_Synchro gnss_synchro_{};

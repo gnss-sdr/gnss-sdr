@@ -94,6 +94,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
 void GalileoE1PcpsAmbiguousAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

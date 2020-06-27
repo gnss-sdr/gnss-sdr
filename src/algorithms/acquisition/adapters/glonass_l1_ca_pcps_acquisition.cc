@@ -94,6 +94,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
 
 void GlonassL1CaPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

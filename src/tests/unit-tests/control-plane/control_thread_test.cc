@@ -135,6 +135,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages /*unused*/)
     unsigned int expected1 = 1;
     EXPECT_EQ(expected3, control_thread->processed_control_messages());
     EXPECT_EQ(expected1, control_thread->applied_actions());
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 
@@ -196,6 +197,7 @@ TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
     unsigned int expected1 = 1;
     EXPECT_EQ(expected5, control_thread2->processed_control_messages());
     EXPECT_EQ(expected1, control_thread2->applied_actions());
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 

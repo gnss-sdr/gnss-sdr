@@ -92,6 +92,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
 
 void BeidouB3iPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

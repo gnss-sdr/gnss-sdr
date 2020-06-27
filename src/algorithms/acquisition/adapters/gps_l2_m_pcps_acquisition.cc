@@ -93,6 +93,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
 void GpsL2MPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

@@ -49,6 +49,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   fallback. The latter has been updated to version
   [0.37.0](https://github.com/gsl-lite/gsl-lite/releases/tag/0.37.0).
 - Improved finding of libgfortran in openSUSE and Fedora distributions.
+- Allow a random name for the build type. If not recognized, it is set to
+  `None`. This allows packaging in some distributions that pass an arbitrary
+  name as the build type (e.g., Gentoo) to avoid unexpected compiler flags. The
+  building option `ENABLE_PACKAGING` must set to `ON` when packaging.
 
 ### Improvements in Reliability:
 

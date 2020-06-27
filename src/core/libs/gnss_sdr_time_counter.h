@@ -43,16 +43,17 @@ public:
 
 private:
     gnss_sdr_time_counter();
-    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
-    uint32_t current_s;       // Receiver time in seconds, modulo 60
-    bool flag_m;              // True if the receiver has been running for at least 1 minute
-    uint32_t current_m;       // Receiver time in minutes, modulo 60
-    bool flag_h;              // True if the receiver has been running for at least 1 hour
-    uint32_t current_h;       // Receiver time in hours, modulo 24
-    bool flag_days;           // True if the receiver has been running for at least 1 day
-    uint32_t current_days;    // Receiver time in days since the beginning of the run
-    int32_t report_interval_ms;
     friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
+
+    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
+    int32_t report_interval_ms;
+    uint32_t current_s;     // Receiver time in seconds, modulo 60
+    uint32_t current_m;     // Receiver time in minutes, modulo 60
+    uint32_t current_h;     // Receiver time in hours, modulo 24
+    uint32_t current_days;  // Receiver time in days since the beginning of the run
+    bool flag_m;            // True if the receiver has been running for at least 1 minute
+    bool flag_h;            // True if the receiver has been running for at least 1 hour
+    bool flag_days;         // True if the receiver has been running for at least 1 day
 };
 
 #endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H

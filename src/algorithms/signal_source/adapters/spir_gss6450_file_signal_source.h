@@ -105,11 +105,11 @@ public:
 private:
     gr::blocks::file_source::sptr file_source_;
     gr::blocks::deinterleave::sptr deint_;
-    #if GNURADIO_USES_STD_POINTERS
-        std::vector<std::shared_ptr<gr::block>> valve_vec_;
-    #else
-        std::vector<boost::shared_ptr<gr::block>> valve_vec_;
-    #endif
+#if GNURADIO_USES_STD_POINTERS
+    std::vector<std::shared_ptr<gr::block>> valve_vec_;
+#else
+    std::vector<boost::shared_ptr<gr::block>> valve_vec_;
+#endif
     std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
     std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;

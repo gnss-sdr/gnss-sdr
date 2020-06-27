@@ -134,7 +134,7 @@ public:
 private:
     cudaStream_t stream1;
     // cudaStream_t stream2;
-    
+
     // Allocate the device input vectors
     GPU_Complex* d_sig_in;
     GPU_Complex* d_nco_in;

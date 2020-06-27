@@ -105,11 +105,11 @@ public:
 
 private:
     std::vector<gr::blocks::file_source::sptr> file_source_vec_;
-    #if GNURADIO_USES_STD_POINTERS
-        std::shared_ptr<gr::block> valve_;
-    #else
-        boost::shared_ptr<gr::block> valve_;
-    #endif
+#if GNURADIO_USES_STD_POINTERS
+    std::shared_ptr<gr::block> valve_;
+#else
+    boost::shared_ptr<gr::block> valve_;
+#endif
     gr::blocks::file_sink::sptr sink_;
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::vector<std::string> filename_vec_;

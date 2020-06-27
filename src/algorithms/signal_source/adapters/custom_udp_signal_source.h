@@ -78,13 +78,13 @@ public:
 
 private:
     Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
-    #if GNURADIO_USES_STD_POINTERS
-        std::vector<std::shared_ptr<gr::block>> null_sinks_;
-        std::vector<std::shared_ptr<gr::block>> file_sink_;
-    #else
-        std::vector<boost::shared_ptr<gr::block>> null_sinks_;
-        std::vector<boost::shared_ptr<gr::block>> file_sink_;
-    #endif
+#if GNURADIO_USES_STD_POINTERS
+    std::vector<std::shared_ptr<gr::block>> null_sinks_;
+    std::vector<std::shared_ptr<gr::block>> file_sink_;
+#else
+    std::vector<boost::shared_ptr<gr::block>> null_sinks_;
+    std::vector<boost::shared_ptr<gr::block>> file_sink_;
+#endif
 
     std::string role_;
     std::string item_type_;

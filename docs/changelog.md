@@ -29,6 +29,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Improved usage of smart pointers to better express ownership.
 - Add definition of std::make_unique for buildings with C++11, and make use of
   it along the source code.
+- Private members in headers have been sorted by type and size, minimizing
+  padding space in the stack and making the files more readable for humans.
 - Fixed building with GCC 10 (gcc-10 and above flipped a default from `-fcommon`
   to `-fno-common`, causing an error due to multiple defined lambda functions).
 - Fixed warnings risen by GCC 10 and Clang 10.

@@ -67,10 +67,10 @@ private:
         void set_survivor_branch_metric_of_next_state(int next_state, float metric);
 
     private:
-        int t;
+        std::vector<float> v_metric;
         std::vector<int> state;
         std::vector<int> v_bit;
-        std::vector<float> v_metric;
+        int t;
         int refcount;
     };
 

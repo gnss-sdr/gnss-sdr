@@ -49,7 +49,7 @@ if(USE_CMAKE_TARGET_SOURCES)
         PRIVATE
             ${ACQ_GR_BLOCKS_SOURCES}
         PUBLIC
-            ${ACQ_ADAPTER_HEADERS}
+            ${ACQ_GR_BLOCKS_HEADERS}
     )
 else()
     source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})

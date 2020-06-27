@@ -135,8 +135,6 @@ endif()
 #Functions
 include(CheckFunctionExists)
 
-set(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
-set(OLD_CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
 set(CMAKE_REQUIRED_INCLUDES ${PCAP_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${PCAP_LIBRARIES})
 check_function_exists("pcap_breakloop" HAVE_PCAP_BREAKLOOP)
@@ -149,8 +147,6 @@ check_function_exists("pcap_lib_version" HAVE_PCAP_LIB_VERSION)
 check_function_exists("pcap_list_datalinks" HAVE_PCAP_LIST_DATALINKS)
 check_function_exists("pcap_open_dead" HAVE_PCAP_OPEN_DEAD)
 check_function_exists("pcap_set_datalink" HAVE_PCAP_SET_DATALINK)
-set(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
-set(CMAKE_REQUIRED_LIBRARIES ${OLD_CMAKE_REQUIRED_LIBRARIES})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PCAP DEFAULT_MSG PCAP_INCLUDE_DIRS PCAP_LIBRARIES)

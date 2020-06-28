@@ -100,6 +100,8 @@ void signal_generator_c::init()
             ms_counter_.push_back(0);
             data_modulation_.push_back((GALILEO_E5A_I_SECONDARY_CODE.at(0) == '0' ? 1 : -1));
             pilot_modulation_.push_back((GALILEO_E5A_Q_SECONDARY_CODE[PRN_[sat]].at(0) == '0' ? 1 : -1));
+            data_modulation_.push_back((GALILEO_E5B_I_SECONDARY_CODE.at(0) == '0' ? 1 : -1));
+            pilot_modulation_.push_back((GALILEO_E5B_Q_SECONDARY_CODE[PRN_[sat]].at(0) == '0' ? 1 : -1));
 
             if (system_[sat] == "G")
                 {

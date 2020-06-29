@@ -238,6 +238,10 @@ if(ARMADILLO_VERSION_STRING VERSION_GREATER 8.400)
     add_definitions(-DARMADILLO_HAVE_MVNRND=1)
 endif()
 
+if(HAVE_STD_PLUS)
+    add_definitions(-DCOMPILER_HAS_STD_PLUS=1)
+endif()
+
 find_package(Gnuplot)
 if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")

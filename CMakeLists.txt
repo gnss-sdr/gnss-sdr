@@ -460,6 +460,17 @@ else()
     endif()
 endif()
 
+# Availability of std::plus without class specifier
+if(CMAKE_CXX_STANDARD VERSION_GREATER 11)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.4.0)
+            set(HAVE_STD_PLUS ON)
+        endif()
+    else()
+        set(HAVE_STD_PLUS ON)
+    endif()
+endif()
+
 
 
 ################################################################################

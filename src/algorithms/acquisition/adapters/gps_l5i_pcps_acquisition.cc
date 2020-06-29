@@ -37,16 +37,15 @@ namespace own = gsl;
 #endif
 
 GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration_, role, GPS_L5I_CODE_RATE_CPS, GPS_L5_OPT_ACQ_FS_SPS);
+    acq_parameters_.SetFromConfiguration(configuration, role, GPS_L5I_CODE_RATE_CPS, GPS_L5_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "role " << role;
 

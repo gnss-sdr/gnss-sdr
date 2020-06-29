@@ -35,7 +35,7 @@ class ConfigurationInterface;
 class IbyteToComplex : public GNSSBlockInterface
 {
 public:
-    IbyteToComplex(ConfigurationInterface* configuration,
+    IbyteToComplex(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -66,7 +66,6 @@ private:
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex_;
     conjugate_cc_sptr conjugate_cc_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;

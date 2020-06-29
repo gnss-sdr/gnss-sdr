@@ -43,7 +43,7 @@ class ConfigurationInterface;
 class BeidouB3iPcpsAcquisition : public AcquisitionInterface
 {
 public:
-    BeidouB3iPcpsAcquisition(ConfigurationInterface* configuration,
+    BeidouB3iPcpsAcquisition(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -154,7 +154,6 @@ private:
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     Gnss_Synchro* gnss_synchro_;
-    ConfigurationInterface* configuration_;
     Acq_Conf acq_parameters_;
     std::string item_type_;
     std::string role_;

@@ -43,7 +43,7 @@ class ConfigurationInterface;
 class MmseResamplerConditioner : public GNSSBlockInterface
 {
 public:
-    MmseResamplerConditioner(ConfigurationInterface* configuration,
+    MmseResamplerConditioner(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 

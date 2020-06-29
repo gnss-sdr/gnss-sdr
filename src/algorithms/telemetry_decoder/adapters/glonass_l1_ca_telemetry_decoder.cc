@@ -25,7 +25,8 @@
 #include <glog/logging.h>
 
 
-GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface* configuration,
+GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),

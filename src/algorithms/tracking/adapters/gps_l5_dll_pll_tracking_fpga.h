@@ -42,7 +42,8 @@ public:
     /*!
      * \brief Constructor
      */
-    GpsL5DllPllTrackingFpga(ConfigurationInterface* configuration,
+    GpsL5DllPllTrackingFpga(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

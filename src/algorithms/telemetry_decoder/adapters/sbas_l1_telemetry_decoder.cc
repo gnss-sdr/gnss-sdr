@@ -24,7 +24,8 @@
 #include <glog/logging.h>
 
 
-SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configuration,
+SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),

@@ -42,7 +42,8 @@ class ConfigurationInterface;
 class GpsL2MPcpsAcquisition : public AcquisitionInterface
 {
 public:
-    GpsL2MPcpsAcquisition(ConfigurationInterface* configuration,
+    GpsL2MPcpsAcquisition(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -159,7 +160,6 @@ private:
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
     Gnss_Synchro* gnss_synchro_;
-    ConfigurationInterface* configuration_;
     Acq_Conf acq_parameters_;
     std::string item_type_;
     std::string dump_filename_;

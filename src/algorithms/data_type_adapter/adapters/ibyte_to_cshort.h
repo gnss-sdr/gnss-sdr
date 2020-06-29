@@ -36,7 +36,7 @@ class ConfigurationInterface;
 class IbyteToCshort : public GNSSBlockInterface
 {
 public:
-    IbyteToCshort(ConfigurationInterface* configuration,
+    IbyteToCshort(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -67,7 +67,6 @@ private:
     interleaved_byte_to_complex_short_sptr interleaved_byte_to_complex_short_;
     conjugate_sc_sptr conjugate_sc_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;

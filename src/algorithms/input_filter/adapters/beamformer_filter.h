@@ -35,7 +35,7 @@ class ConfigurationInterface;
 class BeamformerFilter : public GNSSBlockInterface
 {
 public:
-    BeamformerFilter(ConfigurationInterface* configuration,
+    BeamformerFilter(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 

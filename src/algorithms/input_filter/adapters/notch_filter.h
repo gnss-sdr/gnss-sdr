@@ -33,7 +33,7 @@ class ConfigurationInterface;
 class NotchFilter : public GNSSBlockInterface
 {
 public:
-    NotchFilter(ConfigurationInterface* configuration,
+    NotchFilter(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 

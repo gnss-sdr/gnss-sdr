@@ -36,7 +36,7 @@ namespace own = gsl;
 #endif
 
 GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -49,31 +49,31 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type",
+    item_type_ = configuration->property(role + ".item_type",
         default_item_type);
 
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_ = configuration_->property(role + ".dump", false);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
 
-    bit_transition_flag_ = configuration_->property("Acquisition.bit_transition_flag", false);
+    bit_transition_flag_ = configuration->property("Acquisition.bit_transition_flag", false);
 
     if (!bit_transition_flag_)
         {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+            max_dwells_ = configuration->property(role + ".max_dwells", 1);
         }
     else
         {
             max_dwells_ = 2;
         }
 
-    dump_filename_ = configuration_->property(role + ".dump_filename",
+    dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_filename);
 
     // -- Find number of samples per spreading code -------------------------

@@ -38,16 +38,15 @@ namespace own = gsl;
 using google::LogMessage;
 
 BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration_, role, BEIDOU_B3I_CODE_RATE_CPS, 100e6);
+    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B3I_CODE_RATE_CPS, 100e6);
 
     LOG(INFO) << "role " << role;
 

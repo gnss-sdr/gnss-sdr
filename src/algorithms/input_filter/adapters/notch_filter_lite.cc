@@ -26,7 +26,7 @@
 #include <algorithm>  // for max
 
 
-NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, const std::string& role,
+NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     float p_c_factor;

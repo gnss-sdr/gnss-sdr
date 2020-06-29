@@ -40,7 +40,7 @@ class ConfigurationInterface;
 class Pass_Through : public GNSSBlockInterface
 {
 public:
-    Pass_Through(ConfigurationInterface* configuration,
+    Pass_Through(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_stream,
         unsigned int out_stream);

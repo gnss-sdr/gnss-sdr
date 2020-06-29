@@ -39,7 +39,8 @@ class ConfigurationInterface;
 class GlonassL1CaTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
-    GlonassL1CaTelemetryDecoder(ConfigurationInterface* configuration,
+    GlonassL1CaTelemetryDecoder(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

@@ -46,7 +46,7 @@ class ConfigurationInterface;
 class PlutosdrSignalSource : public GNSSBlockInterface
 {
 public:
-    PlutosdrSignalSource(ConfigurationInterface* configuration,
+    PlutosdrSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 

@@ -46,11 +46,12 @@ class ConfigurationInterface;
 class SpirFileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    SpirFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~SpirFileSignalSource() = default;
+
     inline std::string role() override
     {
         return role_;

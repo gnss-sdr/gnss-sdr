@@ -36,7 +36,7 @@ class ConfigurationInterface;
 class IbyteToCbyte : public GNSSBlockInterface
 {
 public:
-    IbyteToCbyte(ConfigurationInterface* configuration,
+    IbyteToCbyte(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -67,7 +67,6 @@ private:
     interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_;
     conjugate_ic_sptr conjugate_ic_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;

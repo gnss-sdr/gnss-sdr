@@ -32,7 +32,7 @@ class Dll_Pll_Conf_Fpga
 {
 public:
     Dll_Pll_Conf_Fpga();
-    void SetFromConfiguration(ConfigurationInterface* configuration, const std::string& role);
+    void SetFromConfiguration(const ConfigurationInterface* configuration, const std::string& role);
 
     /* DLL/PLL tracking configuration */
     std::string device_name;

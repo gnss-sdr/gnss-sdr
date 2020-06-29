@@ -28,7 +28,7 @@
 #include <utility>
 
 
-SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
+SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_filename = "../data/my_capture.dat";

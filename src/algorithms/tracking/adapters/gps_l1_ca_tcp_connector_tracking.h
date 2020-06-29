@@ -40,7 +40,8 @@ class ConfigurationInterface;
 class GpsL1CaTcpConnectorTracking : public TrackingInterface
 {
 public:
-    GpsL1CaTcpConnectorTracking(ConfigurationInterface* configuration,
+    GpsL1CaTcpConnectorTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

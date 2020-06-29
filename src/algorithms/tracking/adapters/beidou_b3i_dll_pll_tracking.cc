@@ -35,7 +35,7 @@
 using google::LogMessage;
 
 BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
-    ConfigurationInterface* configuration, const std::string& role,
+    const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf trk_params = Dll_Pll_Conf();

@@ -39,7 +39,7 @@ class ConfigurationInterface;
 class HybridObservables : public ObservablesInterface
 {
 public:
-    HybridObservables(ConfigurationInterface* configuration,
+    HybridObservables(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

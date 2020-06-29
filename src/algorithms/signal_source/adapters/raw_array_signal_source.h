@@ -38,7 +38,7 @@ class ConfigurationInterface;
 class RawArraySignalSource : public GNSSBlockInterface
 {
 public:
-    RawArraySignalSource(ConfigurationInterface* configuration,
+    RawArraySignalSource(const ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 

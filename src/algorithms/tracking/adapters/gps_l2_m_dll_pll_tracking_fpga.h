@@ -41,7 +41,8 @@ class ConfigurationInterface;
 class GpsL2MDllPllTrackingFpga : public TrackingInterface
 {
 public:
-    GpsL2MDllPllTrackingFpga(ConfigurationInterface* configuration,
+    GpsL2MDllPllTrackingFpga(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

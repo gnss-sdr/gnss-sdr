@@ -39,7 +39,7 @@ class ConfigurationInterface;
 class Gn3sSignalSource : public GNSSBlockInterface
 {
 public:
-    Gn3sSignalSource(ConfigurationInterface* configuration,
+    Gn3sSignalSource(const ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 

@@ -41,7 +41,8 @@ class ConfigurationInterface;
 class GpsL2MPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
-    GpsL2MPcpsAcquisitionFpga(ConfigurationInterface* configuration,
+    GpsL2MPcpsAcquisitionFpga(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -155,7 +156,6 @@ private:
     std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     std::weak_ptr<ChannelFsm> channel_fsm_;
     Gnss_Synchro* gnss_synchro_;
-    ConfigurationInterface* configuration_;
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;

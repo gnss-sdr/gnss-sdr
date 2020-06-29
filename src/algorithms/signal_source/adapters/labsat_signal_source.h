@@ -37,7 +37,7 @@ class ConfigurationInterface;
 class LabsatSignalSource : public GNSSBlockInterface
 {
 public:
-    LabsatSignalSource(ConfigurationInterface* configuration,
+    LabsatSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 

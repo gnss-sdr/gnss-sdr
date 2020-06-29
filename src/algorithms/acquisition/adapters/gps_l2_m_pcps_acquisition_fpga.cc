@@ -37,7 +37,7 @@
 #include <complex>    // for complex
 
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -45,16 +45,15 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
                                 out_streams_(out_streams)
 {
     pcpsconf_fpga_t acq_parameters;
-    configuration_ = configuration;
     std::string default_dump_filename = "./acquisition.mat";
 
     LOG(INFO) << "role " << role;
 
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
 
-    acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
+    acq_parameters.repeat_satellite = configuration->property(role + ".repeat_satellite", false);
     DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
 
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
@@ -69,15 +68,15 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f(static_cast<float>(code_length)));
     unsigned int nsamples_total = pow(2, nbits);
-    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
+    unsigned int select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
-    std::string device_name = configuration_->property(role + ".devicename", default_device_name);
+    std::string device_name = configuration->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_code = nsamples_total;
 
-    acq_parameters.downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
-    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
+    acq_parameters.downsampling_factor = configuration->property(role + ".downsampling_factor", 1.0);
+    acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 14);
     acq_parameters.excludelimit = static_cast<uint32_t>(std::round(static_cast<double>(fs_in_) / GPS_L2_M_CODE_RATE_CPS));
 
     // compute all the GPS L2C PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time

@@ -39,7 +39,7 @@ namespace bc = boost::integer;
 #endif
 
 
-Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
+Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),

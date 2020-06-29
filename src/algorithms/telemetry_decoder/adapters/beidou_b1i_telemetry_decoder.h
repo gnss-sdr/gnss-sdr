@@ -39,7 +39,8 @@ class ConfigurationInterface;
 class BeidouB1iTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
-    BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
+    BeidouB1iTelemetryDecoder(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

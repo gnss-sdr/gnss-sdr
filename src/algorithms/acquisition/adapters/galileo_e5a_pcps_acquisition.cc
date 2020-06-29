@@ -35,16 +35,16 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
-GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
+GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration_, role, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_OPT_ACQ_FS_SPS);
+    acq_parameters_.SetFromConfiguration(configuration, role, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "Role " << role;
 
@@ -58,8 +58,8 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
-    acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
-    acq_iq_ = configuration_->property(role + ".acquire_iq", false);
+    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
+    acq_iq_ = configuration->property(role + ".acquire_iq", false);
     if (acq_iq_)
         {
             acq_pilot_ = false;

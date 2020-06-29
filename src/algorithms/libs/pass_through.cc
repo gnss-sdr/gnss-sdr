@@ -28,7 +28,7 @@
 #include <ostream>  // for operator<<
 
 
-Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,
+Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),

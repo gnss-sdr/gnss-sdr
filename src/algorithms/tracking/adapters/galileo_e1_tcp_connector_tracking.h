@@ -41,7 +41,8 @@ class ConfigurationInterface;
 class GalileoE1TcpConnectorTracking : public TrackingInterface
 {
 public:
-    GalileoE1TcpConnectorTracking(ConfigurationInterface* configuration,
+    GalileoE1TcpConnectorTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

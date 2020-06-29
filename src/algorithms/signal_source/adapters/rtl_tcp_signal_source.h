@@ -47,7 +47,7 @@ class ConfigurationInterface;
 class RtlTcpSignalSource : public GNSSBlockInterface
 {
 public:
-    RtlTcpSignalSource(ConfigurationInterface* configuration,
+    RtlTcpSignalSource(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_stream,
         unsigned int out_stream,

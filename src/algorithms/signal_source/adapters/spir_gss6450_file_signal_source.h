@@ -52,7 +52,7 @@ class ConfigurationInterface;
 class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~SpirGSS6450FileSignalSource() = default;

@@ -34,7 +34,7 @@ class ConfigurationInterface;
 class ByteToShort : public GNSSBlockInterface
 {
 public:
-    ByteToShort(ConfigurationInterface* configuration,
+    ByteToShort(const ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -64,7 +64,6 @@ public:
 private:
     gr::blocks::char_to_short::sptr gr_char_to_short_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;

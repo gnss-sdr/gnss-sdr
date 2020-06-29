@@ -36,7 +36,7 @@ class ConfigurationInterface;
 class PulseBlankingFilter : public GNSSBlockInterface
 {
 public:
-    PulseBlankingFilter(ConfigurationInterface* configuration,
+    PulseBlankingFilter(const ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -67,7 +67,6 @@ private:
     pulse_blanking_cc_sptr pulse_blanking_cc_;
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;

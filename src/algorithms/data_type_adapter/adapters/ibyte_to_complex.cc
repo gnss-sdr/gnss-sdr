@@ -22,8 +22,8 @@
 #include <glog/logging.h>
 
 
-IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
+IbyteToComplex::IbyteToComplex(const ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
     std::string default_output_item_type = "gr_complex";
@@ -31,10 +31,10 @@ IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, const std:
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
+    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
 
-    dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    dump_ = configuration->property(role_ + ".dump", false);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     size_t item_size = sizeof(gr_complex);

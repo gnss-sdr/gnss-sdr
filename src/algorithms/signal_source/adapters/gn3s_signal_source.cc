@@ -24,7 +24,7 @@
 #include <gn3s/gn3s_source_cc.h>
 
 
-Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
+Gn3sSignalSource::Gn3sSignalSource(const ConfigurationInterface* configuration,
     std::string role,
     unsigned int in_stream,
     unsigned int out_stream,

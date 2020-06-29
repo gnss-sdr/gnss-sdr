@@ -56,7 +56,7 @@ class FirFilter : public GNSSBlockInterface
 {
 public:
     //! Constructor
-    FirFilter(ConfigurationInterface* configuration,
+    FirFilter(const ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -101,7 +101,7 @@ private:
     gr::blocks::float_to_char::sptr float_to_char_1_;
     gr::blocks::float_to_char::sptr float_to_char_2_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
+    const ConfigurationInterface* config_;
     std::vector<float> taps_;
     std::string dump_filename_;
     std::string input_item_type_;

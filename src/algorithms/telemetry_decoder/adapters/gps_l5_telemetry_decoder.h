@@ -40,7 +40,8 @@ class ConfigurationInterface;
 class GpsL5TelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
-    GpsL5TelemetryDecoder(ConfigurationInterface* configuration,
+    GpsL5TelemetryDecoder(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

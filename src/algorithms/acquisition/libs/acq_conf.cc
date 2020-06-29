@@ -59,7 +59,7 @@ Acq_Conf::Acq_Conf()
 }
 
 
-void Acq_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
+void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role, double chip_rate, double opt_freq)
 {
     item_type = configuration->property(role + ".item_type", item_type);

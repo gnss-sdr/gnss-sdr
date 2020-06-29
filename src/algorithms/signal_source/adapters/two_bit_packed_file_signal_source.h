@@ -51,7 +51,7 @@ class ConfigurationInterface;
 class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 {
 public:
-    TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    TwoBitPackedFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 

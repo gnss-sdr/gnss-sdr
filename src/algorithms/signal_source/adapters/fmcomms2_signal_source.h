@@ -44,7 +44,7 @@ class ConfigurationInterface;
 class Fmcomms2SignalSource : public GNSSBlockInterface
 {
 public:
-    Fmcomms2SignalSource(ConfigurationInterface* configuration,
+    Fmcomms2SignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 

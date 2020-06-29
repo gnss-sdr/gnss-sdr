@@ -26,7 +26,7 @@
 #include <utility>
 
 
-PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration,
+PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {

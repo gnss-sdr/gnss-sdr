@@ -45,7 +45,7 @@ class ConfigurationInterface;
 class FlexibandSignalSource : public GNSSBlockInterface
 {
 public:
-    FlexibandSignalSource(ConfigurationInterface* configuration,
+    FlexibandSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 

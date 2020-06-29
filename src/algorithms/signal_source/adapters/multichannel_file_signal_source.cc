@@ -30,7 +30,7 @@
 #include <utility>
 
 
-MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterface* configuration,
+MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {

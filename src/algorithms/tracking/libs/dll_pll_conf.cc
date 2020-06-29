@@ -76,7 +76,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
 }
 
 
-void Dll_Pll_Conf::SetFromConfiguration(ConfigurationInterface *configuration,
+void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)
 {
     item_type = configuration->property(role + ".item_type", item_type);

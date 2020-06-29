@@ -43,7 +43,8 @@ public:
     /*!
      * \brief Constructor
      */
-    GpsL5iPcpsAcquisitionFpga(ConfigurationInterface* configuration,
+    GpsL5iPcpsAcquisitionFpga(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -194,7 +195,6 @@ private:
     std::weak_ptr<ChannelFsm> channel_fsm_;
     std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     Gnss_Synchro* gnss_synchro_;
-    ConfigurationInterface* configuration_;
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;

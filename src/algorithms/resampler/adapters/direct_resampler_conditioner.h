@@ -35,7 +35,7 @@ class ConfigurationInterface;
 class DirectResamplerConditioner : public GNSSBlockInterface
 {
 public:
-    DirectResamplerConditioner(ConfigurationInterface* configuration,
+    DirectResamplerConditioner(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 

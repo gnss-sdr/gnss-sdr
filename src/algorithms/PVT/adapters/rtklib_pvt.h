@@ -44,7 +44,7 @@ class Gps_Ephemeris;
 class Rtklib_Pvt : public PvtInterface
 {
 public:
-    Rtklib_Pvt(ConfigurationInterface* configuration,
+    Rtklib_Pvt(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

@@ -56,7 +56,7 @@ class ConfigurationInterface;
 class FreqXlatingFirFilter : public GNSSBlockInterface
 {
 public:
-    FreqXlatingFirFilter(ConfigurationInterface* configuration,
+    FreqXlatingFirFilter(const ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -94,7 +94,6 @@ private:
     short_x2_to_cshort_sptr short_x2_to_cshort_;
     complex_float_to_complex_byte_sptr complex_to_complex_byte_;
     gr::blocks::file_sink::sptr file_sink_;
-    ConfigurationInterface* config_;
     std::vector<float> taps_;
     std::string dump_filename_;
     std::string input_item_type_;

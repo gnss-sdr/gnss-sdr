@@ -30,7 +30,7 @@
 #include <utility>
 
 
-RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
+RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,

@@ -45,7 +45,8 @@ class ConfigurationInterface;
 class GpsL1CaPcpsAcquisition : public AcquisitionInterface
 {
 public:
-    GpsL1CaPcpsAcquisition(ConfigurationInterface* configuration,
+    GpsL1CaPcpsAcquisition(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -162,7 +163,6 @@ private:
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     Gnss_Synchro* gnss_synchro_;
-    ConfigurationInterface* configuration_;
     Acq_Conf acq_parameters_;
     std::string item_type_;
     std::string dump_filename_;

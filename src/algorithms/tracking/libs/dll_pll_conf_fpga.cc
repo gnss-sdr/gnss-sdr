@@ -87,7 +87,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 }
 
 
-void Dll_Pll_Conf_Fpga::SetFromConfiguration(ConfigurationInterface *configuration,
+void Dll_Pll_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)
 {
     int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);

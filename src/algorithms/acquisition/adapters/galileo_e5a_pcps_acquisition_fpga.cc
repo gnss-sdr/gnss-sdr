@@ -33,7 +33,8 @@
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
-GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
+GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -41,32 +42,31 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                                 out_streams_(out_streams)
 {
     pcpsconf_fpga_t acq_parameters;
-    configuration_ = configuration;
     std::string default_dump_filename = "../data/acquisition.dat";
 
     DLOG(INFO) << "Role " << role;
 
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
-    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 32000000);
+    int64_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
-    acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
+    acq_parameters.repeat_satellite = configuration->property(role + ".repeat_satellite", false);
     DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
 
-    uint32_t downsampling_factor = configuration_->property(role + ".downsampling_factor", 1);
+    uint32_t downsampling_factor = configuration->property(role + ".downsampling_factor", 1);
     acq_parameters.downsampling_factor = downsampling_factor;
     fs_in = fs_in / downsampling_factor;
 
     acq_parameters.fs_in = fs_in;
 
-    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
     acq_parameters.doppler_max = doppler_max_;
 
-    acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
-    acq_iq_ = configuration_->property(role + ".acquire_iq", false);
+    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
+    acq_iq_ = configuration->property(role + ".acquire_iq", false);
     if (acq_iq_)
         {
             acq_pilot_ = false;
@@ -78,10 +78,10 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0));
     uint32_t nsamples_total = pow(2, nbits);
-    uint32_t select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
+    uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 1);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
-    std::string device_name = configuration_->property(role + ".devicename", default_device_name);
+    std::string device_name = configuration->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_code = nsamples_total;
 
@@ -163,12 +163,12 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     // reference for the FPGA FFT-IFFT attenuation factor
-    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 13);
+    acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 13);
 
-    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
-    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
-    acq_parameters.max_num_acqs = configuration_->property(role + ".max_num_acqs", 2);
+    acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
+    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
+    acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
 
     channel_ = 0;

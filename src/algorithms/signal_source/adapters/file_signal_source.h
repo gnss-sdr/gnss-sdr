@@ -48,7 +48,7 @@ class ConfigurationInterface;
 class FileSignalSource : public GNSSBlockInterface
 {
 public:
-    FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 

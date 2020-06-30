@@ -53,6 +53,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   `None`. This allows packaging in some distributions that pass an arbitrary
   name as the build type (e.g., Gentoo) to avoid unexpected compiler flags. The
   building option `ENABLE_PACKAGING` must set to `ON` when packaging.
+- Do not stop the receiver if SysV message queues cannot be created.
 
 ### Improvements in Reliability:
 

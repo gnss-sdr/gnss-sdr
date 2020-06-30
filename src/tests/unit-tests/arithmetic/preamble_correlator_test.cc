@@ -84,7 +84,6 @@ TEST(PreambleCorrelationTest, TestMethods)
         }
     end2 = std::chrono::system_clock::now();
 
-#if COMPILER_HAS_STD_PLUS
     // Compute correlation, method 3
     start3 = std::chrono::system_clock::now();
     for (int64_t iter = 0; iter < n_iter; iter++)
@@ -93,25 +92,25 @@ TEST(PreambleCorrelationTest, TestMethods)
                 d_symbol_history.begin() + GPS_CA_PREAMBLE_LENGTH_BITS,
                 d_preamble_samples.begin(),
                 0,
+#if COMPILER_HAS_STD_PLUS_VOID
                 std::plus<>(),
-                [&](float a, float b) { return (std::signbit(a) ? -b : b); });
+#else
+                std::plus<float>(),
+#endif
             sum_corr3 += corr_value3;
         }
     end3 = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds3 = end3 - start3;
-    EXPECT_EQ(corr_value, corr_value3);
-    EXPECT_EQ(sum_corr1, sum_corr3);
-#endif
-
-    EXPECT_EQ(corr_value, corr_value2);
-    EXPECT_EQ(sum_corr1, sum_corr2);
 
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::chrono::duration<double> elapsed_seconds2 = end2 - start2;
+    std::chrono::duration<double> elapsed_seconds3 = end3 - start3;
+
+    EXPECT_EQ(corr_value, corr_value2);
+    EXPECT_EQ(sum_corr1, sum_corr2);
+    EXPECT_EQ(corr_value, corr_value3);
+    EXPECT_EQ(sum_corr1, sum_corr3);
 
     std::cout << "Correlation computed with 'C for'       : done in " << elapsed_seconds.count() * 1.0e9 / n_iter << " nanoseconds" << std::endl;
     std::cout << "Correlation computed with accumulate    : done in " << elapsed_seconds2.count() * 1.0e9 / n_iter << " nanoseconds" << std::endl;
-#if COMPILER_HAS_STD_PLUS
     std::cout << "Correlation computed with inner_product : done in " << elapsed_seconds3.count() * 1.0e9 / n_iter << " nanoseconds" << std::endl;
-#endif
 }

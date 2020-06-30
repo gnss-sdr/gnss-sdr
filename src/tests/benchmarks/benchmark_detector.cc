@@ -83,7 +83,7 @@ void bm_accumulate(benchmark::State& state)
         }
 }
 
-#if COMPILER_HAS_STD_PLUS
+
 void bm_inner_product(benchmark::State& state)
 {
     std::vector<float> d_symbol_history(GPS_CA_PREAMBLE_LENGTH_SYMBOLS, 0.0);
@@ -104,15 +104,16 @@ void bm_inner_product(benchmark::State& state)
                 d_symbol_history.end(),
                 d_preamble_samples.begin(),
                 0,
+#if COMPILER_HAS_STD_PLUS_VOID
                 std::plus<>(),
+#else
+                std::plus<float>(),
+#endif
                 [&](float a, float b) { return (std::signbit(a) ? -b : b); });
         }
 }
-#endif
 
 BENCHMARK(bm_forloop);
 BENCHMARK(bm_accumulate);
-#if COMPILER_HAS_STD_PLUS
 BENCHMARK(bm_inner_product);
-#endif
 BENCHMARK_MAIN();

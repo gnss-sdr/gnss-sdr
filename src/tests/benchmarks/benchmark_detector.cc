@@ -107,9 +107,9 @@ void bm_inner_product(benchmark::State& state)
 #if COMPILER_HAS_STD_PLUS_VOID
                 std::plus<>(),
 #else
-                std::plus<float>(),
+                std::plus<int32_t>(),
 #endif
-                [&](float a, float b) { return (std::signbit(a) ? -b : b); });
+                [](float a, int32_t b) { return (std::signbit(a) ? -b : b); });
         }
 }
 

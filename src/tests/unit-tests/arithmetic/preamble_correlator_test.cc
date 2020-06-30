@@ -97,6 +97,7 @@ TEST(PreambleCorrelationTest, TestMethods)
 #else
                 std::plus<float>(),
 #endif
+                [&](float a, float b) { return (std::signbit(a) ? -b : b); });
             sum_corr3 += corr_value3;
         }
     end3 = std::chrono::system_clock::now();

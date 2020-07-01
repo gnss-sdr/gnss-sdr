@@ -29,42 +29,42 @@
 
 
 // Carrier and code frequencies
-const double GALILEO_E5A_FREQ_HZ = FREQ5;                 //!< Galileo E5a carrier frequency [Hz]
-const double GALILEO_E5A_CODE_CHIP_RATE_CPS = 1.023e7;    //!< Galileo E5a code rate [chips/s]
-const double GALILEO_E5A_I_TIERED_CODE_PERIOD_S = 0.020;  //!< Galileo E5a-I tiered code period [s]
-const double GALILEO_E5A_Q_TIERED_CODE_PERIOD_S = 0.100;  //!< Galileo E5a-Q tiered code period [s]
-const int32_t GALILEO_E5A_CODE_LENGTH_CHIPS = 10230;      //!< Galileo E5a primary code length [chips]
-const int32_t GALILEO_E5A_I_SECONDARY_CODE_LENGTH = 20;   //!< Galileo E5a-I secondary code length [chips]
-const int32_t GALILEO_E5A_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5a-Q secondary code length [chips]
-const double GALILEO_E5A_CODE_PERIOD_S = 0.001;           //!< Galileo E1 primary code period [s]
-const int32_t GALILEO_E5A_CODE_PERIOD_MS = 1;             //!< Galileo E1 primary code period [ms]
-const int32_t GALILEO_E5A_SYMBOL_RATE_BPS = 50;           //!< Galileo E5a symbol rate [bits/second]
-const int32_t GALILEO_E5A_NUMBER_OF_CODES = 50;
+constexpr double GALILEO_E5A_FREQ_HZ = FREQ5;                 //!< Galileo E5a carrier frequency [Hz]
+constexpr double GALILEO_E5A_CODE_CHIP_RATE_CPS = 1.023e7;    //!< Galileo E5a code rate [chips/s]
+constexpr double GALILEO_E5A_I_TIERED_CODE_PERIOD_S = 0.020;  //!< Galileo E5a-I tiered code period [s]
+constexpr double GALILEO_E5A_Q_TIERED_CODE_PERIOD_S = 0.100;  //!< Galileo E5a-Q tiered code period [s]
+constexpr int32_t GALILEO_E5A_CODE_LENGTH_CHIPS = 10230;      //!< Galileo E5a primary code length [chips]
+constexpr int32_t GALILEO_E5A_I_SECONDARY_CODE_LENGTH = 20;   //!< Galileo E5a-I secondary code length [chips]
+constexpr int32_t GALILEO_E5A_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5a-Q secondary code length [chips]
+constexpr double GALILEO_E5A_CODE_PERIOD_S = 0.001;           //!< Galileo E1 primary code period [s]
+constexpr int32_t GALILEO_E5A_CODE_PERIOD_MS = 1;             //!< Galileo E1 primary code period [ms]
+constexpr int32_t GALILEO_E5A_SYMBOL_RATE_BPS = 50;           //!< Galileo E5a symbol rate [bits/second]
+constexpr int32_t GALILEO_E5A_NUMBER_OF_CODES = 50;
 
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION AND CRC ERROR LIMIT
-const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
-const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
+constexpr int32_t GALILEO_E5A_HISTORY_DEEP = 20;
+constexpr int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
 
 // optimum parameters
-const uint32_t GALILEO_E5A_OPT_ACQ_FS_SPS = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+constexpr uint32_t GALILEO_E5A_OPT_ACQ_FS_SPS = 10000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // F/NAV message structure
 
-const int32_t GALILEO_FNAV_PREAMBLE_LENGTH_BITS = 12;
+constexpr int32_t GALILEO_FNAV_PREAMBLE_LENGTH_BITS = 12;
 const std::string GALILEO_FNAV_PREAMBLE = {"101101110000"};
-const int32_t GALILEO_FNAV_CODES_PER_SYMBOL = 20;     // (chip rate/ code length)/telemetry bps
-const int32_t GALILEO_FNAV_CODES_PER_PREAMBLE = 240;  // bits preamble * codes/symbol
-const int32_t GALILEO_FNAV_SYMBOLS_PER_PAGE = 500;    // Total symbols per page including preamble. See Galileo ICD 4.2.2
-const int32_t GALILEO_FNAV_SECONDS_PER_PAGE = 10;
-const int32_t GALILEO_FNAV_CODES_PER_PAGE = 10000;  // symbols * codes/symbol, where code stands for primary code
+constexpr int32_t GALILEO_FNAV_CODES_PER_SYMBOL = 20;     // (chip rate/ code length)/telemetry bps
+constexpr int32_t GALILEO_FNAV_CODES_PER_PREAMBLE = 240;  // bits preamble * codes/symbol
+constexpr int32_t GALILEO_FNAV_SYMBOLS_PER_PAGE = 500;    // Total symbols per page including preamble. See Galileo ICD 4.2.2
+constexpr int32_t GALILEO_FNAV_SECONDS_PER_PAGE = 10;
+constexpr int32_t GALILEO_FNAV_CODES_PER_PAGE = 10000;  // symbols * codes/symbol, where code stands for primary code
 
-const int32_t GALILEO_FNAV_INTERLEAVER_ROWS = 8;
-const int32_t GALILEO_FNAV_INTERLEAVER_COLS = 61;
-const int32_t GALILEO_FNAV_PAGE_TYPE_BITS = 6;
+constexpr int32_t GALILEO_FNAV_INTERLEAVER_ROWS = 8;
+constexpr int32_t GALILEO_FNAV_INTERLEAVER_COLS = 61;
+constexpr int32_t GALILEO_FNAV_PAGE_TYPE_BITS = 6;
 
-const int32_t GALILEO_FNAV_DATA_FRAME_BITS = 214;
-const int32_t GALILEO_FNAV_DATA_FRAME_BYTES = 27;
+constexpr int32_t GALILEO_FNAV_DATA_FRAME_BITS = 214;
+constexpr int32_t GALILEO_FNAV_DATA_FRAME_BYTES = 27;
 
 const std::vector<std::pair<int32_t, int32_t>> FNAV_PAGE_TYPE_BIT({{1, 6}});
 
@@ -72,27 +72,27 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_PAGE_TYPE_BIT({{1, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SV_ID_PRN_1_BIT({{7, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IO_DNAV_1_BIT({{13, 10}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_T0C_1_BIT({{23, 14}});
-const int32_t FNAV_T0C_1_LSB = 60;
+constexpr int32_t FNAV_T0C_1_LSB = 60;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF0_1_BIT({{37, 31}});
-const double FNAV_AF0_1_LSB = TWO_N34;
+constexpr double FNAV_AF0_1_LSB = TWO_N34;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF1_1_BIT({{68, 21}});
-const double FNAV_AF1_1_LSB = TWO_N46;
+constexpr double FNAV_AF1_1_LSB = TWO_N46;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF2_1_BIT({{89, 6}});
-const double FNAV_AF2_1_LSB = TWO_N59;
+constexpr double FNAV_AF2_1_LSB = TWO_N59;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SISA_1_BIT({{95, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AI0_1_BIT({{103, 11}});
-const double FNAV_AI0_1_LSB = TWO_N2;
+constexpr double FNAV_AI0_1_LSB = TWO_N2;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AI1_1_BIT({{114, 11}});
-const double FNAV_AI1_1_LSB = TWO_N8;
+constexpr double FNAV_AI1_1_LSB = TWO_N8;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AI2_1_BIT({{125, 14}});
-const double FNAV_AI2_1_LSB = TWO_N15;
+constexpr double FNAV_AI2_1_LSB = TWO_N15;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_REGION1_1_BIT({{139, 1}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_REGION2_1_BIT({{140, 1}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_REGION3_1_BIT({{141, 1}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_REGION4_1_BIT({{142, 1}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_REGION5_1_BIT({{143, 1}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_BGD_1_BIT({{144, 10}});
-const double FNAV_BGD_1_LSB = TWO_N32;
+constexpr double FNAV_BGD_1_LSB = TWO_N32;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_E5AHS_1_BIT({{154, 2}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WN_1_BIT({{156, 12}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_1_BIT({{168, 20}});
@@ -101,64 +101,64 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_E5ADVS_1_BIT({{188, 1}});
 // WORD 2 Ephemeris (1/3)
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IO_DNAV_2_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_M0_2_BIT({{17, 32}});
-const double FNAV_M0_2_LSB = PI_TWO_N31;
+constexpr double FNAV_M0_2_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_OMEGADOT_2_BIT({{49, 24}});
-const double FNAV_OMEGADOT_2_LSB = PI_TWO_N43;
+constexpr double FNAV_OMEGADOT_2_LSB = PI_TWO_N43;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_E_2_BIT({{73, 32}});
-const double FNAV_E_2_LSB = TWO_N33;
+constexpr double FNAV_E_2_LSB = TWO_N33;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A12_2_BIT({{105, 32}});
-const double FNAV_A12_2_LSB = TWO_N19;
+constexpr double FNAV_A12_2_LSB = TWO_N19;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_OMEGA0_2_BIT({{137, 32}});
-const double FNAV_OMEGA0_2_LSB = PI_TWO_N31;
+constexpr double FNAV_OMEGA0_2_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IDOT_2_BIT({{169, 14}});
-const double FNAV_IDOT_2_LSB = PI_TWO_N43;
+constexpr double FNAV_IDOT_2_LSB = PI_TWO_N43;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WN_2_BIT({{183, 12}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_2_BIT({{195, 20}});
 
 // WORD 3 Ephemeris (2/3)
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IO_DNAV_3_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_I0_3_BIT({{17, 32}});
-const double FNAV_I0_3_LSB = PI_TWO_N31;
+constexpr double FNAV_I0_3_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_3_BIT({{49, 32}});
-const double FNAV_W_3_LSB = PI_TWO_N31;
+constexpr double FNAV_W_3_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTAN_3_BIT({{81, 16}});
-const double FNAV_DELTAN_3_LSB = PI_TWO_N43;
+constexpr double FNAV_DELTAN_3_LSB = PI_TWO_N43;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_CUC_3_BIT({{97, 16}});
-const double FNAV_CUC_3_LSB = TWO_N29;
+constexpr double FNAV_CUC_3_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_CUS_3_BIT({{113, 16}});
-const double FNAV_CUS_3_LSB = TWO_N29;
+constexpr double FNAV_CUS_3_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_CRC_3_BIT({{129, 16}});
-const double FNAV_CRC_3_LSB = TWO_N5;
+constexpr double FNAV_CRC_3_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_CRS_3_BIT({{145, 16}});
-const double FNAV_CRS_3_LSB = TWO_N5;
+constexpr double FNAV_CRS_3_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_T0E_3_BIT({{161, 14}});
-const int32_t FNAV_T0E_3_LSB = 60;
+constexpr int32_t FNAV_T0E_3_LSB = 60;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WN_3_BIT({{175, 12}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_3_BIT({{187, 20}});
 
 // WORD 4 Ephemeris (3/3)
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IO_DNAV_4_BIT({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_CIC_4_BIT({{17, 16}});
-const double FNAV_CIC_4_LSB = TWO_N29;
+constexpr double FNAV_CIC_4_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_CIS_4_BIT({{33, 16}});
-const double FNAV_CIS_4_LSB = TWO_N29;
+constexpr double FNAV_CIS_4_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A0_4_BIT({{49, 32}});
-const double FNAV_A0_4_LSB = TWO_N30;
+constexpr double FNAV_A0_4_LSB = TWO_N30;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A1_4_BIT({{81, 24}});
-const double FNAV_A1_4_LSB = TWO_N50;
+constexpr double FNAV_A1_4_LSB = TWO_N50;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTATLS_4_BIT({{105, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_T0T_4_BIT({{113, 8}});
-const int32_t FNAV_T0T_4_LSB = 3600;
+constexpr int32_t FNAV_T0T_4_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_NOT_4_BIT({{121, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_NLSF_4_BIT({{129, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DN_4_BIT({{137, 3}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTATLSF_4_BIT({{140, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_T0G_4_BIT({{148, 8}});
-const int32_t FNAV_T0G_4_LSB = 3600;
+constexpr int32_t FNAV_T0G_4_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A0G_4_BIT({{156, 16}});
-const double FNAV_A0G_4_LSB = TWO_N35;
+constexpr double FNAV_A0G_4_LSB = TWO_N35;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A1G_4_BIT({{172, 12}});
-const double FNAV_A1G_4_LSB = TWO_N51;
+constexpr double FNAV_A1G_4_LSB = TWO_N51;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_N0G_4_BIT({{184, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_4_BIT({{190, 20}});
 
@@ -166,26 +166,26 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_4_BIT({{190, 20}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IO_DA_5_BIT({{7, 4}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_NA_5_BIT({{11, 2}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_T0A_5_BIT({{13, 10}});
-const int32_t FNAV_T0A_5_LSB = 600;
+constexpr int32_t FNAV_T0A_5_LSB = 600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SVI_D1_5_BIT({{23, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTAA12_1_5_BIT({{29, 13}});
-const double FNAV_DELTAA12_5_LSB = TWO_N9;
+constexpr double FNAV_DELTAA12_5_LSB = TWO_N9;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_E_1_5_BIT({{42, 11}});
-const double FNAV_E_5_LSB = TWO_N16;
+constexpr double FNAV_E_5_LSB = TWO_N16;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_W_1_5_BIT({{53, 16}});
-const double FNAV_W_5_LSB = TWO_N15;
+constexpr double FNAV_W_5_LSB = TWO_N15;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTAI_1_5_BIT({{69, 11}});
-const double FNAV_DELTAI_5_LSB = TWO_N14;
+constexpr double FNAV_DELTAI_5_LSB = TWO_N14;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_OMEGA0_1_5_BIT({{80, 16}});
-const double FNAV_OMEGA0_5_LSB = TWO_N15;
+constexpr double FNAV_OMEGA0_5_LSB = TWO_N15;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_OMEGADOT_1_5_BIT({{96, 11}});
-const double FNAV_OMEGADOT_5_LSB = TWO_N33;
+constexpr double FNAV_OMEGADOT_5_LSB = TWO_N33;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_M0_1_5_BIT({{107, 16}});
-const double FNAV_M0_5_LSB = TWO_N15;
+constexpr double FNAV_M0_5_LSB = TWO_N15;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF0_1_5_BIT({{123, 16}});
-const double FNAV_AF0_5_LSB = TWO_N19;
+constexpr double FNAV_AF0_5_LSB = TWO_N19;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF1_1_5_BIT({{139, 13}});
-const double FNAV_AF1_5_LSB = TWO_N38;
+constexpr double FNAV_AF1_5_LSB = TWO_N38;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_E5AHS_1_5_BIT({{152, 2}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SVI_D2_5_BIT({{154, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DELTAA12_2_5_BIT({{160, 13}});

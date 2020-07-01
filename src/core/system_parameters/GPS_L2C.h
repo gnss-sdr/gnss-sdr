@@ -31,32 +31,32 @@
 
 
 // Physical constants
-const double GPS_L2_C_M_S = 299792458.0;                //!< The speed of light, [m/s]
-const double GPS_L2_C_M_MS = 299792.4580;               //!< The speed of light, [m/ms]
-const double GPS_L2_PI = 3.1415926535898;               //!< Pi as defined in IS-GPS-200K
-const double GPS_L2_TWO_PI = 6.283185307179586;         //!< 2Pi as defined in IS-GPS-200K
-const double GPS_L2_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
-const double GPS_L2_GM = 3.986005e14;                   //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-const double GPS_L2_F = -4.442807633e-10;               //!< Constant, [s/(m)^(1/2)]
+constexpr double GPS_L2_C_M_S = 299792458.0;                //!< The speed of light, [m/s]
+constexpr double GPS_L2_C_M_MS = 299792.4580;               //!< The speed of light, [m/ms]
+constexpr double GPS_L2_PI = 3.1415926535898;               //!< Pi as defined in IS-GPS-200K
+constexpr double GPS_L2_TWO_PI = 6.283185307179586;         //!< 2Pi as defined in IS-GPS-200K
+constexpr double GPS_L2_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
+constexpr double GPS_L2_GM = 3.986005e14;                   //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
+constexpr double GPS_L2_F = -4.442807633e-10;               //!< Constant, [s/(m)^(1/2)]
 
 // carrier and code frequencies
-const double GPS_L2_FREQ_HZ = FREQ2;  //!< L2 [Hz]
+constexpr double GPS_L2_FREQ_HZ = FREQ2;  //!< L2 [Hz]
 
-const double GPS_L2_M_CODE_RATE_CPS = 0.5115e6;    //!< GPS L2 M code rate [chips/s]
-const int32_t GPS_L2_M_CODE_LENGTH_CHIPS = 10230;  //!< GPS L2 M code length [chips]
-const double GPS_L2_M_PERIOD_S = 0.02;             //!< GPS L2 M code period [seconds]
+constexpr double GPS_L2_M_CODE_RATE_CPS = 0.5115e6;    //!< GPS L2 M code rate [chips/s]
+constexpr int32_t GPS_L2_M_CODE_LENGTH_CHIPS = 10230;  //!< GPS L2 M code length [chips]
+constexpr double GPS_L2_M_PERIOD_S = 0.02;             //!< GPS L2 M code period [seconds]
 
-const double GPS_L2_L_CODE_RATE_CPS = 0.5115e6;     //!< GPS L2 L code rate [chips/s]
-const int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;  //!< GPS L2 L code length [chips]
-const double GPS_L2_L_PERIOD_S = 1.5;               //!< GPS L2 L code period [seconds]
+constexpr double GPS_L2_L_CODE_RATE_CPS = 0.5115e6;     //!< GPS L2 L code rate [chips/s]
+constexpr int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;  //!< GPS L2 L code length [chips]
+constexpr double GPS_L2_L_PERIOD_S = 1.5;               //!< GPS L2 L code period [seconds]
 
-const int32_t GPS_L2C_HISTORY_DEEP = 5;
+constexpr int32_t GPS_L2C_HISTORY_DEEP = 5;
 
 // optimum parameters
-const uint32_t GPS_L2C_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+constexpr uint32_t GPS_L2C_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 
-const int32_t GPS_L2C_M_INIT_REG[115] =
+constexpr int32_t GPS_L2C_M_INIT_REG[115] =
     {0742417664, 0756014035, 0002747144, 0066265724,     // 1:4
         0601403471, 0703232733, 0124510070, 0617316361,  // 5:8
         0047541621, 0733031046, 0713512145, 0024437606,
@@ -87,10 +87,10 @@ const int32_t GPS_L2C_M_INIT_REG[115] =
         0706202440, 0705056276, 0020373522, 0746013617,
         0132720621, 0434015513, 0566721727, 0140633660};
 
-const int32_t GPS_L2_CNAV_DATA_PAGE_BITS = 300;  //!< GPS L2 CNAV page length, including preamble and CRC [bits]
-const int32_t GPS_L2_SYMBOLS_PER_BIT = 2;
-const int32_t GPS_L2_SAMPLES_PER_SYMBOL = 1;
-const int32_t GPS_L2_CNAV_DATA_PAGE_SYMBOLS = 600;
-const int32_t GPS_L2_CNAV_DATA_PAGE_DURATION_S = 12;
+constexpr int32_t GPS_L2_CNAV_DATA_PAGE_BITS = 300;  //!< GPS L2 CNAV page length, including preamble and CRC [bits]
+constexpr int32_t GPS_L2_SYMBOLS_PER_BIT = 2;
+constexpr int32_t GPS_L2_SAMPLES_PER_SYMBOL = 1;
+constexpr int32_t GPS_L2_CNAV_DATA_PAGE_SYMBOLS = 600;
+constexpr int32_t GPS_L2_CNAV_DATA_PAGE_DURATION_S = 12;
 
 #endif  // GNSS_SDR_GPS_L2C_H

@@ -26,27 +26,27 @@
 #include <utility>
 #include <vector>
 
-const double BEIDOU_DNAV_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
-const double BEIDOU_DNAV_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
-const double BEIDOU_DNAV_PI = 3.1415926535898;            //!< BeiDou DNAV Pi
-const double BEIDOU_DNAV_TWO_PI = 6.2831853071796;        //!< BeiDou DNAV 2Pi
-const double BEIDOU_DNAV_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
-const double BEIDOU_DNAV_GM = 3.986004418e14;             //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] as defined in CGCS2000
-const double BEIDOU_DNAV_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)] F=-2(GM)^.5/C^2
+constexpr double BEIDOU_DNAV_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
+constexpr double BEIDOU_DNAV_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
+constexpr double BEIDOU_DNAV_PI = 3.1415926535898;            //!< BeiDou DNAV Pi
+constexpr double BEIDOU_DNAV_TWO_PI = 6.2831853071796;        //!< BeiDou DNAV 2Pi
+constexpr double BEIDOU_DNAV_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
+constexpr double BEIDOU_DNAV_GM = 3.986004418e14;             //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] as defined in CGCS2000
+constexpr double BEIDOU_DNAV_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)] F=-2(GM)^.5/C^2
 
-const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
-const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
-const int32_t BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
-const uint32_t BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
-const int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
-const uint32_t BEIDOU_DNAV_WORDS_SUBFRAME = 10;
-const uint32_t BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
+constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
+constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
+constexpr int32_t BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
+constexpr uint32_t BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
+constexpr int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
+constexpr uint32_t BEIDOU_DNAV_WORDS_SUBFRAME = 10;
+constexpr uint32_t BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
 const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
 
 // Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
-const int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
+constexpr int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
 // Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch
-const int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
+constexpr int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
 // GENERAL
@@ -57,55 +57,55 @@ const std::vector<std::pair<int32_t, int32_t> > D1_PNUM({{44, 7}});
 
 // DNAV SCALE FACTORS
 // EPH
-const double D1_TOC_LSB = TWO_P3;
-const double D1_TGD1_LSB = 0.1e-9;
-const double D1_TGD2_LSB = 0.1e-9;
-const double D1_ALPHA0_LSB = TWO_N30;
-const double D1_ALPHA1_LSB = TWO_N27;
-const double D1_ALPHA2_LSB = TWO_N24;
-const double D1_ALPHA3_LSB = TWO_N24;
-const double D1_BETA0_LSB = TWO_P11;
-const double D1_BETA1_LSB = TWO_P14;
-const double D1_BETA2_LSB = TWO_P16;
-const double D1_BETA3_LSB = TWO_P16;
-const double D1_A2_LSB = TWO_N66;
-const double D1_A0_LSB = TWO_N33;
-const double D1_A1_LSB = TWO_N50;
-const double D1_DELTA_N_LSB = PI_TWO_N43;
-const double D1_CUC_LSB = TWO_N31;
-const double D1_M0_LSB = PI_TWO_N31;
-const double D1_E_LSB = TWO_N33;
-const double D1_CUS_LSB = TWO_N31;
-const double D1_CRC_LSB = TWO_N6;
-const double D1_CRS_LSB = TWO_N6;
-const double D1_SQRT_A_LSB = TWO_N19;
-const double D1_TOE_LSB = TWO_P3;
-const double D1_I0_LSB = PI_TWO_N31;
-const double D1_CIC_LSB = TWO_N31;
-const double D1_OMEGA_DOT_LSB = PI_TWO_N43;
-const double D1_CIS_LSB = TWO_N31;
-const double D1_IDOT_LSB = PI_TWO_N43;
-const double D1_OMEGA0_LSB = PI_TWO_N31;
-const double D1_OMEGA_LSB = PI_TWO_N31;
+constexpr double D1_TOC_LSB = TWO_P3;
+constexpr double D1_TGD1_LSB = 0.1e-9;
+constexpr double D1_TGD2_LSB = 0.1e-9;
+constexpr double D1_ALPHA0_LSB = TWO_N30;
+constexpr double D1_ALPHA1_LSB = TWO_N27;
+constexpr double D1_ALPHA2_LSB = TWO_N24;
+constexpr double D1_ALPHA3_LSB = TWO_N24;
+constexpr double D1_BETA0_LSB = TWO_P11;
+constexpr double D1_BETA1_LSB = TWO_P14;
+constexpr double D1_BETA2_LSB = TWO_P16;
+constexpr double D1_BETA3_LSB = TWO_P16;
+constexpr double D1_A2_LSB = TWO_N66;
+constexpr double D1_A0_LSB = TWO_N33;
+constexpr double D1_A1_LSB = TWO_N50;
+constexpr double D1_DELTA_N_LSB = PI_TWO_N43;
+constexpr double D1_CUC_LSB = TWO_N31;
+constexpr double D1_M0_LSB = PI_TWO_N31;
+constexpr double D1_E_LSB = TWO_N33;
+constexpr double D1_CUS_LSB = TWO_N31;
+constexpr double D1_CRC_LSB = TWO_N6;
+constexpr double D1_CRS_LSB = TWO_N6;
+constexpr double D1_SQRT_A_LSB = TWO_N19;
+constexpr double D1_TOE_LSB = TWO_P3;
+constexpr double D1_I0_LSB = PI_TWO_N31;
+constexpr double D1_CIC_LSB = TWO_N31;
+constexpr double D1_OMEGA_DOT_LSB = PI_TWO_N43;
+constexpr double D1_CIS_LSB = TWO_N31;
+constexpr double D1_IDOT_LSB = PI_TWO_N43;
+constexpr double D1_OMEGA0_LSB = PI_TWO_N31;
+constexpr double D1_OMEGA_LSB = PI_TWO_N31;
 // ALM
-const double D1_SQRT_A_ALMANAC_LSB = TWO_N11;
-const double D1_A1_ALMANAC_LSB = TWO_N38;
-const double D1_A0_ALMANAC_LSB = TWO_N20;
-const double D1_OMEGA0_ALMANAC_LSB = PI_TWO_N23;
-const double D1_E_ALMANAC_LSB = TWO_N21;
-const double D1_DELTA_I_LSB = PI_TWO_N19;
-const double D1_TOA_LSB = TWO_P12;
-const double D1_OMEGA_DOT_ALMANAC_LSB = PI_TWO_N38;
-const double D1_OMEGA_ALMANAC_LSB = PI_TWO_N23;
-const double D1_M0_ALMANAC_LSB = PI_TWO_N23;
-const double D1_A0GPS_LSB = 0.1e-9;
-const double D1_A1GPS_LSB = 0.1e-9;
-const double D1_A0GAL_LSB = 0.1e-9;
-const double D1_A1GAL_LSB = 0.1e-9;
-const double D1_A0GLO_LSB = 0.1e-9;
-const double D1_A1GLO_LSB = 0.1e-9;
-const double D1_A0UTC_LSB = TWO_N30;
-const double D1_A1UTC_LSB = TWO_N50;
+constexpr double D1_SQRT_A_ALMANAC_LSB = TWO_N11;
+constexpr double D1_A1_ALMANAC_LSB = TWO_N38;
+constexpr double D1_A0_ALMANAC_LSB = TWO_N20;
+constexpr double D1_OMEGA0_ALMANAC_LSB = PI_TWO_N23;
+constexpr double D1_E_ALMANAC_LSB = TWO_N21;
+constexpr double D1_DELTA_I_LSB = PI_TWO_N19;
+constexpr double D1_TOA_LSB = TWO_P12;
+constexpr double D1_OMEGA_DOT_ALMANAC_LSB = PI_TWO_N38;
+constexpr double D1_OMEGA_ALMANAC_LSB = PI_TWO_N23;
+constexpr double D1_M0_ALMANAC_LSB = PI_TWO_N23;
+constexpr double D1_A0GPS_LSB = 0.1e-9;
+constexpr double D1_A1GPS_LSB = 0.1e-9;
+constexpr double D1_A0GAL_LSB = 0.1e-9;
+constexpr double D1_A1GAL_LSB = 0.1e-9;
+constexpr double D1_A0GLO_LSB = 0.1e-9;
+constexpr double D1_A1GLO_LSB = 0.1e-9;
+constexpr double D1_A0UTC_LSB = TWO_N30;
+constexpr double D1_A1UTC_LSB = TWO_N50;
 
 // SUBFRAME 1
 const std::vector<std::pair<int32_t, int32_t> > D1_SAT_H1({{43, 1}});

@@ -907,6 +907,40 @@ endif()
 
 
 ################################################################################
+# Detect availability of std::transform_reduce
+################################################################################
+unset(has_transform_reduce CACHE)
+unset(has_transform_reduce_with_execution_policy CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };"
+        has_transform_reduce
+    )
+    check_cxx_source_compiles("
+        #include <execution>
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(std::execution::par, cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };"
+        has_transform_reduce_with_execution_policy
+    )
+endif()
+
+
+
+################################################################################
 # VOLK - Vector-Optimized Library of Kernels
 ################################################################################
 find_package(VOLK)

@@ -106,7 +106,12 @@ add_benchmark(benchmark_copy)
 add_benchmark(benchmark_preamble core_system_parameters)
 add_benchmark(benchmark_detector core_system_parameters)
 
-
 if(has_std_plus_void)
     target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_PLUS_VOID=1)
+endif()
+if(has_transform_reduce)
+    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_TRANSFORM_REDUCE=1)
+endif()
+if(has_transform_reduce_with_execution_policy)
+    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_TRANSFORM_REDUCE_WITH_POLICY=1)
 endif()

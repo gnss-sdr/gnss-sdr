@@ -31,6 +31,7 @@ FirFilter::FirFilter(const ConfigurationInterface* configuration, std::string ro
 {
     config_ = configuration;
     (*this).init();
+    item_size_ = 0;
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             item_size_ = sizeof(gr_complex);

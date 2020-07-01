@@ -238,8 +238,8 @@ if(ARMADILLO_VERSION_STRING VERSION_GREATER 8.400)
     add_definitions(-DARMADILLO_HAVE_MVNRND=1)
 endif()
 
-if(HAVE_STD_PLUS)
-    add_definitions(-DCOMPILER_HAS_STD_PLUS=1)
+if(has_std_plus_void)
+    add_definitions(-DCOMPILER_HAS_STD_PLUS_VOID=1)
 endif()
 
 find_package(Gnuplot)

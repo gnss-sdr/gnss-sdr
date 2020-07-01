@@ -21,6 +21,7 @@
  */
 
 #include "gnss_synchro_monitor.h"
+#include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #include <algorithm>
 #include <iostream>
@@ -52,7 +53,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
     d_decimation_factor = decimation_factor;
     d_nchannels = n_channels;
 
-    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port, enable_protobuf));
+    udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_port, enable_protobuf);
 
     count = 0;
 }

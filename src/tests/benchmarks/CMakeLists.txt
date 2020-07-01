@@ -107,6 +107,6 @@ add_benchmark(benchmark_preamble core_system_parameters)
 add_benchmark(benchmark_detector core_system_parameters)
 
 
-if(HAVE_STD_PLUS)
-    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_PLUS=1)
+if(has_std_plus_void)
+    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_PLUS_VOID=1)
 endif()

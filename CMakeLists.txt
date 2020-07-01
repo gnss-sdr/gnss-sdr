@@ -460,17 +460,6 @@ else()
     endif()
 endif()
 
-# Availability of std::plus without class specifier
-if(CMAKE_CXX_STANDARD VERSION_GREATER 11)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.4.0)
-            set(HAVE_STD_PLUS ON)
-        endif()
-    else()
-        set(HAVE_STD_PLUS ON)
-    endif()
-endif()
-
 
 
 ################################################################################
@@ -898,6 +887,22 @@ check_cxx_source_compiles("
     { std::put_time(nullptr, \"\"); }"
     has_put_time
 )
+
+
+
+################################################################################
+# Detect availability of std::plus without class specifier
+################################################################################
+unset(has_std_plus_void CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 11)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <functional>
+        int main()
+        { [](float a=1, float b=0){return std::plus<>();}; };"
+        has_std_plus_void
+    )
+endif()
 
 
 

@@ -60,6 +60,8 @@ get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
 target_include_directories(core_monitor
     PUBLIC
         SYSTEM ${PROTO_INCLUDE_HEADERS}
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs # for gnss_sdr_make_unique
 )
 
 if(GNURADIO_USES_STD_POINTERS)

@@ -914,7 +914,7 @@ unset(has_transform_reduce_with_execution_policy CACHE)
 if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
-        #include <functional>
+        #include <functional>
         #include <numeric>
         #include <vector>
         int main()
@@ -926,7 +926,7 @@ if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
     )
     check_cxx_source_compiles("
         #include <execution>
-        #include <functional>
+        #include <functional>
         #include <numeric>
         #include <vector>
         int main()

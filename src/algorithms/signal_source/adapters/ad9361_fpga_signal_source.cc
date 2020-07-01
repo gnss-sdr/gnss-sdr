@@ -146,7 +146,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     freq_band = "L1L2";
                 }
 
-            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2, enable_DMA_); });
+            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2); });
         }
     if (switch_position == 2)  // Real-time via AD9361
         {
@@ -304,7 +304,9 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
     /* cleanup and exit */
     if (switch_position == 0)  // read samples from a file via DMA
         {
+            std::unique_lock<std::mutex> lock(dma_mutex);
             enable_DMA_ = false;  // disable the DMA
+            lock.unlock();
             if (thread_file_to_dma.joinable())
                 {
                     thread_file_to_dma.join();
@@ -336,7 +338,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 }
 
 
-void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, bool enable_DMA)
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2)
 {
     const int MAX_INPUT_SAMPLES_TOTAL = 16384;
     int max_value = 0;
@@ -390,7 +392,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     //**************************************************************************
     int nsamples = 0;
 
-    while ((file_completed == 0) && (enable_DMA == true))
+    while ((file_completed == 0))
         {
             unsigned int dma_index = 0;
 
@@ -410,7 +412,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements = 0;
+                            nread_elements = infile1.gcount();
                         }
                     nsamples += (nread_elements / 2);
 
@@ -442,7 +444,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements = 0;
+                            nread_elements = infile1.gcount();
                         }
                     nsamples += (nread_elements / 2);
 
@@ -474,7 +476,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements = 0;
+                            nread_elements = infile1.gcount();
                         }
                     try
                         {
@@ -490,7 +492,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements2 = 0;
+                            nread_elements2 = infile2.gcount();
                         }
 
                     if (nread_elements > nread_elements2)
@@ -551,12 +553,22 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                 {
                     file_completed = 1;
                 }
+
+            std::unique_lock<std::mutex> lock(dma_mutex);
+            if (enable_DMA_ == false)
+                {
+                    file_completed = true;
+                }
+            lock.unlock();
         }
 
     try
         {
             infile1.close();
-            infile2.close();
+            if (FreqBand == "L1L2")
+                {
+                    infile2.close();
+                }
         }
     catch (const std::ifstream::failure &e)
         {

@@ -27,6 +27,7 @@
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -67,8 +68,7 @@ public:
 private:
     void run_DMA_process(const std::string &FreqBand,
         const std::string &Filename1,
-        const std::string &Filename2,
-        bool enable_DMA);
+        const std::string &Filename2);
 
     std::thread thread_file_to_dma;
 
@@ -116,6 +116,8 @@ private:
     bool rx2_enable_;
     bool enable_DMA_;
     bool rf_shutdown_;
+
+    std::mutex dma_mutex;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

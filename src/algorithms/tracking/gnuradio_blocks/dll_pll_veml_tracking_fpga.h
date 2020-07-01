@@ -115,7 +115,7 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
-    int32_t save_matfile();
+    int32_t save_matfile() const;
 
     Dll_Pll_Conf_Fpga d_trk_parameters;
 

@@ -86,7 +86,7 @@ private:
     void log_data();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
-    int32_t save_matfile();
+    int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
     Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel

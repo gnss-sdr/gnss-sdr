@@ -1356,7 +1356,7 @@ void dll_pll_veml_tracking::log_data()
 }
 
 
-int32_t dll_pll_veml_tracking::save_matfile()
+int32_t dll_pll_veml_tracking::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;

@@ -303,7 +303,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 }
 
 
-int32_t glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
+int32_t glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;

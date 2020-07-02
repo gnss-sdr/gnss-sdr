@@ -392,7 +392,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     //**************************************************************************
     int nsamples = 0;
 
-    while ((file_completed == 0))
+    while (file_completed == 0)
         {
             unsigned int dma_index = 0;
 

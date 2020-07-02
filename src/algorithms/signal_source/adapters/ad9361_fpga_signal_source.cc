@@ -372,8 +372,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
 
-    int nread_elements;
-    int nread_elements2;
+    int nread_elements = 0;   // num bytes read from the file corresponding to frequency band 1
+    int nread_elements2 = 0;  // num bytes read from the file corresponding to frequency band 2
     int file_completed = 0;
     int num_transferred_bytes;
 
@@ -392,7 +392,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     //**************************************************************************
     int nsamples = 0;
 
-    while ((file_completed == 0))
+    while (file_completed == 0)
         {
             unsigned int dma_index = 0;
 

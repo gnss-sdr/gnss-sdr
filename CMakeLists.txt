@@ -897,7 +897,7 @@ unset(has_std_plus_void CACHE)
 if(CMAKE_CXX_STANDARD VERSION_GREATER 11)
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
-        #include <functional>
+        #include <functional>
         int main()
         { [](float a=1, float b=0){return std::plus<>();}; };"
         has_std_plus_void

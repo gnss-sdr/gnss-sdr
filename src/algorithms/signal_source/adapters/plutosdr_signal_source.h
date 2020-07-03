@@ -1,7 +1,8 @@
 /*!
  * \file plutosdr_signal_source.h
  * \brief Signal source for PlutoSDR
- * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
+ * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl, rodrigo.munoz(at)proteinlab.cl
+ *
  *
  * -------------------------------------------------------------------------
  *

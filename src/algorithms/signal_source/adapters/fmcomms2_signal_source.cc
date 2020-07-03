@@ -2,7 +2,8 @@
  * \file fmcomms2_signal_source.cc
  * \brief Signal source for SDR hardware from Analog Devices based on
  * fmcomms2 evaluation board.
- * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
+ * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl, rodrigo.munoz(at)proteinlab.cl
+ *
  *
  * -------------------------------------------------------------------------
  *

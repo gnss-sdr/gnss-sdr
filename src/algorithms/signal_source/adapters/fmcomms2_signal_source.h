@@ -2,7 +2,8 @@
  * \file fmcomms2_signal_source.h
  * \brief Interface to use SDR hardware based in FMCOMMS2 driver from analog
  * devices, for example FMCOMMS4 and ADALM-PLUTO (PlutoSdr)
- * \author Rodrigo Muñoz, 2017. rmunozl(at)inacap.cl
+ * \author Rodrigo Muñoz, 2017. rmunozl(at)inacap.cl, rodrigo.munoz(at)proteinlab.cl
+ *
  *
  * This class represent a fmcomms2 signal source. It use the gr_iio block
  * -------------------------------------------------------------------------

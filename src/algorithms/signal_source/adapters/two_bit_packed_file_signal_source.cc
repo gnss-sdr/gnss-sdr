@@ -279,7 +279,6 @@ void TwoBitPackedFileSignalSource::disconnect(gr::top_block_sptr top_block)
     top_block->disconnect(file_source_, 0, unpack_samples_, 0);
     left_block = right_block;
 
-
     DLOG(INFO) << "disconnected file source to unpack samples";
     right_block = char_to_float_;
     top_block->disconnect(left_block, 0, right_block, 0);

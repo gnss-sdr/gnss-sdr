@@ -35,8 +35,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     std::string default_dump_filename = "../data/my_capture_dump.dat";
     item_type_ = "int";
 
-    samples_ = configuration->property(role + ".samples", 0);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
+    samples_ = configuration->property(role + ".samples", 0ULL);
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0LL);
     filename_ = configuration->property(role + ".filename", default_filename);
     repeat_ = configuration->property(role + ".repeat", false);
     dump_ = configuration->property(role + ".dump", false);
@@ -47,7 +47,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
     item_size_ = sizeof(int32_t);
-    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
+    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", 65536LL);
     double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
     if (sel_ch_ > n_channels_)

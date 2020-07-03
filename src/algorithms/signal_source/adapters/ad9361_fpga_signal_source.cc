@@ -51,8 +51,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     double default_manual_gain_rx2 = 64.0;
     uint64_t default_bandwidth = 12500000;
     std::string default_rf_port_select("A_BALANCED");
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000);
+    freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000ULL);
     bandwidth_ = configuration->property(role + ".bandwidth", default_bandwidth);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
@@ -78,11 +78,11 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000);
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000ULL);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_));
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", -3.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
-    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);
+    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000ULL);
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);

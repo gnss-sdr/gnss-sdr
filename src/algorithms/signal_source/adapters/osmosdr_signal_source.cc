@@ -37,7 +37,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
     std::string empty = "";
     std::string default_dump_file = "./data/signal_source.dat";
     std::string default_item_type = "gr_complex";
-    samples_ = configuration->property(role + ".samples", 0);
+    samples_ = configuration->property(role + ".samples", 0LL);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_file);

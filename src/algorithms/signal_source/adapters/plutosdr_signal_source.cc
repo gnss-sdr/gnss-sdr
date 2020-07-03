@@ -34,9 +34,9 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
     std::string default_dump_file = "./data/signal_source.dat";
     std::string default_gain_mode("slow_attack");
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
+    freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000ULL);
+    bandwidth_ = configuration->property(role + ".bandwidth", 2000000ULL);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
@@ -57,7 +57,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    samples_ = configuration->property(role + ".samples", 0);
+    samples_ = configuration->property(role + ".samples", 0LL);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 

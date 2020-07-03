@@ -79,6 +79,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Updated version of the Contributor Covenant to version 2.0.
 - Added a Matlab script to quantize the input signal with a given number of bits
   per sample.
+- Fixed a bug in signal sources that made the number of samples parameter
+  ignored when too large (that is, larger than 2^31-1).
 
 &nbsp;
 

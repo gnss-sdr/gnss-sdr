@@ -41,9 +41,9 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
     std::string default_gain_mode("slow_attack");
     double default_tx_attenuation_db = -10.0;
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2600000);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
+    freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 2600000ULL);
+    bandwidth_ = configuration->property(role + ".bandwidth", 2000000ULL);
     rx1_en_ = configuration->property(role + ".rx1_enable", true);
     rx2_en_ = configuration->property(role + ".rx2_enable", false);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
@@ -71,18 +71,18 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    samples_ = configuration->property(role + ".samples", 0);
+    samples_ = configuration->property(role + ".samples", 0LL);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     // AD9361 Local Oscillator generation for dual band operation
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000);
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000ULL);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_));
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", 0.0);
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
-    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);
+    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000ULL);
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 

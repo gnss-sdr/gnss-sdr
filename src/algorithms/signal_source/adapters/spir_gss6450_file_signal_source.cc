@@ -47,7 +47,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
     item_size_ = sizeof(int32_t);
-    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", 65536LL);
+    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(65536));
     double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
     if (sel_ch_ > n_channels_)

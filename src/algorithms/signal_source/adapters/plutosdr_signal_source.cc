@@ -35,8 +35,8 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
     std::string default_gain_mode("slow_attack");
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000ULL);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000ULL);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(3000000));
+    bandwidth_ = configuration->property(role + ".bandwidth", static_cast<uint64_t>(2000000));
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);

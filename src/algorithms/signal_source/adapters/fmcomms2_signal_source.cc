@@ -42,8 +42,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
     double default_tx_attenuation_db = -10.0;
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2600000ULL);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000ULL);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(2600000));
+    bandwidth_ = configuration->property(role + ".bandwidth", static_cast<uint64_t>(2000000));
     rx1_en_ = configuration->property(role + ".rx1_enable", true);
     rx2_en_ = configuration->property(role + ".rx2_enable", false);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
@@ -77,12 +77,12 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
 
     // AD9361 Local Oscillator generation for dual band operation
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000ULL);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", static_cast<uint64_t>(10000));
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_));
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", 0.0);
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
-    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000ULL);
+    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000));
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 

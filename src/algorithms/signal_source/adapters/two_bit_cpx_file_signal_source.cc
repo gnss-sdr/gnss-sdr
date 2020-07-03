@@ -43,8 +43,8 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(
     std::string default_item_type = "byte";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
 
-    samples_ = configuration->property(role + ".samples", 0ULL);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0LL);
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present

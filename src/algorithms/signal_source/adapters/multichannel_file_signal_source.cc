@@ -40,8 +40,8 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
 
     double default_seconds_to_skip = 0.0;
     size_t header_size = 0;
-    samples_ = configuration->property(role + ".samples", 0ULL);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0LL);
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     n_channels_ = configuration->property(role + ".total_channels", 1);
 
     for (unsigned int n = 0; n < n_channels_; n++)

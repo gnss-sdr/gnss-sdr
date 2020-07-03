@@ -42,7 +42,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configurati
     std::string empty = "";
     std::string default_dump_file = "./data/signal_source.dat";
     std::string default_item_type = "gr_complex";
-    samples_ = configuration->property(role + ".samples", 0ULL);
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_file);

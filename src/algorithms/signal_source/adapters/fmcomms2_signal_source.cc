@@ -71,7 +71,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    samples_ = configuration->property(role + ".samples", 0LL);
+    samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 

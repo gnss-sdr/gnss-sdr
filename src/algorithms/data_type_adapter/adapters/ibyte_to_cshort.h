@@ -24,6 +24,7 @@
 #include "gnss_block_interface.h"
 #include "interleaved_byte_to_complex_short.h"
 #include <gnuradio/blocks/file_sink.h>
+#include <cstdint>
 #include <string>
 
 
@@ -55,7 +56,7 @@ public:
 
     inline size_t item_size() override
     {
-        return 0;
+        return 2 * sizeof(int8_t);
     }
 
     void connect(gr::top_block_sptr top_block) override;

@@ -20,7 +20,6 @@
 #include "byte_to_short.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <cstdint>
 #include <utility>
 
 

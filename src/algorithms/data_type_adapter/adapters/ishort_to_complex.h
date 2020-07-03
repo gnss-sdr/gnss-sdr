@@ -24,6 +24,7 @@
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -54,7 +55,7 @@ public:
 
     inline size_t item_size() override
     {
-        return 0;
+        return 2 * sizeof(int16_t);
     }
 
     void connect(gr::top_block_sptr top_block) override;

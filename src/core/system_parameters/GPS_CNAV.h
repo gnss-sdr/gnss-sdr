@@ -30,13 +30,6 @@
 // CNAV GPS NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200K Appendix III)
 
-#define GPS_CNAV_PREAMBLE      \
-    {                          \
-        1, 0, 0, 0, 1, 0, 1, 1 \
-    }
-#define GPS_CNAV_PREAMBLE_STR "10001011"
-#define GPS_CNAV_INV_PREAMBLE_STR "01110100"
-
 constexpr int32_t GPS_CNAV_DATA_PAGE_BITS = 300;
 
 // common to all messages

@@ -22,7 +22,6 @@
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -41,7 +40,7 @@ constexpr uint32_t BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
 constexpr int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
 constexpr uint32_t BEIDOU_DNAV_WORDS_SUBFRAME = 10;
 constexpr uint32_t BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
-const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
+constexpr char BEIDOU_DNAV_PREAMBLE[] = "11100010010";
 
 // Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
 constexpr int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;

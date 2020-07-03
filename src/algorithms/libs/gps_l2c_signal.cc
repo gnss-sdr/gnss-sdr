@@ -79,24 +79,18 @@ void gps_l2c_m_code_gen_float(own::span<float> _dest, uint32_t _prn)
  */
 void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
+    constexpr int32_t _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;
+    constexpr float _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_CPS);  // L2C chip period in sec
+
+    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
+    const float _ts = 1.0 / static_cast<float>(_fs);  // Sampling period in sec
+    int32_t _codeValueIndex;
+
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
     if (_prn > 0 and _prn < 51)
         {
             gps_l2c_m_code(_code, _prn);
         }
-
-    int32_t _samplesPerCode;
-    int32_t _codeValueIndex;
-    float _ts;
-    float _tc;
-    const int32_t _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;
-
-    // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
-
-    // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                     // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_CPS);  // L2C chip period in sec
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {

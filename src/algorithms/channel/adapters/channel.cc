@@ -36,7 +36,6 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
     acq_ = std::move(acq);
     trk_ = std::move(trk);
     nav_ = std::move(nav);
-    queue_ = queue;
     role_ = role;
     implementation_ = implementation;
     channel_ = channel;
@@ -97,7 +96,7 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
     channel_fsm_->set_tracking(trk_);
     channel_fsm_->set_telemetry(nav_);
     channel_fsm_->set_channel(channel_);
-    channel_fsm_->set_queue(queue_);
+    channel_fsm_->set_queue(queue);
 
     connected_ = false;
 

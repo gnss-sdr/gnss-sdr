@@ -89,7 +89,6 @@ private:
     std::shared_ptr<TrackingInterface> trk_;
     std::shared_ptr<TelemetryDecoderInterface> nav_;
     channel_msg_receiver_cc_sptr channel_msg_rx_;
-    Concurrent_Queue<pmt::pmt_t>* queue_;
     Gnss_Synchro gnss_synchro_{};
     Gnss_Signal gnss_signal_;
     std::string role_;

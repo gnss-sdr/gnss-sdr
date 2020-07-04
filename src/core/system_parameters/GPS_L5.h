@@ -22,7 +22,6 @@
 #define GNSS_SDR_GPS_L5_H
 
 #include "GPS_CNAV.h"
-#include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
 
@@ -39,16 +38,18 @@ constexpr double GPS_L5_F = -4.442807633e-10;               //!< Constant, [s/(m
 // carrier and code frequencies
 constexpr double GPS_L5_FREQ_HZ = FREQ5;  //!< L5 [Hz]
 
-constexpr double GPS_L5I_CODE_RATE_CPS = 10.23e6;     //!< GPS L5i code rate [chips/s]
-constexpr int32_t GPS_L5I_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5i  code length [chips]
-constexpr double GPS_L5I_PERIOD_S = 0.001;            //!< GPS L5 code period [seconds]
-constexpr int32_t GPS_L5I_PERIOD_MS = 1;              //!< GPS L5 code period [ms]
-constexpr double GPS_L5I_SYMBOL_PERIOD_S = 0.01;      //!< GPS L5 symbol period [seconds]
-constexpr int32_t GPS_L5I_SYMBOL_PERIOD_MS = 10;      //!< GPS L5 symbol period [ms]
+constexpr double GPS_L5I_CODE_RATE_CPS = 10.23e6;  //!< GPS L5I code rate [chips/s]
+constexpr double GPS_L5I_PERIOD_S = 0.001;         //!< GPS L5I code period [seconds]
+constexpr double GPS_L5I_SYMBOL_PERIOD_S = 0.01;   //!< GPS L5I symbol period [seconds]
 
-constexpr double GPS_L5Q_CODE_RATE_CPS = 10.23e6;     //!< GPS L5i code rate [chips/s]
-constexpr int32_t GPS_L5Q_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5i code length [chips]
-constexpr double GPS_L5Q_PERIOD_S = 0.001;            //!< GPS L5 code period [seconds]
+constexpr double GPS_L5Q_CODE_RATE_CPS = 10.23e6;  //!< GPS L5Q code rate [chips/s]
+constexpr double GPS_L5Q_PERIOD_S = 0.001;         //!< GPS L5Q code period [seconds]
+
+constexpr int32_t GPS_L5I_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5I code length [chips]
+constexpr int32_t GPS_L5I_PERIOD_MS = 1;              //!< GPS L5I code period [ms]
+constexpr int32_t GPS_L5I_SYMBOL_PERIOD_MS = 10;      //!< GPS L5I symbol period [ms]
+
+constexpr int32_t GPS_L5Q_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5Q code length [chips]
 
 constexpr int32_t GPS_L5_HISTORY_DEEP = 5;
 
@@ -176,9 +177,9 @@ constexpr int32_t GPS_L5_CNAV_DATA_PAGE_SYMBOLS = 600;
 constexpr int32_t GPS_L5_CNAV_DATA_PAGE_DURATION_S = 6;
 constexpr int32_t GPS_L5I_NH_CODE_LENGTH = 10;
 constexpr int32_t GPS_L5I_NH_CODE[10] = {0, 0, 0, 0, 1, 1, 0, 1, 0, 1};
-constexpr char GPS_L5I_NH_CODE_STR[] = "0000110101";
 constexpr int32_t GPS_L5Q_NH_CODE_LENGTH = 20;
 constexpr int32_t GPS_L5Q_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
-constexpr char GPS_L5Q_NH_CODE_STR[] = "00000100110101001110";
+constexpr char GPS_L5I_NH_CODE_STR[11] = "0000110101";
+constexpr char GPS_L5Q_NH_CODE_STR[21] = "00000100110101001110";
 
 #endif  // GNSS_SDR_GPS_L5_H

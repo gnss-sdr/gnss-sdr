@@ -33,11 +33,11 @@ constexpr double GALILEO_E5A_FREQ_HZ = FREQ5;                 //!< Galileo E5a c
 constexpr double GALILEO_E5A_CODE_CHIP_RATE_CPS = 1.023e7;    //!< Galileo E5a code rate [chips/s]
 constexpr double GALILEO_E5A_I_TIERED_CODE_PERIOD_S = 0.020;  //!< Galileo E5a-I tiered code period [s]
 constexpr double GALILEO_E5A_Q_TIERED_CODE_PERIOD_S = 0.100;  //!< Galileo E5a-Q tiered code period [s]
+constexpr double GALILEO_E5A_CODE_PERIOD_S = 0.001;           //!< Galileo E5a primary code period [s]
 constexpr int32_t GALILEO_E5A_CODE_LENGTH_CHIPS = 10230;      //!< Galileo E5a primary code length [chips]
 constexpr int32_t GALILEO_E5A_I_SECONDARY_CODE_LENGTH = 20;   //!< Galileo E5a-I secondary code length [chips]
 constexpr int32_t GALILEO_E5A_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5a-Q secondary code length [chips]
-constexpr double GALILEO_E5A_CODE_PERIOD_S = 0.001;           //!< Galileo E1 primary code period [s]
-constexpr int32_t GALILEO_E5A_CODE_PERIOD_MS = 1;             //!< Galileo E1 primary code period [ms]
+constexpr int32_t GALILEO_E5A_CODE_PERIOD_MS = 1;             //!< Galileo E5a primary code period [ms]
 constexpr int32_t GALILEO_E5A_SYMBOL_RATE_BPS = 50;           //!< Galileo E5a symbol rate [bits/second]
 constexpr int32_t GALILEO_E5A_NUMBER_OF_CODES = 50;
 
@@ -52,7 +52,6 @@ constexpr uint32_t GALILEO_E5A_OPT_ACQ_FS_SPS = 10000000;  //!< Sampling frequen
 // F/NAV message structure
 
 constexpr int32_t GALILEO_FNAV_PREAMBLE_LENGTH_BITS = 12;
-constexpr char GALILEO_FNAV_PREAMBLE[] = "101101110000";
 constexpr int32_t GALILEO_FNAV_CODES_PER_SYMBOL = 20;     // (chip rate/ code length)/telemetry bps
 constexpr int32_t GALILEO_FNAV_CODES_PER_PREAMBLE = 240;  // bits preamble * codes/symbol
 constexpr int32_t GALILEO_FNAV_SYMBOLS_PER_PAGE = 500;    // Total symbols per page including preamble. See Galileo ICD 4.2.2
@@ -65,6 +64,8 @@ constexpr int32_t GALILEO_FNAV_PAGE_TYPE_BITS = 6;
 
 constexpr int32_t GALILEO_FNAV_DATA_FRAME_BITS = 214;
 constexpr int32_t GALILEO_FNAV_DATA_FRAME_BYTES = 27;
+
+constexpr char GALILEO_FNAV_PREAMBLE[13] = "101101110000";
 
 const std::vector<std::pair<int32_t, int32_t>> FNAV_PAGE_TYPE_BIT({{1, 6}});
 

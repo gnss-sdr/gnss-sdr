@@ -20,7 +20,7 @@
  */
 
 #include "gps_cnav_ephemeris.h"
-#include "MATH_CONSTANTS.h"  // for PI, SPEED_OF_LIGHT
+#include "MATH_CONSTANTS.h"  // for GNSS_PI, SPEED_OF_LIGHT_M_S, F, GPS_GM
 #include <cmath>
 
 
@@ -66,9 +66,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     double E_old;
     double dE;
     double M;
-    const double GM = 3.986005e14;      // Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-    const double F = -4.442807633e-10;  // Constant, [s/(m)^(1/2)]
-    const double A_REF = 26559710.0;    // See IS-GPS-200K,  pp. 163
+    const double A_REF = 26559710.0;  // See IS-GPS-200K,  pp. 163
     double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 
     // Restore semi-major axis
@@ -78,24 +76,24 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     tk = check_t(transmitTime - d_Toe1);
 
     // Computed mean motion
-    n0 = sqrt(GM / (a * a * a));
+    n0 = sqrt(GPS_GM / (a * a * a));
     // Corrected mean motion
     n = n0 + d_Delta_n;
     // Mean anomaly
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    // M = fmod((M + 2.0 * GPS_L2_PI), (2.0 * GPS_L2_PI));
+    // M = fmod((M + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
 
-    // --- Iteratively compute eccentric anomaly ----------------------------
+    // --- Iteratively compute eccentric anomaly -------------------------------
     for (int32_t ii = 1; ii < 20; ii++)
         {
             E_old = E;
             E = M + d_e_eccentricity * sin(E);
-            dE = fmod(E - E_old, 2.0 * PI);
+            dE = fmod(E - E_old, 2.0 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -104,7 +102,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
         }
 
     // Compute relativistic correction term
-    d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
+    d_dtr = GPS_F * d_e_eccentricity * d_sqrt_A * sin(E);
     return d_dtr;
 }
 
@@ -126,13 +124,12 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     double i;
     double Omega;
 
-    const double A_REF = 26559710.0;  // See IS-GPS-200K,  pp. 170
+    const double A_REF = 26559710.0;       // See IS-GPS-200K,  pp. 170
+    const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200K pp. 164
+
     double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 
-    const double GM = 3.986005e14;                   // Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-    const double OMEGA_DOT_REF = -2.6e-9;            // semicircles / s, see IS-GPS-200K pp. 164
-    const double OMEGA_EARTH_DOT = 7.2921151467e-5;  // Earth rotation rate, [rad/s]
-    // Find satellite's position ----------------------------------------------
+    // Find satellite's position -----------------------------------------------
 
     // Restore semi-major axis
     a = d_sqrt_A * d_sqrt_A;
@@ -141,7 +138,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     tk = check_t(transmitTime - d_Toe1);
 
     // Computed mean motion
-    n0 = sqrt(GM / (a * a * a));
+    n0 = sqrt(GPS_GM / (a * a * a));
 
     // Mean motion difference from computed value
     double delta_n_a = d_Delta_n + 0.5 * d_DELTA_DOT_N * tk;
@@ -153,17 +150,17 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    // M = fmod((M + 2 * GPS_L2_PI), (2 * GPS_L2_PI));
+    // M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
 
-    // --- Iteratively compute eccentric anomaly ----------------------------
+    // --- Iteratively compute eccentric anomaly -------------------------------
     for (int32_t ii = 1; ii < 20; ii++)
         {
             E_old = E;
             E = M + d_e_eccentricity * sin(E);
-            dE = fmod(E - E_old, 2 * PI);
+            dE = fmod(E - E_old, 2 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -180,7 +177,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    // phi = fmod((phi), (2*GPS_L2_PI));
+    // phi = fmod((phi), (2*GNSS_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
@@ -192,11 +189,11 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    double d_OMEGA_DOT = OMEGA_DOT_REF * PI + d_DELTA_OMEGA_DOT;
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT) * tk - OMEGA_EARTH_DOT * d_Toe1;
+    double d_OMEGA_DOT = OMEGA_DOT_REF * GNSS_PI + d_DELTA_OMEGA_DOT;
+    Omega = d_OMEGA0 + (d_OMEGA_DOT - GNSS_OMEGA_EARTH_DOT) * tk - GNSS_OMEGA_EARTH_DOT * d_Toe1;
 
     // Reduce to between 0 and 2*pi rad
-    // Omega = fmod((Omega + 2*GPS_L2_PI), (2*GPS_L2_PI));
+    // Omega = fmod((Omega + 2*GNSS_PI), (2*GNSS_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
@@ -204,7 +201,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
-    double Omega_dot = d_OMEGA_DOT - OMEGA_EARTH_DOT;
+    double Omega_dot = d_OMEGA_DOT - GNSS_OMEGA_EARTH_DOT;
     d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
@@ -215,7 +212,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (SPEED_OF_LIGHT * SPEED_OF_LIGHT);
+    dtr_s -= 2.0 * sqrt(GPS_GM * a) * d_e_eccentricity * sin(E) / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
 
     return dtr_s;
 }

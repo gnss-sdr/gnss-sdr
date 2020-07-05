@@ -20,10 +20,11 @@
 #ifndef GNSS_SDR_BEIDOU_B3I_H
 #define GNSS_SDR_BEIDOU_B3I_H
 
+#include "gnss_frequencies.h"
 #include <cstdint>
 
 // carrier and code frequencies
-constexpr double BEIDOU_B3I_FREQ_HZ = 1.268520e9;         //!< BeiDou B3I [Hz]
+constexpr double BEIDOU_B3I_FREQ_HZ = FREQ3_BDS;          //!< BeiDou B3I [Hz]
 constexpr double BEIDOU_B3I_CODE_RATE_CPS = 10.23e6;      //!< BeiDou B3I code rate [chips/s]
 constexpr double BEIDOU_B3I_CODE_LENGTH_CHIPS = 10230.0;  //!< BeiDou B3I code length [chips]
 constexpr double BEIDOU_B3I_CODE_PERIOD_S = 0.001;        //!< BeiDou B3I code period [seconds]

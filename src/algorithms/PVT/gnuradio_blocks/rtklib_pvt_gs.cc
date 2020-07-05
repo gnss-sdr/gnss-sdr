@@ -1825,42 +1825,42 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
         {
             // all observables in the map are valid
             observables_iter->second.RX_time -= rx_clock_offset_s;
-            observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT;
+            observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT_M_S;
 
             switch (d_mapStringValues[observables_iter->second.Signal])
                 {
                 case evGPS_1C:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * TWO_PI;
                     break;
                 case evGPS_L5:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * TWO_PI;
                     break;
                 case evSBAS_1C:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * TWO_PI;
                     break;
                 case evGAL_1B:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * TWO_PI;
                     break;
                 case evGAL_5X:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * TWO_PI;
                     break;
                 case evGPS_2S:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2 * TWO_PI;
                     break;
                 case evBDS_B3:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS * TWO_PI;
                     break;
                 case evGLO_1G:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO * TWO_PI;
                     break;
                 case evGLO_2G:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO * TWO_PI;
                     break;
                 case evBDS_B1:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS * TWO_PI;
                     break;
                 case evBDS_B2:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS * TWO_PI;
                     break;
                 default:
                     break;
@@ -1932,43 +1932,43 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                     switch (d_mapStringValues[observables_iter->second.Signal])
                         {
                         case evGPS_1C:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
                             break;
                         case evGPS_L5:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
                             break;
                         case evSBAS_1C:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
                             break;
                         case evGAL_1B:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
                             break;
                         case evGAL_5X:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
                             break;
                         case evGPS_2S:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ2;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2;
                             break;
                         case evBDS_B3:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ3_BDS;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ3_BDS;
                             break;
                         case evGLO_1G:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1_GLO;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1_GLO;
                             break;
                         case evGLO_2G:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ2_GLO;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2_GLO;
                             break;
                         case evBDS_B1:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1_BDS;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1_BDS;
                             break;
                         case evBDS_B2:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ2_BDS;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2_BDS;
                             break;
                         default:
                             break;
                         }
-                    double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, PI_2);
-                    d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = PI_2 * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
+                    double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, TWO_PI);
+                    d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = TWO_PI * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
                     d_channel_initialized.at(observables_iter->second.Channel_ID) = true;
                     DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
                 }

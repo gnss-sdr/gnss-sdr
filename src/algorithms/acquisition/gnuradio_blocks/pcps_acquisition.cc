@@ -23,8 +23,8 @@
  */
 
 #include "pcps_acquisition.h"
-#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI
-#include "GPS_L1_CA.h"         // for GPS_TWO_PI
+#include "GLONASS_L1_L2_CA.h"  // for GLONASS_PRN
+#include "MATH_CONSTANTS.h"    // for TWO_PI
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_make_unique.h"
@@ -258,11 +258,11 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
     float phase_step_rad;
     if (d_acq_parameters.use_automatic_resampler)
         {
-            phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_acq_parameters.resampled_fs);
+            phase_step_rad = TWO_PI * freq / static_cast<float>(d_acq_parameters.resampled_fs);
         }
     else
         {
-            phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_acq_parameters.fs_in);
+            phase_step_rad = TWO_PI * freq / static_cast<float>(d_acq_parameters.fs_in);
         }
     std::array<float, 1> _phase{};
     volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.size());

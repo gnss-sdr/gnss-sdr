@@ -686,7 +686,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     while (trk_dump.read_binary_obs())
                         {
                             trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);
-                            trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / GPS_TWO_PI;
+                            trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / TWO_PI;
                             trk_Doppler_Hz(epoch_counter) = trk_dump.carrier_doppler_hz;
                             double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS - GPS_L1_CA_CODE_LENGTH_CHIPS * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) / 1.0e-3);
 
@@ -767,7 +767,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error, rmse);
                                             for (double code_phase_error_chip : code_phase_error_chips)
                                                 {
-                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD_S * code_phase_error_chip * GPS_C_M_S);
+                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD_S * code_phase_error_chip * SPEED_OF_LIGHT_M_S);
                                                 }
                                             mean_code_phase_error.push_back(mean_error);
                                             std_dev_code_phase_error.push_back(std_dev_error);

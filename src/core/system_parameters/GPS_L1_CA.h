@@ -28,16 +28,6 @@
 #include <vector>
 
 
-// Physical constants
-constexpr double GPS_C_M_S = SPEED_OF_LIGHT;                 //!< The speed of light, [m/s]
-constexpr double GPS_C_M_MS = 299792.4580;                   //!< The speed of light, [m/ms]
-constexpr double GPS_PI = 3.1415926535898;                   //!< Pi as defined in IS-GPS-200K
-constexpr double GPS_TWO_PI = 6.283185307179586;             //!< 2Pi as defined in IS-GPS-200K
-constexpr double OMEGA_EARTH_DOT = DEFAULT_OMEGA_EARTH_DOT;  //!< Earth rotation rate, [rad/s]
-constexpr double GM = 3.986005e14;                           //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-constexpr double F = -4.442807633e-10;                       //!< Constant, [s/(m)^(1/2)]
-
-
 // carrier and code frequencies
 constexpr double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
 constexpr double GPS_L1_CA_CODE_RATE_CPS = 1.023e6;     //!< GPS L1 C/A code rate [chips/s]

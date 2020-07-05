@@ -23,14 +23,14 @@
  */
 
 #include "fpga_acquisition.h"
-#include "GPS_L1_CA.h"     // for GPS_TWO_PI
-#include <glog/logging.h>  // for LOG
-#include <cmath>           // for log2
-#include <fcntl.h>         // libraries used by the GIPO
-#include <iostream>        // for operator<<
-#include <sys/mman.h>      // libraries used by the GIPO
-#include <unistd.h>        // for write, close, read, ssize_t
-#include <utility>         // for move
+#include "MATH_CONSTANTS.h"  // for TWO_PI
+#include <glog/logging.h>    // for LOG
+#include <cmath>             // for log2
+#include <fcntl.h>           // libraries used by the GIPO
+#include <iostream>          // for operator<<
+#include <sys/mman.h>        // libraries used by the GIPO
+#include <unistd.h>          // for write, close, read, ssize_t
+#include <utility>           // for move
 
 
 #ifndef TEMP_FAILURE_RETRY

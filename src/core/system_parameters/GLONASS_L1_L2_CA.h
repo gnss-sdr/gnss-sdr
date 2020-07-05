@@ -31,16 +31,10 @@
 
 
 // Physical constants
-constexpr double GLONASS_C_M_S = SPEED_OF_LIGHT;                   //!< The speed of light, [m/s]
-constexpr double GLONASS_C_M_MS = 299792.4580;                     //!< The speed of light, [m/ms]
-constexpr double GLONASS_PI = 3.1415926535898;                     //!< Pi as defined in IS-GPS-200K
-constexpr double GLONASS_TWO_PI = 6.283185307179586;               //!< 2Pi as defined in IS-GPS-200K
-constexpr double GLONASS_OMEGA_EARTH_DOT = 7.292115e-5;            //!< Earth rotation rate, [rad/s]
-constexpr double GLONASS_GM = 398600.4418e9;                       //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 constexpr double GLONASS_F_M_A = 0.35e9;                           //!< Gravitational constant of atmosphere [m^3/s^2]
 constexpr double GLONASS_SEMI_MAJOR_AXIS = 6378136;                //!< Semi-major axis of Earth [m]
 constexpr double GLONASS_FLATTENING = 1.0 / 29825784.0;            //!< Flattening parameter
-constexpr double GLONASS_GRAVITY = 97803284;                       //!< Equatorial acceleration of gravity [mGal]
+constexpr double GLONASS_GRAVITY = 97803284.0;                     //!< Equatorial acceleration of gravity [mGal]
 constexpr double GLONASS_GRAVITY_CORRECTION = 0.87;                //!< Correction to acceleration of gravity at sea-level due to Atmosphere[uGal]
 constexpr double GLONASS_J2 = 1082625.75e-9;                       //!< Second zonal harmonic of the geopotential
 constexpr double GLONASS_J4 = -2370.89e-9;                         //!< Fourth zonal harmonic of the geopotential
@@ -76,7 +70,7 @@ constexpr double GLONASS_L2_CA_CODE_RATE_CPS = 0.511e6;     //!< GLONASS L1 C/A 
 constexpr double GLONASS_L2_CA_CODE_LENGTH_CHIPS = 511.0;   //!< GLONASS L1 C/A code length [chips]
 constexpr double GLONASS_L2_CA_CODE_PERIOD_S = 0.001;       //!< GLONASS L1 C/A code period [seconds]
 constexpr double GLONASS_L2_CA_CHIP_PERIOD_S = 1.9569e-06;  //!< GLONASS L1 C/A chip period [seconds]
-constexpr double GLONASS_L2_CA_SYMBOL_RATE_BPS = 1000;
+constexpr double GLONASS_L2_CA_SYMBOL_RATE_BPS = 1000.0;
 
 constexpr double GLONASS_L1_CA_FREQ_HZ = FREQ1_GLO;         //!< L1 [Hz]
 constexpr double GLONASS_L1_CA_DFREQ_HZ = DFRQ1_GLO;        //!< Freq Bias for GLONASS L1 [Hz]
@@ -84,9 +78,30 @@ constexpr double GLONASS_L1_CA_CODE_RATE_CPS = 0.511e6;     //!< GLONASS L1 C/A 
 constexpr double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;   //!< GLONASS L1 C/A code length [chips]
 constexpr double GLONASS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GLONASS L1 C/A code period [seconds]
 constexpr double GLONASS_L1_CA_CHIP_PERIOD_S = 1.9569e-06;  //!< GLONASS L1 C/A chip period [seconds]
-constexpr double GLONASS_L1_CA_SYMBOL_RATE_BPS = 1000;
+constexpr double GLONASS_L1_CA_SYMBOL_RATE_BPS = 1000.0;
 
 constexpr int32_t GLONASS_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
+
+// OBSERVABLE HISTORY DEEP FOR INTERPOLATION
+constexpr int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
+
+// NAVIGATION MESSAGE DEMODULATION AND DECODING
+#define GLONASS_GNAV_PREAMBLE                                                                    \
+    {                                                                                            \
+        1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0 \
+    }
+constexpr double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.300;
+constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
+constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
+constexpr int32_t GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 2000;
+constexpr int32_t GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
+constexpr int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT = 10;
+constexpr int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT = 10;
+constexpr int32_t GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND * GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
+constexpr int32_t GLONASS_GNAV_STRING_SYMBOLS = 2000;                                                                                             //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+constexpr int32_t GLONASS_GNAV_STRING_BITS = 85;                                                                                                  //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+constexpr int32_t GLONASS_GNAV_HAMMING_CODE_BITS = 8;                                                                                             //!< Number of bits in hamming code sequence of GNAV message
+constexpr int32_t GLONASS_GNAV_DATA_SYMBOLS = 1700;                                                                                               // STRING DATA WITHOUT PREAMBLE
 
 /*!
  * \brief Record of leap seconds definition for GLOT to GPST conversion and vice versa
@@ -213,27 +228,6 @@ const std::map<uint32_t, int32_t> GLONASS_PRN = {
         3,
     },         // Plane 3
     {24, 2}};  // Plane 3
-
-// OBSERVABLE HISTORY DEEP FOR INTERPOLATION
-constexpr int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
-
-// NAVIGATION MESSAGE DEMODULATION AND DECODING
-#define GLONASS_GNAV_PREAMBLE                                                                    \
-    {                                                                                            \
-        1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0 \
-    }
-constexpr double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.300;
-constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
-constexpr int32_t GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
-constexpr int32_t GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 2000;
-constexpr int32_t GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
-constexpr int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT = 10;
-constexpr int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT = 10;
-constexpr int32_t GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND * GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
-constexpr int32_t GLONASS_GNAV_STRING_SYMBOLS = 2000;                                                                                             //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
-constexpr int32_t GLONASS_GNAV_STRING_BITS = 85;                                                                                                  //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
-constexpr int32_t GLONASS_GNAV_HAMMING_CODE_BITS = 8;                                                                                             //!< Number of bits in hamming code sequence of GNAV message
-constexpr int32_t GLONASS_GNAV_DATA_SYMBOLS = 1700;                                                                                               // STRING DATA WITHOUT PREAMBLE
 
 const std::vector<int32_t> GLONASS_GNAV_CRC_I_INDEX{9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 const std::vector<int32_t> GLONASS_GNAV_CRC_J_INDEX{9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};

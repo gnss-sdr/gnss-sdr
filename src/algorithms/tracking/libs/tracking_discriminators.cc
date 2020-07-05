@@ -30,11 +30,11 @@ double phase_unwrap(double phase_rad)
 {
     if (phase_rad >= HALF_PI)
         {
-            return phase_rad - PI;
+            return phase_rad - GNSS_PI;
         }
     if (phase_rad <= -HALF_PI)
         {
-            return phase_rad + PI;
+            return phase_rad + GNSS_PI;
         }
     else
         {

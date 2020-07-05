@@ -25,13 +25,6 @@
 #include <utility>
 #include <vector>
 
-constexpr double BEIDOU_DNAV_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
-constexpr double BEIDOU_DNAV_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
-constexpr double BEIDOU_DNAV_PI = 3.1415926535898;            //!< BeiDou DNAV Pi
-constexpr double BEIDOU_DNAV_TWO_PI = 6.2831853071796;        //!< BeiDou DNAV 2Pi
-constexpr double BEIDOU_DNAV_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
-constexpr double BEIDOU_DNAV_GM = 3.986004418e14;             //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] as defined in CGCS2000
-constexpr double BEIDOU_DNAV_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)] F=-2(GM)^.5/C^2
 
 // DNAV SCALE FACTORS
 // EPH

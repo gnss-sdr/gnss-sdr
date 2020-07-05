@@ -20,7 +20,7 @@
  */
 
 #include "pcps_assisted_acquisition_cc.h"
-#include "GPS_L1_CA.h"
+#include "MATH_CONSTANTS.h"
 #include "concurrent_map.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_acq_assist.h"
@@ -221,7 +221,7 @@ void pcps_assisted_acquisition_cc::redefine_grid()
             doppler_hz = d_doppler_min + d_doppler_step * doppler_index;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
         }

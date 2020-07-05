@@ -239,7 +239,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     if (d_flag_PLL_180_deg_phase_locked == true)
         {
             // correct the accumulated phase for the Costas loop phase shift, if required
-            current_synchro_data.Carrier_phase_rads += GPS_L2_PI;
+            current_synchro_data.Carrier_phase_rads += GNSS_PI;
         }
 
     current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);

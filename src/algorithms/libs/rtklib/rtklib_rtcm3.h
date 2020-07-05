@@ -37,9 +37,9 @@
 
 /* constants -----------------------------------------------------------------*/
 
-const double PRUNIT_GPS = 299792.458;           /* rtcm ver.3 unit of gps pseudorange (m) */
-const double PRUNIT_GLO = 599584.916;           /* rtcm ver.3 unit of glonass pseudorange (m) */
-const double RANGE_MS = SPEED_OF_LIGHT * 0.001; /* range in 1 ms */
+const double PRUNIT_GPS = 299792.458;              /* rtcm ver.3 unit of gps pseudorange (m) */
+const double PRUNIT_GLO = 599584.916;              /* rtcm ver.3 unit of glonass pseudorange (m) */
+const double RANGE_MS = SPEED_OF_LIGHT_M_S * 0.001; /* range in 1 ms */
 
 
 /* ssr update intervals ------------------------------------------------------*/

@@ -63,7 +63,6 @@ set(SYSTEM_PARAMETERS_HEADERS
     beidou_dnav_almanac.h
     beidou_dnav_utc_model.h
     display.h
-    Galileo_constants.h
     Galileo_E1.h
     Galileo_E5a.h
     Galileo_E5b.h

@@ -3808,11 +3808,11 @@ int32_t Rtcm::set_DF011(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF012(const Gnss_Synchro& gnss_synchro)
 {
-    const double lambda = GPS_C_M_S / GPS_L1_FREQ_HZ;
+    const double lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 299792.458);
     double gps_L1_pseudorange = std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02);
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
-    double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;
+    double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - gps_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
     auto gps_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
@@ -3870,12 +3870,12 @@ int32_t Rtcm::set_DF017(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& 
 
 int32_t Rtcm::set_DF018(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
-    const double lambda2 = GPS_C_M_S / GPS_L2_FREQ_HZ;
+    const double lambda2 = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
     int32_t l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 299792.458);
     double gps_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 299792.458) / 0.02);
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
-    double L2_phaserange_c = gnss_synchroL2.Carrier_phase_rads / GPS_TWO_PI;
+    double L2_phaserange_c = gnss_synchroL2.Carrier_phase_rads / TWO_PI;
     double L1_phaserange_c_r = std::fmod(L2_phaserange_c - gps_L1_pseudorange_c / lambda2 + 1500.0, 3000.0) - 1500.0;
 
     if (std::fabs(L1_phaserange_c_r * lambda2) <= 262.1435)
@@ -4100,11 +4100,11 @@ int32_t Rtcm::set_DF041(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF042(const Gnss_Synchro& gnss_synchro)
 {
-    const double lambda = GLONASS_C_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
+    const double lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 599584.92);
     double glonass_L1_pseudorange = std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02);
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 299792.458;
-    double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GLONASS_TWO_PI;
+    double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - glonass_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
     auto glonass_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF042 = std::bitset<20>(glonass_L1_phaserange_minus_L1_pseudorange);
@@ -4163,12 +4163,12 @@ int32_t Rtcm::set_DF047(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& 
 // TODO Need to consider frequency channel in this fields
 int32_t Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
-    const double lambda2 = GLONASS_C_M_S / GLONASS_L2_CA_FREQ_HZ;
+    const double lambda2 = SPEED_OF_LIGHT_M_S / GLONASS_L2_CA_FREQ_HZ;
     int32_t l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 599584.92);
     double glonass_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 599584.92) / 0.02);
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 599584.92;
-    double L2_phaserange_c = gnss_synchroL2.Carrier_phase_rads / GLONASS_TWO_PI;
+    double L2_phaserange_c = gnss_synchroL2.Carrier_phase_rads / TWO_PI;
     double L1_phaserange_c_r = std::fmod(L2_phaserange_c - glonass_L1_pseudorange_c / lambda2 + 1500.0, 3000.0) - 1500.0;
 
     if (std::fabs(L1_phaserange_c_r * lambda2) <= 262.1435)
@@ -5284,7 +5284,7 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
 
 int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 {
-    double meters_to_miliseconds = GPS_C_M_S * 0.001;
+    double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
     double rough_range_s = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
 
     uint32_t int_ms = 0;
@@ -5309,7 +5309,7 @@ int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
 {
-    double meters_to_miliseconds = GPS_C_M_S * 0.001;
+    double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     uint32_t rr_mod_ms;
     if ((rough_range_m <= 0.0) || (rough_range_m > meters_to_miliseconds * 255.0))
@@ -5333,23 +5333,23 @@ int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
 
     if (sig == "1C")
         {
-            lambda = GPS_C_M_S / GPS_L1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
     if (sig == "2S")
         {
-            lambda = GPS_C_M_S / GPS_L2_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
         }
     if (sig == "5X")
         {
-            lambda = GPS_C_M_S / GALILEO_E5A_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5A_FREQ_HZ;
         }
     if (sig == "1B")
         {
-            lambda = GPS_C_M_S / GALILEO_E1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E1_FREQ_HZ;
         }
     if (sig == "7X")
         {
-            lambda = GPS_C_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
 
     double rough_phase_range_rate_ms = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
@@ -5369,7 +5369,7 @@ int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
 {
-    double meters_to_miliseconds = GPS_C_M_S * 0.001;
+    double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double psrng_s;
     int32_t fine_pseudorange;
@@ -5396,7 +5396,7 @@ int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
 {
-    double meters_to_miliseconds = GPS_C_M_S * 0.001;
+    double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double phrng_m;
     int64_t fine_phaserange;
@@ -5408,39 +5408,39 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
 
     if ((sig == "1C") && (sys == "G"))
         {
-            lambda = GPS_C_M_S / GPS_L1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
     if ((sig == "2S") && (sys == "G"))
         {
-            lambda = GPS_C_M_S / GPS_L2_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
         }
     if ((sig == "5X") && (sys == "E"))
         {
-            lambda = GPS_C_M_S / GALILEO_E5A_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5A_FREQ_HZ;
         }
     if ((sig == "1B") && (sys == "E"))
         {
-            lambda = GPS_C_M_S / GALILEO_E1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E1_FREQ_HZ;
         }
     if ((sig == "7X") && (sys == "E"))
         {
-            lambda = GPS_C_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
     if ((sig == "1C") && (sys == "R"))
         {
-            lambda = GLONASS_C_M_S / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN))));
+            lambda = SPEED_OF_LIGHT_M_S / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN))));
         }
     if ((sig == "2C") && (sys == "R"))
         {
             // TODO Need to add slot number and freq number to gnss_syncro
-            lambda = GLONASS_C_M_S / (GLONASS_L2_CA_FREQ_HZ);
+            lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L2_CA_FREQ_HZ);
         }
 
-    phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;
+    phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
 
     /* Subtract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
-    double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;  // ?
+    double cp = gnss_synchro.Carrier_phase_rads / TWO_PI;  // ?
     if (std::fabs(phrng_m - cp) > 1171.0)
         {
             cp = std::round(phrng_m / lambda) * lambda;
@@ -5517,32 +5517,32 @@ int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
 
     if ((sig_ == "1C") && (sys_ == "G"))
         {
-            lambda = GPS_C_M_S / GPS_L1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
     if ((sig_ == "2S") && (sys_ == "G"))
         {
-            lambda = GPS_C_M_S / GPS_L2_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
         }
     if ((sig_ == "5X") && (sys_ == "E"))
         {
-            lambda = GPS_C_M_S / GALILEO_E5A_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5A_FREQ_HZ;
         }
     if ((sig_ == "1B") && (sys_ == "E"))
         {
-            lambda = GPS_C_M_S / GALILEO_E1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E1_FREQ_HZ;
         }
     if ((sig_ == "7X") && (sys_ == "E"))
         {
-            lambda = GPS_C_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
     if ((sig_ == "1C") && (sys_ == "R"))
         {
-            lambda = GLONASS_C_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
+            lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
         }
     if ((sig_ == "2C") && (sys_ == "R"))
         {
             // TODO Need to add slot number and freq number to gnss syncro
-            lambda = GLONASS_C_M_S / (GLONASS_L2_CA_FREQ_HZ);
+            lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L2_CA_FREQ_HZ);
         }
     double rough_phase_range_rate = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
     double phrr = (-gnss_synchro.Carrier_Doppler_hz * lambda - rough_phase_range_rate);
@@ -5567,7 +5567,7 @@ int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
 {
-    double meters_to_miliseconds = GPS_C_M_S * 0.001;
+    double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double psrng_s;
     int64_t fine_pseudorange;
@@ -5594,7 +5594,7 @@ int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
 int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
 {
     int64_t fine_phaserange_ex;
-    double meters_to_miliseconds = GPS_C_M_S * 0.001;
+    double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double phrng_m;
     double lambda = 0.0;
@@ -5604,38 +5604,38 @@ int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
 
     if ((sig_ == "1C") && (sys_ == "G"))
         {
-            lambda = GPS_C_M_S / GPS_L1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L1_FREQ_HZ;
         }
     if ((sig_ == "2S") && (sys_ == "G"))
         {
-            lambda = GPS_C_M_S / GPS_L2_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GPS_L2_FREQ_HZ;
         }
     if ((sig_ == "5X") && (sys_ == "E"))
         {
-            lambda = GPS_C_M_S / GALILEO_E5A_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5A_FREQ_HZ;
         }
     if ((sig_ == "1B") && (sys_ == "E"))
         {
-            lambda = GPS_C_M_S / GALILEO_E1_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E1_FREQ_HZ;
         }
     if ((sig_ == "7X") && (sys_ == "E"))
         {
-            lambda = GPS_C_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
     if ((sig_ == "1C") && (sys_ == "R"))
         {
-            lambda = GLONASS_C_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
+            lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
         }
     if ((sig_ == "2C") && (sys_ == "R"))
         {
             // TODO Need to add slot number and freq number to gnss syncro
-            lambda = GLONASS_C_M_S / (GLONASS_L2_CA_FREQ_HZ);
+            lambda = SPEED_OF_LIGHT_M_S / (GLONASS_L2_CA_FREQ_HZ);
         }
-    phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;
+    phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
 
     /* Subtract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
-    double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;  // ?
+    double cp = gnss_synchro.Carrier_phase_rads / TWO_PI;  // ?
     if (std::fabs(phrng_m - cp) > 1171.0)
         {
             cp = std::round(phrng_m / lambda) * lambda;

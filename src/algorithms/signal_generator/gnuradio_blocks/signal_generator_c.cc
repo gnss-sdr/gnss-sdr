@@ -276,7 +276,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
 
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
-            float phase_step_rad = -static_cast<float>(GPS_TWO_PI) * doppler_Hz_[sat] / static_cast<float>(fs_in_);
+            float phase_step_rad = -static_cast<float>(TWO_PI) * doppler_Hz_[sat] / static_cast<float>(fs_in_);
             std::array<float, 1> _phase{};
             _phase[0] = -start_phase_rad_[sat];
             volk_gnsssdr_s32f_sincos_32fc(complex_phase_.data(), -phase_step_rad, _phase.data(), vector_length_);
@@ -314,7 +314,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
 
             else if (system_[sat] == "R")
                 {
-                    phase_step_rad = -static_cast<float>(GPS_TWO_PI) * (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat])) + doppler_Hz_[sat]) / static_cast<float>(fs_in_);
+                    phase_step_rad = -static_cast<float>(TWO_PI) * (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat])) + doppler_Hz_[sat]) / static_cast<float>(fs_in_);
                     // std::cout << "sat " << PRN_[sat] << " SG - Freq = " << (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat]))) << " Doppler = " << doppler_Hz_[sat] << std::endl;
                     _phase[0] = -start_phase_rad_[sat];
                     volk_gnsssdr_s32f_sincos_32fc(complex_phase_.data(), -phase_step_rad, _phase.data(), vector_length_);

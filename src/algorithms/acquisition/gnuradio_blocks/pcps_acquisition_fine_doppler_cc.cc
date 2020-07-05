@@ -20,7 +20,7 @@
  */
 
 #include "pcps_acquisition_fine_doppler_cc.h"
-#include "GPS_L1_CA.h"
+#include "GPS_L1_CA.h"  // for GPS_L1_CA_CHIP_PERIOD_S
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_sdr_signal_processing.h"
@@ -231,7 +231,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
             doppler_hz = d_doppler_step * doppler_index - d_config_doppler_max;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase, d_fft_size);

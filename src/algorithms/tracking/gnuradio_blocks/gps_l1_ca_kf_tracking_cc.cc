@@ -185,9 +185,9 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
 
     // covariances (static)
-    double sigma2_carrier_phase = GPS_TWO_PI / 4;
+    double sigma2_carrier_phase = TWO_PI / 4;
     double sigma2_doppler = 450;
-    double sigma2_doppler_rate = pow(4.0 * GPS_TWO_PI, 2) / 12.0;
+    double sigma2_doppler_rate = pow(4.0 * TWO_PI, 2) / 12.0;
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -202,7 +202,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     kf_F = arma::zeros(2, 2);
     kf_F(0, 0) = 1.0;
-    kf_F(0, 1) = GPS_TWO_PI * GPS_L1_CA_CODE_PERIOD_S;
+    kf_F(0, 1) = TWO_PI * GPS_L1_CA_CODE_PERIOD_S;
     kf_F(1, 0) = 0.0;
     kf_F(1, 1) = 1.0;
 
@@ -225,7 +225,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
             kf_Q(2, 2) = GPS_L1_CA_CODE_PERIOD_S;
 
             kf_F = arma::resize(kf_F, 3, 3);
-            kf_F(0, 2) = 0.5 * GPS_TWO_PI * pow(GPS_L1_CA_CODE_PERIOD_S, 2);
+            kf_F(0, 2) = 0.5 * TWO_PI * pow(GPS_L1_CA_CODE_PERIOD_S, 2);
             kf_F(1, 2) = GPS_L1_CA_CODE_PERIOD_S;
             kf_F(2, 0) = 0.0;
             kf_F(2, 1) = 0.0;
@@ -305,7 +305,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_dopplerrate_hz2 = 0;
-    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+    d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL filter initialization
     d_code_loop_filter.initialize();  // initialize the code filter
@@ -753,7 +753,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
 
             //################### NCO COMMANDS #################################################
             // carrier phase step (NCO phase increment per sample) [rads/sample]
-            d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+            d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
             // carrier phase accumulator
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
 
@@ -872,11 +872,11 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     tmp_float = d_code_freq_chips;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // Kalman commands
-                    tmp_float = static_cast<float>(d_carr_phase_error_rad * GPS_TWO_PI);
+                    tmp_float = static_cast<float>(d_carr_phase_error_rad * TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = static_cast<float>(d_carr_phase_sigma2);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = static_cast<float>(d_rem_carr_phase_rad * GPS_TWO_PI);
+                    tmp_float = static_cast<float>(d_rem_carr_phase_rad * TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
                     tmp_float = code_error_chips;

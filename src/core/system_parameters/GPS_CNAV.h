@@ -56,15 +56,15 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV_A_DOT({{108, 25}});
 constexpr double CNAV_A_DOT_LSB = TWO_N21;
 
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_N0({{133, 17}});
-constexpr double CNAV_DELTA_N0_LSB = TWO_N44 * PI;  // semi-circles to radians
+constexpr double CNAV_DELTA_N0_LSB = TWO_N44 * GNSS_PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_N0_DOT({{150, 23}});
-constexpr double CNAV_DELTA_N0_DOT_LSB = TWO_N57 * PI;  // semi-circles to radians
+constexpr double CNAV_DELTA_N0_DOT_LSB = TWO_N57 * GNSS_PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_M0({{173, 33}});
-constexpr double CNAV_M0_LSB = TWO_N32 * PI;  // semi-circles to radians
+constexpr double CNAV_M0_LSB = TWO_N32 * GNSS_PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_E_ECCENTRICITY({{206, 33}});
 constexpr double CNAV_E_ECCENTRICITY_LSB = TWO_N34;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_OMEGA({{239, 33}});
-constexpr double CNAV_OMEGA_LSB = TWO_N32 * PI;  // semi-circles to radians
+constexpr double CNAV_OMEGA_LSB = TWO_N32 * GNSS_PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_INTEGRITY_FLAG({{272, 1}});
 const std::vector<std::pair<int32_t, int32_t> > CNAV_L2_PHASING_FLAG({{273, 1}});
 
@@ -72,13 +72,13 @@ const std::vector<std::pair<int32_t, int32_t> > CNAV_L2_PHASING_FLAG({{273, 1}})
 const std::vector<std::pair<int32_t, int32_t> > CNAV_TOE2({{39, 11}});
 constexpr int32_t CNAV_TOE2_LSB = 300;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_OMEGA0({{50, 33}});
-constexpr double CNAV_OMEGA0_LSB = TWO_N32 * PI;  // semi-circles to radians
+constexpr double CNAV_OMEGA0_LSB = TWO_N32 * GNSS_PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_I0({{83, 33}});
-constexpr double CNAV_I0_LSB = TWO_N32 * PI;                                        // semi-circles to radians
+constexpr double CNAV_I0_LSB = TWO_N32 * GNSS_PI;                                   // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_OMEGA_DOT({{116, 17}});  // Relative to REF = -2.6 x 10-9 semi-circles/second.
-constexpr double CNAV_DELTA_OMEGA_DOT_LSB = TWO_N44 * PI;                           // semi-circles to radians
+constexpr double CNAV_DELTA_OMEGA_DOT_LSB = TWO_N44 * GNSS_PI;                      // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_I0_DOT({{133, 15}});
-constexpr double CNAV_I0_DOT_LSB = TWO_N44 * PI;  // semi-circles to radians
+constexpr double CNAV_I0_DOT_LSB = TWO_N44 * GNSS_PI;  // semi-circles to radians
 const std::vector<std::pair<int32_t, int32_t> > CNAV_CIS({{148, 16}});
 constexpr double CNAV_CIS_LSB = TWO_N30;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_CIC({{164, 16}});

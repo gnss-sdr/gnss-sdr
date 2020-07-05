@@ -25,6 +25,7 @@
  */
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
+#include "MATH_CONSTANTS.h"
 #include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -224,7 +225,6 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
-    const double GALILEO_TWO_PI = 6.283185307179600;
 
     // Count the number of bins
     d_num_doppler_bins = 0;
@@ -240,7 +240,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = GALILEO_TWO_PI * doppler / static_cast<float>(d_fs_in);
+            float phase_step_rad = TWO_PI * doppler / static_cast<float>(d_fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
         }

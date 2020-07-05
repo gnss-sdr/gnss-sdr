@@ -190,7 +190,7 @@ void tide_oload(gtime_t tut, const double *odisp, double *denu)
     a[1] = (279.69668 + 36000.768930485 * t + 3.03E-4 * t2) * D2R;                 /* H0 */
     a[2] = (270.434358 + 481267.88314137 * t - 0.001133 * t2 + 1.9E-6 * t3) * D2R; /* S0 */
     a[3] = (334.329653 + 4069.0340329577 * t - 0.010325 * t2 - 1.2E-5 * t3) * D2R; /* P0 */
-    a[4] = 2.0 * PI;
+    a[4] = 2.0 * GNSS_PI;
 
     /* displacements by 11 constituents */
     for (i = 0; i < 11; i++)

@@ -263,8 +263,8 @@ arma::vec FrontEndCal::lla2ecef(const arma::vec &lla)
     double R = 6378137.0;
 
     arma::vec ellipsoid = "0.0 0.0";
-    double phi = (lla(0) / 360.0) * GPS_TWO_PI;
-    double lambda = (lla(1) / 360.0) * GPS_TWO_PI;
+    double phi = (lla(0) / 360.0) * TWO_PI;
+    double lambda = (lla(1) / 360.0) * TWO_PI;
 
     ellipsoid(0) = R;
     ellipsoid(1) = sqrt(1.0 - (1.0 - f) * (1.0 - f));
@@ -345,7 +345,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double tow, doub
 
             // Doppler estimation
             arma::vec Doppler_Hz;
-            Doppler_Hz = (obs_to_sat_velocity / GPS_C_M_S) * GPS_L1_FREQ_HZ;
+            Doppler_Hz = (obs_to_sat_velocity / SPEED_OF_LIGHT_M_S) * GPS_L1_FREQ_HZ;
             double mean_Doppler_Hz;
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;

@@ -22,7 +22,6 @@
 #ifndef GNSS_SDR_GALILEO_E1_H
 #define GNSS_SDR_GALILEO_E1_H
 
-#include "Galileo_constants.h"
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstddef>  // for size_t

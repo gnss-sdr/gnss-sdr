@@ -4,7 +4,6 @@
  *  regardless of system used
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -21,7 +20,7 @@
  */
 
 #include "gnss_signal_processing.h"
-#include "GPS_L1_CA.h"
+#include "MATH_CONSTANTS.h"
 #include <gnuradio/fxpt_nco.h>
 #include <cstddef>  // for size_t
 
@@ -31,7 +30,7 @@ const auto AUX_CEIL2 = [](float x) { return static_cast<int32_t>(static_cast<int
 void complex_exp_gen(own::span<std::complex<float>> _dest, double _f, double _fs)
 {
     gr::fxpt_nco d_nco;
-    d_nco.set_freq((GPS_TWO_PI * _f) / _fs);
+    d_nco.set_freq((TWO_PI * _f) / _fs);
     d_nco.sincos(_dest.data(), _dest.size(), 1);
 }
 
@@ -39,7 +38,7 @@ void complex_exp_gen(own::span<std::complex<float>> _dest, double _f, double _fs
 void complex_exp_gen_conj(own::span<std::complex<float>> _dest, double _f, double _fs)
 {
     gr::fxpt_nco d_nco;
-    d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
+    d_nco.set_freq(-(TWO_PI * _f) / _fs);
     d_nco.sincos(_dest.data(), _dest.size(), 1);
 }
 

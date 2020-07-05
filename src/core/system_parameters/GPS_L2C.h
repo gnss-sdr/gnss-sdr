@@ -23,7 +23,6 @@
 
 
 #include "GPS_CNAV.h"
-#include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
 #include <utility>  // std::pair

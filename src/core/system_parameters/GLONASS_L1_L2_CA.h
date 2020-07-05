@@ -22,7 +22,6 @@
 #ifndef GNSS_SDR_GLONASS_L1_L2_CA_H
 #define GNSS_SDR_GLONASS_L1_L2_CA_H
 
-#include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
 #include <map>

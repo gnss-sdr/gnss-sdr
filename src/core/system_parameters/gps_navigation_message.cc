@@ -45,9 +45,7 @@ Gps_Navigation_Message::Gps_Navigation_Message()
 
 void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word) const
 {
-    std::cout << " Word =";
-    std::cout << std::bitset<32>(GPS_word);
-    std::cout << std::endl;
+    std::cout << " Word =" << std::bitset<32>(GPS_word) << std::endl;
 }
 
 

@@ -81,6 +81,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   per sample.
 - Fixed a bug in signal sources that made the number of samples parameter
   ignored when too large (that is, larger than 2^31-1).
+- Fixed the building option `-DENABLE_LOG=OFF`, which strips internal logging
+  from the binary and can help to reduce its size and speed up the receiver. In
+  binaries with enabled logging, it can be still disabled by passing the command
+  line flag `--minloglevel=3` to `gnss-sdr`.
 
 &nbsp;
 

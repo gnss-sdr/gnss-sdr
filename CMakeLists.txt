@@ -1581,6 +1581,13 @@ endif()
 
 if(NOT ENABLE_LOG)
     message(STATUS "Logging is not enabled")
+    if(CMAKE_VERSION VERSION_GREATER 3.11.0)
+        target_compile_definitions(Glog::glog INTERFACE -DGOOGLE_STRIP_LOG=1)
+    else()
+        set_property(TARGET Glog::glog APPEND PROPERTY
+            INTERFACE_COMPILE_DEFINITIONS GOOGLE_STRIP_LOG=1
+        )
+    endif()
 endif()
 
 

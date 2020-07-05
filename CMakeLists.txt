@@ -1580,7 +1580,7 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
 endif()
 
 if(NOT ENABLE_LOG)
-    message(STATUS "Logging is not enabled")
+    message(STATUS "Internal logging is not enabled")
     if(CMAKE_VERSION VERSION_GREATER 3.11.0)
         target_compile_definitions(Glog::glog INTERFACE -DGOOGLE_STRIP_LOG=1)
     else()

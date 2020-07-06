@@ -85,6 +85,12 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   from the binary and can help to reduce its size and speed up the receiver. In
   binaries with enabled logging, it can be still disabled by passing the command
   line flag `--minloglevel=3` to `gnss-sdr`.
+- Defined new `GNSS-SDR.GPS_banned_prns`, `GNSS-SDR.Galileo_banned_prns`,
+  `GNSS-SDR.Glonass_banned_prns` and `GNSS-SDR.Beidou_banned_prns` configuration
+  parameters. The user can specify lists of satellites that will not be
+  processed (e.g., `GNSS-SDR.Galileo_banned_prns=14,18` since Galileo E14 and
+  E18 satellites are not usable for PVT). Satellites on those lists will never
+  be assigned to a processing channel.
 
 &nbsp;
 

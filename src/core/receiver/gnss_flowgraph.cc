@@ -53,6 +53,7 @@
 #include <iterator>                  // for insert_iterator, inserter
 #include <memory>                    // for std::shared_ptr
 #include <set>                       // for set
+#include <sstream>                   // for std::stringstream
 #include <stdexcept>                 // for invalid_argument
 #include <thread>                    // for std::thread
 #include <utility>                   // for std::move
@@ -1668,6 +1669,30 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    std::string sv_banned = configuration_->property("GNSS-SDR.Galileo_banned_prns", std::string(""));
+    if (!sv_banned.empty())
+        {
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            auto banned = static_cast<unsigned int>(std::stoi(substr));
+                            available_galileo_prn.erase(banned);
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            std::cerr << "Invalid argument at GNSS-SDR.Galileo_banned_prns configuration parameter: " << ia.what() << '\n';
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            std::cerr << "Out of range at GNSS-SDR.Galileo_banned_prns configuration parameter: " << oor.what() << '\n';
+                        }
+                }
+        }
+
     sv_list = configuration_->property("GPS.prns", std::string(""));
 
     if (sv_list.length() > 0)
@@ -1681,6 +1706,30 @@ void GNSSFlowgraph::set_signals_list()
             if (!tmp_set.empty())
                 {
                     available_gps_prn = tmp_set;
+                }
+        }
+
+    sv_banned = configuration_->property("GNSS-SDR.GPS_banned_prns", std::string(""));
+    if (!sv_banned.empty())
+        {
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            auto banned = static_cast<unsigned int>(std::stoi(substr));
+                            available_gps_prn.erase(banned);
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            std::cerr << "Invalid argument at GNSS-SDR.GPS_banned_prns configuration parameter: " << ia.what() << '\n';
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            std::cerr << "Out of range at GNSS-SDR.GPS_banned_prns configuration parameter: " << oor.what() << '\n';
+                        }
                 }
         }
 
@@ -1700,6 +1749,30 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    sv_banned = configuration_->property("GNSS-SDR.SBAS_banned_prns", std::string(""));
+    if (!sv_banned.empty())
+        {
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            auto banned = static_cast<unsigned int>(std::stoi(substr));
+                            available_sbas_prn.erase(banned);
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            std::cerr << "Invalid argument at GNSS-SDR.SBAS_banned_prns configuration parameter: " << ia.what() << '\n';
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            std::cerr << "Out of range at GNSS-SDR.SBAS_banned_prns configuration parameter: " << oor.what() << '\n';
+                        }
+                }
+        }
+
     sv_list = configuration_->property("Glonass.prns", std::string(""));
 
     if (sv_list.length() > 0)
@@ -1716,6 +1789,30 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    sv_banned = configuration_->property("GNSS-SDR.Glonass_banned_prns", std::string(""));
+    if (!sv_banned.empty())
+        {
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            auto banned = static_cast<unsigned int>(std::stoi(substr));
+                            available_glonass_prn.erase(banned);
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            std::cerr << "Invalid argument at GNSS-SDR.Glonass_banned_prns configuration parameter: " << ia.what() << '\n';
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            std::cerr << "Out of range at GNSS-SDR.Glonass_banned_prns configuration parameter: " << oor.what() << '\n';
+                        }
+                }
+        }
+
     sv_list = configuration_->property("Beidou.prns", std::string(""));
 
     if (sv_list.length() > 0)
@@ -1729,6 +1826,30 @@ void GNSSFlowgraph::set_signals_list()
             if (!tmp_set.empty())
                 {
                     available_beidou_prn = tmp_set;
+                }
+        }
+
+    sv_banned = configuration_->property("GNSS-SDR.Beidou_banned_prns", std::string(""));
+    if (!sv_banned.empty())
+        {
+            std::stringstream ss(sv_banned);
+            while (ss.good())
+                {
+                    std::string substr;
+                    std::getline(ss, substr, ',');
+                    try
+                        {
+                            auto banned = static_cast<unsigned int>(std::stoi(substr));
+                            available_beidou_prn.erase(banned);
+                        }
+                    catch (const std::invalid_argument& ia)
+                        {
+                            std::cerr << "Invalid argument at GNSS-SDR.Beidou_banned_prns configuration parameter: " << ia.what() << '\n';
+                        }
+                    catch (const std::out_of_range& oor)
+                        {
+                            std::cerr << "Out of range at GNSS-SDR.Beidou_banned_prns configuration parameter: " << oor.what() << '\n';
+                        }
                 }
         }
 

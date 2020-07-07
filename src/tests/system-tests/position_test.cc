@@ -108,7 +108,7 @@ int PositionSystemTest::configure_generator()
             p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
             if (FLAGS_duration > 300)
                 {
-                    std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+                    std::cout << "WARNING: Duration has been set to its maximum value of 300 s\n";
                 }
         }
     else
@@ -145,7 +145,7 @@ int PositionSystemTest::generate_signal()
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
-            std::cout << "Return not expected. Must be an execv error. Does " << generator_binary << " exist?" << std::endl;
+            std::cout << "Return not expected. Must be an execv error. Does " << generator_binary << " exist?\n";
             std::terminate();
         }
 
@@ -373,7 +373,7 @@ int PositionSystemTest::run_receiver()
     fp = popen(&argum2[0], "r");
     if (fp == nullptr)
         {
-            std::cout << "Failed to run command: " << argum2 << std::endl;
+            std::cout << "Failed to run command: " << argum2 << '\n';
             return -1;
         }
     while (fgets(buffer.data(), buffer.size(), fp) != nullptr)
@@ -396,7 +396,7 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
             mat_t* matfp;
             matvar_t* matvar;
             filename.append(".mat");
-            std::cout << "save_mat_xy write " << filename << std::endl;
+            std::cout << "save_mat_xy write " << filename << '\n';
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
@@ -411,14 +411,14 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
                 }
             else
                 {
-                    std::cout << "save_mat_xy: error creating file" << std::endl;
+                    std::cout << "save_mat_xy: error creating file\n";
                 }
             Mat_Close(matfp);
             return true;
         }
     catch (const std::exception& ex)
         {
-            std::cout << "save_mat_xy: " << ex.what() << std::endl;
+            std::cout << "save_mat_xy: " << ex.what() << '\n';
             return false;
         }
 }
@@ -432,7 +432,7 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             mat_t* matfp;
             matvar_t* matvar;
             filename.append(".mat");
-            std::cout << "save_mat_x write " << filename << std::endl;
+            std::cout << "save_mat_x write " << filename << '\n';
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
@@ -443,14 +443,14 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
                 }
             else
                 {
-                    std::cout << "save_mat_x: error creating file" << std::endl;
+                    std::cout << "save_mat_x: error creating file\n";
                 }
             Mat_Close(matfp);
             return true;
         }
     catch (const std::exception& ex)
         {
-            std::cout << "save_mat_x: " << ex.what() << std::endl;
+            std::cout << "save_mat_x: " << ex.what() << '\n';
             return false;
         }
 }
@@ -513,9 +513,9 @@ void PositionSystemTest::check_results()
             R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
 
             // debug check
-            // std::cout << "t1: " << pvt_reader.RX_time << std::endl;
-            // std::cout << "t2: " << pvt_reader.TOW_at_current_symbol_ms << std::endl;
-            // std::cout << "offset: " << pvt_reader.clk_offset_s << std::endl;
+            // std::cout << "t1: " << pvt_reader.RX_time << '\n';
+            // std::cout << "t2: " << pvt_reader.TOW_at_current_symbol_ms << '\n';
+            // std::cout << "offset: " << pvt_reader.clk_offset_s << '\n';
             // getchar();
             current_epoch++;
         }
@@ -565,32 +565,32 @@ void PositionSystemTest::check_results()
             std::ofstream position_test_file;
             if (!FLAGS_config_file_ptest.empty())
                 {
-                    stm << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                    stm << "Configuration file: " << FLAGS_config_file_ptest << '\n';
                 }
 
-            stm << "---- STATIC ACCURACY ----" << std::endl;
-            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-            stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-            stm << "CEP = " << 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy) << " [m]" << std::endl;
-            stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "Static Bias 2D = " << static_2D_error_m << " [m]" << std::endl;
-            stm << "Static Bias 3D = " << static_3D_error_m << " [m]" << std::endl;
-            stm << std::endl;
+            stm << "---- STATIC ACCURACY ----\n";
+            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]\n";
+            stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]\n";
+            stm << "CEP = " << 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy) << " [m]\n";
+            stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]\n";
+            stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]\n";
+            stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]\n";
+            stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]\n";
+            stm << "Static Bias 2D = " << static_2D_error_m << " [m]\n";
+            stm << "Static Bias 3D = " << static_3D_error_m << " [m]\n";
+            stm << '\n';
 
-            stm << "---- STATIC PRECISION ----" << std::endl;
-            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-            stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-            stm << "CEP = " << 0.62 * sqrt(sigma_N_2_precision) + 0.56 * sqrt(sigma_E_2_precision) << " [m]" << std::endl;
-            stm << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-            stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-            stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-            stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-            stm << std::endl;
+            stm << "---- STATIC PRECISION ----\n";
+            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]\n";
+            stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]\n";
+            stm << "CEP = " << 0.62 * sqrt(sigma_N_2_precision) + 0.56 * sqrt(sigma_E_2_precision) << " [m]\n";
+            stm << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
+            stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
+            stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
+            stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]\n";
+            stm << '\n';
 
-            stm << "Receiver runtime: " << elapsed_seconds.count() << " [seconds]" << std::endl;
+            stm << "Receiver runtime: " << elapsed_seconds.count() << " [seconds]\n";
 
             std::cout << stm.rdbuf();
             std::string output_filename = "position_test_output_" + PositionSystemTest::generated_kml_file.erase(PositionSystemTest::generated_kml_file.length() - 3, 3) + "txt";
@@ -688,10 +688,10 @@ void PositionSystemTest::check_results()
             double min_error_V_eb_e = arma::min(error_module_V_eb_e);
 
             // report
-            std::cout << "----- Position and Velocity 3D ECEF error statistics -----" << std::endl;
+            std::cout << "----- Position and Velocity 3D ECEF error statistics -----\n";
             if (!FLAGS_config_file_ptest.empty())
                 {
-                    std::cout << "---- Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                    std::cout << "---- Configuration file: " << FLAGS_config_file_ptest << '\n';
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(10) << "---- 3D ECEF Position RMSE = "
@@ -699,13 +699,13 @@ void PositionSystemTest::check_results()
                       << ", stdev = " << sqrt(error_var_R_eb_e)
                       << " (max,min) = " << max_error_R_eb_e
                       << "," << min_error_R_eb_e
-                      << " [m]" << std::endl;
+                      << " [m]\n";
             std::cout << "---- 3D ECEF Velocity RMSE = "
                       << rmse_V_eb_e << ", mean = " << error_mean_V_eb_e
                       << ", stdev = " << sqrt(error_var_V_eb_e)
                       << " (max,min) = " << max_error_V_eb_e
                       << "," << min_error_V_eb_e
-                      << " [m/s]" << std::endl;
+                      << " [m/s]\n";
             std::cout.precision(ss);
 
             // plots
@@ -823,9 +823,9 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())
         {
-            std::cout << "WARNING: Although the flag plot_position_test has been set to TRUE," << std::endl;
-            std::cout << "gnuplot has not been found in your system." << std::endl;
-            std::cout << "Test results will not be plotted." << std::endl;
+            std::cout << "WARNING: Although the flag plot_position_test has been set to TRUE,\n";
+            std::cout << "gnuplot has not been found in your system.\n";
+            std::cout << "Test results will not be plotted.\n";
         }
     else
         {
@@ -940,7 +940,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                 }
             catch (const GnuplotException& ge)
                 {
-                    std::cout << ge.what() << std::endl;
+                    std::cout << ge.what() << '\n';
                 }
         }
 }
@@ -978,7 +978,7 @@ TEST_F(PositionSystemTest /*unused*/, Position_system_test /*unused*/)
 
 int main(int argc, char** argv)
 {
-    std::cout << "Running Position precision test..." << std::endl;
+    std::cout << "Running Position precision test...\n";
     int res = 0;
     try
         {

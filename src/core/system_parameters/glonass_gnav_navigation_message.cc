@@ -651,7 +651,7 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris()  // Check if we have 
                     flag_all_ephemeris = true;
                     // Update the time of ephemeris information
                     d_previous_tb = gnav_ephemeris.d_t_b;
-                    DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
+                    DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch";
                     new_eph = true;
                 }
         }

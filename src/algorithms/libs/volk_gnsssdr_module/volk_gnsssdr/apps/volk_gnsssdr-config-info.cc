@@ -14,12 +14,12 @@
 #include "volk_gnsssdr/volk_gnsssdr.h"    // for volk_gnsssdr_get_alignment, volk_gnsssdr_get_machine
 #include "volk_gnsssdr_option_helpers.h"  // for option_list, option_t
 #include <volk_gnsssdr/constants.h>       // for volk_gnsssdr_available_machines, volk_gnsssdr_c_compiler ...
-#include <iostream>                       // for operator<<, endl, cout, ostream
+#include <iostream>                       // for operator<<, cout, ostream
 #include <string>                         // for string
 
 void print_alignment()
 {
-    std::cout << "Alignment in bytes: " << volk_gnsssdr_get_alignment() << std::endl;
+    std::cout << "Alignment in bytes: " << volk_gnsssdr_get_alignment() << '\n';
 }
 
 
@@ -29,11 +29,11 @@ void print_malloc()
     // structure from there and give an explanation for the implementations
     std::cout << "Used malloc implementation: ";
 #if HAVE_POSIX_MEMALIGN
-    std::cout << "posix_memalign" << std::endl;
+    std::cout << "posix_memalign\n";
 #elif defined(_MSC_VER)
-    std::cout << "_aligned_malloc" << std::endl;
+    std::cout << "_aligned_malloc\n";
 #else
-    std::cout << "C11 aligned_alloc." << std::endl;
+    std::cout << "C11 aligned_alloc.\n";
 #endif
 }
 

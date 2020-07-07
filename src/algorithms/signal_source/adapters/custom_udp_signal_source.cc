@@ -75,7 +75,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* confi
         }
     else
         {
-            std::cout << "Configuration error: RF_channels<channels_in_use" << std::endl;
+            std::cout << "Configuration error: RF_channels<channels_in_use\n";
             exit(0);
         }
 
@@ -105,7 +105,7 @@ void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(udp_gnss_rx_source_, n, null_sinks_.at(n), 0);
         }
-    DLOG(INFO) << "connected udp_source to null_sinks to enable the use of spare channels" << std::endl;
+    DLOG(INFO) << "connected udp_source to null_sinks to enable the use of spare channels\n";
 
     if (dump_)
         {
@@ -133,7 +133,7 @@ void CustomUDPSignalSource::disconnect(gr::top_block_sptr top_block)
                     DLOG(INFO) << "disconnected source to file sink";
                 }
         }
-    DLOG(INFO) << "disconnected udp_source" << std::endl;
+    DLOG(INFO) << "disconnected udp_source\n";
 }
 
 

@@ -21,7 +21,7 @@
 #include "viterbi_decoder.h"
 #include <glog/logging.h>
 #include <algorithm>  // for fill_n
-#include <ostream>    // for operator<<, basic_ostream, char_traits, endl
+#include <ostream>    // for operator<<, basic_ostream, char_traits
 
 // logging
 #define EVENT 2   // logs important events which don't occur every block
@@ -253,7 +253,7 @@ int Viterbi_Decoder::do_traceback(size_t traceback_length)
     int state;
     std::deque<Prev>::iterator it;
 
-    VLOG(FLOW) << "do_traceback(): traceback_length=" << traceback_length << std::endl;
+    VLOG(FLOW) << "do_traceback(): traceback_length=" << traceback_length << '\n';
 
     if (d_trellis_paths.size() < traceback_length)
         {
@@ -516,12 +516,12 @@ Viterbi_Decoder::Prev::~Prev()
 
 int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_state)
 {
-    // std::cout << "get prev state: for state " << current_state << " at time " << t << ", the prev state at time " << t-1 << " is " << state[current_state] << std::endl;
+    // std::cout << "get prev state: for state " << current_state << " at time " << t << ", the prev state at time " << t - 1 << " is " << state[current_state] << '\n';
     if (num_states > current_state)
         {
             return state[current_state];
         }
-    // std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
+    // std::cout << "alarm " << "num_states=" << num_states << " current_state=" << current_state << '\n';
     // return state[current_state];
     return 0;
 }
@@ -529,7 +529,7 @@ int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_stat
 
 int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
 {
-    // std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << std::endl;
+    // std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << '\n';
     if (num_states > current_state)
         {
             return v_bit[current_state];

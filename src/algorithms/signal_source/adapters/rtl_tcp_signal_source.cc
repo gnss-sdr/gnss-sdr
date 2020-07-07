@@ -82,21 +82,21 @@ RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configurati
 
             if (this->AGC_enabled_ == true)
                 {
-                    std::cout << "AGC enabled" << std::endl;
+                    std::cout << "AGC enabled\n";
                     LOG(INFO) << "AGC enabled";
                     signal_source_->set_agc_mode(true);
                 }
             else
                 {
-                    std::cout << "AGC disabled" << std::endl;
+                    std::cout << "AGC disabled\n";
                     LOG(INFO) << "AGC disabled";
                     signal_source_->set_agc_mode(false);
 
-                    std::cout << "Setting gain to " << gain_ << std::endl;
+                    std::cout << "Setting gain to " << gain_ << '\n';
                     LOG(INFO) << "Setting gain to " << gain_;
                     signal_source_->set_gain(gain_);
 
-                    std::cout << "Setting IF gain to " << if_gain_ << std::endl;
+                    std::cout << "Setting IF gain to " << if_gain_ << '\n';
                     LOG(INFO) << "Setting IF gain to " << if_gain_;
                     signal_source_->set_if_gain(if_gain_);
                 }
@@ -135,7 +135,7 @@ void RtlTcpSignalSource::MakeBlock()
 {
     try
         {
-            std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
+            std::cout << "Connecting to " << address_ << ":" << port_ << '\n';
             LOG(INFO) << "Connecting to " << address_ << ":" << port_;
             signal_source_ = rtl_tcp_make_signal_source_c(address_, port_, flip_iq_);
         }

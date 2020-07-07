@@ -169,13 +169,13 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
 
     if (all_platforms.empty())
         {
-            std::cout << "No OpenCL platforms found. Check OpenCL installation!" << std::endl;
+            std::cout << "No OpenCL platforms found. Check OpenCL installation!\n";
             return 1;
         }
 
     d_cl_platform = all_platforms[0];  // get default platform
     std::cout << "Using platform: " << d_cl_platform.getInfo<CL_PLATFORM_NAME>()
-              << std::endl;
+              << '\n';
 
     // get default GPU device of the default platform
     std::vector<cl::Device> gpu_devices;
@@ -183,7 +183,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
 
     if (gpu_devices.empty())
         {
-            std::cout << "No GPU devices found. Check OpenCL installation!" << std::endl;
+            std::cout << "No GPU devices found. Check OpenCL installation!\n";
             return 2;
         }
 
@@ -191,7 +191,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
 
     std::vector<cl::Device> device;
     device.push_back(d_cl_device);
-    std::cout << "Using device: " << d_cl_device.getInfo<CL_DEVICE_NAME>() << std::endl;
+    std::cout << "Using device: " << d_cl_device.getInfo<CL_DEVICE_NAME>() << '\n';
 
     cl::Context context(device);
     d_cl_context = context;
@@ -211,7 +211,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
         {
             std::cout << " Error building: "
                       << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device[0])
-                      << std::endl;
+                      << '\n';
             return 3;
         }
     d_cl_program = program;
@@ -242,7 +242,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kerne
             delete d_cl_buffer_magnitude;
             delete d_cl_buffer_fft_codes;
 
-            std::cout << "Error creating OpenCL FFT plan." << std::endl;
+            std::cout << "Error creating OpenCL FFT plan.\n";
             return 4;
         }
 
@@ -598,7 +598,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
     //    gettimeofday(&tv, NULL);
     //    end = tv.tv_sec *1e6 + tv.tv_usec;
-    //    std::cout << "Acq time = " << (end-begin) << " us" << std::endl;
+    //    std::cout << "Acq time = " << (end-begin) << " us\n";
 
     if (!d_bit_transition_flag)
         {

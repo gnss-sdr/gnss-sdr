@@ -155,14 +155,14 @@ bool Rtklib_Solver::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem opening dump file:" << e.what() << std::endl;
+            std::cerr << "Problem opening dump file:" << e.what() << '\n';
             return false;
         }
     // count number of epochs and rewind
     int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
-            std::cout << "Generating .mat file for " << dump_filename << std::endl;
+            std::cout << "Generating .mat file for " << dump_filename << '\n';
             size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
@@ -241,7 +241,7 @@ bool Rtklib_Solver::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            std::cerr << "Problem reading dump file:" << e.what() << '\n';
             return false;
         }
 

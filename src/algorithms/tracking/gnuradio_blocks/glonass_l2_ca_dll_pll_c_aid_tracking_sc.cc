@@ -287,7 +287,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking of GLONASS L2 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GLONASS L2 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
     LOG(INFO) << "Tracking of GLONASS L2 C/A signal for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -318,7 +318,7 @@ int32_t glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile() const
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem opening dump file:" << e.what() << std::endl;
+            std::cerr << "Problem opening dump file:" << e.what() << '\n';
             return 1;
         }
     // count number of epochs and rewind
@@ -382,7 +382,7 @@ int32_t glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile() const
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            std::cerr << "Problem reading dump file:" << e.what() << '\n';
             return 1;
         }
 
@@ -504,7 +504,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::~glonass_l2_ca_dll_pll_c_aid_tracking_s
 
             if (d_channel == 0)
                 {
-                    std::cout << " done." << std::endl;
+                    std::cout << " done.\n";
                 }
         }
 
@@ -534,7 +534,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_sc::set_channel(uint32_t channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << '\n';
                         }
                     catch (const std::ifstream::failure &e)
                         {
@@ -621,7 +621,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                         {
                             // compute coherent integration and enable tracking loop
                             // perform coherent integration using correlator output history
-                            // std::cout<<"##### RESET COHERENT INTEGRATION ####"<<std::endl;
+                            // std::cout<<"##### RESET COHERENT INTEGRATION ####\n";
                             d_correlator_outs_16sc[0] = lv_cmake(0, 0);
                             d_correlator_outs_16sc[1] = lv_cmake(0, 0);
                             d_correlator_outs_16sc[2] = lv_cmake(0, 0);
@@ -638,8 +638,8 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                     d_carrier_loop_filter.set_params(10.0, d_pll_bw_narrow_hz, 2);
                                     d_preamble_synchronized = true;
                                     std::cout << "Enabled " << d_extend_correlation_ms << " [ms] extended correlator for CH " << d_channel << " : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                              << " pll_bw = " << d_pll_bw_hz << " [Hz], pll_narrow_bw = " << d_pll_bw_narrow_hz << " [Hz]" << std::endl
-                                              << " dll_bw = " << d_dll_bw_hz << " [Hz], dll_narrow_bw = " << d_dll_bw_narrow_hz << " [Hz]" << std::endl;
+                                              << " pll_bw = " << d_pll_bw_hz << " [Hz], pll_narrow_bw = " << d_pll_bw_narrow_hz << " [Hz]\n"
+                                              << " dll_bw = " << d_dll_bw_hz << " [Hz], dll_narrow_bw = " << d_dll_bw_narrow_hz << " [Hz]\n";
                                 }
                             // UPDATE INTEGRATION TIME
                             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L2_CA_CODE_PERIOD_S;
@@ -769,7 +769,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                 }
                             if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                                 {
-                                    std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                                    std::cout << "Loss of lock in channel " << d_channel << "!\n";
                                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                                     this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                                     d_carrier_lock_fail_counter = 0;

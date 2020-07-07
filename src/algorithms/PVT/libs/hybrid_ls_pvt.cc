@@ -236,7 +236,7 @@ bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
 
                                         // 3- compute the current ECEF position for this SV using corrected TX time
                                         TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                                        // std::cout<<"TX time["<<gps_cnav_ephemeris_iter->second.i_satellite_PRN<<"]="<<TX_time_corrected_s<<std::endl;
+                                        // std::cout<<"TX time["<<gps_cnav_ephemeris_iter->second.i_satellite_PRN<<"]="<<TX_time_corrected_s<< '\n';
                                         double dtr = gps_cnav_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
                                         // store satellite positions in a matrix
@@ -296,14 +296,14 @@ bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                             // execute Bancroft's algorithm to estimate initial receiver position and time
                             DLOG(INFO) << " Executing Bancroft algorithm...";
                             rx_position_and_time = bancroftPos(satpos.t(), obs);
-                            this->set_rx_pos(rx_position_and_time.rows(0, 2));             // save ECEF position for the next iteration
+                            this->set_rx_pos(rx_position_and_time.rows(0, 2));                      // save ECEF position for the next iteration
                             this->set_time_offset_s(rx_position_and_time(3) / SPEED_OF_LIGHT_M_S);  // save time for the next iteration [meters]->[seconds]
                         }
 
                     // Execute WLS using previous position as the initialization point
                     rx_position_and_time = leastSquarePos(satpos, obs, W);
 
-                    this->set_rx_pos(rx_position_and_time.rows(0, 2));                                         // save ECEF position for the next iteration
+                    this->set_rx_pos(rx_position_and_time.rows(0, 2));                                                  // save ECEF position for the next iteration
                     this->set_time_offset_s(this->get_time_offset_s() + rx_position_and_time(3) / SPEED_OF_LIGHT_M_S);  // accumulate the rx time error for the next iteration [meters]->[seconds]
 
                     DLOG(INFO) << "Hybrid Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;

@@ -366,13 +366,13 @@ int HybridObservablesTest::generate_signal()
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
-            std::cout << "Return not expected. Must be an execv err." << std::endl;
+            std::cout << "Return not expected. Must be an execv err.\n";
             std::terminate();
         }
 
     waitpid(pid, &child_status, 0);
 
-    std::cout << "Signal and Observables RINEX and RAW files created." << std::endl;
+    std::cout << "Signal and Observables RINEX and RAW files created.\n";
     return 0;
 }
 
@@ -556,7 +556,7 @@ bool HybridObservablesTest::acquire_signal()
                                 acq_fs / 2.1,
                                 acq_fs / 10,
                                 gr::filter::firdes::win_type::WIN_HAMMING);
-                            std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
+                            std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << '\n';
                             acquisition->set_resampler_latency((taps.size() - 1) / 2);
                             gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
                             top_block_acq->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
@@ -591,7 +591,7 @@ bool HybridObservablesTest::acquire_signal()
         }
     catch (const std::exception& e)
         {
-            std::cout << "Failure connecting the message port system: " << e.what() << std::endl;
+            std::cout << "Failure connecting the message port system: " << e.what() << '\n';
             exit(0);
         }
 
@@ -633,8 +633,8 @@ bool HybridObservablesTest::acquire_signal()
             top_block_acq->run();
             if (start_msg == true)
                 {
-                    std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
-                    std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
+                    std::cout << "Reading external signal file: " << FLAGS_signal_file << '\n';
+                    std::cout << "Searching for " << System_and_Signal << " Satellites...\n";
                     std::cout << "[";
                     start_msg = false;
                 }
@@ -655,7 +655,7 @@ bool HybridObservablesTest::acquire_signal()
             file_source->seek(2 * FLAGS_skip_samples, 0);  // skip head. ibyte, two bytes per complex sample
             std::cout.flush();
         }
-    std::cout << "]" << std::endl;
+    std::cout << "]\n";
     std::cout << "-------------------------------------------\n";
 
     for (auto& x : gnss_synchro_vec)
@@ -672,7 +672,7 @@ bool HybridObservablesTest::acquire_signal()
     elapsed_seconds = end - start;
     std::cout << "Total signal acquisition run time "
               << elapsed_seconds.count()
-              << " [seconds]" << std::endl;
+              << " [seconds]\n";
     if (!gnss_synchro_vec.empty())
         {
             return true;
@@ -870,7 +870,7 @@ void HybridObservablesTest::check_results_carrier_phase(
               << ", stdev = " << sqrt(error_var_ch0)
               << " (max,min) = " << max_error_ch0
               << "," << min_error_ch0
-              << " [cycles]" << std::endl;
+              << " [cycles]\n";
     std::cout.precision(ss);
 
     // plots
@@ -961,7 +961,7 @@ void HybridObservablesTest::check_results_carrier_phase_double_diff(
                       << ", stdev = " << sqrt(error_var)
                       << " (max,min) = " << max_error
                       << "," << min_error
-                      << " [Cycles]" << std::endl;
+                      << " [Cycles]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1055,7 +1055,7 @@ void HybridObservablesTest::check_results_carrier_doppler_double_diff(
                       << ", stdev = " << sqrt(error_var)
                       << " (max,min) = " << max_error
                       << "," << min_error
-                      << " [Hz]" << std::endl;
+                      << " [Hz]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1140,7 +1140,7 @@ void HybridObservablesTest::check_results_carrier_doppler(
                       << ", stdev = " << sqrt(error_var_ch0)
                       << " (max,min) = " << max_error_ch0
                       << "," << min_error_ch0
-                      << " [Hz]" << std::endl;
+                      << " [Hz]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1275,7 +1275,7 @@ void HybridObservablesTest::check_results_duplicated_satellite(
                       << ", stdev = " << sqrt(error_var_ch0)
                       << " (max,min) = " << max_error_ch0
                       << "," << min_error_ch0
-                      << " [Hz]" << std::endl;
+                      << " [Hz]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1335,7 +1335,7 @@ void HybridObservablesTest::check_results_duplicated_satellite(
                       << ", stdev = " << sqrt(error_var_carrier_phase)
                       << " (max,min) = " << max_error_carrier_phase
                       << "," << min_error_carrier_phase
-                      << " [Cycles]" << std::endl;
+                      << " [Cycles]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1394,7 +1394,7 @@ void HybridObservablesTest::check_results_duplicated_satellite(
                       << ", stdev = " << sqrt(error_var_pseudorange)
                       << " (max,min) = " << max_error_pseudorange
                       << "," << min_error_pseudorange
-                      << " [meters]" << std::endl;
+                      << " [meters]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1435,7 +1435,7 @@ bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<doub
             mat_t* matfp;
             matvar_t* matvar;
             filename.append(".mat");
-            std::cout << "save_mat_xy write " << filename << std::endl;
+            std::cout << "save_mat_xy write " << filename << '\n';
             matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
@@ -1450,14 +1450,14 @@ bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<doub
                 }
             else
                 {
-                    std::cout << "save_mat_xy: error creating file" << std::endl;
+                    std::cout << "save_mat_xy: error creating file\n";
                 }
             Mat_Close(matfp);
             return true;
         }
     catch (const std::exception& ex)
         {
-            std::cout << "save_mat_xy: " << ex.what() << std::endl;
+            std::cout << "save_mat_xy: " << ex.what() << '\n';
             return false;
         }
 }
@@ -1520,7 +1520,7 @@ void HybridObservablesTest::check_results_code_pseudorange(
                       << ", stdev = " << sqrt(error_var)
                       << " (max,min) = " << max_error
                       << "," << min_error
-                      << " [meters]" << std::endl;
+                      << " [meters]\n";
             std::cout.precision(ss);
 
             // plots
@@ -1555,7 +1555,7 @@ void HybridObservablesTest::check_results_code_pseudorange(
         }
     else
         {
-            std::cout << "Problem with observables in " << data_title << std::endl;
+            std::cout << "Problem with observables in " << data_title << '\n';
         }
 }
 
@@ -1670,7 +1670,7 @@ bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_S
                                         }
                                     else
                                         {
-                                            std::cout << "ReadRinexObs unknown signal requested: " << gnss.Signal << std::endl;
+                                            std::cout << "ReadRinexObs unknown signal requested: " << gnss.Signal << '\n';
                                             return false;
                                         }
                                 }
@@ -1690,13 +1690,13 @@ bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_S
     catch (const std::exception& e)
         {
             std::cout << "Exception: " << e.what();
-            std::cout << "unknown error.  I don't feel so well..." << std::endl;
+            std::cout << "unknown error.  I don't feel so well...\n";
             return false;
         }
-    std::cout << "ReadRinexObs info:" << std::endl;
+    std::cout << "ReadRinexObs info:\n";
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
         {
-            std::cout << "SAT PRN " << gnss_synchro_vec.at(n).PRN << " RINEX epoch read: " << obs_vec->at(n).n_rows << std::endl;
+            std::cout << "SAT PRN " << gnss_synchro_vec.at(n).PRN << " RINEX epoch read: " << obs_vec->at(n).n_rows << '\n';
         }
     return true;
 }
@@ -1757,7 +1757,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     std::vector<std::shared_ptr<Tracking_True_Obs_Reader>> true_reader_vec;
                     // read true data from the generator logs
                     true_reader_vec.push_back(std::make_shared<Tracking_True_Obs_Reader>());
-                    std::cout << "Loading true observable data for PRN " << n.PRN << std::endl;
+                    std::cout << "Loading true observable data for PRN " << n.PRN << '\n';
                     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
                     true_obs_file.append(std::to_string(n.PRN));
                     true_obs_file.append(".dat");
@@ -1780,7 +1780,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     true_reader_vec.back()->restart();
 
                     std::cout << "Initial Doppler [Hz]=" << true_reader_vec.back()->doppler_l1_hz << " Initial code delay [Chips]="
-                              << true_reader_vec.back()->prn_delay_chips << std::endl;
+                              << true_reader_vec.back()->prn_delay_chips << '\n';
                     n.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_reader_vec.back()->prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
                     n.Acq_doppler_hz = true_reader_vec.back()->doppler_l1_hz;
                     n.Acq_samplestamp_samples = 0;
@@ -1790,7 +1790,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     // based on the signal acquisition process
                     std::cout << "Estimated Initial Doppler " << n.Acq_doppler_hz
                               << " [Hz], estimated Initial code delay " << n.Acq_delay_samples << " [Samples]"
-                              << " Acquisition SampleStamp is " << n.Acq_samplestamp_samples << std::endl;
+                              << " Acquisition SampleStamp is " << n.Acq_samplestamp_samples << '\n';
                     n.Acq_samplestamp_samples = 0;
                 }
         }
@@ -1913,7 +1913,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
             auto nepoch = static_cast<unsigned int>(true_observables.num_epochs());
 
-            std::cout << "True observation epochs = " << nepoch << std::endl;
+            std::cout << "True observation epochs = " << nepoch << '\n';
 
             true_observables.restart();
             int64_t epoch_counter = 0;
@@ -1930,7 +1930,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                 if (round(true_observables.prn[n]) != gnss_synchro_vec.at(n).PRN)
                                     {
                                         std::cout << "True observables SV PRN does not match measured ones: "
-                                                  << round(true_observables.prn[n]) << " vs. " << gnss_synchro_vec.at(n).PRN << std::endl;
+                                                  << round(true_observables.prn[n]) << " vs. " << gnss_synchro_vec.at(n).PRN << '\n';
                                         throw std::exception();
                                     }
                                 true_obs_vec.at(n)(epoch_counter, 0) = true_observables.gps_time_sec[n];
@@ -1960,7 +1960,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     }) << "Failure opening dump observables file";
 
     auto nepoch = static_cast<unsigned int>(estimated_observables.num_epochs());
-    std::cout << "Measured observations epochs = " << nepoch << std::endl;
+    std::cout << "Measured observations epochs = " << nepoch << '\n';
 
     // Matrices for storing columnwise measured RX_time, TOW, Doppler, Carrier phase and Pseudorange
     std::vector<arma::mat> measured_obs_vec;
@@ -2109,7 +2109,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             if ((!index2.empty()) and (index2(0) > 0))
                 {
                     receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(index2(0)) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / SPEED_OF_LIGHT_M_S;
-                    std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
+                    std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]\n";
                 }
             else
                 {
@@ -2194,7 +2194,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                 }
                             else
                                 {
-                                    std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
+                                    std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite\n";
                                 }
                             if (FLAGS_compute_single_diffs)
                                 {
@@ -2214,5 +2214,5 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                         }
                 }
         }
-    std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
+    std::cout << "Test completed in " << elapsed_seconds.count() << " [s]\n";
 }

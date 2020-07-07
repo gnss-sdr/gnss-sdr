@@ -111,7 +111,7 @@ TEST(PreambleCorrelationTest, TestMethods)
     EXPECT_EQ(corr_value, corr_value3);
     EXPECT_EQ(sum_corr1, sum_corr3);
 
-    std::cout << "Correlation computed with 'C for'       : done in " << elapsed_seconds.count() * 1.0e9 / n_iter << " nanoseconds" << std::endl;
-    std::cout << "Correlation computed with accumulate    : done in " << elapsed_seconds2.count() * 1.0e9 / n_iter << " nanoseconds" << std::endl;
-    std::cout << "Correlation computed with inner_product : done in " << elapsed_seconds3.count() * 1.0e9 / n_iter << " nanoseconds" << std::endl;
+    std::cout << "Correlation computed with 'C for'       : done in " << elapsed_seconds.count() * 1.0e9 / n_iter << " nanoseconds\n";
+    std::cout << "Correlation computed with accumulate    : done in " << elapsed_seconds2.count() * 1.0e9 / n_iter << " nanoseconds\n";
+    std::cout << "Correlation computed with inner_product : done in " << elapsed_seconds3.count() * 1.0e9 / n_iter << " nanoseconds\n";
 }

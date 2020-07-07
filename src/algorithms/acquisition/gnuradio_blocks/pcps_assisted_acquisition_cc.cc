@@ -177,12 +177,12 @@ void pcps_assisted_acquisition_cc::get_assistance()
                 }
             this->d_disable_assist = false;
             std::cout << "Acq assist ENABLED for GPS SV " << this->d_gnss_synchro->PRN << " (Doppler max,Doppler min)=("
-                      << d_doppler_max << "," << d_doppler_min << ")" << std::endl;
+                      << d_doppler_max << "," << d_doppler_min << ")\n";
         }
     else
         {
             this->d_disable_assist = true;
-            std::cout << "Acq assist DISABLED for GPS SV " << this->d_gnss_synchro->PRN << std::endl;
+            std::cout << "Acq assist DISABLED for GPS SV " << this->d_gnss_synchro->PRN << '\n';
         }
 }
 
@@ -394,7 +394,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
                     if (d_disable_assist == false)
                         {
                             d_disable_assist = true;
-                            std::cout << "Acq assist DISABLED for GPS SV " << this->d_gnss_synchro->PRN << std::endl;
+                            std::cout << "Acq assist DISABLED for GPS SV " << this->d_gnss_synchro->PRN << '\n';
                             d_state = 4;
                         }
                     else

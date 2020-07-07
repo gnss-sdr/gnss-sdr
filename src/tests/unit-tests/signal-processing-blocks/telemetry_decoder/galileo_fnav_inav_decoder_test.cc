@@ -108,7 +108,7 @@ public:
                 if (INAV_decoder.get_flag_CRC_test() == true)
                     {
                         std::cout << "Galileo E1 INAV PAGE CRC correct \n";
-                        // std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+                        // std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << '\n';
                         crc_ok = true;
                     }
                 flag_even_word_arrived = 0;
@@ -270,5 +270,5 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     }) << "Exception during INAV frame decoding";
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
-    std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

@@ -888,7 +888,7 @@ bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_nam
                 }
             catch (const std::exception& e)
                 {
-                    std::cerr << e.what() << std::endl;
+                    std::cerr << e.what() << '\n';
                 }
         }
     if (this->gal_almanac_map.empty())

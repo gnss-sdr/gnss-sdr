@@ -42,7 +42,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
         {
             std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and " + role_ + ".sample_freq_out are not set to the same value!";
             LOG(WARNING) << aux_warn;
-            std::cout << aux_warn << std::endl;
+            std::cout << aux_warn << '\n';
         }
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
@@ -59,7 +59,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
                 sample_freq_out_ / 2.1,
                 sample_freq_out_ / 5,
                 gr::filter::firdes::win_type::WIN_HAMMING);
-            std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps" << std::endl;
+            std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps\n";
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps);
 
 #ifdef GR_GREATER_38

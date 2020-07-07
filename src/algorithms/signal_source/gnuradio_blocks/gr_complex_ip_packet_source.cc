@@ -123,7 +123,7 @@ Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
             std::cout << "Unknown wire sample type\n";
             exit(0);
         }
-    std::cout << "d_wire_sample_type:" << d_wire_sample_type << std::endl;
+    std::cout << "d_wire_sample_type:" << d_wire_sample_type << '\n';
     d_src_device = std::move(src_device);
     d_udp_port = udp_port;
     d_udp_payload_size = udp_packet_size;
@@ -186,15 +186,15 @@ bool Gr_Complex_Ip_Packet_Source::open()
     descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf.data());
     if (descr == nullptr)
         {
-            std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
-            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf.data()) << std::endl;
+            std::cout << "Error opening Ethernet device " << d_src_device << '\n';
+            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf.data()) << '\n';
             return false;
         }
     // bind UDP port to avoid automatic reply with ICMP port unreachable packets from kernel
     d_sock_raw = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (d_sock_raw == -1)
         {
-            std::cout << "Error opening UDP socket" << std::endl;
+            std::cout << "Error opening UDP socket\n";
             return false;
         }
 
@@ -208,7 +208,7 @@ bool Gr_Complex_Ip_Packet_Source::open()
     // bind socket to port
     if (bind(d_sock_raw, reinterpret_cast<struct sockaddr *>(&si_me), sizeof(si_me)) == -1)
         {
-            std::cout << "Error opening UDP socket" << std::endl;
+            std::cout << "Error opening UDP socket\n";
             return false;
         }
     return true;
@@ -273,7 +273,7 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                     //                   ih->daddr.byte3,
                     //                   ih->daddr.byte4,
                     //                   dport);
-                    //            std::cout<<"uh->len:"<<ntohs(uh->len)<<std::endl;
+                    //            std::cout<<"uh->len:"<<ntohs(uh->len)<< '\n';
 
                     int payload_length_bytes = ntohs(uh->len) - 8;  // total udp packet length minus the header length
                     // read the payload bytes and insert them into the shared circular buffer

@@ -72,13 +72,13 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             sampled_ms_ = 3;
             DLOG(INFO) << "Coherent integration time should be 3 ms or less. Changing to 3ms ";
-            std::cout << "Too high coherent integration time. Changing to 3ms" << std::endl;
+            std::cout << "Too high coherent integration time. Changing to 3ms\n";
         }
     if (Zero_padding > 0)
         {
             sampled_ms_ = 2;
             DLOG(INFO) << "Zero padding activated. Changing to 1ms code + 1ms zero padding ";
-            std::cout << "Zero padding activated. Changing to 1ms code + 1ms zero padding" << std::endl;
+            std::cout << "Zero padding activated. Changing to 1ms code + 1ms zero padding\n";
         }
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);

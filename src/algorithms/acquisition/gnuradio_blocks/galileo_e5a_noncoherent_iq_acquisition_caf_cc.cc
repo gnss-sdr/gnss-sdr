@@ -597,7 +597,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 d_dump_file.close();
                             }
                     }
-                // std::cout << "d_mag " << d_mag << ".d_sample_counter " << d_sample_counter << ". acq delay " << d_gnss_synchro->Acq_delay_samples<< " indext "<< indext << std::endl;
+                // std::cout << "d_mag " << d_mag << ".d_sample_counter " << d_sample_counter << ". acq delay " << d_gnss_synchro->Acq_delay_samples<< " indext "<< indext << '\n';
                 // 6 OPTIONAL: CAF filter to avoid Doppler ambiguity in bit transition.
                 if (d_CAF_window_hz > 0)
                     {
@@ -607,7 +607,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         float weighting_factor;
                         weighting_factor = 0.5 / static_cast<float>(CAF_bins_half);
                         // weighting_factor = 0;
-                        // std::cout << "weighting_factor " << weighting_factor << std::endl;
+                        // std::cout << "weighting_factor " << weighting_factor << '\n';
                         // Initialize first iterations
                         for (int doppler_index = 0; doppler_index < CAF_bins_half; doppler_index++)
                             {

@@ -228,10 +228,10 @@ void GNSSFlowgraph::connect()
                     if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
                         {
                             // Multichannel Array
-                            std::cout << "ARRAY MODE" << std::endl;
+                            std::cout << "ARRAY MODE\n";
                             for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
                                 {
-                                    std::cout << "connecting ch " << j << std::endl;
+                                    std::cout << "connecting ch " << j << '\n';
                                     top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
                                 }
                         }
@@ -298,7 +298,7 @@ void GNSSFlowgraph::connect()
                     if (fs == 0.0)
                         {
                             LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
-                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file\n";
                             throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                         }
                     int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
@@ -323,7 +323,7 @@ void GNSSFlowgraph::connect()
                     if (fs == 0.0)
                         {
                             LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
-                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file\n";
                             throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                         }
                     int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
@@ -347,7 +347,7 @@ void GNSSFlowgraph::connect()
             if (fs == 0.0)
                 {
                     LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
-                    std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                    std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file\n";
                     throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                 }
 
@@ -555,7 +555,7 @@ void GNSSFlowgraph::connect()
                             null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
                             top_block_->connect(sig_conditioner_.at(n)->get_right_block(), 0,
                                 null_sinks_.back(), 0);
-                            LOG(INFO) << "Null sink connected to signal conditioner " << n << " due to lack of connection to any channel" << std::endl;
+                            LOG(INFO) << "Null sink connected to signal conditioner " << n << " due to lack of connection to any channel\n";
                         }
                 }
         }
@@ -1507,13 +1507,13 @@ void GNSSFlowgraph::init()
         {
             for (int i = 0; i < sources_count_; i++)
                 {
-                    std::cout << "Creating source " << i << std::endl;
+                    std::cout << "Creating source " << i << '\n';
                     sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
                     // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
                     // Include GetRFChannels in the interface to avoid read config parameters here
                     // read the number of RF channels for each front-end
                     RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
-                    std::cout << "RF Channels " << RF_Channels << std::endl;
+                    std::cout << "RF Channels " << RF_Channels << '\n';
                     for (int j = 0; j < RF_Channels; j++)
                         {
                             sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
@@ -1551,8 +1551,8 @@ void GNSSFlowgraph::init()
     if ((obs_implementation == "GPS_L1_CA_Observables") || (obs_implementation == "GPS_L2C_Observables") ||
         (obs_implementation == "Galileo_E1B_Observables") || (obs_implementation == "Galileo_E5A_Observables"))
         {
-            std::cout << "WARNING: Implementation '" << obs_implementation << "' of the Observables block has been replaced by 'Hybrid_Observables'." << std::endl;
-            std::cout << "Please update your configuration file." << std::endl;
+            std::cout << "WARNING: Implementation '" << obs_implementation << "' of the Observables block has been replaced by 'Hybrid_Observables'.\n";
+            std::cout << "Please update your configuration file.\n";
         }
 
     pvt_ = block_factory->GetPVT(configuration_.get());
@@ -1560,8 +1560,8 @@ void GNSSFlowgraph::init()
     std::string pvt_implementation = configuration_->property("PVT.implementation", default_str);
     if ((pvt_implementation == "GPS_L1_CA_PVT") || (pvt_implementation == "Galileo_E1_PVT") || (pvt_implementation == "Hybrid_PVT"))
         {
-            std::cout << "WARNING: Implementation '" << pvt_implementation << "' of the PVT block has been replaced by 'RTKLIB_PVT'." << std::endl;
-            std::cout << "Please update your configuration file." << std::endl;
+            std::cout << "WARNING: Implementation '" << pvt_implementation << "' of the PVT block has been replaced by 'RTKLIB_PVT'.\n";
+            std::cout << "Please update your configuration file.\n";
         }
 
     auto channels = block_factory->GetChannels(configuration_.get(), queue_.get());

@@ -179,7 +179,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
                 {
-                    std::cerr << "GNSS-SDR cannot create dump file for the PVT block. Wrong permissions?" << std::endl;
+                    std::cerr << "GNSS-SDR cannot create dump file for the PVT block. Wrong permissions?\n";
                     d_dump = false;
                 }
         }
@@ -382,7 +382,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                                 {
                                     if (!fs::create_directory(new_folder, ec))
                                         {
-                                            std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                            std::cout << "Could not create the " << new_folder << " folder.\n";
                                             d_xml_base_path = full_path.string();
                                         }
                                 }
@@ -395,7 +395,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 }
             if (d_xml_base_path != ".")
                 {
-                    std::cout << "XML files will be stored at " << d_xml_base_path << std::endl;
+                    std::cout << "XML files will be stored at " << d_xml_base_path << '\n';
                 }
 
             d_xml_base_path = d_xml_base_path + fs::path::preferred_separator;
@@ -426,8 +426,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     int msgflg = IPC_CREAT | 0666;
     if ((d_sysv_msqid = msgget(d_sysv_msg_key, msgflg)) == -1)
         {
-            std::cout << "GNSS-SDR cannot create System V message queues." << std::endl;
-            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno) << std::endl;
+            std::cout << "GNSS-SDR cannot create System V message queues.\n";
+            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno);
         }
 
     // Display time in local time zone
@@ -1749,7 +1749,7 @@ bool rtklib_pvt_gs::load_gnss_synchro_map_xml(const std::string& file_name)
             boost::archive::xml_iarchive xml(ifs);
             d_gnss_observables_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", d_gnss_observables_map);
-            // std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
+            // std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges\n";
         }
     catch (const std::exception& e)
         {
@@ -2088,12 +2088,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     catch (const boost::exception& ex)
                                         {
-                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << std::endl;
+                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << '\n';
                                             LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
                                         }
                                     catch (const std::exception& ex)
                                         {
-                                            std::cout << "RTCM std exception: " << ex.what() << std::endl;
+                                            std::cout << "RTCM std exception: " << ex.what() << '\n';
                                             LOG(ERROR) << "RTCM std exception: " << ex.what();
                                         }
                                 }
@@ -2145,14 +2145,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             d_rx_time = static_cast<double>(current_RX_time_ms) / 1000.0;
                                                             // std::cout << " obs time t0: " << d_gnss_observables_map_t0.cbegin()->second.RX_time
                                                             //           << " t1: " << d_gnss_observables_map_t1.cbegin()->second.RX_time
-                                                            //           << " interp time: " << d_rx_time << std::endl;
+                                                            //           << " interp time: " << d_rx_time << '\n';
                                                             d_gnss_observables_map = interpolate_observables(d_gnss_observables_map_t0,
                                                                 d_gnss_observables_map_t1,
                                                                 d_rx_time);
                                                             flag_compute_pvt_output = true;
                                                             // d_rx_time = current_RX_time;
                                                             // std::cout.precision(17);
-                                                            // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << std::endl;
+                                                            // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << '\n';
                                                         }
                                                 }
                                         }
@@ -2164,7 +2164,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 {
                                                     flag_compute_pvt_output = true;
                                                     // std::cout.precision(17);
-                                                    // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << std::endl;
+                                                    // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << '\n';
                                                 }
                                             flag_pvt_valid = true;
                                         }
@@ -2199,7 +2199,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     DLOG(INFO) << "Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[s]"
                                                << " at RX time: " << static_cast<uint32_t>(d_rx_time * 1000.0) << " [ms]";
                                     // Optional debug code: export observables snapshot for rtklib unit testing
-                                    // std::cout << "step 1: save gnss_synchro map" << std::endl;
+                                    // std::cout << "step 1: save gnss_synchro map\n";
                                     // save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
                                     // getchar(); // stop the execution
                                     // end debug
@@ -2271,7 +2271,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     std::cout << "First position fix at " << d_user_pvt_solver->get_position_UTC_time() << " UTC";
                                                 }
                                             std::cout << " is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                                      << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]" << std::endl;
+                                                      << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]\n";
                                             d_ttff_msgbuf ttff;
                                             ttff.mtype = 1;
                                             d_end = std::chrono::system_clock::now();
@@ -4211,12 +4211,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     catch (const boost::exception& ex)
                                         {
-                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << std::endl;
+                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << '\n';
                                             LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
                                         }
                                     catch (const std::exception& ex)
                                         {
-                                            std::cout << "RTCM std exception: " << ex.what() << std::endl;
+                                            std::cout << "RTCM std exception: " << ex.what() << '\n';
                                             LOG(ERROR) << "RTCM std exception: " << ex.what();
                                         }
                                 }
@@ -4248,7 +4248,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 << std::fixed << std::setprecision(9)
                                 << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                 << std::fixed << std::setprecision(3)
-                                << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]" << TEXT_RESET << std::endl;
+                                << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]" << TEXT_RESET << '\n';
 
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
@@ -4257,7 +4257,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 << TEXT_BOLD_GREEN
                                 << "Velocity: " << std::fixed << std::setprecision(3)
                                 << "East: " << d_user_pvt_solver->get_rx_vel()[0] << " [m/s], North: " << d_user_pvt_solver->get_rx_vel()[1]
-                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << std::endl;
+                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << '\n';
 
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
@@ -4266,7 +4266,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_user_pvt_solver->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
                             // p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                             // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
-                            // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
+                            // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << '\n';
 
                             DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
                                        << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
@@ -4275,7 +4275,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
                                          << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
                                          << d_user_pvt_solver->get_vdop()
-                                         << " GDOP = " << d_user_pvt_solver->get_gdop() << std::endl; */
+                                         << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
                         }
 
                     // PVT MONITOR

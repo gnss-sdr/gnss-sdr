@@ -105,7 +105,7 @@ void Fpga_Acquisition::open_device()
     if ((d_fd = open(d_device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
-            std::cout << "Acq: cannot open deviceio" << d_device_name << std::endl;
+            std::cout << "Acq: cannot open deviceio" << d_device_name << '\n';
         }
     d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE_DEFAULT,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
@@ -113,7 +113,7 @@ void Fpga_Acquisition::open_device()
     if (d_map_base == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
-            std::cout << "Acq: cannot map deviceio" << d_device_name << std::endl;
+            std::cout << "Acq: cannot map deviceio" << d_device_name << '\n';
         }
 }
 
@@ -148,7 +148,7 @@ void Fpga_Acquisition::run_acquisition()
     ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
     if (nbytes != sizeof(int32_t))
         {
-            std::cerr << "Error enabling run in the FPGA." << std::endl;
+            std::cerr << "Error enabling run in the FPGA.\n";
         }
 
     // launch the acquisition process
@@ -160,8 +160,8 @@ void Fpga_Acquisition::run_acquisition()
     nb = read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
-            std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
+            std::cout << "acquisition module Read failed to retrieve 4 bytes!\n";
+            std::cout << "acquisition module Interrupt number " << irq_count << '\n';
         }
 }
 
@@ -245,7 +245,7 @@ void Fpga_Acquisition::close_device()
     auto *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE_DEFAULT) == -1)
         {
-            std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio\n";
         }
     close(d_fd);
 }

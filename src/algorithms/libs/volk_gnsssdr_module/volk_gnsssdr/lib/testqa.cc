@@ -13,7 +13,7 @@
 #include "qa_utils.h"                           // for volk_gnsssdr_test_case_t, volk_gnsssdr_test_results_t
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
 #include <fstream>                              // IWYU pragma: keep
-#include <iostream>                             // for operator<<, basic_ostream, endl, char...
+#include <iostream>                             // for operator<<, basic_ostream, char...
 #include <map>                                  // for map, map<>::iterator, _Rb_tree_iterator
 #include <sstream>                              // for stringstream
 #include <string>                               // for string, operator<<
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
             ss << argv[1];
             if (ss.fail())
                 {
-                    std::cerr << "Test name not correctly set." << std::endl;
+                    std::cerr << "Test name not correctly set.\n";
                     return 0;
                 }
             for (unsigned int ii = 0; ii < test_cases.size(); ++ii)
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
                                 }
                         }
                 }
-            std::cerr << "Did not run a test for kernel: " << std::string(argv[1]) << " !" << std::endl;
+            std::cerr << "Did not run a test for kernel: " << std::string(argv[1]) << " !\n";
             return 0;
         }
     else
@@ -83,13 +83,13 @@ int main(int argc, char* argv[])
                     catch (...)
                         {
                             // TODO: what exceptions might we need to catch and how do we handle them?
-                            std::cerr << "Exception found on kernel: " << test_case.name() << std::endl;
+                            std::cerr << "Exception found on kernel: " << test_case.name() << '\n';
                             qa_result = false;
                         }
 
                     if (qa_result)
                         {
-                            std::cerr << "Failure on " << test_case.name() << std::endl;
+                            std::cerr << "Failure on " << test_case.name() << '\n';
                             qa_failures.push_back(test_case.name());
                         }
                 }
@@ -99,13 +99,13 @@ int main(int argc, char* argv[])
 
             // Summarize QA results
             std::cerr << "Kernel QA finished: " << qa_failures.size() << " failures out of "
-                      << test_cases.size() << " tests." << std::endl;
+                      << test_cases.size() << " tests.\n";
             if (qa_failures.size() > 0)
                 {
-                    std::cerr << "The following kernels failed QA:" << std::endl;
+                    std::cerr << "The following kernels failed QA:\n";
                     for (unsigned int ii = 0; ii < qa_failures.size(); ++ii)
                         {
-                            std::cerr << "    " << qa_failures[ii] << std::endl;
+                            std::cerr << "    " << qa_failures[ii] << '\n';
                         }
                     qa_ret_val = 1;
                 }
@@ -123,17 +123,17 @@ void print_qa_xml(std::vector<volk_gnsssdr_test_results_t> results, unsigned int
     std::ofstream qa_file;
     qa_file.open(".unittest/kernels.xml");
 
-    qa_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+    qa_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     qa_file << "<testsuites name=\"kernels\" "
             << "tests=\"" << results.size() << "\" "
-            << "failures=\"" << nfails << "\" id=\"1\">" << std::endl;
+            << "failures=\"" << nfails << "\" id=\"1\">\n";
 
     // Results are in a vector by kernel. Each element has a result
     // map containing time and arch name with test result
     for (unsigned int ii = 0; ii < results.size(); ++ii)
         {
             volk_gnsssdr_test_results_t result = results[ii];
-            qa_file << "  <testsuite name=\"" << result.name << "\">" << std::endl;
+            qa_file << "  <testsuite name=\"" << result.name << "\">\n";
 
             std::map<std::string, volk_gnsssdr_test_time_t>::iterator kernel_time_pair;
             for (kernel_time_pair = result.results.begin(); kernel_time_pair != result.results.end(); ++kernel_time_pair)
@@ -141,16 +141,16 @@ void print_qa_xml(std::vector<volk_gnsssdr_test_results_t> results, unsigned int
                     volk_gnsssdr_test_time_t test_time = kernel_time_pair->second;
                     qa_file << "    <testcase name=\"" << test_time.name << "\" "
                             << "classname=\"" << result.name << "\" "
-                            << "time=\"" << test_time.time << "\">" << std::endl;
+                            << "time=\"" << test_time.time << "\">\n";
                     if (!test_time.pass)
                         qa_file << "      <failure "
                                 << "message=\"fail on arch " << test_time.name << "\">"
-                                << "</failure>" << std::endl;
-                    qa_file << "    </testcase>" << std::endl;
+                                << "</failure>\n";
+                    qa_file << "    </testcase>\n";
                 }
-            qa_file << "  </testsuite>" << std::endl;
+            qa_file << "  </testsuite>\n";
         }
 
-    qa_file << "</testsuites>" << std::endl;
+    qa_file << "</testsuites>\n";
     qa_file.close();
 }

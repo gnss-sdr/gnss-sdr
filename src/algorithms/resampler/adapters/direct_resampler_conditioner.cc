@@ -47,7 +47,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
         {
             std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and " + role_ + ".sample_freq_out are not set to the same value!";
             LOG(WARNING) << aux_warn;
-            std::cout << aux_warn << std::endl;
+            std::cout << aux_warn << '\n';
         }
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);

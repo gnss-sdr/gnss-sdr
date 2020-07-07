@@ -296,7 +296,7 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
             if (ephemeris_record.d_Toe1 == ephemeris_record.d_Toe2)  // and ephemeris_record.d_Toe1==ephemeris_record.d_Toc)
                 {
                     // if all ephemeris pages have the same TOE, then they belong to the same block
-                    // std::cout << "Ephemeris (1, 2) have been received and belong to the same batch" << std::endl;
+                    // std::cout << "Ephemeris (1, 2) have been received and belong to the same batch\n";
                     b_flag_ephemeris_1 = false;  // clear the flag
                     b_flag_ephemeris_2 = false;  // clear the flag
                     return true;

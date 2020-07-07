@@ -45,13 +45,13 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     if (trk_params.extend_correlation_symbols != 1)
         {
             trk_params.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: Extended coherent integration is not allowed in GPS L2. Coherent integration has been set to 20 ms (1 symbol)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Extended coherent integration is not allowed in GPS L2. Coherent integration has been set to 20 ms (1 symbol)" << TEXT_RESET << '\n';
         }
     trk_params.track_pilot = configuration->property(role + ".track_pilot", false);
     if (trk_params.track_pilot)
         {
             trk_params.track_pilot = false;
-            std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
         }
     trk_params.system = 'G';
     std::array<char, 3> sig_{'2', 'S', '\0'};

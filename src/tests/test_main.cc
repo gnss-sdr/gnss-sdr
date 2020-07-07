@@ -153,7 +153,7 @@ Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 int main(int argc, char **argv)
 {
-    std::cout << "Running GNSS-SDR Tests..." << std::endl;
+    std::cout << "Running GNSS-SDR Tests...\n";
     int res = 0;
     try
         {

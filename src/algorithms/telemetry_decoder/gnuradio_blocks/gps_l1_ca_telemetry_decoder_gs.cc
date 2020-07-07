@@ -275,7 +275,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
                               << "subframe "
                               << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << std::endl;
+                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << '\n';
 
                     switch (subframe_ID)
                         {

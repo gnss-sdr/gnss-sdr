@@ -22,7 +22,7 @@
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
 #include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
-#include <iostream>  // for string, operator<<, cout, ostream, endl
+#include <iostream>  // for string, operator<<, cout, ostream
 #include <limits>    // for std::numeric_limits
 
 
@@ -43,9 +43,7 @@ Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 
 void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_word) const
 {
-    std::cout << " Word =";
-    std::cout << std::bitset<32>(BEIDOU_word);
-    std::cout << std::endl;
+    std::cout << " Word =" << std::bitset<32>(BEIDOU_word) << '\n';
 }
 
 

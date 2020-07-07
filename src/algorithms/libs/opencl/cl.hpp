@@ -116,7 +116,7 @@
  *           << "("
  *           << err.err()
  *           << ")"
- *           << std::endl;
+ *           << '\n';
  *     }
  *
  *    return EXIT_SUCCESS;

@@ -150,7 +150,7 @@ protected:
 
     Concurrent_Queue<int> channel_internal_queue;
 
-    std::shared_ptr<Concurrent_Queue<pmt::pmt_t> > queue;
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GalileoE5bPcpsAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -177,6 +177,8 @@ protected:
 
     double mse_doppler;
     double mse_delay;
+
+    int sat = 0;
 };
 
 
@@ -203,8 +205,8 @@ void GalileoE5bPcpsAcquisitionTest::config_1()
     integration_time_ms = 1;
     fs_in = 32e6;
 
-    expected_delay_chips = 255;
-    expected_doppler_hz = -1500;
+    expected_delay_chips = 4533;
+    expected_doppler_hz = -3200;
     max_doppler_error_hz = 2 / (3 * integration_time_ms * 1e-3);
     max_delay_error_chips = 0.50;
 
@@ -253,7 +255,6 @@ void GalileoE5bPcpsAcquisitionTest::config_1()
     config->set_property("Acquisition_7X.item_type", "gr_complex");
     config->set_property("Acquisition_7X.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
-    //config->set_property("Acquisition_7X.max_dwells", "1");
     config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
     config->set_property("Acquisition_7X.threshold", "0.8");
     config->set_property("Acquisition_7X.doppler_max", "10000");
@@ -344,9 +345,7 @@ void GalileoE5bPcpsAcquisitionTest::config_2()
     config->set_property("Acquisition_7X.item_type", "gr_complex");
     config->set_property("Acquisition_7X.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
-    //config->set_property("Acquisition_7X.max_dwells", "1");
     config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
-    //config->set_property("Acquisition_7X.pfa", "0.01");
     config->set_property("Acquisition_7X.doppler_max", "10000");
     config->set_property("Acquisition_7X.doppler_step", "250");
     config->set_property("Acquisition_7X.bit_transition_flag", "false");
@@ -393,9 +392,12 @@ void GalileoE5bPcpsAcquisitionTest::process_message()
             detection_counter++;
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
-            // The value 511.0 must be a variable, chips/length
-            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - (static_cast<double>(gnss_synchro.Acq_delay_samples) - 5.0) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
+            // The value 10230.0 must be a variable, chips/length
+
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
+
+            // std::cout << gnss_synchro.Acq_delay_samples << " " << gnss_synchro.Acq_doppler_hz <<std::endl;
 
             mse_delay += std::pow(delay_error_chips, 2);
             mse_doppler += std::pow(doppler_error_hz, 2);
@@ -404,6 +406,7 @@ void GalileoE5bPcpsAcquisitionTest::process_message()
                 {
                     correct_estimation_counter++;
                 }
+            // std::cout << delay_error_chips << " " << doppler_error_hz << std::endl;
         }
 
     realization_counter++;
@@ -438,13 +441,14 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, Instantiate)
 
 TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
 {
+    config_1();
+
     int nsamples = floor(fs_in * integration_time_ms * 1e-3);
     std::chrono::time_point<std::chrono::system_clock> begin, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
-    config_1();
     acquisition = std::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
     auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
@@ -471,7 +475,7 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
 TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
 {
     config_1();
-    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t> >();
+    queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
     acquisition = std::make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
@@ -486,70 +490,83 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_max(10000);
+        acquisition->set_doppler_max(config->property("Acquisition_7X.doppler_max", 5000));
     }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW({
-        acquisition->set_doppler_step(500);
+        acquisition->set_doppler_step(config->property("Acquisition_7X.doppler_step", 100));
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(0.0005);
+        acquisition->set_threshold(config->property("Acquisition_7X.threshold", 0.0001));
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
-        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting acquisition to the top_block.";
 
-    acquisition->init();
+    // USING THE SIGNAL GENERATOR
 
     ASSERT_NO_THROW({
         std::shared_ptr<GNSSBlockInterface> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue.get());
         std::shared_ptr<GNSSBlockInterface> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
         std::shared_ptr<GNSSBlockInterface> signal_source = std::make_shared<GenSignalSource>(signal_generator, filter, "SignalSource", queue.get());
+        filter->connect(top_block);
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
+
+    acquisition->reset();
+    acquisition->init();
 
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
-    for (unsigned int i = 0; i < 2; i++)
+    for (unsigned int i = 0; i < 1; i++)
         {
             init();
 
-            if (i == 0)
+            switch (i)
                 {
-                    gnss_synchro.PRN = 11;  // This satellite is visible
-                }
-            else if (i == 1)
-                {
-                    gnss_synchro.PRN = 19;  // This satellite is not visible
+                case 0:
+                    {
+                        gnss_synchro.PRN = 11;  // present
+                        break;
+                    }
+                case 1:
+                    {
+                        gnss_synchro.PRN = 19;  // not present
+                        break;
+                    }
                 }
 
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
-            acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW({
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block.";
 
+            stop_queue();
+
+            ch_thread.join();
+
             if (i == 0)
                 {
+                    //    std::cout << message << std::endl;
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                     if (message == 1)
                         {
-                            EXPECT_EQ(static_cast<unsigned int>(0), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                            // std::cout << correct_estimation_counter <<std::endl;
+                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                         }
                 }
             else if (i == 1)
                 {
+                    std::cout << message << std::endl;
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-
-            ASSERT_NO_THROW({
-                ch_thread.join();
-            }) << "Failure while waiting the queue to stop";
         }
 }

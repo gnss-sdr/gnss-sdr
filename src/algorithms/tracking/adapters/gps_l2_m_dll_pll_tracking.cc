@@ -40,7 +40,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    int vector_length = std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols != 1)
         {

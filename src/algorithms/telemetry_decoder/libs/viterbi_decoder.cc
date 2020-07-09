@@ -40,8 +40,8 @@ Viterbi_Decoder::Viterbi_Decoder(const int g_encoder[], const int KK, const int 
 
     // derived code properties
     d_mm = d_KK - 1;
-    d_states = 1U << d_mm;         /* 2^mm */
-    d_number_symbols = 1U << d_nn; /* 2^nn */
+    d_states = static_cast<int>(1U << d_mm);         /* 2^mm */
+    d_number_symbols = static_cast<int>(1U << d_nn); /* 2^nn */
 
     /* create appropriate transition matrices (trellis) */
     d_out0.reserve(d_states);
@@ -197,7 +197,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
                     int next_state_if_1 = d_state1[state_at_t];
 
                     /* hypothesis: info bit is a zero */
-                    int bm_0 = d_metric_c[d_out0[state_at_t]];
+                    float bm_0 = d_metric_c[d_out0[state_at_t]];
                     metric = d_pm_t[state_at_t] + bm_0;  // path metric + zerobranch metric
 
                     /* store new metric if more than metric in storage */
@@ -210,7 +210,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
                         }
 
                     /* hypothesis: info bit is a one */
-                    int bm_1 = d_metric_c[d_out1[state_at_t]];
+                    float bm_1 = d_metric_c[d_out1[state_at_t]];
                     metric = d_pm_t[state_at_t] + bm_1;  // path metric + onebranch metric
 
                     /* store new metric if more than metric in storage */
@@ -280,7 +280,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
 
     VLOG(FLOW) << "do_tb_and_decode(): requested_decoding_length=" << requested_decoding_length;
     // decode only decode_length bits -> overstep newer bits which are too much
-    decoding_length_mismatch = d_trellis_paths.size() - (traceback_length + requested_decoding_length);
+    decoding_length_mismatch = static_cast<int>(d_trellis_paths.size()) - (traceback_length + requested_decoding_length);
     VLOG(BLOCK) << "decoding_length_mismatch=" << decoding_length_mismatch;
     overstep_length = decoding_length_mismatch >= 0 ? decoding_length_mismatch : 0;
     VLOG(BLOCK) << "overstep_length=" << overstep_length;
@@ -290,7 +290,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
         {
             state = it->get_anchestor_state_of_current_state(state);
         }
-    t_out = d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1;  // requested_decoding_length-1;
+    t_out = static_cast<int>(d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1);  // requested_decoding_length-1;
     indicator_metric = 0;
     for (it = d_trellis_paths.begin() + traceback_length + overstep_length; it < d_trellis_paths.end(); ++it)
         {
@@ -306,7 +306,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
         }
     if (n_im > 0)
         {
-            indicator_metric /= n_im;
+            indicator_metric /= static_cast<float>(n_im);
         }
 
     VLOG(BLOCK) << "indicator metric: " << indicator_metric;
@@ -348,7 +348,7 @@ float Viterbi_Decoder::gamma(const float rec_array[], int symbol, int nn)
         }
     // rm = rm > 50 ? rm : -1000;
 
-    return (rm);
+    return rm;
 }
 
 
@@ -359,7 +359,7 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
     int nextstate[1];
     int state;
     int states;
-    states = (1U << (KK - 1)); /* The number of states: 2^mm */
+    states = static_cast<int>(1U << (KK - 1)); /* The number of states: 2^mm */
 
     /* Determine the output and next state for each possible starting state */
     for (state = 0; state < states; state++)
@@ -432,7 +432,7 @@ int Viterbi_Decoder::parity_counter(int symbol, int length)
             temp_parity = temp_parity ^ (symbol & 1U);
             symbol = symbol >> 1U;
         }
-    return (temp_parity);
+    return static_cast<int>(temp_parity);
 }
 
 

@@ -23,6 +23,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 
@@ -96,7 +97,7 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
                     d_fft->execute();
                     volk_32fc_s32f_power_spectrum_32f(power_spect.data(), d_fft->get_outbuf(), 1.0, length_);
                     volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect.data(), 15.0, length_);
-                    sig2lin = std::pow(10.0, (sig2dB / 10.0)) / static_cast<float>(n_deg_fred);
+                    sig2lin = std::pow(10.0F, (sig2dB / 10.0F)) / static_cast<float>(n_deg_fred);
                     noise_pow_est = (static_cast<float>(n_segments) * noise_pow_est + sig2lin) / static_cast<float>(n_segments + 1);
                     memcpy(out, in, sizeof(gr_complex) * length_);
                 }
@@ -117,7 +118,7 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
                                     volk_32fc_s32f_atan2_32f(&angle1, &c_samples1, static_cast<float>(1.0), 1);
                                     volk_32fc_x2_multiply_conjugate_32fc(&c_samples2, (in + length_ - 1), (in + length_ - 2), 1);
                                     volk_32fc_s32f_atan2_32f(&angle2, &c_samples2, static_cast<float>(1.0), 1);
-                                    float angle_ = (angle1 + angle2) / 2.0;
+                                    float angle_ = (angle1 + angle2) / 2.0F;
                                     z_0 = std::exp(gr_complex(0, 1) * angle_);
                                 }
                             for (int32_t aux = 0; aux < length_; aux++)

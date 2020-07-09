@@ -23,6 +23,9 @@
 #include "GPS_L2C.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E5b.h"
+#include "Galileo_FNAV.h"
+#include "Galileo_INAV.h"
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -1896,7 +1899,7 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
     glonass_gnav_eph.d_B_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    glonass_gnav_eph.d_P_2 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    glonass_gnav_eph.d_P_2 = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
     glonass_gnav_eph.d_t_b = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 7))) * 15 * 60.0;
@@ -1930,7 +1933,7 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
     glonass_gnav_eph.d_AZn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 5))) * TWO_N30;
     index += 5;
 
-    glonass_gnav_eph.d_P_3 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    glonass_gnav_eph.d_P_3 = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
     glonass_gnav_eph.d_gamma_n = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 11))) * TWO_N30;
@@ -1939,7 +1942,7 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
     glonass_gnav_eph.d_P = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
     index += 2;
 
-    glonass_gnav_eph.d_l3rd_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    glonass_gnav_eph.d_l3rd_n = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
     glonass_gnav_eph.d_tau_n = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 22))) * TWO_N30;
@@ -1951,7 +1954,7 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
     glonass_gnav_eph.d_E_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)));
     index += 5;
 
-    glonass_gnav_eph.d_P_4 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    glonass_gnav_eph.d_P_4 = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
     glonass_gnav_eph.d_F_T = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 4)));
@@ -2007,12 +2010,7 @@ std::string Rtcm::print_MT1029(uint32_t ref_id, const Gps_Ephemeris& gps_eph, do
     std::string text_binary;
     for (char c : message)
         {
-            if (isgraph(c))
-                {
-                    i++;
-                    first = true;
-                }
-            else if (c == ' ')
+            if (isgraph(c) || c == ' ')
                 {
                     i++;
                     first = true;
@@ -4529,14 +4527,14 @@ int32_t Rtcm::set_DF107(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF108(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    DF108 = std::bitset<1>(glonass_gnav_eph.d_B_n);
+    DF108 = std::bitset<1>(static_cast<bool>(glonass_gnav_eph.d_B_n));
     return 0;
 }
 
 
 int32_t Rtcm::set_DF109(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    DF109 = std::bitset<1>(glonass_gnav_eph.d_P_2);
+    DF109 = std::bitset<1>(static_cast<bool>(glonass_gnav_eph.d_P_2));
     return 0;
 }
 
@@ -5289,11 +5287,7 @@ int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 
     uint32_t int_ms = 0;
 
-    if (rough_range_s == 0.0)
-        {
-            int_ms = 255;
-        }
-    else if ((rough_range_s < 0.0) || (rough_range_s > meters_to_miliseconds * 255.0))
+    if (rough_range_s == 0.0 || ((rough_range_s < 0.0) || (rough_range_s > meters_to_miliseconds * 255.0)))
         {
             int_ms = 255;
         }
@@ -5349,7 +5343,7 @@ int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
         }
     if (sig == "7X")
         {
-            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5B_FREQ_HZ;
         }
 
     double rough_phase_range_rate_ms = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
@@ -5376,11 +5370,7 @@ int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
-    if (psrng_s == 0)
-        {
-            fine_pseudorange = -16384;
-        }
-    else if (std::fabs(psrng_s) > 292.7)
+    if (psrng_s == 0 || (std::fabs(psrng_s) > 292.7))
         {
             fine_pseudorange = -16384;  // 4000h: invalid value
         }
@@ -5424,7 +5414,7 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         }
     if ((sig == "7X") && (sys == "E"))
         {
-            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5B_FREQ_HZ;
         }
     if ((sig == "1C") && (sys == "R"))
         {
@@ -5447,11 +5437,7 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         }
     phrng_m -= cp;
 
-    if (phrng_m == 0.0)
-        {
-            fine_phaserange = -2097152;
-        }
-    else if (std::fabs(phrng_m) > 1171.0)
+    if (phrng_m == 0.0 || (std::fabs(phrng_m) > 1171.0))
         {
             fine_phaserange = -2097152;
         }
@@ -5484,11 +5470,7 @@ int32_t Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
         {
             lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
         }
-    if ((sig_ == "1C") && (sys == "R"))
-        {
-            lock_time_period_s = Rtcm::lock_time(ephGNAV, obs_time, gnss_synchro);
-        }
-    if ((sig_ == "2C") && (sys == "R"))
+    if (((sig_ == "1C") && (sys == "R")) || ((sig_ == "2C") && (sys == "R")))
         {
             lock_time_period_s = Rtcm::lock_time(ephGNAV, obs_time, gnss_synchro);
         }
@@ -5533,7 +5515,7 @@ int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
         }
     if ((sig_ == "7X") && (sys_ == "E"))
         {
-            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5B_FREQ_HZ;
         }
     if ((sig_ == "1C") && (sys_ == "R"))
         {
@@ -5547,11 +5529,7 @@ int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
     double rough_phase_range_rate = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
     double phrr = (-gnss_synchro.Carrier_Doppler_hz * lambda - rough_phase_range_rate);
 
-    if (phrr == 0.0)
-        {
-            fine_phaserange_rate = -16384;
-        }
-    else if (std::fabs(phrr) > 1.6384)
+    if (phrr == 0.0 || (std::fabs(phrr) > 1.6384))
         {
             fine_phaserange_rate = -16384;
         }
@@ -5574,11 +5552,7 @@ int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
-    if (psrng_s == 0.0)
-        {
-            fine_pseudorange = -524288;
-        }
-    else if (std::fabs(psrng_s) > 292.7)
+    if (psrng_s == 0.0 || (std::fabs(psrng_s) > 292.7))
         {
             fine_pseudorange = -524288;
         }
@@ -5620,7 +5594,7 @@ int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     if ((sig_ == "7X") && (sys_ == "E"))
         {
-            lambda = SPEED_OF_LIGHT_M_S / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
+            lambda = SPEED_OF_LIGHT_M_S / GALILEO_E5B_FREQ_HZ;
         }
     if ((sig_ == "1C") && (sys_ == "R"))
         {
@@ -5642,11 +5616,7 @@ int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     phrng_m -= cp;
 
-    if (phrng_m == 0.0)
-        {
-            fine_phaserange_ex = -8388608;
-        }
-    else if (std::fabs(phrng_m) > 1171.0)
+    if (phrng_m == 0.0 || (std::fabs(phrng_m) > 1171.0))
         {
             fine_phaserange_ex = -8388608;
         }

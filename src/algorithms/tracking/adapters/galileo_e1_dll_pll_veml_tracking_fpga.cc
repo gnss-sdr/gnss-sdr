@@ -57,7 +57,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
             std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     d_track_pilot = trk_params_fpga.track_pilot;
-    int32_t vector_length = std::round(trk_params_fpga.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    auto vector_length = static_cast<int32_t>(std::round(trk_params_fpga.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     trk_params_fpga.vector_length = vector_length;
     trk_params_fpga.system = 'E';
     std::array<char, 3> sig_{'1', 'B', '\0'};

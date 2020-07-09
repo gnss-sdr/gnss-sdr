@@ -916,7 +916,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
         {
         }  // Avoid compiler warning
     // Avoid compiler warning, there is not time system correction between Galileo and GLONASS
-    if (galileo_utc_model.A_0G_10)
+    if (galileo_utc_model.A_0G_10 > 0.0)
         {
         }
     std::string line;
@@ -1884,7 +1884,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     // -------- Line 6 leap seconds
     // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
-    line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
@@ -2282,7 +2282,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
     // -------- Line 6 leap seconds
     // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
-    line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.d_DeltaT_LS), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.i_DeltaT_LS), 6);
     line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.d_DeltaT_LSF), 6);
     line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.i_WN_LSF), 6);
     line += Rinex_Printer::rightJustify(std::to_string(bds_dnav_utc_model.i_DN), 6);
@@ -3504,7 +3504,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
         {
         }  // Avoid compiler warning
     // Avoid compiler warning, there is not time system correction between Galileo and GLONASS
-    if (galileo_utc_model.A_0G_10)
+    if (galileo_utc_model.A_0G_10 > 0.0)
         {
         }
     std::vector<std::string> data;
@@ -3655,7 +3655,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
                         }
                     else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
                         {
-                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DeltaT_LS), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
@@ -4838,7 +4838,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
-    if (eph.d_m)
+    if (eph.d_m > 0.0)
         {
         }  // Avoid compiler warning
     std::string line;
@@ -5171,7 +5171,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
-    if (glonass_gnav_eph.d_m)
+    if (glonass_gnav_eph.d_m > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -5527,7 +5527,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
-    if (glonass_gnav_eph.d_m)
+    if (glonass_gnav_eph.d_m > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -5847,7 +5847,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& galileo_bands, const std::string& glonass_bands)
 {
-    if (glonass_gnav_eph.d_m)
+    if (glonass_gnav_eph.d_m > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -6679,7 +6679,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, const double d_TOW_first_observation, const std::string& gps_bands)
 {
-    if (eph_cnav.d_i_0)
+    if (eph_cnav.d_i_0 > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -7890,7 +7890,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& galileo_bands)
 {
-    if (galileo_eph.e_1)
+    if (galileo_eph.e_1 > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -8415,7 +8415,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
 
 void Rinex_Printer::update_obs_header(std::fstream& out __attribute__((unused)), const Glonass_Gnav_Utc_Model& utc_model)
 {
-    if (utc_model.d_N_4)
+    if (utc_model.d_N_4 > 0.0)
         {
             // do nothing
         }
@@ -8644,7 +8644,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Beidou_Dnav_Utc_M
                     if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)
                         {
                             data.push_back(line_str);
-                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DeltaT_LS), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
@@ -8940,7 +8940,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
-    if (glonass_gnav_eph.d_m)
+    if (glonass_gnav_eph.d_m > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -9285,7 +9285,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
-    if (glonass_gnav_eph.d_m)
+    if (glonass_gnav_eph.d_m > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -9543,7 +9543,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double galileo_obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
-    if (glonass_gnav_eph.d_m)
+    if (glonass_gnav_eph.d_m > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -10176,7 +10176,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band)
 {
-    if (eph_cnav.d_i_0)
+    if (eph_cnav.d_i_0 > 0.0)
         {
         }  // avoid warning, not needed
     // RINEX observations timestamps are GPS timestamps.
@@ -10658,7 +10658,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
-    if (galileo_eph.e_1)
+    if (galileo_eph.e_1 > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -10930,7 +10930,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
-    if (galileo_eph.e_1)
+    if (galileo_eph.e_1 > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;
@@ -11224,10 +11224,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band)
 {
-    if (galileo_eph.e_1)
+    if (galileo_eph.e_1 > 0.0)
         {
         }  // avoid warning, not needed
-    if (gps_cnav_eph.d_e_eccentricity)
+    if (gps_cnav_eph.d_e_eccentricity > 0.0)
         {
         }  // avoid warning, not needed
     std::string line;

@@ -555,17 +555,11 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
                     switch (d_mapStringValues[it->Signal])
                         {
                         case evGPS_1C:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
-                            break;
-                        case evGPS_L5:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
-                            break;
                         case evSBAS_1C:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
-                            break;
                         case evGAL_1B:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
                             break;
+                        case evGPS_L5:
                         case evGAL_5X:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
                             break;
@@ -626,7 +620,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
             // Consume one item from the clock channel (last of the input channels)
-            consume(d_nchannels_in - 1, 1);
+            consume(static_cast<int32_t>(d_nchannels_in) - 1, 1);
         }
 
     // Push the tracking observables into buffers to allow the observable interpolation at the desired Rx clock

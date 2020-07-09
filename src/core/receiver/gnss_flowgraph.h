@@ -230,10 +230,9 @@ private:
     std::mutex signal_list_mutex_;
 
     int sources_count_;
-
-    unsigned int channels_count_;
-    unsigned int acq_channels_count_;
-    unsigned int max_acq_channels_;
+    int channels_count_;
+    int acq_channels_count_;
+    int max_acq_channels_;
 
     bool connected_;
     bool running_;

@@ -406,16 +406,6 @@ int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
     switch (d_wire_sample_type)
         {
         case 1:  // complex byte samples
-            bytes_requested = noutput_items * d_bytes_per_sample;
-            if (bytes_requested < fifo_items)
-                {
-                    num_samples_readed = noutput_items;  // read all
-                }
-            else
-                {
-                    num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
-                }
-            break;
         case 2:  // complex 4 bits samples
             bytes_requested = noutput_items * d_bytes_per_sample;
             if (bytes_requested < fifo_items)

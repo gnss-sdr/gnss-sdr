@@ -56,7 +56,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
         }
     if (n_channels_ > 1)
         {
-            for (uint32_t i = 0; i < n_channels_; i++)
+            for (int32_t i = 0; i < n_channels_; i++)
                 {
                     null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
                     unpack_spir_vec_.push_back(make_unpack_spir_gss6450_samples(adc_bits_));
@@ -135,7 +135,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
-    for (uint32_t i = 0; i < (n_channels_); i++)
+    for (int32_t i = 0; i < n_channels_; i++)
         {
             valve_vec_.emplace_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue));
             if (dump_)
@@ -187,7 +187,7 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
             if (n_channels_ > 1)
                 {
                     uint32_t aux = 0;
-                    for (uint32_t i = 0; i < n_channels_; i++)
+                    for (int32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
@@ -205,7 +205,7 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                                 }
                         }
                 }
-            for (uint32_t i = 0; i < n_channels_; i++)
+            for (int32_t i = 0; i < n_channels_; i++)
                 {
                     if (enable_throttle_control_)
                         {
@@ -248,7 +248,7 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
             if (n_channels_ > 1)
                 {
                     uint32_t aux = 0;
-                    for (uint32_t i = 0; i < n_channels_; i++)
+                    for (int32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
@@ -267,7 +267,7 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
                         }
                 }
 
-            for (uint32_t i = 0; i < (n_channels_); i++)
+            for (int32_t i = 0; i < (n_channels_); i++)
                 {
                     if (enable_throttle_control_)
                         {

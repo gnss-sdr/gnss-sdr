@@ -31,20 +31,20 @@
 FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_input_item_type = "gr_complex";
-    std::string default_output_item_type = "gr_complex";
-    std::string default_taps_item_type = "float";
-    std::string default_dump_filename = "../data/input_filter.dat";
-    double default_intermediate_freq = 0.0;
-    double default_sampling_freq = 4000000.0;
-    int default_number_of_taps = 6;
-    unsigned int default_number_of_bands = 2;
-    std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
-    std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
-    std::vector<double> default_error_w = {1.0, 1.0};
-    std::string default_filter_type = "bandpass";
-    int default_grid_density = 16;
-    int default_decimation_factor = 1;
+    const std::string default_input_item_type("gr_complex");
+    const std::string default_output_item_type("gr_complex");
+    const std::string default_taps_item_type("float");
+    const std::string default_dump_filename("../data/input_filter.dat");
+    const double default_intermediate_freq = 0.0;
+    const double default_sampling_freq = 4000000.0;
+    const int default_number_of_taps = 6;
+    const unsigned int default_number_of_bands = 2;
+    const std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
+    const std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
+    const std::vector<double> default_error_w = {1.0, 1.0};
+    const std::string default_filter_type("bandpass");
+    const int default_grid_density = 16;
+    const int default_decimation_factor = 1;
 
     DLOG(INFO) << "role " << role_;
 

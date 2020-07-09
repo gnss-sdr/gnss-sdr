@@ -418,7 +418,7 @@ int labsat23_source::general_work(int noutput_items,
                         {
                             std::vector<int16_t> memblock(n_int16_to_read);
                             binary_input_file.read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
-                            n_int16_to_read = binary_input_file.gcount() / 2;  // from bytes to int16
+                            n_int16_to_read = static_cast<int>(binary_input_file.gcount()) / 2;  // from bytes to int16
                             if (n_int16_to_read > 0)
                                 {
                                     int output_pointer = 0;
@@ -476,7 +476,7 @@ int labsat23_source::general_work(int noutput_items,
                         {
                             std::vector<int16_t> memblock(n_int16_to_read);
                             binary_input_file.read(reinterpret_cast<char *>(memblock.data()), n_int16_to_read * 2);
-                            n_int16_to_read = binary_input_file.gcount() / 2;  // from bytes to int16
+                            n_int16_to_read = static_cast<int>(binary_input_file.gcount()) / 2;  // from bytes to int16
                             if (n_int16_to_read > 0)
                                 {
                                     int output_pointer = 0;

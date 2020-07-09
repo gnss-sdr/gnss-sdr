@@ -238,9 +238,9 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
-            rx_latitude_ = std::stod(commandLine.at(3).c_str());
-            rx_longitude_ = std::stod(commandLine.at(4).c_str());
-            rx_altitude_ = std::stod(commandLine.at(5).c_str());
+            rx_latitude_ = std::stof(commandLine.at(3).c_str());
+            rx_longitude_ = std::stof(commandLine.at(4).c_str());
+            rx_altitude_ = std::stof(commandLine.at(5).c_str());
 
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {

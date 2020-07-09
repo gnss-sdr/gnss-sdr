@@ -27,9 +27,9 @@
 IshortToCshort::IshortToCshort(const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_input_item_type = "short";
-    std::string default_output_item_type = "cshort";
-    std::string default_dump_filename = "../data/input_filter.dat";
+    const std::string default_input_item_type("short");
+    const std::string default_output_item_type("cshort");
+    const std::string default_dump_filename("../data/input_filter.dat");
 
     DLOG(INFO) << "role " << role_;
 

@@ -511,7 +511,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                 }
             if (SV_page_5 == 10)
                 {
-                    d_DeltaT_LS = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
+                    i_DeltaT_LS = static_cast<int>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
                     d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LSF));
                     i_WN_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_WN_LSF));
                     d_A0UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0UTC));
@@ -730,7 +730,7 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC = d_DeltaT_LS + d_A0UTC + d_A1UTC * (beidoutime_corrected);
+    double Delta_t_UTC = i_DeltaT_LS + d_A0UTC + d_A1UTC * (beidoutime_corrected);
 
     // Determine if the effectivity time of the leap second event is in the past
     int32_t weeksToLeapSecondEvent = i_WN_LSF - i_BEIDOU_week;
@@ -754,7 +754,7 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
                             if ((beidoutime_corrected - secondOfLeapSecondEvent) < (static_cast<double>(5) / static_cast<double>(4)) * 24 * 60 * 60)
                                 {
                                     int32_t W = fmod(beidoutime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
-                                    t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
+                                    t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - i_DeltaT_LS);
                                 }
                             else
                                 {
@@ -896,7 +896,7 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     // UTC parameters
     utc_model.d_A1_UTC = d_A1UTC;
     utc_model.d_A0_UTC = d_A0UTC;
-    utc_model.d_DeltaT_LS = d_DeltaT_LS;
+    utc_model.i_DeltaT_LS = i_DeltaT_LS;
     utc_model.i_WN_LSF = i_WN_LSF;
     utc_model.i_DN = i_DN;
     utc_model.d_DeltaT_LSF = d_DeltaT_LSF;

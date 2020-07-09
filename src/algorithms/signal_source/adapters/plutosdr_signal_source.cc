@@ -31,8 +31,8 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_file = "./data/signal_source.dat";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_file("./data/signal_source.dat");
     std::string default_gain_mode("slow_attack");
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));

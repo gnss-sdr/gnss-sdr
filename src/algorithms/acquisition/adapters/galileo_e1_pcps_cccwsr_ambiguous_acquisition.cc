@@ -36,8 +36,8 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
                                 out_streams_(out_streams)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_filename("../data/acquisition.dat");
 
     DLOG(INFO) << "role " << role;
 
@@ -68,12 +68,12 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
 
     // -- Find number of samples per spreading code (4 ms)  -----------------
 
-    code_length_ = round(
-        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    code_length_ = static_cast<unsigned int>(round(
+        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
-    int samples_per_ms = code_length_ / 4;
+    auto samples_per_ms = static_cast<int>(code_length_) / 4;
 
     code_data_ = std::vector<std::complex<float>>(vector_length_);
     code_pilot_ = std::vector<std::complex<float>>(vector_length_);

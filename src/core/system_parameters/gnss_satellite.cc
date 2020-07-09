@@ -191,30 +191,15 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "SBAS")
         {
-            if (PRN_ == 120)
+            if ((PRN_ == 120)      // EGNOS Test Platform.Inmarsat 3-F2 (Atlantic Ocean Region-East)
+                || (PRN_ == 123)   // EGNOS Operational Platform. Astra 5B
+                || (PRN_ == 131)   // WAAS Eutelsat 117 West B
+                || (PRN_ == 135)   // WAAS Galaxy 15
+                || (PRN_ == 136)   // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
+                || (PRN_ == 138))  // WAAS Anik F1R
                 {
                     PRN = PRN_;
-                }  // EGNOS Test Platform.Inmarsat 3-F2 (Atlantic Ocean Region-East)
-            else if (PRN_ == 123)
-                {
-                    PRN = PRN_;
-                }  // EGNOS Operational Platform. Astra 5B
-            else if (PRN_ == 131)
-                {
-                    PRN = PRN_;
-                }  // WAAS Eutelsat 117 West B
-            else if (PRN_ == 135)
-                {
-                    PRN = PRN_;
-                }  // WAAS Galaxy 15
-            else if (PRN_ == 136)
-                {
-                    PRN = PRN_;
-                }  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
-            else if (PRN_ == 138)
-                {
-                    PRN = PRN_;
-                }  // WAAS Anik F1R
+                }
             else
                 {
                     DLOG(INFO) << "This PRN is not defined";

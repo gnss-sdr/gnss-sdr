@@ -79,10 +79,10 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", 0.0);
+    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
     if (threshold == 0.0)
         {
-            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
+            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", static_cast<float>(0.0));
         }
 
     acq_->set_threshold(threshold);

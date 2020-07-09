@@ -115,3 +115,5 @@ endif()
 if(has_transform_reduce_with_execution_policy)
     target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_TRANSFORM_REDUCE_WITH_POLICY=1)
 endif()
+
+add_benchmark(benchmark_sign)

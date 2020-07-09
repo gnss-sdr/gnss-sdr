@@ -42,7 +42,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
                                 out_streams_(out_streams)
 {
     pcpsconf_fpga_t acq_parameters;
-    std::string default_dump_filename = "../data/acquisition.dat";
+    const std::string default_dump_filename("../data/acquisition.dat");
 
     DLOG(INFO) << "Role " << role;
 
@@ -166,7 +166,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 13);
 
     acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", static_cast<float>(125.0));
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);

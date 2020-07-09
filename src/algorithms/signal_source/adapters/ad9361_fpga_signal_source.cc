@@ -75,8 +75,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
         {
             filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
         }
-    Fpass_ = configuration->property(role + ".Fpass", 0.0);
-    Fstop_ = configuration->property(role + ".Fstop", 0.0);
+    Fpass_ = configuration->property(role + ".Fpass", static_cast<float>(0.0));
+    Fstop_ = configuration->property(role + ".Fstop", static_cast<float>(0.0));
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", static_cast<uint64_t>(10000));
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_));

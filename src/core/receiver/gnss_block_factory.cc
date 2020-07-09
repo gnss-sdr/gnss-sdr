@@ -346,7 +346,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_1C" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1C" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -407,7 +407,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_2S" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_2S" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -471,7 +471,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_1B" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1B" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -535,7 +535,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_5X" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_5X" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -600,7 +600,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_1G" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1G" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -665,7 +665,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_2G" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_2G" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -729,7 +729,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_L5" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_L5" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -793,7 +793,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_B1" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_B1" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -857,7 +857,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_B3" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_B3" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -887,7 +887,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     std::string telemetry_decoder_implementation;
     std::string acquisition_implementation;
 
-    unsigned int channel_absolute_id = 0;
+    int channel_absolute_id = 0;
 
     unsigned int Channels_1C_count = configuration->property("Channels_1C.count", 0);
     unsigned int Channels_1B_count = configuration->property("Channels_1B.count", 0);

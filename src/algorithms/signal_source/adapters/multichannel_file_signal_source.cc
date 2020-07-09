@@ -44,7 +44,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     n_channels_ = configuration->property(role + ".total_channels", 1);
 
-    for (unsigned int n = 0; n < n_channels_; n++)
+    for (int32_t n = 0; n < n_channels_; n++)
         {
             filename_vec_.push_back(configuration->property(role + ".filename" + std::to_string(n), default_filename));
         }
@@ -93,7 +93,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
         }
     try
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     file_source_vec_.push_back(gr::blocks::file_source::make(item_size_, filename_vec_.at(n).c_str(), repeat_));
 
@@ -210,13 +210,13 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
 
     if (enable_throttle_control_)
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     throttle_vec_.push_back(gr::blocks::throttle::make(item_size_, sampling_frequency_));
                 }
         }
 
-    for (unsigned int n = 0; n < n_channels_; n++)
+    for (int32_t n = 0; n < n_channels_; n++)
         {
             LOG(INFO) << "Multichanne File source filename #" << n << filename_vec_.at(n);
         }
@@ -242,7 +242,7 @@ void MultichannelFileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->connect(file_source_vec_.at(n), 0, throttle_vec_.at(n), 0);
                     DLOG(INFO) << "connected file_source #" << n << " to throttle";
@@ -252,7 +252,7 @@ void MultichannelFileSignalSource::connect(gr::top_block_sptr top_block)
         }
     else
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->connect(file_source_vec_.at(n), 0, valve_, n);
                     DLOG(INFO) << "connected file_source #" << n << " to valve_";
@@ -265,7 +265,7 @@ void MultichannelFileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->disconnect(file_source_vec_.at(n), 0, throttle_vec_.at(n), 0);
                     DLOG(INFO) << "disconnected file_source #" << n << " to throttle";
@@ -275,7 +275,7 @@ void MultichannelFileSignalSource::disconnect(gr::top_block_sptr top_block)
         }
     else
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->disconnect(file_source_vec_.at(n), 0, valve_, n);
                     DLOG(INFO) << "disconnected file_source #" << n << " to valve_";

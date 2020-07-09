@@ -39,7 +39,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    int vector_length = std::round(trk_params.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS));
+    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols < 1)
         {

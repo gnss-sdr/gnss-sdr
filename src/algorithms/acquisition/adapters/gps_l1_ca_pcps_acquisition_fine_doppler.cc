@@ -38,7 +38,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
@@ -67,7 +67,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
 
     // -- Find number of samples per spreading code -------------------------
-    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    vector_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.samples_per_ms = vector_length_;
     code_ = std::vector<std::complex<float>>(vector_length_);
 

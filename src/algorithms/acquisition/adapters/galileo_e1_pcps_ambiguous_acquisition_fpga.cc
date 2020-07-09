@@ -159,7 +159,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", static_cast<float>(125.0));
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     // reference for the FPGA FFT-IFFT attenuation factor

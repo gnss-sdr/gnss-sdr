@@ -42,7 +42,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     DLOG(INFO) << "role " << role;
     trk_params_fpga.SetFromConfiguration(configuration, role);
 
-    int32_t vector_length = std::round(trk_params_fpga.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    auto vector_length = static_cast<int32_t>(std::round(trk_params_fpga.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     trk_params_fpga.vector_length = vector_length;
     if (trk_params_fpga.extend_correlation_symbols < 1)
         {

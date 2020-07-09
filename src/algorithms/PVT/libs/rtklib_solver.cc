@@ -890,7 +890,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
                     nav_data.utc_cmp[2] = 0.0;  // ??
                     nav_data.utc_cmp[3] = 0.0;  // ??
-                    nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
+                    nav_data.leaps = beidou_dnav_utc_model.i_DeltaT_LS;
                 }
 
             /* update carrier wave length using native function call in RTKlib */
@@ -928,7 +928,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     std::vector<double> azel;
                     azel.reserve(used_sats * 2);
-                    unsigned int index_aux = 0;
+                    int index_aux = 0;
                     for (auto &i : rtk_.ssat)
                         {
                             if (i.vs == 1)

@@ -18,7 +18,8 @@
  * -------------------------------------------------------------------------
  */
 
-#include "Galileo_E1.h"
+
+#include "Galileo_INAV.h"
 #include "rtcm.h"
 #include <memory>
 #include <thread>

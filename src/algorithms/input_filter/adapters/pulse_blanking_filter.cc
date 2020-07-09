@@ -32,9 +32,9 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
 {
     size_t item_size;
     xlat_ = false;
-    std::string default_input_item_type = "gr_complex";
-    std::string default_output_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/input_filter.dat";
+    const std::string default_input_item_type("gr_complex");
+    const std::string default_output_item_type("gr_complex");
+    const std::string default_dump_filename("../data/input_filter.dat");
 
     DLOG(INFO) << "role " << role_;
 
@@ -42,13 +42,13 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
     output_item_type_ = configuration->property(role_ + ".output_item_type", default_output_item_type);
     dump_ = configuration->property(role_ + ".dump", false);
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
-    float default_pfa_ = 0.04;
+    const float default_pfa_ = 0.04;
     float pfa = configuration->property(role_ + ".pfa", default_pfa_);
-    int default_length_ = 32;
+    const int default_length_ = 32;
     int length_ = configuration->property(role_ + ".length", default_length_);
-    int default_n_segments_est = 12500;
+    const int default_n_segments_est = 12500;
     int n_segments_est = configuration->property(role_ + ".segments_est", default_n_segments_est);
-    int default_n_segments_reset = 5000000;
+    const int default_n_segments_reset = 5000000;
     int n_segments_reset = configuration->property(role_ + ".segments_reset", default_n_segments_reset);
     if (input_item_type_ == "gr_complex")
         {
@@ -62,17 +62,17 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
             item_size = sizeof(gr_complex);    // avoids uninitialization
             input_size_ = sizeof(gr_complex);  // avoids uninitialization
         }
-    double default_if = 0.0;
+    const double default_if = 0.0;
     double if_aux = configuration->property(role_ + ".if", default_if);
     double if_ = configuration->property(role_ + ".IF", if_aux);
     if (std::abs(if_) > 1.0)
         {
             xlat_ = true;
-            double default_sampling_freq = 4000000.0;
+            const double default_sampling_freq = 4000000.0;
             double sampling_freq_ = configuration->property(role_ + ".sampling_frequency", default_sampling_freq);
-            double default_bw = 2000000.0;
+            const double default_bw = 2000000.0;
             double bw_ = configuration->property(role_ + ".bw", default_bw);
-            double default_tw = bw_ / 10.0;
+            const double default_tw = bw_ / 10.0;
             double tw_ = configuration->property(role_ + ".tw", default_tw);
             const std::vector<float> taps = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_, tw_);
             freq_xlating_ = gr::filter::freq_xlating_fir_filter_ccf::make(1, taps, if_, sampling_freq_);

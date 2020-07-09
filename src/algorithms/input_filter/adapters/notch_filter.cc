@@ -28,27 +28,22 @@
 NotchFilter::NotchFilter(const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    float pfa;
-    float default_pfa = 0.001;
-    float p_c_factor;
-    float default_p_c_factor = 0.9;
-    int length_;
-    int default_length_ = 32;
-    int n_segments_est;
-    int default_n_segments_est = 12500;
-    int n_segments_reset;
-    int default_n_segments_reset = 5000000;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_file = "./data/input_filter.dat";
+    const float default_pfa = 0.001;
+    const float default_p_c_factor = 0.9;
+    const int default_length_ = 32;
+    const int default_n_segments_est = 12500;
+    const int default_n_segments_reset = 5000000;
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_file("./data/input_filter.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-    pfa = configuration->property(role + ".pfa", default_pfa);
-    p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
-    length_ = configuration->property(role + ".length", default_length_);
-    n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
-    n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
+    float pfa = configuration->property(role + ".pfa", default_pfa);
+    float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
+    int length_ = configuration->property(role + ".length", default_length_);
+    int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
+    int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);

@@ -82,7 +82,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_state = 0;
     d_doppler_bias = 0;
     d_num_noncoherent_integrations_counter = 0U;
-    d_consumed_samples = d_acq_parameters.sampled_ms * d_acq_parameters.samples_per_ms * (d_acq_parameters.bit_transition_flag ? 2 : 1);
+    d_consumed_samples = d_acq_parameters.sampled_ms * d_acq_parameters.samples_per_ms * (d_acq_parameters.bit_transition_flag ? 2.0 : 1.0);
     if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
         {
             d_fft_size = d_consumed_samples;
@@ -258,11 +258,11 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
     float phase_step_rad;
     if (d_acq_parameters.use_automatic_resampler)
         {
-            phase_step_rad = TWO_PI * freq / static_cast<float>(d_acq_parameters.resampled_fs);
+            phase_step_rad = static_cast<float>(TWO_PI) * freq / static_cast<float>(d_acq_parameters.resampled_fs);
         }
     else
         {
-            phase_step_rad = TWO_PI * freq / static_cast<float>(d_acq_parameters.fs_in);
+            phase_step_rad = static_cast<float>(TWO_PI) * freq / static_cast<float>(d_acq_parameters.fs_in);
         }
     std::array<float, 1> _phase{};
     volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.size());
@@ -531,8 +531,8 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
     indext = index_time;
     if (!d_step_two)
         {
-            int index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
-            d_input_power = std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + effective_fft_size, 0.0) / effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter;
+            auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
+            d_input_power = std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + effective_fft_size, static_cast<float>(0.0)) / static_cast<float>(effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
             doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
@@ -891,12 +891,12 @@ void pcps_acquisition::calculate_threshold()
             return;
         }
 
-    int effective_fft_size = (d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
+    auto effective_fft_size = static_cast<int>(d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
     int num_doppler_bins = (d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins);
 
     int num_bins = effective_fft_size * num_doppler_bins;
 
-    d_threshold = 2.0 * boost::math::gamma_p_inv(2.0 * d_acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins)));
+    d_threshold = static_cast<float>(2.0 * boost::math::gamma_p_inv(2.0 * d_acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins))));
 }
 
 

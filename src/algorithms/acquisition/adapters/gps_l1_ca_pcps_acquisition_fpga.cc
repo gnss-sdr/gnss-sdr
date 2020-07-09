@@ -141,7 +141,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 10);
 
     acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", static_cast<float>(125.0));
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);

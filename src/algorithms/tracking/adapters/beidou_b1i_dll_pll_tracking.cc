@@ -41,7 +41,7 @@ BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    int vector_length = std::round(trk_params.fs_in / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols < 1)
         {

@@ -235,12 +235,12 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
         {3, 15, 3}};
 
     std::map<int, double> gains;
-    for (int i = 0; i < static_cast<int>(ranges.size()); i++)
+    for (size_t i = 0; i < ranges.size(); i++)
         {
             gains[i + 1] = ranges[i].start;
         }
 
-    for (int i = ranges.size() - 1; i >= 0; i--)
+    for (size_t i = ranges.size() - 1; i > 0; i--)
         {
             const range &r = ranges[i];
             double error = gain;
@@ -248,7 +248,7 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
             while (g < r.stop)
                 {
                     double sum = 0;
-                    for (int j = 0; j < static_cast<int>(gains.size()); j++)
+                    for (size_t j = 0; j < gains.size(); j++)
                         {
                             if (i == j)
                                 {

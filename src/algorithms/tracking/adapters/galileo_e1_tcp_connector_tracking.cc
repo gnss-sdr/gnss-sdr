@@ -38,37 +38,27 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
 {
     DLOG(INFO) << "role " << role;
     // ################# CONFIGURATION PARAMETERS ########################
-    int fs_in;
-    int vector_length;
-    bool dump;
-    std::string dump_filename;
-    std::string item_type;
-    std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float early_late_space_chips;
-    float very_early_late_space_chips;
-    size_t port_ch0;
-    item_type = configuration->property(role + ".item_type", default_item_type);
+    const std::string default_item_type("gr_complex");
+    std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    bool dump = configuration->property(role + ".dump", false);
+    float pll_bw_hz = configuration->property(role + ".pll_bw_hz", static_cast<float>(50.0));
     if (FLAGS_pll_bw_hz != 0.0)
         {
             pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
         }
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", static_cast<float>(2.0));
     if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
-    very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.5);
-    port_ch0 = configuration->property(role + ".port_ch0", 2060);
-    std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    vector_length = std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", static_cast<float>(0.15));
+    float very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", static_cast<float>(0.5));
+    size_t port_ch0 = configuration->property(role + ".port_ch0", 2060);
+    const std::string default_dump_filename("./track_ch");
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    auto vector_length = static_cast<int>(std::round(fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
     // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

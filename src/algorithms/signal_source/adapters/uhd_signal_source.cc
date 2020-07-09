@@ -34,8 +34,8 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
-    std::string empty = "";
-    std::string default_dump_file = "./data/signal_source.dat";
+    std::string empty;
+    const std::string default_dump_file("./data/signal_source.dat");
     std::string default_item_type = "cshort";
 
     // UHD COMMON PARAMETERS

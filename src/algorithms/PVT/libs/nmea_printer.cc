@@ -379,15 +379,10 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     std::stringstream sentence_str;
 
     boost::posix_time::time_duration td = d_position_UTC_time.time_of_day();
-    int utc_hours;
-    int utc_mins;
-    int utc_seconds;
-    int utc_milliseconds;
-
-    utc_hours = td.hours();
-    utc_mins = td.minutes();
-    utc_seconds = td.seconds();
-    utc_milliseconds = td.total_milliseconds() - td.total_seconds() * 1000;
+    int utc_hours = td.hours();
+    int utc_mins = td.minutes();
+    int utc_seconds = td.seconds();
+    auto utc_milliseconds = static_cast<int>(td.total_milliseconds() - td.total_seconds() * 1000);
 
     if (utc_hours < 10)
         {

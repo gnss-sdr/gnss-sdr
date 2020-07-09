@@ -40,43 +40,28 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
 {
     DLOG(INFO) << "role " << role;
     // ################# CONFIGURATION PARAMETERS ########################
-    int order;
-    int fs_in;
-    int vector_length;
-    int f_if;
-    bool dump;
-    std::string dump_filename;
-    std::string item_type;
-    std::string default_item_type = "gr_complex";
-    float dll_bw_hz;
-    float early_late_space_chips;
-    bool bce_run;
-    unsigned int bce_ptrans;
-    unsigned int bce_strans;
-    int bce_nu;
-    int bce_kappa;
-
-    item_type = configuration->property(role + ".item_type", default_item_type);
-    order = configuration->property(role + ".order", 2);
+    const std::string default_item_type("gr_complex");
+    std::string item_type = configuration->property(role + ".item_type", default_item_type);
+    int order = configuration->property(role + ".order", 2);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
-    dump = configuration->property(role + ".dump", false);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int f_if = configuration->property(role + ".if", 0);
+    bool dump = configuration->property(role + ".dump", false);
+    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", static_cast<float>(2.0));
     if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
-    std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", static_cast<float>(0.5));
+    const std::string default_dump_filename("./track_ch");
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    auto vector_length = static_cast<int>(std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
-    bce_run = configuration->property(role + ".bce_run", false);
-    bce_ptrans = configuration->property(role + ".p_transient", 0);
-    bce_strans = configuration->property(role + ".s_transient", 0);
-    bce_nu = configuration->property(role + ".bce_nu", 0);
-    bce_kappa = configuration->property(role + ".bce_kappa", 0);
+    bool bce_run = configuration->property(role + ".bce_run", false);
+    unsigned int bce_ptrans = configuration->property(role + ".p_transient", 0);
+    unsigned int bce_strans = configuration->property(role + ".s_transient", 0);
+    int bce_nu = configuration->property(role + ".bce_nu", 0);
+    int bce_kappa = configuration->property(role + ".bce_kappa", 0);
 
     // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

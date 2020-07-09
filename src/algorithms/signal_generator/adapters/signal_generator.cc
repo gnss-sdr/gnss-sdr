@@ -36,7 +36,7 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string default_dump_file = "./data/gen_source.dat";
     std::string default_system = "G";
     std::string default_signal = "1C";

@@ -118,7 +118,7 @@ private:
     uint64_t samples_;
     int64_t sampling_frequency_;
     size_t item_size_;
-    uint32_t n_channels_;
+    int32_t n_channels_;
     uint32_t in_streams_;
     uint32_t out_streams_;
     bool repeat_;

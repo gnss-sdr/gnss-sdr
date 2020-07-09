@@ -78,9 +78,9 @@ public:
 
     void assist_acquisition_doppler(double Carrier_Doppler_hz) override;
 
-    inline std::shared_ptr<AcquisitionInterface> acquisition() { return acq_; }
-    inline std::shared_ptr<TrackingInterface> tracking() { return trk_; }
-    inline std::shared_ptr<TelemetryDecoderInterface> telemetry() { return nav_; }
+    inline std::shared_ptr<AcquisitionInterface> acquisition() const { return acq_; }
+    inline std::shared_ptr<TrackingInterface> tracking() const { return trk_; }
+    inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
     void msg_handler_events(pmt::pmt_t msg);
 
 private:

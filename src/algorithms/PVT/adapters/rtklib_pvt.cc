@@ -48,10 +48,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 {
     Pvt_Conf pvt_output_parameters = Pvt_Conf();
     // dump parameters
-    std::string default_dump_filename = "./pvt.dat";
-    std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
-    std::string default_nmea_dump_devname = "/dev/tty1";
-    std::string default_rtcm_dump_devname = "/dev/pts/1";
+    const std::string default_dump_filename("./pvt.dat");
+    const std::string default_nmea_dump_filename("./nmea_pvt.nmea");
+    const std::string default_nmea_dump_devname("/dev/tty1");
+    const std::string default_rtcm_dump_devname("/dev/pts/1");
     DLOG(INFO) << "role " << role;
     pvt_output_parameters.dump = configuration->property(role + ".dump", false);
     pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -73,27 +73,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
-    if (FLAGS_RINEX_version == "3.01")
+    if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
         }
-    else if (FLAGS_RINEX_version == "3.02")
-        {
-            pvt_output_parameters.rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version == "3")
-        {
-            pvt_output_parameters.rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version == "2.11")
-        {
-            pvt_output_parameters.rinex_version = 2;
-        }
-    else if (FLAGS_RINEX_version == "2.10")
-        {
-            pvt_output_parameters.rinex_version = 2;
-        }
-    else if (FLAGS_RINEX_version == "2")
+    else if (FLAGS_RINEX_version == "2.10" || FLAGS_RINEX_version == "2.11" || FLAGS_RINEX_version == "2")
         {
             pvt_output_parameters.rinex_version = 2;
         }

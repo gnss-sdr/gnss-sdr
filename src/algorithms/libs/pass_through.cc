@@ -34,7 +34,7 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
     std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
     if (input_type != output_type)

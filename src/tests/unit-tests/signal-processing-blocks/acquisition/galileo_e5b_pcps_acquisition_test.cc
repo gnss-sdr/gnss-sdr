@@ -214,24 +214,24 @@ void GalileoE5bPcpsAcquisitionTest::config_1()
 
     config = std::make_shared<InMemoryConfiguration>();
 
+    config->set_property("Channel.signal", signal);
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
-
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
-
     config->set_property("SignalSource.item_type", "gr_complex");
-
     config->set_property("SignalSource.num_satellites", "1");
-
     config->set_property("SignalSource.system_0", "E");
     config->set_property("SignalSource.signal_0", "7X");
-    config->set_property("SignalSource.PRN_0", "10");
-    config->set_property("SignalSource.CN0_dB_0", "44");
+    config->set_property("SignalSource.PRN_0", "11");
+    config->set_property("SignalSource.CN0_dB_0", "50");
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
     config->set_property("SignalSource.noise_flag", "false");
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
+
+    config->set_property("SignalSource.dump", "false");
+    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
@@ -261,6 +261,7 @@ void GalileoE5bPcpsAcquisitionTest::config_1()
     config->set_property("Acquisition_7X.doppler_step", "250");
     config->set_property("Acquisition_7X.bit_transition_flag", "false");
     config->set_property("Acquisition_7X.dump", "false");
+    config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
 
@@ -323,6 +324,9 @@ void GalileoE5bPcpsAcquisitionTest::config_2()
     config->set_property("SignalSource.data_flag", "true");
     config->set_property("SignalSource.BW_BB", "0.97");
 
+    config->set_property("SignalSource.dump", "false");
+    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
+
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
@@ -350,6 +354,7 @@ void GalileoE5bPcpsAcquisitionTest::config_2()
     config->set_property("Acquisition_7X.doppler_step", "250");
     config->set_property("Acquisition_7X.bit_transition_flag", "false");
     config->set_property("Acquisition_7X.dump", "false");
+    config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
 

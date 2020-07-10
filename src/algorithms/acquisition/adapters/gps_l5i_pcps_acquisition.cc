@@ -55,7 +55,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
         }
 
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
 

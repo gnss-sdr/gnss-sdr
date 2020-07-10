@@ -160,8 +160,8 @@ private:
     float threshold_;
     int Zero_padding;
     int CAF_window_hz_;
+    int code_length_;
     unsigned int vector_length_;
-    unsigned int code_length_;
     unsigned int channel_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;

@@ -68,7 +68,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 
     // -- Find number of samples per spreading code -------------------------
     vector_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-    acq_parameters.samples_per_ms = vector_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(vector_length_);
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
@@ -114,7 +114,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_threshold(float threshold)
 
 void GpsL1CaPcpsAcquisitionFineDoppler::set_doppler_max(unsigned int doppler_max)
 {
-    doppler_max_ = doppler_max;
+    doppler_max_ = static_cast<int>(doppler_max);
     acquisition_cc_->set_doppler_max(doppler_max_);
 }
 
@@ -135,7 +135,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_gnss_synchro(Gnss_Synchro* gnss_sync
 
 signed int GpsL1CaPcpsAcquisitionFineDoppler::mag()
 {
-    return acquisition_cc_->mag();
+    return static_cast<signed int>(acquisition_cc_->mag());
 }
 
 

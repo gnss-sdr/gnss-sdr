@@ -86,7 +86,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     // -- Find number of samples per spreading code (1ms)-------------------------
-    code_length_ = static_cast<unsigned int>(round(static_cast<double>(fs_in_) / GALILEO_E5A_CODE_CHIP_RATE_CPS * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<int>(round(static_cast<double>(fs_in_) / GALILEO_E5A_CODE_CHIP_RATE_CPS * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -198,7 +198,7 @@ signed int GalileoE5aNoncoherentIQAcquisitionCaf::mag()
 {
     if (item_type_ == "gr_complex")
         {
-            return acquisition_cc_->mag();
+            return static_cast<signed int>(acquisition_cc_->mag());
         }
     return 0;
 }
@@ -276,7 +276,7 @@ float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
         {
             frequency_bins++;
         }

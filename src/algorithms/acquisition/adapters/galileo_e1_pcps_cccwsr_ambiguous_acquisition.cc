@@ -219,7 +219,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_state(int state)
 
 float GalileoE1PcpsCccwsrAmbiguousAcquisition::calculate_threshold(float pfa)
 {
-    if (pfa)
+    if (pfa > 0.0)
         { /* Not implemented*/
         };
     return 0.0;

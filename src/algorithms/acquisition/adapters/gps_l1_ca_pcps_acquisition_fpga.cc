@@ -68,7 +68,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0));
+    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;

@@ -1466,7 +1466,7 @@ void GNSSFlowgraph::perform_hw_reset()
     // a stop acquisition command causes the SW to reset the HW
     std::shared_ptr<Channel> channel_ptr;
 
-    for (uint32_t i = 0; i < channels_count_; i++)
+    for (int i = 0; i < channels_count_; i++)
         {
             channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
             channel_ptr->tracking()->stop_tracking();

@@ -76,7 +76,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     acq_parameters.code_length = code_length;
 
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0));
+    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 1);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;

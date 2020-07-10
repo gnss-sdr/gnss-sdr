@@ -22,6 +22,7 @@
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "gnss_signal_processing.h"
+#include <cmath>
 #include <memory>
 #include <string>
 #include <utility>
@@ -112,8 +113,8 @@ void galileo_e1_code_gen_sinboc11_float(own::span<float> _dest, const std::array
 void galileo_e1_gen_float(own::span<float> _dest, own::span<int> _prn, const std::array<char, 3>& _Signal)
 {
     constexpr uint32_t _codeLength = 12 * GALILEO_E1_B_CODE_LENGTH_CHIPS;
-    const float alpha = sqrt(10.0 / 11.0);
-    const float beta = sqrt(1.0 / 11.0);
+    const float alpha = std::sqrt(10.0F / 11.0F);
+    const float beta = std::sqrt(1.0F / 11.0F);
 
     std::string _galileo_signal = _Signal.data();
 
@@ -180,7 +181,7 @@ void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<
         {
             std::vector<float> _resampled_signal(_samplesPerCode);
 
-            resampler(_signal_E1, _resampled_signal, _samplesPerChip * _codeFreqBasis, _fs);  // resamples code to fs
+            resampler(_signal_E1, _resampled_signal, static_cast<float>(_samplesPerChip * _codeFreqBasis), _fs);  // resamples code to fs
 
             _signal_E1 = std::move(_resampled_signal);
         }

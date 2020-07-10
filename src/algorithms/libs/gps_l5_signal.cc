@@ -171,7 +171,7 @@ void gps_l5i_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _pr
 
     for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * static_cast<float>(_code[i]), 0.0);
+            _dest[i] = std::complex<float>(1.0F - 2.0F * static_cast<float>(_code[i]), 0.0);
         }
 }
 
@@ -186,7 +186,7 @@ void gps_l5i_code_gen_float(own::span<float> _dest, uint32_t _prn)
 
     for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code[i]);
+            _dest[i] = 1.0F - 2.0F * static_cast<float>(_code[i]);
         }
 }
 
@@ -200,7 +200,7 @@ void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint
     constexpr float _tc = 1.0 / static_cast<float>(GPS_L5I_CODE_RATE_CPS);  // L5I primary chip period in sec
 
     const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
-    const float _ts = 1.0 / static_cast<float>(_fs);  // Sampling period in sec
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
     int32_t _codeValueIndex;
 
     std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> _code{};
@@ -214,17 +214,17 @@ void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint
             // === Digitizing ==================================================
 
             // --- Make index array to read L5 code values ---------------------
-            _codeValueIndex = static_cast<int32_t>(std::ceil(_ts * static_cast<float>(i + 1) / _tc)) - 1;
+            _codeValueIndex = static_cast<int32_t>(std::ceil(_ts * static_cast<float>(i + 1.0F) / _tc)) - 1;
 
             // --- Make the digitized version of the L5I code ------------------
             if (i == _samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0.0);
+                    _dest[i] = std::complex<float>(1.0F - 2.0F * _code[_codeLength - 1], 0.0);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0.0);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0F - 2.0F * _code[_codeValueIndex], 0.0);  // repeat the chip -> upsample
                 }
         }
 }
@@ -240,7 +240,7 @@ void gps_l5q_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _pr
 
     for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * static_cast<float>(_code[i]));
+            _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * static_cast<float>(_code[i]));
         }
 }
 
@@ -281,25 +281,25 @@ void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint
     _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5Q_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
 
     // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(GPS_L5Q_CODE_RATE_CPS);  // L5Q chip period in sec
+    _ts = 1.0F / static_cast<float>(_fs);                    // Sampling period in sec
+    _tc = 1.0F / static_cast<float>(GPS_L5Q_CODE_RATE_CPS);  // L5Q chip period in sec
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             // === Digitizing ==================================================
 
             // --- Make index array to read L5 code values ---------------------
-            _codeValueIndex = static_cast<int32_t>(std::ceil(_ts * static_cast<float>(i + 1) / _tc)) - 1;
+            _codeValueIndex = static_cast<int32_t>(std::ceil(_ts * static_cast<float>(i + 1.0F) / _tc)) - 1;
 
             // --- Make the digitized version of the L5Q code ------------------
             if (i == _samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeLength - 1]);
+                    _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[_codeLength - 1]);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeValueIndex]);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[_codeValueIndex]);  // repeat the chip -> upsample
                 }
         }
 }

@@ -59,11 +59,7 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
                     conjugate_cc_ = make_conjugate_cc();
                 }
         }
-    else if (item_type_ == "short")
-        {
-            item_size_ = sizeof(int16_t);
-        }
-    else if (item_type_ == "ishort")
+    else if ((item_type_ == "short") || (item_type_ == "ishort"))
         {
             item_size_ = sizeof(int16_t);
         }
@@ -75,11 +71,7 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
                     conjugate_sc_ = make_conjugate_sc();
                 }
         }
-    else if (item_type_ == "byte")
-        {
-            item_size_ = sizeof(int8_t);
-        }
-    else if (item_type_ == "ibyte")
+    else if ((item_type_ == "byte") || (item_type_ == "ibyte"))
         {
             item_size_ = sizeof(int8_t);
         }

@@ -748,7 +748,7 @@ int findUtmZone(double latitude_deg, double longitude_deg)
     //
 
     // Start at 180 deg west = -180 deg
-    int utmZone = floor((180 + longitude_deg) / 6) + 1;
+    auto utmZone = static_cast<int>(floor((180 + longitude_deg) / 6) + 1);
 
     // Correct zone numbers for particular areas
     if (latitude_deg > 72.0)

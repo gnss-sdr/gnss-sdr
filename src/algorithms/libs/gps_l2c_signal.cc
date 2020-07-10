@@ -54,7 +54,7 @@ void gps_l2c_m_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _
 
     for (int32_t i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[i]);
+            _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[i]);
         }
 }
 
@@ -80,10 +80,10 @@ void gps_l2c_m_code_gen_float(own::span<float> _dest, uint32_t _prn)
 void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
 {
     constexpr int32_t _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;
-    constexpr float _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_CPS);  // L2C chip period in sec
+    constexpr float _tc = 1.0F / static_cast<float>(GPS_L2_M_CODE_RATE_CPS);  // L2C chip period in sec
 
     const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
-    const float _ts = 1.0 / static_cast<float>(_fs);  // Sampling period in sec
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
     int32_t _codeValueIndex;
 
     std::array<int32_t, GPS_L2_M_CODE_LENGTH_CHIPS> _code{};
@@ -97,17 +97,17 @@ void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, ui
             // === Digitizing ==================================================
 
             // --- Make index array to read L2C code values --------------------
-            _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
+            _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1.0F)) / _tc) - 1;
 
             // --- Make the digitized version of the L2C code ------------------
             if (i == _samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeLength - 1]);
+                    _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[_codeLength - 1]);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(0.0, 1.0 - 2.0 * _code[_codeValueIndex]);  // repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[_codeValueIndex]);  // repeat the chip -> upsample
                 }
         }
 }

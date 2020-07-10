@@ -97,7 +97,7 @@ void glonass_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest
     constexpr int32_t _codeLength = 511;
     constexpr float _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
 
-    const float _ts = 1.0 / static_cast<float>(_fs);  // Sampling period in sec
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
     const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     std::array<std::complex<float>, 511> _code{};
@@ -115,7 +115,7 @@ void glonass_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            aux = (_ts * (i + 1)) / _tc;
+            aux = (_ts * (static_cast<float>(i) + 1)) / _tc;
             _codeValueIndex = AUX_CEIL(aux) - 1;
 
             // --- Make the digitized version of the C/A code ------------------

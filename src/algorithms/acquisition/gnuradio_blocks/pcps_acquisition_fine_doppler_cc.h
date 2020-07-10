@@ -195,7 +195,7 @@ private:
     int compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
     int estimate_Doppler();
     float estimate_input_power(gr_vector_const_void_star& input_items);
-    double compute_CAF();
+    float compute_CAF();
     void reset_grid();
     void update_carrier_wipeoff();
     bool start();
@@ -234,11 +234,11 @@ private:
     int d_gnuradio_forecast_samples;
     int d_config_doppler_max;
     int d_num_doppler_points;
-    int d_doppler_step;
     int d_well_count;
     int d_n_samples_in_buffer;
+    int d_fft_size;
+    unsigned int d_doppler_step;
     unsigned int d_channel;
-    unsigned int d_fft_size;
     unsigned int d_code_phase;
     unsigned int d_dump_channel;
 

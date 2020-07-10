@@ -70,7 +70,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_fs_in = conf_.fs_in;
-    d_samples_per_ms = conf_.samples_per_ms;
+    d_samples_per_ms = static_cast<int>(conf_.samples_per_ms);
     d_config_doppler_max = conf_.doppler_max;
     d_fft_size = d_samples_per_ms;
     // HS Acquisition
@@ -212,7 +212,7 @@ void pcps_acquisition_fine_doppler_cc::reset_grid()
     for (int i = 0; i < d_num_doppler_points; i++)
         {
             // todo: use memset here
-            for (unsigned int j = 0; j < d_fft_size; j++)
+            for (int j = 0; j < d_fft_size; j++)
                 {
                     d_grid_data[i][j] = 0.0;
                 }
@@ -228,10 +228,10 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_points, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-            doppler_hz = d_doppler_step * doppler_index - d_config_doppler_max;
+            doppler_hz = static_cast<int>(d_doppler_step) * doppler_index - d_config_doppler_max;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler_hz) / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase, d_fft_size);
@@ -239,7 +239,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
 }
 
 
-double pcps_acquisition_fine_doppler_cc::compute_CAF()
+float pcps_acquisition_fine_doppler_cc::compute_CAF()
 {
     float firstPeak = 0.0;
     int index_doppler = 0;

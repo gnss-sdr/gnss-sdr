@@ -228,7 +228,7 @@ void pcps_assisted_acquisition_cc::redefine_grid()
 }
 
 
-double pcps_assisted_acquisition_cc::search_maximum()
+float pcps_assisted_acquisition_cc::search_maximum()
 {
     float magt = 0.0;
     float fft_normalization_factor;
@@ -252,7 +252,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
     magt = magt / (fft_normalization_factor * fft_normalization_factor);
 
     // 5- Compute the test statistics and compare to the threshold
-    d_test_statistics = 2 * d_fft_size * magt / (d_input_power * d_well_count);
+    d_test_statistics = 2.0F * d_fft_size * magt / (d_input_power * d_well_count);
 
     // 4- record the maximum peak and the associated synchronization parameters
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);

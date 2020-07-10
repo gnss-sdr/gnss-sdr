@@ -241,19 +241,19 @@ private:
 
     int d_state;
     int d_samples_per_ms;
-    int d_sampled_ms;
+    unsigned int d_sampled_ms;
     int d_samples_per_code;
     int d_CAF_window_hz;
     unsigned int d_channel;
-    unsigned int d_buffer_count;
+    int d_buffer_count;
     unsigned int d_gr_stream_buffer;
-    unsigned int d_doppler_resolution;
-    unsigned int d_doppler_max;
-    unsigned int d_doppler_step;
+    int d_doppler_resolution;
+    int d_doppler_max;
+    int d_doppler_step;
     unsigned int d_max_dwells;
     unsigned int d_well_count;
-    unsigned int d_fft_size;
-    unsigned int d_num_doppler_bins;
+    int d_fft_size;
+    int d_num_doppler_bins;
     unsigned int d_code_phase;
 
     bool d_bit_transition_flag;

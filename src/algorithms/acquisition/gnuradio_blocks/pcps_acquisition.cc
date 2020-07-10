@@ -321,7 +321,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             int32_t doppler = -static_cast<int32_t>(d_acq_parameters.doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
-            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_doppler_bias + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], static_cast<float>(d_doppler_bias + doppler));
         }
 }
 

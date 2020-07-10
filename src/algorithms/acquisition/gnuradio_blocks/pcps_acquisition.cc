@@ -532,7 +532,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
     if (!d_step_two)
         {
             auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
-            d_input_power = std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + effective_fft_size, static_cast<float>(0.0)) / static_cast<float>(effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
+            d_input_power = static_cast<float>(std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + effective_fft_size, static_cast<float>(0.0)) / effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
             doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else

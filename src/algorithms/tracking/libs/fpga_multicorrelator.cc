@@ -306,7 +306,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
             frac_part = fmod(d_shifts_chips[i] - d_rem_code_phase_chips, 1.0);
             if (frac_part < 0)
                 {
-                    frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
+                    frac_part = frac_part + 1.0F;  // fmod operator does not work as in Matlab with negative numbers
                 }
 
             d_initial_interp_counter[i] = static_cast<uint32_t>(std::floor(max_code_resampler_counter * frac_part));
@@ -324,7 +324,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
             frac_part = fmod(d_prompt_data_shift[0] - d_rem_code_phase_chips, 1.0);
             if (frac_part < 0)
                 {
-                    frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
+                    frac_part = frac_part + 1.0F;  // fmod operator does not work as in Matlab with negative numbers
                 }
             d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(std::floor(max_code_resampler_counter * frac_part));
         }

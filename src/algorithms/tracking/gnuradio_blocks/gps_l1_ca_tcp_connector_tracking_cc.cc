@@ -178,7 +178,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // doppler effect
     // Fd=(C/(C+Vr))*F
-    float radial_velocity = static_cast<float>((GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ);
+    auto radial_velocity = static_cast<float>((GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ);
     // new chip and prn sequence periods based on acq Doppler
     float T_chip_mod_seconds;
     float T_prn_mod_seconds;

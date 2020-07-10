@@ -96,70 +96,19 @@ private:
         float early_late_space_chips,
         size_t port_ch0);
 
-    // tracking configuration vars
-    uint32_t d_vector_length;
-    bool d_dump;
-
-    Gnss_Synchro *d_acquisition_gnss_synchro;
-    uint32_t d_channel;
-
-    int64_t d_fs_in;
-    int32_t d_correlation_length_samples;
-    int32_t d_n_correlator_taps;
-    double d_early_late_spc_chips;
-
-    double d_code_phase_step_chips;
-
     volk_gnsssdr::vector<gr_complex> d_ca_code;
+    // correlator
+    volk_gnsssdr::vector<float> d_local_code_shift_chips;
+    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
+    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
+    Cpu_Multicorrelator multicorrelator_cpu;
+    Tcp_Communication d_tcp_com;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
+    // tracking configuration vars
 
     gr_complex *d_Early;
     gr_complex *d_Prompt;
     gr_complex *d_Late;
-
-    // remaining code phase and carrier phase between tracking loops
-    double d_rem_code_phase_samples;
-    double d_next_rem_code_phase_samples;
-    float d_rem_carr_phase_rad;
-
-    // acquisition
-    float d_acq_code_phase_samples;
-    float d_acq_carrier_doppler_hz;
-    // correlator
-    volk_gnsssdr::vector<float> d_local_code_shift_chips;
-    volk_gnsssdr::vector<gr_complex> d_correlator_outs;
-    Cpu_Multicorrelator multicorrelator_cpu;
-
-    // tracking vars
-    double d_code_freq_hz;
-    double d_carrier_doppler_hz;
-    double d_acc_carrier_phase_rad;
-    double d_code_phase_samples;
-    size_t d_port_ch0;
-    size_t d_port;
-    int32_t d_listen_connection;
-    float d_control_id;
-    Tcp_Communication d_tcp_com;
-
-    // PRN period in samples
-    int32_t d_current_prn_length_samples;
-    int32_t d_next_prn_length_samples;
-    double d_sample_counter_seconds;
-
-    // processing samples counters
-    uint64_t d_sample_counter;
-    uint64_t d_acq_sample_stamp;
-
-    // CN0 estimation and lock detector
-    int32_t d_cn0_estimation_counter;
-    volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
-    float d_carrier_lock_test;
-    float d_CN0_SNV_dB_Hz;
-    float d_carrier_lock_threshold;
-    int32_t d_carrier_lock_fail_counter;
-
-    // control vars
-    bool d_enable_tracking;
-    bool d_pull_in;
 
     // file dump
     std::string d_dump_filename;
@@ -167,6 +116,46 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    double d_early_late_spc_chips;
+    double d_code_phase_step_chips;
+    double d_rem_code_phase_samples;
+    double d_next_rem_code_phase_samples;
+    double d_code_freq_hz;
+    double d_carrier_doppler_hz;
+    double d_acc_carrier_phase_rad;
+    double d_code_phase_samples;
+    double d_sample_counter_seconds;
+
+    int64_t d_fs_in;
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
+
+    size_t d_port_ch0;
+    size_t d_port;
+
+    uint32_t d_vector_length;
+    uint32_t d_channel;
+
+    int32_t d_correlation_length_samples;
+    int32_t d_n_correlator_taps;
+    int32_t d_listen_connection;
+    int32_t d_current_prn_length_samples;
+    int32_t d_next_prn_length_samples;
+    int32_t d_cn0_estimation_counter;
+    int32_t d_carrier_lock_fail_counter;
+
+    float d_rem_carr_phase_rad;
+    float d_acq_code_phase_samples;
+    float d_acq_carrier_doppler_hz;
+    float d_carrier_lock_test;
+    float d_CN0_SNV_dB_Hz;
+    float d_carrier_lock_threshold;
+    float d_control_id;
+
+    bool d_enable_tracking;
+    bool d_pull_in;
+    bool d_dump;
 };
 
 #endif  // GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H

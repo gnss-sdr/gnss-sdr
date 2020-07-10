@@ -269,8 +269,8 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
 
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_carrier_frequency_hz);  // The carrier loop filter implements the Doppler accumulator
-    d_code_loop_filter.initialize();                           // initialize the code filter
+    d_carrier_loop_filter.initialize(static_cast<float>(d_carrier_frequency_hz));  // The carrier loop filter implements the Doppler accumulator
+    d_code_loop_filter.initialize();                                               // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
     glonass_l1_ca_code_gen_complex(own::span<gr_complex>(d_ca_code.data(), GLONASS_L1_CA_CODE_LENGTH_CHIPS), 0);
@@ -595,10 +595,10 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), in);
-            multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
-                d_carrier_phase_step_rad,
-                d_rem_code_phase_chips,
-                d_code_phase_step_chips,
+            multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(static_cast<float>(d_rem_carrier_phase_rad),
+                static_cast<float>(d_carrier_phase_step_rad),
+                static_cast<float>(d_rem_code_phase_chips),
+                static_cast<float>(d_code_phase_step_chips),
                 d_correlation_length_samples);
 
             // ####### coherent integration extension
@@ -644,7 +644,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                                 }
                             // UPDATE INTEGRATION TIME
                             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L1_CA_CODE_PERIOD_S;
-                            d_code_loop_filter.set_pdi(CURRENT_INTEGRATION_TIME_S);
+                            d_code_loop_filter.set_pdi(static_cast<float>(CURRENT_INTEGRATION_TIME_S));
                             enable_dll_pll = true;
                         }
                     else
@@ -680,7 +680,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                                     //  perform basic (1ms) correlation
                                     // UPDATE INTEGRATION TIME
                                     CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in);
-                                    d_code_loop_filter.set_pdi(CURRENT_INTEGRATION_TIME_S);
+                                    d_code_loop_filter.set_pdi(static_cast<float>(CURRENT_INTEGRATION_TIME_S));
                                     enable_dll_pll = true;
                                 }
                         }
@@ -701,7 +701,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     // Carrier discriminator filter
                     // NOTICE: The carrier loop filter includes the Carrier Doppler accumulator, as described in Kaplan
                     // Input [s/Ti] -> output [Hz]
-                    d_carrier_doppler_hz = d_carrier_loop_filter.get_carrier_error(0.0, d_carr_phase_error_secs_Ti, CURRENT_INTEGRATION_TIME_S);
+                    d_carrier_doppler_hz = d_carrier_loop_filter.get_carrier_error(0.0, static_cast<float>(d_carr_phase_error_secs_Ti), static_cast<float>(CURRENT_INTEGRATION_TIME_S));
                     // PLL to DLL assistance [Secs/Ti]
                     d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz * CURRENT_INTEGRATION_TIME_S) / d_glonass_freq_ch;
                     // code Doppler frequency update
@@ -709,9 +709,9 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
 
                     // ################## DLL ##########################################################
                     // DLL discriminator
-                    d_code_error_chips_Ti = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2], d_early_late_spc_chips, 1.0);  // [chips/Ti] //early and late
+                    d_code_error_chips_Ti = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2], static_cast<float>(d_early_late_spc_chips), 1.0);  // [chips/Ti] //early and late
                     // Code discriminator filter
-                    d_code_error_filt_chips_s = d_code_loop_filter.get_code_nco(d_code_error_chips_Ti);  // input [chips/Ti] -> output [chips/second]
+                    d_code_error_filt_chips_s = d_code_loop_filter.get_code_nco(static_cast<float>(d_code_error_chips_Ti));  // input [chips/Ti] -> output [chips/second]
                     d_code_error_filt_chips_Ti = d_code_error_filt_chips_s * CURRENT_INTEGRATION_TIME_S;
                     code_error_filt_secs_Ti = d_code_error_filt_chips_Ti / d_code_freq_chips;  // [s/Ti]
 
@@ -851,30 +851,30 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     // PRN start sample stamp
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
-                    tmp_float = d_acc_carrier_phase_cycles * TWO_PI;
+                    tmp_float = static_cast<float>(d_acc_carrier_phase_cycles * TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // carrier and code frequency
-                    tmp_float = d_carrier_doppler_hz;
+                    tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_code_freq_chips;
+                    tmp_float = static_cast<float>(d_code_freq_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    tmp_float = 1.0 / (d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
+                    tmp_float = static_cast<float>(1.0 / (d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = 1.0 / (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S);
+                    tmp_float = static_cast<float>(1.0 / (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
-                    tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
+                    tmp_float = static_cast<float>(d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_code_error_filt_chips_Ti;
+                    tmp_float = static_cast<float>(d_code_error_filt_chips_Ti);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
-                    tmp_float = d_CN0_SNV_dB_Hz;
+                    tmp_float = static_cast<float>(d_CN0_SNV_dB_Hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_carrier_lock_test;
+                    tmp_float = static_cast<float>(d_carrier_lock_test);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
+                    tmp_float = static_cast<float>(d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     auto tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));

@@ -20,7 +20,7 @@
  */
 
 #include "pcps_acquisition_fine_doppler_cc.h"
-#include "GPS_L1_CA.h"
+#include "GPS_L1_CA.h"  // for GPS_L1_CA_CHIP_PERIOD_S
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_sdr_signal_processing.h"
@@ -70,7 +70,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_fs_in = conf_.fs_in;
-    d_samples_per_ms = conf_.samples_per_ms;
+    d_samples_per_ms = static_cast<int>(conf_.samples_per_ms);
     d_config_doppler_max = conf_.doppler_max;
     d_fft_size = d_samples_per_ms;
     // HS Acquisition
@@ -117,7 +117,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
                 {
-                    std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?" << std::endl;
+                    std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?\n";
                     d_dump = false;
                 }
         }
@@ -212,7 +212,7 @@ void pcps_acquisition_fine_doppler_cc::reset_grid()
     for (int i = 0; i < d_num_doppler_points; i++)
         {
             // todo: use memset here
-            for (unsigned int j = 0; j < d_fft_size; j++)
+            for (int j = 0; j < d_fft_size; j++)
                 {
                     d_grid_data[i][j] = 0.0;
                 }
@@ -228,10 +228,10 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_points, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-            doppler_hz = d_doppler_step * doppler_index - d_config_doppler_max;
+            doppler_hz = static_cast<int>(d_doppler_step) * doppler_index - d_config_doppler_max;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(TWO_PI) * static_cast<float>(doppler_hz) / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase, d_fft_size);
@@ -239,7 +239,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
 }
 
 
-double pcps_acquisition_fine_doppler_cc::compute_CAF()
+float pcps_acquisition_fine_doppler_cc::compute_CAF()
 {
     float firstPeak = 0.0;
     int index_doppler = 0;
@@ -434,7 +434,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     if (std::abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz) < 1000)
         {
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(fftFreqBins[tmp_index_freq]);
-            // std::cout << "FFT maximum present at " << fftFreqBins[tmp_index_freq] << " [Hz]" << std::endl;
+            // std::cout << "FFT maximum present at " << fftFreqBins[tmp_index_freq] << " [Hz]\n";
         }
     else
         {
@@ -642,7 +642,7 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
     mat_t *matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
     if (matfp == nullptr)
         {
-            std::cout << "Unable to create or open Acquisition dump file" << std::endl;
+            std::cout << "Unable to create or open Acquisition dump file\n";
             d_dump = false;
         }
     else

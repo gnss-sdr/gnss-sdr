@@ -18,7 +18,7 @@
  */
 
 #include "rtklib_conversions.h"
-#include "MATH_CONSTANTS.h"          // for PI, PI_2
+#include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
 #include "galileo_almanac.h"         // for Galileo_Almanac
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
@@ -41,7 +41,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
 
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
-    rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / PI_2;
+    rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / TWO_PI;
 
     switch (band)
         {
@@ -128,7 +128,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
 
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model)
 {
-    double week;
+    int week;
     double sec;
     int adj_week;
     geph_t rtklib_sat = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
@@ -364,7 +364,7 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.OMG0 = gps_cnav_eph.d_OMEGA0;
     // Compute the angle between the ascending node and the Greenwich meridian
     const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200K pp. 164
-    double d_OMEGA_DOT = OMEGA_DOT_REF * PI + gps_cnav_eph.d_DELTA_OMEGA_DOT;
+    double d_OMEGA_DOT = OMEGA_DOT_REF * GNSS_PI + gps_cnav_eph.d_DELTA_OMEGA_DOT;
     rtklib_sat.OMGd = d_OMEGA_DOT;
     rtklib_sat.omg = gps_cnav_eph.d_OMEGA;
     rtklib_sat.i0 = gps_cnav_eph.d_i_0;
@@ -434,11 +434,11 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.toa = toa;
     rtklib_alm.A = gps_alm.d_sqrt_A * gps_alm.d_sqrt_A;
     rtklib_alm.e = gps_alm.d_e_eccentricity;
-    rtklib_alm.i0 = (gps_alm.d_Delta_i + 0.3) * PI;
-    rtklib_alm.OMG0 = gps_alm.d_OMEGA0 * PI;
-    rtklib_alm.OMGd = gps_alm.d_OMEGA_DOT * PI;
-    rtklib_alm.omg = gps_alm.d_OMEGA * PI;
-    rtklib_alm.M0 = gps_alm.d_M_0 * PI;
+    rtklib_alm.i0 = (gps_alm.d_Delta_i + 0.3) * GNSS_PI;
+    rtklib_alm.OMG0 = gps_alm.d_OMEGA0 * GNSS_PI;
+    rtklib_alm.OMGd = gps_alm.d_OMEGA_DOT * GNSS_PI;
+    rtklib_alm.omg = gps_alm.d_OMEGA * GNSS_PI;
+    rtklib_alm.M0 = gps_alm.d_M_0 * GNSS_PI;
     rtklib_alm.f0 = gps_alm.d_A_f0;
     rtklib_alm.f1 = gps_alm.d_A_f1;
     rtklib_alm.toas = gps_alm.i_Toa;
@@ -464,11 +464,11 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.A = 5440.588203494 + gal_alm.d_Delta_sqrt_A;
     rtklib_alm.A = rtklib_alm.A * rtklib_alm.A;
     rtklib_alm.e = gal_alm.d_e_eccentricity;
-    rtklib_alm.i0 = (gal_alm.d_Delta_i + 56.0 / 180.0) * PI;
-    rtklib_alm.OMG0 = gal_alm.d_OMEGA0 * PI;
-    rtklib_alm.OMGd = gal_alm.d_OMEGA_DOT * PI;
-    rtklib_alm.omg = gal_alm.d_OMEGA * PI;
-    rtklib_alm.M0 = gal_alm.d_M_0 * PI;
+    rtklib_alm.i0 = (gal_alm.d_Delta_i + 56.0 / 180.0) * GNSS_PI;
+    rtklib_alm.OMG0 = gal_alm.d_OMEGA0 * GNSS_PI;
+    rtklib_alm.OMGd = gal_alm.d_OMEGA_DOT * GNSS_PI;
+    rtklib_alm.omg = gal_alm.d_OMEGA * GNSS_PI;
+    rtklib_alm.M0 = gal_alm.d_M_0 * GNSS_PI;
     rtklib_alm.f0 = gal_alm.d_A_f0;
     rtklib_alm.f1 = gal_alm.d_A_f1;
     rtklib_alm.toas = gal_alm.i_Toa;

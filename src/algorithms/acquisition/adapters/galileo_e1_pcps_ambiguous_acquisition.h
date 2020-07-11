@@ -41,7 +41,8 @@ class ConfigurationInterface;
 class GalileoE1PcpsAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
-    GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
+    GalileoE1PcpsAmbiguousAcquisition(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -152,30 +153,30 @@ public:
     void set_resampler_latency(uint32_t latency_samples) override;
 
 private:
-    ConfigurationInterface* configuration_;
-    Acq_Conf acq_parameters_;
     pcps_acquisition_sptr acquisition_;
+    std::vector<std::complex<float>> code_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    size_t item_size_;
+    Gnss_Synchro* gnss_synchro_;
+    const ConfigurationInterface* configuration_;
+    Acq_Conf acq_parameters_;
     std::string item_type_;
+    std::string dump_filename_;
+    std::string role_;
+    int64_t fs_in_;
+    size_t item_size_;
+    float threshold_;
+    int doppler_center_;
     unsigned int vector_length_;
     unsigned int code_length_;
-    bool acquire_pilot_;
     unsigned int channel_;
-    std::weak_ptr<ChannelFsm> channel_fsm_;
-    float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    int doppler_center_;
     unsigned int sampled_ms_;
-    int64_t fs_in_;
-    std::string dump_filename_;
-    std::vector<std::complex<float>> code_;
-    Gnss_Synchro* gnss_synchro_;
-    std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+    bool acquire_pilot_;
 };
 
 #endif  // GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H

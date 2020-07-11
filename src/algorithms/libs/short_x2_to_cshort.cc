@@ -34,7 +34,7 @@ short_x2_to_cshort::short_x2_to_cshort() : sync_block("short_x2_to_cshort",
                                                gr::io_signature::make(2, 2, sizeof(int16_t)),
                                                gr::io_signature::make(1, 1, sizeof(lv_16sc_t)))
 {
-    const int alignment_multiple = volk_gnsssdr_get_alignment() / sizeof(lv_16sc_t);
+    const auto alignment_multiple = static_cast<int>(volk_gnsssdr_get_alignment() / sizeof(lv_16sc_t));
     set_alignment(std::max(1, alignment_multiple));
 }
 

@@ -26,10 +26,9 @@
 void bm_forloop(benchmark::State& state)
 {
     std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
-    int32_t n = 0;
     while (state.KeepRunning())
         {
-            n = 0;
+            int32_t n = 0;
             for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
                 {
                     if (GPS_CA_PREAMBLE[i] == '1')
@@ -47,7 +46,7 @@ void bm_forloop(benchmark::State& state)
 }
 
 
-void bm_lambda(benchmark::State& state)
+void bm_generate(benchmark::State& state)
 {
     std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
     while (state.KeepRunning())
@@ -58,5 +57,5 @@ void bm_lambda(benchmark::State& state)
 
 
 BENCHMARK(bm_forloop);
-BENCHMARK(bm_lambda);
+BENCHMARK(bm_generate);
 BENCHMARK_MAIN();

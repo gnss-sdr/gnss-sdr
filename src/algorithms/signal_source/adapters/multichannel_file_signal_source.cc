@@ -30,7 +30,7 @@
 #include <utility>
 
 
-MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterface* configuration,
+MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -40,11 +40,11 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
 
     double default_seconds_to_skip = 0.0;
     size_t header_size = 0;
-    samples_ = configuration->property(role + ".samples", 0);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     n_channels_ = configuration->property(role + ".total_channels", 1);
 
-    for (unsigned int n = 0; n < n_channels_; n++)
+    for (int32_t n = 0; n < n_channels_; n++)
         {
             filename_vec_.push_back(configuration->property(role + ".filename" + std::to_string(n), default_filename));
         }
@@ -93,7 +93,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
         }
     try
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     file_source_vec_.push_back(gr::blocks::file_source::make(item_size_, filename_vec_.at(n).c_str(), repeat_));
 
@@ -127,31 +127,31 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
                 {
                     std::cerr
                         << "The configuration file has not been found."
-                        << std::endl
+                        << '\n'
                         << "Please create a configuration file based on the examples at the 'conf/' folder "
-                        << std::endl
+                        << '\n'
                         << "and then generate your own GNSS Software Defined Receiver by doing:"
-                        << std::endl
+                        << '\n'
                         << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                        << std::endl;
+                        << '\n';
                 }
             else
                 {
                     std::cerr
                         << "The receiver was configured to work with a file signal source "
-                        << std::endl
+                        << '\n'
                         << "but the specified file is unreachable by GNSS-SDR."
-                        << std::endl
+                        << '\n'
                         << "Please modify your configuration file"
-                        << std::endl
+                        << '\n'
                         << "and point SignalSource.filename to a valid raw data file. Then:"
-                        << std::endl
+                        << '\n'
                         << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                        << std::endl
+                        << '\n'
                         << "Examples of configuration files available at:"
-                        << std::endl
+                        << '\n'
                         << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                        << std::endl;
+                        << '\n';
                 }
 
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
@@ -177,12 +177,12 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
                 }
             else
                 {
-                    std::cout << "file_signal_source: Unable to open the samples file " << filename_vec_.at(0).c_str() << std::endl;
+                    std::cout << "file_signal_source: Unable to open the samples file " << filename_vec_.at(0).c_str() << '\n';
                     LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_vec_.at(0).c_str();
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_vec_.at(0) << ", which contains " << static_cast<double>(size) << " [bytes]" << std::endl;
+            std::cout << "Processing file " << filename_vec_.at(0) << ", which contains " << static_cast<double>(size) << " [bytes]\n";
             std::cout.precision(ss);
 
             if (size > 0)
@@ -203,20 +203,20 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(ConfigurationInterfac
         }
 
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
+    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
     valve_ = gnss_sdr_make_valve(item_size_, samples_, queue);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
     if (enable_throttle_control_)
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     throttle_vec_.push_back(gr::blocks::throttle::make(item_size_, sampling_frequency_));
                 }
         }
 
-    for (unsigned int n = 0; n < n_channels_; n++)
+    for (int32_t n = 0; n < n_channels_; n++)
         {
             LOG(INFO) << "Multichanne File source filename #" << n << filename_vec_.at(n);
         }
@@ -242,7 +242,7 @@ void MultichannelFileSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->connect(file_source_vec_.at(n), 0, throttle_vec_.at(n), 0);
                     DLOG(INFO) << "connected file_source #" << n << " to throttle";
@@ -252,7 +252,7 @@ void MultichannelFileSignalSource::connect(gr::top_block_sptr top_block)
         }
     else
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->connect(file_source_vec_.at(n), 0, valve_, n);
                     DLOG(INFO) << "connected file_source #" << n << " to valve_";
@@ -265,7 +265,7 @@ void MultichannelFileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->disconnect(file_source_vec_.at(n), 0, throttle_vec_.at(n), 0);
                     DLOG(INFO) << "disconnected file_source #" << n << " to throttle";
@@ -275,7 +275,7 @@ void MultichannelFileSignalSource::disconnect(gr::top_block_sptr top_block)
         }
     else
         {
-            for (unsigned int n = 0; n < n_channels_; n++)
+            for (int32_t n = 0; n < n_channels_; n++)
                 {
                     top_block->disconnect(file_source_vec_.at(n), 0, valve_, n);
                     DLOG(INFO) << "disconnected file_source #" << n << " to valve_";

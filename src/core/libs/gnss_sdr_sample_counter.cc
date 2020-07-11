@@ -104,23 +104,23 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                         {
                             day = " days ";
                         }
-                    std::cout << "Current receiver time: " << current_days << day << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
+                    std::cout << "Current receiver time: " << current_days << day << current_h << " h " << current_m << " min " << current_s << " s\n";
                 }
             else
                 {
                     if (flag_h)
                         {
-                            std::cout << "Current receiver time: " << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
+                            std::cout << "Current receiver time: " << current_h << " h " << current_m << " min " << current_s << " s\n";
                         }
                     else
                         {
                             if (flag_m)
                                 {
-                                    std::cout << "Current receiver time: " << current_m << " min " << current_s << " s" << std::endl;
+                                    std::cout << "Current receiver time: " << current_m << " min " << current_s << " s\n";
                                 }
                             else
                                 {
-                                    std::cout << "Current receiver time: " << current_s << " s" << std::endl;
+                                    std::cout << "Current receiver time: " << current_s << " s\n";
                                 }
                         }
                 }

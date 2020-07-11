@@ -66,17 +66,17 @@ signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
     float BW_BB) : gr::block("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex) * vector_length)),
                    signal_(std::move(signal1)),
                    system_(std::move(system)),
-                   PRN_(PRN),
                    CN0_dB_(std::move(CN0_dB)),
                    doppler_Hz_(std::move(doppler_Hz)),
+                   PRN_(PRN),
                    delay_chips_(std::move(delay_chips)),
                    delay_sec_(std::move(delay_sec)),
-                   data_flag_(data_flag),
-                   noise_flag_(noise_flag),
+                   BW_BB_(BW_BB * static_cast<float>(fs_in) / 2.0),
                    fs_in_(fs_in),
                    num_sats_(PRN.size()),
                    vector_length_(vector_length),
-                   BW_BB_(BW_BB * static_cast<float>(fs_in) / 2.0)
+                   data_flag_(data_flag),
+                   noise_flag_(noise_flag)
 {
     init();
     generate_codes();
@@ -98,8 +98,8 @@ void signal_generator_c::init()
             current_data_bit_int_.push_back(1);
             current_data_bits_.emplace_back(1, 0);
             ms_counter_.push_back(0);
-            data_modulation_.push_back((GALILEO_E5A_I_SECONDARY_CODE.at(0) == '0' ? 1 : -1));
-            pilot_modulation_.push_back((GALILEO_E5A_Q_SECONDARY_CODE[PRN_[sat]].at(0) == '0' ? 1 : -1));
+            data_modulation_.push_back((GALILEO_E5A_I_SECONDARY_CODE[0] == '0' ? 1 : -1));
+            pilot_modulation_.push_back((GALILEO_E5A_Q_SECONDARY_CODE[PRN_[sat]][0] == '0' ? 1 : -1));
 
             if (system_[sat] == "G")
                 {
@@ -300,7 +300,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
 
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
-            float phase_step_rad = -static_cast<float>(GPS_TWO_PI) * doppler_Hz_[sat] / static_cast<float>(fs_in_);
+            float phase_step_rad = -static_cast<float>(TWO_PI) * doppler_Hz_[sat] / static_cast<float>(fs_in_);
             std::array<float, 1> _phase{};
             _phase[0] = -start_phase_rad_[sat];
             volk_gnsssdr_s32f_sincos_32fc(complex_phase_.data(), -phase_step_rad, _phase.data(), vector_length_);
@@ -338,8 +338,8 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
 
             else if (system_[sat] == "R")
                 {
-                    phase_step_rad = -static_cast<float>(GPS_TWO_PI) * (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat])) + doppler_Hz_[sat]) / static_cast<float>(fs_in_);
-                    // std::cout << "sat " << PRN_[sat] << " SG - Freq = " << (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat]))) << " Doppler = " << doppler_Hz_[sat] << std::endl;
+                    phase_step_rad = -static_cast<float>(TWO_PI) * (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat])) + doppler_Hz_[sat]) / static_cast<float>(fs_in_);
+                    // std::cout << "sat " << PRN_[sat] << " SG - Freq = " << (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat]))) << " Doppler = " << doppler_Hz_[sat] << '\n';
                     _phase[0] = -start_phase_rad_[sat];
                     volk_gnsssdr_s32f_sincos_32fc(complex_phase_.data(), -phase_step_rad, _phase.data(), vector_length_);
 
@@ -389,8 +389,8 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
                                     // New random data bit
                                     current_data_bit_int_[sat] = (uniform_dist(e1) % 2) == 0 ? 1 : -1;
                                 }
-                            data_modulation_[sat] = current_data_bit_int_[sat] * (GALILEO_E5A_I_SECONDARY_CODE.at((ms_counter_[sat] + delay_sec_[sat]) % 20) == '0' ? 1 : -1);
-                            pilot_modulation_[sat] = (GALILEO_E5A_Q_SECONDARY_CODE[PRN_[sat] - 1].at((ms_counter_[sat] + delay_sec_[sat]) % 100) == '0' ? 1 : -1);
+                            data_modulation_[sat] = current_data_bit_int_[sat] * (GALILEO_E5A_I_SECONDARY_CODE[(ms_counter_[sat] + delay_sec_[sat]) % 20] == '0' ? 1 : -1);
+                            pilot_modulation_[sat] = (GALILEO_E5A_Q_SECONDARY_CODE[PRN_[sat] - 1][((ms_counter_[sat] + delay_sec_[sat]) % 100)] == '0' ? 1 : -1);
 
                             ms_counter_[sat] = ms_counter_[sat] + static_cast<int>(round(1e3 * GALILEO_E5A_CODE_PERIOD_S));
 

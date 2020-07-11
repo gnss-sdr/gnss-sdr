@@ -63,7 +63,7 @@ arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec
 
     // -- Find rotation angle --------------------------------------------------
     double omegatau;
-    omegatau = OMEGA_EARTH_DOT * traveltime;
+    omegatau = GNSS_OMEGA_EARTH_DOT * traveltime;
 
     // -- Build a rotation matrix ----------------------------------------------
     arma::mat R3 = {{cos(omegatau), sin(omegatau), 0.0},
@@ -116,8 +116,8 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
                 }
         }
     while (std::abs(h - oldh) > 1.0e-12);
-    d_latitude_d = phi * 180.0 / GPS_PI;
-    d_longitude_d = lambda * 180.0 / GPS_PI;
+    d_latitude_d = phi * 180.0 / GNSS_PI;
+    d_longitude_d = lambda * 180.0 / GNSS_PI;
     d_height_m = h;
     // todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
     return 0;

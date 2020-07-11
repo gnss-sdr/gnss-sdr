@@ -170,7 +170,7 @@
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-    ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID)  // NOLINT(performance-unnecessary-value-param)
+    const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID)  // NOLINT(performance-unnecessary-value-param)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource";  // backwards compatibility for old conf files
@@ -192,7 +192,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
-    ConfigurationInterface* configuration, int ID)
+    const ConfigurationInterface* configuration, int ID)
 {
     std::string default_implementation = "Pass_Through";
     // backwards compatibility for old conf files
@@ -258,7 +258,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(ConfigurationInterface* configuration)
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const ConfigurationInterface* configuration)
 {
     std::string default_implementation = "Hybrid_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
@@ -287,7 +287,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(Configurati
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(ConfigurationInterface* configuration)
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const ConfigurationInterface* configuration)
 {
     std::string default_implementation = "RTKLIB_PVT";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
@@ -309,7 +309,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(ConfigurationInterf
 
 // ********* GPS L1 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -350,7 +350,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_1C" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1C" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -374,7 +374,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 
 // ********* GPS L2C (M) CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -411,7 +411,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_2S" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_2S" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -435,7 +435,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 
 // ********* GALILEO E1 B CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -475,7 +475,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_1B" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1B" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -499,7 +499,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
 
 // ********* GALILEO E5a  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -539,7 +539,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_5X" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_5X" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -627,7 +627,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_7X(
 
 // ********* GLONASS L1 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -668,7 +668,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_1G" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1G" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -692,7 +692,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 
 // ********* GLONASS L2 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -733,7 +733,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_2G" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_2G" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -757,7 +757,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
 
 // ********* GPS L5  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -797,7 +797,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_L5" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_L5" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -821,7 +821,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
 
 // ********* BeiDou B1I  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -861,7 +861,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_B1" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_B1" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -885,7 +885,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
 
 // ********* BeiDou B3I  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
@@ -925,7 +925,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
             appendix3 = "";
         }
     // Automatically detect input data type
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string acq_item_type = configuration->property("Acquisition_B3" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_B3" + appendix2 + ".item_type", default_item_type);
     if (acq_item_type != trk_item_type)
@@ -948,14 +948,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B3(
 
 
 std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFactory::GetChannels(
-    ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue)  // NOLINT(performance-unnecessary-value-param)
+    const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue)  // NOLINT(performance-unnecessary-value-param)
 {
     std::string default_implementation = "Pass_Through";
     std::string tracking_implementation;
     std::string telemetry_decoder_implementation;
     std::string acquisition_implementation;
 
-    unsigned int channel_absolute_id = 0;
+    int channel_absolute_id = 0;
 
     unsigned int Channels_1C_count = configuration->property("Channels_1C.count", 0);
     unsigned int Channels_1B_count = configuration->property("Channels_1B.count", 0);
@@ -1296,7 +1296,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
  * (see below)
  */
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams, Concurrent_Queue<pmt::pmt_t>* queue)  // NOLINT(performance-unnecessary-value-param)
@@ -1322,7 +1322,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1337,7 +1337,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1353,7 +1353,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1368,7 +1368,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1382,7 +1382,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1396,7 +1396,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1410,7 +1410,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1424,7 +1424,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1438,7 +1438,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -1453,7 +1453,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             catch (const std::exception& e)
                 {
-                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
                     exit(1);
                 }
         }
@@ -2026,7 +2026,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
  */
 
 std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams)
@@ -2216,7 +2216,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
 
 
 std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams)
@@ -2367,7 +2367,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 
 
 std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams)

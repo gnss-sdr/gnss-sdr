@@ -28,7 +28,7 @@ const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int6
 
 void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 10230;
+    constexpr uint32_t _code_length = 10230;
     std::bitset<_code_length> G1{};
     std::bitset<_code_length> G2{};
     auto G1_register = std::bitset<13>{}.set();  // All true
@@ -170,7 +170,7 @@ void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_
 
 void beidou_b3i_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 10230;
+    constexpr uint32_t _code_length = 10230;
     std::array<int, _code_length> b3i_code_int{};
 
     beidou_b3i_code_gen_int(b3i_code_int, _prn, _chip_shift);
@@ -184,7 +184,7 @@ void beidou_b3i_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _c
 
 void beidou_b3i_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 10230;
+    constexpr uint32_t _code_length = 10230;
     std::array<int, _code_length> b3i_code_int{};
 
     beidou_b3i_code_gen_int(b3i_code_int, _prn, _chip_shift);
@@ -198,38 +198,34 @@ void beidou_b3i_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _
 
 void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int _fs, uint32_t _chip_shift)
 {
-    // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
+    constexpr int32_t _codeFreqBasis = 10230000;  // Hz
+    constexpr int32_t _codeLength = 10230;
+    constexpr float _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // B3I chip period in sec
+
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in secs
+    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+
     std::array<std::complex<float>, 10230> _code{};
-    int32_t _samplesPerCode;
+
     int32_t _codeValueIndex;
-    float _ts;
-    float _tc;
     float aux;
-    const int32_t _codeFreqBasis = 10230000;  // Hz
-    const int32_t _codeLength = 10230;
 
-    // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
-
-    // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
-    beidou_b3i_code_gen_complex(_code, _prn, _chip_shift);  // generate C/A code 1 sample per chip
+    beidou_b3i_code_gen_complex(_code, _prn, _chip_shift);  // generate B3I code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             // === Digitizing ==================================================
 
-            // --- Make index array to read C/A code values --------------------
+            // --- Make index array to read B3I code values --------------------
             // The length of the index array depends on the sampling frequency -
-            // number of samples per millisecond (because one C/A code period is one
-            // millisecond).
+            // number of samples per millisecond (because one B3I code period is
+            // one millisecond).
 
-            aux = (_ts * (i + 1)) / _tc;
+            aux = (_ts * (static_cast<float>(i) + 1)) / _tc;
             _codeValueIndex = AUX_CEIL(aux) - 1;
 
-            // --- Make the digitized version of the C/A code ------------------
-            // The "upsampled" code is made by selecting values form the CA code
+            // --- Make the digitized version of the B3I code ------------------
+            // The "upsampled" code is made by selecting values form the B3I code
             // chip array (caCode) for the time instances of each sample.
             if (i == _samplesPerCode - 1)
                 {

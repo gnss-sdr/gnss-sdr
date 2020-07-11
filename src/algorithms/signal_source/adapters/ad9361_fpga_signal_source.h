@@ -27,6 +27,7 @@
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -35,7 +36,7 @@ class ConfigurationInterface;
 class Ad9361FpgaSignalSource : public GNSSBlockInterface
 {
 public:
-    Ad9361FpgaSignalSource(ConfigurationInterface *configuration,
+    Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
         const std::string &role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t> *queue);
 
@@ -65,54 +66,58 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    void run_DMA_process(const std::string &FreqBand,
+        const std::string &Filename1,
+        const std::string &Filename2);
+
+    std::thread thread_file_to_dma;
+
+    std::shared_ptr<Fpga_Switch> switch_fpga;
+
     std::string role_;
 
     // Front-end settings
+    std::string gain_mode_rx1_;
+    std::string gain_mode_rx2_;
+    std::string rf_port_select_;
+    std::string filter_file_;
+    std::string filter_source_;
+    std::string filter_filename_;
+    std::string filename_rx1;
+    std::string filename_rx2;
+    std::string freq_band;
+
+    double rf_gain_rx1_;
+    double rf_gain_rx2_;
     uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;
     uint64_t bandwidth_;
+    float Fpass_;
+    float Fstop_;
+
+    // DDS configuration for LO generation for external mixer
+    double scale_dds_dbfs_;
+    double phase_dds_deg_;
+    double tx_attenuation_db_;
+    uint64_t freq_rf_tx_hz_;
+    uint64_t freq_dds_tx_hz_;
+    uint64_t tx_bandwidth_;
+    size_t item_size_;
+    uint32_t in_stream_;
+    uint32_t out_stream_;
+    int32_t switch_position;
+    bool enable_dds_lo_;
+
+    bool filter_auto_;
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;
     bool rx1_enable_;
     bool rx2_enable_;
-    std::string gain_mode_rx1_;
-    std::string gain_mode_rx2_;
-    double rf_gain_rx1_;
-    double rf_gain_rx2_;
-    std::string rf_port_select_;
-    std::string filter_file_;
-    bool filter_auto_;
-    std::string filter_source_;
-    std::string filter_filename_;
-    float Fpass_;
-    float Fstop_;
-
-    // DDS configuration for LO generation for external mixer
-    bool enable_dds_lo_;
-    uint64_t freq_rf_tx_hz_;
-    uint64_t freq_dds_tx_hz_;
-    uint64_t tx_bandwidth_;
-    double scale_dds_dbfs_;
-    double phase_dds_deg_;
-    double tx_attenuation_db_;
-
-    uint32_t in_stream_;
-    uint32_t out_stream_;
-
-    size_t item_size_;
-
-    std::shared_ptr<Fpga_Switch> switch_fpga;
-    int32_t switch_position;
-
-    std::thread thread_file_to_dma;
-    std::string filename_rx1;
-    std::string filename_rx2;
-    std::string freq_band;
-
     bool enable_DMA_;
     bool rf_shutdown_;
-    void run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA);
+
+    std::mutex dma_mutex;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

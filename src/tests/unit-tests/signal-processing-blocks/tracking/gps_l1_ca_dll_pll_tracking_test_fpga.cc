@@ -84,7 +84,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
     buffer_DMA = reinterpret_cast<char *>(malloc(DMA_TRACK_TRANSFER_SIZE));
     if (!buffer_DMA)
         {
-            std::cerr << "Memory error!" << std::endl;
+            std::cerr << "Memory error!\n";
             close(dma_descr);
             return;
         }
@@ -105,7 +105,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
                     size_t result = fread(buffer_DMA, DMA_TRACK_TRANSFER_SIZE, 1, rx_signal_file);
                     if (result != DMA_TRACK_TRANSFER_SIZE)
                         {
-                            std::cerr << "Error reading from DMA" << std::endl;
+                            std::cerr << "Error reading from DMA\n";
                         }
 
                     assert(DMA_TRACK_TRANSFER_SIZE == write(dma_descr, &buffer_DMA[0], DMA_TRACK_TRANSFER_SIZE));
@@ -117,7 +117,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
                     size_t result = fread(buffer_DMA, num_remaining_samples, 1, rx_signal_file);
                     if (static_cast<int>(result) != num_remaining_samples)
                         {
-                            std::cerr << "Error reading from DMA" << std::endl;
+                            std::cerr << "Error reading from DMA\n";
                         }
                     assert(num_remaining_samples == write(dma_descr, &buffer_DMA[0], num_remaining_samples));
                     num_samples_transferred = num_samples_transferred + num_remaining_samples;
@@ -140,7 +140,7 @@ void sending_thread(const gr::top_block_sptr &top_block, const char *file_name)
     rx_signal_file = fopen(file_name, "rb");
     if (!rx_signal_file)
         {
-            std::cerr << "Unable to open file!" << std::endl;
+            std::cerr << "Unable to open file!\n";
             return;
         }
 
@@ -308,13 +308,13 @@ int GpsL1CADllPllTrackingTestFpga::generate_signal()
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
-            std::cout << "Return not expected. Must be an execv err." << std::endl;
+            std::cout << "Return not expected. Must be an execv err.\n";
             std::terminate();
         }
 
     waitpid(pid, &child_status, 0);
 
-    std::cout << "Signal and Observables RINEX and RAW files created." << std::endl;
+    std::cout << "Signal and Observables RINEX and RAW files created.\n";
     return 0;
 }
 
@@ -375,7 +375,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec &true_time_s
     std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
               << " (max,min)=" << max_error << "," << min_error << " [Hz]"
-              << std::endl;
+              << '\n';
     std::cout.precision(ss);
 }
 
@@ -414,7 +414,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     std::cout << std::setprecision(10) << "TRK acc carrier phase RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
               << " (max,min)=" << max_error << "," << min_error << " [Hz]"
-              << std::endl;
+              << '\n';
     std::cout.precision(ss);
 }
 
@@ -452,7 +452,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     std::cout << std::setprecision(10) << "TRK code phase RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
               << " (max,min)=" << max_error << "," << min_error << " [Chips]"
-              << std::endl;
+              << '\n';
     std::cout.precision(ss);
 }
 
@@ -473,7 +473,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     // open true observables log file written by the simulator
     Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
-    std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
+    std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));
     true_obs_file.append(".dat");
@@ -507,7 +507,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz
               << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips
-              << std::endl;
+              << '\n';
 
     gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD_S;
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
@@ -564,7 +564,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     // check results
     // load the true values
     int64_t nepoch = true_obs_data.num_epochs();
-    std::cout << "True observation epochs=" << nepoch << std::endl;
+    std::cout << "True observation epochs=" << nepoch << '\n';
 
     arma::vec true_timestamp_s = arma::zeros(nepoch, 1);
     arma::vec true_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
@@ -595,7 +595,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         << "Failure opening tracking dump file";
 
     nepoch = trk_dump.num_epochs();
-    std::cout << "Measured observation epochs=" << nepoch << std::endl;
+    std::cout << "Measured observation epochs=" << nepoch << '\n';
 
     arma::vec trk_timestamp_s = arma::zeros(nepoch, 1);
     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
@@ -606,7 +606,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     while (trk_dump.read_binary_obs())
         {
             trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);
-            trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / GPS_TWO_PI;
+            trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / TWO_PI;
             trk_Doppler_Hz(epoch_counter) = trk_dump.carrier_doppler_hz;
 
             double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS - GPS_L1_CA_CODE_LENGTH_CHIPS * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) / 1.0e-3);
@@ -630,5 +630,5 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         true_acc_carrier_phase_cycles, trk_timestamp_s,
         trk_acc_carrier_phase_cycles);
 
-    std::cout << "Signal tracking completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Signal tracking completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

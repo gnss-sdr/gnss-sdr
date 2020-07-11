@@ -28,13 +28,13 @@
 #include <ostream>  // for operator<<
 
 
-Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,
+Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
     std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
     if (input_type != output_type)
@@ -59,11 +59,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::str
                     conjugate_cc_ = make_conjugate_cc();
                 }
         }
-    else if (item_type_ == "short")
-        {
-            item_size_ = sizeof(int16_t);
-        }
-    else if (item_type_ == "ishort")
+    else if ((item_type_ == "short") || (item_type_ == "ishort"))
         {
             item_size_ = sizeof(int16_t);
         }
@@ -75,11 +71,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::str
                     conjugate_sc_ = make_conjugate_sc();
                 }
         }
-    else if (item_type_ == "byte")
-        {
-            item_size_ = sizeof(int8_t);
-        }
-    else if (item_type_ == "ibyte")
+    else if ((item_type_ == "byte") || (item_type_ == "ibyte"))
         {
             item_size_ = sizeof(int8_t);
         }

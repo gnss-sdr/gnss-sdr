@@ -30,7 +30,7 @@ class Acq_Conf
 public:
     Acq_Conf();
 
-    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
+    void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role, double chip_rate, double opt_freq);
 
     /* PCPS Acquisition configuration */
     std::string item_type;

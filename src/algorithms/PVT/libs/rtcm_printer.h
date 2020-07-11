@@ -150,7 +150,7 @@ private:
     void close_serial();
     bool Print_Message(const std::string& message);
 
-    std::shared_ptr<Rtcm> rtcm;
+    std::unique_ptr<Rtcm> rtcm;
     std::ofstream rtcm_file_descriptor;  // Output file stream for RTCM log file
     std::string rtcm_filename;           // String with the RTCM log filename
     std::string rtcm_base_path;

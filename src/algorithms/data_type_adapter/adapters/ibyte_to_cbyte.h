@@ -25,6 +25,7 @@
 #include "gnss_block_interface.h"
 #include "interleaved_byte_to_complex_byte.h"
 #include <gnuradio/blocks/file_sink.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -36,7 +37,7 @@ class ConfigurationInterface;
 class IbyteToCbyte : public GNSSBlockInterface
 {
 public:
-    IbyteToCbyte(ConfigurationInterface* configuration,
+    IbyteToCbyte(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
@@ -55,7 +56,7 @@ public:
 
     inline size_t item_size() override
     {
-        return 0;
+        return 2 * sizeof(int8_t);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -65,17 +66,16 @@ public:
 
 private:
     interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_;
-    ConfigurationInterface* config_;
-    bool dump_;
+    conjugate_ic_sptr conjugate_ic_;
+    gr::blocks::file_sink::sptr file_sink_;
     std::string dump_filename_;
     std::string input_item_type_;
     std::string output_item_type_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr::blocks::file_sink::sptr file_sink_;
-    conjugate_ic_sptr conjugate_ic_;
     bool inverted_spectrum;
+    bool dump_;
 };
 
 #endif

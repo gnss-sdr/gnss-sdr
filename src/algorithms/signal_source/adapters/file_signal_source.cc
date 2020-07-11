@@ -31,7 +31,7 @@
 #include <utility>
 
 
-FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
+FileSignalSource::FileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -41,8 +41,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
     double default_seconds_to_skip = 0.0;
     size_t header_size = 0;
-    samples_ = configuration->property(role + ".samples", 0);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
@@ -132,31 +132,31 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                 {
                     std::cerr
                         << "The configuration file has not been found."
-                        << std::endl
+                        << '\n'
                         << "Please create a configuration file based on the examples at the 'conf/' folder "
-                        << std::endl
+                        << '\n'
                         << "and then generate your own GNSS Software Defined Receiver by doing:"
-                        << std::endl
+                        << '\n'
                         << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                        << std::endl;
+                        << '\n';
                 }
             else
                 {
                     std::cerr
                         << "The receiver was configured to work with a file signal source "
-                        << std::endl
+                        << '\n'
                         << "but the specified file is unreachable by GNSS-SDR."
-                        << std::endl
+                        << '\n'
                         << "Please modify your configuration file"
-                        << std::endl
+                        << '\n'
                         << "and point SignalSource.filename to a valid raw data file. Then:"
-                        << std::endl
+                        << '\n'
                         << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                        << std::endl
+                        << '\n'
                         << "Examples of configuration files available at:"
-                        << std::endl
+                        << '\n'
                         << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                        << std::endl;
+                        << '\n';
                 }
 
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
@@ -183,12 +183,12 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                 }
             else
                 {
-                    std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
+                    std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << '\n';
                     LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << static_cast<double>(size) << " [bytes]" << std::endl;
+            std::cout << "Processing file " << filename_ << ", which contains " << static_cast<double>(size) << " [bytes]\n";
             std::cout.precision(ss);
 
             if (size > 0)
@@ -209,7 +209,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
 
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
+    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
     valve_ = gnss_sdr_make_valve(item_size_, samples_, queue);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";

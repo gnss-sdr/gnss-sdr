@@ -154,16 +154,16 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             tstruct = *gmtime(&UTC_time);
             strftime(buf1.data(), buf1.size(), "%d/%m/%Y %H:%M:%S", &tstruct);
             std::string str_time = std::string(buf1.data());
-            str_stream << "- Receiver UTC Time: " << str_time << std::endl;
+            str_stream << "- Receiver UTC Time: " << str_time << '\n';
             str_stream << std::setprecision(9);
             str_stream << "- Receiver Position WGS84 [Lat, Long, H]: "
                        << latitude_deg << ", "
                        << longitude_deg << ", ";
             str_stream << std::setprecision(3);
-            str_stream << height_m << std::endl;
+            str_stream << height_m << '\n';
             str_stream << std::setprecision(1);
-            str_stream << "- Receiver Speed over Ground [km/h]: " << ground_speed_kmh << std::endl;
-            str_stream << "- Receiver Course over ground [deg]: " << course_over_ground_deg << std::endl;
+            str_stream << "- Receiver Speed over Ground [km/h]: " << ground_speed_kmh << '\n';
+            str_stream << "- Receiver Course over ground [deg]: " << course_over_ground_deg << '\n';
         }
     else
         {
@@ -238,9 +238,9 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
-            rx_latitude_ = std::stod(commandLine.at(3).c_str());
-            rx_longitude_ = std::stod(commandLine.at(4).c_str());
-            rx_altitude_ = std::stod(commandLine.at(5).c_str());
+            rx_latitude_ = std::stof(commandLine.at(3).c_str());
+            rx_longitude_ = std::stof(commandLine.at(4).c_str());
+            rx_altitude_ = std::stof(commandLine.at(5).c_str());
 
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {
@@ -319,13 +319,13 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                 {
                     try
                         {
-                            std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << std::endl;
+                            std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << '\n';
 
                             boost::asio::ip::tcp::socket socket(context);
                             acceptor.accept(socket, not_throw);
                             if (not_throw)
                                 {
-                                    std::cout << "TcpCmdInterface: Error when binding the port in the socket" << std::endl;
+                                    std::cout << "TcpCmdInterface: Error when binding the port in the socket\n";
                                     continue;
                                 }
 
@@ -376,7 +376,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                     socket.write_some(boost::asio::buffer(response), not_throw);
                                     if (not_throw)
                                         {
-                                            std::cout << "Error sending(" << not_throw.value() << "): " << not_throw.message() << std::endl;
+                                            std::cout << "Error sending(" << not_throw.value() << "): " << not_throw.message() << '\n';
                                             break;
                                         }
                                 }
@@ -388,7 +388,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                 }
                             else
                                 {
-                                    std::cout << "TcpCmdInterface unexpected error: " << error << std::endl;
+                                    std::cout << "TcpCmdInterface unexpected error: " << error << '\n';
                                 }
 
                             // Close socket
@@ -396,16 +396,16 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                         }
                     catch (const boost::exception &e)
                         {
-                            std::cout << "TcpCmdInterface: Boost exception " << std::endl;
+                            std::cout << "TcpCmdInterface: Boost exception\n";
                         }
                     catch (const std::exception &ex)
                         {
-                            std::cout << "TcpCmdInterface: Exception " << ex.what() << std::endl;
+                            std::cout << "TcpCmdInterface: Exception " << ex.what() << '\n';
                         }
                 }
         }
     catch (const boost::exception &e)
         {
-            std::cout << "TCP Command Interface exception: address already in use" << std::endl;
+            std::cout << "TCP Command Interface exception: address already in use\n";
         }
 }

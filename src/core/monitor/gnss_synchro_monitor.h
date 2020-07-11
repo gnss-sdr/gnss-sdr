@@ -43,7 +43,7 @@ using gnss_synchro_monitor_sptr = std::shared_ptr<gnss_synchro_monitor>;
 using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
 #endif
 
-gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
+gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
     int decimation_factor,
     int udp_port,
     const std::vector<std::string>& udp_addresses,
@@ -63,19 +63,19 @@ public:
         gr_vector_void_star& output_items);
 
 private:
-    friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
+    friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
         int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses,
         bool enable_protobuf);
 
-    gnss_synchro_monitor(unsigned int n_channels,
+    gnss_synchro_monitor(int n_channels,
         int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses,
         bool enable_protobuf);
 
-    unsigned int d_nchannels;
+    int d_nchannels;
     int d_decimation_factor;
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
     int count;

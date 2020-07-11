@@ -185,9 +185,9 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
 
     // covariances (static)
-    double sigma2_carrier_phase = GPS_TWO_PI / 4;
+    double sigma2_carrier_phase = TWO_PI / 4;
     double sigma2_doppler = 450;
-    double sigma2_doppler_rate = pow(4.0 * GPS_TWO_PI, 2) / 12.0;
+    double sigma2_doppler_rate = pow(4.0 * TWO_PI, 2) / 12.0;
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -202,7 +202,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     kf_F = arma::zeros(2, 2);
     kf_F(0, 0) = 1.0;
-    kf_F(0, 1) = GPS_TWO_PI * GPS_L1_CA_CODE_PERIOD_S;
+    kf_F(0, 1) = TWO_PI * GPS_L1_CA_CODE_PERIOD_S;
     kf_F(1, 0) = 0.0;
     kf_F(1, 1) = 1.0;
 
@@ -225,7 +225,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
             kf_Q(2, 2) = GPS_L1_CA_CODE_PERIOD_S;
 
             kf_F = arma::resize(kf_F, 3, 3);
-            kf_F(0, 2) = 0.5 * GPS_TWO_PI * pow(GPS_L1_CA_CODE_PERIOD_S, 2);
+            kf_F(0, 2) = 0.5 * TWO_PI * pow(GPS_L1_CA_CODE_PERIOD_S, 2);
             kf_F(1, 2) = GPS_L1_CA_CODE_PERIOD_S;
             kf_F(2, 0) = 0.0;
             kf_F(2, 1) = 0.0;
@@ -305,7 +305,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_dopplerrate_hz2 = 0;
-    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+    d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL filter initialization
     d_code_loop_filter.initialize();  // initialize the code filter
@@ -329,7 +329,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -372,7 +372,7 @@ Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
 
             if (d_channel == 0)
                 {
-                    std::cout << " done." << std::endl;
+                    std::cout << " done.\n";
                 }
         }
     try
@@ -402,7 +402,7 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem opening dump file:" << e.what() << std::endl;
+            std::cerr << "Problem opening dump file:" << e.what() << '\n';
             return 1;
         }
     // count number of epochs and rewind
@@ -474,7 +474,7 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            std::cerr << "Problem reading dump file:" << e.what() << '\n';
             return 1;
         }
 
@@ -676,10 +676,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             // Perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs.data(), in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carr_phase_rad,
-                d_carrier_phase_step_rad,
-                d_rem_code_phase_chips,
-                d_code_phase_step_chips,
-                d_code_phase_rate_step_chips,
+                static_cast<float>(d_carrier_phase_step_rad),
+                static_cast<float>(d_rem_code_phase_chips),
+                static_cast<float>(d_code_phase_step_chips),
+                static_cast<float>(d_code_phase_rate_step_chips),
                 d_current_prn_length_samples);
 
             // ################## Kalman Carrier Tracking ######################################
@@ -737,9 +737,9 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             // New code Doppler frequency estimation based on carrier frequency estimation
             d_code_freq_chips = GPS_L1_CA_CODE_RATE_CPS + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_CPS) / GPS_L1_FREQ_HZ);
             // DLL discriminator
-            code_error_chips = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2], d_early_late_spc_chips, 1.0);  // [chips/Ti] early and late
+            code_error_chips = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2], static_cast<float>(d_early_late_spc_chips), 1.0);  // [chips/Ti] early and late
             // Code discriminator filter
-            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips);  // [chips/second]
+            code_error_filt_chips = d_code_loop_filter.get_code_nco(static_cast<float>(code_error_chips));  // [chips/second]
             double T_chip_seconds = 1.0 / static_cast<double>(d_code_freq_chips);
             double T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds);  // [seconds]
@@ -753,7 +753,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
 
             //################### NCO COMMANDS #################################################
             // carrier phase step (NCO phase increment per sample) [rads/sample]
-            d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+            d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
             // carrier phase accumulator
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
 
@@ -782,7 +782,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
                             // if (d_channel == 1)
-                            // std::cout << "Carrier Lock Test Fail in channel " << d_channel << ": " << d_carrier_lock_test << " < " << d_carrier_lock_threshold << "," << nfail++ << std::endl;
+                            // std::cout << "Carrier Lock Test Fail in channel " << d_channel << ": " << d_carrier_lock_test << " < " << d_carrier_lock_threshold << "," << nfail++ << '\n';
                             d_carrier_lock_fail_counter++;
                             // nfail++;
                         }
@@ -795,7 +795,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                         }
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {
-                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                            std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                             d_carrier_lock_fail_counter = 0;
@@ -862,34 +862,34 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     // PRN start sample stamp
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
-                    tmp_float = d_acc_carrier_phase_rad;
+                    tmp_float = static_cast<float>(d_acc_carrier_phase_rad);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // carrier and code frequency
-                    tmp_float = d_carrier_doppler_hz;
+                    tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_carrier_dopplerrate_hz2;
+                    tmp_float = static_cast<float>(d_carrier_dopplerrate_hz2);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_code_freq_chips;
+                    tmp_float = static_cast<float>(d_code_freq_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // Kalman commands
-                    tmp_float = static_cast<float>(d_carr_phase_error_rad * GPS_TWO_PI);
+                    tmp_float = static_cast<float>(d_carr_phase_error_rad * TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = static_cast<float>(d_carr_phase_sigma2);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = static_cast<float>(d_rem_carr_phase_rad * GPS_TWO_PI);
+                    tmp_float = static_cast<float>(d_rem_carr_phase_rad * TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
-                    tmp_float = code_error_chips;
+                    tmp_float = static_cast<float>(code_error_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = code_error_filt_chips;
+                    tmp_float = static_cast<float>(code_error_filt_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
-                    tmp_float = d_CN0_SNV_dB_Hz;
+                    tmp_float = static_cast<float>(d_CN0_SNV_dB_Hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_carrier_lock_test;
+                    tmp_float = static_cast<float>(d_carrier_lock_test);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_float = d_rem_code_phase_samples;
+                    tmp_float = static_cast<float>(d_rem_code_phase_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_double = static_cast<double>(d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));

@@ -40,7 +40,7 @@ class ConfigurationInterface;
 class Pass_Through : public GNSSBlockInterface
 {
 public:
-    Pass_Through(ConfigurationInterface* configuration,
+    Pass_Through(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_stream,
         unsigned int out_stream);
@@ -74,15 +74,15 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    std::string item_type_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     gr::blocks::copy::sptr kludge_copy_;
-    size_t item_size_;
     conjugate_cc_sptr conjugate_cc_;
     conjugate_sc_sptr conjugate_sc_;
     conjugate_ic_sptr conjugate_ic_;
+    std::string item_type_;
+    std::string role_;
+    size_t item_size_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
     bool inverted_spectrum;
 };
 

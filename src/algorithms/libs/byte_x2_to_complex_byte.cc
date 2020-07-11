@@ -36,7 +36,7 @@ byte_x2_to_complex_byte::byte_x2_to_complex_byte() : sync_block("byte_x2_to_comp
                                                          gr::io_signature::make(2, 2, sizeof(int8_t)),    // int8_t, defined in stdint.h and included in volk.h (signed char)
                                                          gr::io_signature::make(1, 1, sizeof(lv_8sc_t)))  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
-    const int alignment_multiple = volk_gnsssdr_get_alignment() / sizeof(lv_8sc_t);
+    const auto alignment_multiple = static_cast<int>(volk_gnsssdr_get_alignment() / sizeof(lv_8sc_t));
     set_alignment(std::max(1, alignment_multiple));
 }
 

@@ -267,7 +267,7 @@ private:
     // UTC parameters
     double d_A1UTC{};       // 1st order term of a model that relates GPS and UTC time [s/s]
     double d_A0UTC{};       // Constant of a model that relates GPS and UTC time [s]
-    double d_DeltaT_LS{};   // delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
+    int32_t i_DeltaT_LS{};  // delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int32_t i_WN_LSF{};     // Week number at the end of which the leap second becomes effective [weeks]
     int32_t i_DN{};         // Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF{};  // Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]

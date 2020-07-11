@@ -75,6 +75,7 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
 
 gps_l5_telemetry_decoder_gs::~gps_l5_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "GPS L5 Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try
@@ -190,20 +191,20 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
@@ -250,7 +251,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             if (d_flag_PLL_180_deg_phase_locked == true)
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
-                    current_synchro_data.Carrier_phase_rads += GPS_L5_PI;
+                    current_synchro_data.Carrier_phase_rads += GNSS_PI;
                 }
             current_synchro_data.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_synchro_data.Flag_valid_word = d_flag_valid_word;

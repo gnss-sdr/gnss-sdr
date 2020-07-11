@@ -115,7 +115,7 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data();
-    int32_t save_matfile();
+    int32_t save_matfile() const;
 
     Dll_Pll_Conf_Fpga d_trk_parameters;
 
@@ -140,8 +140,8 @@ private:
 
     std::string d_systemName;
     std::string d_signal_type;
-    std::string *d_secondary_code_string;
-    std::string *d_data_secondary_code_string;
+    std::string d_secondary_code_string;
+    std::string d_data_secondary_code_string;
     std::string d_signal_pretty_name;
     std::string d_dump_filename;
 

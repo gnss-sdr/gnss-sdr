@@ -85,28 +85,33 @@ if(NOT benchmark_FOUND)
 
 endif()
 
-add_executable(benchmark_copy benchmark_copy.cc)
-target_link_libraries(benchmark_copy PRIVATE benchmark::benchmark)
+macro(add_benchmark)
+    # First argument is the benchmark name, the rest are dependencies
+    add_executable(${ARGV0} ${ARGV0}.cc)
+    target_link_libraries(${ARGV0} PRIVATE benchmark::benchmark)
+    if(${ARGC} GREATER 1)
+        set(list_dependencies "${ARGN}")
+        list(REMOVE_AT list_dependencies 0 list_dependencies)
+        foreach(dependency IN LISTS list_dependencies)
+            target_link_libraries(${ARGV0} PRIVATE ${dependency})
+        endforeach()
+    endif()
+    add_custom_command(TARGET ${ARGV0} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ARGV0}>
+            ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${ARGV0}>
+    )
+endmacro()
 
-add_custom_command(TARGET benchmark_copy POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:benchmark_copy>
-        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:benchmark_copy>
-)
+add_benchmark(benchmark_copy)
+add_benchmark(benchmark_preamble core_system_parameters)
+add_benchmark(benchmark_detector core_system_parameters)
 
-
-add_executable(benchmark_detector benchmark_detector.cc)
-target_link_libraries(benchmark_detector PRIVATE core_system_parameters benchmark::benchmark)
-
-add_custom_command(TARGET benchmark_detector POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:benchmark_detector>
-        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:benchmark_detector>
-)
-
-
-add_executable(benchmark_preamble benchmark_preamble.cc)
-target_link_libraries(benchmark_preamble PRIVATE core_system_parameters benchmark::benchmark)
-
-add_custom_command(TARGET benchmark_preamble POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:benchmark_preamble>
-        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:benchmark_preamble>
-)
+if(has_std_plus_void)
+    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_PLUS_VOID=1)
+endif()
+if(has_transform_reduce)
+    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_TRANSFORM_REDUCE=1)
+endif()
+if(has_transform_reduce_with_execution_policy)
+    target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_TRANSFORM_REDUCE_WITH_POLICY=1)
+endif()

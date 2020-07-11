@@ -52,11 +52,11 @@ public:
     // FSM EVENTS
     bool Event_start_acquisition();
     bool Event_start_acquisition_fpga();
-    virtual bool Event_valid_acquisition();
     bool Event_stop_channel();
+    bool Event_failed_tracking_standby();
+    virtual bool Event_valid_acquisition();
     virtual bool Event_failed_acquisition_repeat();
     virtual bool Event_failed_acquisition_no_repeat();
-    bool Event_failed_tracking_standby();
 
 private:
     void start_tracking();
@@ -65,9 +65,6 @@ private:
     void request_satellite();
     void notify_stop_tracking();
 
-    uint32_t channel_;
-    uint32_t state_;
-
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     std::shared_ptr<TelemetryDecoderInterface> nav_;
@@ -75,6 +72,9 @@ private:
     std::mutex mx_;
 
     Concurrent_Queue<pmt::pmt_t>* queue_;
+
+    uint32_t channel_;
+    uint32_t state_;
 };
 
 #endif  // GNSS_SDR_CHANNEL_FSM_H

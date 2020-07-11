@@ -27,22 +27,20 @@
 #include <vector>
 
 MmseResamplerConditioner::MmseResamplerConditioner(
-    ConfigurationInterface* configuration, const std::string& role,
+    const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_file = "./data/signal_conditioner.dat";
-    double fs_in_deprecated;
-    double fs_in;
-    fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_file("./data/signal_conditioner.dat");
+    double fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
+    double fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out", fs_in);
     if (std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
         {
             std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and " + role_ + ".sample_freq_out are not set to the same value!";
             LOG(WARNING) << aux_warn;
-            std::cout << aux_warn << std::endl;
+            std::cout << aux_warn << '\n';
         }
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
@@ -59,13 +57,13 @@ MmseResamplerConditioner::MmseResamplerConditioner(
                 sample_freq_out_ / 2.1,
                 sample_freq_out_ / 5,
                 gr::filter::firdes::win_type::WIN_HAMMING);
-            std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps" << std::endl;
+            std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps\n";
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps);
 
 #ifdef GR_GREATER_38
-            resampler_ = gr::filter::mmse_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
+            resampler_ = gr::filter::mmse_resampler_cc::make(0.0, static_cast<float>(sample_freq_in_ / sample_freq_out_));
 #else
-            resampler_ = gr::filter::fractional_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
+            resampler_ = gr::filter::fractional_resampler_cc::make(0.0, static_cast<float>(sample_freq_in_ / sample_freq_out_));
 #endif
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;

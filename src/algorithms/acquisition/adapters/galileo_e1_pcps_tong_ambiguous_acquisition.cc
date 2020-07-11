@@ -36,7 +36,7 @@ namespace own = gsl;
 #endif
 
 GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -44,8 +44,8 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
                                 out_streams_(out_streams)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_filename("../data/acquisition.dat");
 
     DLOG(INFO) << "role " << role;
 
@@ -79,12 +79,12 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
     // -- Find number of samples per spreading code (4 ms)  -----------------
 
-    code_length_ = round(
-        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    code_length_ = static_cast<unsigned int>(round(
+        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
-    int samples_per_ms = code_length_ / 4;
+    auto samples_per_ms = static_cast<int>(code_length_) / 4;
 
     code_ = std::vector<std::complex<float>>(vector_length_);
 
@@ -125,16 +125,18 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
 void GalileoE1PcpsTongAmbiguousAcquisition::stop_acquisition()
 {
+    acquisition_cc_->set_state(0);
+    acquisition_cc_->set_active(false);
 }
 
 
 void GalileoE1PcpsTongAmbiguousAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
 
     if (pfa == 0.0)
         {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
         }
 
     if (pfa == 0.0)
@@ -247,7 +249,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_state(int state)
 float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
         {
             frequency_bins++;
         }

@@ -27,6 +27,7 @@
 #endif
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
 
 class Notch;
@@ -50,7 +51,7 @@ notch_sptr make_notch_filter(
 class Notch : public gr::block
 {
 public:
-    ~Notch();
+    ~Notch() = default;
 
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
@@ -61,6 +62,13 @@ public:
 private:
     friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
     Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
+    std::unique_ptr<gr::fft::fft_complex> d_fft;
+    volk_gnsssdr::vector<gr_complex> c_samples;
+    volk_gnsssdr::vector<float> angle_;
+    volk_gnsssdr::vector<float> power_spect;
+    gr_complex last_out;
+    gr_complex z_0;
+    gr_complex p_c_factor;
     float pfa;
     float noise_pow_est;
     float thres_;
@@ -70,13 +78,6 @@ private:
     uint32_t n_segments_est;
     uint32_t n_segments_reset;
     bool filter_state_;
-    gr_complex last_out;
-    gr_complex z_0;
-    gr_complex p_c_factor;
-    gr_complex *c_samples;
-    float *angle_;
-    float *power_spect;
-    std::unique_ptr<gr::fft::fft_complex> d_fft;
 };
 
 #endif  // GNSS_SDR_NOTCH_H

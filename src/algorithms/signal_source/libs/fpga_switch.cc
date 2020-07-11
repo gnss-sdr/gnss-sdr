@@ -26,7 +26,7 @@
 #include "fpga_switch.h"
 #include <glog/logging.h>
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
-#include <iostream>    // for cout, endl
+#include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 
 Fpga_Switch::Fpga_Switch(const std::string &device_name)
@@ -41,11 +41,11 @@ Fpga_Switch::Fpga_Switch(const std::string &device_name)
     if (d_map_base == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA switch module into tracking memory";
-            std::cout << "Could not map switch memory." << std::endl;
+            std::cout << "Could not map switch memory.\n";
         }
     else
         {
-            std::cout << "Switch memory successfully mapped." << std::endl;
+            std::cout << "Switch memory successfully mapped.\n";
         }
 
     // sanity check : check test register
@@ -95,7 +95,7 @@ void Fpga_Switch::close_device()
     auto *aux = const_cast<unsigned *>(d_map_base);
     if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE) == -1)
         {
-            std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio\n";
         }
 
     close(d_device_descriptor);

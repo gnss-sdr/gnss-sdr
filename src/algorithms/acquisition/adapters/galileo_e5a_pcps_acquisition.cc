@@ -35,16 +35,16 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
-GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
+GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration_, role, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_OPT_ACQ_FS_SPS);
+    acq_parameters_.SetFromConfiguration(configuration, role, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_OPT_ACQ_FS_SPS);
 
     DLOG(INFO) << "Role " << role;
 
@@ -53,20 +53,20 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
-    acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
-    acq_iq_ = configuration_->property(role + ".acquire_iq", false);
+    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
+    acq_iq_ = configuration->property(role + ".acquire_iq", false);
     if (acq_iq_)
         {
             acq_pilot_ = false;
         }
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
-    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
@@ -93,6 +93,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
 void GalileoE5aPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 
@@ -197,11 +198,7 @@ void GalileoE5aPcpsAcquisition::set_state(int state)
 
 void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to connect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -214,11 +211,7 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute
 
 void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to disconnect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to disconnect
         }

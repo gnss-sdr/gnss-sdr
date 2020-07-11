@@ -60,7 +60,7 @@ double gettgd(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT * nav->eph[i].tgd[0];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
         }
     return 0.0;
 }
@@ -74,7 +74,7 @@ double getiscl1(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT * nav->eph[i].isc[0];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].isc[0];
         }
     return 0.0;
 }
@@ -87,7 +87,7 @@ double getiscl2(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT * nav->eph[i].isc[1];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].isc[1];
         }
     return 0.0;
 }
@@ -100,7 +100,7 @@ double getiscl5i(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT * nav->eph[i].isc[2];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].isc[2];
         }
     return 0.0;
 }
@@ -113,7 +113,7 @@ double getiscl5q(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT * nav->eph[i].isc[3];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].isc[3];
         }
     return 0.0;
 }
@@ -497,7 +497,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
             /* pseudorange residual */
-            v[nv] = P - (r + dtr - SPEED_OF_LIGHT * dts[i * 2] + dion + dtrp);
+            v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
 
             /* design matrix */
             for (j = 0; j < NX; j++)
@@ -665,11 +665,11 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
             if (norm_rtk(dx, NX) < 1e-4)
                 {
                     sol->type = 0;
-                    sol->time = timeadd(obs[0].time, -x[3] / SPEED_OF_LIGHT);
-                    sol->dtr[0] = x[3] / SPEED_OF_LIGHT; /* receiver clock bias (s) */
-                    sol->dtr[1] = x[4] / SPEED_OF_LIGHT; /* glo-gps time offset (s) */
-                    sol->dtr[2] = x[5] / SPEED_OF_LIGHT; /* gal-gps time offset (s) */
-                    sol->dtr[3] = x[6] / SPEED_OF_LIGHT; /* bds-gps time offset (s) */
+                    sol->time = timeadd(obs[0].time, -x[3] / SPEED_OF_LIGHT_M_S);
+                    sol->dtr[0] = x[3] / SPEED_OF_LIGHT_M_S; /* receiver clock bias (s) */
+                    sol->dtr[1] = x[4] / SPEED_OF_LIGHT_M_S; /* glo-gps time offset (s) */
+                    sol->dtr[2] = x[5] / SPEED_OF_LIGHT_M_S; /* gal-gps time offset (s) */
+                    sol->dtr[3] = x[6] / SPEED_OF_LIGHT_M_S; /* bds-gps time offset (s) */
                     for (j = 0; j < 6; j++)
                         {
                             sol->rr[j] = j < 3 ? x[j] : 0.0;
@@ -891,10 +891,10 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
                 }
 
             /* range rate with earth rotation correction */
-            rate = dot(vs, e, 3) + DEFAULT_OMEGA_EARTH_DOT / SPEED_OF_LIGHT * (rs[4 + i * 6] * rr[0] + rs[1 + i * 6] * x[0] - rs[3 + i * 6] * rr[1] - rs[i * 6] * x[1]);
+            rate = dot(vs, e, 3) + GNSS_OMEGA_EARTH_DOT / SPEED_OF_LIGHT_M_S * (rs[4 + i * 6] * rr[0] + rs[1 + i * 6] * x[0] - rs[3 + i * 6] * rr[1] - rs[i * 6] * x[1]);
 
             /* doppler residual */
-            v[nv] = -lam * obs[i].D[band] - (rate + x[3] - SPEED_OF_LIGHT * dts[1 + i * 2]);
+            v[nv] = -lam * obs[i].D[band] - (rate + x[3] - SPEED_OF_LIGHT_M_S * dts[1 + i * 2]);
 
             /* design matrix */
             for (j = 0; j < 4; j++)

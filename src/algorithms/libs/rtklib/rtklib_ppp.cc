@@ -45,7 +45,7 @@ double lam_LC(int i, int j, int k)
     const double f2 = FREQ2;
     const double f5 = FREQ5;
 
-    return SPEED_OF_LIGHT / (i * f1 + j * f2 + k * f5);
+    return SPEED_OF_LIGHT_M_S / (i * f1 + j * f2 + k * f5);
 }
 
 
@@ -63,9 +63,9 @@ double L_LC(int i, int j, int k, const double *L)
         {
             return 0.0;
         }
-    L1 = SPEED_OF_LIGHT / f1 * L[0];
-    L2 = SPEED_OF_LIGHT / f2 * L[1];
-    L5 = SPEED_OF_LIGHT / f5 * L[2];
+    L1 = SPEED_OF_LIGHT_M_S / f1 * L[0];
+    L2 = SPEED_OF_LIGHT_M_S / f2 * L[1];
+    L5 = SPEED_OF_LIGHT_M_S / f5 * L[2];
     return (i * f1 * L1 + j * f2 * L2 + k * f5 * L5) / (i * f1 + j * f2 + k * f5);
 }
 
@@ -773,7 +773,7 @@ void pppoutsolstat(rtk_t *rtk, int level, FILE *fp)
     /* receiver clocks */
     i = IC_PPP(0, &rtk->opt);
     fprintf(fp, "$CLK,%d,%.3f,%d,%d,%.3f,%.3f,%.3f,%.3f\n",
-        week, tow, rtk->sol.stat, 1, rtk->x[i] * 1E9 / SPEED_OF_LIGHT, rtk->x[i + 1] * 1E9 / SPEED_OF_LIGHT,
+        week, tow, rtk->sol.stat, 1, rtk->x[i] * 1E9 / SPEED_OF_LIGHT_M_S, rtk->x[i + 1] * 1E9 / SPEED_OF_LIGHT_M_S,
         0.0, 0.0);
 
     /* tropospheric parameters */
@@ -858,7 +858,7 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
             ang = acos(cosa);
 
             /* test eclipse */
-            if (ang < PI / 2.0 || r * sin(ang) > RE_WGS84)
+            if (ang < GNSS_PI / 2.0 || r * sin(ang) > RE_WGS84)
                 {
                     continue;
                 }
@@ -990,7 +990,7 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     P2_C2 = nav->cbias[obs->sat - 1][2];
     if (opt->sateph == EPHOPT_LEX)
         {
-            P1_C1 = nav->lexeph[obs->sat - 1].isc[0] * SPEED_OF_LIGHT; /* ISC_L1C/A */
+            P1_C1 = nav->lexeph[obs->sat - 1].isc[0] * SPEED_OF_LIGHT_M_S; /* ISC_L1C/A */
         }
     if (L1 == 0.0 || L2 == 0.0 || P1 == 0.0 || P2 == 0.0)
         {
@@ -1048,7 +1048,7 @@ double gettgd_ppp(int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            return SPEED_OF_LIGHT * nav->eph[i].tgd[0];
+            return SPEED_OF_LIGHT_M_S * nav->eph[i].tgd[0];
         }
     return 0.0;
 }
@@ -1249,7 +1249,7 @@ void udclk_ppp(rtk_t *rtk)
                 {
                     dtr = i == 0 ? rtk->sol.dtr[0] : rtk->sol.dtr[0] + rtk->sol.dtr[i];
                 }
-            initx(rtk, SPEED_OF_LIGHT * dtr, VAR_CLK, IC_PPP(i, &rtk->opt));
+            initx(rtk, SPEED_OF_LIGHT_M_S * dtr, VAR_CLK, IC_PPP(i, &rtk->opt));
         }
 }
 
@@ -1258,7 +1258,7 @@ void udclk_ppp(rtk_t *rtk)
 void udtrop_ppp(rtk_t *rtk)
 {
     double pos[3];
-    double azel[] = {0.0, PI / 2.0};
+    double azel[] = {0.0, GNSS_PI / 2.0};
     double ztd;
     double var;
     int i = IT_PPP(&rtk->opt);
@@ -1420,7 +1420,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             k++;
         }
     /* correct phase-code jump to enssure phase-code coherency */
-    if (k >= 2 && fabs(offset / k) > 0.0005 * SPEED_OF_LIGHT)
+    if (k >= 2 && fabs(offset / k) > 0.0005 * SPEED_OF_LIGHT_M_S)
         {
             for (i = 0; i < MAXSAT; i++)
                 {
@@ -1431,7 +1431,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                         }
                 }
             trace(2, "phase-code jump corrected: %s n=%2d dt=%12.9fs\n",
-                time_str(rtk->sol.time, 0), k, offset / k / SPEED_OF_LIGHT);
+                time_str(rtk->sol.time, 0), k, offset / k / SPEED_OF_LIGHT_M_S);
         }
     for (i = 0; i < n && i < MAXOBS; i++)
         {
@@ -1515,7 +1515,7 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
     const prcopt_t *opt, const double *x, double *dtdx,
     double *var)
 {
-    const double zazel[] = {0.0, PI / 2.0};
+    const double zazel[] = {0.0, GNSS_PI / 2.0};
     double zhd;
     double m_h;
     double m_w;
@@ -1660,7 +1660,7 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                     continue;
                 }
             /* satellite clock and tropospheric delay */
-            r += -SPEED_OF_LIGHT * dts[i * 2] + dtrp;
+            r += -SPEED_OF_LIGHT_M_S * dts[i * 2] + dtrp;
 
             trace(5, "sat=%2d azel=%6.1f %5.1f dtrp=%.3f dantr=%6.3f %6.3f dants=%6.3f %6.3f phw=%6.3f\n",
                 sat, azel[i * 2] * R2D, azel[1 + i * 2] * R2D, dtrp, dantr[0], dantr[1], dants[0],

@@ -539,12 +539,12 @@ int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
                     if (i < MAXRCV)
                         {
                             j = !strcmp(str1, "G") ? 0 : 1;
-                            nav->rbias[i][j][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT; /* ns -> m */
+                            nav->rbias[i][j][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT_M_S; /* ns -> m */
                         }
                 }
             else if ((sat = satid2no(str1)))
-                {                                                                  /* satellite dcb */
-                    nav->cbias[sat - 1][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT; /* ns -> m */
+                {                                                                      /* satellite dcb */
+                    nav->cbias[sat - 1][type - 1] = cbias * 1e-9 * SPEED_OF_LIGHT_M_S; /* ns -> m */
                 }
         }
     fclose(fp);
@@ -692,8 +692,8 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
             p[1][j] = pos[1];
 #else
             /* correciton for earh rotation ver.2.4.0 */
-            sinl = sin(DEFAULT_OMEGA_EARTH_DOT * t[j]);
-            cosl = cos(DEFAULT_OMEGA_EARTH_DOT * t[j]);
+            sinl = sin(GNSS_OMEGA_EARTH_DOT * t[j]);
+            cosl = cos(GNSS_OMEGA_EARTH_DOT * t[j]);
             p[0][j] = cosl * pos[0] - sinl * pos[1];
             p[1][j] = sinl * pos[0] + cosl * pos[1];
 #endif
@@ -732,14 +732,14 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
         {
             if ((dts[0] = c[0]) != 0.0)
                 {
-                    std = nav->peph[index].std[sat - 1][3] * SPEED_OF_LIGHT - EXTERR_CLK * t[0];
+                    std = nav->peph[index].std[sat - 1][3] * SPEED_OF_LIGHT_M_S - EXTERR_CLK * t[0];
                 }
         }
     else if (t[1] >= 0.0)
         {
             if ((dts[0] = c[1]) != 0.0)
                 {
-                    std = nav->peph[index + 1].std[sat - 1][3] * SPEED_OF_LIGHT + EXTERR_CLK * t[1];
+                    std = nav->peph[index + 1].std[sat - 1][3] * SPEED_OF_LIGHT_M_S + EXTERR_CLK * t[1];
                 }
         }
     else if (c[0] != 0.0 && c[1] != 0.0)
@@ -808,7 +808,7 @@ int pephclk(gtime_t time, int sat, const nav_t *nav, double *dts,
                 {
                     return 0;
                 }
-            std = nav->pclk[index].std[sat - 1][0] * SPEED_OF_LIGHT - EXTERR_CLK * t[0];
+            std = nav->pclk[index].std[sat - 1][0] * SPEED_OF_LIGHT_M_S - EXTERR_CLK * t[0];
         }
     else if (t[1] >= 0.0)
         {
@@ -816,13 +816,13 @@ int pephclk(gtime_t time, int sat, const nav_t *nav, double *dts,
                 {
                     return 0;
                 }
-            std = nav->pclk[index + 1].std[sat - 1][0] * SPEED_OF_LIGHT + EXTERR_CLK * t[1];
+            std = nav->pclk[index + 1].std[sat - 1][0] * SPEED_OF_LIGHT_M_S + EXTERR_CLK * t[1];
         }
     else if (c[0] != 0.0 && c[1] != 0.0)
         {
             dts[0] = (c[1] * t[0] - c[0] * t[1]) / (t[0] - t[1]);
             i = t[0] < -t[1] ? 0 : 1;
-            std = nav->pclk[index + i].std[sat - 1][0] * SPEED_OF_LIGHT + EXTERR_CLK * fabs(t[i]);
+            std = nav->pclk[index + i].std[sat - 1][0] * SPEED_OF_LIGHT_M_S + EXTERR_CLK * fabs(t[i]);
         }
     else
         {
@@ -988,7 +988,7 @@ int peph2pos(gtime_t time, int sat, const nav_t *nav, int opt,
     /* relativistic effect correction */
     if (dtss[0] != 0.0)
         {
-            dts[0] = dtss[0] - 2.0 * dot(rs, rs + 3, 3) / SPEED_OF_LIGHT / SPEED_OF_LIGHT;
+            dts[0] = dtss[0] - 2.0 * dot(rs, rs + 3, 3) / SPEED_OF_LIGHT_M_S / SPEED_OF_LIGHT_M_S;
             dts[1] = (dtst[0] - dtss[0]) / tt;
         }
     else

@@ -55,10 +55,10 @@ int main(int argc, char** argv)
 
     if ((argc != 2))
         {
-            std::cerr << "Usage:" << std::endl;
+            std::cerr << "Usage:\n";
             std::cerr << "   " << argv[0]
                       << " <RINEX Nav file input>"
-                      << std::endl;
+                      << '\n';
             google::ShutDownCommandLineFlags();
             return 1;
         }
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
                             std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
                             if (file.fail())
                                 {
-                                    std::cerr << "Could not open file " << rinex_filename << std::endl;
+                                    std::cerr << "Could not open file " << rinex_filename << '\n';
                                     return 1;
                                 }
                             boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
                                 }
                             catch (const boost::exception& e)
                                 {
-                                    std::cerr << "Could not decompress file " << rinex_filename << std::endl;
+                                    std::cerr << "Could not decompress file " << rinex_filename << '\n';
                                     return 1;
                                 }
                             in.push(file);
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
                             std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
                             if (file.fail())
                                 {
-                                    std::cerr << "Could not create file " << rinex_filename_unzipped << std::endl;
+                                    std::cerr << "Could not create file " << rinex_filename_unzipped << '\n';
                                     return 1;
                                 }
                             boost::iostreams::copy(in, output_file);
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
                             std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
                             if (file.fail())
                                 {
-                                    std::cerr << "Could not open file" << rinex_filename << std::endl;
+                                    std::cerr << "Could not open file" << rinex_filename << '\n';
                                     return 1;
                                 }
                             file.close();
@@ -126,13 +126,13 @@ int main(int argc, char** argv)
                                     input_filename = rinex_filename.substr(0, found);
                                     if ((s1 != 0) or (s2 != 0) or (s3 != 0))
                                         {
-                                            std::cerr << "Failure uncompressing file." << std::endl;
+                                            std::cerr << "Failure uncompressing file.\n";
                                             return 1;
                                         }
                                 }
                             else
                                 {
-                                    std::cerr << "uncompress program not found." << std::endl;
+                                    std::cerr << "uncompress program not found.\n";
                                     return 1;
                                 }
                         }
@@ -162,8 +162,8 @@ int main(int argc, char** argv)
             // Check that it really is a RINEX navigation file
             if (hdr.fileType.substr(0, 1) != "N")
                 {
-                    std::cerr << "This is not a valid RINEX navigation file, or file not found." << std::endl;
-                    std::cerr << "No XML file will be created." << std::endl;
+                    std::cerr << "This is not a valid RINEX navigation file, or file not found.\n";
+                    std::cerr << "No XML file will be created.\n";
                     return 1;
                 }
 
@@ -295,15 +295,15 @@ int main(int argc, char** argv)
         }
     catch (std::exception& e)
         {
-            std::cerr << "Error reading the RINEX file: " << e.what() << std::endl;
-            std::cerr << "No XML file will be created." << std::endl;
+            std::cerr << "Error reading the RINEX file: " << e.what() << '\n';
+            std::cerr << "No XML file will be created.\n";
             google::ShutDownCommandLineFlags();
             return 1;
         }
 
     if (i == 0 and j == 0)
         {
-            std::cerr << "No navigation data found in the RINEX file. No XML file will be created." << std::endl;
+            std::cerr << "No navigation data found in the RINEX file. No XML file will be created.\n";
             google::ShutDownCommandLineFlags();
             return 1;
         }
@@ -324,11 +324,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
-            std::cout << "Generated file: " << xml_filename << std::endl;
+            std::cout << "Generated file: " << xml_filename << '\n';
         }
     if (j != 0)
         {
@@ -342,11 +342,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
-            std::cout << "Generated file: " << xml_filename << std::endl;
+            std::cout << "Generated file: " << xml_filename << '\n';
         }
 
     // Write XML UTC
@@ -362,11 +362,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
-            std::cout << "Generated file: " << xml_filename << std::endl;
+            std::cout << "Generated file: " << xml_filename << '\n';
         }
 
     // Write XML iono
@@ -382,11 +382,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
-            std::cout << "Generated file: " << xml_filename << std::endl;
+            std::cout << "Generated file: " << xml_filename << '\n';
         }
 
     if (gal_utc_model.A0_6 != 0)
@@ -401,11 +401,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
-            std::cout << "Generated file: " << xml_filename << std::endl;
+            std::cout << "Generated file: " << xml_filename << '\n';
         }
     if (gal_iono.ai0_5 != 0)
         {
@@ -419,11 +419,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
-            std::cout << "Generated file: " << xml_filename << std::endl;
+            std::cout << "Generated file: " << xml_filename << '\n';
         }
     google::ShutDownCommandLineFlags();
     return 0;

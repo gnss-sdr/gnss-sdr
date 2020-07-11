@@ -51,7 +51,7 @@ class ConfigurationInterface;
 class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 {
 public:
-    TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    TwoBitPackedFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
@@ -125,16 +125,6 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    std::string filename_;
-    std::string item_type_;
-    bool repeat_;
-    bool dump_;
-    std::string dump_filename_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     gr::blocks::file_source::sptr file_source_;
     unpack_2bit_samples_sptr unpack_samples_;
     gr::basic_block_sptr char_to_float_;
@@ -145,12 +135,22 @@ private:
 #endif
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
+    std::string filename_;
+    std::string item_type_;
+    std::string dump_filename_;
+    std::string role_;
+    std::string sample_type_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     size_t item_size_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
     bool big_endian_items_;
     bool big_endian_bytes_;
     bool is_complex_;
     bool reverse_interleaving_;
-    std::string sample_type_;
+    bool repeat_;
+    bool dump_;
     // Throttle control
     bool enable_throttle_control_;
 };

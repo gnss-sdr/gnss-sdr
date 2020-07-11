@@ -46,7 +46,7 @@ class ConfigurationInterface;
 class OsmosdrSignalSource : public GNSSBlockInterface
 {
 public:
-    OsmosdrSignalSource(ConfigurationInterface* configuration,
+    OsmosdrSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
@@ -77,37 +77,36 @@ public:
 
 private:
     void driver_instance();
-    std::string role_;
-
-    // Front-end settings
-    bool AGC_enabled_;
-    double sample_rate_;
-
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-
-    double freq_;
-    double gain_;
-    double if_gain_;
-    double rf_gain_;
-
-    std::string item_type_;
-    size_t item_size_;
-    int64_t samples_;
-    bool dump_;
-    std::string dump_filename_;
 
     osmosdr::source::sptr osmosdr_source_;
-    std::string osmosdr_args_;
-
-    std::string antenna_;
-
 #if GNURADIO_USES_STD_POINTERS
     std::shared_ptr<gr::block> valve_;
 #else
     boost::shared_ptr<gr::block> valve_;
 #endif
     gr::blocks::file_sink::sptr file_sink_;
+
+    std::string role_;
+    std::string item_type_;
+    std::string dump_filename_;
+    std::string osmosdr_args_;
+    std::string antenna_;
+
+    // Front-end settings
+    double sample_rate_;
+    double freq_;
+    double gain_;
+    double if_gain_;
+    double rf_gain_;
+
+    size_t item_size_;
+    int64_t samples_;
+
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+
+    bool AGC_enabled_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H

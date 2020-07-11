@@ -121,35 +121,35 @@ private:
 
     void generate_codes();
 
+    std::random_device r;
+    std::uniform_int_distribution<int> uniform_dist;
+    std::normal_distribution<float> normal_dist;
     std::vector<std::string> signal_;
     std::vector<std::string> system_;
-    std::vector<unsigned int> PRN_;
+    std::vector<std::vector<gr_complex>> sampled_code_data_;
+    std::vector<std::vector<gr_complex>> sampled_code_pilot_;
+    std::vector<gr_complex> current_data_bits_;
+    std::vector<gr_complex> complex_phase_;
     std::vector<float> CN0_dB_;
     std::vector<float> doppler_Hz_;
+    std::vector<float> start_phase_rad_;
+    std::vector<unsigned int> PRN_;
     std::vector<unsigned int> delay_chips_;
     std::vector<unsigned int> delay_sec_;
-    bool data_flag_;
-    bool noise_flag_;
-    unsigned int fs_in_;
-    unsigned int num_sats_;
-    unsigned int vector_length_;
-    float BW_BB_;
     std::vector<unsigned int> samples_per_code_;
     std::vector<unsigned int> num_of_codes_per_vector_;
     std::vector<unsigned int> data_bit_duration_ms_;
     std::vector<unsigned int> ms_counter_;
-    std::vector<float> start_phase_rad_;
-    std::vector<gr_complex> current_data_bits_;
     std::vector<signed int> current_data_bit_int_;
     std::vector<signed int> data_modulation_;
     std::vector<signed int> pilot_modulation_;
-    std::vector<std::vector<gr_complex>> sampled_code_data_;
-    std::vector<std::vector<gr_complex>> sampled_code_pilot_;
-    std::vector<gr_complex> complex_phase_;
+    float BW_BB_;
     unsigned int work_counter_{};
-    std::random_device r;
-    std::uniform_int_distribution<int> uniform_dist;
-    std::normal_distribution<float> normal_dist;
+    unsigned int fs_in_;
+    unsigned int num_sats_;
+    unsigned int vector_length_;
+    bool data_flag_;
+    bool noise_flag_;
 };
 
 #endif  // GNSS_SDR_SIGNAL_GENERATOR_C_H

@@ -25,7 +25,8 @@
 #include <glog/logging.h>
 
 
-GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
+GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),

@@ -383,7 +383,7 @@ bool fcompare(t *in1, t *in2, unsigned int vlen, float tol)
                             if (print_max_errs-- > 0)
                                 {
                                     std::cout << "offset " << i << " in1: " << t(((t *)(in1))[i]) << " in2: " << t(((t *)(in2))[i]);
-                                    std::cout << " tolerance was: " << tol << std::endl;
+                                    std::cout << " tolerance was: " << tol << '\n';
                                 }
                         }
                 }
@@ -394,7 +394,7 @@ bool fcompare(t *in1, t *in2, unsigned int vlen, float tol)
                     if (print_max_errs-- > 0)
                         {
                             std::cout << "offset " << i << " in1: " << t(((t *)(in1))[i]) << " in2: " << t(((t *)(in2))[i]);
-                            std::cout << " tolerance was: " << tol << std::endl;
+                            std::cout << " tolerance was: " << tol << '\n';
                         }
                 }
         }
@@ -423,7 +423,7 @@ bool ccompare(t *in1, t *in2, unsigned int vlen, float tol)
                             if (print_max_errs-- > 0)
                                 {
                                     std::cout << "offset " << i / 2 << " in1: " << in1[i] << " + " << in1[i + 1] << "j  in2: " << in2[i] << " + " << in2[i + 1] << "j";
-                                    std::cout << " tolerance was: " << tol << std::endl;
+                                    std::cout << " tolerance was: " << tol << '\n';
                                 }
                         }
                 }
@@ -434,7 +434,7 @@ bool ccompare(t *in1, t *in2, unsigned int vlen, float tol)
                     if (print_max_errs-- > 0)
                         {
                             std::cout << "offset " << i / 2 << " in1: " << in1[i] << " + " << in1[i + 1] << "j  in2: " << in2[i] << " + " << in2[i + 1] << "j";
-                            std::cout << " tolerance was: " << tol << std::endl;
+                            std::cout << " tolerance was: " << tol << '\n';
                         }
                 }
         }
@@ -455,7 +455,7 @@ bool icompare(t *in1, t *in2, unsigned int vlen, unsigned int tol)
                     if (print_max_errs-- > 0)
                         {
                             std::cout << "offset " << i << " in1: " << static_cast<int>(t(((t *)(in1))[i])) << " in2: " << static_cast<int>(t(((t *)(in2))[i]));
-                            std::cout << " tolerance was: " << tol << std::endl;
+                            std::cout << " tolerance was: " << tol << '\n';
                         }
                 }
         }
@@ -514,7 +514,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
     results->back().name = name;
     results->back().vlen = vlen;
     results->back().iter = iter;
-    std::cout << "RUN_VOLK_GNSSSDR_TESTS: " << name << "(" << vlen << "," << iter << ")" << std::endl;
+    std::cout << "RUN_VOLK_GNSSSDR_TESTS: " << name << "(" << vlen << "," << iter << ")\n";
 
     // vlen_twiddle will increase vlen for malloc and data generation
     // but kernels will still be called with the user provided vlen.
@@ -530,7 +530,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
 
     if ((!benchmark_mode) && (arch_list.size() < 2))
         {
-            std::cout << "no architectures to test" << std::endl;
+            std::cout << "no architectures to test\n";
             return false;
         }
 
@@ -545,13 +545,13 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         }
     catch (std::exception &error)
         {
-            std::cerr << "Error: unable to get function signature from kernel name" << std::endl;
-            std::cerr << "  - " << name << std::endl;
+            std::cerr << "Error: unable to get function signature from kernel name\n";
+            std::cerr << "  - " << name << '\n';
             return false;
         }
     catch (std::string s)
         {
-            std::cerr << "Error: " << s << std::endl;
+            std::cerr << "Error: " << s << '\n';
             return false;
         }
 
@@ -740,7 +740,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             double arch_time = 1000.0 * elapsed_seconds.count();
-            std::cout << arch_list[i] << " completed in " << arch_time << " ms" << std::endl;
+            std::cout << arch_list[i] << " completed in " << arch_time << " ms\n";
             volk_gnsssdr_test_time_t result;
             result.name = arch_list[i];
             result.time = arch_time;
@@ -881,7 +881,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                     volk_gnsssdr_test_time_t *result = &results->back().results[arch_list[i]];
                                     result->pass = false;
                                     fail_global = true;
-                                    std::cout << name << ": fail on arch " << arch_list[i] << std::endl;
+                                    std::cout << name << ": fail on arch " << arch_list[i] << '\n';
                                 }
                         }
                 }
@@ -906,8 +906,8 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                 }
         }
 
-    std::cout << "Best aligned arch: " << best_arch_a << std::endl;
-    std::cout << "Best unaligned arch: " << best_arch_u << std::endl;
+    std::cout << "Best aligned arch: " << best_arch_a << '\n';
+    std::cout << "Best unaligned arch: " << best_arch_u << '\n';
 
     if (puppet_master_name == "NULL")
         {

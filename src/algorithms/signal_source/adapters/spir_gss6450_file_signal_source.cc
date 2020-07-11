@@ -28,15 +28,15 @@
 #include <utility>
 
 
-SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
+SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
     item_type_ = "int";
 
-    samples_ = configuration->property(role + ".samples", 0);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     filename_ = configuration->property(role + ".filename", default_filename);
     repeat_ = configuration->property(role + ".repeat", false);
     dump_ = configuration->property(role + ".dump", false);
@@ -47,7 +47,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
     item_size_ = sizeof(int32_t);
-    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
+    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(65536));
     double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
     if (sel_ch_ > n_channels_)
@@ -56,7 +56,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
         }
     if (n_channels_ > 1)
         {
-            for (uint32_t i = 0; i < n_channels_; i++)
+            for (int32_t i = 0; i < n_channels_; i++)
                 {
                     null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
                     unpack_spir_vec_.push_back(make_unpack_spir_gss6450_samples(adc_bits_));
@@ -78,19 +78,19 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
         {
             std::cerr
                 << "The receiver was configured to work with a file signal source "
-                << std::endl
+                << '\n'
                 << "but the specified file is unreachable by GNSS-SDR."
-                << std::endl
+                << '\n'
                 << "Please modify your configuration file"
-                << std::endl
+                << '\n'
                 << "and point SignalSource.filename to a valid raw data file. Then:"
-                << std::endl
+                << '\n'
                 << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                << std::endl
+                << '\n'
                 << "Examples of configuration files available at:"
-                << std::endl
+                << '\n'
                 << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                << std::endl;
+                << '\n';
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
@@ -115,12 +115,12 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
                 }
             else
                 {
-                    std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
+                    std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << '\n';
                     LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]" << std::endl;
+            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]\n";
             std::cout.precision(ss);
 
             if (size > 0)
@@ -133,9 +133,9 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s = static_cast<double>(samples_) / sampling_frequency_;
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
+    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
-    for (uint32_t i = 0; i < (n_channels_); i++)
+    for (int32_t i = 0; i < n_channels_; i++)
         {
             valve_vec_.emplace_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue));
             if (dump_)
@@ -187,7 +187,7 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
             if (n_channels_ > 1)
                 {
                     uint32_t aux = 0;
-                    for (uint32_t i = 0; i < n_channels_; i++)
+                    for (int32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
@@ -205,7 +205,7 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                                 }
                         }
                 }
-            for (uint32_t i = 0; i < n_channels_; i++)
+            for (int32_t i = 0; i < n_channels_; i++)
                 {
                     if (enable_throttle_control_)
                         {
@@ -248,7 +248,7 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
             if (n_channels_ > 1)
                 {
                     uint32_t aux = 0;
-                    for (uint32_t i = 0; i < n_channels_; i++)
+                    for (int32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
@@ -267,7 +267,7 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
                         }
                 }
 
-            for (uint32_t i = 0; i < (n_channels_); i++)
+            for (int32_t i = 0; i < (n_channels_); i++)
                 {
                     if (enable_throttle_control_)
                         {

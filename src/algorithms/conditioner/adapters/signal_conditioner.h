@@ -37,7 +37,7 @@ class SignalConditioner : public GNSSBlockInterface
 {
 public:
     //! Constructor
-    SignalConditioner(ConfigurationInterface *configuration,
+    SignalConditioner(const ConfigurationInterface *configuration,
         std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
         std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
 

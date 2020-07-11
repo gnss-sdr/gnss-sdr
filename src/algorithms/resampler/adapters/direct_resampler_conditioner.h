@@ -35,7 +35,7 @@ class ConfigurationInterface;
 class DirectResamplerConditioner : public GNSSBlockInterface
 {
 public:
-    DirectResamplerConditioner(ConfigurationInterface* configuration,
+    DirectResamplerConditioner(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 
@@ -63,17 +63,17 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    gr::block_sptr resampler_;
+    gr::block_sptr file_sink_;
     std::string role_;
-    unsigned int in_stream_;
-    unsigned int out_stream_;
     std::string item_type_;
-    size_t item_size_;
-    bool dump_;
     std::string dump_filename_;
     double sample_freq_in_;
     double sample_freq_out_;
-    gr::block_sptr resampler_;
-    gr::block_sptr file_sink_;
+    size_t item_size_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H

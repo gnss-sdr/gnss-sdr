@@ -14,7 +14,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
-cmake_minimum_required(VERSION 2.8.12...3.17)
+cmake_minimum_required(VERSION 2.8.12...3.18)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -245,13 +245,17 @@ if((${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU") AND (CMAKE_CXX_COMPILER_I
 endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Fix for Debug mode in macOS
+        # Fix for Debug and None modes in macOS
+        # without this, get get a runtime error
         include(CheckCXXCompilerFlag)
         check_cxx_compiler_flag(-fstandalone-debug HAVE_STANDALONE_DEBUG)
         check_cxx_compiler_flag(-Og HAVE_OG_FLAG)
         if(HAVE_STANDALONE_DEBUG AND HAVE_OG_FLAG)
             set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -fstandalone-debug")
             set(CMAKE_C_FLAGS_DEBUG "-Og -g -fstandalone-debug")
+            if(CMAKE_BUILD_TYPE STREQUAL "None")
+                add_compile_options(-Og -fstandalone-debug)
+            endif()
         endif()
     endif()
 endif()
@@ -883,6 +887,56 @@ check_cxx_source_compiles("
     { std::put_time(nullptr, \"\"); }"
     has_put_time
 )
+
+
+
+################################################################################
+# Detect availability of std::plus without class specifier
+################################################################################
+unset(has_std_plus_void CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 11)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <functional>
+        int main()
+        { [](float a=1, float b=0){return std::plus<>();}; };"
+        has_std_plus_void
+    )
+endif()
+
+
+
+################################################################################
+# Detect availability of std::transform_reduce
+################################################################################
+unset(has_transform_reduce CACHE)
+unset(has_transform_reduce_with_execution_policy CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };"
+        has_transform_reduce
+    )
+    check_cxx_source_compiles("
+        #include <execution>
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(std::execution::par, cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };"
+        has_transform_reduce_with_execution_policy
+    )
+endif()
 
 
 
@@ -1526,7 +1580,14 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
 endif()
 
 if(NOT ENABLE_LOG)
-    message(STATUS "Logging is not enabled")
+    message(STATUS "Internal logging is not enabled")
+    if(CMAKE_VERSION VERSION_GREATER 3.11.0)
+        target_compile_definitions(Glog::glog INTERFACE -DGOOGLE_STRIP_LOG=1)
+    else()
+        set_property(TARGET Glog::glog APPEND PROPERTY
+            INTERFACE_COMPILE_DEFINITIONS GOOGLE_STRIP_LOG=1
+        )
+    endif()
 endif()
 
 

@@ -30,7 +30,7 @@ class Dll_Pll_Conf
 {
 public:
     Dll_Pll_Conf();
-    void SetFromConfiguration(ConfigurationInterface *configuration, const std::string &role);
+    void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role);
 
     /* DLL/PLL tracking configuration */
     std::string item_type;

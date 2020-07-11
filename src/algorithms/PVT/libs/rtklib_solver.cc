@@ -98,6 +98,7 @@ Rtklib_Solver::Rtklib_Solver(int nchannels, const std::string &dump_filename, bo
 
 Rtklib_Solver::~Rtklib_Solver()
 {
+    DLOG(INFO) << "Rtklib_Solver destructor called.";
     if (d_dump_file.is_open() == true)
         {
             auto pos = d_dump_file.tellp();
@@ -154,14 +155,14 @@ bool Rtklib_Solver::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem opening dump file:" << e.what() << std::endl;
+            std::cerr << "Problem opening dump file:" << e.what() << '\n';
             return false;
         }
     // count number of epochs and rewind
     int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
-            std::cout << "Generating .mat file for " << dump_filename << std::endl;
+            std::cout << "Generating .mat file for " << dump_filename << '\n';
             size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
@@ -240,7 +241,7 @@ bool Rtklib_Solver::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            std::cerr << "Problem reading dump file:" << e.what() << '\n';
             return false;
         }
 
@@ -889,7 +890,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
                     nav_data.utc_cmp[2] = 0.0;  // ??
                     nav_data.utc_cmp[3] = 0.0;  // ??
-                    nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
+                    nav_data.leaps = beidou_dnav_utc_model.i_DeltaT_LS;
                 }
 
             /* update carrier wave length using native function call in RTKlib */
@@ -927,7 +928,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     std::vector<double> azel;
                     azel.reserve(used_sats * 2);
-                    unsigned int index_aux = 0;
+                    int index_aux = 0;
                     for (auto &i : rtk_.ssat)
                         {
                             if (i.vs == 1)
@@ -958,7 +959,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         {
                             // the receiver clock offset is expressed in [meters], so we convert it into [s]
                             // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
-                            rx_position_and_time(3) = pvt_sol.dtr[2] + pvt_sol.dtr[0] / GPS_C_M_S;
+                            rx_position_and_time(3) = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
 
@@ -1058,7 +1059,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     this->set_rx_vel(rx_vel_enu);
 
-                    double clock_drift_ppm = pvt_sol.dtr[5] / GPS_C_M_S * 1e6;
+                    double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]

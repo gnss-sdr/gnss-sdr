@@ -44,14 +44,14 @@ complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
  */
 class complex_float_to_complex_byte : public gr::sync_block
 {
-private:
-    friend complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
-    complex_float_to_complex_byte();
-
 public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
+    complex_float_to_complex_byte();
 };
 
 #endif

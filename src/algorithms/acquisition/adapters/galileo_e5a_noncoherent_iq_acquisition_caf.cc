@@ -42,7 +42,7 @@ namespace own = gsl;
 #endif
 
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -50,8 +50,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
                                 out_streams_(out_streams)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_filename("../data/acquisition.dat");
 
     DLOG(INFO) << "role " << role;
 
@@ -72,13 +72,13 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             sampled_ms_ = 3;
             DLOG(INFO) << "Coherent integration time should be 3 ms or less. Changing to 3ms ";
-            std::cout << "Too high coherent integration time. Changing to 3ms" << std::endl;
+            std::cout << "Too high coherent integration time. Changing to 3ms\n";
         }
     if (Zero_padding > 0)
         {
             sampled_ms_ = 2;
             DLOG(INFO) << "Zero padding activated. Changing to 1ms code + 1ms zero padding ";
-            std::cout << "Zero padding activated. Changing to 1ms code + 1ms zero padding" << std::endl;
+            std::cout << "Zero padding activated. Changing to 1ms code + 1ms zero padding\n";
         }
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
@@ -86,7 +86,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     // -- Find number of samples per spreading code (1ms)-------------------------
-    code_length_ = round(static_cast<double>(fs_in_) / GALILEO_E5A_CODE_CHIP_RATE_CPS * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS));
+    code_length_ = static_cast<int>(round(static_cast<double>(fs_in_) / GALILEO_E5A_CODE_CHIP_RATE_CPS * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -130,16 +130,18 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::stop_acquisition()
 {
+    acquisition_cc_->set_state(0);
+    acquisition_cc_->set_active(false);
 }
 
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
 
     if (pfa == 0.0)
         {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
         }
 
     if (pfa == 0.0)
@@ -196,7 +198,7 @@ signed int GalileoE5aNoncoherentIQAcquisitionCaf::mag()
 {
     if (item_type_ == "gr_complex")
         {
-            return acquisition_cc_->mag();
+            return static_cast<signed int>(acquisition_cc_->mag());
         }
     return 0;
 }
@@ -274,7 +276,7 @@ float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
         {
             frequency_bins++;
         }

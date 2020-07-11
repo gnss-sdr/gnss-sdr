@@ -86,7 +86,7 @@ private:
     void log_data();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
-    int32_t save_matfile();
+    int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
     Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
@@ -155,8 +155,8 @@ private:
     gr_complex d_VL_accu;
     gr_complex d_P_data_accu;
 
-    std::string *d_secondary_code_string;
-    std::string *d_data_secondary_code_string;
+    std::string d_secondary_code_string;
+    std::string d_data_secondary_code_string;
     std::string d_systemName;
     std::string d_signal_type;
     std::string d_signal_pretty_name;
@@ -182,12 +182,12 @@ private:
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
     int32_t d_code_lock_fail_counter;
+    int32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
+    int32_t d_code_length_chips;
 
     uint32_t d_channel;
     uint32_t d_secondary_code_length;
     uint32_t d_data_secondary_code_length;
-    uint32_t d_code_length_chips;
-    uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
 
     bool d_pull_in_transitory;
     bool d_corrected_doppler;

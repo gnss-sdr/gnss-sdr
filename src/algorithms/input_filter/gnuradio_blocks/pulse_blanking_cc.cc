@@ -50,17 +50,7 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa,
     n_deg_fred = 2 * length_;
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
-    zeros_ = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
-    for (int32_t aux = 0; aux < length_; aux++)
-        {
-            zeros_[aux] = gr_complex(0.0, 0.0);
-        }
-}
-
-
-pulse_blanking_cc::~pulse_blanking_cc()
-{
-    volk_free(zeros_);
+    zeros_ = volk_gnsssdr::vector<gr_complex>(length_);
 }
 
 
@@ -78,13 +68,13 @@ int pulse_blanking_cc::general_work(int noutput_items, gr_vector_int &ninput_ite
 {
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
     auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
-    auto *magnitude = static_cast<float *>(volk_malloc(noutput_items * sizeof(float), volk_get_alignment()));
-    volk_32fc_magnitude_squared_32f(magnitude, in, noutput_items);
+    auto magnitude = volk_gnsssdr::vector<float>(noutput_items);
+    volk_32fc_magnitude_squared_32f(magnitude.data(), in, noutput_items);
     int32_t sample_index = 0;
     float segment_energy;
     while ((sample_index + length_) < noutput_items)
         {
-            volk_32f_accumulator_s32f(&segment_energy, (magnitude + sample_index), length_);
+            volk_32f_accumulator_s32f(&segment_energy, (magnitude.data() + sample_index), length_);
             if ((n_segments < n_segments_est) && (last_filtered == false))
                 {
                     noise_power_estimation = (static_cast<float>(n_segments) * noise_power_estimation + segment_energy / static_cast<float>(n_deg_fred)) / static_cast<float>(n_segments + 1);
@@ -94,7 +84,7 @@ int pulse_blanking_cc::general_work(int noutput_items, gr_vector_int &ninput_ite
                 {
                     if ((segment_energy / noise_power_estimation) > thres_)
                         {
-                            memcpy(out, zeros_, sizeof(gr_complex) * length_);
+                            memcpy(out, zeros_.data(), sizeof(gr_complex) * length_);
                             last_filtered = true;
                         }
                     else
@@ -112,7 +102,6 @@ int pulse_blanking_cc::general_work(int noutput_items, gr_vector_int &ninput_ite
             sample_index += length_;
             n_segments++;
         }
-    volk_free(magnitude);
     consume_each(sample_index);
     return sample_index;
 }

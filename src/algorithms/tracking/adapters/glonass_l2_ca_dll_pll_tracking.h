@@ -39,7 +39,8 @@ class ConfigurationInterface;
 class GlonassL2CaDllPllTracking : public TrackingInterface
 {
 public:
-    GlonassL2CaDllPllTracking(ConfigurationInterface* configuration,
+    GlonassL2CaDllPllTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

@@ -41,7 +41,8 @@ class ConfigurationInterface;
 class GpsL1CaKfTracking : public TrackingInterface
 {
 public:
-    GpsL1CaKfTracking(ConfigurationInterface* configuration,
+    GpsL1CaKfTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

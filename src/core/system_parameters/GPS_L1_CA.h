@@ -24,32 +24,18 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
-#include <string>
 #include <utility>  // std::pair
 #include <vector>
 
 
-// Physical constants
-const double GPS_C_M_S = SPEED_OF_LIGHT;                 //!< The speed of light, [m/s]
-const double GPS_C_M_MS = 299792.4580;                   //!< The speed of light, [m/ms]
-const double GPS_PI = 3.1415926535898;                   //!< Pi as defined in IS-GPS-200K
-const double GPS_TWO_PI = 6.283185307179586;             //!< 2Pi as defined in IS-GPS-200K
-const double OMEGA_EARTH_DOT = DEFAULT_OMEGA_EARTH_DOT;  //!< Earth rotation rate, [rad/s]
-const double GM = 3.986005e14;                           //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-const double F = -4.442807633e-10;                       //!< Constant, [s/(m)^(1/2)]
-
-
 // carrier and code frequencies
-const double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
-const double GPS_L1_CA_CODE_RATE_CPS = 1.023e6;     //!< GPS L1 C/A code rate [chips/s]
-const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length [chips]
-const double GPS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GPS L1 C/A code period [seconds]
-const uint32_t GPS_L1_CA_CODE_PERIOD_MS = 1U;       //!< GPS L1 C/A code period [ms]
-const uint32_t GPS_L1_CA_BIT_PERIOD_MS = 20U;       //!< GPS L1 C/A bit period [ms]
-const double GPS_L1_CA_CHIP_PERIOD_S = 9.7752e-07;  //!< GPS L1 C/A chip period [seconds]
-
-// optimum parameters
-const uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+constexpr double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
+constexpr double GPS_L1_CA_CODE_RATE_CPS = 1.023e6;     //!< GPS L1 C/A code rate [chips/s]
+constexpr double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length [chips]
+constexpr double GPS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GPS L1 C/A code period [seconds]
+constexpr double GPS_L1_CA_CHIP_PERIOD_S = 9.7752e-07;  //!< GPS L1 C/A chip period [seconds]
+constexpr uint32_t GPS_L1_CA_CODE_PERIOD_MS = 1U;       //!< GPS L1 C/A code period [ms]
+constexpr uint32_t GPS_L1_CA_BIT_PERIOD_MS = 20U;       //!< GPS L1 C/A bit period [ms]
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
@@ -59,34 +45,32 @@ const uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that
  * [1] J. Bao-Yen Tsui, Fundamentals of Global Positioning System Receivers. A Software Approach, John Wiley & Sons,
  * Inc., Hoboken, NJ, 2nd edition, 2005.
  */
-const double MAX_TOA_DELAY_MS = 20;
+constexpr double MAX_TOA_DELAY_MS = 20.0;
 
-const double GPS_STARTOFFSET_MS = 68.802;  // [ms] Initial signal travel time (only for old ls_pvt implementation)
+constexpr double GPS_STARTOFFSET_MS = 68.802;  // [ms] Initial signal travel time (only for old ls_pvt implementation)
+
+// optimum parameters
+constexpr uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
-const int32_t GPS_L1_CA_HISTORY_DEEP = 100;
+constexpr int32_t GPS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
-
-#define GPS_PREAMBLE           \
-    {                          \
-        1, 0, 0, 0, 1, 0, 1, 1 \
-    }
-const std::string GPS_CA_PREAMBLE = {"10001011"};
-const std::string GPS_CA_PREAMBLE_SYMBOLS_STR = {"1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111000000000000000000001111111111111111111111111111111111111111"};
-const int32_t GPS_CA_PREAMBLE_LENGTH_BITS = 8;
-const int32_t GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
-const double GPS_CA_PREAMBLE_DURATION_S = 0.160;
-const int32_t GPS_CA_PREAMBLE_DURATION_MS = 160;
-const int32_t GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
-const int32_t GPS_CA_TELEMETRY_SYMBOLS_PER_BIT = 20;
-const int32_t GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GPS_CA_TELEMETRY_RATE_BITS_SECOND * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
-const int32_t GPS_WORD_LENGTH = 4;                                                                                          //!< CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
-const int32_t GPS_SUBFRAME_LENGTH = 40;                                                                                     //!< GPS_WORD_LENGTH x 10 = 40 bytes
-const int32_t GPS_SUBFRAME_BITS = 300;                                                                                      //!< Number of bits per subframe in the NAV message [bits]
-const int32_t GPS_SUBFRAME_SECONDS = 6;                                                                                     //!< Subframe duration [seconds]
-const int32_t GPS_SUBFRAME_MS = 6000;                                                                                       //!< Subframe duration [seconds]
-const int32_t GPS_WORD_BITS = 30;                                                                                           //!< Number of bits per word in the NAV message [bits]
+constexpr double GPS_CA_PREAMBLE_DURATION_S = 0.160;
+constexpr int32_t GPS_CA_PREAMBLE_LENGTH_BITS = 8;
+constexpr int32_t GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
+constexpr int32_t GPS_CA_PREAMBLE_DURATION_MS = 160;
+constexpr int32_t GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
+constexpr int32_t GPS_CA_TELEMETRY_SYMBOLS_PER_BIT = 20;
+constexpr int32_t GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GPS_CA_TELEMETRY_RATE_BITS_SECOND * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
+constexpr int32_t GPS_WORD_LENGTH = 4;                                                                                          //!< CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
+constexpr int32_t GPS_SUBFRAME_LENGTH = 40;                                                                                     //!< GPS_WORD_LENGTH x 10 = 40 bytes
+constexpr int32_t GPS_SUBFRAME_BITS = 300;                                                                                      //!< Number of bits per subframe in the NAV message [bits]
+constexpr int32_t GPS_SUBFRAME_SECONDS = 6;                                                                                     //!< Subframe duration [seconds]
+constexpr int32_t GPS_SUBFRAME_MS = 6000;                                                                                       //!< Subframe duration [seconds]
+constexpr int32_t GPS_WORD_BITS = 30;                                                                                           //!< Number of bits per word in the NAV message [bits]
+constexpr char GPS_CA_PREAMBLE[9] = "10001011";
+constexpr char GPS_CA_PREAMBLE_SYMBOLS_STR[161] = "1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111000000000000000000001111111111111111111111111111111111111111";
 
 // GPS NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200K Appendix II)
@@ -106,58 +90,57 @@ const std::vector<std::pair<int32_t, int32_t>> SV_ACCURACY({{73, 4}});
 const std::vector<std::pair<int32_t, int32_t>> SV_HEALTH({{77, 6}});
 const std::vector<std::pair<int32_t, int32_t>> L2_P_DATA_FLAG({{91, 1}});
 const std::vector<std::pair<int32_t, int32_t>> T_GD({{197, 8}});
-const double T_GD_LSB = TWO_N31;
+constexpr double T_GD_LSB = TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> IODC({{83, 2}, {211, 8}});
 const std::vector<std::pair<int32_t, int32_t>> T_OC({{219, 16}});
-const int32_t T_OC_LSB = static_cast<int32_t>(TWO_P4);
+constexpr int32_t T_OC_LSB = static_cast<int32_t>(TWO_P4);
 const std::vector<std::pair<int32_t, int32_t>> A_F2({{241, 8}});
-const double A_F2_LSB = TWO_N55;
+constexpr double A_F2_LSB = TWO_N55;
 const std::vector<std::pair<int32_t, int32_t>> A_F1({{249, 16}});
-const double A_F1_LSB = TWO_N43;
+constexpr double A_F1_LSB = TWO_N43;
 const std::vector<std::pair<int32_t, int32_t>> A_F0({{271, 22}});
-const double A_F0_LSB = TWO_N31;
+constexpr double A_F0_LSB = TWO_N31;
 
 // SUBFRAME 2
 const std::vector<std::pair<int32_t, int32_t>> IODE_SF2({{61, 8}});
 const std::vector<std::pair<int32_t, int32_t>> C_RS({{69, 16}});
-const double C_RS_LSB = TWO_N5;
+constexpr double C_RS_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> DELTA_N({{91, 16}});
-const double DELTA_N_LSB = PI_TWO_N43;
+constexpr double DELTA_N_LSB = PI_TWO_N43;
 const std::vector<std::pair<int32_t, int32_t>> M_0({{107, 8}, {121, 24}});
-const double M_0_LSB = PI_TWO_N31;
+constexpr double M_0_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> C_UC({{151, 16}});
-const double C_UC_LSB = TWO_N29;
+constexpr double C_UC_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> ECCENTRICITY({{167, 8}, {181, 24}});
-const double ECCENTRICITY_LSB = TWO_N33;
+constexpr double ECCENTRICITY_LSB = TWO_N33;
 const std::vector<std::pair<int32_t, int32_t>> C_US({{211, 16}});
-const double C_US_LSB = TWO_N29;
+constexpr double C_US_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> SQRT_A({{227, 8}, {241, 24}});
-const double SQRT_A_LSB = TWO_N19;
+constexpr double SQRT_A_LSB = TWO_N19;
 const std::vector<std::pair<int32_t, int32_t>> T_OE({{271, 16}});
-const int32_t T_OE_LSB = static_cast<int32_t>(TWO_P4);
+constexpr int32_t T_OE_LSB = static_cast<int32_t>(TWO_P4);
 const std::vector<std::pair<int32_t, int32_t>> FIT_INTERVAL_FLAG({{271, 1}});
 const std::vector<std::pair<int32_t, int32_t>> AODO({{272, 5}});
-const int32_t AODO_LSB = 900;
+constexpr int32_t AODO_LSB = 900;
 
 // SUBFRAME 3
 const std::vector<std::pair<int32_t, int32_t>> C_IC({{61, 16}});
-const double C_IC_LSB = TWO_N29;
+constexpr double C_IC_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> OMEGA_0({{77, 8}, {91, 24}});
-const double OMEGA_0_LSB = PI_TWO_N31;
+constexpr double OMEGA_0_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> C_IS({{121, 16}});
-const double C_IS_LSB = TWO_N29;
+constexpr double C_IS_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> I_0({{137, 8}, {151, 24}});
-const double I_0_LSB = PI_TWO_N31;
+constexpr double I_0_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> C_RC({{181, 16}});
-const double C_RC_LSB = TWO_N5;
+constexpr double C_RC_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> OMEGA({{197, 8}, {211, 24}});
-const double OMEGA_LSB = PI_TWO_N31;
+constexpr double OMEGA_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> OMEGA_DOT({{241, 24}});
-const double OMEGA_DOT_LSB = PI_TWO_N43;
+constexpr double OMEGA_DOT_LSB = PI_TWO_N43;
 const std::vector<std::pair<int32_t, int32_t>> IODE_SF3({{271, 8}});
 const std::vector<std::pair<int32_t, int32_t>> I_DOT({{279, 14}});
-const double I_DOT_LSB = PI_TWO_N43;
-
+constexpr double I_DOT_LSB = PI_TWO_N43;
 
 // SUBFRAME 4-5
 const std::vector<std::pair<int32_t, int32_t>> SV_DATA_ID({{61, 2}});
@@ -167,37 +150,37 @@ const std::vector<std::pair<int32_t, int32_t>> SV_PAGE({{63, 6}});
 //! \todo read all pages of subframe 4
 // Page 18 - Ionospheric and UTC data
 const std::vector<std::pair<int32_t, int32_t>> ALPHA_0({{69, 8}});
-const double ALPHA_0_LSB = TWO_N30;
+constexpr double ALPHA_0_LSB = TWO_N30;
 const std::vector<std::pair<int32_t, int32_t>> ALPHA_1({{77, 8}});
-const double ALPHA_1_LSB = TWO_N27;
+constexpr double ALPHA_1_LSB = TWO_N27;
 const std::vector<std::pair<int32_t, int32_t>> ALPHA_2({{91, 8}});
-const double ALPHA_2_LSB = TWO_N24;
+constexpr double ALPHA_2_LSB = TWO_N24;
 const std::vector<std::pair<int32_t, int32_t>> ALPHA_3({{99, 8}});
-const double ALPHA_3_LSB = TWO_N24;
+constexpr double ALPHA_3_LSB = TWO_N24;
 const std::vector<std::pair<int32_t, int32_t>> BETA_0({{107, 8}});
-const double BETA_0_LSB = TWO_P11;
+constexpr double BETA_0_LSB = TWO_P11;
 const std::vector<std::pair<int32_t, int32_t>> BETA_1({{121, 8}});
-const double BETA_1_LSB = TWO_P14;
+constexpr double BETA_1_LSB = TWO_P14;
 const std::vector<std::pair<int32_t, int32_t>> BETA_2({{129, 8}});
-const double BETA_2_LSB = TWO_P16;
+constexpr double BETA_2_LSB = TWO_P16;
 const std::vector<std::pair<int32_t, int32_t>> BETA_3({{137, 8}});
-const double BETA_3_LSB = TWO_P16;
+constexpr double BETA_3_LSB = TWO_P16;
 const std::vector<std::pair<int32_t, int32_t>> A_1({{151, 24}});
-const double A_1_LSB = TWO_N50;
+constexpr double A_1_LSB = TWO_N50;
 const std::vector<std::pair<int32_t, int32_t>> A_0({{181, 24}, {211, 8}});
-const double A_0_LSB = TWO_N30;
+constexpr double A_0_LSB = TWO_N30;
 const std::vector<std::pair<int32_t, int32_t>> T_OT({{219, 8}});
-const double T_OT_LSB = TWO_P12;
+constexpr double T_OT_LSB = TWO_P12;
 const std::vector<std::pair<int32_t, int32_t>> WN_T({{227, 8}});
-const double WN_T_LSB = 1;
+constexpr double WN_T_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t>> DELTAT_LS({{241, 8}});
-const double DELTAT_LS_LSB = 1;
+constexpr double DELTAT_LS_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t>> WN_LSF({{249, 8}});
-const double WN_LSF_LSB = 1;
+constexpr double WN_LSF_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t>> DN({{257, 8}});
-const double DN_LSB = 1;
+constexpr double DN_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t>> DELTAT_LSF({{271, 8}});
-const double DELTAT_LSF_LSB = 1;
+constexpr double DELTAT_LSF_LSB = 1;
 
 // Page 25 - Antispoofing, SV config and SV health (PRN 25 -32)
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV25({{229, 6}});
@@ -215,7 +198,7 @@ const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV32({{283, 6}});
 
 // page 25 - Health (PRN 1 - 24)
 const std::vector<std::pair<int32_t, int32_t>> T_OA({{69, 8}});
-const int32_t T_OA_LSB = TWO_P12;
+constexpr int32_t T_OA_LSB = TWO_P12;
 const std::vector<std::pair<int32_t, int32_t>> WN_A({{77, 8}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV1({{91, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV2({{97, 6}});

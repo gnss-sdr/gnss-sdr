@@ -36,7 +36,7 @@ namespace own = gsl;
 #endif
 
 GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -44,8 +44,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
                                 out_streams_(out_streams)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_filename("../data/acquisition.dat");
 
     DLOG(INFO) << "role " << role;
 
@@ -63,10 +63,10 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 8);
 
     /* --- Find number of samples per spreading code (4 ms)  -----------------*/
-    code_length_ = round(
-        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    code_length_ = static_cast<unsigned int>(round(
+        fs_in_ / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
-    int samples_per_ms = round(code_length_ / 4.0);
+    auto samples_per_ms = static_cast<int>(round(code_length_ / 4.0));
 
     /*Calculate the folding factor value based on the formula described in the paper.
     This may be a bug, but acquisition also work by variying the folding factor at va-
@@ -155,16 +155,18 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::stop_acquisition()
 {
+    acquisition_cc_->set_state(0);
+    acquisition_cc_->set_active(false);
 }
 
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
 
     if (pfa == 0.0)
         {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
         }
 
     if (pfa == 0.0)
@@ -281,7 +283,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_state(int state)
 float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
         {
             frequency_bins++;
         }

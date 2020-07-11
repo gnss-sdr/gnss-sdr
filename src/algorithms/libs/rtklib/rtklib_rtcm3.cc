@@ -874,7 +874,7 @@ int decode_type1010(rtcm_t *rtcm)
             if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     rtcm->obs.data[index].P[0] = pr1;
-                    lam1 = SPEED_OF_LIGHT / (FREQ1_GLO + DFRQ1_GLO * (freq - 7));
+                    lam1 = SPEED_OF_LIGHT_M_S / (FREQ1_GLO + DFRQ1_GLO * (freq - 7));
                     cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / lam1);
                     rtcm->obs.data[index].L[0] = pr1 / lam1 + cp1;
                 }
@@ -978,7 +978,7 @@ int decode_type1012(rtcm_t *rtcm)
             pr1 = pr1 * 0.02 + amb * PRUNIT_GLO;
             if (ppr1 != static_cast<int>(0xFFF80000))
                 {
-                    lam1 = SPEED_OF_LIGHT / (FREQ1_GLO + DFRQ1_GLO * (freq - 7));
+                    lam1 = SPEED_OF_LIGHT_M_S / (FREQ1_GLO + DFRQ1_GLO * (freq - 7));
                     rtcm->obs.data[index].P[0] = pr1;
                     cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / lam1);
                     rtcm->obs.data[index].L[0] = pr1 / lam1 + cp1;
@@ -993,7 +993,7 @@ int decode_type1012(rtcm_t *rtcm)
                 }
             if (ppr2 != static_cast<int>(0xFFF80000))
                 {
-                    lam2 = SPEED_OF_LIGHT / (FREQ2_GLO + DFRQ2_GLO * (freq - 7));
+                    lam2 = SPEED_OF_LIGHT_M_S / (FREQ2_GLO + DFRQ2_GLO * (freq - 7));
                     cp2 = adjcp(rtcm, sat, 1, ppr2 * 0.0005 / lam2);
                     rtcm->obs.data[index].L[1] = pr1 / lam2 + cp2;
                 }
@@ -3203,8 +3203,8 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                             if (sys == SYS_GLO && ex && ex[i] <= 13)
                                 {
                                     fn = ex[i] - 7;
-                                    wl = SPEED_OF_LIGHT / ((freq[k] == 2 ? FREQ2_GLO : FREQ1_GLO) +
-                                                              (freq[k] == 2 ? DFRQ2_GLO : DFRQ1_GLO) * fn);
+                                    wl = SPEED_OF_LIGHT_M_S / ((freq[k] == 2 ? FREQ2_GLO : FREQ1_GLO) +
+                                                                  (freq[k] == 2 ? DFRQ2_GLO : DFRQ1_GLO) * fn);
                                 }
                             /* pseudorange (m) */
                             if (r[i] != 0.0 && pr[j] > -1E12)

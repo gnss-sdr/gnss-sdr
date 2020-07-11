@@ -47,7 +47,7 @@ TEST(ConjugateTest, StandardCComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << "-length complex float vector in standard C finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
 
     delete[] input;
     delete[] output;
@@ -70,7 +70,7 @@ TEST(ConjugateTest, C11ComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << " complex<float> vector (C++11-style) finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
     std::complex<float> expected(0, 0);
@@ -97,7 +97,7 @@ TEST(ConjugateTest, ArmadilloComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << "-length complex float Armadillo vector finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 }
 
@@ -117,7 +117,7 @@ TEST(ConjugateTest, VolkComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << "-length complex float vector using VOLK finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     volk_gnsssdr_free(input);
     volk_gnsssdr_free(output);
@@ -138,6 +138,6 @@ TEST(ConjugateTest, VolkComplexImplementationAlloc)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << "-length complex float vector using VOLK ALLOC finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 }

@@ -179,7 +179,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // create directory
             if (!gnss_sdr_create_directory(dump_path))
                 {
-                    std::cerr << "GNSS-SDR cannot create dump file for the PVT block. Wrong permissions?" << std::endl;
+                    std::cerr << "GNSS-SDR cannot create dump file for the PVT block. Wrong permissions?\n";
                     d_dump = false;
                 }
         }
@@ -382,7 +382,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                                 {
                                     if (!fs::create_directory(new_folder, ec))
                                         {
-                                            std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                            std::cout << "Could not create the " << new_folder << " folder.\n";
                                             d_xml_base_path = full_path.string();
                                         }
                                 }
@@ -395,7 +395,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 }
             if (d_xml_base_path != ".")
                 {
-                    std::cout << "XML files will be stored at " << d_xml_base_path << std::endl;
+                    std::cout << "XML files will be stored at " << d_xml_base_path << '\n';
                 }
 
             d_xml_base_path = d_xml_base_path + fs::path::preferred_separator;
@@ -426,8 +426,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     int msgflg = IPC_CREAT | 0666;
     if ((d_sysv_msqid = msgget(d_sysv_msg_key, msgflg)) == -1)
         {
-            std::cout << "GNSS-SDR cannot create System V message queues." << std::endl;
-            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno) << std::endl;
+            std::cout << "GNSS-SDR cannot create System V message queues.\n";
+            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno);
         }
 
     // Display time in local time zone
@@ -501,6 +501,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
+    DLOG(INFO) << "PVT block destructor called.";
     if (d_sysv_msqid != -1)
         {
             msgctl(d_sysv_msqid, IPC_RMID, nullptr);
@@ -1089,17 +1090,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     switch (d_type_of_rx)
                                         {
                                         case 1:  // GPS L1 C/A only
-                                            d_rp->log_rinex_nav(d_rp->navFile, new_eph);
-                                            break;
                                         case 8:  // L1+L5
                                             d_rp->log_rinex_nav(d_rp->navFile, new_eph);
                                             break;
-                                        case 9:  // GPS L1 C/A + Galileo E1B
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
+                                        case 9:   // GPS L1 C/A + Galileo E1B
                                         case 10:  // GPS L1 C/A + Galileo E5a
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
                                         case 11:  // GPS L1 C/A + Galileo E5b
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
                                             break;
@@ -1124,8 +1119,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                                 }
                                             break;
                                         case 32:  // L1+E1+L5+E5a
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
                                         case 33:  // L1+E1+E5a
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
                                             break;
@@ -1200,11 +1193,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     switch (d_type_of_rx)
                                         {
                                         case 2:  // GPS L2C only
-                                            d_rp->log_rinex_nav(d_rp->navFile, new_cnav_eph);
-                                            break;
                                         case 3:  // GPS L5 only
-                                            d_rp->log_rinex_nav(d_rp->navFile, new_cnav_eph);
-                                            break;
                                         case 7:  // GPS L1 C/A + GPS L2C
                                             d_rp->log_rinex_nav(d_rp->navFile, new_cnav_eph);
                                             break;
@@ -1212,8 +1201,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_cnav_eph, new_gal_eph);
                                             break;
                                         case 28:  // GPS L2C + GLONASS L1 C/A
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_cnav_eph, new_glo_eph);
-                                            break;
                                         case 31:  // GPS L2C + GLONASS L2 C/A
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_cnav_eph, new_glo_eph);
                                             break;
@@ -1302,20 +1289,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     switch (d_type_of_rx)
                                         {
                                         case 4:  // Galileo E1B only
-                                            d_rp->log_rinex_nav(d_rp->navGalFile, new_gal_eph);
-                                            break;
                                         case 5:  // Galileo E5a only
-                                            d_rp->log_rinex_nav(d_rp->navGalFile, new_gal_eph);
-                                            break;
                                         case 6:  // Galileo E5b only
                                             d_rp->log_rinex_nav(d_rp->navGalFile, new_gal_eph);
                                             break;
-                                        case 9:  // GPS L1 C/A + Galileo E1B
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
+                                        case 9:   // GPS L1 C/A + Galileo E1B
                                         case 10:  // GPS L1 C/A + Galileo E5a
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
                                         case 11:  // GPS L1 C/A + Galileo E5b
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
                                             break;
@@ -1326,17 +1305,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                             d_rp->log_rinex_nav(d_rp->navGalFile, new_gal_eph);
                                             break;
                                         case 27:  // Galileo E1B + GLONASS L1 C/A
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_gal_eph, new_glo_eph);
-                                            break;
                                         case 30:  // Galileo E1B + GLONASS L2 C/A
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_gal_eph, new_glo_eph);
                                             break;
-                                        case 32:  // L1+E1+L5+E5a
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
-                                        case 33:  // L1+E1+E5a
-                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
-                                            break;
+                                        case 32:    // L1+E1+L5+E5a
+                                        case 33:    // L1+E1+E5a
                                         case 1001:  // L1+E1+L2+L5+E5a
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
                                             break;
@@ -1462,11 +1435,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     switch (d_type_of_rx)
                                         {
                                         case 23:  // GLONASS L1 C/A
-                                            d_rp->log_rinex_nav(d_rp->navGloFile, new_glo_eph);
-                                            break;
                                         case 24:  // GLONASS L2 C/A
-                                            d_rp->log_rinex_nav(d_rp->navGloFile, new_glo_eph);
-                                            break;
                                         case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
                                             d_rp->log_rinex_nav(d_rp->navGloFile, new_glo_eph);
                                             break;
@@ -1573,8 +1542,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     switch (d_type_of_rx)
                                         {
                                         case 500:  // BDS B1I only
-                                            d_rp->log_rinex_nav(d_rp->navFile, new_bds_eph);
-                                            break;
                                         case 600:  // BDS B3I only
                                             d_rp->log_rinex_nav(d_rp->navFile, new_bds_eph);
                                             break;
@@ -1748,7 +1715,7 @@ bool rtklib_pvt_gs::load_gnss_synchro_map_xml(const std::string& file_name)
             boost::archive::xml_iarchive xml(ifs);
             d_gnss_observables_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", d_gnss_observables_map);
-            // std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
+            // std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges\n";
         }
     catch (const std::exception& e)
         {
@@ -1824,42 +1791,36 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
         {
             // all observables in the map are valid
             observables_iter->second.RX_time -= rx_clock_offset_s;
-            observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT;
+            observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT_M_S;
 
             switch (d_mapStringValues[observables_iter->second.Signal])
                 {
                 case evGPS_1C:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
+                case evSBAS_1C:
+                case evGAL_1B:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * TWO_PI;
                     break;
                 case evGPS_L5:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * PI_2;
-                    break;
-                case evSBAS_1C:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
-                    break;
-                case evGAL_1B:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1 * PI_2;
-                    break;
                 case evGAL_5X:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * TWO_PI;
                     break;
                 case evGPS_2S:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2 * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2 * TWO_PI;
                     break;
                 case evBDS_B3:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ3_BDS * TWO_PI;
                     break;
                 case evGLO_1G:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_GLO * TWO_PI;
                     break;
                 case evGLO_2G:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_GLO * TWO_PI;
                     break;
                 case evBDS_B1:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ1_BDS * TWO_PI;
                     break;
                 case evBDS_B2:
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS * PI_2;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2_BDS * TWO_PI;
                     break;
                 default:
                     break;
@@ -1931,43 +1892,37 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                     switch (d_mapStringValues[observables_iter->second.Signal])
                         {
                         case evGPS_1C:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
+                        case evSBAS_1C:
+                        case evGAL_1B:
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
                             break;
                         case evGPS_L5:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
-                            break;
-                        case evSBAS_1C:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
-                            break;
-                        case evGAL_1B:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1;
-                            break;
                         case evGAL_5X:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ5;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
                             break;
                         case evGPS_2S:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ2;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2;
                             break;
                         case evBDS_B3:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ3_BDS;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ3_BDS;
                             break;
                         case evGLO_1G:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1_GLO;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1_GLO;
                             break;
                         case evGLO_2G:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ2_GLO;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2_GLO;
                             break;
                         case evBDS_B1:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ1_BDS;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1_BDS;
                             break;
                         case evBDS_B2:
-                            wavelength_m = SPEED_OF_LIGHT / FREQ2_BDS;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2_BDS;
                             break;
                         default:
                             break;
                         }
-                    double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, PI_2);
-                    d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = PI_2 * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
+                    double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, TWO_PI);
+                    d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = TWO_PI * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
                     d_channel_initialized.at(observables_iter->second.Channel_ID) = true;
                     DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
                 }
@@ -2087,12 +2042,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     catch (const boost::exception& ex)
                                         {
-                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << std::endl;
+                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << '\n';
                                             LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
                                         }
                                     catch (const std::exception& ex)
                                         {
-                                            std::cout << "RTCM std exception: " << ex.what() << std::endl;
+                                            std::cout << "RTCM std exception: " << ex.what() << '\n';
                                             LOG(ERROR) << "RTCM std exception: " << ex.what();
                                         }
                                 }
@@ -2144,14 +2099,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             d_rx_time = static_cast<double>(current_RX_time_ms) / 1000.0;
                                                             // std::cout << " obs time t0: " << d_gnss_observables_map_t0.cbegin()->second.RX_time
                                                             //           << " t1: " << d_gnss_observables_map_t1.cbegin()->second.RX_time
-                                                            //           << " interp time: " << d_rx_time << std::endl;
+                                                            //           << " interp time: " << d_rx_time << '\n';
                                                             d_gnss_observables_map = interpolate_observables(d_gnss_observables_map_t0,
                                                                 d_gnss_observables_map_t1,
                                                                 d_rx_time);
                                                             flag_compute_pvt_output = true;
                                                             // d_rx_time = current_RX_time;
                                                             // std::cout.precision(17);
-                                                            // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << std::endl;
+                                                            // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << '\n';
                                                         }
                                                 }
                                         }
@@ -2163,7 +2118,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 {
                                                     flag_compute_pvt_output = true;
                                                     // std::cout.precision(17);
-                                                    // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << std::endl;
+                                                    // std::cout << "current_RX_time: " << current_RX_time << " map time: " << d_gnss_observables_map.begin()->second.RX_time << '\n';
                                                 }
                                             flag_pvt_valid = true;
                                         }
@@ -2198,7 +2153,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     DLOG(INFO) << "Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[s]"
                                                << " at RX time: " << static_cast<uint32_t>(d_rx_time * 1000.0) << " [ms]";
                                     // Optional debug code: export observables snapshot for rtklib unit testing
-                                    // std::cout << "step 1: save gnss_synchro map" << std::endl;
+                                    // std::cout << "step 1: save gnss_synchro map\n";
                                     // save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
                                     // getchar(); // stop the execution
                                     // end debug
@@ -2270,7 +2225,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     std::cout << "First position fix at " << d_user_pvt_solver->get_position_UTC_time() << " UTC";
                                                 }
                                             std::cout << " is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                                      << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]" << std::endl;
+                                                      << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]\n";
                                             d_ttff_msgbuf ttff;
                                             ttff.mtype = 1;
                                             d_end = std::chrono::system_clock::now();
@@ -2687,35 +2642,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                                             break;
                                                         case 503:  // BeiDou B1I + GLONASS L1 C/A
-                                                            if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
-                                                                {
-                                                                    // d_rp->rinex_obs_header(d_rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                    // d_rp->rinex_nav_header(d_rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                    // d_rp->log_rinex_nav(d_rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
-                                                                    d_rinex_header_written = true;  // do not write header anymore
-                                                                }
-
-                                                            break;
                                                         case 504:  // BeiDou B1I + GPS L1 C/A + Galileo E1B
-                                                            if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
-                                                                {
-                                                                    // d_rp->rinex_obs_header(d_rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                    // d_rp->rinex_nav_header(d_rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                    // d_rp->log_rinex_nav(d_rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
-                                                                    d_rinex_header_written = true;  // do not write header anymore
-                                                                }
-
-                                                            break;
                                                         case 505:  // BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
-                                                            if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
-                                                                {
-                                                                    // d_rp->rinex_obs_header(d_rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
-                                                                    // d_rp->rinex_nav_header(d_rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                    // d_rp->log_rinex_nav(d_rp->navFile, d_user_pvt_solver->beidou_dnav_ephemeris_map);
-                                                                    d_rinex_header_written = true;  // do not write header anymore
-                                                                }
-
-                                                            break;
                                                         case 506:  // BeiDou B1I + Beidou B3I
                                                             if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                 {
@@ -2737,23 +2665,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                                             break;
                                                         case 601:  // BeiDou B3I + GPS L2C
-                                                            if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
-                                                                {
-                                                                    d_rp->rinex_obs_header(d_rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                    // d_rp->rinex_nav_header(d_rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                    d_rinex_header_written = true;  // do not write header anymore
-                                                                }
-
-                                                            break;
                                                         case 602:  // BeiDou B3I + GLONASS L2 C/A
-                                                            if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
-                                                                {
-                                                                    d_rp->rinex_obs_header(d_rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
-                                                                    // d_rp->rinex_nav_header(d_rp->navFile, d_user_pvt_solver->beidou_dnav_iono, d_user_pvt_solver->beidou_dnav_utc_model);
-                                                                    d_rinex_header_written = true;  // do not write header anymore
-                                                                }
-
-                                                            break;
                                                         case 603:  // BeiDou B3I + GPS L2C + GLONASS L2 C/A
                                                             if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                 {
@@ -2817,17 +2729,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                     break;
                                                                 case 2:  // GPS L2C only
-                                                                    if (gps_cnav_ephemeris_iter != d_user_pvt_solver->gps_cnav_ephemeris_map.cend())
-                                                                        {
-                                                                            d_rp->log_rinex_obs(d_rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time, d_gnss_observables_map);
-                                                                        }
-                                                                    if (!d_rinex_header_updated and (d_user_pvt_solver->gps_cnav_utc_model.d_A0 != 0))
-                                                                        {
-                                                                            d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->gps_cnav_utc_model);
-                                                                            d_rp->update_nav_header(d_rp->navFile, d_user_pvt_solver->gps_cnav_utc_model, d_user_pvt_solver->gps_cnav_iono);
-                                                                            d_rinex_header_updated = true;
-                                                                        }
-                                                                    break;
                                                                 case 3:  // GPS L5
                                                                     if (gps_cnav_ephemeris_iter != d_user_pvt_solver->gps_cnav_ephemeris_map.cend())
                                                                         {
@@ -4210,12 +4111,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     catch (const boost::exception& ex)
                                         {
-                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << std::endl;
+                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << '\n';
                                             LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
                                         }
                                     catch (const std::exception& ex)
                                         {
-                                            std::cout << "RTCM std exception: " << ex.what() << std::endl;
+                                            std::cout << "RTCM std exception: " << ex.what() << '\n';
                                             LOG(ERROR) << "RTCM std exception: " << ex.what();
                                         }
                                 }
@@ -4247,7 +4148,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 << std::fixed << std::setprecision(9)
                                 << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                 << std::fixed << std::setprecision(3)
-                                << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]" << TEXT_RESET << std::endl;
+                                << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]" << TEXT_RESET << '\n';
 
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
@@ -4256,7 +4157,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 << TEXT_BOLD_GREEN
                                 << "Velocity: " << std::fixed << std::setprecision(3)
                                 << "East: " << d_user_pvt_solver->get_rx_vel()[0] << " [m/s], North: " << d_user_pvt_solver->get_rx_vel()[1]
-                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << std::endl;
+                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << '\n';
 
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
@@ -4265,7 +4166,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_user_pvt_solver->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
                             // p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                             // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
-                            // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
+                            // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << '\n';
 
                             DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
                                        << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
@@ -4274,7 +4175,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
                                          << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
                                          << d_user_pvt_solver->get_vdop()
-                                         << " GDOP = " << d_user_pvt_solver->get_gdop() << std::endl; */
+                                         << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
                         }
 
                     // PVT MONITOR

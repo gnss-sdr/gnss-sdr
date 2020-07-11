@@ -40,16 +40,15 @@ namespace own = gsl;
 
 
 BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration_, role, BEIDOU_B1I_CODE_RATE_CPS, 10e6);
+    acq_parameters_.SetFromConfiguration(configuration, role, BEIDOU_B1I_CODE_RATE_CPS, 10e6);
 
     LOG(INFO) << "role " << role;
 
@@ -58,14 +57,14 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     fs_in_ = acq_parameters_.fs_in;
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
 
     num_codes_ = acq_parameters_.sampled_ms;
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
-    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     acquisition_ = pcps_make_acquisition(acq_parameters_);
@@ -94,6 +93,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 
 void BeidouB1iPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 
@@ -172,11 +172,7 @@ void BeidouB1iPcpsAcquisition::set_state(int state)
 
 void BeidouB1iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to connect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -197,11 +193,7 @@ void BeidouB1iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void BeidouB1iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to disconnect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to disconnect
         }
@@ -220,11 +212,7 @@ void BeidouB1iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
 {
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_;
-        }
-    if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             return acquisition_;
         }

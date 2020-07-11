@@ -44,14 +44,14 @@ conjugate_ic_sptr make_conjugate_ic();
  */
 class conjugate_ic : public gr::sync_block
 {
-private:
-    friend conjugate_ic_sptr make_conjugate_ic();
-    conjugate_ic();
-
 public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
+
+private:
+    friend conjugate_ic_sptr make_conjugate_ic();
+    conjugate_ic();
 };
 
 #endif

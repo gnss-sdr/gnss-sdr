@@ -33,7 +33,7 @@ conjugate_cc::conjugate_cc() : gr::sync_block("conjugate_cc",
                                    gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                    gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
+    const auto alignment_multiple = static_cast<int>(volk_get_alignment() / sizeof(gr_complex));
     set_alignment(std::max(1, alignment_multiple));
 }
 

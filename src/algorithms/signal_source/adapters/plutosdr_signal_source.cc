@@ -1,7 +1,8 @@
 /*!
  * \file plutosdr_signal_source.cc
  * \brief Signal source for PlutoSDR
- * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
+ * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl, rodrigo.munoz(at)proteinlab.cl
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -26,17 +27,17 @@
 #include <utility>
 
 
-PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration,
+PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_file = "./data/signal_source.dat";
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_file("./data/signal_source.dat");
     std::string default_gain_mode("slow_attack");
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
+    freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
+    sample_rate_ = configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(3000000));
+    bandwidth_ = configuration->property(role + ".bandwidth", static_cast<uint64_t>(2000000));
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
@@ -57,23 +58,23 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     Fpass_ = configuration->property(role + ".Fpass", 0.0);
     Fstop_ = configuration->property(role + ".Fstop", 0.0);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    samples_ = configuration->property(role + ".samples", 0);
+    samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     if (item_type_ != "gr_complex")
         {
-            std::cout << "Configuration error: item_type must be gr_complex" << std::endl;
+            std::cout << "Configuration error: item_type must be gr_complex\n";
             LOG(FATAL) << "Configuration error: item_type must be gr_complex!";
         }
 
     // basic check
     if ((gain_mode_ != "manual") and (gain_mode_ != "slow_attack") and (gain_mode_ != "fast_attack") and (gain_mode_ != "hybrid"))
         {
-            std::cout << "Configuration parameter gain_mode should take one of these values:" << std::endl;
-            std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
-            std::cout << "Error: provided value gain_mode=" << gain_mode_ << " is not among valid values" << std::endl;
-            std::cout << " This parameter has been set to its default value gain_mode=" << default_gain_mode << std::endl;
+            std::cout << "Configuration parameter gain_mode should take one of these values:\n";
+            std::cout << " manual, slow_attack, fast_attack, hybrid\n";
+            std::cout << "Error: provided value gain_mode=" << gain_mode_ << " is not among valid values\n";
+            std::cout << " This parameter has been set to its default value gain_mode=" << default_gain_mode << '\n';
             gain_mode_ = default_gain_mode;
             LOG(WARNING) << "Invalid configuration value for gain_mode parameter. Set to gain_mode=" << default_gain_mode;
         }
@@ -82,9 +83,9 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
         {
             if (rf_gain_ > 73.0 or rf_gain_ < -1.0)
                 {
-                    std::cout << "Configuration parameter rf_gain should take values between -1.0 and 73 dB" << std::endl;
-                    std::cout << "Error: provided value rf_gain=" << rf_gain_ << " is not among valid values" << std::endl;
-                    std::cout << " This parameter has been set to its default value rf_gain=64.0" << std::endl;
+                    std::cout << "Configuration parameter rf_gain should take values between -1.0 and 73 dB\n";
+                    std::cout << "Error: provided value rf_gain=" << rf_gain_ << " is not among valid values\n";
+                    std::cout << " This parameter has been set to its default value rf_gain=64.0\n";
                     rf_gain_ = 64.0;
                     LOG(WARNING) << "Invalid configuration value for rf_gain parameter. Set to rf_gain=64.0";
                 }
@@ -92,35 +93,35 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
 
     if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
         {
-            std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
-            std::cout << "  Off: Disable filter" << std::endl;
-            std::cout << "  Auto: Use auto-generated filters" << std::endl;
-            std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
+            std::cout << "Configuration parameter filter_source should take one of these values:\n";
+            std::cout << "  Off: Disable filter\n";
+            std::cout << "  Auto: Use auto-generated filters\n";
+            std::cout << "  File: User-provided filter in filter_filename parameter\n";
 #if LIBAD9361_VERSION_GREATER_THAN_01
-            std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
+            std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters\n";
 #endif
-            std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
-            std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
+            std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values\n";
+            std::cout << " This parameter has been set to its default value filter_source=Off\n";
             filter_source_ = std::string("Off");
             LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
         }
 
     if (bandwidth_ < 200000 or bandwidth_ > 56000000)
         {
-            std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
-            std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
-            std::cout << " This parameter has been set to its default value bandwidth=2000000" << std::endl;
+            std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz\n";
+            std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values\n";
+            std::cout << " This parameter has been set to its default value bandwidth=2000000\n";
             bandwidth_ = 2000000;
             LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=2000000";
         }
 
     item_size_ = sizeof(gr_complex);
 
-    std::cout << "device address: " << uri_ << std::endl;
-    std::cout << "frequency : " << freq_ << " Hz" << std::endl;
-    std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
-    std::cout << "gain mode: " << gain_mode_ << std::endl;
-    std::cout << "item type: " << item_type_ << std::endl;
+    std::cout << "device address: " << uri_ << '\n';
+    std::cout << "frequency : " << freq_ << " Hz\n";
+    std::cout << "sample rate: " << sample_rate_ << " Hz\n";
+    std::cout << "gain mode: " << gain_mode_ << '\n';
+    std::cout << "item type: " << item_type_ << '\n';
 
 #if GNURADIO_API_IIO
     plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,

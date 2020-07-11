@@ -43,9 +43,9 @@ const double MU_GAL = 3.986004418e14; /* earth gravitational constant   ref [7] 
 const double MU_BDS = 3.986004418e14; /* earth gravitational constant   ref [9] */
 const double J2_GLO = 1.0826257e-3;   /* 2nd zonal harmonic of geopot   ref [2] */
 
-const double OMGE_GLO = 7.292115e-5;     /* earth angular velocity (rad/s) ref [2] */
-const double OMGE_GAL = 7.2921151467e-5; /* earth angular velocity (rad/s) ref [7] */
-const double OMGE_BDS = 7.292115e-5;     /* earth angular velocity (rad/s) ref [9] */
+const double OMGE_GLO = GLONASS_OMEGA_EARTH_DOT; /* earth angular velocity (rad/s) ref [2] */
+const double OMGE_GAL = GNSS_OMEGA_EARTH_DOT;    /* earth angular velocity (rad/s) ref [7] */
+const double OMGE_BDS = BEIDOU_OMEGA_EARTH_DOT;  /* earth angular velocity (rad/s) ref [9] */
 
 const double SIN_5 = -0.0871557427476582; /* sin(-5.0 deg) */
 const double COS_5 = 0.9961946980917456;  /* cos(-5.0 deg) */
@@ -54,12 +54,12 @@ const double ERREPH_GLO = 5.0;    /* error of glonass ephemeris (m) */
 const double TSTEP = 60.0;        /* integration step glonass ephemeris (s) */
 const double RTOL_KEPLER = 1e-13; /* relative tolerance for Kepler equation */
 
-const double DEFURASSR = 0.15;                   /* default accuracy of ssr corr (m) */
-const double MAXECORSSR = 10.0;                  /* max orbit correction of ssr (m) */
-const double MAXCCORSSR = 1e-6 * SPEED_OF_LIGHT; /* max clock correction of ssr (m) */
-const double MAXAGESSR = 90.0;                   /* max age of ssr orbit and clock (s) */
-const double MAXAGESSR_HRCLK = 10.0;             /* max age of ssr high-rate clock (s) */
-const double STD_BRDCCLK = 30.0;                 /* error of broadcast clock (m) */
+const double DEFURASSR = 0.15;                       /* default accuracy of ssr corr (m) */
+const double MAXECORSSR = 10.0;                      /* max orbit correction of ssr (m) */
+const double MAXCCORSSR = 1e-6 * SPEED_OF_LIGHT_M_S; /* max clock correction of ssr (m) */
+const double MAXAGESSR = 90.0;                       /* max age of ssr orbit and clock (s) */
+const double MAXAGESSR_HRCLK = 10.0;                 /* max age of ssr high-rate clock (s) */
+const double STD_BRDCCLK = 30.0;                     /* error of broadcast clock (m) */
 
 const int MAX_ITER_KEPLER = 30; /* max number of iteration of Kelpler */
 
@@ -147,7 +147,7 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
     u = atan2(sqrt(1.0 - alm->e * alm->e) * sinE, cosE - alm->e) + alm->omg;
     r = alm->A * (1.0 - alm->e * cosE);
     i = alm->i0;
-    O = alm->OMG0 + (alm->OMGd - DEFAULT_OMEGA_EARTH_DOT) * tk - DEFAULT_OMEGA_EARTH_DOT * alm->toas;
+    O = alm->OMG0 + (alm->OMGd - GNSS_OMEGA_EARTH_DOT) * tk - GNSS_OMEGA_EARTH_DOT * alm->toas;
     x = r * cos(u);
     y = r * sin(u);
     sinO = sin(O);
@@ -250,7 +250,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             break;
         default:
             mu = MU_GPS;
-            omge = DEFAULT_OMEGA_EARTH_DOT;
+            omge = GNSS_OMEGA_EARTH_DOT;
             break;
         }
     M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
@@ -310,7 +310,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
-    *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT, 2.0);
+    *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT_M_S, 2.0);
 
     /* position and clock error variance */
     *var = var_uraeph(eph->sva);
@@ -906,7 +906,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             dts[1] = eph->f1 + 2.0 * eph->f2 * tk;
 
             /* relativity correction */
-            dts[0] -= 2.0 * dot(rs, rs + 3, 3) / SPEED_OF_LIGHT / SPEED_OF_LIGHT;
+            dts[0] -= 2.0 * dot(rs, rs + 3, 3) / SPEED_OF_LIGHT_M_S / SPEED_OF_LIGHT_M_S;
         }
     /* radial-along-cross directions in ecef */
     if (!normv3(rs + 3, ea))
@@ -930,8 +930,8 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         {
             rs[i] += -(er[i] * deph[0] + ea[i] * deph[1] + ec[i] * deph[2]) + dant[i];
         }
-    /* t_corr = t_sv - (dts(brdc) + dclk(ssr) / SPEED_OF_LIGHT) (ref [10] eq.3.12-7) */
-    dts[0] += dclk / SPEED_OF_LIGHT;
+    /* t_corr = t_sv - (dts(brdc) + dclk(ssr) / SPEED_OF_LIGHT_M_S) (ref [10] eq.3.12-7) */
+    dts[0] += dclk / SPEED_OF_LIGHT_M_S;
 
     /* variance by ssr ura */
     *var = var_urassr(ssr->ura);
@@ -1058,7 +1058,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                     continue;
                 }
             /* transmission time by satellite clock */
-            time[i] = timeadd(obs[i].time, -pr / SPEED_OF_LIGHT);
+            time[i] = timeadd(obs[i].time, -pr / SPEED_OF_LIGHT_M_S);
 
             /* satellite clock bias by broadcast ephemeris */
             if (!ephclk(time[i], teph, obs[i].sat, nav, &dt))

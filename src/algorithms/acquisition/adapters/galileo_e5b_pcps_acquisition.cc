@@ -54,7 +54,7 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
@@ -67,7 +67,7 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
         }
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E5B_CODE_CHIP_RATE_CPS / GALILEO_E5B_CODE_LENGTH_CHIPS)));
-    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0F : 1.0F));
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
@@ -196,11 +196,7 @@ void GalileoE5bPcpsAcquisition::set_state(int state)
 
 void GalileoE5bPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to connect
-        }
-    else if (item_type_ == "cshort")
+    if ((item_type_ == "gr_complex") || (item_type_ == "cshort"))
         {
             // nothing to connect
         }
@@ -213,11 +209,7 @@ void GalileoE5bPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute
 
 void GalileoE5bPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to disconnect
-        }
-    else if (item_type_ == "cshort")
+    if ((item_type_ == "gr_complex") || (item_type_ == "cshort"))
         {
             // nothing to disconnect
         }

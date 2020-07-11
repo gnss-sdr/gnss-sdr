@@ -1749,7 +1749,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #if ENABLE_FPGA
     else if (implementation == "Galileo_E5b_PCPS_Acquisition_FPGA")
         {
-            std::unique_ptr<GNSSBlockInterface> block = std::make_unique<GalileoE5bPcpsAcquisitionFpga>(configuration, role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GalileoE5bPcpsAcquisitionFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }

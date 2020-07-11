@@ -42,7 +42,7 @@ public:
     /*!
      * \brief Constructor
      */
-    GalileoE5bPcpsAcquisitionFpga(ConfigurationInterface* configuration,
+    GalileoE5bPcpsAcquisitionFpga(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -192,7 +192,6 @@ private:
     static const uint32_t select_all_code_bits = 0xFFFFFFFF;  // Select a 20 bit word
     static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
 
-    ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     std::string item_type_;
     std::string dump_filename_;

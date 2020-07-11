@@ -86,11 +86,11 @@ private:
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
-    std::unique_ptr<GNSSBlockInterface> GetChannel_7X(ConfigurationInterface* configuration,
+    std::unique_ptr<GNSSBlockInterface> GetChannel_7X(const ConfigurationInterface* configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
-    std::unique_ptr<GNSSBlockInterface> GetChannel_L5(ConfigurationInterface* configuration,
+    std::unique_ptr<GNSSBlockInterface> GetChannel_L5(const ConfigurationInterface* configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
         Concurrent_Queue<pmt::pmt_t>* queue);
 

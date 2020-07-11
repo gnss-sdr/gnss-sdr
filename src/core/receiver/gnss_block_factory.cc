@@ -563,7 +563,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
 
 // ********* GALILEO E5b  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_7X(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {

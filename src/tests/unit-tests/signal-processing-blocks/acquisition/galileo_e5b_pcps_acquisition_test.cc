@@ -131,6 +131,7 @@ protected:
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
         stop = false;
+        message = 0;
     }
 
     ~GalileoE5bPcpsAcquisitionTest() = default;
@@ -154,41 +155,32 @@ protected:
     Gnss_Synchro gnss_synchro;
     size_t item_size;
 
+    double fs_in = 12e6;
     bool stop;
     int message;
     std::thread ch_thread;
 
-    unsigned int num_of_realizations = 10;
-    unsigned int realization_counter;
-    unsigned int detection_counter;
-    unsigned int correct_estimation_counter;
-    unsigned int acquired_samples;
-    unsigned int mean_acq_time_us;
-    double expected_doppler_hz = -632;
-    double expected_delay_chips = 53;
-    double expected_delay_sec = 94;
+    unsigned int num_of_realizations = 1;
+    unsigned int realization_counter = 0;
+    unsigned int detection_counter = 0;
+    unsigned int correct_estimation_counter = 0;
+    unsigned int acquired_samples = 0;
+    unsigned int mean_acq_time_us = 0;
+    double expected_doppler_hz = -632.0;
+    double expected_delay_chips = round(14000.0 * 10230000.0 / static_cast<double>(fs_in));
+    double expected_delay_sec = 10.0;
 
-    double expected_delay_chips1 = 0.0;
-    double expected_delay_sec1 = 0.0;
-    double expected_doppler_hz1 = 0.0;
-    double expected_delay_chips2 = 0.0;
-    double expected_delay_sec2 = 0.0;
-    double expected_doppler_hz2 = 0.0;
-    double expected_delay_chips3 = 0.0;
-    double expected_delay_sec3 = 0.0;
-    double expected_doppler_hz3 = 0.0;
-    float max_doppler_error_hz = 0.0;
-    float max_delay_error_chips = 0.0;
-    double fs_in = 12e6;
+    float integration_time_ms = 1;
+    float max_doppler_error_hz = 2 / (3 * integration_time_ms * 1e-3);
+    float max_delay_error_chips = 0.5;
 
-    double mse_doppler;
-    double mse_delay;
 
-    double Pd;
-    double Pfa_p;
-    double Pfa_a;
+    double mse_doppler = 0.0;
+    double mse_delay = 0.0;
 
-    int sat = 0;
+    double Pd = 0.0;
+    double Pfa_p = 0.0;
+    double Pfa_a = 0.0;
 };
 
 
@@ -233,7 +225,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
     config->set_property("Acquisition_7X.item_type", "gr_complex");
-    config->set_property("Acquisition_7X.coherent_integration_time_ms", "1");
+    config->set_property("Acquisition_7X.coherent_integration_time_ms", std::to_string(integration_time_ms));
     config->set_property("Acquisition_7X.dump", "true");
     config->set_property("Acquisition_7X.dump_filename", "./acquisition");
     config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
@@ -277,32 +269,11 @@ void GalileoE5bPcpsAcquisitionTest::process_message()
 {
     if (message == 1)
         {
-            double delay_error_chips = 0.0;
-            double doppler_error_hz = 0.0;
-            switch (sat)
-                {
-                case 0:
-                    delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
-                    doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
-                    break;
-                case 1:
-                    delay_error_chips = std::abs(static_cast<double>(expected_delay_chips1) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
-                    doppler_error_hz = std::abs(expected_doppler_hz1 - gnss_synchro.Acq_doppler_hz);
-                    break;
-                case 2:
-                    delay_error_chips = std::abs(static_cast<double>(expected_delay_chips2) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
-                    doppler_error_hz = std::abs(expected_doppler_hz2 - gnss_synchro.Acq_doppler_hz);
-                    break;
-                case 3:
-                    delay_error_chips = std::abs(static_cast<double>(expected_delay_chips3) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
-                    doppler_error_hz = std::abs(expected_doppler_hz3 - gnss_synchro.Acq_doppler_hz);
-                    break;
-                default:  // case 3
-                    std::cout << "Error: message from unexpected acquisition channel\n";
-                    break;
-                }
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
+            double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
             detection_counter++;
-
+            std::cout << "delay_error_chips: " << delay_error_chips << '\n';
+            std::cout << "expected_delay_chips: " << expected_delay_chips << '\n';
             // The term -5 is here to correct the additional delay introduced by the FIR filter
             /*
             double delay_error_chips = abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));

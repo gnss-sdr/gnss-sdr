@@ -34,8 +34,7 @@ uint32_t gps_l2c_m_shift(uint32_t x)
 
 void gps_l2c_m_code(own::span<int32_t> _dest, uint32_t _prn)
 {
-    uint32_t x;
-    x = GPS_L2C_M_INIT_REG[_prn - 1];
+    uint32_t x = GPS_L2C_M_INIT_REG[_prn - 1];
     for (int32_t n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
         {
             _dest[n] = static_cast<int8_t>(x & 1U);

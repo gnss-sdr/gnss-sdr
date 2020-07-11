@@ -35,7 +35,7 @@ void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest,
     int32_t _prn,
     const std::array<char, 3>& _Signal)
 {
-    uint32_t prn = _prn - 1;
+    const uint32_t prn = _prn - 1;
     uint32_t index = 0;
     std::array<int32_t, 4> a{};
     if ((_prn < 1) || (_prn > 50))
@@ -102,17 +102,14 @@ void galileo_e5_a_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
     int32_t _fs,
     uint32_t _chip_shift)
 {
-    uint32_t _samplesPerCode;
-    uint32_t delay;
-    const uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
-    const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_CPS;
+    constexpr uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
+    constexpr int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_CPS;
+
+    const auto _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    const uint32_t delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
     std::vector<std::complex<float>> _code(_codeLength);
     galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
-
-    _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
-
-    delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
     if (_fs != _codeFreqBasis)
         {
@@ -132,7 +129,7 @@ void galileo_e5_b_code_gen_complex_primary(own::span<std::complex<float>> _dest,
     int32_t _prn,
     const std::array<char, 3>& _Signal)
 {
-    uint32_t prn = _prn - 1;
+    const uint32_t prn = _prn - 1;
     uint32_t index = 0;
     std::array<int32_t, 4> a{};
     if ((_prn < 1) || (_prn > 50))
@@ -202,14 +199,11 @@ void galileo_e5_b_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
     constexpr uint32_t _codeLength = GALILEO_E5B_CODE_LENGTH_CHIPS;
     constexpr int32_t _codeFreqBasis = GALILEO_E5B_CODE_CHIP_RATE_CPS;
 
-    auto _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
-    uint32_t delay;
+    const auto _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    const uint32_t delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
     std::vector<std::complex<float>> _code(_codeLength);
     galileo_e5_b_code_gen_complex_primary(_code, _prn, _Signal);
-
-    _samplesPerCode =
-        delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
     if (_fs != _codeFreqBasis)
         {

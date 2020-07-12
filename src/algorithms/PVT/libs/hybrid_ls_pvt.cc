@@ -305,7 +305,7 @@ bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                     this->set_rx_pos({rx_position_and_time(0), rx_position_and_time(1), rx_position_and_time(2)});      // save ECEF position for the next iteration
                     this->set_time_offset_s(this->get_time_offset_s() + rx_position_and_time(3) / SPEED_OF_LIGHT_M_S);  // accumulate the rx time error for the next iteration [meters]->[seconds]
 
-                    DLOG(INFO) << "Hybrid Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
+                    DLOG(INFO) << "Hybrid Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time[0] << ", " << rx_position_and_time[1] << ", " << rx_position_and_time[2] << ", " << rx_position_and_time[4];
                     DLOG(INFO) << "Accumulated rx clock error=" << this->get_time_offset_s() << " clock error for this iteration=" << rx_position_and_time(3) / SPEED_OF_LIGHT_M_S << " [s]";
 
                     // Compute GST and Gregorian time

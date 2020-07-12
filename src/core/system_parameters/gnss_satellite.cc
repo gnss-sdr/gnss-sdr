@@ -623,7 +623,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
             switch (PRN_)
                 {
                 case 1:
-                    block_ = std::string("BeiDou-2 GEO01");  // GEO 140.0°E; launched 2010/01/16
+                    block_ = std::string("BeiDou-2 GEO01*");  // GEO 140.0°E; launched 2010/01/16 (Retired)
                     break;
                 case 2:
                     block_ = std::string("BeiDou-2 GEO06");  // GEO 80°E; launched 2012/10/25
@@ -653,76 +653,112 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("BeiDou-2 IGSO05");  // 55° inclination IGSO 118°E; launched 2011/12/01
                     break;
                 case 11:
-                    block_ = std::string("BeiDou-2 MEO03");  // Slot A07; launched 2012/04/29
+                    block_ = std::string("BeiDou-2 MEO03*");  // Slot A07; launched 2012/04/29 (Retired)
                     break;
                 case 12:
-                    block_ = std::string("BeiDou-2 MEO04");  // Slot A08; launched 2012/04/29
+                    block_ = std::string("BeiDou-2 MEO04*");  // Slot A08; launched 2012/04/29 (Retired)
                     break;
                 case 13:
                     block_ = std::string("BeiDou-2 IGSO06");  // launched 2016/03/30
                     break;
                 case 14:
-                    block_ = std::string("BeiDou-2 MEO06");  // launched 2012/09/19
+                    block_ = std::string("BeiDou-2 MEO06*");  // launched 2012/09/19 (Retired)
                     break;
                 case 16:
                     block_ = std::string("BeiDou-2 IGSO07");  // launched 2018/07/10
                     break;
+                case 18:
+                    block_ = std::string("BeiDou-3 GEOG8");  // launched 2019/05/17
+                    break;
                 case 19:
-                    block_ = std::string("BeiDou-3 MEO01");  // Slot B-7; launched 2017/11/05
+                    block_ = std::string("BeiDou-3 MEO01");  // Slot B07; launched 2017/11/05
                     break;
                 case 20:
-                    block_ = std::string("BeiDou-3 MEO02");  // Slot B-5; launched 2017/11/05
+                    block_ = std::string("BeiDou-3 MEO02");  // Slot B05; launched 2017/11/05
                     break;
                 case 21:
-                    block_ = std::string("BeiDou-3 MEO03");  // Slot B-?; launched 2018/02/12
+                    block_ = std::string("BeiDou-3 MEO03");  // Slot B0?; launched 2018/02/12
                     break;
                 case 22:
-                    block_ = std::string("BeiDou-3 MEO04");  // Slot B-6; launched 2018/02/12
+                    block_ = std::string("BeiDou-3 MEO04");  // Slot B06; launched 2018/02/12
                     break;
                 case 23:
-                    block_ = std::string("BeiDou-3 MEO05");  // Slot C-7; launched 2018/07/29
+                    block_ = std::string("BeiDou-3 MEO05");  // Slot C07; launched 2018/07/29
                     break;
                 case 24:
-                    block_ = std::string("BeiDou-3 MEO06");  // Slot C-1; launched 2018/07/29
+                    block_ = std::string("BeiDou-3 MEO06");  // Slot C01; launched 2018/07/29
                     break;
                 case 25:
-                    block_ = std::string("BeiDou-3 MEO11");  // Slot C-8; launched 2018/08/24
+                    block_ = std::string("BeiDou-3 MEO11");  // Slot C08; launched 2018/08/24
                     break;
                 case 26:
-                    block_ = std::string("BeiDou-3 MEO12");  // Slot C-2; launched 2018/08/24
+                    block_ = std::string("BeiDou-3 MEO12");  // Slot C02; launched 2018/08/24
                     break;
                 case 27:
-                    block_ = std::string("BeiDou-3 3M3");  // Slot A-?; launched 2018/01/11
+                    block_ = std::string("BeiDou-3 3M3");  // Slot A04; launched 2018/01/11
                     break;
                 case 28:
-                    block_ = std::string("BeiDou-3 3M4");  // Slot A-?; launched 2018/01/11
+                    block_ = std::string("BeiDou-3 3M4");  // Slot A05; launched 2018/01/11
                     break;
                 case 29:
-                    block_ = std::string("BeiDou-3 3M7");  // Slot A-?; launched 2018/03/29
+                    block_ = std::string("BeiDou-3 3M7");  // Slot A02; launched 2018/03/29
                     break;
                 case 30:
-                    block_ = std::string("BeiDou-3 3M8");  // Slot A-?; launched 2018/03/29
+                    block_ = std::string("BeiDou-3 3M8");  // Slot A03; launched 2018/03/29
                     break;
                 case 32:
-                    block_ = std::string("BeiDou-3 MEO13");  // Slot B-1?; launched 2018/09/19
+                    block_ = std::string("BeiDou-3 MEO13");  // Slot B01; launched 2018/09/19
                     break;
                 case 33:
-                    block_ = std::string("BeiDou-3 MEO14");  // Slot B-3; launched 2018/09/19
+                    block_ = std::string("BeiDou-3 MEO14");  // Slot B03; launched 2018/09/19
                     break;
                 case 34:
-                    block_ = std::string("BeiDou-3 MEO15");  // Slot B-3; launched 2018/10/15
+                    block_ = std::string("BeiDou-3 MEO15");  // Slot B03; launched 2018/10/15
                     break;
                 case 35:
-                    block_ = std::string("BeiDou-3 MEO16");  // Slot B-3; launched 2018/10/15
+                    block_ = std::string("BeiDou-3 MEO16");  // Slot B03; launched 2018/10/15
                     break;
                 case 36:
-                    block_ = std::string("BeiDou-3 MEO17");  // Slot B-3; launched 2018/11/18
+                    block_ = std::string("BeiDou-3 MEO17");  // Slot B03; launched 2018/11/18
                     break;
                 case 37:
-                    block_ = std::string("BeiDou-3 MEO18");  // Slot B-3; launched 2018/11/18
+                    block_ = std::string("BeiDou-3 MEO18");  // Slot B03; launched 2018/11/18
                     break;
                 case 38:
-                    block_ = std::string("BeiDou-3 IGSO01");  // Slot B-3; launched 2019/04/20
+                    block_ = std::string("BeiDou-3 IGSOI1");  // launched 2019/04/20
+                    break;
+                case 39:
+                    block_ = std::string("BeiDou-3 IGSOI2");  // launched 2019/04/20
+                    break;
+                case 40:
+                    block_ = std::string("BeiDou-3 IGSOI3");  // launched 2019/11/04
+                    break;
+                case 41:
+                    block_ = std::string("BeiDou-3 MEO19");  // Slot B02, launched 2019/12/16
+                    break;
+                case 42:
+                    block_ = std::string("BeiDou-3 MEO20");  // Slot B04, launched 2019/12/16
+                    break;
+                case 43:
+                    block_ = std::string("BeiDou-3 MEO21");  // Slot A06, launched 2019/11/23
+                    break;
+                case 44:
+                    block_ = std::string("BeiDou-3 MEO22");  // Slot A08, launched 2019/11/23
+                    break;
+                case 45:
+                    block_ = std::string("BeiDou-3 MEO23");  // Slot C03, launched 2019/09/22
+                    break;
+                case 46:
+                    block_ = std::string("BeiDou-3 MEO24");  // Slot C05, launched 2019/09/22
+                    break;
+                case 59:
+                    block_ = std::string("BeiDou-3 GEOG1");  // launched 2018/11/01
+                    break;
+                case 60:
+                    block_ = std::string("BeiDou-3 GEOG2");  // launched 2020/03/20
+                    break;
+                case 61:
+                    block_ = std::string("BeiDou-3 GEOG3");  // launched 2020/06/2023
                     break;
                 default:
                     block_ = std::string("Unknown(Simulated)");

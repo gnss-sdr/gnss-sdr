@@ -88,7 +88,6 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
     d_latitude_d = phi * R2D;
     d_longitude_d = lambda * R2D;
     d_height_m = h;
-    // todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
     return 0;
 }
 

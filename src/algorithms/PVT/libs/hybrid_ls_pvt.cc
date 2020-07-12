@@ -19,9 +19,8 @@
  */
 
 #include "hybrid_ls_pvt.h"
-#include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
-#include "Galileo_E1.h"
+#include "MATH_CONSTANTS.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <utility>
@@ -296,14 +295,14 @@ bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                             // execute Bancroft's algorithm to estimate initial receiver position and time
                             DLOG(INFO) << " Executing Bancroft algorithm...";
                             rx_position_and_time = bancroftPos(satpos.t(), obs);
-                            this->set_rx_pos(rx_position_and_time.rows(0, 2));                      // save ECEF position for the next iteration
-                            this->set_time_offset_s(rx_position_and_time(3) / SPEED_OF_LIGHT_M_S);  // save time for the next iteration [meters]->[seconds]
+                            this->set_rx_pos({rx_position_and_time(0), rx_position_and_time(1), rx_position_and_time(2)});  // save ECEF position for the next iteration
+                            this->set_time_offset_s(rx_position_and_time(3) / SPEED_OF_LIGHT_M_S);                          // save time for the next iteration [meters]->[seconds]
                         }
 
                     // Execute WLS using previous position as the initialization point
                     rx_position_and_time = leastSquarePos(satpos, obs, W);
 
-                    this->set_rx_pos(rx_position_and_time.rows(0, 2));                                                  // save ECEF position for the next iteration
+                    this->set_rx_pos({rx_position_and_time(0), rx_position_and_time(1), rx_position_and_time(2)});      // save ECEF position for the next iteration
                     this->set_time_offset_s(this->get_time_offset_s() + rx_position_and_time(3) / SPEED_OF_LIGHT_M_S);  // accumulate the rx time error for the next iteration [meters]->[seconds]
 
                     DLOG(INFO) << "Hybrid Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
@@ -324,8 +323,6 @@ bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     this->set_position_UTC_time(p_time);
-
-                    cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
                     DLOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()

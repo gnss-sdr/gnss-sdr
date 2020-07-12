@@ -114,10 +114,10 @@ constexpr double PI_TWO_N31 = 1.462918079267160e-009;  //!< Pi*2^-31
 constexpr double PI_TWO_N38 = 1.142904749427469e-011;  //!< Pi*2^-38
 constexpr double PI_TWO_N23 = 3.745070282923929e-007;  //!< Pi*2^-23
 
-constexpr double D2R = (GNSS_PI / 180.0);  //!< deg to rad
-constexpr double R2D = (180.0 / GNSS_PI);  //!< rad to deg
-constexpr double SC2RAD = GNSS_PI;         //!<  semi-circle to radian (IS-GPS)
-constexpr double AS2R = (D2R / 3600.0);    //!<  arc sec to radian
+constexpr double D2R = GNSS_PI / 180.0;  //!< deg to rad
+constexpr double R2D = 180.0 / GNSS_PI;  //!< rad to deg
+constexpr double SC2RAD = GNSS_PI;       //!<  semi-circle to radian (IS-GPS)
+constexpr double AS2R = D2R / 3600.0;    //!<  arc sec to radian
 
 constexpr double AU = 149597870691.0;  //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
 

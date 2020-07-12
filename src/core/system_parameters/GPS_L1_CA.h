@@ -47,8 +47,6 @@ constexpr uint32_t GPS_L1_CA_BIT_PERIOD_MS = 20U;       //!< GPS L1 C/A bit peri
  */
 constexpr double MAX_TOA_DELAY_MS = 20.0;
 
-constexpr double GPS_STARTOFFSET_MS = 68.802;  // [ms] Initial signal travel time (only for old ls_pvt implementation)
-
 // optimum parameters
 constexpr uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 

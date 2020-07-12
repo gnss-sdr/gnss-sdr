@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -19,10 +19,9 @@
  */
 
 #include "pvt_solution.h"
-#include "GPS_L1_CA.h"
-#include "geofunctions.h"
+#include "MATH_CONSTANTS.h"
 #include <glog/logging.h>
-#include <array>
+#include <cmath>
 #include <cstddef>
 
 
@@ -40,40 +39,9 @@ Pvt_Solution::Pvt_Solution()
     b_valid_position = false;
     d_averaging_depth = 0;
     d_valid_observations = 0;
-    d_rx_pos = arma::zeros(3, 1);
     d_rx_dt_s = 0.0;
     d_rx_clock_drift_ppm = 0.0;
     d_pre_2009_file = false;  // disabled by default
-}
-
-
-arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec &X_sat)
-{
-    /*
-     *  Returns rotated satellite ECEF coordinates due to Earth
-     * rotation during signal travel time
-     *
-     *   Inputs:
-     *       travelTime  - signal travel time
-     *       X_sat       - satellite's ECEF coordinates
-     *
-     *   Returns:
-     *       X_sat_rot   - rotated satellite's coordinates (ECEF)
-     */
-
-    // -- Find rotation angle --------------------------------------------------
-    double omegatau;
-    omegatau = GNSS_OMEGA_EARTH_DOT * traveltime;
-
-    // -- Build a rotation matrix ----------------------------------------------
-    arma::mat R3 = {{cos(omegatau), sin(omegatau), 0.0},
-        {-sin(omegatau), cos(omegatau), 0.0},
-        {0.0, 0.0, 1.0}};
-
-    // -- Do the rotation ------------------------------------------------------
-    arma::vec X_sat_rot;
-    X_sat_rot = R3 * X_sat;
-    return X_sat_rot;
 }
 
 
@@ -93,9 +61,9 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
     const std::array<double, 5> a = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
     const std::array<double, 5> f = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
 
-    double lambda = atan2(Y, X);
-    double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));
-    double c = a[elipsoid_selection] * sqrt(1.0 + ex2);
+    const double lambda = atan2(Y, X);
+    const double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));
+    const double c = a[elipsoid_selection] * sqrt(1.0 + ex2);
     double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
     double h = 0.1;
@@ -116,117 +84,11 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
                 }
         }
     while (std::abs(h - oldh) > 1.0e-12);
-    d_latitude_d = phi * 180.0 / GNSS_PI;
-    d_longitude_d = lambda * 180.0 / GNSS_PI;
+
+    d_latitude_d = phi * R2D;
+    d_longitude_d = lambda * R2D;
     d_height_m = h;
     // todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
-    return 0;
-}
-
-
-int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
-{
-    /*   Inputs:
-           sinel     - sin of elevation angle of satellite
-           hsta_km   - height of station in km
-           p_mb      - atmospheric pressure in mb at height hp_km
-           t_kel     - surface temperature in degrees Kelvin at height htkel_km
-           hum       - humidity in % at height hhum_km
-           hp_km     - height of pressure measurement in km
-           htkel_km  - height of temperature measurement in km
-           hhum_km   - height of humidity measurement in km
-
-       Outputs:
-           ddr_m     - range correction (meters)
-
-     Reference
-     Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
-     Refraction Correction Model. Paper presented at the
-     American Geophysical Union Annual Fall Meeting, San
-     Francisco, December 12-17
-
-     Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
-     */
-
-    const double a_e = 6378.137;  // semi-major axis of earth ellipsoid
-    const double b0 = 7.839257e-5;
-    const double tlapse = -6.5;
-    const double em = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
-
-    double tkhum = t_kel + tlapse * (hhum_km - htkel_km);
-    double atkel = 7.5 * (tkhum - 273.15) / (237.3 + tkhum - 273.15);
-    double e0 = 0.0611 * hum * pow(10, atkel);
-    double tksea = t_kel - tlapse * htkel_km;
-    double tkelh = tksea + tlapse * hhum_km;
-    double e0sea = e0 * pow((tksea / tkelh), (4 * em));
-    double tkelp = tksea + tlapse * hp_km;
-    double psea = p_mb * pow((tksea / tkelp), em);
-
-    if (sinel < 0)
-        {
-            sinel = 0.0;
-        }
-
-    double tropo_delay = 0.0;
-    bool done = false;
-    double refsea = 77.624e-6 / tksea;
-    double htop = 1.1385e-5 / refsea;
-    refsea = refsea * psea;
-    double ref = refsea * pow(((htop - hsta_km) / htop), 4);
-
-    double a;
-    double b;
-    double rtop;
-
-    while (true)
-        {
-            rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
-
-            // check to see if geometry is crazy
-            if (rtop < 0)
-                {
-                    rtop = 0;
-                }
-
-            rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
-
-            a = -sinel / (htop - hsta_km);
-            b = -b0 * (1 - pow(sinel, 2)) / (htop - hsta_km);
-
-            arma::vec rn = arma::vec(8);
-            rn.zeros();
-
-            for (int i = 0; i < 8; i++)
-                {
-                    rn(i) = pow(rtop, (i + 1 + 1));
-                }
-
-            arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b / 3, a * (pow(a, 2) + 3 * b),
-                pow(a, 4) / 5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b) / 3,
-                pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
-
-            if (pow(b, 2) > 1.0e-35)
-                {
-                    alpha(6) = a * pow(b, 3) / 2;
-                    alpha(7) = pow(b, 4) / 9;
-                }
-
-            double dr = rtop;
-            arma::mat aux_ = alpha * rn;
-            dr = dr + aux_(0, 0);
-            tropo_delay = tropo_delay + dr * ref * 1000;
-
-            if (done == true)
-                {
-                    *ddr_m = tropo_delay;
-                    break;
-                }
-
-            done = true;
-            refsea = (371900.0e-6 / tksea - 12.92e-6) / tksea;
-            htop = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
-            ref = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
-        }
     return 0;
 }
 
@@ -306,6 +168,7 @@ void Pvt_Solution::set_time_offset_s(double offset)
     d_rx_dt_s = offset;
 }
 
+
 double Pvt_Solution::get_clock_drift_ppm() const
 {
     return d_rx_clock_drift_ppm;
@@ -316,6 +179,7 @@ void Pvt_Solution::set_clock_drift_ppm(double clock_drift_ppm)
 {
     d_rx_clock_drift_ppm = clock_drift_ppm;
 }
+
 
 double Pvt_Solution::get_latitude() const
 {
@@ -395,27 +259,26 @@ void Pvt_Solution::set_valid_position(bool is_valid)
 }
 
 
-void Pvt_Solution::set_rx_pos(const arma::vec &pos)
+void Pvt_Solution::set_rx_pos(const std::array<double, 3> &pos)
 {
     d_rx_pos = pos;
-    d_latitude_d = d_rx_pos(0);
-    d_longitude_d = d_rx_pos(1);
-    d_height_m = d_rx_pos(2);
+    Pvt_Solution::cart2geo(d_rx_pos[0], d_rx_pos[1], d_rx_pos[2], 4);
 }
 
 
-arma::vec Pvt_Solution::get_rx_pos() const
+std::array<double, 3> Pvt_Solution::get_rx_pos() const
 {
     return d_rx_pos;
 }
 
-void Pvt_Solution::set_rx_vel(const arma::vec &vel)
+
+void Pvt_Solution::set_rx_vel(const std::array<double, 3> &vel)
 {
     d_rx_vel = vel;
 }
 
 
-arma::vec Pvt_Solution::get_rx_vel() const
+std::array<double, 3> Pvt_Solution::get_rx_vel() const
 {
     return d_rx_vel;
 }
@@ -448,4 +311,10 @@ void Pvt_Solution::set_num_valid_observations(int num)
 void Pvt_Solution::set_pre_2009_file(bool pre_2009_file)
 {
     d_pre_2009_file = pre_2009_file;
+}
+
+
+bool Pvt_Solution::is_pre_2009() const
+{
+    return d_pre_2009_file;
 }

@@ -19,11 +19,10 @@
  */
 
 #include "ls_pvt.h"
-#include "GPS_L1_CA.h"
+#include "MATH_CONSTANTS.h"
 #include "geofunctions.h"
 #include <glog/logging.h>
 #include <stdexcept>
-
 
 arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
 {
@@ -166,14 +165,15 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
      */
 
     //=== Initialization =======================================================
-    int nmbOfIterations = 10;  // TODO: include in config
+    constexpr double GPS_STARTOFFSET_MS = 68.802;  // [ms] Initial signal travel time
+    int nmbOfIterations = 10;                      // TODO: include in config
     int nmbOfSatellites;
     nmbOfSatellites = satpos.n_cols;  // Armadillo
     arma::mat w = arma::zeros(nmbOfSatellites, nmbOfSatellites);
     w.diag() = w_vec;  // diagonal weight matrix
 
-    arma::vec rx_pos = this->get_rx_pos();
-    arma::vec pos = {rx_pos(0), rx_pos(1), rx_pos(2), 0};  // time error in METERS (time x speed)
+    std::array<double, 3> rx_pos = this->get_rx_pos();
+    arma::vec pos = {rx_pos[0], rx_pos[1], rx_pos[2], 0};  // time error in METERS (time x speed)
     arma::mat A;
     arma::mat omc;
     A = arma::zeros(nmbOfSatellites, 4);
@@ -211,7 +211,8 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                             traveltime = sqrt(rho2) / SPEED_OF_LIGHT_M_S;
 
                             // --- Correct satellite position (do to earth rotation) -------
-                            Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i));  // armadillo
+                            std::array<double, 3> rot_x = Ls_Pvt::rotateSatellite(traveltime, {X(0, i), X(1, i), X(2, i)});
+                            Rot_X = {rot_x[0], rot_x[1], rot_x[2]};
 
                             // -- Find DOA and range of satellites
                             double* azim = nullptr;
@@ -232,7 +233,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                                     else
                                         {
                                             // --- Find delay due to troposphere (in meters)
-                                            Ls_Pvt::tropo(&trop, sin(*elev * GNSS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            Ls_Pvt::tropo(&trop, sin(elev[0] * GNSS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                             if (trop > 5.0)
                                                 {
                                                     trop = 0.0;  // check for erratic values
@@ -269,4 +270,159 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
             throw std::runtime_error("Receiver time offset out of range!");
         }
     return pos;
+}
+
+
+int Ls_Pvt::tropo(double* ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
+{
+    /*   Inputs:
+           sinel     - sin of elevation angle of satellite
+           hsta_km   - height of station in km
+           p_mb      - atmospheric pressure in mb at height hp_km
+           t_kel     - surface temperature in degrees Kelvin at height htkel_km
+           hum       - humidity in % at height hhum_km
+           hp_km     - height of pressure measurement in km
+           htkel_km  - height of temperature measurement in km
+           hhum_km   - height of humidity measurement in km
+
+       Outputs:
+           ddr_m     - range correction (meters)
+
+     Reference
+     Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
+     Refraction Correction Model. Paper presented at the
+     American Geophysical Union Annual Fall Meeting, San
+     Francisco, December 12-17
+
+     Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
+     */
+
+    const double a_e = 6378.137;  // semi-major axis of earth ellipsoid
+    const double b0 = 7.839257e-5;
+    const double tlapse = -6.5;
+    const double em = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
+    const double tkhum = t_kel + tlapse * (hhum_km - htkel_km);
+    const double atkel = 7.5 * (tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    const double e0 = 0.0611 * hum * pow(10, atkel);
+    const double tksea = t_kel - tlapse * htkel_km;
+    const double tkelh = tksea + tlapse * hhum_km;
+    const double e0sea = e0 * pow((tksea / tkelh), (4 * em));
+    const double tkelp = tksea + tlapse * hp_km;
+    const double psea = p_mb * pow((tksea / tkelp), em);
+
+    if (sinel < 0)
+        {
+            sinel = 0.0;
+        }
+
+    double tropo_delay = 0.0;
+    bool done = false;
+    double refsea = 77.624e-6 / tksea;
+    double htop = 1.1385e-5 / refsea;
+    refsea = refsea * psea;
+    double ref = refsea * pow(((htop - hsta_km) / htop), 4);
+
+    double a;
+    double b;
+    double rtop;
+
+    while (true)
+        {
+            rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
+
+            // check to see if geometry is crazy
+            if (rtop < 0)
+                {
+                    rtop = 0;
+                }
+
+            rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
+
+            a = -sinel / (htop - hsta_km);
+            b = -b0 * (1 - pow(sinel, 2)) / (htop - hsta_km);
+
+            arma::vec rn = arma::vec(8);
+            rn.zeros();
+
+            for (int i = 0; i < 8; i++)
+                {
+                    rn(i) = pow(rtop, (i + 1 + 1));
+                }
+
+            arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b / 3, a * (pow(a, 2) + 3 * b),
+                pow(a, 4) / 5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b) / 3,
+                pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
+
+            if (pow(b, 2) > 1.0e-35)
+                {
+                    alpha(6) = a * pow(b, 3) / 2;
+                    alpha(7) = pow(b, 4) / 9;
+                }
+
+            double dr = rtop;
+            arma::mat aux_ = alpha * rn;
+            dr = dr + aux_(0, 0);
+            tropo_delay = tropo_delay + dr * ref * 1000;
+
+            if (done == true)
+                {
+                    *ddr_m = tropo_delay;
+                    break;
+                }
+
+            done = true;
+            refsea = (371900.0e-6 / tksea - 12.92e-6) / tksea;
+            htop = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
+            ref = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
+        }
+    return 0;
+}
+
+
+std::array<double, 3> Ls_Pvt::rotateSatellite(double traveltime, const std::array<double, 3>& X_sat)
+{
+    /*
+     *  Returns rotated satellite ECEF coordinates due to Earth
+     * rotation during signal travel time
+     *
+     *   Inputs:
+     *       travelTime  - signal travel time
+     *       X_sat       - satellite's ECEF coordinates
+     *
+     *   Returns:
+     *       X_sat_rot   - rotated satellite's coordinates (ECEF)
+     */
+
+    const double omegatau = GNSS_OMEGA_EARTH_DOT * traveltime;
+    const double cosomg = cos(omegatau);
+    const double sinomg = sin(omegatau);
+    const double x = cosomg * X_sat[0] + sinomg * X_sat[1];
+    const double y = -sinomg * X_sat[0] + cosomg * X_sat[1];
+
+    std::array<double, 3> X_sat_rot = {x, y, X_sat[2]};
+    return X_sat_rot;
+}
+
+
+double Ls_Pvt::get_gdop() const
+{
+    return 0.0;  // not implemented
+}
+
+
+double Ls_Pvt::get_pdop() const
+{
+    return 0.0;  // not implemented
+}
+
+
+double Ls_Pvt::get_hdop() const
+{
+    return 0.0;  // not implemented
+}
+
+
+double Ls_Pvt::get_vdop() const
+{
+    return 0.0;  // not implemented
 }

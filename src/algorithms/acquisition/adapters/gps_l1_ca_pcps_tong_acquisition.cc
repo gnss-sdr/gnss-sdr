@@ -36,7 +36,7 @@ namespace own = gsl;
 #endif
 
 GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -44,7 +44,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
                                 out_streams_(out_streams)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
@@ -68,7 +68,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     // -- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -110,16 +110,18 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 
 void GpsL1CaPcpsTongAcquisition::stop_acquisition()
 {
+    acquisition_cc_->set_state(0);
+    acquisition_cc_->set_active(false);
 }
 
 
 void GpsL1CaPcpsTongAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", static_cast<float>(0.0));
 
     if (pfa == 0.0)
         {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", static_cast<float>(0.0));
         }
     if (pfa == 0.0)
         {
@@ -226,7 +228,7 @@ float GpsL1CaPcpsTongAcquisition::calculate_threshold(float pfa)
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))
         {
             frequency_bins++;
         }

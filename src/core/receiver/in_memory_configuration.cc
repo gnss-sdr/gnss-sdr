@@ -20,14 +20,13 @@
 
 
 #include "in_memory_configuration.h"
-#include "string_converter.h"
+#include "gnss_sdr_make_unique.h"
 #include <utility>
 
 
 InMemoryConfiguration::InMemoryConfiguration()
 {
-    std::unique_ptr<StringConverter> converter_aux(new StringConverter);
-    converter_ = std::move(converter_aux);
+    converter_ = std::make_unique<StringConverter>();
 }
 
 
@@ -37,7 +36,7 @@ InMemoryConfiguration::~InMemoryConfiguration()
 }
 
 
-std::string InMemoryConfiguration::property(std::string property_name, std::string default_value)
+std::string InMemoryConfiguration::property(std::string property_name, std::string default_value) const
 {
     auto iter = properties_.find(property_name);
     if (iter != properties_.end())
@@ -48,63 +47,63 @@ std::string InMemoryConfiguration::property(std::string property_name, std::stri
 }
 
 
-bool InMemoryConfiguration::property(std::string property_name, bool default_value)
+bool InMemoryConfiguration::property(std::string property_name, bool default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-int64_t InMemoryConfiguration::property(std::string property_name, int64_t default_value)
+int64_t InMemoryConfiguration::property(std::string property_name, int64_t default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-uint64_t InMemoryConfiguration::property(std::string property_name, uint64_t default_value)
+uint64_t InMemoryConfiguration::property(std::string property_name, uint64_t default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-int32_t InMemoryConfiguration::property(std::string property_name, int32_t default_value)
+int32_t InMemoryConfiguration::property(std::string property_name, int32_t default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-uint32_t InMemoryConfiguration::property(std::string property_name, uint32_t default_value)
+uint32_t InMemoryConfiguration::property(std::string property_name, uint32_t default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-uint16_t InMemoryConfiguration::property(std::string property_name, uint16_t default_value)
+uint16_t InMemoryConfiguration::property(std::string property_name, uint16_t default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-int16_t InMemoryConfiguration::property(std::string property_name, int16_t default_value)
+int16_t InMemoryConfiguration::property(std::string property_name, int16_t default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-float InMemoryConfiguration::property(std::string property_name, float default_value)
+float InMemoryConfiguration::property(std::string property_name, float default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
 }
 
 
-double InMemoryConfiguration::property(std::string property_name, double default_value)
+double InMemoryConfiguration::property(std::string property_name, double default_value) const
 {
     std::string empty;
     return converter_->convert(property(property_name, empty), default_value);
@@ -124,7 +123,7 @@ void InMemoryConfiguration::supersede_property(const std::string& property_name,
 }
 
 
-bool InMemoryConfiguration::is_present(const std::string& property_name)
+bool InMemoryConfiguration::is_present(const std::string& property_name) const
 {
     return (properties_.find(property_name) != properties_.end());
 }

@@ -258,7 +258,7 @@ TEST_F(DataTypeAdapter, ByteToShortValidationOfResults)
         }
     catch (std::system_error& e)
         {
-            std::cerr << e.code().message() << std::endl;
+            std::cerr << e.code().message() << '\n';
         }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
@@ -284,7 +284,7 @@ TEST_F(DataTypeAdapter, IbyteToCbyteValidationOfResults)
         }
     catch (std::system_error& e)
         {
-            std::cerr << e.code().message() << std::endl;
+            std::cerr << e.code().message() << '\n';
         }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
@@ -310,7 +310,7 @@ TEST_F(DataTypeAdapter, IbyteToComplexValidationOfResults)
         }
     catch (std::system_error& e)
         {
-            std::cerr << e.code().message() << std::endl;
+            std::cerr << e.code().message() << '\n';
         }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
@@ -336,7 +336,7 @@ TEST_F(DataTypeAdapter, IbyteToCshortValidationOfResults)
         }
     catch (std::system_error& e)
         {
-            std::cerr << e.code().message() << std::endl;
+            std::cerr << e.code().message() << '\n';
         }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
@@ -362,7 +362,7 @@ TEST_F(DataTypeAdapter, IshortToComplexValidationOfResults)
         }
     catch (std::system_error& e)
         {
-            std::cerr << e.code().message() << std::endl;
+            std::cerr << e.code().message() << '\n';
         }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
@@ -388,7 +388,7 @@ TEST_F(DataTypeAdapter, IshortToCshortValidationOfResults)
         }
     catch (std::system_error& e)
         {
-            std::cerr << e.code().message() << std::endl;
+            std::cerr << e.code().message() << '\n';
         }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";

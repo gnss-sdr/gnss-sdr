@@ -47,7 +47,7 @@ TEST(MultiplyTest, StandardCDoubleImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << " doubles in standard C finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
 
     double acc = 0.0;
     double expected = 0.0;
@@ -76,7 +76,7 @@ TEST(MultiplyTest, ArmadilloImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << "-length double Armadillo vectors finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(0, arma::norm(output, 2));
 }
@@ -99,7 +99,7 @@ TEST(MultiplyTest, StandardCComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << " complex<float> in standard C finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
 
     std::complex<float> expected(0.0, 0.0);
     std::complex<float> result(0.0, 0.0);
@@ -132,7 +132,7 @@ TEST(MultiplyTest, C11ComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << " complex<float> vector (C++11-style) finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
     std::complex<float> expected(0.0, 0.0);
@@ -155,7 +155,7 @@ TEST(MultiplyTest, ArmadilloComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << "-length complex float Armadillo vectors finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(0, arma::norm(output, 2));
 }
@@ -176,7 +176,7 @@ TEST(MultiplyTest, VolkComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << "-length complex float vector using VOLK finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
     auto* mag = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(float), volk_gnsssdr_get_alignment()));
@@ -209,7 +209,7 @@ TEST(MultiplyTest, VolkComplexImplementationAlloc)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << "-length complex float vector using VOLK ALLOC finished in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     volk_gnsssdr::vector<float> mag(FLAGS_size_multiply_test);
     volk_32fc_magnitude_32f(mag.data(), output.data(), FLAGS_size_multiply_test);

@@ -30,7 +30,7 @@
 #include <utility>
 
 
-RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
+RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
@@ -39,23 +39,22 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
                                            out_stream_(out_stream)
 {
     // DUMP PARAMETERS
-    std::string empty = "";
-    std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_item_type = "gr_complex";
-    samples_ = configuration->property(role + ".samples", 0);
+    const std::string default_dump_file("./data/signal_source.dat");
+    const std::string default_item_type("gr_complex");
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_file);
 
     // rtl_tcp PARAMETERS
-    std::string default_address = "127.0.0.1";
-    int16_t default_port = 1234;
+    const std::string default_address("127.0.0.1");
+    const int16_t default_port = 1234;
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", 40.0);
+    freq_ = configuration->property(role + ".freq", static_cast<int>(GPS_L1_FREQ_HZ));
+    gain_ = configuration->property(role + ".gain", 40);
     rf_gain_ = configuration->property(role + ".rf_gain", 40.0);
-    if_gain_ = configuration->property(role + ".if_gain", 40.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
+    if_gain_ = configuration->property(role + ".if_gain", 40);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 2000000);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
@@ -82,21 +81,21 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
             if (this->AGC_enabled_ == true)
                 {
-                    std::cout << "AGC enabled" << std::endl;
+                    std::cout << "AGC enabled\n";
                     LOG(INFO) << "AGC enabled";
                     signal_source_->set_agc_mode(true);
                 }
             else
                 {
-                    std::cout << "AGC disabled" << std::endl;
+                    std::cout << "AGC disabled\n";
                     LOG(INFO) << "AGC disabled";
                     signal_source_->set_agc_mode(false);
 
-                    std::cout << "Setting gain to " << gain_ << std::endl;
+                    std::cout << "Setting gain to " << gain_ << '\n';
                     LOG(INFO) << "Setting gain to " << gain_;
                     signal_source_->set_gain(gain_);
 
-                    std::cout << "Setting IF gain to " << if_gain_ << std::endl;
+                    std::cout << "Setting IF gain to " << if_gain_ << '\n';
                     LOG(INFO) << "Setting IF gain to " << if_gain_;
                     signal_source_->set_if_gain(if_gain_);
                 }
@@ -135,7 +134,7 @@ void RtlTcpSignalSource::MakeBlock()
 {
     try
         {
-            std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
+            std::cout << "Connecting to " << address_ << ":" << port_ << '\n';
             LOG(INFO) << "Connecting to " << address_ << ":" << port_;
             signal_source_ = rtl_tcp_make_signal_source_c(address_, port_, flip_iq_);
         }

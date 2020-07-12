@@ -30,6 +30,11 @@
 class Galileo_Almanac
 {
 public:
+    /*!
+     * Default constructor
+     */
+    Galileo_Almanac() = default;
+
     uint32_t i_satellite_PRN{};  //!< SV PRN NUMBER
     int32_t i_Toa{};
     int32_t i_WNa{};
@@ -46,11 +51,6 @@ public:
     int32_t E5b_HS{};
     int32_t E1B_HS{};
     int32_t E5a_HS{};
-
-    /*!
-     * Default constructor
-     */
-    Galileo_Almanac() = default;
 
     template <class Archive>
 

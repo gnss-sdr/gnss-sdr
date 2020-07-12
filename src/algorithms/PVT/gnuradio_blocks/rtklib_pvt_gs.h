@@ -34,7 +34,6 @@
 #include <memory>                 // for shared_ptr, unique_ptr
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
-#include <utility>                // for pair
 #include <vector>                 // for vector
 #if GNURADIO_USES_STD_POINTERS
 #else
@@ -135,7 +134,54 @@ private:
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
-    enum StringValue
+    void initialize_and_apply_carrier_phase_offset();
+
+    void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
+        double rx_clock_offset_s);
+
+    std::map<int, Gnss_Synchro> interpolate_observables(const std::map<int, Gnss_Synchro>& observables_map_t0,
+        const std::map<int, Gnss_Synchro>& observables_map_t1,
+        double rx_time_s);
+
+    inline std::time_t convert_to_time_t(const boost::posix_time::ptime pt) const
+    {
+        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
+    }
+
+    std::vector<std::string> split_string(const std::string& s, char delim) const;
+
+    typedef struct
+    {
+        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
+        double ttff;
+    } d_ttff_msgbuf;
+    bool send_sys_v_ttff_msg(d_ttff_msgbuf ttff);
+
+    bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
+    bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
+
+    std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
+
+    std::unique_ptr<Rinex_Printer> d_rp;
+    std::unique_ptr<Kml_Printer> d_kml_dump;
+    std::unique_ptr<Gpx_Printer> d_gpx_dump;
+    std::unique_ptr<Nmea_Printer> d_nmea_printer;
+    std::unique_ptr<GeoJSON_Printer> d_geojson_printer;
+    std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
+    std::unique_ptr<Monitor_Pvt_Udp_Sink> d_udp_sink_ptr;
+
+    std::chrono::time_point<std::chrono::system_clock> d_start;
+    std::chrono::time_point<std::chrono::system_clock> d_end;
+
+    std::string d_dump_filename;
+    std::string d_xml_base_path;
+    std::string d_local_time_str;
+
+    std::vector<bool> d_channel_initialized;
+    std::vector<double> d_initial_carrier_phase_offset_estimation_rads;
+
+    enum StringValue_
     {
         evGPS_1C,
         evGPS_2S,
@@ -149,26 +195,20 @@ private:
         evBDS_B2,
         evBDS_B3
     };
+    std::map<std::string, StringValue_> d_mapStringValues;
+    std::map<int, Gnss_Synchro> d_gnss_observables_map;
+    std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
+    std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
 
-    std::map<std::string, StringValue> mapStringValues_;
+    boost::posix_time::time_duration d_utc_diff_time;
 
-    void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
-        double rx_clock_offset_s);
-
-    std::map<int, Gnss_Synchro> interpolate_observables(std::map<int, Gnss_Synchro>& observables_map_t0,
-        std::map<int, Gnss_Synchro>& observables_map_t1,
-        double rx_time_s);
-
-    bool d_dump;
-    bool d_dump_mat;
-    bool b_rinex_output_enabled;
-    bool b_rinex_header_written;
-    bool b_rinex_header_updated;
     double d_rinex_version;
-    int32_t d_rinexobs_rate_ms;
+    double d_rx_time;
 
-    bool b_rtcm_writing_started;
-    bool b_rtcm_enabled;
+    key_t d_sysv_msg_key;
+    int d_sysv_msqid;
+
+    int32_t d_rinexobs_rate_ms;
     int32_t d_rtcm_MT1045_rate_ms;  // Galileo Broadcast Ephemeris
     int32_t d_rtcm_MT1019_rate_ms;  // GPS Broadcast Ephemeris (orbits)
     int32_t d_rtcm_MT1020_rate_ms;  // GLONASS Broadcast Ephemeris (orbits)
@@ -176,79 +216,36 @@ private:
     int32_t d_rtcm_MT1087_rate_ms;  // GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
     int32_t d_rtcm_MT1097_rate_ms;  // Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
     int32_t d_rtcm_MSM_rate_ms;
-
     int32_t d_kml_rate_ms;
     int32_t d_gpx_rate_ms;
     int32_t d_geojson_rate_ms;
     int32_t d_nmea_rate_ms;
-
     int32_t d_last_status_print_seg;  // for status printer
-
-    uint32_t d_nchannels;
-    std::string d_dump_filename;
-
     int32_t d_output_rate_ms;
     int32_t d_display_rate_ms;
     int32_t d_report_rate_ms;
+    int32_t d_max_obs_block_rx_clock_offset_ms;
 
-    std::unique_ptr<Rinex_Printer> rp;
-    std::unique_ptr<Kml_Printer> d_kml_dump;
-    std::unique_ptr<Gpx_Printer> d_gpx_dump;
-    std::unique_ptr<Nmea_Printer> d_nmea_printer;
-    std::unique_ptr<GeoJSON_Printer> d_geojson_printer;
-    std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
-    double d_rx_time;
+    uint32_t d_nchannels;
+    uint32_t d_type_of_rx;
 
+    bool d_dump;
+    bool d_dump_mat;
+    bool d_rinex_output_enabled;
+    bool d_rinex_header_written;
+    bool d_rinex_header_updated;
     bool d_geojson_output_enabled;
     bool d_gpx_output_enabled;
     bool d_kml_output_enabled;
     bool d_nmea_output_file_enabled;
-
-    std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
-    std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
-
-    int32_t max_obs_block_rx_clock_offset_ms;
+    bool d_first_fix;
+    bool d_xml_storage;
+    bool d_flag_monitor_pvt_enabled;
+    bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
-    std::map<int, Gnss_Synchro> gnss_observables_map;
-    std::map<int, Gnss_Synchro> gnss_observables_map_t0;
-    std::map<int, Gnss_Synchro> gnss_observables_map_t1;
-
-    std::vector<double> initial_carrier_phase_offset_estimation_rads;
-    std::vector<bool> channel_initialized;
-
-    uint32_t type_of_rx;
-
-    bool first_fix;
-    key_t sysv_msg_key;
-    int sysv_msqid;
-    typedef struct
-    {
-        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
-        double ttff;
-    } ttff_msgbuf;
-    bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-
-    void initialize_and_apply_carrier_phase_offset();
-    bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
-    bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
-
-    bool d_xml_storage;
-    std::string xml_base_path;
-
-    inline std::time_t convert_to_time_t(const boost::posix_time::ptime pt) const
-    {
-        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
-    }
-
-    bool flag_monitor_pvt_enabled;
-    std::unique_ptr<Monitor_Pvt_Udp_Sink> udp_sink_ptr;
-    std::vector<std::string> split_string(const std::string& s, char delim) const;
-
-    bool d_show_local_time_zone;
-    std::string d_local_time_str;
-    boost::posix_time::time_duration d_utc_diff_time;
+    bool d_rtcm_writing_started;
+    bool d_rtcm_enabled;
 };
 
 #endif  // GNSS_SDR_RTKLIB_PVT_GS_H

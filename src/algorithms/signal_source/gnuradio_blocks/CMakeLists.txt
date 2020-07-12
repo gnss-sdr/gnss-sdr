@@ -107,7 +107,7 @@ endif()
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(signal_source_gr_blocks
         PUBLIC
-            -DUSE_BOOST_ASIO_IO_CONTEXT
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
     )
 endif()
 

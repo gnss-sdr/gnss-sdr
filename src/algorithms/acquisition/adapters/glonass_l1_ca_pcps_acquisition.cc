@@ -38,16 +38,15 @@ namespace own = gsl;
 #endif
 
 GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
-    ConfigurationInterface* configuration,
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    configuration_ = configuration;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration_, role, GLONASS_L1_CA_CODE_RATE_CPS, 100e6);
+    acq_parameters_.SetFromConfiguration(configuration, role, GLONASS_L1_CA_CODE_RATE_CPS, 100e6);
 
     DLOG(INFO) << "role " << role;
 
@@ -56,13 +55,13 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GLONASS_L1_CA_CODE_RATE_CPS / GLONASS_L1_CA_CODE_LENGTH_CHIPS)));
-    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
@@ -94,6 +93,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
 
 void GlonassL1CaPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 
@@ -173,11 +173,7 @@ void GlonassL1CaPcpsAcquisition::set_state(int state)
 
 void GlonassL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to connect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -196,11 +192,7 @@ void GlonassL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void GlonassL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to disconnect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to disconnect
         }
@@ -221,11 +213,7 @@ void GlonassL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GlonassL1CaPcpsAcquisition::get_left_block()
 {
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_;
-        }
-    if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             return acquisition_;
         }

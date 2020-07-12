@@ -73,7 +73,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
                                 {
                                     if (!fs::create_directory(new_folder, ec))
                                         {
-                                            std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                            std::cout << "Could not create the " << new_folder << " folder.\n";
                                             nmea_base_path = full_path.string();
                                         }
                                 }
@@ -87,7 +87,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 
             if ((nmea_base_path != ".") and (d_flag_nmea_output_file == true))
                 {
-                    std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
+                    std::cout << "NMEA files will be stored at " << nmea_base_path << '\n';
                 }
 
             nmea_base_path = nmea_base_path + fs::path::preferred_separator;
@@ -101,7 +101,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
                 }
             else
                 {
-                    std::cout << "File " << nmea_filename << " cannot be saved. Wrong permissions?" << std::endl;
+                    std::cout << "File " << nmea_filename << " cannot be saved. Wrong permissions?\n";
                 }
         }
 
@@ -125,6 +125,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 
 Nmea_Printer::~Nmea_Printer()
 {
+    DLOG(INFO) << "NMEA printer destructor called.";
     auto pos = nmea_file_descriptor.tellp();
     try
         {
@@ -378,15 +379,10 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     std::stringstream sentence_str;
 
     boost::posix_time::time_duration td = d_position_UTC_time.time_of_day();
-    int utc_hours;
-    int utc_mins;
-    int utc_seconds;
-    int utc_milliseconds;
-
-    utc_hours = td.hours();
-    utc_mins = td.minutes();
-    utc_seconds = td.seconds();
-    utc_milliseconds = td.total_milliseconds() - td.total_seconds() * 1000;
+    int utc_hours = td.hours();
+    int utc_mins = td.minutes();
+    int utc_seconds = td.seconds();
+    auto utc_milliseconds = static_cast<int>(td.total_milliseconds() - td.total_seconds() * 1000);
 
     if (utc_hours < 10)
         {

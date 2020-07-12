@@ -38,7 +38,8 @@
  */
 
 #include "pcps_tong_acquisition_cc.h"
-#include "GPS_L1_CA.h"  // for GPS_TWO_PI
+#include "MATH_CONSTANTS.h"  // for TWO_PI
+#include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -76,8 +77,8 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     uint32_t tong_max_dwells,
     bool dump,
     const std::string &dump_filename) : gr::block("pcps_tong_acquisition_cc",
-                                            gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-                                            gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+                                            gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                            gr::io_signature::make(0, 0, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -102,10 +103,10 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_magnitude.reserve(d_fft_size);
 
     // Direct FFT
-    d_fft_if = std::make_shared<gr::fft::fft_complex>(d_fft_size, true);
+    d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = std::make_shared<gr::fft::fft_complex>(d_fft_size, false);
+    d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;
@@ -181,7 +182,7 @@ void pcps_tong_acquisition_cc::init()
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
+            float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
         }

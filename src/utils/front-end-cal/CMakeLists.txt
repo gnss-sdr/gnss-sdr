@@ -122,7 +122,8 @@ endif()
 
 add_custom_command(TARGET front-end-cal POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
-        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
+        ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>
+)
 
 install(TARGETS front-end-cal
     RUNTIME DESTINATION bin
@@ -139,6 +140,7 @@ find_program(GZIP gzip
 
 if(NOT GZIP_NOTFOUND)
     execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz")
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz"
+    )
     install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
 endif()

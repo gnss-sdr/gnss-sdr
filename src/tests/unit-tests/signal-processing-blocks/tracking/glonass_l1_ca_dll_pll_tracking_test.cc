@@ -208,5 +208,5 @@ TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)
     }) << "Failure running the top_block.";
 
     // TODO: Verify tracking results
-    std::cout << "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

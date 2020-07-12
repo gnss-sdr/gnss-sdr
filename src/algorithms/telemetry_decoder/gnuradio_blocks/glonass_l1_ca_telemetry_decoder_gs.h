@@ -81,43 +81,46 @@ private:
 
     glonass_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
+    const std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE};
+
+    const int32_t d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
+
     void decode_string(const double *symbols, int32_t frame_length);
 
     // Help with coherent tracking
-    double d_preamble_time_samples;
 
     // Preamble decoding
-    const std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE};
     std::array<int32_t, GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS> d_preambles_symbols{};
-    const int32_t d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
     // Storage for incoming data
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
 
-    // Variables for internal functionality
-    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
-    uint64_t d_preamble_index;    // Index of sample number where preamble was found
-    uint32_t d_stat;              // Status of decoder
-    bool d_flag_frame_sync;       // Indicate when a frame sync is achieved
-    bool d_flag_parity;           // Flag indicating when parity check was achieved (crc check)
-    bool d_flag_preamble;         // Flag indicating when preamble was found
-    int32_t d_CRC_error_counter;  // Number of failed CRC operations
-    bool flag_TOW_set;            // Indicates when time of week is set
-    double delta_t;               // GPS-GLONASS time offset
-
     // Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;
 
-    // Values to populate gnss synchronization structure
-    double d_TOW_at_current_symbol;
-    bool Flag_valid_word;
-
-    // Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
-    int32_t d_channel;
-    bool d_dump;
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    double d_preamble_time_samples;
+    double d_TOW_at_current_symbol;
+    double delta_t;  // GPS-GLONASS time offset
+
+    // Variables for internal functionality
+    uint64_t d_sample_counter;  // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_preamble_index;  // Index of sample number where preamble was found
+
+    uint32_t d_stat;              // Status of decoder
+    int32_t d_CRC_error_counter;  // Number of failed CRC operations
+    int32_t d_channel;
+
+    bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
+    bool d_flag_parity;      // Flag indicating when parity check was achieved (crc check)
+    bool d_flag_preamble;    // Flag indicating when preamble was found
+    bool flag_TOW_set;       // Indicates when time of week is set
+    bool Flag_valid_word;
+    bool d_dump;
 };
 
 #endif  // GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_GS_H

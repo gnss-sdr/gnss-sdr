@@ -73,13 +73,14 @@ public:
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
 
-    sol_t pvt_sol{};
-    std::array<ssat_t, MAXSAT> pvt_ssat{};
     double get_hdop() const override;
     double get_vdop() const override;
     double get_pdop() const override;
     double get_gdop() const override;
     Monitor_Pvt get_monitor_pvt() const;
+
+    sol_t pvt_sol{};
+    std::array<ssat_t, MAXSAT> pvt_ssat{};
 
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
@@ -106,16 +107,17 @@ public:
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
 private:
-    rtk_t rtk_{};
-    Monitor_Pvt monitor_pvt{};
+    bool save_matfile();
+
     std::array<obsd_t, MAXOBS> obs_data{};
     std::array<double, 4> dop_{};
+    rtk_t rtk_{};
+    Monitor_Pvt monitor_pvt{};
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     int d_nchannels;  // Number of available channels for positioning
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
-    bool save_matfile();
 };
 
 #endif  // GNSS_SDR_RTKLIB_SOLVER_H

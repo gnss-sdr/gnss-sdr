@@ -238,6 +238,10 @@ if(ARMADILLO_VERSION_STRING VERSION_GREATER 8.400)
     add_definitions(-DARMADILLO_HAVE_MVNRND=1)
 endif()
 
+if(has_std_plus_void)
+    add_definitions(-DCOMPILER_HAS_STD_PLUS_VOID=1)
+endif()
+
 find_package(Gnuplot)
 if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
@@ -729,6 +733,14 @@ if(ENABLE_SYSTEM_TESTING)
             Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
         )
         add_system_test(position_test)
+        if(ENABLE_GPERFTOOLS)
+            if(GPERFTOOLS_FOUND)
+                target_link_libraries(position_test
+                    PRIVATE
+                        Gperftools::gperftools
+                )
+            endif()
+        endif()
         if(NOT GNSSSIMULATOR_FOUND OR ENABLE_GNSS_SIM_INSTALL)
             if(NOT CMAKE_CROSSCOMPILING)
                 add_dependencies(position_test gnss-sim)
@@ -1158,4 +1170,8 @@ else()
             matio_test
         )
     endif()
+endif()
+
+if(ENABLE_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()

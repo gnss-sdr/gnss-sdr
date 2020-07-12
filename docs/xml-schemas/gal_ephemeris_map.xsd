@@ -41,7 +41,7 @@
                           <xs:element type="xs:int" name="TOW_5"/>
                           <xs:element type="xs:float" name="Galileo_satClkDrift"/>
                           <xs:element type="xs:float" name="Galileo_dtr"/>
-                          <xs:element type="xs:byte" name="flag_all_ephemeris"/>
+
                           <xs:element type="xs:byte" name="IOD_ephemeris"/>
                           <xs:element type="xs:byte" name="IOD_nav_1"/>
                           <xs:element type="xs:byte" name="SISA_3"/>
@@ -53,6 +53,7 @@
                           <xs:element type="xs:byte" name="E1B_DVS_5"/>
                           <xs:element type="xs:float" name="BGD_E1E5a_5"/>
                           <xs:element type="xs:float" name="BGD_E1E5b_5"/>
+                          <xs:element type="xs:byte" name="flag_all_ephemeris"/>
                         </xs:sequence>
                         <xs:attribute type="xs:byte" name="class_id" use="optional"/>
                         <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>

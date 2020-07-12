@@ -27,7 +27,7 @@
 #include <utility>
 
 
-FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configuration,
+FlexibandSignalSource::FlexibandSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,

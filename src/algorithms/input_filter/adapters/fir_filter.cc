@@ -26,25 +26,26 @@
 #include <utility>
 
 
-FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
+FirFilter::FirFilter(const ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
-    size_t item_size;
+    config_ = configuration;
     (*this).init();
+    item_size_ = 0;
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
-            item_size = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
             DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
-            item_size = sizeof(lv_16sc_t);
+            item_size_ = sizeof(lv_16sc_t);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
             fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -56,12 +57,12 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
-            item_size = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
             fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -71,13 +72,13 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
 
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
-            item_size = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
 
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -90,12 +91,12 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
-            item_size = sizeof(lv_8sc_t);
+            item_size_ = sizeof(lv_8sc_t);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
 
             fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
@@ -111,7 +112,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             if (dump_)
                 {
                     DLOG(INFO) << "Dumping output into file " << dump_filename_;
-                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                    file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
                 }
         }
     else
@@ -125,6 +126,74 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     if (out_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream";
+        }
+}
+
+
+void FirFilter::init()
+{
+    const std::string default_input_item_type("gr_complex");
+    const std::string default_output_item_type("gr_complex");
+    const std::string default_taps_item_type("float");
+    const std::string default_dump_filename("../data/input_filter.dat");
+    const int default_number_of_taps = 6;
+    const unsigned int default_number_of_bands = 2;
+    const std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
+    const std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
+    const std::vector<double> default_error_w = {1.0, 1.0};
+    const std::string default_filter_type("bandpass");
+    const int default_grid_density = 16;
+
+    DLOG(INFO) << "role " << role_;
+
+    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
+    output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
+    taps_item_type_ = config_->property(role_ + ".taps_item_type", default_taps_item_type);
+    dump_ = config_->property(role_ + ".dump", false);
+    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
+    unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
+
+    std::vector<double> bands;
+    std::vector<double> ampl;
+    std::vector<double> error_w;
+    std::string option;
+    double option_value;
+    for (unsigned int i = 0; i < number_of_bands; i++)
+        {
+            option = ".band" + std::to_string(i + 1) + "_begin";
+            option_value = config_->property(role_ + option, default_bands[i]);
+            bands.push_back(option_value);
+
+            option = ".band" + std::to_string(i + 1) + "_end";
+            option_value = config_->property(role_ + option, default_bands[i]);
+            bands.push_back(option_value);
+
+            option = ".ampl" + std::to_string(i + 1) + "_begin";
+            option_value = config_->property(role_ + option, default_bands[i]);
+            ampl.push_back(option_value);
+
+            option = ".ampl" + std::to_string(i + 1) + "_end";
+            option_value = config_->property(role_ + option, default_bands[i]);
+            ampl.push_back(option_value);
+
+            option = ".band" + std::to_string(i + 1) + "_error";
+            option_value = config_->property(role_ + option, default_bands[i]);
+            error_w.push_back(option_value);
+        }
+
+    std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
+    int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
+
+    // pm_remez implements the Parks-McClellan FIR filter design.
+    // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter
+    // impulse response given a set of band edges, the desired response on
+    // those bands, and the weight given to the error in those bands.
+    std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
+    taps_.reserve(taps_d.size());
+    for (double& it : taps_d)
+        {
+            taps_.push_back(static_cast<float>(it));
         }
 }
 
@@ -312,72 +381,4 @@ gr::basic_block_sptr FirFilter::get_right_block()
         }
     LOG(WARNING) << "Unknown input filter taps item type";
     return nullptr;
-}
-
-
-void FirFilter::init()
-{
-    std::string default_input_item_type = "gr_complex";
-    std::string default_output_item_type = "gr_complex";
-    std::string default_taps_item_type = "float";
-    std::string default_dump_filename = "../data/input_filter.dat";
-    int default_number_of_taps = 6;
-    unsigned int default_number_of_bands = 2;
-    std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
-    std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
-    std::vector<double> default_error_w = {1.0, 1.0};
-    std::string default_filter_type = "bandpass";
-    int default_grid_density = 16;
-
-    DLOG(INFO) << "role " << role_;
-
-    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
-    output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
-    taps_item_type_ = config_->property(role_ + ".taps_item_type", default_taps_item_type);
-    dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
-    int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
-    unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
-
-    std::vector<double> bands;
-    std::vector<double> ampl;
-    std::vector<double> error_w;
-    std::string option;
-    double option_value;
-    for (unsigned int i = 0; i < number_of_bands; i++)
-        {
-            option = ".band" + std::to_string(i + 1) + "_begin";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            bands.push_back(option_value);
-
-            option = ".band" + std::to_string(i + 1) + "_end";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            bands.push_back(option_value);
-
-            option = ".ampl" + std::to_string(i + 1) + "_begin";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            ampl.push_back(option_value);
-
-            option = ".ampl" + std::to_string(i + 1) + "_end";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            ampl.push_back(option_value);
-
-            option = ".band" + std::to_string(i + 1) + "_error";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            error_w.push_back(option_value);
-        }
-
-    std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
-    int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
-
-    // pm_remez implements the Parks-McClellan FIR filter design.
-    // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter
-    // impulse response given a set of band edges, the desired response on
-    // those bands, and the weight given to the error in those bands.
-    std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
-    taps_.reserve(taps_d.size());
-    for (double& it : taps_d)
-        {
-            taps_.push_back(static_cast<float>(it));
-        }
 }

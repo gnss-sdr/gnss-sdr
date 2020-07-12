@@ -41,6 +41,25 @@ public:
      */
     Gps_Ephemeris();
 
+    /*!
+     * \brief Compute the ECEF SV coordinates and ECEF velocity
+     * Implementation of Table 20-IV (IS-GPS-200K)
+     * and compute the clock bias term including relativistic effect (return value)
+     */
+    double satellitePosition(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     */
+    double sv_clock_drift(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     */
+    double sv_clock_relativistic_term(double transmitTime);
+
     uint32_t i_satellite_PRN{};  // SV PRN NUMBER
     int32_t d_TOW{};             //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_Crs{};              //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
@@ -110,25 +129,6 @@ public:
     double d_satvel_Z{};  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
     std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
-
-    /*!
-     * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Table 20-IV (IS-GPS-200K)
-     * and compute the clock bias term including relativistic effect (return value)
-     */
-    double satellitePosition(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
-     */
-    double sv_clock_drift(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
-     */
-    double sv_clock_relativistic_term(double transmitTime);
 
     template <class Archive>
 

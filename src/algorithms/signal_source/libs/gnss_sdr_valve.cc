@@ -26,8 +26,6 @@
 #include <gnuradio/io_signature.h>  // for io_signature
 #include <algorithm>                // for min
 #include <cstring>                  // for memcpy
-#include <unistd.h>                 // for usleep
-#include <utility>
 
 Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
     uint64_t nitems,
@@ -93,7 +91,6 @@ int Gnss_Sdr_Valve::work(int noutput_items,
                         {
                             return -1;  // Done!
                         }
-                    usleep(1000000);
                     return 0;  // do not produce or consume
                 }
             uint64_t n = std::min(d_nitems - d_ncopied_items, static_cast<uint64_t>(noutput_items));
@@ -104,14 +101,14 @@ int Gnss_Sdr_Valve::work(int noutput_items,
             // multichannel support
             for (size_t ch = 0; ch < output_items.size(); ch++)
                 {
-                    memcpy(output_items[ch], input_items[ch], n * input_signature()->sizeof_stream_item(ch));
+                    std::memcpy(output_items[ch], input_items[ch], n * input_signature()->sizeof_stream_item(ch));
                 }
             d_ncopied_items += n;
             return n;
         }
     for (size_t ch = 0; ch < output_items.size(); ch++)
         {
-            memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
+            std::memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
         }
     return noutput_items;
 }

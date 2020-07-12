@@ -72,45 +72,45 @@ private:
         bool dump);
 
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe();
 
-    int32_t d_bits_per_preamble;
-    int32_t d_samples_per_preamble;
-    int32_t d_preamble_period_symbols;
-    std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
-    uint32_t d_required_symbols;
-    uint32_t d_frame_length_symbols;
-    bool flag_PLL_180_deg_phase_locked;
-
-    // navigation message vars
     Gps_Navigation_Message d_nav;
-    uint32_t d_prev_GPS_frame_4bytes;
+    Gnss_Satellite d_satellite;
+
+    std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
+
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
 
     boost::circular_buffer<float> d_symbol_history;
 
     uint64_t d_sample_counter;
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
-    uint32_t d_max_symbols_without_valid_frame;
 
-    bool d_sent_tlm_failed_msg;
-    uint32_t d_stat;
-    bool d_flag_frame_sync;
-    bool d_flag_parity;
-    bool d_flag_preamble;
+    int32_t d_bits_per_preamble;
+    int32_t d_samples_per_preamble;
+    int32_t d_preamble_period_symbols;
     int32_t d_CRC_error_counter;
-
-    Gnss_Satellite d_satellite;
     int32_t d_channel;
 
+    uint32_t d_required_symbols;
+    uint32_t d_frame_length_symbols;
+    uint32_t d_prev_GPS_frame_4bytes;
+    uint32_t d_max_symbols_without_valid_frame;
+    uint32_t d_stat;
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
 
-    bool flag_TOW_set;
+    bool d_flag_frame_sync;
+    bool d_flag_parity;
+    bool d_flag_preamble;
+    bool d_sent_tlm_failed_msg;
+    bool d_flag_PLL_180_deg_phase_locked;
+    bool d_flag_TOW_set;
     bool d_dump;
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
 };
 
 #endif  // GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H

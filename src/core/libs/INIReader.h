@@ -53,11 +53,12 @@ public:
     int64_t GetInteger(const std::string& section, const std::string& name, int64_t default_value);
 
 private:
-    int _error;
-    std::map<std::string, std::string> _values;
     static std::string MakeKey(const std::string& section, const std::string& name);
     static int ValueHandler(void* user, const char* section, const char* name,
         const char* value);
+
+    std::map<std::string, std::string> _values;
+    int _error;
 };
 
 #endif  // GNSS_SDR_INIREADER_H

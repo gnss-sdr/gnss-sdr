@@ -36,7 +36,8 @@ public:
     /*!
      * \brief Constructor
      */
-    GalileoE5aDllPllTrackingFpga(ConfigurationInterface* configuration,
+    GalileoE5aDllPllTrackingFpga(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

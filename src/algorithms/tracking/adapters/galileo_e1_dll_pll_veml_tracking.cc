@@ -33,7 +33,7 @@
 #include <array>
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
-    ConfigurationInterface* configuration, const std::string& role,
+    const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf trk_params = Dll_Pll_Conf();
@@ -43,18 +43,18 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     if (trk_params.extend_correlation_symbols < 1)
         {
             trk_params.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: Galileo E1. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (4 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E1. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (4 ms)" << TEXT_RESET << '\n';
         }
     else if (!trk_params.track_pilot and trk_params.extend_correlation_symbols > 1)
         {
             trk_params.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: Galileo E1. Extended coherent integration is not allowed when tracking the data component. Coherent integration has been set to 4 ms (1 symbol)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E1. Extended coherent integration is not allowed when tracking the data component. Coherent integration has been set to 4 ms (1 symbol)" << TEXT_RESET << '\n';
         }
     if ((trk_params.extend_correlation_symbols > 1) and (trk_params.pll_bw_narrow_hz > trk_params.pll_bw_hz or trk_params.dll_bw_narrow_hz > trk_params.dll_bw_hz))
         {
-            std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
-    int vector_length = std::round(trk_params.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS));
+    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     trk_params.system = 'E';
     std::array<char, 3> sig_{'1', 'B', '\0'};

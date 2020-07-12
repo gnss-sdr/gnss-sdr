@@ -488,7 +488,7 @@ void readtec(const char *file, nav_t *nav, int opt)
     /* P1-P2 dcb */
     for (i = 0; i < MAXSAT; i++)
         {
-            nav->cbias[i][0] = SPEED_OF_LIGHT * dcb[i] * 1e-9; /* ns->m */
+            nav->cbias[i][0] = SPEED_OF_LIGHT_M_S * dcb[i] * 1e-9; /* ns->m */
         }
 }
 
@@ -622,13 +622,13 @@ int iondelay(gtime_t time, const tec_t *tec, const double *pos,
             if (opt & 2)
                 {
                     /* modified single layer mapping function (M-SLM) ref [2] */
-                    rp = tec->rb / (tec->rb + hion) * sin(0.9782 * (PI / 2.0 - azel[1]));
+                    rp = tec->rb / (tec->rb + hion) * sin(0.9782 * (GNSS_PI / 2.0 - azel[1]));
                     fs = 1.0 / sqrt(1.0 - rp * rp);
                 }
             if (opt & 1)
                 {
                     /* earth rotation correction (sun-fixed coordinate) */
-                    posp[1] += 2.0 * PI * timediff(time, tec->time) / 86400.0;
+                    posp[1] += 2.0 * GNSS_PI * timediff(time, tec->time) / 86400.0;
                 }
             /* interpolate tec grid data */
             if (!interptec(tec, i, posp, &vtec, &rms))

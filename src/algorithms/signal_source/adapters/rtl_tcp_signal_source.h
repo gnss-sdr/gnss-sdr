@@ -47,7 +47,7 @@ class ConfigurationInterface;
 class RtlTcpSignalSource : public GNSSBlockInterface
 {
 public:
-    RtlTcpSignalSource(ConfigurationInterface* configuration,
+    RtlTcpSignalSource(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_stream,
         unsigned int out_stream,
@@ -80,28 +80,6 @@ public:
 
 private:
     void MakeBlock();
-    std::string role_;
-
-    // rtl_tcp settings
-    std::string address_;
-    int16_t port_;
-    bool AGC_enabled_;
-    double sample_rate_;
-    bool flip_iq_;
-
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-
-    double freq_;
-    double gain_;
-    double if_gain_;
-    double rf_gain_;
-
-    std::string item_type_;
-    size_t item_size_;
-    uint64_t samples_;
-    bool dump_;
-    std::string dump_filename_;
 
     rtl_tcp_signal_source_c_sptr signal_source_;
 
@@ -111,6 +89,26 @@ private:
     boost::shared_ptr<gr::block> valve_;
 #endif
     gr::blocks::file_sink::sptr file_sink_;
+
+    std::string role_;
+    std::string item_type_;
+    std::string dump_filename_;
+
+    // rtl_tcp settings
+    std::string address_;
+    size_t item_size_;
+    uint64_t samples_;
+    int sample_rate_;
+    int freq_;
+    int gain_;
+    int if_gain_;
+    double rf_gain_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+    int16_t port_;
+    bool AGC_enabled_;
+    bool flip_iq_;
+    bool dump_;
 };
 
 #endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H

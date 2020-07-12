@@ -38,7 +38,7 @@ public:
     /*!
      * \brief Constructor
      */
-    GalileoE5bPcpsAcquisition(ConfigurationInterface* configuration,
+    GalileoE5bPcpsAcquisition(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -176,7 +176,6 @@ public:
     void set_resampler_latency(uint32_t latency_samples) override;
 
 private:
-    ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
     Acq_Conf acq_parameters_;
     size_t item_size_;

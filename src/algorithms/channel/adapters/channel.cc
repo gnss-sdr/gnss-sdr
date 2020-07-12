@@ -29,14 +29,13 @@
 #include <utility>  // for std::move
 
 
-Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
+Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
     const std::string& role, const std::string& implementation, Concurrent_Queue<pmt::pmt_t>* queue)
 {
     acq_ = std::move(acq);
     trk_ = std::move(trk);
     nav_ = std::move(nav);
-    queue_ = queue;
     role_ = role;
     implementation_ = implementation;
     channel_ = channel;
@@ -60,8 +59,8 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
             int64_t deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
             if (deprecation_warning != 0)
                 {
-                    std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED." << std::endl;
-                    std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file." << std::endl;
+                    std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED.\n";
+                    std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file.\n";
                 }
         }
 
@@ -80,10 +79,10 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", 0.0);
+    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
     if (threshold == 0.0)
         {
-            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
+            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", static_cast<float>(0.0));
         }
 
     acq_->set_threshold(threshold);
@@ -97,13 +96,13 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
     channel_fsm_->set_tracking(trk_);
     channel_fsm_->set_telemetry(nav_);
     channel_fsm_->set_channel(channel_);
-    channel_fsm_->set_queue(queue_);
+    channel_fsm_->set_queue(queue);
 
     connected_ = false;
 
     gnss_signal_ = Gnss_Signal(implementation_);
 
-    channel_msg_rx = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
+    channel_msg_rx_ = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
 }
 
 
@@ -126,9 +125,9 @@ void Channel::connect(gr::top_block_sptr top_block)
     // Message ports
     if (!flag_enable_fpga)
         {
-            top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+            top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
         }
-    top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+    top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
 
     connected_ = true;
 }
@@ -153,9 +152,9 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
     if (!flag_enable_fpga)
         {
-            top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+            top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
         }
-    top_block->msg_disconnect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+    top_block->msg_disconnect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
     connected_ = false;
 }
 
@@ -191,7 +190,7 @@ gr::basic_block_sptr Channel::get_right_block()
 
 void Channel::set_signal(const Gnss_Signal& gnss_signal)
 {
-    std::lock_guard<std::mutex> lk(mx);
+    std::lock_guard<std::mutex> lk(mx_);
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
     gnss_synchro_.Signal[0] = str_aux[0];
@@ -210,7 +209,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 
 void Channel::stop_channel()
 {
-    std::lock_guard<std::mutex> lk(mx);
+    std::lock_guard<std::mutex> lk(mx_);
     bool result = channel_fsm_->Event_stop_channel();
     if (!result)
         {
@@ -229,7 +228,7 @@ void Channel::assist_acquisition_doppler(double Carrier_Doppler_hz)
 
 void Channel::start_acquisition()
 {
-    std::lock_guard<std::mutex> lk(mx);
+    std::lock_guard<std::mutex> lk(mx_);
     bool result = false;
     if (!flag_enable_fpga)
         {

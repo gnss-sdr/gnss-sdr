@@ -27,21 +27,20 @@
 #include <utility>
 
 
-CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configuration,
+CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
-    std::string empty = "";
-    std::string default_dump_file = "./data/signal_source.dat";
-    std::string default_item_type = "gr_complex";
+    const std::string default_dump_file("./data/signal_source.dat");
+    const std::string default_item_type("gr_complex");
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     // network PARAMETERS
-    std::string default_capture_device = "eth0";
-    std::string default_address = "127.0.0.1";
-    int default_port = 1234;
+    const std::string default_capture_device("eth0");
+    const std::string default_address("127.0.0.1");
+    const int default_port = 1234;
     std::string address = configuration->property(role + ".origin_address", default_address);
     std::string capture_device = configuration->property(role + ".capture_device", default_capture_device);
     int port = configuration->property(role + ".port", default_port);
@@ -51,7 +50,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     channels_in_udp_ = configuration->property(role + ".channels_in_udp", 1);
     IQ_swap_ = configuration->property(role + ".IQ_swap", false);
 
-    std::string default_sample_type = "cbyte";
+    const std::string default_sample_type("cbyte");
     std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     // output item size is always gr_complex
@@ -75,7 +74,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
         }
     else
         {
-            std::cout << "Configuration error: RF_channels<channels_in_use" << std::endl;
+            std::cout << "Configuration error: RF_channels<channels_in_use\n";
             exit(0);
         }
 
@@ -105,7 +104,7 @@ void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(udp_gnss_rx_source_, n, null_sinks_.at(n), 0);
         }
-    DLOG(INFO) << "connected udp_source to null_sinks to enable the use of spare channels" << std::endl;
+    DLOG(INFO) << "connected udp_source to null_sinks to enable the use of spare channels\n";
 
     if (dump_)
         {
@@ -133,7 +132,7 @@ void CustomUDPSignalSource::disconnect(gr::top_block_sptr top_block)
                     DLOG(INFO) << "disconnected source to file sink";
                 }
         }
-    DLOG(INFO) << "disconnected udp_source" << std::endl;
+    DLOG(INFO) << "disconnected udp_source\n";
 }
 
 

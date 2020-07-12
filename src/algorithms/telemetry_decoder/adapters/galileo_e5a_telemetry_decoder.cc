@@ -28,7 +28,8 @@
 #include <glog/logging.h>
 
 
-GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
+GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),

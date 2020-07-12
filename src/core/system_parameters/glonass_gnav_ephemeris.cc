@@ -53,7 +53,7 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(const double offset
 }
 
 
-void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, double* wn, double* tow) const
+void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, int32_t* wn, double* tow) const
 {
     double tod = 0.0;
     double glot2utc = 3 * 3600;

@@ -38,7 +38,7 @@ int Tcp_Communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 
             if (d_port_ == d_port_ch0_)
                 {
-                    std::cout << "Server ready. Listening for TCP connections..." << std::endl;
+                    std::cout << "Server ready. Listening for TCP connections...\n";
                 }
 
             // Reuse the IP address for each connection
@@ -48,12 +48,12 @@ int Tcp_Communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
             acceptor.listen(12);
             acceptor.accept(tcp_socket_);
 
-            std::cout << "Socket accepted on port " << d_port_ << std::endl;
+            std::cout << "Socket accepted on port " << d_port_ << '\n';
         }
 
     catch (const std::exception& e)
         {
-            std::cerr << "Exception: " << e.what() << std::endl;
+            std::cerr << "Exception: " << e.what() << '\n';
         }
 
     return false;
@@ -88,7 +88,7 @@ void Tcp_Communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
 
     catch (const std::exception& e)
         {
-            std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
+            std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program.\n";
             std::cin >> controlc;
         }
 }
@@ -122,7 +122,7 @@ void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
 
     catch (const std::exception& e)
         {
-            std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
+            std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program.\n";
             std::cin >> controlc;
         }
 }
@@ -132,5 +132,5 @@ void Tcp_Communication::close_tcp_connection(size_t d_port_)
 {
     // Close the TCP connection
     tcp_socket_.close();
-    std::cout << "Socket closed on port " << d_port_ << std::endl;
+    std::cout << "Socket closed on port " << d_port_ << '\n';
 }

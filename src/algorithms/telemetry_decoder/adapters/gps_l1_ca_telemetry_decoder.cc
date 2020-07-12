@@ -24,7 +24,8 @@
 #include <glog/logging.h>
 
 
-GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
+GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(
+    const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),

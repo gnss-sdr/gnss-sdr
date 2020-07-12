@@ -27,44 +27,15 @@
 class Pvt_Conf
 {
 public:
-    uint32_t type_of_receiver;
-    int32_t output_rate_ms;
-    int32_t display_rate_ms;
-    int32_t kml_rate_ms;
-    int32_t gpx_rate_ms;
-    int32_t geojson_rate_ms;
-    int32_t nmea_rate_ms;
+    Pvt_Conf();
 
-    int32_t rinex_version;
-    int32_t rinexobs_rate_ms;
-    std::string rinex_name;
     std::map<int, int> rtcm_msg_rate_ms;
 
-    bool dump;
-    bool dump_mat;
+    std::string rinex_name;
     std::string dump_filename;
-
-    bool flag_nmea_tty_port;
     std::string nmea_dump_filename;
     std::string nmea_dump_devname;
-
-    bool flag_rtcm_server;
-    bool flag_rtcm_tty_port;
-    uint16_t rtcm_tcp_port;
-    uint16_t rtcm_station_id;
     std::string rtcm_dump_devname;
-
-    bool output_enabled;
-    bool rinex_output_enabled;
-    bool gpx_output_enabled;
-    bool geojson_output_enabled;
-    bool nmea_output_file_enabled;
-    bool kml_output_enabled;
-    bool xml_output_enabled;
-    bool rtcm_output_file_enabled;
-
-    int32_t max_obs_block_rx_clock_offset_ms;
-
     std::string output_path;
     std::string rinex_output_path;
     std::string gpx_output_path;
@@ -73,17 +44,41 @@ public:
     std::string kml_output_path;
     std::string xml_output_path;
     std::string rtcm_output_file_path;
-
-    bool monitor_enabled;
-    bool protobuf_enabled;
     std::string udp_addresses;
+
+    uint32_t type_of_receiver;
+    int32_t output_rate_ms;
+    int32_t display_rate_ms;
+    int32_t kml_rate_ms;
+    int32_t gpx_rate_ms;
+    int32_t geojson_rate_ms;
+    int32_t nmea_rate_ms;
+    int32_t rinex_version;
+    int32_t rinexobs_rate_ms;
+    int32_t max_obs_block_rx_clock_offset_ms;
     int udp_port;
 
+    uint16_t rtcm_tcp_port;
+    uint16_t rtcm_station_id;
+
+    bool flag_nmea_tty_port;
+    bool flag_rtcm_server;
+    bool flag_rtcm_tty_port;
+    bool output_enabled;
+    bool rinex_output_enabled;
+    bool gpx_output_enabled;
+    bool geojson_output_enabled;
+    bool nmea_output_file_enabled;
+    bool kml_output_enabled;
+    bool xml_output_enabled;
+    bool rtcm_output_file_enabled;
+    bool monitor_enabled;
+    bool protobuf_enabled;
     bool enable_rx_clock_correction;
     bool show_local_time_zone;
     bool pre_2009_file;
-
-    Pvt_Conf();
+    bool dump;
+    bool dump_mat;
 };
 
 #endif

@@ -206,7 +206,7 @@ TEST_F(FirFilterTest, ConnectAndRun)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -249,7 +249,7 @@ TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -294,7 +294,7 @@ TEST_F(FirFilterTest, ConnectAndRunCshorts)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " std::complex<int16_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " std::complex<int16_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -339,7 +339,7 @@ TEST_F(FirFilterTest, ConnectAndRunCbytes)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " std::complex<int8_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " std::complex<int8_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -384,5 +384,5 @@ TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

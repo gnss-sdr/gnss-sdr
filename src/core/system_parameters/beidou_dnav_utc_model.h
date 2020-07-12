@@ -35,12 +35,10 @@ class Beidou_Dnav_Utc_Model
 public:
     Beidou_Dnav_Utc_Model() = default;
 
-    bool valid{};
-
     // BeiDou UTC parameters
     double d_A0_UTC{};      //!< BDT clock bias relative to UTC [s]
     double d_A1_UTC{};      //!< BDT clock rate relative to UTC [s/s]
-    double d_DeltaT_LS{};   //!< Delta time due to leap seconds before the new leap second effective
+    int i_DeltaT_LS{};      //!< Delta time due to leap seconds before the new leap second effective
     int i_WN_LSF{};         //!< Week number of the new leap second
     int i_DN{};             //!< Day number of week of the new leap second
     double d_DeltaT_LSF{};  //!< Delta time due to leap seconds after the new leap second effective [s]
@@ -57,6 +55,8 @@ public:
     double d_A0_GLO{};  //!< BDT clock bias relative to GLO time [s]
     double d_A1_GLO{};  //!< BDT clock rate relative to GLO time [s/s]
 
+    bool valid{};
+
     template <class Archive>
     /*
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
@@ -67,10 +67,9 @@ public:
         if (version)
             {
             };
-        archive& make_nvp("valid", valid);
         archive& make_nvp("d_A1", d_A1_UTC);
         archive& make_nvp("d_A0", d_A0_UTC);
-        archive& make_nvp("d_DeltaT_LS", d_DeltaT_LS);
+        archive& make_nvp("i_DeltaT_LS", i_DeltaT_LS);
         archive& make_nvp("i_WN_LSF", i_WN_LSF);
         archive& make_nvp("i_DN", i_DN);
         archive& make_nvp("d_DeltaT_LSF", d_DeltaT_LSF);
@@ -80,6 +79,7 @@ public:
         archive& make_nvp("d_A0_GPS", d_A1_GAL);
         archive& make_nvp("d_A0_GPS", d_A0_GLO);
         archive& make_nvp("d_A0_GPS", d_A1_GLO);
+        archive& make_nvp("valid", valid);
     }
 };
 

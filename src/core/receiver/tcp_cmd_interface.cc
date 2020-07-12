@@ -49,21 +49,21 @@ TcpCmdInterface::TcpCmdInterface()
 void TcpCmdInterface::register_functions()
 {
 #if HAS_GENERIC_LAMBDA
-    functions["status"] = [&](auto &s) { return TcpCmdInterface::status(s); };
-    functions["standby"] = [&](auto &s) { return TcpCmdInterface::standby(s); };
-    functions["reset"] = [&](auto &s) { return TcpCmdInterface::reset(s); };
-    functions["hotstart"] = [&](auto &s) { return TcpCmdInterface::hotstart(s); };
-    functions["warmstart"] = [&](auto &s) { return TcpCmdInterface::warmstart(s); };
-    functions["coldstart"] = [&](auto &s) { return TcpCmdInterface::coldstart(s); };
-    functions["set_ch_satellite"] = [&](auto &s) { return TcpCmdInterface::set_ch_satellite(s); };
+    functions_["status"] = [&](auto &s) { return TcpCmdInterface::status(s); };
+    functions_["standby"] = [&](auto &s) { return TcpCmdInterface::standby(s); };
+    functions_["reset"] = [&](auto &s) { return TcpCmdInterface::reset(s); };
+    functions_["hotstart"] = [&](auto &s) { return TcpCmdInterface::hotstart(s); };
+    functions_["warmstart"] = [&](auto &s) { return TcpCmdInterface::warmstart(s); };
+    functions_["coldstart"] = [&](auto &s) { return TcpCmdInterface::coldstart(s); };
+    functions_["set_ch_satellite"] = [&](auto &s) { return TcpCmdInterface::set_ch_satellite(s); };
 #else
-    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
-    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
-    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
-    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
-    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
-    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
-    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
+    functions_["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
+    functions_["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
+    functions_["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
+    functions_["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
+    functions_["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
+    functions_["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
+    functions_["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
 #endif
 }
 
@@ -154,16 +154,16 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             tstruct = *gmtime(&UTC_time);
             strftime(buf1.data(), buf1.size(), "%d/%m/%Y %H:%M:%S", &tstruct);
             std::string str_time = std::string(buf1.data());
-            str_stream << "- Receiver UTC Time: " << str_time << std::endl;
+            str_stream << "- Receiver UTC Time: " << str_time << '\n';
             str_stream << std::setprecision(9);
             str_stream << "- Receiver Position WGS84 [Lat, Long, H]: "
                        << latitude_deg << ", "
                        << longitude_deg << ", ";
             str_stream << std::setprecision(3);
-            str_stream << height_m << std::endl;
+            str_stream << height_m << '\n';
             str_stream << std::setprecision(1);
-            str_stream << "- Receiver Speed over Ground [km/h]: " << ground_speed_kmh << std::endl;
-            str_stream << "- Receiver Course over ground [deg]: " << course_over_ground_deg << std::endl;
+            str_stream << "- Receiver Speed over Ground [km/h]: " << ground_speed_kmh << '\n';
+            str_stream << "- Receiver Course over ground [deg]: " << course_over_ground_deg << '\n';
         }
     else
         {
@@ -238,9 +238,9 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
-            rx_latitude_ = std::stod(commandLine.at(3).c_str());
-            rx_longitude_ = std::stod(commandLine.at(4).c_str());
-            rx_altitude_ = std::stod(commandLine.at(5).c_str());
+            rx_latitude_ = std::stof(commandLine.at(3).c_str());
+            rx_longitude_ = std::stof(commandLine.at(4).c_str());
+            rx_altitude_ = std::stof(commandLine.at(5).c_str());
 
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {
@@ -319,13 +319,13 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                 {
                     try
                         {
-                            std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << std::endl;
+                            std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << '\n';
 
                             boost::asio::ip::tcp::socket socket(context);
                             acceptor.accept(socket, not_throw);
                             if (not_throw)
                                 {
-                                    std::cout << "TcpCmdInterface: Error when binding the port in the socket" << std::endl;
+                                    std::cout << "TcpCmdInterface: Error when binding the port in the socket\n";
                                     continue;
                                 }
 
@@ -355,7 +355,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                                         }
                                                     else
                                                         {
-                                                            response = functions[cmd_vector.at(0)](cmd_vector);
+                                                            response = functions_[cmd_vector.at(0)](cmd_vector);
                                                         }
                                                 }
                                             catch (const std::bad_function_call &ex)
@@ -376,7 +376,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                     socket.write_some(boost::asio::buffer(response), not_throw);
                                     if (not_throw)
                                         {
-                                            std::cout << "Error sending(" << not_throw.value() << "): " << not_throw.message() << std::endl;
+                                            std::cout << "Error sending(" << not_throw.value() << "): " << not_throw.message() << '\n';
                                             break;
                                         }
                                 }
@@ -388,7 +388,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                 }
                             else
                                 {
-                                    std::cout << "TcpCmdInterface unexpected error: " << error << std::endl;
+                                    std::cout << "TcpCmdInterface unexpected error: " << error << '\n';
                                 }
 
                             // Close socket
@@ -396,16 +396,16 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                         }
                     catch (const boost::exception &e)
                         {
-                            std::cout << "TcpCmdInterface: Boost exception " << std::endl;
+                            std::cout << "TcpCmdInterface: Boost exception\n";
                         }
                     catch (const std::exception &ex)
                         {
-                            std::cout << "TcpCmdInterface: Exception " << ex.what() << std::endl;
+                            std::cout << "TcpCmdInterface: Exception " << ex.what() << '\n';
                         }
                 }
         }
     catch (const boost::exception &e)
         {
-            std::cout << "TCP Command Interface exception: address already in use" << std::endl;
+            std::cout << "TCP Command Interface exception: address already in use\n";
         }
 }

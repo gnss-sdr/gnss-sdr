@@ -38,6 +38,24 @@ public:
      */
     Gps_CNAV_Ephemeris() = default;
 
+    /*!
+     * \brief Compute the ECEF SV coordinates and ECEF velocity
+     * Implementation of Table 20-IV (IS-GPS-200K)
+     */
+    double satellitePosition(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     */
+    double sv_clock_drift(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     */
+    double sv_clock_relativistic_term(double transmitTime);
+
     uint32_t i_satellite_PRN{};  // SV PRN NUMBER
 
     // Message Types 10 and 11 Parameters (1 of 2)
@@ -84,21 +102,6 @@ public:
 
     int32_t d_TOW{};  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
 
-    /*! \brief If true, enhanced level of integrity assurance.
-     *
-     *  If false, indicates that the conveying signal is provided with the legacy level of integrity assurance.
-     *  That is, the probability that the instantaneous URE of the conveying signal exceeds 4.42 times the upper bound
-     *  value of the current broadcast URA index, for more than 5.2 seconds, without an accompanying alert, is less
-     *  than 1E-5 per hour. If true, indicates that the conveying signal is provided with an enhanced level of
-     *  integrity assurance. That is, the probability that the instantaneous URE of the conveying signal exceeds 5.73
-     *  times the upper bound value of the current broadcast URA index, for more than 5.2 seconds, without an
-     *  accompanying alert, is less than 1E-8 per hour.
-     */
-    bool b_integrity_status_flag{};
-    bool b_l2c_phasing_flag{};
-    bool b_alert_flag{};         //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    bool b_antispoofing_flag{};  //!<  If true, the AntiSpoofing mode is ON in that SV
-
     // clock terms derived from ephemeris data
     double d_satClkDrift{};  //!< GPS clock error
     double d_dtr{};          //!< relativistic clock correction term
@@ -113,23 +116,20 @@ public:
     double d_satvel_Y{};  //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z{};  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
-    /*!
-     * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Table 20-IV (IS-GPS-200K)
+    /*! \brief If true, enhanced level of integrity assurance.
+     *
+     *  If false, indicates that the conveying signal is provided with the legacy level of integrity assurance.
+     *  That is, the probability that the instantaneous URE of the conveying signal exceeds 4.42 times the upper bound
+     *  value of the current broadcast URA index, for more than 5.2 seconds, without an accompanying alert, is less
+     *  than 1E-5 per hour. If true, indicates that the conveying signal is provided with an enhanced level of
+     *  integrity assurance. That is, the probability that the instantaneous URE of the conveying signal exceeds 5.73
+     *  times the upper bound value of the current broadcast URA index, for more than 5.2 seconds, without an
+     *  accompanying alert, is less than 1E-8 per hour.
      */
-    double satellitePosition(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
-     */
-    double sv_clock_drift(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
-     */
-    double sv_clock_relativistic_term(double transmitTime);
+    bool b_integrity_status_flag{};
+    bool b_l2c_phasing_flag{};
+    bool b_alert_flag{};         //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
+    bool b_antispoofing_flag{};  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     template <class Archive>
 

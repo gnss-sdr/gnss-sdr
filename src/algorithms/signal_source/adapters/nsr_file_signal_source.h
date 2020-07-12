@@ -48,7 +48,7 @@ class ConfigurationInterface;
 class NsrFileSignalSource : public GNSSBlockInterface
 {
 public:
-    NsrFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    NsrFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
@@ -102,16 +102,6 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    std::string filename_;
-    std::string item_type_;
-    bool repeat_;
-    bool dump_;
-    std::string dump_filename_;
-    std::string role_;
-    uint32_t in_streams_;
-    uint32_t out_streams_;
     gr::blocks::file_source::sptr file_source_;
     unpack_byte_2bit_samples_sptr unpack_byte_;
 #if GNURADIO_USES_STD_POINTERS
@@ -121,7 +111,17 @@ private:
 #endif
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     size_t item_size_;
+    std::string filename_;
+    std::string item_type_;
+    std::string dump_filename_;
+    std::string role_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    bool repeat_;
+    bool dump_;
     // Throttle control
     bool enable_throttle_control_;
 };

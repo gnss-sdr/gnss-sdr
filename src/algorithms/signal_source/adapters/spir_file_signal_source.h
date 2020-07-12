@@ -46,11 +46,12 @@ class ConfigurationInterface;
 class SpirFileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+    SpirFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~SpirFileSignalSource() = default;
+
     inline std::string role() override
     {
         return role_;
@@ -100,16 +101,6 @@ public:
     }
 
 private:
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    std::string filename_;
-    std::string item_type_;
-    bool repeat_;
-    bool dump_;
-    std::string dump_filename_;
-    std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
     gr::blocks::file_source::sptr file_source_;
     unpack_intspir_1bit_samples_sptr unpack_intspir_;
 #if GNURADIO_USES_STD_POINTERS
@@ -119,7 +110,21 @@ private:
 #endif
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
+    std::string filename_;
+    std::string item_type_;
+    std::string dump_filename_;
+    std::string role_;
+
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     size_t item_size_;
+
+    unsigned int in_streams_;
+    unsigned int out_streams_;
+
+    bool repeat_;
+    bool dump_;
+
     // Throttle control
     bool enable_throttle_control_;
 };

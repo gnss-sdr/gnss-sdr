@@ -109,8 +109,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     d_CRC_error_counter = 0;
     d_flag_preamble = false;
     d_channel = 0;
-    flag_TOW_set = false;
-    flag_PLL_180_deg_phase_locked = false;
+    d_flag_TOW_set = false;
+    d_flag_PLL_180_deg_phase_locked = false;
     d_prev_GPS_frame_4bytes = 0;
     d_symbol_history.set_capacity(d_required_symbols);
 }
@@ -118,6 +118,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 
 gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "GPS L1 C/A Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try
@@ -172,7 +173,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satelli
     d_nav = Gps_Navigation_Message();
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
-    d_nav.i_satellite_PRN = d_satellite.get_PRN();
+    d_nav.set_satellite_PRN(d_satellite.get_PRN());
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 
@@ -180,7 +181,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satelli
 void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
-    d_nav.i_channel_ID = channel;
+    d_nav.set_channel(channel);
     DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -274,7 +275,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
                               << "subframe "
                               << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string("GPS"), d_nav.i_satellite_PRN) << std::endl;
+                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << '\n';
 
                     switch (subframe_ID)
                         {
@@ -287,12 +288,12 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                                 }
                             break;
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
-                            if (d_nav.flag_iono_valid == true)
+                            if (d_nav.get_flag_iono_valid() == true)
                                 {
                                     std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav.get_iono());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                 }
-                            if (d_nav.flag_utc_model_valid == true)
+                            if (d_nav.get_flag_utc_model_valid() == true)
                                 {
                                     std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav.get_utc_model());
                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -301,7 +302,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                         case 5:
                             // get almanac (if available)
                             // TODO: implement almanac reader in navigation_message
-                            break;
                         default:
                             break;
                         }
@@ -317,7 +317,7 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
-    flag_TOW_set = false;
+    d_flag_TOW_set = false;
     d_symbol_history.clear();
     d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
@@ -378,7 +378,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         decode_subframe();
                         d_stat = 1;  // enter into frame pre-detection status
                     }
-                flag_TOW_set = false;
+                d_flag_TOW_set = false;
                 break;
             }
         case 1:  // possible preamble lock
@@ -411,11 +411,11 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 if (corr_value < 0)
                                     {
-                                        flag_PLL_180_deg_phase_locked = true;
+                                        d_flag_PLL_180_deg_phase_locked = true;
                                     }
                                 else
                                     {
-                                        flag_PLL_180_deg_phase_locked = false;
+                                        d_flag_PLL_180_deg_phase_locked = false;
                                     }
                                 decode_subframe();
                                 d_stat = 2;
@@ -425,7 +425,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 if (preamble_diff > d_preamble_period_symbols)
                                     {
                                         d_stat = 0;  // start again
-                                        flag_TOW_set = false;
+                                        d_flag_TOW_set = false;
                                     }
                             }
                     }
@@ -463,7 +463,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                         d_TOW_at_current_symbol_ms = 0;
                                         d_TOW_at_Preamble_ms = 0;
                                         d_CRC_error_counter = 0;
-                                        flag_TOW_set = false;
+                                        d_flag_TOW_set = false;
                                     }
                             }
                     }
@@ -474,34 +474,34 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            if (!(d_nav.d_TOW == 0))
+            if (!(d_nav.get_TOW() == 0))
                 {
-                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
-                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
-                    flag_TOW_set = true;
+                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.get_TOW() * 1000.0);
+                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.get_TOW() * 1000.0);
+                    d_flag_TOW_set = true;
                 }
             else
                 {
-                    DLOG(INFO) << "Received GPS L1 TOW equal to zero at sat " << d_nav.i_satellite_PRN;
+                    DLOG(INFO) << "Received GPS L1 TOW equal to zero at sat " << d_nav.get_satellite_PRN();
                 }
         }
     else
         {
-            if (flag_TOW_set == true)
+            if (d_flag_TOW_set == true)
                 {
                     d_TOW_at_current_symbol_ms += GPS_L1_CA_BIT_PERIOD_MS;
                 }
         }
 
-    if (flag_TOW_set == true)
+    if (d_flag_TOW_set == true)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-            current_symbol.Flag_valid_word = flag_TOW_set;
+            current_symbol.Flag_valid_word = d_flag_TOW_set;
 
-            if (flag_PLL_180_deg_phase_locked == true)
+            if (d_flag_PLL_180_deg_phase_locked == true)
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
-                    current_symbol.Carrier_phase_rads += GPS_PI;
+                    current_symbol.Carrier_phase_rads += GNSS_PI;
                 }
 
             if (d_dump == true)

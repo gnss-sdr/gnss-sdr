@@ -74,12 +74,13 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
     cnav_msg_decoder_init(&d_cnav_decoder);
 
     d_sample_counter = 0;
-    flag_PLL_180_deg_phase_locked = false;
+    d_flag_PLL_180_deg_phase_locked = false;
 }
 
 
 gps_l2c_telemetry_decoder_gs::~gps_l2c_telemetry_decoder_gs()
 {
+    DLOG(INFO) << "GPS L2C Telemetry decoder block (channel " << d_channel << ") destructor called.";
     if (d_dump_file.is_open() == true)
         {
             try
@@ -178,11 +179,11 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part2.invert == true)
                 {
-                    flag_PLL_180_deg_phase_locked = true;
+                    d_flag_PLL_180_deg_phase_locked = true;
                 }
             else
                 {
-                    flag_PLL_180_deg_phase_locked = false;
+                    d_flag_PLL_180_deg_phase_locked = false;
                 }
             std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> raw_bits;
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
@@ -198,20 +199,20 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
@@ -235,10 +236,10 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 }
         }
 
-    if (flag_PLL_180_deg_phase_locked == true)
+    if (d_flag_PLL_180_deg_phase_locked == true)
         {
             // correct the accumulated phase for the Costas loop phase shift, if required
-            current_synchro_data.Carrier_phase_rads += GPS_L2_PI;
+            current_synchro_data.Carrier_phase_rads += GNSS_PI;
         }
 
     current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);

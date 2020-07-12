@@ -38,7 +38,8 @@ class ConfigurationInterface;
 class GalileoE5aDllPllTracking : public TrackingInterface
 {
 public:
-    GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
+    GalileoE5aDllPllTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

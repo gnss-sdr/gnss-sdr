@@ -132,6 +132,9 @@ public:
         int n_correlators);
 
 private:
+    cudaStream_t stream1;
+    // cudaStream_t stream2;
+
     // Allocate the device input vectors
     GPU_Complex* d_sig_in;
     GPU_Complex* d_nco_in;
@@ -142,16 +145,14 @@ private:
     std::complex<float>* d_sig_in_cpu;
     std::complex<float>* d_corr_out_cpu;
 
-    int* d_shifts_samples;
     float* d_shifts_chips;
+    int* d_shifts_samples;
     int d_code_length_chips;
 
     int selected_gps_device;
     int threadsPerBlock;
     int blocksPerGrid;
 
-    cudaStream_t stream1;
-    // cudaStream_t stream2;
     int num_gpu_devices;
     int selected_device;
 };

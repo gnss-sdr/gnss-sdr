@@ -14,7 +14,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
-cmake_minimum_required(VERSION 2.8.12...3.17)
+cmake_minimum_required(VERSION 2.8.12...3.18)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -112,6 +112,10 @@ if(ENABLE_FPGA)
     set(ENABLE_INSTALL_TESTS ON)
 endif()
 
+option(ENABLE_BENCHMARKS "Build code snippets benchmarks" OFF)
+if(CMAKE_VERSION VERSION_LESS 3.5.1)
+    set(ENABLE_BENCHMARKS OFF)
+endif()
 
 
 ################################################################################
@@ -241,13 +245,17 @@ if((${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU") AND (CMAKE_CXX_COMPILER_I
 endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Fix for Debug mode in macOS
+        # Fix for Debug and None modes in macOS
+        # without this, get get a runtime error
         include(CheckCXXCompilerFlag)
         check_cxx_compiler_flag(-fstandalone-debug HAVE_STANDALONE_DEBUG)
         check_cxx_compiler_flag(-Og HAVE_OG_FLAG)
         if(HAVE_STANDALONE_DEBUG AND HAVE_OG_FLAG)
             set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -fstandalone-debug")
             set(CMAKE_C_FLAGS_DEBUG "-Og -g -fstandalone-debug")
+            if(CMAKE_BUILD_TYPE STREQUAL "None")
+                add_compile_options(-Og -fstandalone-debug)
+            endif()
         endif()
     endif()
 endif()
@@ -320,6 +328,7 @@ set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.12.3")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.1")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
@@ -882,6 +891,56 @@ check_cxx_source_compiles("
 
 
 ################################################################################
+# Detect availability of std::plus without class specifier
+################################################################################
+unset(has_std_plus_void CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 11)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <functional>
+        int main()
+        { [](float a=1, float b=0){return std::plus<>();}; };"
+        has_std_plus_void
+    )
+endif()
+
+
+
+################################################################################
+# Detect availability of std::transform_reduce
+################################################################################
+unset(has_transform_reduce CACHE)
+unset(has_transform_reduce_with_execution_policy CACHE)
+if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles("
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };"
+        has_transform_reduce
+    )
+    check_cxx_source_compiles("
+        #include <execution>
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(std::execution::par, cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };"
+        has_transform_reduce_with_execution_policy
+    )
+endif()
+
+
+
+################################################################################
 # VOLK - Vector-Optimized Library of Kernels
 ################################################################################
 find_package(VOLK)
@@ -1194,7 +1253,7 @@ if(NOT GFLAGS_FOUND)
                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 ${GFLAGS_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GFLAGS_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -1455,7 +1514,7 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
                 -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
                 ${GLOG_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -1521,7 +1580,14 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
 endif()
 
 if(NOT ENABLE_LOG)
-    message(STATUS "Logging is not enabled")
+    message(STATUS "Internal logging is not enabled")
+    if(CMAKE_VERSION VERSION_GREATER 3.11.0)
+        target_compile_definitions(Glog::glog INTERFACE -DGOOGLE_STRIP_LOG=1)
+    else()
+        set_property(TARGET Glog::glog APPEND PROPERTY
+            INTERFACE_COMPILE_DEFINITIONS GOOGLE_STRIP_LOG=1
+        )
+    endif()
 endif()
 
 
@@ -1717,7 +1783,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
                 ${DARWIN_DISABLE_HDF5}
                 ${ARMADILLO_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${ARMADILLO_BUILD_COMMAND} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${ARMADILLO_BUILD_COMMAND} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/armadillo-${armadillo_RELEASE}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}
             UPDATE_COMMAND ""
             INSTALL_COMMAND ""
@@ -2107,7 +2173,7 @@ if(NOT PUGIXML_FOUND)
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${PUGIXML_BUILD_COMMAND} ${PARALLEL_BUILD}
+            BUILD_COMMAND "${PUGIXML_BUILD_COMMAND} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}
             INSTALL_COMMAND ""
         )
@@ -3045,6 +3111,7 @@ add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enable
 add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
 add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
+add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 
 message(STATUS "")
 message(STATUS "***************************************")

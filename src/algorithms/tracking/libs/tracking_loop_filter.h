@@ -57,6 +57,9 @@ public:
     float apply(float current_input);
 
 private:
+    // Compute the filter coefficients:
+    void update_coefficients();
+
     // Store the last inputs and outputs:
     std::vector<float> d_inputs;
     std::vector<float> d_outputs;
@@ -64,15 +67,6 @@ private:
     // Store the filter coefficients:
     std::vector<float> d_input_coefficients;
     std::vector<float> d_output_coefficients;
-
-    // The loop order:
-    int d_loop_order;
-
-    // The current index in the i/o arrays:
-    int d_current_index;
-
-    // Should the last integrator be included?
-    bool d_include_last_integrator;
 
     // The noise bandwidth (in Hz)
     // Note this is an approximation only valid when the product of this
@@ -82,8 +76,14 @@ private:
     // Loop update interval
     float d_update_interval;
 
-    // Compute the filter coefficients:
-    void update_coefficients();
+    // The loop order:
+    int d_loop_order;
+
+    // The current index in the i/o arrays:
+    int d_current_index;
+
+    // Should the last integrator be included?
+    bool d_include_last_integrator;
 };
 
 #endif

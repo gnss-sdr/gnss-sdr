@@ -35,7 +35,7 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
     auto* output = new std::complex<float>[FLAGS_size_carrier_test];
     const double _f = 2000.0;
     const double _fs = 2000000.0;
-    const auto phase_step = static_cast<double>((GPS_TWO_PI * _f) / _fs);
+    const auto phase_step = static_cast<double>((TWO_PI * _f) / _fs);
     double phase = 0.0;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -51,7 +51,7 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
               << "-length complex carrier in standard C++ (dynamic allocation) generated in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
 
     std::complex<float> expected(1, 0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
@@ -75,7 +75,7 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
     std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
     const double _f = 2000.0;
     const double _fs = 2000000.0;
-    const auto phase_step = static_cast<double>((GPS_TWO_PI * _f) / _fs);
+    const auto phase_step = static_cast<double>((TWO_PI * _f) / _fs);
     double phase = 0.0;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -90,7 +90,7 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
               << "-length complex carrier in standard C++ (declaration) generated in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     std::complex<float> expected(1, 0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
@@ -117,7 +117,7 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
               << "-length complex carrier using fixed point generated in " << elapsed_seconds.count() * 1e6
-              << " microseconds" << std::endl;
+              << " microseconds\n";
 
     std::complex<float> expected(1, 0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);

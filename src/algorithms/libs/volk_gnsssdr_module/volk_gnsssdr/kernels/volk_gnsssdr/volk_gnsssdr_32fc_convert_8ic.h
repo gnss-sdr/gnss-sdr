@@ -57,8 +57,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
 {
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
-    const float min_val = (float)SCHAR_MIN;
-    const float max_val = (float)SCHAR_MAX;
+    const float min_val = (float)INT8_MIN;
+    const float max_val = (float)INT8_MAX;
     float aux;
     unsigned int i;
     for (i = 0; i < num_points * 2; i++)
@@ -84,8 +84,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_avx2(lv_8sc_t* outputVector, 
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
 
-    const float min_val = (float)SCHAR_MIN;
-    const float max_val = (float)SCHAR_MAX;
+    const float min_val = (float)INT8_MIN;
+    const float max_val = (float)INT8_MAX;
     float aux;
     unsigned int i;
 
@@ -158,8 +158,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_avx2(lv_8sc_t* outputVector, 
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
 
-    const float min_val = (float)SCHAR_MIN;
-    const float max_val = (float)SCHAR_MAX;
+    const float min_val = (float)INT8_MIN;
+    const float max_val = (float)INT8_MAX;
     float aux;
     unsigned int i;
 
@@ -232,8 +232,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
 
-    const float min_val = (float)SCHAR_MIN;
-    const float max_val = (float)SCHAR_MAX;
+    const float min_val = (float)INT8_MIN;
+    const float max_val = (float)INT8_MAX;
     float aux;
     unsigned int i;
 
@@ -302,8 +302,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
 
-    const float min_val = (float)SCHAR_MIN;
-    const float max_val = (float)SCHAR_MAX;
+    const float min_val = (float)INT8_MIN;
+    const float max_val = (float)INT8_MAX;
     float aux;
     unsigned int i;
 
@@ -371,8 +371,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
 
     float32_t* inputVectorPtr = (float32_t*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
-    const float32_t max_val_f = (float32_t)SCHAR_MAX;
-    const float32_t min_val_f = (float32_t)SCHAR_MIN;
+    const float32_t max_val_f = (float32_t)INT8_MAX;
+    const float32_t min_val_f = (float32_t)INT8_MIN;
     float32_t aux;
     unsigned int i;
 

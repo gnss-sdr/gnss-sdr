@@ -593,7 +593,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
         elapsed_seconds = end - begin;
     }) << "Failure running the top_block.";
 
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
     LOG(INFO) << "----end connect and run test-----";
     LOG(INFO) << "**End connect and run test";
 }
@@ -822,7 +822,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 
-    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
+    std::cout << "Probability of false alarm (target) = " << 0.1 << '\n';
 
     // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
@@ -853,10 +853,10 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 
             if (i == 0)
                 {
-                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                    std::cout << "Estimated probability of miss detection (satellite present) = " << Pmd << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of detection = " << Pd << '\n';
+                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << '\n';
+                    std::cout << "Estimated probability of miss detection (satellite present) = " << Pmd << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
 
                     if (dump_test_results)
                         {
@@ -867,14 +867,14 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                                        << gnss_synchro.PRN << "CN0_dB_0_" << FLAGS_e1_value_CN0_dB_0 << "_dBHz.csv";
 
                             pdpfafile.open(filenamepd.str().c_str(), std::ios::app | std::ios::out);
-                            pdpfafile << FLAGS_e1_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
+                            pdpfafile << FLAGS_e1_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << '\n';
                             pdpfafile.close();
                         }
                 }
             else if (i == 1)
                 {
-                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
 
                     if (dump_test_results)
                         {
@@ -885,7 +885,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                                        << gnss_synchro.PRN << "CN0_dB_0_" << FLAGS_e1_value_CN0_dB_0 << "_dBHz.csv";
 
                             pdpfafile.open(filenamepf.str().c_str(), std::ios::app | std::ios::out);
-                            pdpfafile << FLAGS_e1_value_threshold << "," << Pfa_a << std::endl;
+                            pdpfafile << FLAGS_e1_value_threshold << "," << Pfa_a << '\n';
                             pdpfafile.close();
                         }
                 }

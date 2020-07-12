@@ -38,7 +38,8 @@ class ConfigurationInterface;
 class GpsL5DllPllTracking : public TrackingInterface
 {
 public:
-    GpsL5DllPllTracking(ConfigurationInterface* configuration,
+    GpsL5DllPllTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

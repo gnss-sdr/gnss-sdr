@@ -37,28 +37,28 @@
 #include <array>
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
-    ConfigurationInterface *configuration, const std::string &role,
+    const ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf_Fpga trk_params_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     trk_params_fpga.SetFromConfiguration(configuration, role);
 
-    int32_t vector_length = std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
+    auto vector_length = static_cast<int32_t>(std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     trk_params_fpga.vector_length = vector_length;
     if (trk_params_fpga.extend_correlation_symbols < 1)
         {
             trk_params_fpga.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << '\n';
         }
     else if (!trk_params_fpga.track_pilot and trk_params_fpga.extend_correlation_symbols > GPS_L5I_NH_CODE_LENGTH)
         {
             trk_params_fpga.extend_correlation_symbols = GPS_L5I_NH_CODE_LENGTH;
-            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be lower than 11 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be lower than 11 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << '\n';
         }
     if ((trk_params_fpga.extend_correlation_symbols > 1) and (trk_params_fpga.pll_bw_narrow_hz > trk_params_fpga.pll_bw_hz or trk_params_fpga.dll_bw_narrow_hz > trk_params_fpga.dll_bw_hz))
         {
-            std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     d_track_pilot = trk_params_fpga.track_pilot;
     trk_params_fpga.system = 'G';

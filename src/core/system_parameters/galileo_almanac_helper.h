@@ -33,6 +33,8 @@ class Galileo_Almanac_Helper
 public:
     Galileo_Almanac_Helper() = default;  //!< Default constructor
 
+    Galileo_Almanac get_almanac(int i);
+
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     int32_t IOD_a_7{};
     int32_t WN_a_7{};
@@ -87,8 +89,6 @@ public:
     int32_t E5b_HS_10{};
     int32_t E1B_HS_10{};
     int32_t E5a_HS_10{};
-
-    Galileo_Almanac get_almanac(int i);
 };
 
 #endif

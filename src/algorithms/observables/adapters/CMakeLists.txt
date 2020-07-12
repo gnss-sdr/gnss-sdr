@@ -28,6 +28,7 @@ target_include_directories(obs_adapters
 target_link_libraries(obs_adapters
     PUBLIC
         obs_gr_blocks
+        core_system_parameters
     PRIVATE
         gnss_sdr_flags
         Glog::glog

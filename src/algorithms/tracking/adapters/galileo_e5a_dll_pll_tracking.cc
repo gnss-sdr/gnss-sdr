@@ -32,28 +32,28 @@
 #include <array>
 
 GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
-    ConfigurationInterface* configuration, const std::string& role,
+    const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf trk_params = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    int vector_length = std::round(trk_params.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS));
+    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols < 1)
         {
             trk_params.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << '\n';
         }
     else if (!trk_params.track_pilot and trk_params.extend_correlation_symbols > GALILEO_E5A_I_SECONDARY_CODE_LENGTH)
         {
             trk_params.extend_correlation_symbols = GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
-            std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be lower than 21 when tracking the data component. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be lower than 21 when tracking the data component. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << '\n';
         }
     if ((trk_params.extend_correlation_symbols > 1) and (trk_params.pll_bw_narrow_hz > trk_params.pll_bw_hz or trk_params.dll_bw_narrow_hz > trk_params.dll_bw_hz))
         {
-            std::cout << TEXT_RED << "WARNING: Galileo E5a. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E5a. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     trk_params.system = 'E';
     std::array<char, 3> sig_{'5', 'X', '\0'};

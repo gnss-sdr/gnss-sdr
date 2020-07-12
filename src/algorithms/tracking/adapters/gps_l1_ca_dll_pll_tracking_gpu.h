@@ -39,7 +39,8 @@ class ConfigurationInterface;
 class GpsL1CaDllPllTrackingGPU : public TrackingInterface
 {
 public:
-    GpsL1CaDllPllTrackingGPU(ConfigurationInterface* configuration,
+    GpsL1CaDllPllTrackingGPU(
+        const ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams);

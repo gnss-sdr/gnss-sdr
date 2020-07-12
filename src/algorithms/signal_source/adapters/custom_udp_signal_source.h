@@ -46,7 +46,7 @@ class ConfigurationInterface;
 class CustomUDPSignalSource : public GNSSBlockInterface
 {
 public:
-    CustomUDPSignalSource(ConfigurationInterface* configuration,
+    CustomUDPSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
@@ -77,18 +77,7 @@ public:
     gr::basic_block_sptr get_right_block(int RF_channel) override;
 
 private:
-    std::string role_;
-
-    bool IQ_swap_;
-    int RF_channels_;
-    int channels_in_udp_;
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-
-    std::string item_type_;
-    size_t item_size_;
-    bool dump_;
-    std::string dump_filename_;
+    Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
 #if GNURADIO_USES_STD_POINTERS
     std::vector<std::shared_ptr<gr::block>> null_sinks_;
     std::vector<std::shared_ptr<gr::block>> file_sink_;
@@ -97,7 +86,19 @@ private:
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
 #endif
 
-    Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
+    std::string role_;
+    std::string item_type_;
+    std::string dump_filename_;
+
+    size_t item_size_;
+
+    int RF_channels_;
+    int channels_in_udp_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
+
+    bool dump_;
+    bool IQ_swap_;
 };
 
 #endif  // GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H

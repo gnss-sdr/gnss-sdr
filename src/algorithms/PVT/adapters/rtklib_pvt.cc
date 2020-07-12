@@ -39,7 +39,7 @@ namespace bc = boost::integer;
 #endif
 
 
-Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
+Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -48,10 +48,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
 {
     Pvt_Conf pvt_output_parameters = Pvt_Conf();
     // dump parameters
-    std::string default_dump_filename = "./pvt.dat";
-    std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
-    std::string default_nmea_dump_devname = "/dev/tty1";
-    std::string default_rtcm_dump_devname = "/dev/pts/1";
+    const std::string default_dump_filename("./pvt.dat");
+    const std::string default_nmea_dump_filename("./nmea_pvt.nmea");
+    const std::string default_nmea_dump_devname("/dev/tty1");
+    const std::string default_rtcm_dump_devname("/dev/pts/1");
     DLOG(INFO) << "role " << role;
     pvt_output_parameters.dump = configuration->property(role + ".dump", false);
     pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -73,27 +73,11 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
 
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
-    if (FLAGS_RINEX_version == "3.01")
+    if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
         }
-    else if (FLAGS_RINEX_version == "3.02")
-        {
-            pvt_output_parameters.rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version == "3")
-        {
-            pvt_output_parameters.rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version == "2.11")
-        {
-            pvt_output_parameters.rinex_version = 2;
-        }
-    else if (FLAGS_RINEX_version == "2.10")
-        {
-            pvt_output_parameters.rinex_version = 2;
-        }
-    else if (FLAGS_RINEX_version == "2")
+    else if (FLAGS_RINEX_version == "2.10" || FLAGS_RINEX_version == "2.11" || FLAGS_RINEX_version == "2")
         {
             pvt_output_parameters.rinex_version = 2;
         }
@@ -418,10 +402,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     if (positioning_mode == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of positioning mode." << std::endl;
-            std::cout << "positioning_mode possible values: Single / Static / Kinematic / PPP_Static / PPP_Kinematic" << std::endl;
-            std::cout << "positioning_mode specified value: " << positioning_mode_str << std::endl;
-            std::cout << "Setting positioning_mode to Single" << std::endl;
+            std::cout << "WARNING: Bad specification of positioning mode.\n";
+            std::cout << "positioning_mode possible values: Single / Static / Kinematic / PPP_Static / PPP_Kinematic\n";
+            std::cout << "positioning_mode specified value: " << positioning_mode_str << '\n';
+            std::cout << "Setting positioning_mode to Single\n";
             positioning_mode = PMODE_SINGLE;
         }
 
@@ -497,10 +481,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     if (iono_model == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of ionospheric model." << std::endl;
-            std::cout << "iono_model possible values: OFF / Broadcast / SBAS / Iono-Free-LC / Estimate_STEC / IONEX" << std::endl;
-            std::cout << "iono_model specified value: " << iono_model_str << std::endl;
-            std::cout << "Setting iono_model to OFF" << std::endl;
+            std::cout << "WARNING: Bad specification of ionospheric model.\n";
+            std::cout << "iono_model possible values: OFF / Broadcast / SBAS / Iono-Free-LC / Estimate_STEC / IONEX\n";
+            std::cout << "iono_model specified value: " << iono_model_str << '\n';
+            std::cout << "Setting iono_model to OFF\n";
             iono_model = IONOOPT_OFF; /* 0: ionosphere option: correction off */
         }
 
@@ -530,10 +514,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     if (trop_model == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of tropospheric model." << std::endl;
-            std::cout << "trop_model possible values: OFF / Saastamoinen / SBAS / Estimate_ZTD / Estimate_ZTD_Grad" << std::endl;
-            std::cout << "trop_model specified value: " << trop_model_str << std::endl;
-            std::cout << "Setting trop_model to OFF" << std::endl;
+            std::cout << "WARNING: Bad specification of tropospheric model.\n";
+            std::cout << "trop_model possible values: OFF / Saastamoinen / SBAS / Estimate_ZTD / Estimate_ZTD_Grad\n";
+            std::cout << "trop_model specified value: " << trop_model_str << '\n';
+            std::cout << "Setting trop_model to OFF\n";
             trop_model = TROPOPT_OFF;
         }
 
@@ -608,10 +592,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     if (integer_ambiguity_resolution_gps == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of GPS ambiguity resolution method." << std::endl;
-            std::cout << "AR_GPS possible values: OFF / Continuous / Instantaneous / Fix-and-Hold / PPP-AR" << std::endl;
-            std::cout << "AR_GPS specified value: " << integer_ambiguity_resolution_gps_str << std::endl;
-            std::cout << "Setting AR_GPS to OFF" << std::endl;
+            std::cout << "WARNING: Bad specification of GPS ambiguity resolution method.\n";
+            std::cout << "AR_GPS possible values: OFF / Continuous / Instantaneous / Fix-and-Hold / PPP-AR\n";
+            std::cout << "AR_GPS specified value: " << integer_ambiguity_resolution_gps_str << '\n';
+            std::cout << "Setting AR_GPS to OFF\n";
             integer_ambiguity_resolution_gps = ARMODE_OFF;
         }
 
@@ -795,6 +779,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
 
 Rtklib_Pvt::~Rtklib_Pvt()
 {
+    DLOG(INFO) << "PVT adapter destructor called.";
     rtkfree(&rtk);
 }
 

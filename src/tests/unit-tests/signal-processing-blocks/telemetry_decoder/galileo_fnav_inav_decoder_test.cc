@@ -105,10 +105,10 @@ public:
             {
                 // DECODE COMPLETE WORD (even + odd) and TEST CRC
                 INAV_decoder.split_page(page_String, flag_even_word_arrived);
-                if (INAV_decoder.flag_CRC_test == true)
+                if (INAV_decoder.get_flag_CRC_test() == true)
                     {
                         std::cout << "Galileo E1 INAV PAGE CRC correct \n";
-                        // std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+                        // std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << '\n';
                         crc_ok = true;
                     }
                 flag_even_word_arrived = 0;
@@ -164,7 +164,7 @@ public:
 
         // DECODE COMPLETE WORD (even + odd) and TEST CRC
         FNAV_decoder.split_page(page_String);
-        if (FNAV_decoder.flag_CRC_test == true)
+        if (FNAV_decoder.get_flag_CRC_test() == true)
             {
                 std::cout << "Galileo E5a FNAV PAGE CRC correct \n";
                 return true;
@@ -270,5 +270,5 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     }) << "Exception during INAV frame decoding";
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
-    std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

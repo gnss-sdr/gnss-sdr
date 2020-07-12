@@ -23,9 +23,7 @@
  */
 
 #include "file_configuration.h"
-#include "INIReader.h"
-#include "in_memory_configuration.h"
-#include "string_converter.h"
+#include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
 #include <utility>
 
@@ -44,7 +42,28 @@ FileConfiguration::FileConfiguration()
 }
 
 
-std::string FileConfiguration::property(std::string property_name, std::string default_value)
+void FileConfiguration::init()
+{
+    converter_ = std::make_unique<StringConverter>();
+    overrided_ = std::make_unique<InMemoryConfiguration>();
+    ini_reader_ = std::make_unique<INIReader>(filename_);
+    error_ = ini_reader_->ParseError();
+    if (error_ == 0)
+        {
+            DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
+        }
+    else if (error_ > 0)
+        {
+            LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
+        }
+    else
+        {
+            LOG(WARNING) << "Unable to open configuration file " << filename_;
+        }
+}
+
+
+std::string FileConfiguration::property(std::string property_name, std::string default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -54,7 +73,7 @@ std::string FileConfiguration::property(std::string property_name, std::string d
 }
 
 
-bool FileConfiguration::property(std::string property_name, bool default_value)
+bool FileConfiguration::property(std::string property_name, bool default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -65,7 +84,7 @@ bool FileConfiguration::property(std::string property_name, bool default_value)
 }
 
 
-int64_t FileConfiguration::property(std::string property_name, int64_t default_value)
+int64_t FileConfiguration::property(std::string property_name, int64_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -76,7 +95,7 @@ int64_t FileConfiguration::property(std::string property_name, int64_t default_v
 }
 
 
-uint64_t FileConfiguration::property(std::string property_name, uint64_t default_value)
+uint64_t FileConfiguration::property(std::string property_name, uint64_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -87,7 +106,7 @@ uint64_t FileConfiguration::property(std::string property_name, uint64_t default
 }
 
 
-int FileConfiguration::property(std::string property_name, int default_value)
+int FileConfiguration::property(std::string property_name, int default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -98,7 +117,7 @@ int FileConfiguration::property(std::string property_name, int default_value)
 }
 
 
-unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value)
+unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -109,7 +128,7 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
 }
 
 
-uint16_t FileConfiguration::property(std::string property_name, uint16_t default_value)
+uint16_t FileConfiguration::property(std::string property_name, uint16_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -120,7 +139,7 @@ uint16_t FileConfiguration::property(std::string property_name, uint16_t default
 }
 
 
-int16_t FileConfiguration::property(std::string property_name, int16_t default_value)
+int16_t FileConfiguration::property(std::string property_name, int16_t default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -131,7 +150,7 @@ int16_t FileConfiguration::property(std::string property_name, int16_t default_v
 }
 
 
-float FileConfiguration::property(std::string property_name, float default_value)
+float FileConfiguration::property(std::string property_name, float default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -142,7 +161,7 @@ float FileConfiguration::property(std::string property_name, float default_value
 }
 
 
-double FileConfiguration::property(std::string property_name, double default_value)
+double FileConfiguration::property(std::string property_name, double default_value) const
 {
     if (overrided_->is_present(property_name))
         {
@@ -159,22 +178,7 @@ void FileConfiguration::set_property(std::string property_name, std::string valu
 }
 
 
-void FileConfiguration::init()
+bool FileConfiguration::is_present(const std::string& property_name) const
 {
-    converter_ = std::make_shared<StringConverter>();
-    overrided_ = std::make_shared<InMemoryConfiguration>();
-    ini_reader_ = std::make_shared<INIReader>(filename_);
-    error_ = ini_reader_->ParseError();
-    if (error_ == 0)
-        {
-            DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
-        }
-    else if (error_ > 0)
-        {
-            LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
-        }
-    else
-        {
-            LOG(WARNING) << "Unable to open configuration file " << filename_;
-        }
+    return (overrided_->is_present(property_name));
 }

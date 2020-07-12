@@ -62,19 +62,19 @@ private:
         int32_t _interval_ms,
         size_t _size);
 
-    uint32_t samples_per_output;
     double fs;
+    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
     uint64_t sample_counter;
     int32_t interval_ms;
-    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
-    uint32_t current_s;       // Receiver time in seconds, modulo 60
-    bool flag_m;              // True if the receiver has been running for at least 1 minute
-    uint32_t current_m;       // Receiver time in minutes, modulo 60
-    bool flag_h;              // True if the receiver has been running for at least 1 hour
-    uint32_t current_h;       // Receiver time in hours, modulo 24
-    bool flag_days;           // True if the receiver has been running for at least 1 day
-    uint32_t current_days;    // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
+    uint32_t samples_per_output;
+    uint32_t current_s;     // Receiver time in seconds, modulo 60
+    uint32_t current_m;     // Receiver time in minutes, modulo 60
+    uint32_t current_h;     // Receiver time in hours, modulo 24
+    uint32_t current_days;  // Receiver time in days since the beginning of the run
+    bool flag_m;            // True if the receiver has been running for at least 1 minute
+    bool flag_h;            // True if the receiver has been running for at least 1 hour
+    bool flag_days;         // True if the receiver has been running for at least 1 day
     bool flag_enable_send_msg;
 };
 

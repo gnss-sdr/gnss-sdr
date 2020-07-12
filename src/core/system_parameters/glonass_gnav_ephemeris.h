@@ -81,7 +81,7 @@ public:
     double d_iode{};                     //!< Issue of data, ephemeris (Bit 0-6 of tb)
     double d_tau_c{};                    //!< GLONASST 2 UTC correction (todo) may be eliminated
     double d_TOW{};                      //!< GLONASST IN GPST seconds of week
-    double d_WN{};                       //!< GLONASST IN GPST week number of the start of frame
+    int32_t d_WN{};                      //!< GLONASST IN GPST week number of the start of frame
     double d_tod{};                      //!< Time of Day since ephemeris where decoded
 
     /*!
@@ -114,7 +114,7 @@ public:
      * \param[out] WN Week Number, not in mod(1024) format
      * \param[out] TOW Time of Week in seconds of week
      */
-    void glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, double* WN, double* TOW) const;
+    void glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, int32_t* WN, double* TOW) const;
 
     template <class Archive>
 

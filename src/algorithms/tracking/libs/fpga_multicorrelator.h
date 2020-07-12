@@ -189,14 +189,40 @@ private:
     static const uint32_t init_secondary_code_addresses = 4;    // bit 2 of drop_samples_reg_addr
     static const uint32_t page_size = 0x10000;
     static const uint32_t max_length_deviceio_name = 50;
-    static const uint32_t max_code_resampler_counter = 1 << 20;  // 2^(number of bits of precision of the code resampler)
+    static const uint32_t max_code_resampler_counter = 1 << 31;  // 2^(number of bits of precision of the code resampler)
     static const uint32_t local_code_fpga_clear_address_counter = 0x10000000;
     static const uint32_t test_register_track_writeval = 0x55AA;
 
+    // private functions
+    uint32_t fpga_acquisition_test_register(uint32_t writeval);
+    void fpga_configure_tracking_gps_local_code(int32_t PRN);
+    void fpga_compute_code_shift_parameters();
+    void fpga_configure_code_parameters_in_fpga();
+    void fpga_compute_signal_parameters_in_fpga();
+    void fpga_configure_signal_parameters_in_fpga();
+    void fpga_launch_multicorrelator_fpga();
+    void read_tracking_gps_results();
+    void close_device(void);
+    void write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr);
+
+    volk_gnsssdr::vector<uint32_t> d_initial_index;
+    volk_gnsssdr::vector<uint32_t> d_initial_interp_counter;
+
+    uint64_t d_initial_sample_counter;
+
     gr_complex *d_corr_out;
     gr_complex *d_Prompt_Data;
+
     float *d_shifts_chips;
     float *d_prompt_data_shift;
+
+    float d_rem_code_phase_chips;
+    float d_code_phase_step_chips;
+    float d_code_phase_rate_step_chips;
+    float d_rem_carrier_phase_in_rad;
+    float d_phase_step_rad;
+    float d_carrier_phase_rate_step_rad;
+
     uint32_t d_code_length_chips;
     uint32_t d_code_length_samples;
     uint32_t d_n_correlators;  // number of correlators
@@ -208,24 +234,13 @@ private:
     // configuration data received from the interface
     uint32_t d_channel;  // channel number
     uint32_t d_correlator_length_samples;
-    float d_rem_code_phase_chips;
-    float d_code_phase_step_chips;
-    float d_code_phase_rate_step_chips;
-    float d_rem_carrier_phase_in_rad;
-    float d_phase_step_rad;
-    float d_carrier_phase_rate_step_rad;
     uint32_t d_code_samples_per_chip;
-    bool d_track_pilot;
 
-    // configuration data computed in the format that the FPGA expects
-    volk_gnsssdr::vector<uint32_t> d_initial_index;
-    volk_gnsssdr::vector<uint32_t> d_initial_interp_counter;
     uint32_t d_code_phase_step_chips_num;
     uint32_t d_code_phase_rate_step_chips_num;
     int32_t d_rem_carr_phase_rad_int;
     int32_t d_phase_step_rad_int;
     int32_t d_carrier_phase_rate_step_rad_int;
-    uint64_t d_initial_sample_counter;
 
     // driver
     std::string d_device_name;
@@ -239,19 +254,9 @@ private:
     // secondary code configuration
     uint32_t d_secondary_code_0_length;
     uint32_t d_secondary_code_1_length;
-    bool d_secondary_code_enabled;
 
-    // private functions
-    uint32_t fpga_acquisition_test_register(uint32_t writeval);
-    void fpga_configure_tracking_gps_local_code(int32_t PRN);
-    void fpga_compute_code_shift_parameters();
-    void fpga_configure_code_parameters_in_fpga();
-    void fpga_compute_signal_parameters_in_fpga();
-    void fpga_configure_signal_parameters_in_fpga();
-    void fpga_launch_multicorrelator_fpga();
-    void read_tracking_gps_results();
-    void close_device(void);
-    void write_secondary_code(uint32_t secondary_code_length, std::string *secondary_code_string, uint32_t reg_addr);
+    bool d_track_pilot;
+    bool d_secondary_code_enabled;
 };
 
 #endif  // GNSS_SDR_FPGA_MULTICORRELATOR_H

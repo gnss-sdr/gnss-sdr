@@ -22,7 +22,7 @@
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
 #include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
-#include <iostream>  // for string, operator<<, cout, ostream, endl
+#include <iostream>  // for string, operator<<, cout, ostream
 #include <limits>    // for std::numeric_limits
 
 
@@ -41,17 +41,15 @@ Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 }
 
 
-void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_word)
+void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(uint32_t BEIDOU_word) const
 {
-    std::cout << " Word =";
-    std::cout << std::bitset<32>(BEIDOU_word);
-    std::cout << std::endl;
+    std::cout << " Word =" << std::bitset<32>(BEIDOU_word) << '\n';
 }
 
 
 bool Beidou_Dnav_Navigation_Message::read_navigation_bool(
     std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter)
+    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
 
@@ -69,7 +67,7 @@ bool Beidou_Dnav_Navigation_Message::read_navigation_bool(
 
 uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
     std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter)
+    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -90,7 +88,7 @@ uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
 
 int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
     std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits,
-    const std::vector<std::pair<int32_t, int32_t>>& parameter)
+    const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0;
     int32_t num_of_slices = parameter.size();
@@ -174,7 +172,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     tk = check_t(transmitTime - d_Toe_sf2);
 
     // Computed mean motion
-    n0 = sqrt(BEIDOU_DNAV_GM / (a * a * a));
+    n0 = sqrt(BEIDOU_GM / (a * a * a));
 
     // Corrected mean motion
     n = n0 + d_Delta_n;
@@ -183,7 +181,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * BEIDOU_DNAV_PI), (2 * BEIDOU_DNAV_PI));
+    M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -193,7 +191,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
         {
             E_old = E;
             E = M + d_eccentricity * sin(E);
-            dE = fmod(E - E_old, 2 * BEIDOU_DNAV_PI);
+            dE = fmod(E - E_old, 2 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -202,7 +200,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
         }
 
     // Compute relativistic correction term
-    d_dtr = BEIDOU_DNAV_F * d_eccentricity * d_sqrt_A * sin(E);
+    d_dtr = BEIDOU_F * d_eccentricity * d_sqrt_A * sin(E);
 
     // Compute the true anomaly
     double tmp_Y = sqrt(1.0 - d_eccentricity * d_eccentricity) * sin(E);
@@ -213,7 +211,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2 * BEIDOU_DNAV_PI));
+    phi = fmod((phi), (2 * GNSS_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
@@ -225,10 +223,10 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_DNAV_OMEGA_EARTH_DOT) * tk - BEIDOU_DNAV_OMEGA_EARTH_DOT * d_Toe_sf2;
+    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe_sf2;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2 * BEIDOU_DNAV_PI), (2 * BEIDOU_DNAV_PI));
+    Omega = fmod((Omega + 2 * GNSS_PI), (2 * GNSS_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
@@ -236,7 +234,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
-    double Omega_dot = d_OMEGA_DOT - BEIDOU_DNAV_OMEGA_EARTH_DOT;
+    double Omega_dot = d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT;
     d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
@@ -513,7 +511,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                 }
             if (SV_page_5 == 10)
                 {
-                    d_DeltaT_LS = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
+                    i_DeltaT_LS = static_cast<int>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
                     d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LSF));
                     i_WN_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_WN_LSF));
                     d_A0UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0UTC));
@@ -732,7 +730,7 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC = d_DeltaT_LS + d_A0UTC + d_A1UTC * (beidoutime_corrected);
+    double Delta_t_UTC = i_DeltaT_LS + d_A0UTC + d_A1UTC * (beidoutime_corrected);
 
     // Determine if the effectivity time of the leap second event is in the past
     int32_t weeksToLeapSecondEvent = i_WN_LSF - i_BEIDOU_week;
@@ -756,7 +754,7 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
                             if ((beidoutime_corrected - secondOfLeapSecondEvent) < (static_cast<double>(5) / static_cast<double>(4)) * 24 * 60 * 60)
                                 {
                                     int32_t W = fmod(beidoutime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
-                                    t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
+                                    t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - i_DeltaT_LS);
                                 }
                             else
                                 {
@@ -776,7 +774,7 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
 }
 
 
-Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
+Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 {
     Beidou_Dnav_Ephemeris eph;
 
@@ -825,7 +823,6 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_A_f1_msb_bits + d_A_f1_lsb_bits);
             eph.d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1)) * D1_A1_LSB;
             eph.d_A_f2 = d_A_f2;
-
 
             eph.d_TGD1 = d_TGD1;
             eph.d_TGD2 = d_TGD2;
@@ -899,7 +896,7 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     // UTC parameters
     utc_model.d_A1_UTC = d_A1UTC;
     utc_model.d_A0_UTC = d_A0UTC;
-    utc_model.d_DeltaT_LS = d_DeltaT_LS;
+    utc_model.i_DeltaT_LS = i_DeltaT_LS;
     utc_model.i_WN_LSF = i_WN_LSF;
     utc_model.i_DN = i_DN;
     utc_model.d_DeltaT_LSF = d_DeltaT_LSF;

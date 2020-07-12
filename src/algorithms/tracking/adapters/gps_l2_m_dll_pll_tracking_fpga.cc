@@ -40,27 +40,27 @@
 #include <iostream>
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
-    ConfigurationInterface* configuration, const std::string& role,
+    const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf_Fpga trk_params_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     trk_params_fpga.SetFromConfiguration(configuration, role);
 
-    int vector_length = std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     trk_params_fpga.vector_length = vector_length;
     trk_params_fpga.extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     if (trk_params_fpga.extend_correlation_symbols != 1)
         {
             trk_params_fpga.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: Extended coherent integration is not allowed in GPS L2. Coherent integration has been set to 20 ms (1 symbol)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Extended coherent integration is not allowed in GPS L2. Coherent integration has been set to 20 ms (1 symbol)" << TEXT_RESET << '\n';
         }
 
     trk_params_fpga.track_pilot = configuration->property(role + ".track_pilot", false);
     if (trk_params_fpga.track_pilot)
         {
             trk_params_fpga.track_pilot = false;
-            std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
         }
     trk_params_fpga.system = 'G';
     std::array<char, 3> sig_{'2', 'S', '\0'};

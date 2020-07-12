@@ -56,7 +56,7 @@ public:
 
 private:
     std::unordered_map<std::string, std::function<std::string(const std::vector<std::string> &)>>
-        functions;
+        functions_;
     std::string status(const std::vector<std::string> &commandLine);
     std::string reset(const std::vector<std::string> &commandLine);
     std::string standby(const std::vector<std::string> &commandLine);
@@ -68,15 +68,15 @@ private:
     void register_functions();
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
-    bool keep_running_;
-
-    time_t receiver_utc_time_;
+    std::shared_ptr<PvtInterface> PVT_sptr_;
 
     float rx_latitude_;
     float rx_longitude_;
     float rx_altitude_;
 
-    std::shared_ptr<PvtInterface> PVT_sptr_;
+    time_t receiver_utc_time_;
+
+    bool keep_running_;
 };
 
 #endif  // GNSS_SDR_TCP_CMD_INTERFACE_H

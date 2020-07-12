@@ -54,7 +54,7 @@ class Channel : public ChannelInterface
 {
 public:
     //! Constructor
-    Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
+    Channel(const ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
         const std::string& role, const std::string& implementation, Concurrent_Queue<pmt::pmt_t>* queue);
 
@@ -78,27 +78,26 @@ public:
 
     void assist_acquisition_doppler(double Carrier_Doppler_hz) override;
 
-    inline std::shared_ptr<AcquisitionInterface> acquisition() { return acq_; }
-    inline std::shared_ptr<TrackingInterface> tracking() { return trk_; }
-    inline std::shared_ptr<TelemetryDecoderInterface> telemetry() { return nav_; }
+    inline std::shared_ptr<AcquisitionInterface> acquisition() const { return acq_; }
+    inline std::shared_ptr<TrackingInterface> tracking() const { return trk_; }
+    inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
     void msg_handler_events(pmt::pmt_t msg);
 
 private:
-    channel_msg_receiver_cc_sptr channel_msg_rx;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     std::shared_ptr<TelemetryDecoderInterface> nav_;
-    std::string role_;
-    std::string implementation_;
-    bool flag_enable_fpga;
-    uint32_t channel_;
+    channel_msg_receiver_cc_sptr channel_msg_rx_;
     Gnss_Synchro gnss_synchro_{};
     Gnss_Signal gnss_signal_;
+    std::string role_;
+    std::string implementation_;
+    std::mutex mx_;
+    uint32_t channel_;
     bool connected_;
     bool repeat_;
-    std::shared_ptr<ChannelFsm> channel_fsm_;
-    Concurrent_Queue<pmt::pmt_t>* queue_;
-    std::mutex mx;
+    bool flag_enable_fpga;
 };
 
 #endif  // GNSS_SDR_CHANNEL_H

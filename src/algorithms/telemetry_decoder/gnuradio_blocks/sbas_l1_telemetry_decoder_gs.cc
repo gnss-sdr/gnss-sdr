@@ -341,7 +341,7 @@ void sbas_l1_telemetry_decoder_gs::Crc_Verifier::get_valid_frames(const std::vec
                 {
                     ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<uint32_t>((*byte_it));
                 }
-            VLOG(SAMP_SYNC) << ss.str() << std::setfill(' ') << std::resetiosflags(std::ios::hex) << std::endl;
+            VLOG(SAMP_SYNC) << ss.str() << std::setfill(' ') << std::resetiosflags(std::ios::hex) << '\n';
         }
 }
 
@@ -465,7 +465,7 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // and send them to the SBAS raw message queue
             // for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
             //    {
-            // std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
+            // std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received\n";
             // sbas_telemetry_data.update(*it);
             //    }
 

@@ -54,8 +54,8 @@ The goal is to write efficient and truly reusable code, easy to read and maintai
 in a variety of hardware platforms and operating systems. In that sense, the challenge consists of defining a gentle balance within level
 of abstraction and performance. GNSS-SDR runs in a personal computer and provides interfaces through USB and Ethernet
 buses to a variety of either commercially available or custom-made RF front-ends, adapting the processing algorithms to different sampling frequencies, intermediate
- frequencies and sample resolutions. This makes possible rapid prototyping of specific receivers intended, for instance, to geodetic applications,
- observation of the ionospheric impact on navigation signals, GNSS reflectometry, signal quality monitoring, or carrier-phase based navigation techniques.
+frequencies and sample resolutions. This makes possible rapid prototyping of specific receivers intended, for instance, to geodetic applications,
+observation of the ionospheric impact on navigation signals, GNSS reflectometry, signal quality monitoring, or carrier-phase based navigation techniques.
 
 \image html overview.png
 \image latex overview.png "Overview" width=12cm
@@ -70,7 +70,7 @@ This includes all current and future <a href="https://www.ettus.com/">Ettus Rese
 
 As outputs, it provides:
 \li Dump of intermediate signals (configurable by the user)
-\li The processing is logged at a  system temporary folder (usually, <tt>/tmp</tt>)
+\li The processing is logged at a system temporary folder (usually, <tt>/tmp</tt>)
 \li Observables in form of RINEX file (experimental)
 \li Navigation message data in form of RINEX file
 \li Position, Velocity and Time solution in KML format and NMEA
@@ -81,17 +81,20 @@ As outputs, it provides:
 In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="https://gnss-sdr.org/build-and-install/" target="_blank">building guide</a> page for details about the project's
 dependencies and build process. Mainly, it consists on installing <a href="https://www.gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
 
+\li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
+\li <a href="https://www.boost.org/" target="_blank">Boost</a>, a set of free peer-reviewed portable C++ source libraries,
 \li <a href="https://github.com/gflags/gflags" target="_blank">Gflags</a>, a library that implements commandline flags processing,
 \li <a href="https://github.com/google/glog" target="_blank">Glog</a>, a library that implements application-level logging,
-\li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
-\li <a href="https://github.com/tbeu/matio" target="_blank">Matio</a>, a MATLAB MAT File I/O Library.
-\li <a href="https://pugixml.org/" target="_blank">PugiXML</a>, a light-weight, simple and fast XML parser for C++ with XPath support.
-\li <a href="https://developers.google.com/protocol-buffers" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data.
-\li <a href="https://www.makotemplates.org/" target="_blank">Mako</a>, a template library written in Python.
-\li <a href="https://pypi.org/project/six/" target="_blank">Six</a>, a Python 2 and 3 compatibility library.
-\li <a href="https://github.com/google/googletest" target="_blank">Googletest</a>, Google's framework for writing C++ tests (requires definition of the GTEST_DIR variable),
+\li <a href="https://github.com/google/googletest" target="_blank">Googletest</a>, Google's framework for writing C++ tests,
+\li <a href="https://www.makotemplates.org/" target="_blank">Mako</a>, a template library written in Python,
+\li <a href="https://github.com/tbeu/matio" target="_blank">Matio</a>, a MATLAB MAT File I/O Library,
+\li <a href="https://developers.google.com/protocol-buffers" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data,
+\li <a href="https://pugixml.org/" target="_blank">PugiXML</a>, a light-weight, simple and fast XML parser for C++ with XPath support,
+\li <a href="https://www.libvolk.org" target="_blank">Volk</a>, a Vector-Optimized Library of Kernels which provides an abstraction of optimized math routines targeting several SIMD processors,
 
 and, optionally,
+\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/master/gr-uhd" target="_blank">gr-uhd</a>, <a href="http://git.osmocom.org/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
+\li <a href="https://github.com/google/benchmark" target="_blank">Benchmark</a>, a library to benchmark code snippets,
 \li <a href="https://github.com/gperftools/gperftools" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 
 After all dependencies are installed, clone the GNSS-SDR repository:
@@ -135,7 +138,7 @@ This will create a folder named gnss-sdr with the following structure:
 You are now ready to build GNSS-SDR by using <a href="https://cmake.org/" target="_blank">CMake</a> as building tool:
 \verbatim
 $ cd gnss-sdr/build
-$ cmake ../
+$ cmake ..
 $ make
 \endverbatim
 
@@ -179,7 +182,7 @@ a RF front-end and you need to attain real time. If working with a file (and thu
 the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 \verbatim
 $ cd gnss-sdr/build
-$ cmake -DCMAKE_BUILD_TYPE=Debug ../
+$ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
 $ sudo make install
 \endverbatim
@@ -188,7 +191,7 @@ $ sudo make install
 If you checked out GNSS-SDR some days ago, it is possible that some developer had updated files at the Git repository. You can update your local copy by doing:
 \verbatim
 $ git checkout next
-$ git pull origin next
+$ git pull https://github.com/gnss-sdr/gnss-sdr next
 \endverbatim
 Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
 \verbatim
@@ -318,10 +321,10 @@ Relevant parameters of those samples are the intermediate frequency (or baseband
 specified by the user in the configuration file.
 
 This module also performs bit-depth adaptation, since most of the existing RF front-ends provide samples quantized with 2 or 3 bits, while operations inside
- the processor are performed on 32- or 64-bit words, depending on its architecture. Although there are implementations of the most intensive computational
- processes (mainly correlation) that take advantage of specific data types and architectures for the sake of
- efficiency, the approach is processor-specific and hardly portable. We suggest to keep signal samples in standard data types and letting the compiler
- select the best library version (implemented using SIMD or any other processor-specific technology) of the required routines for a given processor.
+the processor are performed on 32- or 64-bit words, depending on its architecture. Although there are implementations of the most intensive computational
+processes (mainly correlation) that take advantage of specific data types and architectures for the sake of
+efficiency, the approach is processor-specific and hardly portable. We suggest to keep signal samples in standard data types and letting the compiler
+select the best library version (implemented using SIMD or any other processor-specific technology) of the required routines for a given processor.
 
 Example: FileSignalSource
 
@@ -352,16 +355,16 @@ SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B
 
 Other examples are available at <tt>gnss-sdr/conf</tt>.
 
- \subsection signal_conditioner Signal Conditioner
- The signal conditioner is in charge of resampling the signal and delivering a reference sample rate to the downstream processing blocks, acting as
-  a facade between the signal source and the synchronization channels, providing a simplified interface to the input signal.
- In case of multiband front-ends, this module would be in charge of providing a separated data stream for each band.
+\subsection signal_conditioner Signal Conditioner
+The signal conditioner is in charge of resampling the signal and delivering a reference sample rate to the downstream processing blocks, acting as
+a facade between the signal source and the synchronization channels, providing a simplified interface to the input signal.
+In case of multiband front-ends, this module would be in charge of providing a separated data stream for each band.
 
 
 \subsection channel Channel
 A channel encapsulates all signal processing devoted to a single satellite. Thus, it is a large composite object which encapsulates the \ref acquisition,
- \ref tracking and \ref decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of
-  channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
+\ref tracking and \ref decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of
+channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
 
 This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on
 the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when
@@ -375,25 +378,25 @@ The abstract class ChannelInterface represents an interface to a channel GNSS bl
 
 \subsubsection acquisition Acquisition
 The first task of a GNSS receiver is to detect the presence or absence of in-view satellites. This is done by the acquisition system process, which also provides a coarse estimation of two signal parameters: the frequency shift
- with respect to the nominal IF frequency, and a delay term which allows the receiver to create a local code aligned with the incoming code.
+with respect to the nominal IF frequency, and a delay term which allows the receiver to create a local code aligned with the incoming code.
 AcquisitionInterface is the common interface for all the acquisition algorithms and their corresponding implementations. Algorithms' interface, that may vary
 depending on the use of information external to the receiver, such as in Assisted GNSS, is defined in classes referred to as <i>adapters</i>.
 These adapters wrap the GNU Radio blocks interface into a compatible interface expected by AcquisitionInterface. This allows the use of existing GNU Radio blocks
 derived from <tt>gr::block</tt>, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications.
 Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using
- different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
+different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
 
 Check GpsL1CaPcpsAcquisition and GalileoE1PcpsAmbiguousAcquisition for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and
- pcps_acquisition_cc for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
+pcps_acquisition_cc for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
 
- \verbatim
+\verbatim
   |-gnss-sdr
   |---src
   |-----algorithms
   |-------acquisition
   |---------adapters          <- Adapters of the processing blocks to an AcquisitionInterface
   |---------gnuradio_blocks   <- Signal processing blocks implementation
- \endverbatim
+\endverbatim
 
 The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file:
 \verbatim
@@ -422,8 +425,8 @@ Acquisition_1C.doppler_step=250
 
 \subsubsection tracking Tracking
 When a satellite is declared present, the parameters estimated by the acquisition module are then fed to the receiver tracking module, which represents the
- second stage of the signal processing unit, aiming to perform a local search for accurate estimates of code delay and carrier phase, and following their eventual
-  variations.
+second stage of the signal processing unit, aiming to perform a local search for accurate estimates of code delay and carrier phase, and following their eventual
+variations.
 
 Again, a class hierarchy consisting of a TrackingInterface class and subclasses implementing algorithms provides a way of testing different approaches,
 with full access to their parameters. Check GpsL1CaDllPllTracking or GalileoE1DllPllVemlTracking for examples of adapters, and Gps_L1_Ca_Dll_Pll_Tracking_cc for an example
@@ -494,8 +497,8 @@ See the \ref reference_docs for more information about the signal format.
 \subsection observables Observables
 GNSS systems provide different kinds of observations. The most commonly used are the code observations, also called pseudoranges. The <i>pseudo</i> comes from
 the fact that on the receiver side the clock error is unknown and thus the measurement is not a pure range observation. High accuracy applications also use the
- carrier phase observations, which are based on measuring the difference between the carrier phase transmitted by the GNSS satellites and the phase of the carrier
- generated in the receiver. Both observables are computed from the outputs of the tracking module and the decoding of the navigation message.
+carrier phase observations, which are based on measuring the difference between the carrier phase transmitted by the GNSS satellites and the phase of the carrier
+generated in the receiver. Both observables are computed from the outputs of the tracking module and the decoding of the navigation message.
 This module collects all the data provided by every tracked channel, aligns all received data into a coherent set, and computes the observables.
 
 The common interface is ObservablesInterface.
@@ -514,8 +517,8 @@ Observables.dump_filename=./observables.dat
 
 \subsection pvt Computation of Position, Velocity and Time
 Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
- solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
-  data such as <a href="https://github.com/SGL-UT/GPSTk" target="_blank">GPSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
+solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
+data such as <a href="https://github.com/SGL-UT/GPSTk" target="_blank">GPSTk</a> or <a href="https://gage.upc.edu/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
 
 The common interface is PvtInterface. For instance, in order to use the implementation RTKLIB_PVT, add to the configuration file:
 \verbatim

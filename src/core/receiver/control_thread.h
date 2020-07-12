@@ -66,7 +66,7 @@ public:
      *
      * \param[in] configuration Pointer to a ConfigurationInterface
      */
-    explicit ControlThread(const std::shared_ptr<ConfigurationInterface> &configuration);
+    explicit ControlThread(std::shared_ptr<ConfigurationInterface> configuration);
 
     /*!
      * \brief Destructor
@@ -92,7 +92,7 @@ public:
      *
      * \param[in] std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue
      */
-    void set_control_queue(const std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);  // NOLINT(performance-unnecessary-value-param)
+    void set_control_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue);
 
     unsigned int processed_control_messages() const
     {
@@ -115,27 +115,14 @@ public:
     }
 
 private:
-    // Telecommand TCP interface
-    TcpCmdInterface cmd_interface_;
-    void telecommand_listener();
+    void init();
+
+    void apply_action(unsigned int what);
 
     /*
      * New receiver event dispatcher
      */
-    bool receiver_on_standby_;
     void event_dispatcher(bool &valid_event, pmt::pmt_t &msg);
-
-    std::thread cmd_interface_thread_;
-
-    // SUPL assistance classes
-    Gnss_Sdr_Supl_Client supl_client_acquisition_;
-    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
-    int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
-    int supl_mns;  // Current network MNC (Mobile Network code), 2 or 3 digits.
-    int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
-    int supl_ci;   // Cell Identity (16 bits, 0-65535 are valid values).
-
-    void init();
 
     // Read {ephemeris, iono, utc, ref loc, ref time} assistance from a local XML file previously recorded
     bool read_assistance_from_XML();
@@ -156,47 +143,61 @@ private:
      */
     void assist_GNSS();
 
-    void apply_action(unsigned int what);
-    std::shared_ptr<GNSSFlowgraph> flowgraph_;
+    void telecommand_listener();
+    void keyboard_listener();
+    void sysv_queue_listener();
+
+    // default filename for assistance data
+    const std::string eph_default_xml_filename_ = "./gps_ephemeris.xml";
+    const std::string utc_default_xml_filename_ = "./gps_utc_model.xml";
+    const std::string iono_default_xml_filename_ = "./gps_iono.xml";
+    const std::string ref_time_default_xml_filename_ = "./gps_ref_time.xml";
+    const std::string ref_location_default_xml_filename_ = "./gps_ref_location.xml";
+    const std::string eph_gal_default_xml_filename_ = "./gal_ephemeris.xml";
+    const std::string eph_cnav_default_xml_filename_ = "./gps_cnav_ephemeris.xml";
+    const std::string gal_iono_default_xml_filename_ = "./gal_iono.xml";
+    const std::string gal_utc_default_xml_filename_ = "./gal_utc_model.xml";
+    const std::string cnav_utc_default_xml_filename_ = "./gps_cnav_utc_model.xml";
+    const std::string eph_glo_gnav_default_xml_filename_ = "./glo_gnav_ephemeris.xml";
+    const std::string glo_utc_default_xml_filename_ = "./glo_utc_model.xml";
+    const std::string gal_almanac_default_xml_filename_ = "./gal_almanac.xml";
+    const std::string gps_almanac_default_xml_filename_ = "./gps_almanac.xml";
+
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
-    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
-    bool stop_;
-    bool restart_;
-    bool delete_configuration_;
-    unsigned int processed_control_messages_;
-    unsigned int applied_actions_;
+    std::shared_ptr<GNSSFlowgraph> flowgraph_;
 
+    std::thread cmd_interface_thread_;
     std::thread keyboard_thread_;
     std::thread sysv_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;
 
-    void keyboard_listener();
-    void sysv_queue_listener();
-    int msqid;
+#ifdef ENABLE_FPGA
+    boost::thread fpga_helper_thread_;
+#endif
 
-    // default filename for assistance data
-    const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
-    const std::string utc_default_xml_filename = "./gps_utc_model.xml";
-    const std::string iono_default_xml_filename = "./gps_iono.xml";
-    const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
-    const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
-    const std::string eph_gal_default_xml_filename = "./gal_ephemeris.xml";
-    const std::string eph_cnav_default_xml_filename = "./gps_cnav_ephemeris.xml";
-    const std::string gal_iono_default_xml_filename = "./gal_iono.xml";
-    const std::string gal_utc_default_xml_filename = "./gal_utc_model.xml";
-    const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
-    const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
-    const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
-    const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
-    const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
+    TcpCmdInterface cmd_interface_;
+
+    // SUPL assistance classes
+    Gnss_Sdr_Supl_Client supl_client_acquisition_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
+    int supl_mcc_;  // Current network MCC (Mobile country code), 3 digits.
+    int supl_mns_;  // Current network MNC (Mobile Network code), 2 or 3 digits.
+    int supl_lac_;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
+    int supl_ci_;   // Cell Identity (16 bits, 0-65535 are valid values).
 
     Agnss_Ref_Location agnss_ref_location_;
     Agnss_Ref_Time agnss_ref_time_;
 
-#ifdef ENABLE_FPGA
-    boost::thread fpga_helper_thread_;
-#endif
+    unsigned int processed_control_messages_;
+    unsigned int applied_actions_;
+    int msqid_;
+
+    bool receiver_on_standby_;
+    bool stop_;
+    bool restart_;
+    bool telecommand_enabled_;
+    bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
 };
 
 #endif  // GNSS_SDR_CONTROL_THREAD_H

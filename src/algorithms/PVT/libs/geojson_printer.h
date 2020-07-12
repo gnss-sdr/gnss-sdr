@@ -24,7 +24,6 @@
 
 
 #include <fstream>
-#include <memory>
 #include <string>
 
 class Pvt_Solution;
@@ -45,9 +44,9 @@ public:
 
 private:
     std::ofstream geojson_file;
-    bool first_pos;
     std::string filename_;
     std::string geojson_base_path;
+    bool first_pos;
 };
 
 #endif

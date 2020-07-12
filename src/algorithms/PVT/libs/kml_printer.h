@@ -23,7 +23,6 @@
 #define GNSS_SDR_KML_PRINTER_H
 
 #include <fstream>  // for ofstream
-#include <memory>   // for shared_ptr
 #include <string>
 
 class Pvt_Solution;
@@ -45,12 +44,12 @@ public:
 private:
     std::ofstream kml_file;
     std::ofstream tmp_file;
-    bool positions_printed;
     std::string kml_filename;
     std::string kml_base_path;
     std::string tmp_file_str;
-    unsigned int point_id;
     std::string indent;
+    unsigned int point_id;
+    bool positions_printed;
 };
 
 #endif

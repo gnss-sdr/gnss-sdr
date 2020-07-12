@@ -48,13 +48,13 @@ public:
 private:
     // Allocate the device input vectors
     const std::complex<float> *d_sig_in;
-    float **d_local_codes_resampled;
     const float *d_local_code_in;
     std::complex<float> *d_corr_out;
+    float **d_local_codes_resampled;
     float *d_shifts_chips;
-    bool d_use_high_dynamics_resampler;
     int d_code_length_chips;
     int d_n_correlators;
+    bool d_use_high_dynamics_resampler;
 };
 
 

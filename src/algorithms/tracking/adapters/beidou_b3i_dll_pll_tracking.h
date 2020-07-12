@@ -38,7 +38,8 @@ class ConfigurationInterface;
 class BeidouB3iDllPllTracking : public TrackingInterface
 {
 public:
-    BeidouB3iDllPllTracking(ConfigurationInterface* configuration,
+    BeidouB3iDllPllTracking(
+        const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);

@@ -33,7 +33,7 @@
 #include <exception>  // for exceptions
 #include <fcntl.h>    // for open, O_WRONLY
 #include <fstream>    // for std::ifstream
-#include <iostream>   // for cout, endl
+#include <iostream>   // for cout
 #include <string>     // for string manipulation
 #include <thread>     // for std::chrono
 #include <unistd.h>   // for write
@@ -41,7 +41,7 @@
 #include <vector>
 
 
-Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configuration,
+Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
@@ -51,8 +51,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     double default_manual_gain_rx2 = 64.0;
     uint64_t default_bandwidth = 12500000;
     std::string default_rf_port_select("A_BALANCED");
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000);
+    freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
+    sample_rate_ = configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(12500000));
     bandwidth_ = configuration->property(role + ".bandwidth", default_bandwidth);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
@@ -75,14 +75,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
         {
             filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
         }
-    Fpass_ = configuration->property(role + ".Fpass", 0.0);
-    Fstop_ = configuration->property(role + ".Fstop", 0.0);
+    Fpass_ = configuration->property(role + ".Fpass", static_cast<float>(0.0));
+    Fstop_ = configuration->property(role + ".Fstop", static_cast<float>(0.0));
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 10000);
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", static_cast<uint64_t>(10000));
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_));
     scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", -3.0);
     tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
-    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", 500000);
+    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000));
     phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
@@ -93,8 +93,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
     switch_position = configuration->property(role + ".switch_position", 0);
     if (switch_position != 0 && switch_position != 2)
         {
-            std::cout << "SignalSource.switch_position configuration parameter must be either 0: read from file(s) via DMA, or 2: read from AD9361" << std::endl;
-            std::cout << "SignalSource.switch_position configuration parameter set to its default value switch_position=0 - read from file(s)" << std::endl;
+            std::cout << "SignalSource.switch_position configuration parameter must be either 0: read from file(s) via DMA, or 2: read from AD9361\n";
+            std::cout << "SignalSource.switch_position configuration parameter set to its default value switch_position=0 - read from file(s)\n";
             switch_position = 0;
         }
 
@@ -103,7 +103,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
 
     item_size_ = sizeof(gr_complex);
 
-    std::cout << "Sample rate: " << sample_rate_ << " Sps" << std::endl;
+    std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
 
     if (switch_position == 0)  // Inject file(s) via DMA
         {
@@ -146,37 +146,37 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                     freq_band = "L1L2";
                 }
 
-            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2, enable_DMA_); });
+            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2); });
         }
     if (switch_position == 2)  // Real-time via AD9361
         {
             // some basic checks
             if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
                 {
-                    std::cout << "Configuration parameter rf_port_select should take one of these values:" << std::endl;
-                    std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2" << std::endl;
-                    std::cout << "Error: provided value rf_port_select=" << rf_port_select_ << " is not among valid values" << std::endl;
-                    std::cout << " This parameter has been set to its default value rf_port_select=" << default_rf_port_select << std::endl;
+                    std::cout << "Configuration parameter rf_port_select should take one of these values:\n";
+                    std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2\n";
+                    std::cout << "Error: provided value rf_port_select=" << rf_port_select_ << " is not among valid values\n";
+                    std::cout << " This parameter has been set to its default value rf_port_select=" << default_rf_port_select << '\n';
                     rf_port_select_ = default_rf_port_select;
                     LOG(WARNING) << "Invalid configuration value for rf_port_select parameter. Set to rf_port_select=" << default_rf_port_select;
                 }
 
             if ((gain_mode_rx1_ != "manual") and (gain_mode_rx1_ != "slow_attack") and (gain_mode_rx1_ != "fast_attack") and (gain_mode_rx1_ != "hybrid"))
                 {
-                    std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:" << std::endl;
-                    std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
-                    std::cout << "Error: provided value gain_mode_rx1=" << gain_mode_rx1_ << " is not among valid values" << std::endl;
-                    std::cout << " This parameter has been set to its default value gain_mode_rx1=" << default_gain_mode << std::endl;
+                    std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:\n";
+                    std::cout << " manual, slow_attack, fast_attack, hybrid\n";
+                    std::cout << "Error: provided value gain_mode_rx1=" << gain_mode_rx1_ << " is not among valid values\n";
+                    std::cout << " This parameter has been set to its default value gain_mode_rx1=" << default_gain_mode << '\n';
                     gain_mode_rx1_ = default_gain_mode;
                     LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx1=" << default_gain_mode;
                 }
 
             if ((gain_mode_rx2_ != "manual") and (gain_mode_rx2_ != "slow_attack") and (gain_mode_rx2_ != "fast_attack") and (gain_mode_rx2_ != "hybrid"))
                 {
-                    std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:" << std::endl;
-                    std::cout << " manual, slow_attack, fast_attack, hybrid" << std::endl;
-                    std::cout << "Error: provided value gain_mode_rx2=" << gain_mode_rx2_ << " is not among valid values" << std::endl;
-                    std::cout << " This parameter has been set to its default value gain_mode_rx2=" << default_gain_mode << std::endl;
+                    std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:\n";
+                    std::cout << " manual, slow_attack, fast_attack, hybrid\n";
+                    std::cout << "Error: provided value gain_mode_rx2=" << gain_mode_rx2_ << " is not among valid values\n";
+                    std::cout << " This parameter has been set to its default value gain_mode_rx2=" << default_gain_mode << '\n';
                     gain_mode_rx2_ = default_gain_mode;
                     LOG(WARNING) << "Invalid configuration value for gain_mode_rx2 parameter. Set to gain_mode_rx2=" << default_gain_mode;
                 }
@@ -185,9 +185,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                 {
                     if (rf_gain_rx1_ > 73.0 or rf_gain_rx1_ < -1.0)
                         {
-                            std::cout << "Configuration parameter rf_gain_rx1 should take values between -1.0 and 73 dB" << std::endl;
-                            std::cout << "Error: provided value rf_gain_rx1=" << rf_gain_rx1_ << " is not among valid values" << std::endl;
-                            std::cout << " This parameter has been set to its default value rf_gain_rx1=" << default_manual_gain_rx1 << std::endl;
+                            std::cout << "Configuration parameter rf_gain_rx1 should take values between -1.0 and 73 dB\n";
+                            std::cout << "Error: provided value rf_gain_rx1=" << rf_gain_rx1_ << " is not among valid values\n";
+                            std::cout << " This parameter has been set to its default value rf_gain_rx1=" << default_manual_gain_rx1 << '\n';
                             rf_gain_rx1_ = default_manual_gain_rx1;
                             LOG(WARNING) << "Invalid configuration value for rf_gain_rx1 parameter. Set to rf_gain_rx1=" << default_manual_gain_rx1;
                         }
@@ -197,9 +197,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                 {
                     if (rf_gain_rx2_ > 73.0 or rf_gain_rx2_ < -1.0)
                         {
-                            std::cout << "Configuration parameter rf_gain_rx2 should take values between -1.0 and 73 dB" << std::endl;
-                            std::cout << "Error: provided value rf_gain_rx2=" << rf_gain_rx2_ << " is not among valid values" << std::endl;
-                            std::cout << " This parameter has been set to its default value rf_gain_rx2=" << default_manual_gain_rx2 << std::endl;
+                            std::cout << "Configuration parameter rf_gain_rx2 should take values between -1.0 and 73 dB\n";
+                            std::cout << "Error: provided value rf_gain_rx2=" << rf_gain_rx2_ << " is not among valid values\n";
+                            std::cout << " This parameter has been set to its default value rf_gain_rx2=" << default_manual_gain_rx2 << '\n';
                             rf_gain_rx2_ = default_manual_gain_rx2;
                             LOG(WARNING) << "Invalid configuration value for rf_gain_rx2 parameter. Set to rf_gain_rx2=" << default_manual_gain_rx2;
                         }
@@ -207,27 +207,27 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
 
             if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
                 {
-                    std::cout << "Configuration parameter filter_source should take one of these values:" << std::endl;
-                    std::cout << "  Off: Disable filter" << std::endl;
-                    std::cout << "  Auto: Use auto-generated filters" << std::endl;
-                    std::cout << "  File: User-provided filter in filter_filename parameter" << std::endl;
-                    std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters" << std::endl;
-                    std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values" << std::endl;
-                    std::cout << " This parameter has been set to its default value filter_source=Off" << std::endl;
+                    std::cout << "Configuration parameter filter_source should take one of these values:\n";
+                    std::cout << "  Off: Disable filter\n";
+                    std::cout << "  Auto: Use auto-generated filters\n";
+                    std::cout << "  File: User-provided filter in filter_filename parameter\n";
+                    std::cout << "  Design: Create filter from Fpass, Fstop, sampling_frequency and bandwidth parameters\n";
+                    std::cout << "Error: provided value filter_source=" << filter_source_ << " is not among valid values\n";
+                    std::cout << " This parameter has been set to its default value filter_source=Off\n";
                     filter_source_ = std::string("Off");
                     LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
                 }
 
             if (bandwidth_ < 200000 or bandwidth_ > 56000000)
                 {
-                    std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz" << std::endl;
-                    std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values" << std::endl;
-                    std::cout << " This parameter has been set to its default value bandwidth=" << default_bandwidth << std::endl;
+                    std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz\n";
+                    std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values\n";
+                    std::cout << " This parameter has been set to its default value bandwidth=" << default_bandwidth << '\n';
                     bandwidth_ = default_bandwidth;
                     LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=" << default_bandwidth;
                 }
 
-            std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
+            std::cout << "LO frequency : " << freq_ << " Hz\n";
             try
                 {
                     config_ad9361_rx_local(bandwidth_,
@@ -250,24 +250,24 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                 }
             catch (const std::runtime_error &e)
                 {
-                    std::cout << "Exception cached when configuring the RX chain: " << e.what() << std::endl;
+                    std::cout << "Exception cached when configuring the RX chain: " << e.what() << '\n';
                 }
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
             if (enable_dds_lo_ == true)
                 {
                     if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
                         {
-                            std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz" << std::endl;
-                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values" << std::endl;
-                            std::cout << " This parameter has been set to its default value tx_bandwidth=500000" << std::endl;
+                            std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz\n";
+                            std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values\n";
+                            std::cout << " This parameter has been set to its default value tx_bandwidth=500000\n";
                             tx_bandwidth_ = 500000;
                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
                         }
                     if (tx_attenuation_db_ > 0.0 or tx_attenuation_db_ < -89.75)
                         {
-                            std::cout << "Configuration parameter tx_attenuation_db should take values between 0.0 and -89.95 in 0.25 dB steps" << std::endl;
-                            std::cout << "Error: provided value tx_attenuation_db=" << tx_attenuation_db_ << " is not among valid values" << std::endl;
-                            std::cout << " This parameter has been set to its default value tx_attenuation_db=" << default_tx_attenuation_db << std::endl;
+                            std::cout << "Configuration parameter tx_attenuation_db should take values between 0.0 and -89.95 in 0.25 dB steps\n";
+                            std::cout << "Error: provided value tx_attenuation_db=" << tx_attenuation_db_ << " is not among valid values\n";
+                            std::cout << " This parameter has been set to its default value tx_attenuation_db=" << default_tx_attenuation_db << '\n';
                             tx_attenuation_db_ = default_tx_attenuation_db;
                             LOG(WARNING) << "Invalid configuration value for tx_attenuation_db parameter. Set to tx_attenuation_db=" << default_tx_attenuation_db;
                         }
@@ -283,7 +283,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface *configura
                         }
                     catch (const std::runtime_error &e)
                         {
-                            std::cout << "Exception cached when configuring the TX carrier: " << e.what() << std::endl;
+                            std::cout << "Exception cached when configuring the TX carrier: " << e.what() << '\n';
                         }
                 }
         }
@@ -304,7 +304,9 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
     /* cleanup and exit */
     if (switch_position == 0)  // read samples from a file via DMA
         {
+            std::unique_lock<std::mutex> lock(dma_mutex);
             enable_DMA_ = false;  // disable the DMA
+            lock.unlock();
             if (thread_file_to_dma.joinable())
                 {
                     thread_file_to_dma.join();
@@ -336,7 +338,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 }
 
 
-void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2, const bool &enable_DMA)
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2)
 {
     const int MAX_INPUT_SAMPLES_TOTAL = 16384;
     int max_value = 0;
@@ -350,7 +352,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception opening file " << Filename1 << std::endl;
+            std::cerr << "Exception opening file " << Filename1 << '\n';
             return;
         }
 
@@ -370,8 +372,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
     std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
 
-    int nread_elements;
-    int nread_elements2;
+    int nread_elements = 0;   // num bytes read from the file corresponding to frequency band 1
+    int nread_elements2 = 0;  // num bytes read from the file corresponding to frequency band 2
     int file_completed = 0;
     int num_transferred_bytes;
 
@@ -381,7 +383,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     tx_fd = open("/dev/loop_tx", O_WRONLY);
     if (tx_fd < 0)
         {
-            std::cout << "Cannot open loop device" << std::endl;
+            std::cout << "Cannot open loop device\n";
             return;
         }
 
@@ -390,7 +392,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     //**************************************************************************
     int nsamples = 0;
 
-    while ((file_completed == 0) && (enable_DMA == true))
+    while (file_completed == 0)
         {
             unsigned int dma_index = 0;
 
@@ -402,7 +404,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                            std::cerr << "Exception reading file " << Filename1 << '\n';
                         }
                     if (infile1)
                         {
@@ -410,7 +412,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements = 0;
+                            nread_elements = infile1.gcount();
                         }
                     nsamples += (nread_elements / 2);
 
@@ -434,7 +436,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                            std::cerr << "Exception reading file " << Filename1 << '\n';
                         }
                     if (infile1)
                         {
@@ -442,7 +444,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements = 0;
+                            nread_elements = infile1.gcount();
                         }
                     nsamples += (nread_elements / 2);
 
@@ -466,7 +468,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                            std::cerr << "Exception reading file " << Filename1 << '\n';
                         }
                     if (infile1)
                         {
@@ -474,7 +476,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements = 0;
+                            nread_elements = infile1.gcount();
                         }
                     try
                         {
@@ -482,7 +484,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            std::cerr << "Exception reading file " << Filename1 << std::endl;
+                            std::cerr << "Exception reading file " << Filename1 << '\n';
                         }
                     if (infile2)
                         {
@@ -490,7 +492,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                         }
                     else
                         {
-                            nread_elements2 = 0;
+                            nread_elements2 = infile2.gcount();
                         }
 
                     if (nread_elements > nread_elements2)
@@ -540,7 +542,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                     int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
                     if (num_bytes_sent != num_transferred_bytes)
                         {
-                            std::cerr << "Error: DMA could not send all the required samples " << std::endl;
+                            std::cerr << "Error: DMA could not send all the required samples \n";
                         }
 
                     // Throttle the DMA
@@ -551,16 +553,26 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                 {
                     file_completed = 1;
                 }
+
+            std::unique_lock<std::mutex> lock(dma_mutex);
+            if (enable_DMA_ == false)
+                {
+                    file_completed = true;
+                }
+            lock.unlock();
         }
 
     try
         {
             infile1.close();
-            infile2.close();
+            if (FreqBand == "L1L2")
+                {
+                    infile2.close();
+                }
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception closing files " << Filename1 << " and " << Filename2 << std::endl;
+            std::cerr << "Exception closing files " << Filename1 << " and " << Filename2 << '\n';
         }
 }
 

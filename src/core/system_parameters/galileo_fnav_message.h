@@ -28,6 +28,7 @@
 
 
 #include "Galileo_E5a.h"
+#include "Galileo_FNAV.h"
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
@@ -53,28 +54,100 @@ public:
     bool have_new_iono_and_GST();
     bool have_new_utc_model();
     bool have_new_almanac();
-    Galileo_Ephemeris get_ephemeris();
-    Galileo_Iono get_iono();
-    Galileo_Utc_Model get_utc_model();
-    Galileo_Almanac_Helper get_almanac();
+    Galileo_Ephemeris get_ephemeris() const;
+    Galileo_Iono get_iono() const;
+    Galileo_Utc_Model get_utc_model() const;
+    Galileo_Almanac_Helper get_almanac() const;
 
-    bool flag_CRC_test{};
-    bool flag_all_ephemeris{};  //!< Flag indicating that all words containing ephemeris have been received
-    bool flag_ephemeris_1{};    //!< Flag indicating that ephemeris 1/3 (word 2) have been received
-    bool flag_ephemeris_2{};    //!< Flag indicating that ephemeris 2/3 (word 3) have been received
-    bool flag_ephemeris_3{};    //!< Flag indicating that ephemeris 3/3 (word 4) have been received
+    inline int32_t get_TOW1() const
+    {
+        return FNAV_TOW_1;
+    }
 
-    bool flag_iono_and_GST{};  //!< Flag indicating that ionospheric and GST parameters (word 1) have been received
-    bool flag_TOW_1{};
-    bool flag_TOW_2{};
-    bool flag_TOW_3{};
-    bool flag_TOW_4{};
-    bool flag_TOW_set{};    //!< it is true when page 1,2,3 or 4 arrives
-    bool flag_utc_model{};  //!< Flag indicating that utc model parameters (word 4) have been received
+    inline int32_t get_TOW2() const
+    {
+        return FNAV_TOW_2;
+    }
 
-    bool flag_all_almanac{};  //!< Flag indicating that all almanac have been received
-    bool flag_almanac_1{};    //!< Flag indicating that almanac 1/2 (word 5) have been received
-    bool flag_almanac_2{};    //!< Flag indicating that almanac 2/2 (word 6) have been received
+    inline int32_t get_TOW3() const
+    {
+        return FNAV_TOW_3;
+    }
+
+    inline int32_t get_TOW4() const
+    {
+        return FNAV_TOW_4;
+    }
+
+    inline bool get_flag_CRC_test() const
+    {
+        return flag_CRC_test;
+    }
+
+    inline bool get_flag_TOW_set() const
+    {
+        return flag_TOW_set;
+    }
+
+    inline void set_flag_TOW_set(bool flag_tow)
+    {
+        flag_TOW_set = flag_tow;
+    }
+
+    inline bool is_TOW_set() const
+    {
+        return flag_TOW_set;
+    }
+
+    inline bool is_TOW1_set() const
+    {
+        return flag_TOW_1;
+    }
+
+    inline void set_TOW1_flag(bool flag_tow1)
+    {
+        flag_TOW_1 = flag_tow1;
+    }
+
+    inline bool is_TOW2_set() const
+    {
+        return flag_TOW_2;
+    }
+
+    inline void set_TOW2_flag(bool flag_tow2)
+    {
+        flag_TOW_2 = flag_tow2;
+    }
+
+    inline bool is_TOW3_set() const
+    {
+        return flag_TOW_3;
+    }
+
+    inline void set_TOW3_flag(bool flag_tow3)
+    {
+        flag_TOW_3 = flag_tow3;
+    }
+
+    inline bool is_TOW4_set() const
+    {
+        return flag_TOW_4;
+    }
+
+    inline void set_TOW4_flag(bool flag_tow4)
+    {
+        flag_TOW_4 = flag_tow4;
+    }
+
+private:
+    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, uint32_t checksum) const;
+    void decode_page(const std::string& data);
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+
+    std::string omega0_1{};
+    // std::string omega0_2{};
+    // bool omega_flag{};
 
     int32_t IOD_ephemeris{};
 
@@ -186,15 +259,23 @@ public:
     double FNAV_af1_3_6{};
     int32_t FNAV_E5ahs_3_6{};
 
-private:
-    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, uint32_t checksum);
-    void decode_page(const std::string& data);
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
-    int64_t read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool flag_CRC_test{};
+    bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
+    bool flag_ephemeris_1{};    // Flag indicating that ephemeris 1/3 (word 2) have been received
+    bool flag_ephemeris_2{};    // Flag indicating that ephemeris 2/3 (word 3) have been received
+    bool flag_ephemeris_3{};    // Flag indicating that ephemeris 3/3 (word 4) have been received
 
-    std::string omega0_1{};
-    // std::string omega0_2{};
-    // bool omega_flag{};
+    bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 1) have been received
+    bool flag_TOW_1{};
+    bool flag_TOW_2{};
+    bool flag_TOW_3{};
+    bool flag_TOW_4{};
+    bool flag_TOW_set{};    // it is true when page 1,2,3 or 4 arrives
+    bool flag_utc_model{};  // Flag indicating that utc model parameters (word 4) have been received
+
+    bool flag_all_almanac{};  // Flag indicating that all almanac have been received
+    bool flag_almanac_1{};    // Flag indicating that almanac 1/2 (word 5) have been received
+    bool flag_almanac_2{};    // Flag indicating that almanac 2/2 (word 6) have been received
 };
 
 #endif  // GNSS_SDR_GALILEO_FNAV_MESSAGE_H

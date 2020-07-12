@@ -23,11 +23,11 @@
 
 Obs_Conf::Obs_Conf()
 {
-    enable_carrier_smoothing = false;
+    dump_filename = "obs_dump.dat";
     smoothing_factor = FLAGS_carrier_smoothing_factor;
     nchannels_in = 0;
     nchannels_out = 0;
+    enable_carrier_smoothing = false;
     dump = false;
     dump_mat = false;
-    dump_filename = "obs_dump.dat";
 }

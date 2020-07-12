@@ -63,7 +63,7 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT1)
 
     double glo2utc = 3600 * 3;
     double tod = 48600;
-    double week = 0.0;
+    int week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 13;
     double true_week = 1307;
@@ -89,7 +89,7 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT2)
 
     double glo2utc = 3600 * 3;
     double tod = 7560;
-    double week = 0.0;
+    int week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 17;
     double true_week = 1915;
@@ -115,7 +115,7 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT3)
 
     double glo2utc = 3600 * 3;
     double tod = 7560;
-    double week = 0.0;
+    int week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 17;
     double true_week = 1886;

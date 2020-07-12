@@ -31,7 +31,7 @@
 using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 
 
-bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum)
+bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum) const
 {
     CRC_Galileo_INAV_type CRC_Galileo;
 
@@ -59,7 +59,7 @@ bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> b
 }
 
 
-uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
+uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -78,7 +78,7 @@ uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILE
 }
 
 
-uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
+uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -97,7 +97,7 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
 }
 
 
-int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
+int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     int64_t value = 0LL;
     int32_t num_of_slices = parameter.size();
@@ -128,7 +128,7 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
 }
 
 
-bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
+bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     bool value;
     if (static_cast<int>(static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first])) == 1)
@@ -268,7 +268,7 @@ bool Galileo_Navigation_Message::have_new_almanac()  // Check if we have a new a
 }
 
 
-Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
+Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris() const
 {
     Galileo_Ephemeris ephemeris;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
@@ -317,13 +317,18 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
 }
 
 
-Galileo_Iono Galileo_Navigation_Message::get_iono()
+Galileo_Iono Galileo_Navigation_Message::get_iono() const
 {
     Galileo_Iono iono;
     // Ionospheric correction
     iono.ai0_5 = ai0_5;  // Effective Ionisation Level 1st order parameter [sfu]
     iono.ai1_5 = ai1_5;  // Effective Ionisation Level 2st order parameter [sfu/degree]
     iono.ai2_5 = ai2_5;  // Effective Ionisation Level 3st order parameter [sfu/degree]
+
+    // GST
+    // This is the ONLY page containing the Week Number (WN)
+    iono.TOW_5 = TOW_5;
+    iono.WN_5 = WN_5;
 
     // Ionospheric disturbance flag
     iono.Region1_flag_5 = Region1_flag_5;  // Ionospheric Disturbance Flag for region 1
@@ -332,15 +337,11 @@ Galileo_Iono Galileo_Navigation_Message::get_iono()
     iono.Region4_flag_5 = Region4_flag_5;  // Ionospheric Disturbance Flag for region 4
     iono.Region5_flag_5 = Region5_flag_5;  // Ionospheric Disturbance Flag for region 5
 
-    // GST
-    // This is the ONLY page containing the Week Number (WN)
-    iono.TOW_5 = TOW_5;
-    iono.WN_5 = WN_5;
     return iono;
 }
 
 
-Galileo_Utc_Model Galileo_Navigation_Message::get_utc_model()
+Galileo_Utc_Model Galileo_Navigation_Message::get_utc_model() const
 {
     Galileo_Utc_Model utc_model;
     // Word type 6: GST-UTC conversion parameters
@@ -362,7 +363,7 @@ Galileo_Utc_Model Galileo_Navigation_Message::get_utc_model()
 }
 
 
-Galileo_Almanac_Helper Galileo_Navigation_Message::get_almanac()
+Galileo_Almanac_Helper Galileo_Navigation_Message::get_almanac() const
 {
     Galileo_Almanac_Helper almanac;
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number

@@ -45,7 +45,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1Test)
     std::chrono::duration<double> elapsed_seconds = end - start;
 
     ASSERT_LE(0, elapsed_seconds.count());
-    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -73,7 +73,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
     std::chrono::duration<double> elapsed_seconds = end - start;
 
     ASSERT_LE(0, elapsed_seconds.count());
-    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -100,5 +100,5 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
     std::chrono::duration<double> elapsed_seconds = end - start;
 
     ASSERT_LE(0, elapsed_seconds.count());
-    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

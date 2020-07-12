@@ -212,47 +212,55 @@ private:
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);
 
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
+
+    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
+    std::unique_ptr<gr::fft::fft_complex> d_ifft;
+
+    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     std::vector<gr_complex> d_code;
-    uint32_t d_folding_factor;  // also referred in the paper as 'p'
-    std::vector<uint32_t> d_possible_delay;
-    std::vector<float> d_corr_output_f;
-    std::vector<float> d_magnitude_folded;
+    std::vector<gr_complex> d_fft_codes;
     std::vector<gr_complex> d_signal_folded;
     std::vector<gr_complex> d_code_folded;
-    float d_noise_floor_power;
+    std::vector<float> d_magnitude;
+    std::vector<float> d_corr_output_f;
+    std::vector<float> d_magnitude_folded;
+    std::vector<uint32_t> d_possible_delay;
+
+    std::string d_dump_filename;
+    std::string d_satellite_str;
+
+    std::ofstream d_dump_file;
+
+    Gnss_Synchro* d_gnss_synchro;
+
     int64_t d_fs_in;
+    uint64_t d_sample_counter;
+
+    float d_noise_floor_power;
+    float d_threshold;
+    float d_doppler_freq;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
     int32_t d_samples_per_ms;
     int32_t d_samples_per_code;
+    int32_t d_state;
+    uint32_t d_channel;
+    uint32_t d_folding_factor;  // also referred in the paper as 'p'
     uint32_t d_doppler_resolution;
-    float d_threshold;
-    std::string d_satellite_str;
     uint32_t d_doppler_max;
     uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_max_dwells;
     uint32_t d_well_count;
     uint32_t d_fft_size;
-    uint64_t d_sample_counter;
-    std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     uint32_t d_num_doppler_bins;
-    std::vector<gr_complex> d_fft_codes;
-    std::shared_ptr<gr::fft::fft_complex> d_fft_if;
-    std::shared_ptr<gr::fft::fft_complex> d_ifft;
-    Gnss_Synchro* d_gnss_synchro;
     uint32_t d_code_phase;
-    float d_doppler_freq;
-    float d_mag;
-    std::vector<float> d_magnitude;
-    float d_input_power;
-    float d_test_statistics;
+
     bool d_bit_transition_flag;
-    std::ofstream d_dump_file;
     bool d_active;
-    int32_t d_state;
     bool d_dump;
-    uint32_t d_channel;
-    std::weak_ptr<ChannelFsm> d_channel_fsm;
-    std::string d_dump_filename;
 };
 
 #endif  // GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H

@@ -21,6 +21,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_H
 #define GNSS_SDR_RTKLIB_PVT_H
 
+#include "gnss_synchro.h"
 #include "pvt_interface.h"           // for PvtInterface
 #include "rtklib.h"                  // for rtk_t
 #include "rtklib_pvt_gs.h"           // for rtklib_pvt_gs_sptr
@@ -43,7 +44,7 @@ class Gps_Ephemeris;
 class Rtklib_Pvt : public PvtInterface
 {
 public:
-    Rtklib_Pvt(ConfigurationInterface* configuration,
+    Rtklib_Pvt(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
@@ -77,10 +78,10 @@ public:
         return;
     }
 
-    //! All blocks must have an item_size() function implementation. Returns sizeof(gr_complex)
+    //! All blocks must have an item_size() function implementation
     inline size_t item_size() override
     {
-        return sizeof(gr_complex);
+        return sizeof(Gnss_Synchro);
     }
 
     bool get_latest_PVT(double* longitude_deg,

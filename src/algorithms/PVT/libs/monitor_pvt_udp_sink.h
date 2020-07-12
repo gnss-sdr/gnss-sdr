@@ -38,15 +38,14 @@ class Monitor_Pvt_Udp_Sink
 {
 public:
     Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled);
-    bool write_monitor_pvt(std::shared_ptr<Monitor_Pvt> monitor_pvt);
+    bool write_monitor_pvt(const Monitor_Pvt* monitor_pvt);
 
 private:
+    Serdes_Monitor_Pvt serdes;
     b_io_context io_context;
     boost::asio::ip::udp::socket socket;
-    boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    Serdes_Monitor_Pvt serdes;
-    std::shared_ptr<Monitor_Pvt> monitor_pvt_;
+    boost::system::error_code error;
     bool use_protobuf;
 };
 

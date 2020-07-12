@@ -129,7 +129,7 @@ endif()
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(core_receiver
         PRIVATE
-            -DUSE_BOOST_ASIO_IO_CONTEXT
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
     )
 endif()
 
@@ -154,6 +154,8 @@ target_link_libraries(core_receiver
         Glog::glog
         Armadillo::armadillo
 )
+
+target_include_directories(core_receiver PRIVATE ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
 
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(core_receiver

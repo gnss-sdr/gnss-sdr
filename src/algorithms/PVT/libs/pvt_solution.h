@@ -132,6 +132,14 @@ public:
 protected:
     bool d_pre_2009_file;  // Flag to correct week rollover in post processing mode for signals older than 2009
 private:
+    arma::vec d_rx_pos;
+    arma::vec d_rx_vel;
+    boost::posix_time::ptime d_position_UTC_time;
+
+    std::deque<double> d_hist_latitude_d;
+    std::deque<double> d_hist_longitude_d;
+    std::deque<double> d_hist_height_m;
+
     double d_rx_dt_s;             // RX time offset [s]
     double d_rx_clock_drift_ppm;  // RX clock drift [ppm]
 
@@ -145,19 +153,11 @@ private:
     double d_avg_longitude_d;  // Averaged longitude in degrees
     double d_avg_height_m;     // Averaged height [m]
 
-    bool b_valid_position;
-
-    std::deque<double> d_hist_latitude_d;
-    std::deque<double> d_hist_longitude_d;
-    std::deque<double> d_hist_height_m;
-
-    bool d_flag_averaging;
     int d_averaging_depth;  // Length of averaging window
-
-    arma::vec d_rx_pos;
-    arma::vec d_rx_vel;
-    boost::posix_time::ptime d_position_UTC_time;
     int d_valid_observations;
+
+    bool b_valid_position;
+    bool d_flag_averaging;
 };
 
 #endif

@@ -53,7 +53,7 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
             end = std::chrono::system_clock::now();
             elapsed_seconds = end - start;
             d_execution_time = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_speed_iterations_test);
-            std::cout << "GNU Radio FFT execution time for length = " << d_fft_size << " : " << d_execution_time * 1e6 << " [us]" << std::endl;
+            std::cout << "GNU Radio FFT execution time for length = " << d_fft_size << " : " << d_execution_time * 1e6 << " [us]\n";
 
             start = std::chrono::system_clock::now();
             for (int k = 0; k < FLAGS_fft_speed_iterations_test; k++)
@@ -63,6 +63,6 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
             end = std::chrono::system_clock::now();
             elapsed_seconds = end - start;
             d_execution_time = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_speed_iterations_test);
-            std::cout << "Armadillo FFT execution time for length = " << d_fft_size << " : " << d_execution_time * 1e6 << " [us]" << std::endl;
+            std::cout << "Armadillo FFT execution time for length = " << d_fft_size << " : " << d_execution_time * 1e6 << " [us]\n";
         });
 }

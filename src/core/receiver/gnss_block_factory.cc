@@ -194,7 +194,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     const ConfigurationInterface* configuration, int ID)
 {
-    const std::string empty_implementation;
+    const std::string default_implementation("Pass_Through");
     // backwards compatibility for old conf files
     std::string role_conditioner = "SignalConditioner";
     std::string role_datatypeadapter = "DataTypeAdapter";
@@ -775,6 +775,17 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 #endif
 
+#if AD9361_DRIVER
+    // The AD9361_DRIVER Driver must be instantiated last. In this way, when using the FPGA, and when using the GNSS receiver
+    // in post-processing mode, the receiver is configured and ready when the DMA starts sending samples to the receiver.
+    else if (implementation == "Ad9361_Fpga_Signal_Source")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Ad9361FpgaSignalSource>(configuration, role, in_streams,
+                out_streams, queue);
+            block = std::move(block_);
+        }
+#endif
+
     // DATA TYPE ADAPTER -----------------------------------------------------------
     else if (implementation == "Byte_To_Short")
         {
@@ -885,16 +896,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams);
             block = std::move(block_);
         }
-
-#if OPENCL_BLOCKS
-    else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
-        {
-            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaPcpsOpenClAcquisition>(configuration, role, in_streams,
-                out_streams);
-            block = std::move(block_);
-        }
-#endif
-
     else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
         {
             std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaPcpsAcquisitionFineDoppler>(configuration, role, in_streams,
@@ -991,7 +992,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams);
             block = std::move(block_);
         }
-
+#if OPENCL_BLOCKS
+    else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaPcpsOpenClAcquisition>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+#endif
 #if ENABLE_FPGA
     else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fpga")
         {
@@ -1062,15 +1070,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams);
             block = std::move(block_);
         }
-
-#if CUDA_GPU_ACCEL
-    else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
-        {
-            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaDllPllTrackingGPU>(configuration, role, in_streams,
-                out_streams);
-            block = std::move(block_);
-        }
-#endif
     else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking")
         {
             std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GalileoE1DllPllVemlTracking>(configuration, role, in_streams,
@@ -1125,6 +1124,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams);
             block = std::move(block_);
         }
+#if CUDA_GPU_ACCEL
+    else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaDllPllTrackingGPU>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+#endif
 #if ENABLE_FPGA
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
         {
@@ -1237,17 +1244,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 
-#if AD9361_DRIVER
-    // The AD9361_DRIVER Driver is instantiated last. In this way, when using the FPGA, and when using the GNSS receiver
-    // in post-processing mode, the receiver is configured and ready when the DMA starts sending samples to the receiver.
-    else if (implementation == "Ad9361_Fpga_Signal_Source")
-        {
-            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Ad9361FpgaSignalSource>(configuration, role, in_streams,
-                out_streams, queue);
-            block = std::move(block_);
-        }
-#endif
-
     else
         {
             // Log fatal. This causes execution to stop.
@@ -1293,16 +1289,6 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                 out_streams);
             block = std::move(block_);
         }
-
-#if OPENCL_BLOCKS
-    else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
-        {
-            std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL1CaPcpsOpenClAcquisition>(configuration, role, in_streams,
-                out_streams);
-            block = std::move(block_);
-        }
-#endif
-
     else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL1CaPcpsAcquisitionFineDoppler>(configuration, role, in_streams,
@@ -1400,6 +1386,14 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                 out_streams);
             block = std::move(block_);
         }
+#if OPENCL_BLOCKS
+    else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
+        {
+            std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL1CaPcpsOpenClAcquisition>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+#endif
 #if ENABLE_FPGA
     else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fpga")
         {
@@ -1507,14 +1501,6 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams);
             block = std::move(block_);
         }
-#if CUDA_GPU_ACCEL
-    else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
-        {
-            std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaDllPllTrackingGPU>(configuration, role, in_streams,
-                out_streams);
-            block = std::move(block_);
-        }
-#endif
     else if (implementation == "GLONASS_L1_CA_DLL_PLL_Tracking")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GlonassL1CaDllPllTracking>(configuration, role, in_streams,
@@ -1551,6 +1537,14 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams);
             block = std::move(block_);
         }
+#if CUDA_GPU_ACCEL
+    else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_GPU")
+        {
+            std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaDllPllTrackingGPU>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+#endif
 #if ENABLE_FPGA
     else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
         {

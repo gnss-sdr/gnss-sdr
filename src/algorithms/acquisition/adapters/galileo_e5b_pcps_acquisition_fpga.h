@@ -193,20 +193,22 @@ private:
     static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;
+    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
+    std::weak_ptr<ChannelFsm> channel_fsm_;
+
+    Gnss_Synchro* gnss_synchro_;
+
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
-    bool acq_pilot_;
-    bool acq_iq_;
+    int32_t doppler_center_;
     uint32_t channel_;
-    std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
-    int32_t doppler_center_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    Gnss_Synchro* gnss_synchro_;
-    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
+    bool acq_pilot_;
+    bool acq_iq_;
 };
 
 #endif  // GNSS_SDR_GALILEO_E5B_PCPS_ACQUISITION_FPGA_H

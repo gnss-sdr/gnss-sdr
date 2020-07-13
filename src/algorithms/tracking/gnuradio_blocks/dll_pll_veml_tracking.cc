@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,6 +31,7 @@
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E5b.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_processing.h"
 #include "beidou_b3i_signal_processing.h"
@@ -127,6 +128,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     map_signal_pretty_name["2S"] = "L2C";
     map_signal_pretty_name["2G"] = "L2 C/A";
     map_signal_pretty_name["5X"] = "E5a";
+    map_signal_pretty_name["7X"] = "E5b";
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
     map_signal_pretty_name["B3"] = "B3I";
@@ -279,6 +281,37 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                             // synchronize and remove data secondary code
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
+                            d_signal_pretty_name = d_signal_pretty_name + "I";
+                            d_interchange_iq = true;
+                        }
+                }
+            else if (d_signal_type == "7X")
+                {
+                    d_signal_carrier_freq = GALILEO_E5B_FREQ_HZ;
+                    d_code_period = GALILEO_E5B_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E5B_CODE_CHIP_RATE_CPS;
+                    d_symbols_per_bit = 4;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_code_length_chips = static_cast<int32_t>(GALILEO_E5B_CODE_LENGTH_CHIPS);
+                    d_secondary = true;
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            // synchronize pilot secondary code
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5B_Q_SECONDARY_CODE_LENGTH);
+                            d_signal_pretty_name = d_signal_pretty_name + "Q";
+                            // remove data secondary code
+                            d_data_secondary_code_length = static_cast<uint32_t>(GALILEO_E5B_I_SECONDARY_CODE_LENGTH);
+                            d_data_secondary_code_string = GALILEO_E5B_I_SECONDARY_CODE;
+                        }
+                    else
+                        {
+                            // synchronize and remove data secondary code
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5B_I_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_string = GALILEO_E5B_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
                         }
@@ -647,6 +680,30 @@ void dll_pll_veml_tracking::start_tracking()
                         {
                             d_tracking_code[i] = aux_code[i].imag();
                             d_data_code[i] = aux_code[i].real();  // the same because it is generated the full signal (E5aI + E5aQ)
+                        }
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                }
+            else
+                {
+                    for (int32_t i = 0; i < d_code_length_chips; i++)
+                        {
+                            d_tracking_code[i] = aux_code[i].real();
+                        }
+                }
+        }
+    else if (d_systemName == "Galileo" and d_signal_type == "7X")
+        {
+            volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
+            std::array<char, 3> signal_type_ = {{'7', 'X', '\0'}};
+            galileo_e5_b_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, signal_type_);
+            if (d_trk_parameters.track_pilot)
+                {
+                    d_secondary_code_string = GALILEO_E5B_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1];
+                    for (int32_t i = 0; i < d_code_length_chips; i++)
+                        {
+                            d_tracking_code[i] = aux_code[i].imag();
+                            d_data_code[i] = aux_code[i].real();  // the same because it is generated the full signal (E5bI + E5bsQ)
                         }
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                     d_correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code.data(), d_prompt_data_shift);

@@ -1567,24 +1567,8 @@ void GNSSFlowgraph::init()
         }
 
     observables_ = block_factory->GetObservables(configuration_.get());
-    // Mark old implementations as deprecated
-    std::string default_str("Default");
-    std::string obs_implementation = configuration_->property("Observables.implementation", default_str);
-    if ((obs_implementation == "GPS_L1_CA_Observables") || (obs_implementation == "GPS_L2C_Observables") ||
-        (obs_implementation == "Galileo_E1B_Observables") || (obs_implementation == "Galileo_E5A_Observables"))
-        {
-            std::cout << "WARNING: Implementation '" << obs_implementation << "' of the Observables block has been replaced by 'Hybrid_Observables'.\n";
-            std::cout << "Please update your configuration file.\n";
-        }
 
     pvt_ = block_factory->GetPVT(configuration_.get());
-    // Mark old implementations as deprecated
-    std::string pvt_implementation = configuration_->property("PVT.implementation", default_str);
-    if ((pvt_implementation == "GPS_L1_CA_PVT") || (pvt_implementation == "Galileo_E1_PVT") || (pvt_implementation == "Hybrid_PVT"))
-        {
-            std::cout << "WARNING: Implementation '" << pvt_implementation << "' of the PVT block has been replaced by 'RTKLIB_PVT'.\n";
-            std::cout << "Please update your configuration file.\n";
-        }
 
     auto channels = block_factory->GetChannels(configuration_.get(), queue_.get());
 

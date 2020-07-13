@@ -89,6 +89,7 @@ Concurrent_Map<Gps_Iono> global_gps_iono_map;
 Concurrent_Map<Gps_Utc_Model> global_gps_utc_model_map;
 Concurrent_Map<Gps_Almanac> global_gps_almanac_map;
 Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 bool stop;
 Concurrent_Queue<int> channel_internal_queue;

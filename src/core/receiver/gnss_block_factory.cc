@@ -194,7 +194,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     const ConfigurationInterface* configuration, int ID)
 {
-    const std::string default_implementation("Pass_Through");
+    const std::string empty_implementation;
     // backwards compatibility for old conf files
     std::string role_conditioner = "SignalConditioner";
     std::string role_datatypeadapter = "DataTypeAdapter";

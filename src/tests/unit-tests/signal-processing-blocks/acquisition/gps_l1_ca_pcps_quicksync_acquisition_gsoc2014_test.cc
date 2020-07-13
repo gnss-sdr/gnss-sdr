@@ -21,7 +21,6 @@
 
 
 #include "concurrent_queue.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -128,7 +127,6 @@ class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test : public ::testing::Test
 protected:
     GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -149,7 +147,6 @@ protected:
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<GpsL1CaPcpsQuickSyncAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;

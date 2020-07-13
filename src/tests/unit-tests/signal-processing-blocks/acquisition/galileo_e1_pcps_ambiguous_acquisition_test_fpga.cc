@@ -26,7 +26,6 @@
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_signal.h"
 #include "gnss_synchro.h"

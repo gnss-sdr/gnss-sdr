@@ -23,7 +23,6 @@
 #include "concurrent_queue.h"
 #include "fir_filter.h"
 #include "galileo_e5b_pcps_acquisition.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -132,7 +131,6 @@ class GalileoE5bPcpsAcquisitionTest : public ::testing::Test
 protected:
     GalileoE5bPcpsAcquisitionTest()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
@@ -156,7 +154,6 @@ protected:
     boost::shared_ptr<GalileoE5bPcpsAcquisition> acquisition;
 #endif
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     std::thread ch_thread;
 

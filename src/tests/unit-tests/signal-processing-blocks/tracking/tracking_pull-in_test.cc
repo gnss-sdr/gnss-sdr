@@ -828,7 +828,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                             // create flowgraph
                             auto top_block_trk = gr::make_top_block("Tracking test");
-                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
+                            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config.get(), "Tracking", 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             auto msg_rx = TrackingPullInTest_msg_rx_make();
 

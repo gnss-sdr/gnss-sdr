@@ -34,7 +34,6 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 #include "GPS_L1_CA.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
@@ -205,7 +204,6 @@ public:
 
     GpsL1CATelemetryDecoderTest()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
@@ -216,7 +214,6 @@ public:
     void configure_receiver();
 
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;

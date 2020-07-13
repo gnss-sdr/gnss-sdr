@@ -172,7 +172,7 @@
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
     const ConfigurationInterface* configuration, Concurrent_Queue<pmt::pmt_t>* queue, int ID)
 {
-    const std::string default_implementation("File_Signal_Source");
+    const std::string empty_implementation;
     std::string role = "SignalSource";  // backwards compatibility for old conf files
     try
         {
@@ -185,16 +185,16 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
         {
             LOG(WARNING) << e.what();
         }
-    std::string implementation = configuration->property(role + ".implementation", default_implementation);
+    std::string implementation = configuration->property(role + ".implementation", empty_implementation);
     LOG(INFO) << "Getting SignalSource with implementation " << implementation;
-    return GetBlock(configuration, role, implementation, 0, 1, queue);
+    return GetBlock(configuration, role, 0, 1, queue);
 }
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     const ConfigurationInterface* configuration, int ID)
 {
-    const std::string default_implementation("Pass_Through");
+    const std::string empty_implementation;
     // backwards compatibility for old conf files
     std::string role_conditioner = "SignalConditioner";
     std::string role_datatypeadapter = "DataTypeAdapter";
@@ -214,7 +214,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             LOG(WARNING) << e.what();
         }
-    std::string signal_conditioner = configuration->property(role_conditioner + ".implementation", default_implementation);
+    std::string signal_conditioner = configuration->property(role_conditioner + ".implementation", empty_implementation);
 
     std::string data_type_adapter;
     std::string input_filter;
@@ -227,9 +227,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         }
     else
         {
-            data_type_adapter = configuration->property(role_datatypeadapter + ".implementation", default_implementation);
-            input_filter = configuration->property(role_inputfilter + ".implementation", default_implementation);
-            resampler = configuration->property(role_resampler + ".implementation", default_implementation);
+            data_type_adapter = configuration->property(role_datatypeadapter + ".implementation", empty_implementation);
+            input_filter = configuration->property(role_inputfilter + ".implementation", empty_implementation);
+            resampler = configuration->property(role_resampler + ".implementation", empty_implementation);
         }
 
     LOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
@@ -241,18 +241,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             // instantiate the array version
             std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<ArraySignalConditioner>(configuration,
-                GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
-                GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
-                GetBlock(configuration, role_resampler, resampler, 1, 1),
+                GetBlock(configuration, role_datatypeadapter, 1, 1),
+                GetBlock(configuration, role_inputfilter, 1, 1),
+                GetBlock(configuration, role_resampler, 1, 1),
                 role_conditioner, "Signal_Conditioner");
             return conditioner_;
         }
 
     // single-antenna version
     std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<SignalConditioner>(configuration,
-        GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
-        GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
-        GetBlock(configuration, role_resampler, resampler, 1, 1),
+        GetBlock(configuration, role_datatypeadapter, 1, 1),
+        GetBlock(configuration, role_inputfilter, 1, 1),
+        GetBlock(configuration, role_resampler, 1, 1),
         role_conditioner, "Signal_Conditioner");
     return conditioner_;
 }
@@ -260,8 +260,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const ConfigurationInterface* configuration)
 {
-    const std::string default_implementation("Hybrid_Observables");
-    std::string implementation = configuration->property("Observables.implementation", default_implementation);
+    const std::string empty_implementation;
+    std::string implementation = configuration->property("Observables.implementation", empty_implementation);
     LOG(INFO) << "Getting Observables with implementation " << implementation;
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
@@ -274,7 +274,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const Confi
     unsigned int Beidou_channels = configuration->property("Channels_B1.count", 0);
     Beidou_channels += configuration->property("Channels_B3.count", 0);
     unsigned int extra_channels = 1;  // For monitor channel sample counter
-    return GetBlock(configuration, "Observables", implementation,
+    return GetBlock(configuration, "Observables",
         Galileo_channels +
             GPS_channels +
             Glonass_channels +
@@ -289,8 +289,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const Confi
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const ConfigurationInterface* configuration)
 {
-    const std::string default_implementation("RTKLIB_PVT");
-    std::string implementation = configuration->property("PVT.implementation", default_implementation);
+    const std::string empty_implementation;
+    std::string implementation = configuration->property("PVT.implementation", empty_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
@@ -302,7 +302,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const Configuration
     Glonass_channels += configuration->property("Channels_2G.count", 0);
     unsigned int Beidou_channels = configuration->property("Channels_B1.count", 0);
     Beidou_channels += configuration->property("Channels_B3.count", 0);
-    return GetBlock(configuration, "PVT", implementation,
+    return GetBlock(configuration, "PVT",
         Galileo_channels + GPS_channels + Glonass_channels + Beidou_channels, 0);
 }
 
@@ -551,12 +551,13 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     const ConfigurationInterface* configuration,
     const std::string& role,
-    const std::string& implementation,
     unsigned int in_streams,
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
 {
     std::unique_ptr<GNSSBlockInterface> block;
+    const std::string defaut_implementation("Pass_Through");
+    const std::string implementation = configuration->property(role + ".implementation", defaut_implementation);
 
     // PASS THROUGH ------------------------------------------------------------
     if (implementation == "Pass_Through")

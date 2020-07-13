@@ -62,11 +62,12 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration);
 
     /*!
-     * \brief Returns the block with the required configuration and implementation
+     * \brief Returns the block with the required role implementation and its configuration parameters 
      */
     std::unique_ptr<GNSSBlockInterface> GetBlock(const ConfigurationInterface* configuration,
-        const std::string& role, const std::string& implementation,
-        unsigned int in_streams, unsigned int out_streams,
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue = nullptr);
 
 private:

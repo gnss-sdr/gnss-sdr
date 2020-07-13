@@ -25,7 +25,6 @@
 #include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"

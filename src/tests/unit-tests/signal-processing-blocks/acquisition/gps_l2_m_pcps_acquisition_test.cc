@@ -23,7 +23,6 @@
 #include "GPS_L2C.h"
 #include "acquisition_dump_reader.h"
 #include "concurrent_queue.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -135,7 +134,6 @@ class GpsL2MPcpsAcquisitionTest : public ::testing::Test
 protected:
     GpsL2MPcpsAcquisitionTest()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         sampling_frequency_hz = 5000000;
@@ -152,7 +150,6 @@ protected:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;

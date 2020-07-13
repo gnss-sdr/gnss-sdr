@@ -74,7 +74,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-
     channel_ = 0;
     threshold_ = 0.0;
     doppler_center_ = 0;

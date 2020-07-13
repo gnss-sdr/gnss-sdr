@@ -2281,7 +2281,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
                                     if (it2 != available_GAL_7X_signals_.end())
                                         {
-                                            estimated_doppler = current_status.second->Carrier_Doppler_hz;
+                                            estimated_doppler = static_cast<float>(current_status.second->Carrier_Doppler_hz);
                                             RX_time = current_status.second->RX_time;
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the Gal 7X satellite and remove it from list

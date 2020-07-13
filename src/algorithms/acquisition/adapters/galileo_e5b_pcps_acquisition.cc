@@ -75,7 +75,6 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-
     channel_ = 0;
     threshold_ = 0.0;
     doppler_center_ = 0;
@@ -94,6 +93,7 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
 
 void GalileoE5bPcpsAcquisition::stop_acquisition()
 {
+    acquisition_->set_active(false);
 }
 
 

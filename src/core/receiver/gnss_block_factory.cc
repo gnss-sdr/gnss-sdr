@@ -1,33 +1,33 @@
 /*!
-* \file gnss_block_factory.cc
-* \brief  This class implements a factory that returns instances of GNSS blocks.
-* \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
-*         Luis Esteve, 2012. luis(at)epsilon-formacion.com
-*         Javier Arribas, 2011. jarribas(at)cttc.es
-*         Marc Majoral, 2018. mmajoral(at)cttc.es
-*         Carles Fernandez-Prades, 2014-2020. cfernandez(at)cttc.es
-*
-* This class encapsulates the complexity behind the instantiation
-* of GNSS blocks.
-*
-*
-* -----------------------------------------------------------------------------
-*
-* Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
-*
-* GNSS-SDR is a software defined Global Navigation
-*          Satellite Systems receiver
-*
-* This file is part of GNSS-SDR.
-*
-* SPDX-License-Identifier: GPL-3.0-or-later
-*
-* -----------------------------------------------------------------------------
-*/
+ * \file gnss_block_factory.cc
+ * \brief  This class implements a factory that returns instances of GNSS blocks.
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *         Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Marc Majoral, 2018. mmajoral(at)cttc.es
+ *         Carles Fernandez-Prades, 2014-2020. cfernandez(at)cttc.es
+ *
+ * This class encapsulates the complexity behind the instantiation
+ * of GNSS blocks.
+ *
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
 
 
 #include "gnss_block_factory.h"
-#include "acquisition_interface.h"  // for AcquisitionInterface
+#include "acquisition_interface.h"
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
 #include "beidou_b1i_dll_pll_tracking.h"
@@ -119,6 +119,7 @@
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
 #include "galileo_e5a_pcps_acquisition_fpga.h"
+// #include "galileo_e5b_pcps_acquisition_fpga.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l2_m_dll_pll_tracking_fpga.h"

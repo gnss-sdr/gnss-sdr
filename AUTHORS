@@ -1,5 +1,5 @@
 GNSS-SDR Authorship
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 The GNSS-SDR project is hosted and sponsored by the Centre Tecnològic de
 Telecomunicacions de Catalunya (CTTC), a non-profit research foundation located
@@ -9,7 +9,7 @@ Systems Division of CTTC, and it is the combined effort of students,
 software engineers and researchers from different institutions around the World.
 
 Contact Information
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
     GNSS-SDR Homepage
     ----------------------------
     https://gnss-sdr.org
@@ -20,7 +20,7 @@ Contact Information
     http://www.cttc.cat
 
 
-    Mailing Lists
+    Mailing List
     ----------------------------
     gnss-sdr-developers@lists.sourceforge.net
     https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers
@@ -32,31 +32,32 @@ Contact Information
 
 
 List of authors
-------------------------------------------------------------------------------
-Carles Fernández-Prades carles.fernandez@cttc.cat       Project manager
-Javier Arribas          javier.arribas@cttc.es          Developer
-Luis Esteve Elfau       luis@epsilon-formacion.com      Developer
-Antonio Ramos           antonio.ramosdet@gmail.com      Developer
-Marc Majoral            marc.majoral@cttc.cat           Developer
-Jordi Vilà-Valls        jordi.vila@cttc.cat             Consultant
-Pau Closas              pau.closas@northeastern.edu     Consultant
-Álvaro Cebrián Juan     acebrianjuan@gmail.com          Contributor
-Andres Cecilia Luque    a.cecilia.luque@gmail.com       Contributor
-Anthony Arnold          anthony.arnold@uqconnect.edu.au Contributor
-Carlos Avilés           carlos.avilesr@googlemail.com   Contributor
-Cillian O'Driscoll      cillian.odriscoll@gmail.com     Contributor
-Damian Miralles         dmiralles2009@gmail.com         Contributor
-Daniel Fehr             daniel.co@bluewin.ch            Contributor
-David Pubill            david.pubill@cttc.cat           Contributor
-Fran Fabra              fabra@ice.csic.es               Contributor
-Gabriel Araujo          gabriel.araujo.5000@gmail.com   Contributor
-Gerald LaMountain       gerald@gece.neu.edu             Contributor
-Leonardo Tonetto        tonetto.dev@gmail.com           Contributor
-Mara Branzanti          mara.branzanti@gmail.com        Contributor
-Marc Molina             marc.molina.pena@gmail.com      Contributor
-Marc Sales              marcsales92@gmail.com           Contributor
-Rodrigo Muñoz           rodrigo.munoz@proteinlab.cl     Contributor
-Carlos Paniego          carpanie@hotmail.com            Artwork
+--------------------------------------------------------------------------------
+Carles Fernández-Prades carles.fernandez@cttc.cat        Project manager
+Javier Arribas          javier.arribas@cttc.es           Developer
+Luis Esteve Elfau       luis@epsilon-formacion.com       Developer
+Marc Majoral            marc.majoral@cttc.cat            Developer
+Jordi Vilà-Valls        jordi.vila-valls@isae-supaero.fr Consultant
+Pau Closas              pau.closas@northeastern.edu      Consultant
+Álvaro Cebrián Juan     acebrianjuan@gmail.com           Contributor
+Andres Cecilia Luque    a.cecilia.luque@gmail.com        Contributor
+Anthony Arnold          anthony.arnold@uqconnect.edu.au  Contributor
+Antonio Ramos           antonio.ramosdet@gmail.com       Contributor
+Carlos Avilés           carlos.avilesr@googlemail.com    Contributor
+Cillian O'Driscoll      cillian.odriscoll@gmail.com      Contributor
+Damian Miralles         dmiralles2009@gmail.com          Contributor
+Daniel Fehr             daniel.co@bluewin.ch             Contributor
+David Pubill            david.pubill@cttc.cat            Contributor
+Fran Fabra              fabra@ice.csic.es                Contributor
+Gabriel Araujo          gabriel.araujo.5000@gmail.com    Contributor
+Gerald LaMountain       gerald@gece.neu.edu              Contributor
+Leonardo Tonetto        tonetto.dev@gmail.com            Contributor
+Mara Branzanti          mara.branzanti@gmail.com         Contributor
+Marc Molina             marc.molina.pena@gmail.com       Contributor
+Marc Sales              marcsales92@gmail.com            Contributor
+Piyush Gupta            piyush04111999@gmail.com         Contributor
+Rodrigo Muñoz           rodrigo.munoz@proteinlab.cl      Contributor
+Carlos Paniego          carpanie@hotmail.com             Artwork
 
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>

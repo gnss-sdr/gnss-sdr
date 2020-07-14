@@ -31,7 +31,6 @@
 #include "tcp_cmd_interface.h"     // for TcpCmdInterface
 #include <pmt/pmt.h>
 #include <array>    // for array
-#include <ctime>    // for time_t (gmtime, strftime in implementation)
 #include <memory>   // for shared_ptr
 #include <string>   // for string
 #include <thread>   // for std::thread

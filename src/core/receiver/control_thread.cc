@@ -60,6 +60,7 @@
 #include <algorithm>               // for find, min
 #include <chrono>                  // for milliseconds
 #include <cmath>                   // for floor, fmod, log
+#include <ctime>                   // for time_t, gmtime, strftime
 #include <exception>               // for exception
 #include <iostream>                // for operator<<
 #include <limits>                  // for numeric_limits

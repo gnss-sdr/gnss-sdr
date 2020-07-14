@@ -24,7 +24,6 @@
 #include "gnss_satellite.h"
 #include <glog/logging.h>
 #include <cstddef>  // for size_t
-#include <map>
 #include <ostream>  // for operator<<
 
 

@@ -26,6 +26,7 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_assisted_acquisition_cc.h"
+#include <memory>
 #include <string>
 #include <vector>
 

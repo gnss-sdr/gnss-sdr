@@ -25,6 +25,8 @@
 #ifndef GNSS_SDR_FPGA_DYNAMIC_BIT_SELECTION_H
 #define GNSS_SDR_FPGA_DYNAMIC_BIT_SELECTION_H
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 /*!
@@ -63,12 +65,10 @@ private:
     static const uint32_t Power_Threshold_High = 15000;
     static const uint32_t Power_Threshold_Low = 6000;
 
-
     void close_devices(void);
 
     uint32_t shift_out_bits_band1;  // number of bits to shift for frequency band 1
     uint32_t shift_out_bits_band2;  // number of bits to shift for frequency band 2
-
 
     volatile unsigned* d_map_base1;  // driver memory map corresponding to frequency band 1
     int d_device_descriptor1;        // driver descriptor corresponding to frequency band 1

@@ -25,7 +25,7 @@
 #include "fpga_dynamic_bit_selection.h"
 #include <glog/logging.h>
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
-#include <iostream>    // for cout, endl
+#include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 
 Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(const std::string &device_name1, const std::string &device_name2)
@@ -41,7 +41,7 @@ Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(const std::string &device
     if (d_map_base1 == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA dynamic bit selection module in frequency band 1 into tracking memory";
-            std::cout << "Could not map dynamic bit selection memory corresponding to frequency band 1." << std::endl;
+            std::cout << "Could not map dynamic bit selection memory corresponding to frequency band 1.\n";
         }
 
     // dynamic bits selection corresponding to frequency band 2
@@ -55,7 +55,7 @@ Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(const std::string &device
     if (d_map_base2 == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA dynamic bit selection module in frequency band 2 into tracking memory";
-            std::cout << "Could not map dynamic bit selection memory corresponding to frequency band 2." << std::endl;
+            std::cout << "Could not map dynamic bit selection memory corresponding to frequency band 2.\n";
         }
 
     // initialize default bit selection
@@ -70,6 +70,7 @@ Fpga_dynamic_bit_selection::~Fpga_dynamic_bit_selection()
 {
     close_devices();
 }
+
 
 void Fpga_dynamic_bit_selection::bit_selection(void)
 {
@@ -117,18 +118,19 @@ void Fpga_dynamic_bit_selection::bit_selection(void)
     d_map_base2[0] = shift_out_bits_band2;
 }
 
+
 void Fpga_dynamic_bit_selection::close_devices()
 {
     auto *aux = const_cast<unsigned *>(d_map_base1);
     if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE) == -1)
         {
-            std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio\n";
         }
 
     aux = const_cast<unsigned *>(d_map_base2);
     if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE) == -1)
         {
-            std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio\n";
         }
 
     close(d_device_descriptor1);

@@ -3,7 +3,10 @@
  * \brief signal source for Analog Devices front-end AD9361 connected directly to FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with conventional SDR acquisition and tracking blocks.
  * Please use the fmcomms2 source if conventional SDR acquisition and tracking is selected in the configuration file.
- * \author Javier Arribas, jarribas(at)cttc.es
+ * \authors <ul>
+ *          <li> Javier Arribas, jarribas(at)cttc.es
+ *          <li> Marc Majoral, mmajoral(at)cttc.es
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -288,6 +291,18 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                 }
         }
 
+    // dynamic bits selection
+    enable_dynamic_bit_selection_ = configuration->property(role + ".enable_dynamic_bit_selection", true);
+    if (enable_dynamic_bit_selection_)
+        {
+            std::string dynamic_bit_selection_default_device_name1 = "/dev/uio48";
+            std::string device_name1 = configuration->property(role + ".dyn_bits_sel_devicename", dynamic_bit_selection_default_device_name1);
+            std::string dynamic_bit_selection_default_device_name2 = "/dev/uio49";
+            std::string device_name2 = configuration->property(role + ".dyn_bits_sel_devicename", dynamic_bit_selection_default_device_name2);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_name1, device_name2);
+            thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
+        }
+
     if (in_stream_ > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";
@@ -333,6 +348,22 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
                                     LOG(WARNING) << "Problem shutting down the AD9361 TX stream: " << e.what();
                                 }
                         }
+                }
+        }
+
+    std::unique_lock<std::mutex> lock(dynamic_bit_selection_mutex);
+    bool bit_selection_enabled = enable_dynamic_bit_selection_;
+    lock.unlock();
+
+    if (bit_selection_enabled == true)
+        {
+            std::unique_lock<std::mutex> lock(dynamic_bit_selection_mutex);
+            enable_dynamic_bit_selection_ = false;
+            lock.unlock();
+
+            if (thread_dynamic_bit_selection.joinable())
+                {
+                    thread_dynamic_bit_selection.join();
                 }
         }
 }
@@ -576,6 +607,23 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
         }
 }
 
+void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process(void)
+{
+    bool dynamic_bit_selection_active = true;
+
+    while (dynamic_bit_selection_active)
+        {
+            // setting the bit selection to the top bits
+            dynamic_bit_selection_fpga->bit_selection();
+            std::this_thread::sleep_for(std::chrono::milliseconds(Gain_control_period_ms));
+            std::unique_lock<std::mutex> lock(dynamic_bit_selection_mutex);
+            if (enable_dynamic_bit_selection_ == false)
+                {
+                    dynamic_bit_selection_active = false;
+                }
+            lock.unlock();
+        }
+}
 
 void Ad9361FpgaSignalSource::connect(gr::top_block_sptr top_block)
 {

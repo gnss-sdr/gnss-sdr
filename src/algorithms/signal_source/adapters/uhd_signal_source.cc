@@ -254,6 +254,7 @@ void UhdSignalSource::connect(gr::top_block_sptr top_block)
 
 void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
+    uhd_source_->stop();
     for (int i = 0; i < RF_channels_; i++)
         {
             if (samples_.at(i) != 0ULL)

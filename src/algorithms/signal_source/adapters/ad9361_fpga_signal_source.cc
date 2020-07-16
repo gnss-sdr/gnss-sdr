@@ -3,7 +3,10 @@
  * \brief signal source for Analog Devices front-end AD9361 connected directly to FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with conventional SDR acquisition and tracking blocks.
  * Please use the fmcomms2 source if conventional SDR acquisition and tracking is selected in the configuration file.
- * \author Javier Arribas, jarribas(at)cttc.es
+ * \authors <ul>
+ *          <li> Javier Arribas, jarribas(at)cttc.es
+ *          <li> Marc Majoral, mmajoral(at)cttc.es
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *

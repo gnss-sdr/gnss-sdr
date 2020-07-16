@@ -22,6 +22,7 @@
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
+#include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
 #include <pmt/pmt.h>
@@ -66,13 +67,20 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    // perform dynamic bit selection every 500 ms by default
+    static const uint32_t Gain_control_period_ms = 500;
+
     void run_DMA_process(const std::string &FreqBand,
         const std::string &Filename1,
         const std::string &Filename2);
 
+    void run_dynamic_bit_selection_process(void);
+
     std::thread thread_file_to_dma;
+    std::thread thread_dynamic_bit_selection;
 
     std::shared_ptr<Fpga_Switch> switch_fpga;
+    std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
 
     std::string role_;
 
@@ -115,9 +123,11 @@ private:
     bool rx1_enable_;
     bool rx2_enable_;
     bool enable_DMA_;
+    bool enable_dynamic_bit_selection_;
     bool rf_shutdown_;
 
     std::mutex dma_mutex;
+    std::mutex dynamic_bit_selection_mutex;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

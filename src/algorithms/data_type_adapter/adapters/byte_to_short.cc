@@ -20,16 +20,15 @@
 #include "byte_to_short.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <cstdint>
 #include <utility>
 
 
 ByteToShort::ByteToShort(const ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_input_item_type = "byte";
-    std::string default_output_item_type = "short";
-    std::string default_dump_filename = "../data/input_filter.dat";
+    const std::string default_input_item_type("byte");
+    const std::string default_output_item_type("short");
+    const std::string default_dump_filename("../data/input_filter.dat");
 
     DLOG(INFO) << "role " << role_;
 

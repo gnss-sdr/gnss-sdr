@@ -123,7 +123,7 @@ TEST_F(NotchFilterLiteTest, ConnectAndRun)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -165,5 +165,5 @@ TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

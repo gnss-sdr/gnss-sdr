@@ -216,7 +216,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
 {
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
 }
@@ -232,7 +232,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx_make(channel_internal_queue);
 
@@ -251,7 +251,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -263,7 +263,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
 
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx_make(channel_internal_queue);
 
@@ -319,7 +319,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     stop_queue();
 
     uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 
     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
 

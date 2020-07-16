@@ -36,7 +36,6 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
     acq_ = std::move(acq);
     trk_ = std::move(trk);
     nav_ = std::move(nav);
-    queue_ = queue;
     role_ = role;
     implementation_ = implementation;
     channel_ = channel;
@@ -60,8 +59,8 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
             int64_t deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
             if (deprecation_warning != 0)
                 {
-                    std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED." << std::endl;
-                    std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file." << std::endl;
+                    std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED.\n";
+                    std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file.\n";
                 }
         }
 
@@ -80,10 +79,10 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", 0.0);
+    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
     if (threshold == 0.0)
         {
-            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
+            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", static_cast<float>(0.0));
         }
 
     acq_->set_threshold(threshold);
@@ -97,7 +96,7 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
     channel_fsm_->set_tracking(trk_);
     channel_fsm_->set_telemetry(nav_);
     channel_fsm_->set_channel(channel_);
-    channel_fsm_->set_queue(queue_);
+    channel_fsm_->set_queue(queue);
 
     connected_ = false;
 

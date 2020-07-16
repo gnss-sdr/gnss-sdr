@@ -128,7 +128,7 @@ private:
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     double d_rem_code_phase_chips;
-    double d_rem_carr_phase_rad;
+    float d_rem_carr_phase_rad;
 
     // acquisition
     double d_acq_code_phase_samples;

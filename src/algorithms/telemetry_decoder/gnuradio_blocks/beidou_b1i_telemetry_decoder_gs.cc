@@ -244,7 +244,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
+            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -252,7 +252,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj = std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV UTC Model have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV utc model message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
+            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV utc model message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
         }
     if (d_nav.have_new_iono() == true)
         {
@@ -260,15 +260,15 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             std::shared_ptr<Beidou_Dnav_Iono> tmp_obj = std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Iono have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV Iono message received in channel " << d_channel << ": Iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
+            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV Iono message received in channel " << d_channel << ": Iono model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
         }
     if (d_nav.have_new_almanac() == true)
         {
             // uint32_t slot_nbr = d_nav.i_alm_satellite_PRN;
             // std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
             // this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Almanac have been received in channel" << d_channel << " from satellite " << d_satellite << std::endl;
-            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << std::endl;
+            LOG(INFO) << "BEIDOU DNAV Almanac have been received in channel" << d_channel << " from satellite " << d_satellite << '\n';
+            std::cout << TEXT_YELLOW << "New BEIDOU B1I DNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
         }
 }
 

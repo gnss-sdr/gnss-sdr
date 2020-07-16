@@ -200,7 +200,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
 
-    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+    d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz);  // The carrier loop filter implements the Doppler accumulator
@@ -228,7 +228,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
     LOG(INFO) << "Tracking of GPS L1 C/A signal for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -354,14 +354,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                 static_cast<float>(d_rem_code_phase_chips),
                 d_correlation_length_samples, d_n_correlator_taps);
             cudaProfilerStop();
-            // std::cout<<"c_out[0]="<<d_correlator_outs[0]<<"c_out[1]="<<d_correlator_outs[1]<<"c_out[2]="<<d_correlator_outs[2]<<std::endl;
+            // std::cout<<"c_out[0]="<<d_correlator_outs[0]<<"c_out[1]="<<d_correlator_outs[1]<<"c_out[2]="<<d_correlator_outs[2]<< '\n';
 
             // UPDATE INTEGRATION TIME
             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in);
 
             // ################## PLL ##########################################################
             // Update PLL discriminator [rads/Ti -> Secs/Ti]
-            carr_phase_error_secs_Ti = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / GPS_TWO_PI;  // prompt output
+            carr_phase_error_secs_Ti = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / TWO_PI;  // prompt output
             // Carrier discriminator filter
             // NOTICE: The carrier loop filter includes the Carrier Doppler accumulator, as described in Kaplan
             // d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_phase_error_filt_secs_ti/INTEGRATION_TIME;
@@ -400,14 +400,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             // UPDATE REMNANT CARRIER PHASE
             CORRECTED_INTEGRATION_TIME_S = (static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in));
             // remnant carrier phase [rad]
-            d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, GPS_TWO_PI);
+            d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, TWO_PI);
             // UPDATE CARRIER PHASE ACCUULATOR
             // carrier phase accumulator prior to update the PLL estimators (accumulated carrier in this loop depends on the old estimations!)
             d_acc_carrier_phase_cycles -= d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S;
 
             // ################### PLL COMMANDS #################################################
             // carrier phase step (NCO phase increment per sample) [rads/sample]
-            d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+            d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
             // ################### DLL COMMANDS #################################################
             // code phase step (Code resampler phase increment per sample) [chips/sample]
@@ -440,7 +440,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                         }
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {
-                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                            std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                             d_carrier_lock_fail_counter = 0;
@@ -453,7 +453,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
-            current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
+            current_synchro_data.Carrier_phase_rads = TWO_PI * d_acc_carrier_phase_cycles;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
@@ -503,12 +503,12 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     // PRN start sample stamp
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
-                    tmp_float = d_acc_carrier_phase_cycles * GPS_TWO_PI;
+                    tmp_float = static_cast<float>(d_acc_carrier_phase_cycles * TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // carrier and code frequency
-                    tmp_float = d_carrier_doppler_hz;
+                    tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_code_freq_chips;
+                    tmp_float = static_cast<float>(d_code_freq_chips);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
                     tmp_float = 1.0 / (carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
@@ -521,9 +521,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     tmp_float = code_error_filt_secs_Ti;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
-                    tmp_float = d_CN0_SNV_dB_Hz;
+                    tmp_float = static_cast<float>(d_CN0_SNV_dB_Hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = d_carrier_lock_test;
+                    tmp_float = static_cast<float>(d_carrier_lock_test);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
                     tmp_float = code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;

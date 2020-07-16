@@ -74,7 +74,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.code_length = code_length;
 
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0));
+    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 0);
 
@@ -159,7 +159,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.all_fft_codes = d_all_fft_codes_.data();
 
     acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", static_cast<float>(125.0));
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     // reference for the FPGA FFT-IFFT attenuation factor

@@ -40,7 +40,7 @@
 #include <glog/logging.h>                              // for FLAGS_log_dir
 #include <chrono>                                      // for time_point
 #include <exception>                                   // for exception
-#include <iostream>                                    // for operator<<, endl
+#include <iostream>                                    // for operator<<
 #include <memory>                                      // for unique_ptr
 #include <string>                                      // for string
 
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     google::SetUsageMessage(intro_help);
     google::SetVersionString(gnss_sdr_version);
     google::ParseCommandLineFlags(&argc, &argv, true);
-    std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait." << std::endl;
+    std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait.\n";
 
 #if CUDA_GPU_ACCEL
     // Reset the device
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     // profiled. Calling cudaDeviceReset causes all profile data to be
     // flushed before the application exits
     cudaDeviceReset();
-    std::cout << "Reset CUDA device done " << std::endl;
+    std::cout << "Reset CUDA device done.\n";
 #endif
 
     if (GOOGLE_STRIP_LOG == 0)
@@ -109,9 +109,8 @@ int main(int argc, char** argv)
                 {
                     std::cout << "Logging will be written at "
                               << fs::temp_directory_path()
-                              << std::endl
-                              << "Use gnss-sdr --log_dir=/path/to/log to change that."
-                              << std::endl;
+                              << '\n'
+                              << "Use gnss-sdr --log_dir=/path/to/log to change that.\n";
                 }
             else
                 {
@@ -120,17 +119,16 @@ int main(int argc, char** argv)
                         {
                             std::cout << "The path "
                                       << FLAGS_log_dir
-                                      << " does not exist, attempting to create it."
-                                      << std::endl;
+                                      << " does not exist, attempting to create it.\n";
                             errorlib::error_code ec;
                             if (!fs::create_directory(p, ec))
                                 {
-                                    std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
+                                    std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended.\n";
                                     google::ShutDownCommandLineFlags();
                                     return 1;
                                 }
                         }
-                    std::cout << "Logging will be written at " << FLAGS_log_dir << std::endl;
+                    std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
                 }
         }
 
@@ -147,9 +145,9 @@ int main(int argc, char** argv)
         }
     catch (const boost::thread_resource_error& e)
         {
-            std::cerr << "Failed to create boost thread." << std::endl;
+            std::cerr << "Failed to create boost thread.\n";
             google::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended." << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
             return 1;
         }
     catch (const boost::exception& e)
@@ -157,14 +155,14 @@ int main(int argc, char** argv)
             if (GOOGLE_STRIP_LOG == 0)
                 {
                     LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
-                    std::cerr << boost::diagnostic_information(e) << std::endl;
+                    std::cerr << boost::diagnostic_information(e) << '\n';
                 }
             else
                 {
-                    std::cerr << "Boost exception: " << boost::diagnostic_information(e) << std::endl;
+                    std::cerr << "Boost exception: " << boost::diagnostic_information(e) << '\n';
                 }
             google::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended." << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
             return 1;
         }
     catch (const std::exception& ex)
@@ -172,14 +170,14 @@ int main(int argc, char** argv)
             if (GOOGLE_STRIP_LOG == 0)
                 {
                     LOG(WARNING) << "C++ Standard Library exception: " << ex.what();
-                    std::cerr << ex.what() << std::endl;
+                    std::cerr << ex.what() << '\n';
                 }
             else
                 {
-                    std::cerr << "C++ Standard Library exception: " << ex.what() << std::endl;
+                    std::cerr << "C++ Standard Library exception: " << ex.what() << '\n';
                 }
             google::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended." << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
             return 1;
         }
     catch (...)
@@ -187,14 +185,14 @@ int main(int argc, char** argv)
             if (GOOGLE_STRIP_LOG == 0)
                 {
                     LOG(WARNING) << "Unexpected catch. This should not happen.";
-                    std::cerr << "Unexpected error." << std::endl;
+                    std::cerr << "Unexpected error.\n";
                 }
             else
                 {
-                    std::cerr << "Unexpected catch. This should not happen." << std::endl;
+                    std::cerr << "Unexpected catch. This should not happen.\n";
                 }
             google::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended." << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
             return 1;
         }
 
@@ -204,9 +202,9 @@ int main(int argc, char** argv)
 
     std::cout << "Total GNSS-SDR run time: "
               << elapsed_seconds.count()
-              << " [seconds]" << std::endl;
+              << " [seconds]\n";
 
     google::ShutDownCommandLineFlags();
-    std::cout << "GNSS-SDR program ended." << std::endl;
+    std::cout << "GNSS-SDR program ended.\n";
     return return_code;
 }

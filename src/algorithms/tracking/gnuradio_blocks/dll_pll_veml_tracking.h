@@ -182,12 +182,12 @@ private:
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
     int32_t d_code_lock_fail_counter;
+    int32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
+    int32_t d_code_length_chips;
 
     uint32_t d_channel;
     uint32_t d_secondary_code_length;
     uint32_t d_data_secondary_code_length;
-    uint32_t d_code_length_chips;
-    uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
 
     bool d_pull_in_transitory;
     bool d_corrected_doppler;

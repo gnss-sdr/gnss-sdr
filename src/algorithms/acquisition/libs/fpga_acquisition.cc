@@ -23,14 +23,14 @@
  */
 
 #include "fpga_acquisition.h"
-#include "GPS_L1_CA.h"     // for GPS_TWO_PI
-#include <glog/logging.h>  // for LOG
-#include <cmath>           // for log2
-#include <fcntl.h>         // libraries used by the GIPO
-#include <iostream>        // for operator<<
-#include <sys/mman.h>      // libraries used by the GIPO
-#include <unistd.h>        // for write, close, read, ssize_t
-#include <utility>         // for move
+#include "MATH_CONSTANTS.h"  // for TWO_PI
+#include <glog/logging.h>    // for LOG
+#include <cmath>             // for log2
+#include <fcntl.h>           // libraries used by the GIPO
+#include <iostream>          // for operator<<
+#include <sys/mman.h>        // libraries used by the GIPO
+#include <unistd.h>          // for write, close, read, ssize_t
+#include <utility>           // for move
 
 
 #ifndef TEMP_FAILURE_RETRY
@@ -105,7 +105,7 @@ void Fpga_Acquisition::open_device()
     if ((d_fd = open(d_device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
-            std::cout << "Acq: cannot open deviceio" << d_device_name << std::endl;
+            std::cout << "Acq: cannot open deviceio" << d_device_name << '\n';
         }
     d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE_DEFAULT,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
@@ -113,7 +113,7 @@ void Fpga_Acquisition::open_device()
     if (d_map_base == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
-            std::cout << "Acq: cannot map deviceio" << d_device_name << std::endl;
+            std::cout << "Acq: cannot map deviceio" << d_device_name << '\n';
         }
 }
 
@@ -148,7 +148,7 @@ void Fpga_Acquisition::run_acquisition()
     ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
     if (nbytes != sizeof(int32_t))
         {
-            std::cerr << "Error enabling run in the FPGA." << std::endl;
+            std::cerr << "Error enabling run in the FPGA.\n";
         }
 
     // launch the acquisition process
@@ -160,8 +160,8 @@ void Fpga_Acquisition::run_acquisition()
     nb = read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
-            std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
+            std::cout << "acquisition module Read failed to retrieve 4 bytes!\n";
+            std::cout << "acquisition module Interrupt number " << irq_count << '\n';
         }
 }
 
@@ -179,12 +179,12 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-    phase_step_rad_real = 2.0 * (doppler_min) / static_cast<float>(d_fs_in);
+    phase_step_rad_real = 2.0F * (doppler_min) / static_cast<float>(d_fs_in);
     phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
     d_map_base[3] = phase_step_rad_int;
 
     // repeat the calculation with the doppler step
-    phase_step_rad_real = 2.0 * (doppler_step) / static_cast<float>(d_fs_in);
+    phase_step_rad_real = 2.0F * (doppler_step) / static_cast<float>(d_fs_in);
     phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
     d_map_base[4] = phase_step_rad_int;
 
@@ -245,7 +245,7 @@ void Fpga_Acquisition::close_device()
     auto *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE_DEFAULT) == -1)
         {
-            std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio\n";
         }
     close(d_fd);
 }

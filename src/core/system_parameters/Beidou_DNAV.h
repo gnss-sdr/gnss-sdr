@@ -22,38 +22,9 @@
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
-#include <string>
 #include <utility>
 #include <vector>
 
-constexpr double BEIDOU_DNAV_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
-constexpr double BEIDOU_DNAV_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
-constexpr double BEIDOU_DNAV_PI = 3.1415926535898;            //!< BeiDou DNAV Pi
-constexpr double BEIDOU_DNAV_TWO_PI = 6.2831853071796;        //!< BeiDou DNAV 2Pi
-constexpr double BEIDOU_DNAV_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
-constexpr double BEIDOU_DNAV_GM = 3.986004418e14;             //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] as defined in CGCS2000
-constexpr double BEIDOU_DNAV_F = -4.442807309e-10;            //!< Constant, [s/(m)^(1/2)] F=-2(GM)^.5/C^2
-
-constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
-constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
-constexpr int32_t BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
-constexpr uint32_t BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
-constexpr int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
-constexpr uint32_t BEIDOU_DNAV_WORDS_SUBFRAME = 10;
-constexpr uint32_t BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
-const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
-
-// Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
-constexpr int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
-// Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch
-constexpr int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
-
-// BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
-// GENERAL
-const std::vector<std::pair<int32_t, int32_t> > D1_PRE({{1, 11}});
-const std::vector<std::pair<int32_t, int32_t> > D1_FRAID({{16, 3}});
-const std::vector<std::pair<int32_t, int32_t> > D1_SOW({{19, 8}, {31, 12}});
-const std::vector<std::pair<int32_t, int32_t> > D1_PNUM({{44, 7}});
 
 // DNAV SCALE FACTORS
 // EPH
@@ -106,6 +77,28 @@ constexpr double D1_A0GLO_LSB = 0.1e-9;
 constexpr double D1_A1GLO_LSB = 0.1e-9;
 constexpr double D1_A0UTC_LSB = TWO_N30;
 constexpr double D1_A1UTC_LSB = TWO_N50;
+
+constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
+constexpr int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;  // **************
+constexpr int32_t BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
+constexpr int32_t BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;  //!< Number of bits per subframe in the NAV message [bits]
+// Number of leap seconds passed from the start of the GPS epoch up to the start of BeiDou epoch
+constexpr int32_t BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET = 14;
+// Number of weeks passed from the start of the GPS epoch up to the start of BeiDou epoch
+constexpr int32_t BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET = 1356;
+
+constexpr uint32_t BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
+constexpr uint32_t BEIDOU_DNAV_WORDS_SUBFRAME = 10;
+constexpr uint32_t BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
+constexpr char BEIDOU_DNAV_PREAMBLE[12] = "11100010010";
+
+
+// BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
+// GENERAL
+const std::vector<std::pair<int32_t, int32_t> > D1_PRE({{1, 11}});
+const std::vector<std::pair<int32_t, int32_t> > D1_FRAID({{16, 3}});
+const std::vector<std::pair<int32_t, int32_t> > D1_SOW({{19, 8}, {31, 12}});
+const std::vector<std::pair<int32_t, int32_t> > D1_PNUM({{44, 7}});
 
 // SUBFRAME 1
 const std::vector<std::pair<int32_t, int32_t> > D1_SAT_H1({{43, 1}});

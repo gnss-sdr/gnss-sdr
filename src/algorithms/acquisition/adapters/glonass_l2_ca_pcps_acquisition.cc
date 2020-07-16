@@ -54,13 +54,13 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
-    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
@@ -172,11 +172,7 @@ void GlonassL2CaPcpsAcquisition::set_state(int state)
 
 void GlonassL2CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to connect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -197,11 +193,7 @@ void GlonassL2CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void GlonassL2CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to disconnect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to disconnect
         }
@@ -220,11 +212,7 @@ void GlonassL2CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GlonassL2CaPcpsAcquisition::get_left_block()
 {
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_;
-        }
-    if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             return acquisition_;
         }

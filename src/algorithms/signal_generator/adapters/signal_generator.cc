@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,6 +25,7 @@
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E5b.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <cstdint>
@@ -36,7 +37,7 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string default_dump_file = "./data/gen_source.dat";
     std::string default_system = "G";
     std::string default_signal = "1C";
@@ -79,6 +80,10 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
             if (signal1[0].at(0) == '5')
                 {
                     vector_length = round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS));
+                }
+            else if (signal1[0].at(0) == '7')
+                {
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E5B_CODE_CHIP_RATE_CPS / GALILEO_E5B_CODE_LENGTH_CHIPS));
                 }
             else
                 {

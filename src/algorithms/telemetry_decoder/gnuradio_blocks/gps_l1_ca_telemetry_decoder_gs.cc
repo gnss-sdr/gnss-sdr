@@ -275,7 +275,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
                               << "subframe "
                               << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << std::endl;
+                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << '\n';
 
                     switch (subframe_ID)
                         {
@@ -302,7 +302,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                         case 5:
                             // get almanac (if available)
                             // TODO: implement almanac reader in navigation_message
-                            break;
                         default:
                             break;
                         }
@@ -502,7 +501,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             if (d_flag_PLL_180_deg_phase_locked == true)
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
-                    current_symbol.Carrier_phase_rads += GPS_PI;
+                    current_symbol.Carrier_phase_rads += GNSS_PI;
                 }
 
             if (d_dump == true)

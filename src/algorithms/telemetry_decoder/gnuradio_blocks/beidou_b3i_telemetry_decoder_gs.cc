@@ -248,7 +248,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel"
                       << d_channel << " from satellite " << d_satellite;
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV message received in channel " << d_channel
-                      << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
+                      << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -260,7 +260,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
                       << d_channel << " from satellite " << d_satellite;
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV utc model message received in channel "
                       << d_channel << ": UTC model parameters from satellite "
-                      << d_satellite << TEXT_RESET << std::endl;
+                      << d_satellite << TEXT_RESET << '\n';
         }
     if (d_nav.have_new_iono() == true)
         {
@@ -272,7 +272,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
                       << " from satellite " << d_satellite;
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV Iono message received in channel "
                       << d_channel << ": Iono model parameters from satellite "
-                      << d_satellite << TEXT_RESET << std::endl;
+                      << d_satellite << TEXT_RESET << '\n';
         }
     if (d_nav.have_new_almanac() == true)
         {
@@ -282,9 +282,9 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             //            this->message_port_pub(pmt::mp("telemetry"),
             //            pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Almanac have been received in channel"
-                      << d_channel << " from satellite " << d_satellite << std::endl;
+                      << d_channel << " from satellite " << d_satellite << '\n';
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV almanac received in channel " << d_channel
-                      << " from satellite " << d_satellite << TEXT_RESET << std::endl;
+                      << " from satellite " << d_satellite << TEXT_RESET << '\n';
         }
 }
 

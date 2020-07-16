@@ -132,17 +132,17 @@ FirFilter::FirFilter(const ConfigurationInterface* configuration, std::string ro
 
 void FirFilter::init()
 {
-    std::string default_input_item_type = "gr_complex";
-    std::string default_output_item_type = "gr_complex";
-    std::string default_taps_item_type = "float";
-    std::string default_dump_filename = "../data/input_filter.dat";
-    int default_number_of_taps = 6;
-    unsigned int default_number_of_bands = 2;
-    std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
-    std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
-    std::vector<double> default_error_w = {1.0, 1.0};
-    std::string default_filter_type = "bandpass";
-    int default_grid_density = 16;
+    const std::string default_input_item_type("gr_complex");
+    const std::string default_output_item_type("gr_complex");
+    const std::string default_taps_item_type("float");
+    const std::string default_dump_filename("../data/input_filter.dat");
+    const int default_number_of_taps = 6;
+    const unsigned int default_number_of_bands = 2;
+    const std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
+    const std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
+    const std::vector<double> default_error_w = {1.0, 1.0};
+    const std::string default_filter_type("bandpass");
+    const int default_grid_density = 16;
 
     DLOG(INFO) << "role " << role_;
 

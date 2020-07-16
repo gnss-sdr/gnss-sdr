@@ -65,6 +65,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e5b_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/glonass_l1_ca_pcps_acquisition_gsoc2017_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
@@ -153,7 +154,7 @@ Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 int main(int argc, char **argv)
 {
-    std::cout << "Running GNSS-SDR Tests..." << std::endl;
+    std::cout << "Running GNSS-SDR Tests...\n";
     int res = 0;
     try
         {

@@ -50,78 +50,49 @@ public:
     ~GNSSBlockFactory() = default;
 
     std::unique_ptr<GNSSBlockInterface> GetSignalSource(const ConfigurationInterface* configuration,
-        Concurrent_Queue<pmt::pmt_t>* queue, int ID = -1);  // NOLINT(performance-unnecessary-value-param)
+        Concurrent_Queue<pmt::pmt_t>* queue, int ID = -1);
 
     std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(const ConfigurationInterface* configuration, int ID = -1);
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(const ConfigurationInterface* configuration,
-        Concurrent_Queue<pmt::pmt_t>* queue);  // NOLINT(performance-unnecessary-value-param)
+        Concurrent_Queue<pmt::pmt_t>* queue);
 
     std::unique_ptr<GNSSBlockInterface> GetObservables(const ConfigurationInterface* configuration);
 
     std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration);
 
     /*!
-     * \brief Returns the block with the required configuration and implementation
+     * \brief Returns the block with the required role implementation and its configuration parameters 
      */
     std::unique_ptr<GNSSBlockInterface> GetBlock(const ConfigurationInterface* configuration,
-        const std::string& role, const std::string& implementation,
-        unsigned int in_streams, unsigned int out_streams,
-        Concurrent_Queue<pmt::pmt_t>* queue = nullptr);  // NOLINT(performance-unnecessary-value-param)
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams,
+        Concurrent_Queue<pmt::pmt_t>* queue = nullptr);
 
 private:
-    std::unique_ptr<GNSSBlockInterface> GetChannel_1C(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_2S(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_1B(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_5X(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_L5(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_1G(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_2G(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_B1(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        Concurrent_Queue<pmt::pmt_t>* queue);
-
-    std::unique_ptr<GNSSBlockInterface> GetChannel_B3(const ConfigurationInterface* configuration,
-        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
+    std::unique_ptr<GNSSBlockInterface> GetChannel(
+        const ConfigurationInterface* configuration,
+        const std::string& signal,
+        int channel,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
     std::unique_ptr<AcquisitionInterface> GetAcqBlock(
         const ConfigurationInterface* configuration,
         const std::string& role,
-        const std::string& implementation, unsigned int in_streams,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     std::unique_ptr<TrackingInterface> GetTrkBlock(
         const ConfigurationInterface* configuration,
         const std::string& role,
-        const std::string& implementation, unsigned int in_streams,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     std::unique_ptr<TelemetryDecoderInterface> GetTlmBlock(
         const ConfigurationInterface* configuration,
         const std::string& role,
-        const std::string& implementation, unsigned int in_streams,
+        unsigned int in_streams,
         unsigned int out_streams);
 };
 

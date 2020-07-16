@@ -28,7 +28,7 @@
 LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "gr_complex";
+    const std::string default_item_type("gr_complex");
     std::string default_dump_file = "./labsat_output.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);

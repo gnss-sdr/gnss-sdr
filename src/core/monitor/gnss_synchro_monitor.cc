@@ -28,7 +28,7 @@
 #include <utility>
 
 
-gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
+gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
     int decimation_factor,
     int udp_port,
     const std::vector<std::string>& udp_addresses,
@@ -42,7 +42,7 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
 }
 
 
-gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
+gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     int decimation_factor,
     int udp_port,
     const std::vector<std::string>& udp_addresses,
@@ -68,7 +68,7 @@ int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& inp
             count++;
             if (count >= d_decimation_factor)
                 {
-                    for (unsigned int i = 0; i < d_nchannels; i++)
+                    for (int i = 0; i < d_nchannels; i++)
                         {
                             std::vector<Gnss_Synchro> stocks;
                             stocks.push_back(in[i][epoch]);

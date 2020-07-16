@@ -113,7 +113,7 @@ void Bayesian_estimator::update_sequential(const arma::vec& data)
     arma::vec mu_posterior = (kappa_prior * mu_prior + K * y_mean) / (kappa_prior + K);
     int kappa_posterior = kappa_prior + K;
     int nu_posterior = nu_prior + K;
-    arma::mat Psi_posterior = Psi_prior + Psi_N + (kappa_prior * static_cast<float>(K)) / (kappa_prior + static_cast<float>(K)) * (y_mean - mu_prior) * ((y_mean - mu_prior).t());
+    arma::mat Psi_posterior = Psi_prior + Psi_N + (static_cast<float>(kappa_prior) * static_cast<float>(K)) / (static_cast<float>(kappa_prior) + static_cast<float>(K)) * (y_mean - mu_prior) * ((y_mean - mu_prior).t());
 
     mu_est = mu_posterior;
     if ((nu_posterior - ny - 1) > 0)
@@ -152,7 +152,7 @@ void Bayesian_estimator::update_sequential(const arma::vec& data, const arma::ve
     arma::vec mu_posterior = (kappa_prior_0 * mu_prior_0 + K * y_mean) / (kappa_prior_0 + K);
     int kappa_posterior = kappa_prior_0 + K;
     int nu_posterior = nu_prior_0 + K;
-    arma::mat Psi_posterior = Psi_prior_0 + Psi_N + (kappa_prior_0 * static_cast<float>(K)) / (kappa_prior_0 + static_cast<float>(K)) * (y_mean - mu_prior_0) * ((y_mean - mu_prior_0).t());
+    arma::mat Psi_posterior = Psi_prior_0 + Psi_N + (Psi_prior_0 * static_cast<double>(K)) / (static_cast<double>(kappa_prior_0) + static_cast<double>(K)) * (y_mean - mu_prior_0) * ((y_mean - mu_prior_0).t());
 
     mu_est = mu_posterior;
     if ((nu_posterior - ny - 1) > 0)

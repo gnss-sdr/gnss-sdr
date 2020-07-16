@@ -28,7 +28,13 @@ const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int6
 
 void beidou_b1i_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 2046;
+    constexpr uint32_t _code_length = 2046;
+    const std::array<int32_t, 33> delays = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
+        1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,
+        705};
+    const std::array<int32_t, 37> phase1 = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
+    const std::array<int32_t, 37> phase2 = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
+
     std::bitset<_code_length> G1{};
     std::bitset<_code_length> G2{};
 
@@ -42,12 +48,6 @@ void beidou_b1i_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _c
     uint32_t lcv2;
     uint32_t delay;
     int32_t prn_idx;
-
-    const std::array<int32_t, 33> delays = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
-        1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,
-        705};
-    const std::array<int32_t, 37> phase1 = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
-    const std::array<int32_t, 37> phase2 = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
 
     // compute delay array index for given PRN number
     prn_idx = _prn - 1;
@@ -103,7 +103,7 @@ void beidou_b1i_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _c
 
 void beidou_b1i_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 2046;
+    constexpr uint32_t _code_length = 2046;
     std::array<int32_t, _code_length> b1i_code_int{};
 
     beidou_b1i_code_gen_int(own::span<int32_t>(b1i_code_int.data(), _code_length), _prn, _chip_shift);
@@ -117,7 +117,7 @@ void beidou_b1i_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _c
 
 void beidou_b1i_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 2046;
+    constexpr uint32_t _code_length = 2046;
     std::array<int32_t, _code_length> b1i_code_int{};
 
     beidou_b1i_code_gen_int(own::span<int32_t>(b1i_code_int.data(), _code_length), _prn, _chip_shift);
@@ -130,43 +130,37 @@ void beidou_b1i_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _
 
 
 /*
- *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
+ *  Generates complex BeiDou B1I code for the desired SV ID and sampled to specific sampling frequency
  */
 void beidou_b1i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
-    // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
+    constexpr int32_t _codeFreqBasis = 2046000;  // Hz
+    constexpr int32_t _codeLength = 2046;
+    constexpr float _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // B1I chip period in sec
+
+    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
+
     std::array<std::complex<float>, 2046> _code{};
-    int32_t _samplesPerCode;
     int32_t _codeValueIndex;
-    float _ts;
-    float _tc;
     float aux;
-    const int32_t _codeFreqBasis = 2046000;  // Hz
-    const int32_t _codeLength = 2046;
 
-    // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
-
-    // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);             // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
-
-    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  // generate C/A code 1 sample per chip
+    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  // generate B1I code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             // === Digitizing ==================================================
 
-            // --- Make index array to read C/A code values --------------------
+            // --- Make index array to read B1I code values --------------------
             // The length of the index array depends on the sampling frequency -
-            // number of samples per millisecond (because one C/A code period is one
-            // millisecond).
+            // number of samples per millisecond (because one B1I code period is
+            // one millisecond).
 
-            aux = (_ts * (i + 1)) / _tc;
+            aux = (_ts * (static_cast<float>(i) + 1)) / _tc;
             _codeValueIndex = AUX_CEIL(aux) - 1;
 
-            // --- Make the digitized version of the C/A code ------------------
-            // The "upsampled" code is made by selecting values form the CA code
+            // --- Make the digitized version of the B1I code ------------------
+            // The "upsampled" code is made by selecting values form the B1I code
             // chip array (caCode) for the time instances of each sample.
             if (i == _samplesPerCode - 1)
                 {

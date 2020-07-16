@@ -55,13 +55,13 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-    doppler_step_ = acq_parameters_.doppler_step;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     item_type_ = acq_parameters_.item_type;
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L2_M_CODE_RATE_CPS / GPS_L2_M_CODE_LENGTH_CHIPS)));
-    vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+    vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
     code_ = std::vector<std::complex<float>>(vector_length_);
 
     acquisition_ = pcps_make_acquisition(acq_parameters_);
@@ -187,11 +187,7 @@ void GpsL2MPcpsAcquisition::set_state(int state)
 
 void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to connect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -212,11 +208,7 @@ void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_ == "gr_complex")
-        {
-            // nothing to disconnect
-        }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             // nothing to disconnect
         }
@@ -235,11 +227,7 @@ void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
 {
-    if (item_type_ == "gr_complex")
-        {
-            return acquisition_;
-        }
-    if (item_type_ == "cshort")
+    if (item_type_ == "gr_complex" || item_type_ == "cshort")
         {
             return acquisition_;
         }

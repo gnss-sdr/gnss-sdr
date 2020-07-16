@@ -420,7 +420,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::process_message()
             stop_queue();
             top_block->stop();
 
-            std::cout << std::endl;
+            std::cout << '\n';
         }
 }
 
@@ -434,7 +434,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
 }
 
@@ -447,7 +447,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     config_1();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW({
@@ -465,7 +465,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -474,7 +474,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     config_1();
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -550,8 +550,8 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
 
-            // std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
-            // std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
+            // std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << '\n';
+            // std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << '\n';
             ch_thread.join();
         }
 }
@@ -562,7 +562,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
     config_2();
     top_block = gr::make_top_block("Acquisition test");
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -601,7 +601,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 
-    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
+    std::cout << "Probability of false alarm (target) = " << 0.1 << '\n';
 
     // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
@@ -630,14 +630,14 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
 
             if (i == 0)
                 {
-                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of detection = " << Pd << '\n';
+                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                 }
             else if (i == 1)
                 {
-                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                 }
             ch_thread.join();
         }

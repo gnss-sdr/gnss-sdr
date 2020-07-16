@@ -96,7 +96,7 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime)  // Sa
     M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * GALILEO_PI), (2 * GALILEO_PI));
+    M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -106,7 +106,7 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime)  // Sa
         {
             E_old = E;
             E = M + e_1 * sin(E);
-            dE = fmod(E - E_old, 2 * GALILEO_PI);
+            dE = fmod(E - E_old, 2 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -156,7 +156,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * GALILEO_PI), (2 * GALILEO_PI));
+    M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -166,7 +166,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
         {
             E_old = E;
             E = M + e_1 * sin(E);
-            dE = fmod(E - E_old, 2 * GALILEO_PI);
+            dE = fmod(E - E_old, 2 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -184,7 +184,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + omega_2;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2 * GALILEO_PI));
+    phi = fmod((phi), (2 * GNSS_PI));
 
     // Correct argument of latitude
     u = phi + C_uc_3 * cos(2 * phi) + C_us_3 * sin(2 * phi);
@@ -196,10 +196,10 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     i = i_0_2 + iDot_2 * tk + C_ic_4 * cos(2 * phi) + C_is_4 * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = OMEGA_0_2 + (OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT) * tk - GALILEO_OMEGA_EARTH_DOT * t0e_1;
+    Omega = OMEGA_0_2 + (OMEGA_dot_3 - GNSS_OMEGA_EARTH_DOT) * tk - GNSS_OMEGA_EARTH_DOT * t0e_1;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2 * GALILEO_PI), (2 * GALILEO_PI));
+    Omega = fmod((Omega + 2 * GNSS_PI), (2 * GNSS_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
@@ -207,7 +207,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
-    double Omega_dot = OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT;
+    double Omega_dot = OMEGA_dot_3 - GNSS_OMEGA_EARTH_DOT;
     d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);

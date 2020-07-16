@@ -178,8 +178,8 @@ void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            std::cout << "Tracking_module Read failed to retrieve 4 bytes!" << std::endl;
-            std::cout << "Tracking_module Interrupt number " << irq_count << std::endl;
+            std::cout << "Tracking_module Read failed to retrieve 4 bytes!\n";
+            std::cout << "Tracking_module Interrupt number " << irq_count << '\n';
         }
 
     // release secondary code indices, keep channel locked
@@ -222,12 +222,12 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
 
     mergedname.copy(device_io_name, mergedname.size() + 1);
     device_io_name[mergedname.size()] = '\0';
-    std::cout << "trk device_io_name = " << device_io_name << std::endl;
+    std::cout << "trk device_io_name = " << device_io_name << '\n';
 
     if ((d_device_descriptor = open(device_io_name, O_RDWR | O_SYNC)) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << device_io_name;
-            std::cout << "Cannot open deviceio" << device_io_name << std::endl;
+            std::cout << "Cannot open deviceio" << device_io_name << '\n';
         }
     d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, page_size,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
@@ -236,7 +236,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
         {
             LOG(WARNING) << "Cannot map the FPGA tracking module "
                          << d_channel << "into user memory";
-            std::cout << "Cannot map deviceio" << device_io_name << std::endl;
+            std::cout << "Cannot map deviceio" << device_io_name << '\n';
         }
 
     // sanity check: check test register
@@ -246,7 +246,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     if (writeval != readval)
         {
             LOG(WARNING) << "Test register sanity check failed";
-            std::cout << "Tracking test register sanity check failed" << std::endl;
+            std::cout << "Tracking test register sanity check failed\n";
         }
     else
         {
@@ -306,7 +306,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
             frac_part = fmod(d_shifts_chips[i] - d_rem_code_phase_chips, 1.0);
             if (frac_part < 0)
                 {
-                    frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
+                    frac_part = frac_part + 1.0F;  // fmod operator does not work as in Matlab with negative numbers
                 }
 
             d_initial_interp_counter[i] = static_cast<uint32_t>(std::floor(max_code_resampler_counter * frac_part));
@@ -324,7 +324,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters()
             frac_part = fmod(d_prompt_data_shift[0] - d_rem_code_phase_chips, 1.0);
             if (frac_part < 0)
                 {
-                    frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
+                    frac_part = frac_part + 1.0F;  // fmod operator does not work as in Matlab with negative numbers
                 }
             d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(std::floor(max_code_resampler_counter * frac_part));
         }
@@ -395,7 +395,7 @@ void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga()
     ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
     if (nbytes != sizeof(int32_t))
         {
-            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
+            std::cerr << "Error launching the FPGA multicorrelator\n";
         }
     // writing 1 to reg 14 launches the tracking
     d_map_base[start_flag_addr] = 1;
@@ -436,7 +436,7 @@ void Fpga_Multicorrelator_8sc::close_device()
     auto *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), page_size) == -1)
         {
-            std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio\n";
         }
     close(d_device_descriptor);
 }

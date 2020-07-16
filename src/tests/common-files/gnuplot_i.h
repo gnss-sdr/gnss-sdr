@@ -794,7 +794,7 @@ Gnuplot &Gnuplot::plot_x(const X &x, const std::string &title)
     //
     for (unsigned int i = 0; i < x.size(); i++)
         {
-            tmp << x[i] << std::endl;
+            tmp << x[i] << '\n';
         }
 
     tmp.flush();
@@ -837,7 +837,7 @@ Gnuplot &Gnuplot::plot_xy(const X &x, const Y &y, const std::string &title, cons
     //
     for (unsigned int i = 0; i < x.size(); i++)
         {
-            tmp << x[i] << " " << y[i] << std::endl;
+            tmp << x[i] << " " << y[i] << '\n';
         }
 
     tmp.flush();
@@ -883,7 +883,7 @@ Gnuplot &Gnuplot::plot_xy_err(const X &x,
     //
     for (unsigned int i = 0; i < x.size(); i++)
         {
-            tmp << x[i] << " " << y[i] << " " << dy[i] << std::endl;
+            tmp << x[i] << " " << y[i] << " " << dy[i] << '\n';
         }
 
     tmp.flush();
@@ -925,7 +925,7 @@ Gnuplot &Gnuplot::plot_grid3d(const X &x,
         {
             for (unsigned int k = 0; k < y.size(); k++)
                 {
-                    tmp << static_cast<float>(x.at(i)) << " " << static_cast<float>(y.at(k)) << " " << mag.at(i).at(k) << std::endl;
+                    tmp << static_cast<float>(x.at(i)) << " " << static_cast<float>(y.at(k)) << " " << mag.at(i).at(k) << '\n';
                 }
             tmp.flush();
         }
@@ -993,7 +993,7 @@ Gnuplot &Gnuplot::plot_xyz(const X &x,
     //
     for (unsigned int i = 0; i < x.size(); i++)
         {
-            tmp << x[i] << " " << y[i] << " " << z[i] << std::endl;
+            tmp << x[i] << " " << y[i] << " " << z[i] << '\n';
         }
 
     tmp.flush();
@@ -1106,7 +1106,7 @@ Gnuplot::~Gnuplot()
         {
 #endif
             // throw GnuplotException("Problem closing communication to gnuplot");
-            std::cout << "Gnuplot window left open." << std::endl;
+            std::cout << "Gnuplot window left open.\n";
         }
 }
 
@@ -1862,7 +1862,7 @@ inline Gnuplot &Gnuplot::plot_image(const unsigned char *ucPicBuf,
             for (unsigned int iColumn = 0; iColumn < iWidth; iColumn++)
                 {
                     tmp << iColumn << " " << iRow << " "
-                        << static_cast<float>(ucPicBuf[iIndex++]) << std::endl;
+                        << static_cast<float>(ucPicBuf[iIndex++]) << '\n';
                 }
         }
 
@@ -2188,7 +2188,7 @@ inline std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
         {
             std::ostringstream except;
             except << "Maximum number of temporary files reached ("
-                   << GP_MAX_TMP_FILES << "): cannot open more files" << std::endl;
+                   << GP_MAX_TMP_FILES << "): cannot open more files\n";
 
             throw GnuplotException(except.str());
         }
@@ -2250,7 +2250,7 @@ inline void Gnuplot::remove_tmpfiles()
                 {
                     if (remove(i.c_str()) != 0)
                         {
-                            std::cout << "Problem closing files" << std::endl;
+                            std::cout << "Problem closing files\n";
                         }
                 }
 

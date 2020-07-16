@@ -195,7 +195,7 @@ private:
 
     int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
     float estimate_input_power(gr_vector_const_void_star& input_items);
-    double search_maximum();
+    float search_maximum();
     void get_assistance();
     void reset_grid();
     void redefine_grid();

@@ -68,7 +68,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0));
+    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
@@ -141,7 +141,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 10);
 
     acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", static_cast<float>(125.0));
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);

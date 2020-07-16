@@ -433,7 +433,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    auto acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0);
+    auto acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
 }
 
 
@@ -447,7 +447,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1Pcps8msAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -487,7 +487,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -497,7 +497,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0, queue.get());
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0, queue.get());
     acquisition = std::dynamic_pointer_cast<GalileoE1Pcps8msAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -584,7 +584,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
     config_2();
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1Pcps8msAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
@@ -623,7 +623,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 
-    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
+    std::cout << "Probability of false alarm (target) = " << 0.1 << '\n';
 
     // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
@@ -650,14 +650,14 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
             stop_queue();
             if (i == 0)
                 {
-                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of detection = " << Pd << '\n';
+                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                 }
             else if (i == 1)
                 {
-                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                 }
 
             ch_thread.join();

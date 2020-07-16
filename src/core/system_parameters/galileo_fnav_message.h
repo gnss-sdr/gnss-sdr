@@ -28,6 +28,7 @@
 
 
 #include "Galileo_E5a.h"
+#include "Galileo_FNAV.h"
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"

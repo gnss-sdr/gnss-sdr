@@ -38,11 +38,6 @@ target_link_libraries(gnss-sdr
 
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
-# Disable internal logging
-if(NOT ENABLE_LOG)
-    target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
-endif()
-
 if(ENABLE_CUDA)
     if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
         target_link_libraries(gnss-sdr

@@ -90,7 +90,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 void Dll_Pll_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)
 {
-    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
+    double fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
     smoother_length = configuration->property(role + ".smoother_length", smoother_length);

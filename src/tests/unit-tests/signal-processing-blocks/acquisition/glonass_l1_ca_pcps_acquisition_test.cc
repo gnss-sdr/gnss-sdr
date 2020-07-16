@@ -22,7 +22,6 @@
 #include "concurrent_queue.h"
 #include "freq_xlating_fir_filter.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -87,7 +86,7 @@ void GlonassL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
         }
     catch (boost::bad_any_cast& e)
         {
-            std::cout << "msg_handler_telemetry Bad any cast!" << std::endl;
+            std::cout << "msg_handler_telemetry Bad any cast!\n";
             rx_message = 0;
         }
 }
@@ -120,7 +119,6 @@ class GlonassL1CaPcpsAcquisitionTest : public ::testing::Test
 protected:
     GlonassL1CaPcpsAcquisitionTest()
     {
-        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
@@ -131,7 +129,6 @@ protected:
     void init();
 
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -223,7 +220,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
         elapsed_seconds = end - begin;
     }) << "Failure running the top_block.";
 
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -286,7 +283,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure running the top_block.";
 
     uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 

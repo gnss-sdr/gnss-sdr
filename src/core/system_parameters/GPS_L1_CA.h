@@ -24,19 +24,8 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
-#include <string>
 #include <utility>  // std::pair
 #include <vector>
-
-
-// Physical constants
-constexpr double GPS_C_M_S = SPEED_OF_LIGHT;                 //!< The speed of light, [m/s]
-constexpr double GPS_C_M_MS = 299792.4580;                   //!< The speed of light, [m/ms]
-constexpr double GPS_PI = 3.1415926535898;                   //!< Pi as defined in IS-GPS-200K
-constexpr double GPS_TWO_PI = 6.283185307179586;             //!< 2Pi as defined in IS-GPS-200K
-constexpr double OMEGA_EARTH_DOT = DEFAULT_OMEGA_EARTH_DOT;  //!< Earth rotation rate, [rad/s]
-constexpr double GM = 3.986005e14;                           //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-constexpr double F = -4.442807633e-10;                       //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
@@ -44,12 +33,9 @@ constexpr double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
 constexpr double GPS_L1_CA_CODE_RATE_CPS = 1.023e6;     //!< GPS L1 C/A code rate [chips/s]
 constexpr double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length [chips]
 constexpr double GPS_L1_CA_CODE_PERIOD_S = 0.001;       //!< GPS L1 C/A code period [seconds]
+constexpr double GPS_L1_CA_CHIP_PERIOD_S = 9.7752e-07;  //!< GPS L1 C/A chip period [seconds]
 constexpr uint32_t GPS_L1_CA_CODE_PERIOD_MS = 1U;       //!< GPS L1 C/A code period [ms]
 constexpr uint32_t GPS_L1_CA_BIT_PERIOD_MS = 20U;       //!< GPS L1 C/A bit period [ms]
-constexpr double GPS_L1_CA_CHIP_PERIOD_S = 9.7752e-07;  //!< GPS L1 C/A chip period [seconds]
-
-// optimum parameters
-constexpr uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
@@ -59,24 +45,18 @@ constexpr uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency 
  * [1] J. Bao-Yen Tsui, Fundamentals of Global Positioning System Receivers. A Software Approach, John Wiley & Sons,
  * Inc., Hoboken, NJ, 2nd edition, 2005.
  */
-constexpr double MAX_TOA_DELAY_MS = 20;
+constexpr double MAX_TOA_DELAY_MS = 20.0;
 
-constexpr double GPS_STARTOFFSET_MS = 68.802;  // [ms] Initial signal travel time (only for old ls_pvt implementation)
+// optimum parameters
+constexpr uint32_t GPS_L1_CA_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 constexpr int32_t GPS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
-
-#define GPS_PREAMBLE           \
-    {                          \
-        1, 0, 0, 0, 1, 0, 1, 1 \
-    }
-const std::string GPS_CA_PREAMBLE = {"10001011"};
-const std::string GPS_CA_PREAMBLE_SYMBOLS_STR = {"1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111000000000000000000001111111111111111111111111111111111111111"};
+constexpr double GPS_CA_PREAMBLE_DURATION_S = 0.160;
 constexpr int32_t GPS_CA_PREAMBLE_LENGTH_BITS = 8;
 constexpr int32_t GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
-constexpr double GPS_CA_PREAMBLE_DURATION_S = 0.160;
 constexpr int32_t GPS_CA_PREAMBLE_DURATION_MS = 160;
 constexpr int32_t GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
 constexpr int32_t GPS_CA_TELEMETRY_SYMBOLS_PER_BIT = 20;
@@ -87,6 +67,8 @@ constexpr int32_t GPS_SUBFRAME_BITS = 300;                                      
 constexpr int32_t GPS_SUBFRAME_SECONDS = 6;                                                                                     //!< Subframe duration [seconds]
 constexpr int32_t GPS_SUBFRAME_MS = 6000;                                                                                       //!< Subframe duration [seconds]
 constexpr int32_t GPS_WORD_BITS = 30;                                                                                           //!< Number of bits per word in the NAV message [bits]
+constexpr char GPS_CA_PREAMBLE[9] = "10001011";
+constexpr char GPS_CA_PREAMBLE_SYMBOLS_STR[161] = "1111111111111111111100000000000000000000000000000000000000000000000000000000000011111111111111111111000000000000000000001111111111111111111111111111111111111111";
 
 // GPS NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200K Appendix II)

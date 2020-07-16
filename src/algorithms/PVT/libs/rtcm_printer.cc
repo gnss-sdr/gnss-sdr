@@ -79,7 +79,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                                 {
                                     if (!fs::create_directory(new_folder, ec))
                                         {
-                                            std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                            std::cout << "Could not create the " << new_folder << " folder.\n";
                                             rtcm_base_path = full_path.string();
                                         }
                                 }
@@ -92,7 +92,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                 }
             if (rtcm_base_path != ".")
                 {
-                    std::cout << "RTCM binary file will be stored at " << rtcm_base_path << std::endl;
+                    std::cout << "RTCM binary file will be stored at " << rtcm_base_path << '\n';
                 }
 
             rtcm_base_path = rtcm_base_path + fs::path::preferred_separator;
@@ -150,7 +150,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                 }
             else
                 {
-                    std::cout << "File " << rtcm_filename << "cannot be saved. Wrong permissions?" << std::endl;
+                    std::cout << "File " << rtcm_filename << "cannot be saved. Wrong permissions?\n";
                 }
         }
 
@@ -430,7 +430,7 @@ bool Rtcm_Printer::Print_Message(const std::string& message)
         {
             try
                 {
-                    rtcm_file_descriptor << message << std::endl;
+                    rtcm_file_descriptor << message << '\n';
                 }
             catch (const std::exception& ex)
                 {
@@ -445,7 +445,7 @@ bool Rtcm_Printer::Print_Message(const std::string& message)
             if (write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1)
                 {
                     DLOG(INFO) << "RTCM printer cannot write on serial device " << rtcm_devname.c_str();
-                    std::cout << "RTCM printer cannot write on serial device " << rtcm_devname.c_str() << std::endl;
+                    std::cout << "RTCM printer cannot write on serial device " << rtcm_devname.c_str() << '\n';
                     return false;
                 }
         }

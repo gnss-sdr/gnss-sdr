@@ -21,7 +21,6 @@
 #define GNSS_SDR_NOTCH_LITE_H
 
 #if GNURADIO_USES_STD_POINTERS
-#include <memory>
 #else
 #include <boost/shared_ptr.hpp>
 #endif
@@ -29,6 +28,7 @@
 #include <gnuradio/fft/fft.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
+#include <memory>
 
 class NotchLite;
 

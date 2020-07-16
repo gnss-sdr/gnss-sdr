@@ -45,6 +45,8 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_ephemeris.h
     galileo_almanac.h
     galileo_almanac_helper.h
+    Galileo_FNAV.h
+    Galileo_INAV.h
     galileo_iono.h
     galileo_navigation_message.h
     sbas_ephemeris.h

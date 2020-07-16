@@ -40,21 +40,21 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    int vector_length = std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
+    auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols < 1)
         {
             trk_params.extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << '\n';
         }
     else if (!trk_params.track_pilot and trk_params.extend_correlation_symbols > GPS_L5I_NH_CODE_LENGTH)
         {
             trk_params.extend_correlation_symbols = GPS_L5I_NH_CODE_LENGTH;
-            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be lower than 11 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be lower than 11 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << '\n';
         }
     if ((trk_params.extend_correlation_symbols > 1) and (trk_params.pll_bw_narrow_hz > trk_params.pll_bw_hz or trk_params.dll_bw_narrow_hz > trk_params.dll_bw_hz))
         {
-            std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     trk_params.system = 'G';
     std::array<char, 3> sig_{'L', '5', '\0'};

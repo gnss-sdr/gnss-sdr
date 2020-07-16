@@ -27,18 +27,18 @@ const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int6
 
 void gps_l1_ca_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 1023;
+    constexpr uint32_t _code_length = 1023;
     std::bitset<_code_length> G1{};
     std::bitset<_code_length> G2{};
-    std::bitset<10> G1_register{};
-    std::bitset<10> G2_register{};
-    bool feedback1;
-    bool feedback2;
-    bool aux;
+    auto G1_register = std::bitset<10>{}.set();  // All true
+    auto G2_register = std::bitset<10>{}.set();  // All true
     uint32_t lcv;
     uint32_t lcv2;
     uint32_t delay;
     int32_t prn_idx;
+    bool feedback1;
+    bool feedback2;
+    bool aux;
 
     // G2 Delays as defined in GPS-ISD-200D
     const std::array<int32_t, 51> delays = {5 /*PRN1*/, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
@@ -60,12 +60,6 @@ void gps_l1_ca_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _ch
     if ((prn_idx < 0) || (prn_idx > 51))
         {
             return;
-        }
-
-    for (lcv = 0; lcv < 10; lcv++)
-        {
-            G1_register[lcv] = true;
-            G2_register[lcv] = true;
         }
 
     // Generate G1 & G2 Register
@@ -112,7 +106,7 @@ void gps_l1_ca_code_gen_int(own::span<int32_t> _dest, int32_t _prn, uint32_t _ch
 
 void gps_l1_ca_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 1023;
+    constexpr uint32_t _code_length = 1023;
     std::array<int32_t, _code_length> ca_code_int{};
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);
@@ -126,7 +120,7 @@ void gps_l1_ca_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _ch
 
 void gps_l1_ca_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const uint32_t _code_length = 1023;
+    constexpr uint32_t _code_length = 1023;
     std::array<int32_t, _code_length> ca_code_int{};
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);
@@ -145,21 +139,16 @@ void gps_l1_ca_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _p
 void gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
+    constexpr int32_t _codeFreqBasis = 1023000;  // Hz
+    constexpr int32_t _codeLength = 1023;
+    constexpr float _tc = 1.0F / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
+
+    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
     std::array<std::complex<float>, 1023> _code{};
-    int32_t _samplesPerCode;
     int32_t _codeValueIndex;
-    float _ts;
-    float _tc;
     float aux;
-    const int32_t _codeFreqBasis = 1023000;  // Hz
-    const int32_t _codeLength = 1023;
 
-    // --- Find number of samples per spreading code ---------------------------
-    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
-
-    // --- Find time constants -------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);        // C/A chip period in sec
     gps_l1_ca_code_gen_complex(_code, _prn, _chip_shift);  // generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
@@ -171,7 +160,7 @@ void gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, ui
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
 
-            aux = (_ts * (i + 1)) / _tc;
+            aux = (_ts * (static_cast<float>(i) + 1)) / _tc;
             _codeValueIndex = AUX_CEIL(aux) - 1;
 
             // --- Make the digitized version of the C/A code -------------------

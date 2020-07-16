@@ -210,7 +210,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 
     if (!acq_dump.read_binary_acq())
         {
-            std::cout << "Error reading files" << std::endl;
+            std::cout << "Error reading files\n";
         }
 
     std::vector<int>* doppler = &acq_dump.doppler;
@@ -220,13 +220,13 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())
         {
-            std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE," << std::endl;
-            std::cout << "gnuplot has not been found in your system." << std::endl;
-            std::cout << "Test results will not be plotted." << std::endl;
+            std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE,\n";
+            std::cout << "gnuplot has not been found in your system.\n";
+            std::cout << "Test results will not be plotted.\n";
         }
     else
         {
-            std::cout << "Plotting the acquisition grid. This can take a while..." << std::endl;
+            std::cout << "Plotting the acquisition grid. This can take a while...\n";
             try
                 {
                     fs::path p(gnuplot_executable);
@@ -254,7 +254,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                 }
             catch (const GnuplotException& ge)
                 {
-                    std::cout << ge.what() << std::endl;
+                    std::cout << ge.what() << '\n';
                 }
         }
     std::string data_str = "./tmp-acq-gal1";
@@ -268,7 +268,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, Instantiate)
 {
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 }
 
@@ -282,7 +282,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
@@ -301,7 +301,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -324,7 +324,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = -632;
     init();
     top_block = gr::make_top_block("Acquisition test");
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config.get(), "Acquisition_1B", 1, 0);
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
     auto msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
@@ -374,11 +374,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure running the top_block.";
 
     uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
-    std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
-    std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
+    std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << '\n';
+    std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << '\n';
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000000);

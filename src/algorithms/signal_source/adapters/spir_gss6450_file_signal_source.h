@@ -125,8 +125,8 @@ private:
     uint32_t in_streams_;
     uint32_t out_streams_;
     uint32_t adc_bits_;
-    uint32_t n_channels_;
-    uint32_t sel_ch_;
+    int32_t n_channels_;
+    int32_t sel_ch_;
     bool repeat_;
     bool dump_;  // Enables dumping the gr_complex sample output
     bool enable_throttle_control_;

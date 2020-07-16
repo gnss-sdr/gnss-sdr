@@ -35,7 +35,7 @@ interleaved_short_to_complex_short::interleaved_short_to_complex_short() : sync_
                                                                                gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),  // lv_16sc_t is a Volk's typedef for std::complex<short int>
                                                                                2)
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(lv_16sc_t);
+    const auto alignment_multiple = static_cast<int>(volk_get_alignment() / sizeof(lv_16sc_t));
     set_alignment(std::max(1, alignment_multiple));
 }
 

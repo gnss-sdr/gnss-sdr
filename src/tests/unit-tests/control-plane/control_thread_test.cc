@@ -251,4 +251,5 @@ TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
         }
 
     stop_receiver_thread.join();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }

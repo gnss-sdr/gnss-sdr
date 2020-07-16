@@ -547,7 +547,7 @@ double varerr(int sat __attribute((unused)), int sys, double el, double bl, doub
     double a;
     double b;
     double c = opt->err[3] * bl / 1e4;
-    double d = SPEED_OF_LIGHT * opt->sclkstab * dt;
+    double d = SPEED_OF_LIGHT_M_S * opt->sclkstab * dt;
     double fact = 1.0;
     double sinel = sin(el);
     int i = sys == SYS_GLO ? 1 : (sys == SYS_GAL ? 2 : 0);
@@ -1255,8 +1255,8 @@ void zdres_sat(int base, double r, const obsd_t *obs, const nav_t *nav,
                     return;
                 }
 
-            f1 = SPEED_OF_LIGHT / lam[0];
-            f2 = SPEED_OF_LIGHT / lam[1];
+            f1 = SPEED_OF_LIGHT_M_S / lam[0];
+            f2 = SPEED_OF_LIGHT_M_S / lam[1];
             C1 = std::pow(f1, 2.0) / (std::pow(f1, 2.0) - std::pow(f2, 2.0));
             C2 = -std::pow(f2, 2.0) / (std::pow(f1, 2.0) - std::pow(f2, 2.0));
             dant_if = C1 * dant[0] + C2 * dant[1];
@@ -1362,7 +1362,7 @@ int zdres(int base, const obsd_t *obs, int n, const double *rs,
                 }
 
             /* satellite clock-bias */
-            r += -SPEED_OF_LIGHT * dts[i * 2];
+            r += -SPEED_OF_LIGHT_M_S * dts[i * 2];
 
             /* troposphere delay model (hydrostatic) */
             zhd = tropmodel(obs[0].time, pos, zazel, 0.0);
@@ -1533,7 +1533,7 @@ double gloicbcorr(int sat1 __attribute((unused)), int sat2 __attribute((unused))
             return 0.0;
         }
 
-    dfreq = (SPEED_OF_LIGHT / lam1 - SPEED_OF_LIGHT / lam2) / (f == 0 ? DFRQ1_GLO : DFRQ2_GLO);
+    dfreq = (SPEED_OF_LIGHT_M_S / lam1 - SPEED_OF_LIGHT_M_S / lam2) / (f == 0 ? DFRQ1_GLO : DFRQ2_GLO);
 
     return opt->exterr.gloicb[f] * 0.01 * dfreq; /* (m) */
 }
@@ -1758,7 +1758,7 @@ int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
                             /* glonass receiver h/w bias term */
                             if (rtk->opt.glomodear == 2 && sysi == SYS_GLO && sysj == SYS_GLO && ff < NFREQGLO)
                                 {
-                                    df = (SPEED_OF_LIGHT / lami - SPEED_OF_LIGHT / lamj) / 1E6; /* freq-difference (MHz) */
+                                    df = (SPEED_OF_LIGHT_M_S / lami - SPEED_OF_LIGHT_M_S / lamj) / 1E6; /* freq-difference (MHz) */
                                     v[nv] -= df * x[IL_RTK(ff, opt)];
                                     if (H)
                                         {

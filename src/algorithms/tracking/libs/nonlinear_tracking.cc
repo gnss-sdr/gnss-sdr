@@ -245,12 +245,12 @@ void UnscentedFilter::predict_sequential(const arma::vec& x_post, const arma::ma
     float kappa = 0.0;
     float beta = 2.0;
 
-    float lambda = std::pow(alpha, 2.0) * (static_cast<float>(nx) + kappa) - static_cast<float>(nx);
+    float lambda = std::pow(alpha, 2.0F) * (static_cast<float>(nx) + kappa) - static_cast<float>(nx);
 
     // Compute UT Weights
     float W0_m = lambda / (static_cast<float>(nx) + lambda);
-    float W0_c = lambda / (static_cast<float>(nx) + lambda) + (1 - std::pow(alpha, 2.0) + beta);
-    float Wi_m = 1.0 / (2.0 * (static_cast<float>(nx) + lambda));
+    float W0_c = lambda / (static_cast<float>(nx) + lambda) + (1 - std::pow(alpha, 2.0F) + beta);
+    float Wi_m = 1.0F / (2.0F * (static_cast<float>(nx) + lambda));
 
     // Propagate and evaluate sigma points
     arma::mat Xi_fact = arma::zeros(nx, nx);
@@ -300,12 +300,12 @@ void UnscentedFilter::update_sequential(const arma::vec& z_upd, const arma::vec&
     float kappa = 0.0;
     float beta = 2.0;
 
-    float lambda = std::pow(alpha, 2.0) * (static_cast<float>(nx) + kappa) - static_cast<float>(nx);
+    float lambda = std::pow(alpha, 2.0F) * (static_cast<float>(nx) + kappa) - static_cast<float>(nx);
 
     // Compute UT Weights
     float W0_m = lambda / (static_cast<float>(nx) + lambda);
-    float W0_c = lambda / (static_cast<float>(nx) + lambda) + (1.0 - std::pow(alpha, 2.0) + beta);
-    float Wi_m = 1.0 / (2.0 * (static_cast<float>(nx) + lambda));
+    float W0_c = lambda / (static_cast<float>(nx) + lambda) + (1.0F - std::pow(alpha, 2.0F) + beta);
+    float Wi_m = 1.0F / (2.0F * (static_cast<float>(nx) + lambda));
 
     // Propagate and evaluate sigma points
     arma::mat Xi_fact = arma::zeros(nx, nx);

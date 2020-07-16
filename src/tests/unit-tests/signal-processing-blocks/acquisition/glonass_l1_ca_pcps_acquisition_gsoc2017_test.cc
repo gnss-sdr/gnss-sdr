@@ -472,7 +472,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ConnectAndRun)
         elapsed_seconds = end - begin;
     }) << "Failure running the top_block.";
 
-    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
 
@@ -598,7 +598,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
         top_block->connect(filter->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
 
-    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
+    std::cout << "Probability of false alarm (target) = " << 0.1 << '\n';
 
     // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
@@ -622,23 +622,23 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
             EXPECT_NO_THROW({
                 top_block->run();  // Start threads and wait
             }) << "Failure running the top_block."
-               << std::endl;
+               << '\n';
 
             if (i == 0)
                 {
-                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of detection = " << Pd << '\n';
+                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                 }
             else if (i == 1)
                 {
-                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << '\n';
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds.\n";
                 }
 
             ASSERT_NO_THROW({
                 ch_thread.join();
             }) << "Failure while waiting the queue to stop"
-               << std::endl;
+               << '\n';
         }
 }

@@ -31,12 +31,7 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
-#include "Beidou_B1I.h"
-#include "Beidou_B3I.h"
 #include "Beidou_DNAV.h"
-#include "GLONASS_L1_L2_CA.h"
-#include "GPS_L1_CA.h"
-#include "Galileo_E1.h"
 #include "rtklib_conversions.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
@@ -155,14 +150,14 @@ bool Rtklib_Solver::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem opening dump file:" << e.what() << std::endl;
+            std::cerr << "Problem opening dump file:" << e.what() << '\n';
             return false;
         }
     // count number of epochs and rewind
     int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
-            std::cout << "Generating .mat file for " << dump_filename << std::endl;
+            std::cout << "Generating .mat file for " << dump_filename << '\n';
             size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
@@ -241,7 +236,7 @@ bool Rtklib_Solver::save_matfile()
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            std::cerr << "Problem reading dump file:" << e.what() << '\n';
             return false;
         }
 
@@ -546,14 +541,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second, d_pre_2009_file);
+                                        eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second, this->is_pre_2009());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             gps_ephemeris_iter->second.i_GPS_week,
                                             0,
-                                            d_pre_2009_file);
+                                            this->is_pre_2009());
                                         valid_obs++;
                                     }
                                 else  // the ephemeris are not available for this SV
@@ -890,7 +885,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
                     nav_data.utc_cmp[2] = 0.0;  // ??
                     nav_data.utc_cmp[3] = 0.0;  // ??
-                    nav_data.leaps = beidou_dnav_utc_model.d_DeltaT_LS;
+                    nav_data.leaps = beidou_dnav_utc_model.i_DeltaT_LS;
                 }
 
             /* update carrier wave length using native function call in RTKlib */
@@ -928,7 +923,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     std::vector<double> azel;
                     azel.reserve(used_sats * 2);
-                    unsigned int index_aux = 0;
+                    int index_aux = 0;
                     for (auto &i : rtk_.ssat)
                         {
                             if (i.vs == 1)
@@ -944,24 +939,24 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             dops(index_aux, azel.data(), 0.0, dop_.data());
                         }
                     this->set_valid_position(true);
-                    arma::vec rx_position_and_time(4);
-                    rx_position_and_time(0) = pvt_sol.rr[0];  // [m]
-                    rx_position_and_time(1) = pvt_sol.rr[1];  // [m]
-                    rx_position_and_time(2) = pvt_sol.rr[2];  // [m]
+                    std::array<double, 4> rx_position_and_time{};
+                    rx_position_and_time[0] = pvt_sol.rr[0];  // [m]
+                    rx_position_and_time[1] = pvt_sol.rr[1];  // [m]
+                    rx_position_and_time[2] = pvt_sol.rr[2];  // [m]
                     // todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
                     if (rtk_.opt.mode == PMODE_SINGLE)
                         {
                             // if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
                             // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
-                            rx_position_and_time(3) = pvt_sol.dtr[0] + pvt_sol.dtr[2];
+                            rx_position_and_time[3] = pvt_sol.dtr[0] + pvt_sol.dtr[2];
                         }
                     else
                         {
                             // the receiver clock offset is expressed in [meters], so we convert it into [s]
                             // add also the clock offset from gps to galileo (pvt_sol.dtr[2])
-                            rx_position_and_time(3) = pvt_sol.dtr[2] + pvt_sol.dtr[0] / GPS_C_M_S;
+                            rx_position_and_time[3] = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
-                    this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
+                    this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
 
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
@@ -981,21 +976,20 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             this->set_course_over_ground(new_cog);
                         }
 
-                    this->set_time_offset_s(rx_position_and_time(3));
+                    this->set_time_offset_s(rx_position_and_time[3]);
 
                     DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.begin()->second.RX_time
-                               << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
+                               << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time[0] << ", " << rx_position_and_time[1] << ", " << rx_position_and_time[2] << ", " << rx_position_and_time[4];
 
                     boost::posix_time::ptime p_time;
                     // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); // Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
-                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time(3));  // uncorrected rx time
+                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time[3]);  // uncorrected rx time
                     gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)
 
                     this->set_position_UTC_time(p_time);
-                    cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
                     DLOG(INFO) << "RTKLIB Position at " << boost::posix_time::to_simple_string(p_time)
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()
@@ -1006,11 +1000,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // TOW
                     monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
                     // WEEK
-                    monitor_pvt.week = adjgpsweek(nav_data.eph[0].week, d_pre_2009_file);
+                    monitor_pvt.week = adjgpsweek(nav_data.eph[0].week, this->is_pre_2009());
                     // PVT GPS time
                     monitor_pvt.RX_time = gnss_observables_map.begin()->second.RX_time;
                     // User clock offset [s]
-                    monitor_pvt.user_clk_offset = rx_position_and_time(3);
+                    monitor_pvt.user_clk_offset = rx_position_and_time[3];
 
                     // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
                     monitor_pvt.pos_x = pvt_sol.rr[0];
@@ -1052,14 +1046,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     monitor_pvt.hdop = dop_[2];
                     monitor_pvt.vdop = dop_[3];
 
-                    arma::vec rx_vel_enu(3);
-                    rx_vel_enu(0) = enuv[0];
-                    rx_vel_enu(1) = enuv[1];
-                    rx_vel_enu(2) = enuv[2];
+                    this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
 
-                    this->set_rx_vel(rx_vel_enu);
-
-                    double clock_drift_ppm = pvt_sol.dtr[5] / GPS_C_M_S * 1e6;
+                    double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]
@@ -1077,13 +1066,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_uint32 = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
-                                    tmp_uint32 = adjgpsweek(nav_data.eph[0].week, d_pre_2009_file);
+                                    tmp_uint32 = adjgpsweek(nav_data.eph[0].week, this->is_pre_2009());
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.begin()->second.RX_time;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // User clock offset [s]
-                                    tmp_double = rx_position_and_time(3);
+                                    tmp_double = rx_position_and_time[3];
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)

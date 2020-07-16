@@ -733,6 +733,14 @@ if(ENABLE_SYSTEM_TESTING)
             Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
         )
         add_system_test(position_test)
+        if(ENABLE_GPERFTOOLS)
+            if(GPERFTOOLS_FOUND)
+                target_link_libraries(position_test
+                    PRIVATE
+                        Gperftools::gperftools
+                )
+            endif()
+        endif()
         if(NOT GNSSSIMULATOR_FOUND OR ENABLE_GNSS_SIM_INSTALL)
             if(NOT CMAKE_CROSSCOMPILING)
                 add_dependencies(position_test gnss-sim)

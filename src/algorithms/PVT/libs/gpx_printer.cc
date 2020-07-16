@@ -67,7 +67,7 @@ Gpx_Printer::Gpx_Printer(const std::string& base_path)
                         {
                             if (!fs::create_directory(new_folder, ec))
                                 {
-                                    std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                    std::cout << "Could not create the " << new_folder << " folder.\n";
                                     gpx_base_path = full_path.string();
                                 }
                         }
@@ -80,7 +80,7 @@ Gpx_Printer::Gpx_Printer(const std::string& base_path)
         }
     if (gpx_base_path != ".")
         {
-            std::cout << "GPX files will be stored at " << gpx_base_path << std::endl;
+            std::cout << "GPX files will be stored at " << gpx_base_path << '\n';
         }
 
     gpx_base_path = gpx_base_path + fs::path::preferred_separator;
@@ -144,20 +144,20 @@ bool Gpx_Printer::set_headers(const std::string& filename, bool time_tag_name)
             // Set iostream numeric format and precision
             gpx_file.setf(gpx_file.std::ofstream::fixed, gpx_file.std::ofstream::floatfield);
             gpx_file << std::setprecision(14);
-            gpx_file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << std::endl
-                     << R"(<gpx version="1.1" creator="GNSS-SDR")" << std::endl
-                     << indent << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v2 http://www.garmin.com/xmlschemas/TrackPointExtensionv2.xsd\"" << std::endl
-                     << indent << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
-                     << indent << "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" << std::endl
-                     << indent << "xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v2\"" << std::endl
-                     << indent << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << std::endl
-                     << indent << "<trk>" << std::endl
-                     << indent << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << std::endl
-                     << indent << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << std::endl
-                     << indent << indent << "<trkseg>" << std::endl;
+            gpx_file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << '\n'
+                     << R"(<gpx version="1.1" creator="GNSS-SDR")" << '\n'
+                     << indent << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v2 http://www.garmin.com/xmlschemas/TrackPointExtensionv2.xsd\"" << '\n'
+                     << indent << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << '\n'
+                     << indent << "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" << '\n'
+                     << indent << "xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v2\"" << '\n'
+                     << indent << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << '\n'
+                     << indent << "<trk>" << '\n'
+                     << indent << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << '\n'
+                     << indent << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << '\n'
+                     << indent << indent << "<trkseg>\n";
             return true;
         }
-    std::cout << "File " << gpx_filename << " cannot be saved. Wrong permissions?" << std::endl;
+    std::cout << "File " << gpx_filename << " cannot be saved. Wrong permissions?\n";
     return false;
 }
 
@@ -205,7 +205,7 @@ bool Gpx_Printer::print_position(const Pvt_Solution* position, bool print_averag
                      << "<extensions><gpxtpx:TrackPointExtension>"
                      << "<gpxtpx:speed>" << speed_over_ground << "</gpxtpx:speed>"
                      << "<gpxtpx:course>" << course_over_ground << "</gpxtpx:course>"
-                     << "</gpxtpx:TrackPointExtension></extensions></trkpt>" << std::endl;
+                     << "</gpxtpx:TrackPointExtension></extensions></trkpt>\n";
             return true;
         }
     return false;
@@ -216,8 +216,8 @@ bool Gpx_Printer::close_file()
 {
     if (gpx_file.is_open())
         {
-            gpx_file << indent << indent << "</trkseg>" << std::endl
-                     << indent << "</trk>" << std::endl
+            gpx_file << indent << indent << "</trkseg>" << '\n'
+                     << indent << "</trk>" << '\n'
                      << "</gpx>";
             gpx_file.close();
             return true;

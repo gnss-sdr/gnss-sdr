@@ -56,7 +56,7 @@ public:
     //! Constructor
     Channel(const ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-        const std::string& role, const std::string& implementation, Concurrent_Queue<pmt::pmt_t>* queue);
+        const std::string& role, const std::string& signal_str, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~Channel() = default;  //!< Destructor
 
@@ -69,7 +69,7 @@ public:
 
     inline std::string role() override { return role_; }
     //! Returns "Channel"
-    inline std::string implementation() override { return implementation_; }
+    inline std::string implementation() override { return std::string("Channel"); }
     inline size_t item_size() override { return 0; }
     inline Gnss_Signal get_signal() const override { return gnss_signal_; }
     void start_acquisition() override;                          //!< Start the State Machine
@@ -92,12 +92,11 @@ private:
     Gnss_Synchro gnss_synchro_{};
     Gnss_Signal gnss_signal_;
     std::string role_;
-    std::string implementation_;
     std::mutex mx_;
     uint32_t channel_;
     bool connected_;
     bool repeat_;
-    bool flag_enable_fpga;
+    bool flag_enable_fpga_;
 };
 
 #endif  // GNSS_SDR_CHANNEL_H

@@ -31,17 +31,16 @@
 
 Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-    const std::string& role, const std::string& implementation, Concurrent_Queue<pmt::pmt_t>* queue)
+    const std::string& role, const std::string& signal_str, Concurrent_Queue<pmt::pmt_t>* queue)
 {
     acq_ = std::move(acq);
     trk_ = std::move(trk);
     nav_ = std::move(nav);
     role_ = role;
-    implementation_ = implementation;
     channel_ = channel;
     channel_fsm_ = std::make_shared<ChannelFsm>();
 
-    flag_enable_fpga = configuration->property("GNSS-SDR.enable_FPGA", false);
+    flag_enable_fpga_ = configuration->property("GNSS-SDR.enable_FPGA", false);
 
     acq_->set_channel(channel_);
     acq_->set_channel_fsm(channel_fsm_);
@@ -66,10 +65,10 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
 
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
-    uint32_t doppler_step = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".doppler_step", 0);
+    uint32_t doppler_step = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".doppler_step", 0);
     if (doppler_step == 0)
         {
-            doppler_step = configuration->property("Acquisition_" + implementation_ + ".doppler_step", 500);
+            doppler_step = configuration->property("Acquisition_" + signal_str + ".doppler_step", 500);
         }
     if (FLAGS_doppler_step != 0)
         {
@@ -79,17 +78,17 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
+    float threshold = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".threshold", static_cast<float>(0.0));
     if (threshold == 0.0)
         {
-            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", static_cast<float>(0.0));
+            threshold = configuration->property("Acquisition_" + signal_str + ".threshold", static_cast<float>(0.0));
         }
 
     acq_->set_threshold(threshold);
 
     acq_->init();
 
-    repeat_ = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".repeat_satellite", false);
+    repeat_ = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".repeat_satellite", false);
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
     channel_fsm_->set_acquisition(acq_);
@@ -100,7 +99,7 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
 
     connected_ = false;
 
-    gnss_signal_ = Gnss_Signal(implementation_);
+    gnss_signal_ = Gnss_Signal(signal_str);
 
     channel_msg_rx_ = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
 }
@@ -108,7 +107,7 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
 
 void Channel::connect(gr::top_block_sptr top_block)
 {
-    if (!flag_enable_fpga)
+    if (!flag_enable_fpga_)
         {
             acq_->connect(top_block);
         }
@@ -123,7 +122,7 @@ void Channel::connect(gr::top_block_sptr top_block)
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
-    if (!flag_enable_fpga)
+    if (!flag_enable_fpga_)
         {
             top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
         }
@@ -142,7 +141,7 @@ void Channel::disconnect(gr::top_block_sptr top_block)
         }
 
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
-    if (!flag_enable_fpga)
+    if (!flag_enable_fpga_)
         {
             acq_->disconnect(top_block);
         }
@@ -150,7 +149,7 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     nav_->disconnect(top_block);
 
     top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
-    if (!flag_enable_fpga)
+    if (!flag_enable_fpga_)
         {
             top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));
         }
@@ -174,7 +173,7 @@ gr::basic_block_sptr Channel::get_left_block_trk()
 
 gr::basic_block_sptr Channel::get_left_block_acq()
 {
-    if (flag_enable_fpga)
+    if (flag_enable_fpga_)
         {
             LOG(ERROR) << "Enabled FPGA and called get_left_block() in channel interface";
         }
@@ -199,7 +198,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
     acq_->set_local_code();
-    if (flag_enable_fpga)
+    if (flag_enable_fpga_)
         {
             trk_->set_gnss_synchro(&gnss_synchro_);
         }
@@ -230,7 +229,7 @@ void Channel::start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx_);
     bool result = false;
-    if (!flag_enable_fpga)
+    if (!flag_enable_fpga_)
         {
             result = channel_fsm_->Event_start_acquisition();
         }

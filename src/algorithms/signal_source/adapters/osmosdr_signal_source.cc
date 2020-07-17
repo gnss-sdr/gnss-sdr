@@ -34,7 +34,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
-    std::string empty;
+    const std::string empty;
     const std::string default_dump_file("./data/signal_source.dat");
     const std::string default_item_type("gr_complex");
     samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));

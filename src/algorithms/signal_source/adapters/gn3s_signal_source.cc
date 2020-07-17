@@ -30,8 +30,8 @@ Gn3sSignalSource::Gn3sSignalSource(const ConfigurationInterface* configuration,
     unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-    std::string default_item_type = "short";
-    std::string default_dump_file = "./data/gn3s_source.dat";
+    const std::string default_item_type("short");
+    const std::string default_dump_file("./data/gn3s_source.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);

@@ -30,27 +30,23 @@ RawArraySignalSource::RawArraySignalSource(const ConfigurationInterface* configu
     std::string role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("gr_complex");
-    std::string default_dump_file = "./data/raw_array_source.dat";
+    const std::string default_dump_file("./data/raw_array_source.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
     // dump_ = configuration->property(role + ".dump", false);
     // dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     dump_ = false;
 
-    std::string default_ethernet_dev = "eth0";
+    const std::string default_ethernet_dev("eth0");
     eth_device_ = configuration->property(role + ".ethernet_dev", default_ethernet_dev);
 
-    int channels_;
-    channels_ = configuration->property(role + ".channels", 8);
+    int channels_ = configuration->property(role + ".channels", 8);
 
-    int snapshots_per_frame_;
-    snapshots_per_frame_ = configuration->property(role + ".snapshots_per_frame", 80);
+    int snapshots_per_frame_ = configuration->property(role + ".snapshots_per_frame", 80);
 
-    int inter_frame_delay_;
-    inter_frame_delay_ = configuration->property(role + ".inter_frame_delay", 10);
+    int inter_frame_delay_ = configuration->property(role + ".inter_frame_delay", 10);
 
-    int sampling_freq_;
-    sampling_freq_ = configuration->property(role + ".sampling_freq", 5000000);
+    int sampling_freq_ = configuration->property(role + ".sampling_freq", 5000000);
 
     if (item_type_ == "gr_complex")
         {

@@ -39,8 +39,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/signal_source.dat");
-    std::string default_gain_mode("slow_attack");
-    double default_tx_attenuation_db = -10.0;
+    const std::string default_gain_mode("slow_attack");
+    const double default_tx_attenuation_db = -10.0;
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
     sample_rate_ = configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(2600000));

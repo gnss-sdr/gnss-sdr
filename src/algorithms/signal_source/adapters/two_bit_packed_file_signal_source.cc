@@ -41,11 +41,11 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
                                            in_streams_(in_streams),
                                            out_streams_(out_streams)
 {
-    std::string default_filename = "../data/my_capture.dat";
-    std::string default_item_type = "byte";
-    std::string default_dump_filename = "../data/my_capture_dump.dat";
-    std::string default_sample_type = "real";
-    double default_seconds_to_skip = 0.0;
+    const std::string default_filename("../data/my_capture.dat");
+    const std::string default_item_type("byte");
+    const std::string default_dump_filename("../data/my_capture_dump.dat");
+    const std::string default_sample_type("real");
+    const double default_seconds_to_skip = 0.0;
 
     samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
@@ -69,7 +69,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
-    double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
+    const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
     int64_t bytes_to_skip = 0;
 
     if (item_type_ == "byte")
@@ -145,20 +145,13 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
     catch (const std::exception& e)
         {
             std::cerr
-                << "The receiver was configured to work with a file signal source "
-                << '\n'
-                << "but the specified file is unreachable by GNSS-SDR."
-                << '\n'
-                << "Please modify your configuration file"
-                << '\n'
-                << "and point SignalSource.filename to a valid raw data file. Then:"
-                << '\n'
-                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                << '\n'
-                << "Examples of configuration files available at:"
-                << '\n'
-                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                << '\n';
+                << "The receiver was configured to work with a file signal source\n"
+                << "but the specified file is unreachable by GNSS-SDR.\n"
+                << "Please modify your configuration file\n"
+                << "and point SignalSource.filename to a valid raw data file. Then:\n"
+                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
+                << "Examples of configuration files available at:\n"
+                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n";
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
@@ -167,7 +160,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
 
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
-    size_t output_item_size = (is_complex_ ? sizeof(gr_complex) : sizeof(float));
+    const size_t output_item_size = (is_complex_ ? sizeof(gr_complex) : sizeof(float));
 
     if (samples_ == 0)  // read all file
         {

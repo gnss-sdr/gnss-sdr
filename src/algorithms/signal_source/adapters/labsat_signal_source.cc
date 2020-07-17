@@ -29,14 +29,14 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     const std::string& role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("gr_complex");
-    std::string default_dump_file = "./labsat_output.dat";
+    const std::string default_dump_file("./labsat_output.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    int channel_selector = configuration->property(role + ".selected_channel", 1);
+    const int channel_selector = configuration->property(role + ".selected_channel", 1);
 
-    std::string default_filename = "./example_capture.LS3";
+    const std::string default_filename("./example_capture.LS3");
     filename_ = configuration->property(role + ".filename", default_filename);
 
     if (item_type_ == "gr_complex")

@@ -34,12 +34,11 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_filename = "./example_capture.dat";
-    std::string default_item_type = "short";
-    std::string default_dump_filename = "./my_capture.dat";
+    const std::string default_filename("./example_capture.dat");
+    const std::string default_item_type("short");
+    const std::string default_dump_filename("./my_capture.dat");
 
-    double default_seconds_to_skip = 0.0;
-    size_t header_size = 0;
+    const double default_seconds_to_skip = 0.0;
     samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     n_channels_ = configuration->property(role + ".total_channels", 1);
@@ -53,8 +52,8 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
     repeat_ = configuration->property(role + ".repeat", false);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
-    double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
-    header_size = configuration->property(role + ".header_size", 0);
+    const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
+    size_t header_size = configuration->property(role + ".header_size", 0);
     int64_t samples_to_skip = 0;
 
     bool is_complex = false;
@@ -126,32 +125,21 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
             if (filename_vec_.at(0) == default_filename)
                 {
                     std::cerr
-                        << "The configuration file has not been found."
-                        << '\n'
-                        << "Please create a configuration file based on the examples at the 'conf/' folder "
-                        << '\n'
-                        << "and then generate your own GNSS Software Defined Receiver by doing:"
-                        << '\n'
-                        << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                        << '\n';
+                        << "The configuration file has not been found.\n"
+                        << "Please create a configuration file based on the examples at the 'conf/' folder\n"
+                        << "and then generate your own GNSS Software Defined Receiver by doing:\n"
+                        << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n";
                 }
             else
                 {
                     std::cerr
-                        << "The receiver was configured to work with a file signal source "
-                        << '\n'
-                        << "but the specified file is unreachable by GNSS-SDR."
-                        << '\n'
-                        << "Please modify your configuration file"
-                        << '\n'
-                        << "and point SignalSource.filename to a valid raw data file. Then:"
-                        << '\n'
-                        << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                        << '\n'
-                        << "Examples of configuration files available at:"
-                        << '\n'
-                        << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                        << '\n';
+                        << "The receiver was configured to work with a file signal source\n"
+                        << "but the specified file is unreachable by GNSS-SDR.\n"
+                        << "Please modify your configuration file\n"
+                        << "and point SignalSource.filename to a valid raw data file. Then:\n"
+                        << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
+                        << "Examples of configuration files available at:\n"
+                        << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n";
                 }
 
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
@@ -194,8 +182,7 @@ MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationIn
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
-    double signal_duration_s;
-    signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
+    double signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
 
     if (is_complex)
         {

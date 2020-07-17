@@ -30,6 +30,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
+#include <cmath>
 #include <fstream>
 #include <utility>
 
@@ -63,7 +64,7 @@ signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
     bool noise_flag,
     unsigned int fs_in,
     unsigned int vector_length,
-    float BW_BB) : gr::block("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex) * vector_length)),
+    float BW_BB) : gr::block("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)), gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * vector_length))),
                    signal_(std::move(signal1)),
                    system_(std::move(system)),
                    CN0_dB_(std::move(CN0_dB)),
@@ -71,7 +72,7 @@ signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
                    PRN_(PRN),
                    delay_chips_(std::move(delay_chips)),
                    delay_sec_(std::move(delay_sec)),
-                   BW_BB_(BW_BB * static_cast<float>(fs_in) / 2.0),
+                   BW_BB_(BW_BB * static_cast<float>(fs_in) / 2.0F),
                    fs_in_(fs_in),
                    num_sats_(PRN.size()),
                    vector_length_(vector_length),
@@ -88,6 +89,14 @@ void signal_generator_c::init()
     work_counter_ = 0;
 
     complex_phase_.reserve(vector_length_);
+    start_phase_rad_.reserve(num_sats_);
+    current_data_bit_int_.reserve(num_sats_);
+    ms_counter_.reserve(num_sats_);
+    data_modulation_.reserve(num_sats_);
+    pilot_modulation_.reserve(num_sats_);
+    samples_per_code_.reserve(num_sats_);
+    num_of_codes_per_vector_.reserve(num_sats_);
+    data_bit_duration_ms_.reserve(num_sats_);
 
     // True if Galileo satellites are present
     bool galileo_signal = std::find(system_.begin(), system_.end(), "E") != system_.end();
@@ -165,7 +174,7 @@ void signal_generator_c::generate_codes()
                         {
                             for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
                                 {
-                                    code[i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_);
+                                    code[i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_);
                                 }
                         }
 
@@ -187,7 +196,7 @@ void signal_generator_c::generate_codes()
                         {
                             for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
                                 {
-                                    code[i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_);
+                                    code[i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_);
                                 }
                         }
 
@@ -211,7 +220,7 @@ void signal_generator_c::generate_codes()
                                 {
                                     for (unsigned int i = 0; i < vector_length_; i++)
                                         {
-                                            sampled_code_data_[sat][i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
+                                            sampled_code_data_[sat][i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
                         }
@@ -226,7 +235,7 @@ void signal_generator_c::generate_codes()
                                 {
                                     for (unsigned int i = 0; i < vector_length_; i++)
                                         {
-                                            sampled_code_data_[sat][i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
+                                            sampled_code_data_[sat][i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
                         }
@@ -244,7 +253,7 @@ void signal_generator_c::generate_codes()
                                 {
                                     for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
                                         {
-                                            code[i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
+                                            code[i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
 
@@ -267,7 +276,7 @@ void signal_generator_c::generate_codes()
                                 {
                                     for (unsigned int i = 0; i < vector_length_; i++)
                                         {
-                                            sampled_code_pilot_[sat][i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
+                                            sampled_code_pilot_[sat][i] *= sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
                         }
@@ -304,13 +313,13 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
             std::array<float, 1> _phase{};
             _phase[0] = -start_phase_rad_[sat];
             volk_gnsssdr_s32f_sincos_32fc(complex_phase_.data(), -phase_step_rad, _phase.data(), vector_length_);
-            start_phase_rad_[sat] += vector_length_ * phase_step_rad;
+            start_phase_rad_[sat] += static_cast<float>(vector_length_) * phase_step_rad;
 
             out_idx = 0;
 
             if (system_[sat] == "G")
                 {
-                    unsigned int delay_samples = (delay_chips_[sat] % static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS)) * samples_per_code_[sat] / GPS_L1_CA_CODE_LENGTH_CHIPS;
+                    auto delay_samples = static_cast<unsigned int>((delay_chips_[sat] % static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS)) * samples_per_code_[sat] / GPS_L1_CA_CODE_LENGTH_CHIPS);
 
                     for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {
@@ -338,12 +347,12 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
 
             else if (system_[sat] == "R")
                 {
-                    phase_step_rad = -static_cast<float>(TWO_PI) * (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat])) + doppler_Hz_[sat]) / static_cast<float>(fs_in_);
+                    phase_step_rad = -static_cast<float>(TWO_PI) * (static_cast<float>(freq) + (static_cast<float>(DFRQ1_GLO) * GLONASS_PRN.at(PRN_[sat])) + doppler_Hz_[sat]) / static_cast<float>(fs_in_);
                     // std::cout << "sat " << PRN_[sat] << " SG - Freq = " << (freq + (DFRQ1_GLO * GLONASS_PRN.at(PRN_[sat]))) << " Doppler = " << doppler_Hz_[sat] << '\n';
                     _phase[0] = -start_phase_rad_[sat];
                     volk_gnsssdr_s32f_sincos_32fc(complex_phase_.data(), -phase_step_rad, _phase.data(), vector_length_);
 
-                    unsigned int delay_samples = (delay_chips_[sat] % static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS)) * samples_per_code_[sat] / GLONASS_L1_CA_CODE_LENGTH_CHIPS;
+                    auto delay_samples = static_cast<unsigned int>((delay_chips_[sat] % static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS)) * samples_per_code_[sat] / GLONASS_L1_CA_CODE_LENGTH_CHIPS);
 
                     for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {
@@ -435,7 +444,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
                         }
                     else
                         {
-                            unsigned int delay_samples = (delay_chips_[sat] % static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * samples_per_code_[sat] / GALILEO_E1_B_CODE_LENGTH_CHIPS;
+                            auto delay_samples = static_cast<unsigned int>((delay_chips_[sat] % static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * samples_per_code_[sat] / GALILEO_E1_B_CODE_LENGTH_CHIPS);
 
                             for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
                                 {

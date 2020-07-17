@@ -34,9 +34,9 @@ SpirFileSignalSource::SpirFileSignalSource(const ConfigurationInterface* configu
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_filename = "../data/my_capture.dat";
-    std::string default_item_type = "int";
-    std::string default_dump_filename = "../data/my_capture_dump.dat";
+    const std::string default_filename("../data/my_capture.dat");
+    const std::string default_item_type("int");
+    const std::string default_dump_filename("../data/my_capture_dump.dat");
 
     samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
@@ -75,20 +75,13 @@ SpirFileSignalSource::SpirFileSignalSource(const ConfigurationInterface* configu
     catch (const std::exception& e)
         {
             std::cerr
-                << "The receiver was configured to work with a file signal source "
-                << '\n'
-                << "but the specified file is unreachable by GNSS-SDR."
-                << '\n'
-                << "Please modify your configuration file"
-                << '\n'
-                << "and point SignalSource.filename to a valid raw data file. Then:"
-                << '\n'
-                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                << '\n'
-                << "Examples of configuration files available at:"
-                << '\n'
-                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                << '\n';
+                << "The receiver was configured to work with a file signal source\n"
+                << "but the specified file is unreachable by GNSS-SDR.\n"
+                << "Please modify your configuration file\n"
+                << "and point SignalSource.filename to a valid raw data file. Then:\n"
+                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
+                << "Examples of configuration files available at:\n"
+                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n";
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
@@ -131,8 +124,7 @@ SpirFileSignalSource::SpirFileSignalSource(const ConfigurationInterface* configu
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
-    double signal_duration_s;
-    signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
+    double signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 

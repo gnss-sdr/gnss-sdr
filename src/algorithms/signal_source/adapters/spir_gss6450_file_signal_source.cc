@@ -31,8 +31,8 @@
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_filename = "../data/my_capture.dat";
-    std::string default_dump_filename = "../data/my_capture_dump.dat";
+    const std::string default_filename("../data/my_capture.dat");
+    const std::string default_dump_filename("../data/my_capture_dump.dat");
     item_type_ = "int";
 
     samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
@@ -47,8 +47,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
     item_size_ = sizeof(int32_t);
-    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(65536));
-    double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
+    const int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(65536));
+    const double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
     if (sel_ch_ > n_channels_)
         {

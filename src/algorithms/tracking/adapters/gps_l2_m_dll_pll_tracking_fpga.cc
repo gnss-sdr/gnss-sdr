@@ -47,7 +47,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     DLOG(INFO) << "role " << role;
     trk_params_fpga.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
+    const auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     trk_params_fpga.vector_length = vector_length;
     trk_params_fpga.extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     if (trk_params_fpga.extend_correlation_symbols != 1)
@@ -63,7 +63,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
             std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
         }
     trk_params_fpga.system = 'G';
-    std::array<char, 3> sig_{'2', 'S', '\0'};
+    const std::array<char, 3> sig_{'2', 'S', '\0'};
     std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
 
     // FPGA configuration parameters

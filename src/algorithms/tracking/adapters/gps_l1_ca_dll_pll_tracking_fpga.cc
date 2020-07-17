@@ -42,7 +42,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     DLOG(INFO) << "role " << role;
     trk_params_fpga.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int32_t>(std::round(trk_params_fpga.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int32_t>(std::round(trk_params_fpga.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     trk_params_fpga.vector_length = vector_length;
     if (trk_params_fpga.extend_correlation_symbols < 1)
         {
@@ -65,7 +65,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
             std::cout << TEXT_RED << "WARNING: GPS L1 C/A. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     trk_params_fpga.system = 'G';
-    std::array<char, 3> sig_{'1', 'C', '\0'};
+    const std::array<char, 3> sig_{'1', 'C', '\0'};
     std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
 
     // FPGA configuration parameters

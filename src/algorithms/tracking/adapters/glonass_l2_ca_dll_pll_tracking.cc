@@ -54,7 +54,7 @@ GlonassL2CaDllPllTracking::GlonassL2CaDllPllTracking(
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", static_cast<float>(0.5));
     const std::string default_dump_filename("./track_ch");
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    auto vector_length = static_cast<int>(std::round(fs_in / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(fs_in / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
 
     // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

@@ -201,8 +201,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 #endif
 #endif
     // initialize kml_printer
-    std::string kml_dump_filename;
-    kml_dump_filename = d_dump_filename;
+    const std::string kml_dump_filename = d_dump_filename;
     d_kml_output_enabled = conf_.kml_output_enabled;
     d_kml_rate_ms = conf_.kml_rate_ms;
     if (d_kml_rate_ms == 0)
@@ -220,8 +219,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // initialize gpx_printer
-    std::string gpx_dump_filename;
-    gpx_dump_filename = d_dump_filename;
+    const std::string gpx_dump_filename = d_dump_filename;
     d_gpx_output_enabled = conf_.gpx_output_enabled;
     d_gpx_rate_ms = conf_.gpx_rate_ms;
     if (d_gpx_rate_ms == 0)
@@ -239,8 +237,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // initialize geojson_printer
-    std::string geojson_dump_filename;
-    geojson_dump_filename = d_dump_filename;
+    const std::string geojson_dump_filename = d_dump_filename;
     d_geojson_output_enabled = conf_.geojson_output_enabled;
     d_geojson_rate_ms = conf_.geojson_rate_ms;
     if (d_geojson_rate_ms == 0)
@@ -275,8 +272,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // initialize rtcm_printer
-    std::string rtcm_dump_filename;
-    rtcm_dump_filename = d_dump_filename;
+    const std::string rtcm_dump_filename = d_dump_filename;
     if (conf_.flag_rtcm_server or conf_.flag_rtcm_tty_port or conf_.rtcm_output_file_enabled)
         {
             d_rtcm_printer = std::make_unique<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
@@ -423,7 +419,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // Create Sys V message queue
     d_first_fix = true;
     d_sysv_msg_key = 1101;
-    int msgflg = IPC_CREAT | 0666;
+    const int msgflg = IPC_CREAT | 0666;
     if ((d_sysv_msqid = msgget(d_sysv_msg_key, msgflg)) == -1)
         {
             std::cout << "GNSS-SDR cannot create System V message queues.\n";
@@ -443,14 +439,14 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             utc_diff_str = "+0000";
         }
-    int h = std::stoi(utc_diff_str.substr(0, 3), nullptr, 10);
-    int m = std::stoi(utc_diff_str[0] + utc_diff_str.substr(3), nullptr, 10);
+    const int h = std::stoi(utc_diff_str.substr(0, 3), nullptr, 10);
+    const int m = std::stoi(utc_diff_str[0] + utc_diff_str.substr(3), nullptr, 10);
     d_utc_diff_time = boost::posix_time::hours(h) + boost::posix_time::minutes(m);
     std::ostringstream os2;
 #ifdef HAS_PUT_TIME
     os2 << std::put_time(&tm, "%Z");
 #endif
-    std::string time_zone_abrv = os2.str();
+    const std::string time_zone_abrv = os2.str();
     if (time_zone_abrv.empty())
         {
             if (utc_diff_str == "+0000")

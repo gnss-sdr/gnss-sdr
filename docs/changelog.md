@@ -37,6 +37,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   padding space in the stack and making the files more readable for humans.
 - Simpler, less error-prone design of the `GNSSBlockFactory` class public API
   and internal implementation.
+- Simpler API for the `Pvt_Solution` class.
 - Improved system constant definition headers, numerical values are only written
   once.
 - The software can now be built against the GNU Radio 3.9 API that uses standard
@@ -104,6 +105,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   samples parameter ignored when too large (that is, when set larger than
   2^31-1). Now the `samples` parameter accepts values up to 2^64-1, that is,
   18,446,744,073,709,551,615 samples.
+- Fixed a bug in the forwarding of NMEA messages to a serial port (configuration
+  of the `PVT.nmea_dump_devname` parameter was ignored).
 - Updated version of the Contributor Covenant to version 2.0. Added badge in the
   README.md file.
 

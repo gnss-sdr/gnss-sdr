@@ -47,7 +47,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     size_t port_ch0 = configuration->property(role + ".port_ch0", 2060);
     const std::string default_dump_filename("./track_ch");
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    auto vector_length = static_cast<int>(std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
     // ################# MAKE TRACKING GNURadio object ###################
     if (item_type == "gr_complex")

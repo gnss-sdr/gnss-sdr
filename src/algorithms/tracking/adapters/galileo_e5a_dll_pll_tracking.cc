@@ -39,7 +39,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols < 1)
         {
@@ -56,7 +56,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
             std::cout << TEXT_RED << "WARNING: Galileo E5a. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     trk_params.system = 'E';
-    std::array<char, 3> sig_{'5', 'X', '\0'};
+    const std::array<char, 3> sig_{'5', 'X', '\0'};
     std::memcpy(trk_params.signal, sig_.data(), 3);
 
     // ################# Make a GNU Radio Tracking block object ################

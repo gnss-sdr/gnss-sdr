@@ -28,7 +28,7 @@
 HybridObservables::HybridObservables(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_dump_filename = "./observables.dat";
+    const std::string default_dump_filename("./observables.dat");
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_mat_ = configuration->property(role + ".dump_mat", true);

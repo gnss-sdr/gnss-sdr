@@ -42,7 +42,7 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (BEIDOU_B3I_CODE_RATE_CPS / BEIDOU_B3I_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (BEIDOU_B3I_CODE_RATE_CPS / BEIDOU_B3I_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     trk_params.track_pilot = configuration->property(role + ".track_pilot", false);
     if (trk_params.extend_correlation_symbols < 1)
@@ -56,7 +56,7 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
             std::cout << TEXT_RED << "WARNING: BEIDOU B3I. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << '\n';
         }
     trk_params.system = 'C';
-    std::array<char, 3> sig_{'B', '3', '\0'};
+    const std::array<char, 3> sig_{'B', '3', '\0'};
     std::memcpy(trk_params.signal, sig_.data(), 3);
 
     // ################# Make a GNU Radio Tracking block object ################

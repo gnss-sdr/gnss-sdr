@@ -40,7 +40,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
+    const auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols != 1)
         {
@@ -54,7 +54,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
             std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
         }
     trk_params.system = 'G';
-    std::array<char, 3> sig_{'2', 'S', '\0'};
+    const std::array<char, 3> sig_{'2', 'S', '\0'};
     std::memcpy(trk_params.signal, sig_.data(), 3);
 
     // ################# Make a GNU Radio Tracking block object ################

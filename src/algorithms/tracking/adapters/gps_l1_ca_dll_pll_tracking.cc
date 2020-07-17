@@ -41,7 +41,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     DLOG(INFO) << "role " << role;
     trk_params.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     if (trk_params.extend_correlation_symbols < 1)
         {
@@ -65,7 +65,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         }
 
     trk_params.system = 'G';
-    std::array<char, 3> sig_{'1', 'C', '\0'};
+    const std::array<char, 3> sig_{'1', 'C', '\0'};
     std::memcpy(trk_params.signal, sig_.data(), 3);
 
     // ################# Make a GNU Radio Tracking block object ################

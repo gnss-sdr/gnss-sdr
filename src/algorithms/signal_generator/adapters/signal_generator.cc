@@ -60,6 +60,14 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     std::vector<unsigned int> delay_chips;
     std::vector<unsigned int> delay_sec;
 
+    signal1.reserve(num_satellites);
+    system.reserve(num_satellites);
+    PRN.reserve(num_satellites);
+    CN0_dB.reserve(num_satellites);
+    doppler_Hz.reserve(num_satellites);
+    delay_chips.reserve(num_satellites);
+    delay_sec.reserve(num_satellites);
+
     for (unsigned int sat_idx = 0; sat_idx < num_satellites; sat_idx++)
         {
             std::string sat = std::to_string(sat_idx);

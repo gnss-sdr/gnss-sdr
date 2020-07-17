@@ -27,7 +27,7 @@ BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(
     unsigned int in_streams, unsigned int out_streams)
     : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    std::string default_dump_filename = "./navigation.dat";
+    const std::string default_dump_filename("./navigation.dat");
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ =

@@ -54,10 +54,10 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         {
             std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
-    auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     trk_params.vector_length = vector_length;
     trk_params.system = 'E';
-    std::array<char, 3> sig_{'1', 'B', '\0'};
+    const std::array<char, 3> sig_{'1', 'B', '\0'};
     std::memcpy(trk_params.signal, sig_.data(), 3);
 
     // ################# Make a GNU Radio Tracking block object ################

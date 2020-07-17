@@ -37,7 +37,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     DLOG(INFO) << "role " << role;
     trk_params_fpga.SetFromConfiguration(configuration, role);
 
-    auto vector_length = static_cast<int32_t>(std::round(trk_params_fpga.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int32_t>(std::round(trk_params_fpga.fs_in / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
     trk_params_fpga.vector_length = vector_length;
     d_track_pilot = trk_params_fpga.track_pilot;
     if (trk_params_fpga.extend_correlation_symbols < 1)
@@ -55,7 +55,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
             std::cout << TEXT_RED << "WARNING: Galileo E5a. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     trk_params_fpga.system = 'E';
-    std::array<char, 3> sig_{'5', 'X', '\0'};
+    const std::array<char, 3> sig_{'5', 'X', '\0'};
     std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
 
     d_data_codes = nullptr;
@@ -89,7 +89,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
-            std::array<char, 3> sig_a = {'5', 'X', '\0'};
+            const std::array<char, 3> sig_a = {'5', 'X', '\0'};
             galileo_e5_a_code_gen_complex_primary(aux_code, PRN, sig_a);
 
             if (trk_params_fpga.track_pilot)

@@ -55,7 +55,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", static_cast<float>(0.5));
     const std::string default_dump_filename("./track_ch");
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    auto vector_length = static_cast<int>(std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    const auto vector_length = static_cast<int>(std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
     bool bce_run = configuration->property(role + ".bce_run", false);
     unsigned int bce_ptrans = configuration->property(role + ".p_transient", 0);

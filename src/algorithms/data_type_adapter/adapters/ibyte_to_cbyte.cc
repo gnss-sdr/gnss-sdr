@@ -39,7 +39,7 @@ IbyteToCbyte::IbyteToCbyte(const ConfigurationInterface* configuration, const st
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
-    size_t item_size = sizeof(lv_8sc_t);
+    const size_t item_size = sizeof(lv_8sc_t);
 
     ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
 

@@ -295,14 +295,14 @@ void GNSSFlowgraph::connect()
             // connect the sample counter to Observables
             try
                 {
-                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+                    const double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
                     if (fs == 0.0)
                         {
                             LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
                             std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file\n";
                             throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                         }
-                    int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
+                    const int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
                     ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
                     top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter_, 0);
                     top_block_->connect(ch_out_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
@@ -320,14 +320,14 @@ void GNSSFlowgraph::connect()
             // create a hardware-defined gnss_synchro pulse for the observables block
             try
                 {
-                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+                    const double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
                     if (fs == 0.0)
                         {
                             LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
                             std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file\n";
                             throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                         }
-                    int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
+                    const int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
                     ch_out_fpga_sample_counter_ = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
                     top_block_->connect(ch_out_fpga_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
                 }
@@ -344,7 +344,7 @@ void GNSSFlowgraph::connect()
     // connect the sample counter to Observables
     try
         {
-            double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+            const double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
             if (fs == 0.0)
                 {
                     LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
@@ -352,7 +352,7 @@ void GNSSFlowgraph::connect()
                     throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                 }
 
-            int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
+            const int observable_interval_ms = configuration_->property("GNSS-SDR.observable_interval_ms", 20);
             ch_out_sample_counter_ = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
             top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter_, 0);
             top_block_->connect(ch_out_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
@@ -368,6 +368,7 @@ void GNSSFlowgraph::connect()
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     std::vector<bool> signal_conditioner_connected;
+    signal_conditioner_connected.reserve(sig_conditioner_.size());
     for (size_t n = 0; n < sig_conditioner_.size(); n++)
         {
             signal_conditioner_connected.push_back(false);
@@ -376,8 +377,8 @@ void GNSSFlowgraph::connect()
         {
 #ifndef ENABLE_FPGA
             int selected_signal_conditioner_ID = 0;
-            bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-            uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
+            const bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+            const uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
             if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
                 {
                     try
@@ -433,36 +434,19 @@ void GNSSFlowgraph::connect()
                                     if (acq_fs < fs)
                                         {
                                             // check if the resampler is already created for the channel system/signal and for the specific RF Channel
-                                            std::string map_key = channels_.at(i)->implementation() + std::to_string(selected_signal_conditioner_ID);
+                                            const std::string map_key = channels_.at(i)->implementation() + std::to_string(selected_signal_conditioner_ID);
                                             resampler_ratio = static_cast<double>(fs) / acq_fs;
                                             int decimation = floor(resampler_ratio);
                                             while (fs % decimation > 0)
                                                 {
                                                     decimation--;
                                                 };
-                                            double acq_fs_decimated = static_cast<double>(fs) / static_cast<double>(decimation);
+                                            const double acq_fs_decimated = static_cast<double>(fs) / static_cast<double>(decimation);
 
                                             if (decimation > 1)
                                                 {
                                                     // create a FIR low pass filter
-                                                    std::vector<float> taps;
-
-                                                    // float beta = 7.0;
-                                                    // float halfband = 0.5;
-                                                    // float fractional_bw = 0.4;
-                                                    // float rate = 1.0 / static_cast<float>(decimation);
-                                                    //
-                                                    // float trans_width = rate * (halfband - fractional_bw);
-                                                    // float mid_transition_band = rate * halfband - trans_width / 2.0;
-                                                    //
-                                                    // taps = gr::filter::firdes::low_pass(1.0,
-                                                    //    1.0,
-                                                    //    mid_transition_band,
-                                                    //    trans_width,
-                                                    //    gr::filter::firdes::win_type::WIN_KAISER,
-                                                    //    beta);
-
-                                                    taps = gr::filter::firdes::low_pass(1.0,
+                                                    std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
                                                         acq_fs_decimated / 2.1,
                                                         acq_fs_decimated / 2,
@@ -490,8 +474,7 @@ void GNSSFlowgraph::connect()
                                                     top_block_->connect(acq_resamplers_.at(map_key), 0,
                                                         channels_.at(i)->get_left_block_acq(), 0);
 
-                                                    std::shared_ptr<Channel> channel_ptr;
-                                                    channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
+                                                    std::shared_ptr<Channel> channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
                                                     channel_ptr->acquisition()->set_resampler_latency((taps.size() - 1) / 2);
                                                 }
                                             else
@@ -585,7 +568,7 @@ void GNSSFlowgraph::connect()
     // Assign satellites to channels in the initialization
     for (unsigned int& i : vector_of_channels)
         {
-            std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal
+            const std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal
             unsigned int sat = 0;
             try
                 {

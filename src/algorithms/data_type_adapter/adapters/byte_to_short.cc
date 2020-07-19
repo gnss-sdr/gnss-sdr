@@ -37,7 +37,7 @@ ByteToShort::ByteToShort(const ConfigurationInterface* configuration, std::strin
     dump_ = configuration->property(role_ + ".dump", false);
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
 
-    size_t item_size = sizeof(int16_t);
+    const size_t item_size = sizeof(int16_t);
 
     gr_char_to_short_ = gr::blocks::char_to_short::make();
 

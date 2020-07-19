@@ -24,7 +24,7 @@
 
 double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW)
 {
-    /* GALIELO SYSTEM TIME, ICD 5.1.2
+    /* GALILEO SYSTEM TIME, ICD 5.1.2
      * input parameter:
      * WN: The Week Number is an integer counter that gives the sequential week number
        from the origin of the Galileo time. It covers 4096 weeks (about 78 years).

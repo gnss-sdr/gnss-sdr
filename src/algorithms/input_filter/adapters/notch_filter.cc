@@ -39,11 +39,11 @@ NotchFilter::NotchFilter(const ConfigurationInterface* configuration, const std:
     dump_ = configuration->property(role + ".dump", false);
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-    float pfa = configuration->property(role + ".pfa", default_pfa);
-    float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
-    int length_ = configuration->property(role + ".length", default_length_);
-    int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
-    int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
+    const float pfa = configuration->property(role + ".pfa", default_pfa);
+    const float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
+    const int length_ = configuration->property(role + ".length", default_length_);
+    const int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
+    const int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);

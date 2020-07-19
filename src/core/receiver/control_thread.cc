@@ -357,10 +357,14 @@ int ControlThread::run()
 #endif
 
     // Terminate keyboard thread
-    pthread_t id = keyboard_thread_.native_handle();
-    keyboard_thread_.detach();
-    pthread_cancel(id);
+    if (keyboard_thread_.joinable())
+        {
+            pthread_t id = keyboard_thread_.native_handle();
+            keyboard_thread_.detach();
+            pthread_cancel(id);
+        }
 
+    // Terminate telecommand thread
     if (telecommand_enabled_)
         {
             pthread_t id2 = cmd_interface_thread_.native_handle();
@@ -692,11 +696,11 @@ void ControlThread::assist_GNSS()
                                  gps_eph_iter++)
                                 {
                                     std::cout << "SUPL: Received ephemeris data for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << '\n';
-                                    std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
+                                    const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             // Save ephemeris to XML file
-                            std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename_);
+                            const std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename_);
                             if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, supl_client_ephemeris_.gps_ephemeris_map) == true)
                                 {
                                     std::cout << "SUPL: XML ephemeris data file created\n";
@@ -729,20 +733,20 @@ void ControlThread::assist_GNSS()
                                  gps_alm_iter++)
                                 {
                                     std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << '\n';
-                                    std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
+                                    const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             supl_client_ephemeris_.save_gps_almanac_xml("gps_almanac_map.xml", supl_client_ephemeris_.gps_almanac_map);
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
                                     std::cout << "SUPL: Received GPS Ionosphere model parameters\n";
-                                    std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_ephemeris_.gps_iono);
+                                    const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_ephemeris_.gps_iono);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
                                 {
                                     std::cout << "SUPL: Received GPS UTC model parameters\n";
-                                    std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_ephemeris_.gps_utc);
+                                    const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_ephemeris_.gps_utc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             // Save iono and UTC model data to xml file
@@ -789,7 +793,7 @@ void ControlThread::assist_GNSS()
                                 {
                                     std::cout << "SUPL: Received Ref Location data (Acquisition Assistance)\n";
                                     agnss_ref_location_ = supl_client_acquisition_.gps_ref_loc;
-                                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(agnss_ref_location_);
+                                    const std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(agnss_ref_location_);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                     supl_client_acquisition_.save_ref_location_xml("agnss_ref_location.xml", agnss_ref_location_);
                                 }
@@ -797,7 +801,7 @@ void ControlThread::assist_GNSS()
                                 {
                                     std::cout << "SUPL: Received Ref Time data (Acquisition Assistance)\n";
                                     agnss_ref_time_ = supl_client_acquisition_.gps_time;
-                                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(agnss_ref_time_);
+                                    const std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(agnss_ref_time_);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                     supl_client_acquisition_.save_ref_time_xml("agnss_ref_time.xml", agnss_ref_time_);
                                 }
@@ -833,7 +837,7 @@ void ControlThread::assist_GNSS()
                     ref_rx_utc_time = static_cast<time_t>(agnss_ref_time_.d_tv_sec);
                 }
 
-            std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
+            const std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
             // Set the receiver in Standby mode
             flowgraph_->apply_action(0, 10);
             // Give priority to visible satellites in the search list
@@ -917,14 +921,14 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     gtime_t utc_gtime;
     utc_gtime.time = rx_utc_time;
     utc_gtime.sec = 0.0;
-    gtime_t gps_gtime = utc2gpst(utc_gtime);
+    const gtime_t gps_gtime = utc2gpst(utc_gtime);
 
     // 3. loop through all the available ephemeris or almanac and compute satellite positions and elevations
     // store visible satellites in a vector of pairs <int,Gnss_Satellite> to associate an elevation to the each satellite
     std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
-    std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
+    const std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
     struct tm tstruct
     {
     };
@@ -938,7 +942,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     const std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (auto &it : gps_eph_map)
         {
-            eph_t rtklib_eph = eph_to_rtklib(it.second, pre_2009_file_);
+            const eph_t rtklib_eph = eph_to_rtklib(it.second, pre_2009_file_);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;
@@ -963,7 +967,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     const std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
     for (auto &it : gal_eph_map)
         {
-            eph_t rtklib_eph = eph_to_rtklib(it.second);
+            const eph_t rtklib_eph = eph_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             double sat_pos_variance_m2;
@@ -988,7 +992,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     const std::map<int, Gps_Almanac> gps_alm_map = pvt_ptr->get_gps_almanac();
     for (auto &it : gps_alm_map)
         {
-            alm_t rtklib_alm = alm_to_rtklib(it.second);
+            const alm_t rtklib_alm = alm_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             gtime_t aux_gtime;
@@ -1018,7 +1022,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     const std::map<int, Galileo_Almanac> gal_alm_map = pvt_ptr->get_galileo_almanac();
     for (auto &it : gal_alm_map)
         {
-            alm_t rtklib_alm = alm_to_rtklib(it.second);
+            const alm_t rtklib_alm = alm_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
             double clock_bias_s;
             gtime_t gal_gtime;
@@ -1101,9 +1105,9 @@ void ControlThread::sysv_queue_listener()
     bool read_queue = true;
     stop_msgbuf msg;
     double received_message = 0.0;
-    int msgrcv_size = sizeof(msg.stop_message);
+    const int msgrcv_size = sizeof(msg.stop_message);
 
-    key_t key = 1102;
+    const key_t key = 1102;
 
     if ((msqid_ = msgget(key, 0644 | IPC_CREAT)) == -1)
         {
@@ -1140,6 +1144,9 @@ void ControlThread::keyboard_listener()
                     control_queue_->push(pmt::make_any(command_event_make(200, 0)));
                     read_keys = false;
                 }
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            else
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
         }
 }

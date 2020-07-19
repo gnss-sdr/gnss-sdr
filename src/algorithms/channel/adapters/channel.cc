@@ -55,7 +55,7 @@ Channel::Channel(const ConfigurationInterface* configuration, uint32_t channel, 
     // Provide a warning to the user about the change of parameter name
     if (channel_ == 0)
         {
-            int64_t deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
+            const int64_t deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
             if (deprecation_warning != 0)
                 {
                     std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED.\n";
@@ -191,7 +191,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 {
     std::lock_guard<std::mutex> lk(mx_);
     gnss_signal_ = gnss_signal;
-    std::string str_aux = gnss_signal_.get_signal_str();
+    const std::string str_aux = gnss_signal_.get_signal_str();
     gnss_synchro_.Signal[0] = str_aux[0];
     gnss_synchro_.Signal[1] = str_aux[1];
     gnss_synchro_.Signal[2] = '\0';  // make sure that string length is only two characters
@@ -209,7 +209,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 void Channel::stop_channel()
 {
     std::lock_guard<std::mutex> lk(mx_);
-    bool result = channel_fsm_->Event_stop_channel();
+    const bool result = channel_fsm_->Event_stop_channel();
     if (!result)
         {
             LOG(WARNING) << "Invalid channel event";

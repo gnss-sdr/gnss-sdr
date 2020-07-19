@@ -37,18 +37,18 @@ NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration, co
     const float default_samp_freq = 4000000;
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/input_filter.dat");
-    float samp_freq = configuration->property("SignalSource.sampling_frequency", default_samp_freq);
-    float default_coeff_rate = samp_freq * 0.1F;
+    const float samp_freq = configuration->property("SignalSource.sampling_frequency", default_samp_freq);
+    const float default_coeff_rate = samp_freq * 0.1F;
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-    float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
-    float pfa = configuration->property(role + ".pfa", default_pfa);
-    float coeff_rate = configuration->property(role + ".coeff_rate", default_coeff_rate);
-    int length_ = configuration->property(role + ".length", default_length_);
-    int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
-    int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
+    const float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
+    const float pfa = configuration->property(role + ".pfa", default_pfa);
+    const float coeff_rate = configuration->property(role + ".coeff_rate", default_coeff_rate);
+    const int length_ = configuration->property(role + ".length", default_length_);
+    const int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
+    const int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
     int n_segments_coeff = static_cast<int>((samp_freq / coeff_rate) / static_cast<float>(length_));
     n_segments_coeff = std::max(1, n_segments_coeff);
     if (item_type_ == "gr_complex")

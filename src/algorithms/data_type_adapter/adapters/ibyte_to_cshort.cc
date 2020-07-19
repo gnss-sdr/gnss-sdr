@@ -39,7 +39,7 @@ IbyteToCshort::IbyteToCshort(const ConfigurationInterface* configuration, const 
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
-    size_t item_size = sizeof(lv_16sc_t);
+    const size_t item_size = sizeof(lv_16sc_t);
 
     interleaved_byte_to_complex_short_ = make_interleaved_byte_to_complex_short();
 

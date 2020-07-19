@@ -1,6 +1,7 @@
 /*!
  * \file channel_msg_receiver_cc.cc
- * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
+ * \brief GNU Radio block that receives asynchronous channel messages from
+ * acquisition and tracking blocks
  * \author Javier Arribas, 2016. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -61,7 +62,7 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
     bool result = false;
     try
         {
-            int64_t message = pmt::to_long(std::move(msg));
+            const int64_t message = pmt::to_long(std::move(msg));
             switch (message)
                 {
                 case 1:  // positive acquisition

@@ -55,14 +55,13 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     intermediate_freq_ = configuration->property(role_ + ".IF", default_intermediate_freq);
     sampling_freq_ = configuration->property(role_ + ".sampling_frequency", default_sampling_freq);
-    int number_of_taps = configuration->property(role_ + ".number_of_taps", default_number_of_taps);
-    unsigned int number_of_bands = configuration->property(role_ + ".number_of_bands", default_number_of_bands);
-    std::string filter_type = configuration->property(role_ + ".filter_type", default_filter_type);
+    const int number_of_taps = configuration->property(role_ + ".number_of_taps", default_number_of_taps);
+    const unsigned int number_of_bands = configuration->property(role_ + ".number_of_bands", default_number_of_bands);
+    const std::string filter_type = configuration->property(role_ + ".filter_type", default_filter_type);
     decimation_factor_ = configuration->property(role_ + ".decimation_factor", default_decimation_factor);
 
     if (filter_type != "lowpass")
         {
-            std::vector<double> taps_d;
             std::vector<double> bands;
             std::vector<double> ampl;
             std::vector<double> error_w;
@@ -92,20 +91,20 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
                     error_w.push_back(option_value);
                 }
 
-            int grid_density = configuration->property(role_ + ".grid_density", default_grid_density);
-            taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
+            const int grid_density = configuration->property(role_ + ".grid_density", default_grid_density);
+            const std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
             taps_.reserve(taps_d.size());
-            for (double& it : taps_d)
+            for (auto& it : taps_d)
                 {
                     taps_.push_back(static_cast<float>(it));
                 }
         }
     else
         {
-            double default_bw = (sampling_freq_ / decimation_factor_) / 2;
-            double bw_ = configuration->property(role_ + ".bw", default_bw);
-            double default_tw = bw_ / 10.0;
-            double tw_ = configuration->property(role_ + ".tw", default_tw);
+            const double default_bw = (sampling_freq_ / decimation_factor_) / 2;
+            const double bw_ = configuration->property(role_ + ".bw", default_bw);
+            const double default_tw = bw_ / 10.0;
+            const double tw_ = configuration->property(role_ + ".tw", default_tw);
             taps_ = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_, tw_);
         }
 

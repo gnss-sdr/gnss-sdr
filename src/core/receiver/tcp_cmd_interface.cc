@@ -91,7 +91,7 @@ std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine _
     std::string response;
     if (control_queue_ != nullptr)
         {
-            command_event_sptr new_evnt = command_event_make(200, 1);  // send the restart message (who=200,what=1)
+            const command_event_sptr new_evnt = command_event_make(200, 1);  // send the restart message (who=200,what=1)
             control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
@@ -108,7 +108,7 @@ std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine
     std::string response;
     if (control_queue_ != nullptr)
         {
-            command_event_sptr new_evnt = command_event_make(300, 10);  // send the standby message (who=300,what=10)
+            const command_event_sptr new_evnt = command_event_make(300, 10);  // send the standby message (who=300,what=10)
             control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
@@ -149,11 +149,13 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             &course_over_ground_deg,
             &UTC_time) == true)
         {
-            struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
+            struct tm tstruct
+            {
+            };
             std::array<char, 80> buf1{};
             tstruct = *gmtime(&UTC_time);
             strftime(buf1.data(), buf1.size(), "%d/%m/%Y %H:%M:%S", &tstruct);
-            std::string str_time = std::string(buf1.data());
+            const std::string str_time = std::string(buf1.data());
             str_stream << "- Receiver UTC Time: " << str_time << '\n';
             str_stream << std::setprecision(9);
             str_stream << "- Receiver Position WGS84 [Lat, Long, H]: "
@@ -179,10 +181,11 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
     std::string response;
     if (commandLine.size() > 5)
         {
-            std::string tmp_str;
             // Read commandline time parameter
-            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
-            tmp_str = commandLine.at(1) + commandLine.at(2);
+            struct tm tm
+            {
+            };
+            const std::string tmp_str = commandLine.at(1) + commandLine.at(2);
             if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
@@ -203,7 +206,7 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
                 {
                     if (control_queue_ != nullptr)
                         {
-                            command_event_sptr new_evnt = command_event_make(300, 12);  // send the standby message (who=300,what=12)
+                            const command_event_sptr new_evnt = command_event_make(300, 12);  // send the standby message (who=300,what=12)
                             control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }
@@ -226,10 +229,11 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
     std::string response;
     if (commandLine.size() > 5)
         {
-            std::string tmp_str;
             // Read commandline time parameter
-            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
-            tmp_str = commandLine.at(1) + commandLine.at(2);
+            struct tm tm
+            {
+            };
+            const std::string tmp_str = commandLine.at(1) + commandLine.at(2);
             if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
@@ -250,7 +254,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
                 {
                     if (control_queue_ != nullptr)
                         {
-                            command_event_sptr new_evnt = command_event_make(300, 13);  // send the warmstart message (who=300,what=13)
+                            const command_event_sptr new_evnt = command_event_make(300, 13);  // send the warmstart message (who=300,what=13)
                             control_queue_->push(pmt::make_any(new_evnt));
                             response = "OK\n";
                         }
@@ -273,7 +277,7 @@ std::string TcpCmdInterface::coldstart(const std::vector<std::string> &commandLi
     std::string response;
     if (control_queue_ != nullptr)
         {
-            command_event_sptr new_evnt = command_event_make(300, 11);  // send the coldstart message (who=300,what=11)
+            const command_event_sptr new_evnt = command_event_make(300, 11);  // send the coldstart message (who=300,what=11)
             control_queue_->push(pmt::make_any(new_evnt));
             response = "OK\n";
         }
@@ -304,7 +308,7 @@ void TcpCmdInterface::set_msg_queue(std::shared_ptr<Concurrent_Queue<pmt::pmt_t>
 void TcpCmdInterface::run_cmd_server(int tcp_port)
 {
     // Get the port from the parameters
-    uint16_t port = tcp_port;
+    const uint16_t port = tcp_port;
 
     // Error to not throw exception
     boost::system::error_code not_throw;
@@ -340,7 +344,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                     std::string line;
                                     std::getline(is, line);
                                     std::istringstream iss(line);
-                                    std::vector<std::string> cmd_vector(std::istream_iterator<std::string>{iss},
+                                    const std::vector<std::string> cmd_vector(std::istream_iterator<std::string>{iss},
                                         std::istream_iterator<std::string>());
 
                                     if (!cmd_vector.empty())

@@ -37,7 +37,7 @@ IshortToComplex::IshortToComplex(const ConfigurationInterface* configuration, co
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
-    size_t item_size = sizeof(gr_complex);
+    const size_t item_size = sizeof(gr_complex);
 
     gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
 

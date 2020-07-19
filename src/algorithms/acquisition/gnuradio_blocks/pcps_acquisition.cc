@@ -161,7 +161,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
             // Get path
             if (d_dump_filename.find_last_of('/') != std::string::npos)
                 {
-                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    const std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
                     d_dump_filename = dump_filename_;
                 }
@@ -515,7 +515,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
     uint32_t index_doppler = 0U;
     uint32_t tmp_intex_t = 0U;
     uint32_t index_time = 0U;
-    int32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
+    const int32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
 
     // Find the correlation peak and the carrier frequency
     for (uint32_t i = 0; i < num_doppler_bins; i++)
@@ -531,7 +531,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
     indext = index_time;
     if (!d_step_two)
         {
-            auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
+            const auto index_opp = (index_doppler + d_num_doppler_bins / 2) % d_num_doppler_bins;
             d_input_power = static_cast<float>(std::accumulate(d_magnitude_grid[index_opp].data(), d_magnitude_grid[index_opp].data() + effective_fft_size, static_cast<float>(0.0)) / effective_fft_size / 2.0 / d_num_noncoherent_integrations_counter);
             doppler = -static_cast<int32_t>(doppler_max) + d_doppler_center + doppler_step * static_cast<int32_t>(index_doppler);
         }
@@ -606,7 +606,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
 
     // Find the second highest correlation peak in the same freq. bin ---
     volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_tmp_buffer.data(), d_fft_size);
-    float secondPeak = d_tmp_buffer[tmp_intex_t];
+    const float secondPeak = d_tmp_buffer[tmp_intex_t];
 
     // Compute the test statistics and compare to the threshold
     return firstPeak / secondPeak;

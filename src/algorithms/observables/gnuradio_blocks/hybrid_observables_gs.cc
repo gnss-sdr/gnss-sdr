@@ -224,7 +224,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
 int32_t hybrid_observables_gs::save_matfile() const
 {
     // READ DUMP FILE
-    std::string dump_filename = d_dump_filename;
+    const std::string dump_filename = d_dump_filename;
     std::ifstream::pos_type size;
     const int32_t number_of_double_vars = 7;
     const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels_out;
@@ -367,11 +367,10 @@ double hybrid_observables_gs::compute_T_rx_s(const Gnss_Synchro &a) const
 bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint32_t ch, uint64_t rx_clock) const
 {
     int32_t nearest_element = -1;
-    int64_t abs_diff;
     int64_t old_abs_diff = std::numeric_limits<int64_t>::max();
     for (uint32_t i = 0; i < d_gnss_synchro_history->size(ch); i++)
         {
-            abs_diff = llabs(static_cast<int64_t>(rx_clock) - static_cast<int64_t>(d_gnss_synchro_history->get(ch, i).Tracking_sample_counter));
+            const int64_t abs_diff = llabs(static_cast<int64_t>(rx_clock) - static_cast<int64_t>(d_gnss_synchro_history->get(ch, i).Tracking_sample_counter));
             if (old_abs_diff > abs_diff)
                 {
                     old_abs_diff = abs_diff;

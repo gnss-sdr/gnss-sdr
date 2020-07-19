@@ -35,8 +35,8 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
                                 out_streams_(out_streams)
 {
     const std::string default_item_type("gr_complex");
-    std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
-    std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
+    const std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
+    const std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
     if (input_type != output_type)
         {
             LOG(WARNING) << "input_item_type and output_item_type are different in a Pass_Through implementation! Taking "
@@ -90,7 +90,7 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
         }
 
     kludge_copy_ = gr::blocks::copy::make(item_size_);
-    uint64_t max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0);
+    const uint64_t max_source_buffer_samples = configuration->property("GNSS-SDR.max_source_buffer_samples", 0);
     if (max_source_buffer_samples > 0)
         {
             kludge_copy_->set_max_output_buffer(max_source_buffer_samples);

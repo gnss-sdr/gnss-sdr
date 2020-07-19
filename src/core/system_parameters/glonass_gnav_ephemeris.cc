@@ -27,11 +27,29 @@
 #include <string>
 
 
-boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const double offset_time) const
+boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(double offset_time) const
 {
-    boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c + d_tau_n);
-    boost::gregorian::date d1(d_yr, 1, 1);
-    boost::gregorian::days d2(d_N_T - 1);
+    int J = 0;
+    if (d_N_T >= 1 && d_N_T <= 366)
+        {
+            J = 1;
+        }
+    else if (d_N_T >= 367 && d_N_T <= 731)
+        {
+            J = 2;
+        }
+    else if (d_N_T >= 732 && d_N_T <= 1096)
+        {
+            J = 3;
+        }
+    else if (d_N_T >= 1097 && d_N_T <= 1461)
+        {
+            J = 4;
+        }
+
+    const boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c + d_tau_n);
+    const boost::gregorian::date d1(d_yr - J + 1.0, 1, 1);
+    const boost::gregorian::days d2(d_N_T - 1);
     boost::posix_time::ptime glonass_time(d1 + d2, t);
 
     return glonass_time;
@@ -40,13 +58,29 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const doub
 
 boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(const double offset_time, const double glot2utc_corr) const
 {
-    double tod = 0.0;
-    double glot2utc = 3 * 3600;
+    const double glot2utc = 3 * 3600;
+    int J = 0;
+    if (d_N_T >= 1 && d_N_T <= 366)
+        {
+            J = 1;
+        }
+    else if (d_N_T >= 367 && d_N_T <= 731)
+        {
+            J = 2;
+        }
+    else if (d_N_T >= 732 && d_N_T <= 1096)
+        {
+            J = 3;
+        }
+    else if (d_N_T >= 1097 && d_N_T <= 1461)
+        {
+            J = 4;
+        }
 
-    tod = offset_time - glot2utc + glot2utc_corr + d_tau_n;
-    boost::posix_time::time_duration t(0, 0, tod);
-    boost::gregorian::date d1(d_yr, 1, 1);
-    boost::gregorian::days d2(d_N_T - 1);
+    const double tod = offset_time - glot2utc + glot2utc_corr + d_tau_n;
+    const boost::posix_time::time_duration t(0, 0, tod);
+    const boost::gregorian::date d1(d_yr - J + 1.0, 1, 1);
+    const boost::gregorian::days d2(d_N_T - 1);
     boost::posix_time::ptime utc_time(d1 + d2, t);
 
     return utc_time;
@@ -55,32 +89,48 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(const double offset
 
 void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, int32_t* wn, double* tow) const
 {
-    double tod = 0.0;
-    double glot2utc = 3 * 3600;
+    const double glot2utc = 3 * 3600;
     double days = 0.0;
     double total_sec = 0.0;
     double sec_of_day = 0.0;
     int i = 0;
+    int J = 0;
+    if (d_N_T >= 1 && d_N_T <= 366)
+        {
+            J = 1;
+        }
+    else if (d_N_T >= 367 && d_N_T <= 731)
+        {
+            J = 2;
+        }
+    else if (d_N_T >= 732 && d_N_T <= 1096)
+        {
+            J = 3;
+        }
+    else if (d_N_T >= 1097 && d_N_T <= 1461)
+        {
+            J = 4;
+        }
 
-    boost::gregorian::date gps_epoch{1980, 1, 6};
+    const boost::gregorian::date gps_epoch{1980, 1, 6};
 
     // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
     // tk plus 10 sec is the true tod since get_TOW is called when in str5
-    tod = tod_offset - glot2utc;
+    const double tod = tod_offset - glot2utc;
 
-    boost::posix_time::time_duration t(0, 0, tod);
-    boost::gregorian::date d1(d_yr, 1, 1);
-    boost::gregorian::days d2(d_N_T - 1);
-    boost::posix_time::ptime utc_time(d1 + d2, t);
-    boost::gregorian::date utc_date = utc_time.date();
+    const boost::posix_time::time_duration t(0, 0, tod);
+    const boost::gregorian::date d1(d_yr - J + 1.0, 1, 1);
+    const boost::gregorian::days d2(d_N_T - 1);
+    const boost::posix_time::ptime utc_time(d1 + d2, t);
+    const boost::gregorian::date utc_date = utc_time.date();
     boost::posix_time::ptime gps_time;
 
     // Adjust for leap second correction
     for (i = 0; GLONASS_LEAP_SECONDS[i][0] > 0; i++)
         {
-            boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
-            boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
-            boost::posix_time::ptime ls_time(d3, t3);
+            const boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+            const boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+            const boost::posix_time::ptime ls_time(d3, t3);
             if (utc_time >= ls_time)
                 {
                     // We add the leap second when going from utc to gpst
@@ -90,7 +140,6 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
         }
 
     // Total number of days
-    std::string fdat = boost::posix_time::to_simple_string(gps_time);
     days = static_cast<double>((utc_date - gps_epoch).days());
 
     // Total number of seconds
@@ -109,9 +158,8 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
 
 double Glonass_Gnav_Ephemeris::check_t(double time)
 {
-    double corrTime;
-    double half_day = 43200.0;  // seconds
-    corrTime = time;
+    const double half_day = 43200.0;  // seconds
+    double corrTime = time;
     if (time > half_day)
         {
             corrTime = time - 2.0 * half_day;
@@ -128,8 +176,7 @@ double Glonass_Gnav_Ephemeris::check_t(double time)
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
 double Glonass_Gnav_Ephemeris::sv_clock_drift(double transmitTime, double timeCorrUTC)
 {
-    double dt;
-    dt = check_t(transmitTime - d_t_b);
+    const double dt = check_t(transmitTime - d_t_b);
     d_satClkDrift = -(d_tau_n + timeCorrUTC - d_gamma_n * dt);
     // Correct satellite group delay and missing relativistic term here
     // d_satClkDrift-=d_TGD;

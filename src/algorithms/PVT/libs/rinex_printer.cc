@@ -11982,6 +11982,23 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
     const double glot2utc = 3 * 3600;
     double obs_time_glot = 0.0;
     int32_t i = 0;
+    int J = 0;
+    if (eph.d_N_T >= 1 && eph.d_N_T <= 366)
+        {
+            J = 1;
+        }
+    else if (eph.d_N_T >= 367 && eph.d_N_T <= 731)
+        {
+            J = 2;
+        }
+    else if (eph.d_N_T >= 732 && eph.d_N_T <= 1096)
+        {
+            J = 3;
+        }
+    else if (eph.d_N_T >= 1097 && eph.d_N_T <= 1461)
+        {
+            J = 4;
+        }
 
     // Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
     obs_time_glot = obs_time + glot2utc;
@@ -11991,7 +12008,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
 
     // Form date and time duration types
     const boost::posix_time::time_duration t1(0, 0, tod);
-    const boost::gregorian::date d1(eph.d_yr, 1, 1);
+    const boost::gregorian::date d1(eph.d_yr - J + 1.0, 1, 1);
     const boost::gregorian::days d2(eph.d_N_T - 1);
     const boost::posix_time::ptime glo_time(d1 + d2, t1);
 
@@ -12024,6 +12041,23 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const d
     double obs_time_glot = 0.0;
     int32_t i = 0;
     double leap_second = 0;
+    int J = 0;
+    if (eph.d_N_T >= 1 && eph.d_N_T <= 366)
+        {
+            J = 1;
+        }
+    else if (eph.d_N_T >= 367 && eph.d_N_T <= 731)
+        {
+            J = 2;
+        }
+    else if (eph.d_N_T >= 732 && eph.d_N_T <= 1096)
+        {
+            J = 3;
+        }
+    else if (eph.d_N_T >= 1097 && eph.d_N_T <= 1461)
+        {
+            J = 4;
+        }
 
     // Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
     obs_time_glot = gps_obs_time + glot2utc;
@@ -12033,7 +12067,7 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const d
 
     // Form date and time duration types
     const boost::posix_time::time_duration t1(0, 0, tod);
-    const boost::gregorian::date d1(eph.d_yr, 1, 1);
+    const boost::gregorian::date d1(eph.d_yr - J + 1.0, 1, 1);
     const boost::gregorian::days d2(eph.d_N_T - 1);
     const boost::posix_time::ptime glo_time(d1 + d2, t1);
 

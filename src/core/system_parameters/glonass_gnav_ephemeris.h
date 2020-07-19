@@ -24,6 +24,7 @@
 #define GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H
 
 
+#include "glonass_gnav_utc_model.h"
 #include <boost/date_time/posix_time/ptime.hpp>  // for ptime
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
@@ -94,7 +95,7 @@ public:
      *  \brief Computes the GLONASS System Time and returns a boost::posix_time::ptime object
      * \ param offset_time Is the start of day offset to compute the time
      */
-    boost::posix_time::ptime compute_GLONASS_time(const double offset_time) const;
+    boost::posix_time::ptime compute_GLONASS_time(double offset_time) const;
 
     /*!
      * \brief Converts from GLONASST to UTC

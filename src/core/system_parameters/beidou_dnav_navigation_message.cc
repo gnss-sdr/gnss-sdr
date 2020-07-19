@@ -774,7 +774,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
             eph.d_Toc = d_Toc;
 
             eph.d_sqrt_A = d_sqrt_A;
-            eph.d_eccentricity = (d_eccentricity_msb + d_eccentricity_lsb) * D1_E_LSB;
+            eph.d_eccentricity = static_cast<double>((d_eccentricity_msb + d_eccentricity_lsb)) * D1_E_LSB;
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_i_0_msb_bits + d_i_0_lsb_bits);
             eph.d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0)) * D1_I0_LSB;
             eph.d_OMEGA0 = d_OMEGA0;
